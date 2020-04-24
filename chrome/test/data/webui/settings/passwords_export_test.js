@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {eventToPromise} from 'chrome://test/test_util.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {MockTimer} from 'chrome://test/mock_timer.m.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {MockTimer} from 'chrome://test/mock_timer.m.js';
 // clang-format on
 
-cr.define('export_passwords_tests', function() {
   // Test that tapping "Export passwords..." notifies the browser.
-  /* #export */ function runStartExportTest(
+  export function runStartExportTest(
       exportDialog, passwordManager, done) {
     passwordManager.exportPasswords = (callback) => {
       callback();
@@ -22,7 +21,7 @@ cr.define('export_passwords_tests', function() {
 
   // Test the export flow. If exporting is fast, we should skip the
   // in-progress view altogether.
-  /* #export */ function runExportFlowFastTest(
+  export function runExportFlowFastTest(
       exportDialog, passwordManager, done) {
     const progressCallback = passwordManager.progressCallback;
 
@@ -38,7 +37,7 @@ cr.define('export_passwords_tests', function() {
     progressCallback(
         {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
 
-    Polymer.dom.flush();
+    flush();
     // When we are done, the export dialog closes completely.
     assertFalse(!!exportDialog.$$('#dialog_start'));
     assertFalse(!!exportDialog.$$('#dialog_error'));
@@ -49,7 +48,7 @@ cr.define('export_passwords_tests', function() {
   }
 
   // The error view is shown when an error occurs.
-  /* #export */ function runExportFlowErrorTest(
+  export function runExportFlowErrorTest(
       exportDialog, passwordManager, done) {
     const progressCallback = passwordManager.progressCallback;
 
@@ -67,12 +66,12 @@ cr.define('export_passwords_tests', function() {
       folderName: 'tmp',
     });
 
-    Polymer.dom.flush();
+    flush();
     // Test that the error dialog is shown.
     assertTrue(exportDialog.$$('#dialog_error').open);
     // Test that the error dialog can be dismissed.
     exportDialog.$$('#cancelErrorButton').click();
-    Polymer.dom.flush();
+    flush();
     assertFalse(!!exportDialog.$$('#dialog_error'));
     done();
 
@@ -80,7 +79,7 @@ cr.define('export_passwords_tests', function() {
   }
 
   // The error view allows to retry.
-  /* #export */ function runExportFlowErrorRetryTest(
+  export function runExportFlowErrorRetryTest(
       exportDialog, passwordManager, done) {
     const progressCallback = passwordManager.progressCallback;
     // Use this to freeze the delayed progress bar and avoid flakiness.
@@ -102,7 +101,7 @@ cr.define('export_passwords_tests', function() {
         folderName: 'tmp',
       });
 
-      Polymer.dom.flush();
+      flush();
       // Test that the error dialog is shown.
       assertTrue(exportDialog.$$('#dialog_error').open);
       // Test that clicking retry will start a new export.
@@ -118,7 +117,7 @@ cr.define('export_passwords_tests', function() {
 
   // Test the export flow. If exporting is slow, Chrome should show the
   // in-progress dialog for at least 1000ms.
-  /* #export */ function runExportFlowSlowTest(
+  export function runExportFlowSlowTest(
       exportDialog, passwordManager, done) {
     const progressCallback = passwordManager.progressCallback;
 
@@ -140,7 +139,7 @@ cr.define('export_passwords_tests', function() {
     mockTimer.tick(99);
     assertTrue(exportDialog.$$('#dialog_start').open);
     mockTimer.tick(1);
-    Polymer.dom.flush();
+    flush();
     assertTrue(exportDialog.$$('#dialog_progress').open);
     progressCallback(
         {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
@@ -150,7 +149,7 @@ cr.define('export_passwords_tests', function() {
     mockTimer.tick(999);
     assertTrue(exportDialog.$$('#dialog_progress').open);
     mockTimer.tick(1);
-    Polymer.dom.flush();
+    flush();
     // On SUCCEEDED the dialog closes completely.
     assertFalse(!!exportDialog.$$('#dialog_progress'));
     assertFalse(!!exportDialog.$$('#dialog_start'));
@@ -162,7 +161,7 @@ cr.define('export_passwords_tests', function() {
 
   // Test that canceling the dialog while exporting will also cancel the
   // export on the browser.
-  /* #export */ function runCancelExportTest(
+  export function runCancelExportTest(
       exportDialog, passwordManager, done) {
     const progressCallback = passwordManager.progressCallback;
 
@@ -180,11 +179,11 @@ cr.define('export_passwords_tests', function() {
         {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
     // The progress bar only appears after 100ms.
     mockTimer.tick(100);
-    Polymer.dom.flush();
+    flush();
     assertTrue(exportDialog.$$('#dialog_progress').open);
     exportDialog.$$('#cancel_progress_button').click();
 
-    Polymer.dom.flush();
+    flush();
     // The dialog should be dismissed entirely.
     assertFalse(!!exportDialog.$$('#dialog_progress'));
     assertFalse(!!exportDialog.$$('#dialog_start'));
@@ -193,10 +192,10 @@ cr.define('export_passwords_tests', function() {
     mockTimer.uninstall();
   }
 
-  /* #export */ function runFireCloseEventAfterExportCompleteTest(
+  export function runFireCloseEventAfterExportCompleteTest(
       exportDialog, passwordManager) {
     const wait =
-        test_util.eventToPromise('passwords-export-dialog-close', exportDialog);
+        eventToPromise('passwords-export-dialog-close', exportDialog);
     exportDialog.$$('#exportPasswordsButton').click();
     passwordManager.progressCallback(
         {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
@@ -205,15 +204,3 @@ cr.define('export_passwords_tests', function() {
     return wait;
   }
 
-  // #cr_define_end
-  return {
-    runStartExportTest: runStartExportTest,
-    runExportFlowFastTest: runExportFlowFastTest,
-    runExportFlowErrorTest: runExportFlowErrorTest,
-    runExportFlowErrorRetryTest: runExportFlowErrorRetryTest,
-    runExportFlowSlowTest: runExportFlowSlowTest,
-    runCancelExportTest: runCancelExportTest,
-    runFireCloseEventAfterExportCompleteTest:
-        runFireCloseEventAfterExportCompleteTest,
-  };
-});

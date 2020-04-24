@@ -158,11 +158,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::ProtocolHandlersHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<::settings::SearchEnginesHandler>(profile));
-
-  html_source->AddBoolean(
-      "isSupportedArcVersion",
-      AppManagementPageHandler::IsCurrentArcVersionSupported(profile));
-
   AddSettingsPageUIHandler(
       base::WrapUnique(::settings::AboutHandler::Create(html_source, profile)));
   AddSettingsPageUIHandler(base::WrapUnique(
@@ -387,17 +382,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("isDemoSession",
                           chromeos::DemoSession::IsDeviceInDemoMode());
-
-  // We have 2 variants of Android apps settings. Default case, when the Play
-  // Store app exists we show expandable section that allows as to
-  // enable/disable the Play Store and link to Android settings which is
-  // available once settings app is registered in the system.
-  // For AOSP images we don't have the Play Store app. In last case we Android
-  // apps settings consists only from root link to Android settings and only
-  // visible once settings app is registered.
-  html_source->AddBoolean("androidAppsVisible",
-                          arc::IsArcAllowedForProfile(profile));
-  html_source->AddBoolean("havePlayStoreApp", arc::IsPlayStoreAvailable());
 
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::PowerHandler>(profile->GetPrefs()));

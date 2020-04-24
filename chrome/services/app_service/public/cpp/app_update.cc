@@ -111,6 +111,9 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   if (delta->show_in_management != apps::mojom::OptionalBool::kUnknown) {
     state->show_in_management = delta->show_in_management;
   }
+  if (delta->has_badge != apps::mojom::OptionalBool::kUnknown) {
+    state->has_badge = delta->has_badge;
+  }
   if (delta->paused != apps::mojom::OptionalBool::kUnknown) {
     state->paused = delta->paused;
   }
@@ -447,6 +450,21 @@ bool AppUpdate::ShowInManagementChanged() const {
          (delta_->show_in_management != apps::mojom::OptionalBool::kUnknown) &&
          (!state_ ||
           (delta_->show_in_management != state_->show_in_management));
+}
+
+apps::mojom::OptionalBool AppUpdate::HasBadge() const {
+  if (delta_ && (delta_->has_badge != apps::mojom::OptionalBool::kUnknown)) {
+    return delta_->has_badge;
+  }
+  if (state_) {
+    return state_->has_badge;
+  }
+  return apps::mojom::OptionalBool::kUnknown;
+}
+
+bool AppUpdate::HasBadgeChanged() const {
+  return delta_ && (delta_->has_badge != apps::mojom::OptionalBool::kUnknown) &&
+         (!state_ || (delta_->has_badge != state_->has_badge));
 }
 
 apps::mojom::OptionalBool AppUpdate::Paused() const {

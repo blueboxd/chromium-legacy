@@ -75,6 +75,10 @@ constexpr int kScreenEdgeInsetForSnapping = 32;
 // the delegate.
 constexpr int kMinOnscreenSize = 20;
 
+// The amount of pixels that needs to be moved during a caption area drag from a
+// snapped window before the window restores.
+constexpr int kResizeRestoreDragThresholdDp = 5;
+
 // Current instance for use by the WorkspaceWindowResizerTest.
 WorkspaceWindowResizer* instance = nullptr;
 
@@ -275,6 +279,33 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
                                              window_state);
 }
 
+// When dragging, drags events have to moved pass this threshold before the
+// window bounds start changing.
+int GetDraggingThreshold(const DragDetails& details) {
+  if (details.window_component != HTCAPTION)
+    return 0;
+
+  WindowStateType state = details.initial_state_type;
+#if DCHECK_IS_ON()
+  // Other state types either create a different window resizer, or none at all.
+  std::vector<WindowStateType> draggable_states = {
+      WindowStateType::kDefault, WindowStateType::kNormal,
+      WindowStateType::kLeftSnapped, WindowStateType::kRightSnapped,
+      WindowStateType::kMaximized};
+  DCHECK(base::Contains(draggable_states, state));
+#endif
+
+  // Snapped and maximized windows need to be dragged a certain amount before
+  // bounds start changing.
+  return IsNormalWindowStateType(state) ? 0 : kResizeRestoreDragThresholdDp;
+}
+
+void ResetFrameRestoreLookKey(WindowState* window_state) {
+  aura::Window* window = window_state->window();
+  if (window->GetProperty(kFrameRestoreLookKey))
+    window->SetProperty(kFrameRestoreLookKey, false);
+}
+
 }  // namespace
 
 std::unique_ptr<WindowResizer> CreateWindowResizer(
@@ -314,7 +345,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   if (!window_state->CanResize() && window_component != HTCAPTION)
     return nullptr;
 
-  if (!window_state->IsNormalOrSnapped())
+  if (!window_state->IsNormalOrSnapped() && !window_state->IsMaximized())
     return nullptr;
 
   int bounds_change =
@@ -425,6 +456,15 @@ WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
 
 void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
                                   int event_flags) {
+  // For snapped or maximized windows, do not start resizing or restoring the
+  // window until a certain threshold has passed.
+  if (!did_move_or_resize_) {
+    if ((location_in_parent - details().initial_location_in_parent).Length() <
+        GetDraggingThreshold(details())) {
+      return;
+    }
+  }
+
   last_mouse_location_ = location_in_parent;
 
   int sticky_size;
@@ -442,8 +482,16 @@ void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
 
   if (bounds != GetTarget()->bounds()) {
     if (!did_move_or_resize_) {
-      if (!details().restore_bounds.IsEmpty())
+      if (!details().restore_bounds.IsEmpty()) {
         window_state()->ClearRestoreBounds();
+        if (window_state()->IsMaximized() &&
+            details().window_component == HTCAPTION) {
+          // Update the maximized window so that it looks like it has been
+          // restored (i.e. update the caption buttons and height of the browser
+          // frame).
+          window_state()->window()->SetProperty(kFrameRestoreLookKey, true);
+        }
+      }
       RestackWindows();
     }
     did_move_or_resize_ = true;
@@ -476,6 +524,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
   if (!did_move_or_resize_)
     return;
 
+  ResetFrameRestoreLookKey(window_state());
   window_state()->set_bounds_changed_by_user(true);
   snap_phantom_window_controller_.reset();
 
@@ -521,6 +570,10 @@ void WorkspaceWindowResizer::CompleteDrag() {
         window_state()->SaveCurrentBoundsForRestore();
         window_state()->Restore();
       }
+    } else if (window_state()->IsMaximized()) {
+      DCHECK_EQ(HTCAPTION, details().window_component);
+      window_state()->SaveCurrentBoundsForRestore();
+      window_state()->Restore();
     } else {
       // The window was not snapped and is not snapped. This is a user
       // resize/drag and so the current bounds should be maintained, clearing
@@ -542,6 +595,7 @@ void WorkspaceWindowResizer::RevertDrag() {
   if (!did_move_or_resize_)
     return;
 
+  ResetFrameRestoreLookKey(window_state());
   GetTarget()->SetBounds(details().initial_bounds_in_parent);
   if (!details().restore_bounds.IsEmpty())
     window_state()->SetRestoreBoundsInScreen(details().restore_bounds);

@@ -423,6 +423,7 @@ class GpuIntegrationTest(
       # it's the discrete GPU, so that test expectations can be written that
       # target the discrete GPU.
       gpu_tags.append(gpu_helper.GetANGLERenderer(gpu_info))
+      gpu_tags.append(gpu_helper.GetSwiftShaderGLRenderer(gpu_info))
       gpu_tags.append(gpu_helper.GetCommandDecoder(gpu_info))
       if gpu_info and gpu_info.devices:
         for ii in xrange(0, len(gpu_info.devices)):

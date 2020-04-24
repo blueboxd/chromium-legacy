@@ -25,7 +25,6 @@
 namespace feed {
 namespace {
 using LoadType = LoadStreamTask::LoadType;
-using Result = LoadStreamTask::Result;
 
 feedwire::FeedQuery::RequestReason GetRequestReason(LoadType load_type) {
   switch (load_type) {
@@ -37,12 +36,6 @@ feedwire::FeedQuery::RequestReason GetRequestReason(LoadType load_type) {
 }
 
 }  // namespace
-
-Result::Result() = default;
-Result::Result(LoadStreamStatus status) : final_status(status) {}
-Result::~Result() = default;
-Result::Result(const Result&) = default;
-Result& Result::operator=(const Result&) = default;
 
 LoadStreamTask::LoadStreamTask(LoadType load_type,
                                FeedStream* stream,
@@ -113,9 +106,6 @@ void LoadStreamTask::LoadFromStoreComplete(
 void LoadStreamTask::QueryRequestComplete(
     FeedNetwork::QueryRequestResult result) {
   DCHECK(!stream_->GetModel());
-
-  network_response_info_ = result.response_info;
-
   if (!result.response_body) {
     Done(LoadStreamStatus::kNoResponseBody);
     return;
@@ -150,7 +140,6 @@ void LoadStreamTask::Done(LoadStreamStatus status) {
   result.load_from_store_status = load_from_store_status_;
   result.final_status = status;
   result.load_type = load_type_;
-  result.network_response_info = network_response_info_;
   std::move(done_callback_).Run(result);
   TaskComplete();
 }

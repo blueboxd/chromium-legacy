@@ -42,6 +42,35 @@
 
 namespace {
 
+std::string ConvertAlertStateToString(TabAlertState alert_state) {
+  switch (alert_state) {
+    case TabAlertState::MEDIA_RECORDING:
+      return "media-recording";
+    case TabAlertState::TAB_CAPTURING:
+      return "tab-capturing";
+    case TabAlertState::AUDIO_PLAYING:
+      return "audio-playing";
+    case TabAlertState::AUDIO_MUTING:
+      return "audio-muting";
+    case TabAlertState::BLUETOOTH_CONNECTED:
+      return "bluetooth-connected";
+    case TabAlertState::USB_CONNECTED:
+      return "usb-connected";
+    case TabAlertState::HID_CONNECTED:
+      return "hid-connected";
+    case TabAlertState::SERIAL_CONNECTED:
+      return "serial-connected";
+    case TabAlertState::PIP_PLAYING:
+      return "pip-playing";
+    case TabAlertState::DESKTOP_CAPTURING:
+      return "desktop-capturing";
+    case TabAlertState::VR_PRESENTING_IN_HEADSET:
+      return "vr-presenting";
+    default:
+      NOTREACHED();
+  }
+}
+
 // Writes bytes to a std::vector that can be fetched. This is used to record the
 // output of skia image encoding.
 class BufferWStream : public SkWStream {
@@ -459,7 +488,7 @@ base::DictionaryValue TabStripUIHandler::GetTabData(
   auto alert_states = std::make_unique<base::ListValue>();
   for (const auto alert_state :
        chrome::GetTabAlertStatesForContents(contents)) {
-    alert_states->Append(static_cast<int>(alert_state));
+    alert_states->Append(ConvertAlertStateToString(alert_state));
   }
   tab_data.SetList("alertStates", std::move(alert_states));
 

@@ -195,15 +195,7 @@ void LazyLoadImageObserver::StartMonitoringNearViewport(
         "Images loaded lazily and replaced with placeholders. Load events are "
         "deferred. See https://crbug.com/954323"));
   }
-  if (deferral_message == DeferralMessage::kMissingDimensionForLazy &&
-      !is_missing_dimension_intervention_shown_) {
-    is_missing_dimension_intervention_shown_ = true;
-    root_document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kIntervention,
-        mojom::ConsoleMessageLevel::kInfo,
-        "An <img> element was lazyloaded with loading=lazy, but had no "
-        "dimensions specified. Specifying dimensions improves performance. See "
-        "https://crbug.com/954323"));
+  if (deferral_message == DeferralMessage::kMissingDimensionForLazy) {
     UseCounter::Count(root_document,
                       WebFeature::kLazyLoadImageMissingDimensionsForLazy);
   }

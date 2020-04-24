@@ -57,64 +57,8 @@
 using base::ASCIIToUTF16;
 using content::BrowserThread;
 
-// Record a rate (kB per second) at which extensions are unpacked.
-// Range from 1kB/s to 100mB/s.
-#define UNPACK_RATE_HISTOGRAM(name, rate) \
-  UMA_HISTOGRAM_CUSTOM_COUNTS(name, rate, 1, 100000, 100);
-
 namespace extensions {
 namespace {
-
-void RecordSuccessfulUnpackTimeHistograms(const base::FilePath& crx_path,
-                                          const base::TimeDelta unpack_time) {
-  const int64_t kBytesPerKb = 1024;
-  const int64_t kBytesPerMb = 1024 * 1024;
-
-  // To get a sense of how CRX size impacts unpack time, record unpack
-  // time for several increments of CRX size.
-  int64_t crx_file_size;
-  if (!base::GetFileSize(crx_path, &crx_file_size))
-    return;
-
-  // Cast is safe as long as the number of bytes in the CRX is less than
-  // 2^31 * 2^10.
-  int crx_file_size_kb = static_cast<int>(crx_file_size / kBytesPerKb);
-  UMA_HISTOGRAM_COUNTS_1M("Extensions.SandboxUnpackSuccessCrxSize",
-                          crx_file_size_kb);
-
-  // We have time in seconds and file size in bytes.  We want the rate bytes are
-  // unpacked in kB/s.
-  double file_size_kb =
-      static_cast<double>(crx_file_size) / static_cast<double>(kBytesPerKb);
-  int unpack_rate_kb_per_s =
-      static_cast<int>(file_size_kb / unpack_time.InSecondsF());
-  UNPACK_RATE_HISTOGRAM("Extensions.SandboxUnpackRate", unpack_rate_kb_per_s);
-
-  if (crx_file_size < 50.0 * kBytesPerKb) {
-    UNPACK_RATE_HISTOGRAM("Extensions.SandboxUnpackRateUnder50kB",
-                          unpack_rate_kb_per_s);
-
-  } else if (crx_file_size < 1 * kBytesPerMb) {
-    UNPACK_RATE_HISTOGRAM("Extensions.SandboxUnpackRate50kBTo1mB",
-                          unpack_rate_kb_per_s);
-
-  } else if (crx_file_size < 2 * kBytesPerMb) {
-    UNPACK_RATE_HISTOGRAM("Extensions.SandboxUnpackRate1To2mB",
-                          unpack_rate_kb_per_s);
-
-  } else if (crx_file_size < 5 * kBytesPerMb) {
-    UNPACK_RATE_HISTOGRAM("Extensions.SandboxUnpackRate2To5mB",
-                          unpack_rate_kb_per_s);
-
-  } else if (crx_file_size < 10 * kBytesPerMb) {
-    UNPACK_RATE_HISTOGRAM("Extensions.SandboxUnpackRate5To10mB",
-                          unpack_rate_kb_per_s);
-
-  } else {
-    UNPACK_RATE_HISTOGRAM("Extensions.SandboxUnpackRateOver10mB",
-                          unpack_rate_kb_per_s);
-  }
-}
 
 // Work horse for FindWritableTempLocation. Creates a temp file in the folder
 // and uses NormalizeFilePath to check if the path is junction free.
@@ -279,7 +223,6 @@ void SandboxedUnpacker::StartWithCrx(const CRXFileInfo& crx_info) {
   // to do file IO on.
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
-  crx_unpack_start_time_ = base::TimeTicks::Now();
   std::string expected_hash;
   if (!crx_info.expected_hash.empty() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -939,10 +882,6 @@ void SandboxedUnpacker::ReportSuccess() {
 
   UMA_HISTOGRAM_COUNTS_1M("Extensions.SandboxUnpackSuccess", 1);
 
-  if (!crx_unpack_start_time_.is_null())
-    RecordSuccessfulUnpackTimeHistograms(
-        crx_path_for_histograms_,
-        base::TimeTicks::Now() - crx_unpack_start_time_);
   DCHECK(!temp_dir_.GetPath().empty());
 
   // Client takes ownership of temporary directory, manifest, and extension.

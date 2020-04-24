@@ -98,7 +98,7 @@ const bluetooth_v2_shlib::Uuid RemoteDescriptorImpl::uuid() const {
   return descriptor_->uuid;
 }
 
-uint16_t RemoteDescriptorImpl::handle() const {
+HandleId RemoteDescriptorImpl::handle() const {
   return descriptor_->handle;
 }
 

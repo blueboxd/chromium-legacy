@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PLUGIN_VM_PLUGIN_VM_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_PLUGIN_VM_PLUGIN_VM_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
+#include "base/observer_list_types.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace aura {
@@ -22,6 +26,8 @@ class Profile;
 class GURL;
 
 namespace plugin_vm {
+
+class PluginVmPolicySubscription;
 
 // Generated as crx_file::id_util::GenerateId("org.chromium.plugin_vm");
 constexpr char kPluginVmAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
@@ -93,6 +99,38 @@ std::string GetIdFromDriveUrl(const GURL& url);
 
 // Used during communication with |DlcserviceClient|.
 dlcservice::DlcModuleList GetPluginVmDlcModuleList();
+
+// A subscription for changes to PluginVm policy that may affect
+// IsPluginVmAllowedForProfile.
+class PluginVmPolicySubscription {
+ public:
+  using PluginVmAllowedChanged = base::RepeatingCallback<void(bool is_allowed)>;
+  PluginVmPolicySubscription(Profile* profile, PluginVmAllowedChanged callback);
+  ~PluginVmPolicySubscription();
+
+  PluginVmPolicySubscription(const PluginVmPolicySubscription&) = delete;
+  PluginVmPolicySubscription& operator=(const PluginVmPolicySubscription&) =
+      delete;
+
+ private:
+  // Internal callback for policy changes.
+  void OnPolicyChanged();
+
+  Profile* profile_;
+
+  // Whether Plugin VM was previously allowed for the profile.
+  bool is_allowed_;
+
+  // The user-provided callback method.
+  PluginVmAllowedChanged callback_;
+
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      allowed_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      license_subscription_;
+  std::unique_ptr<base::CallbackList<void(void)>::Subscription>
+      fake_license_subscription_;
+};
 
 }  // namespace plugin_vm
 

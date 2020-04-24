@@ -28,6 +28,9 @@ ASH_PUBLIC_EXPORT int FrameBorderNonClientHitTest(
 ASH_PUBLIC_EXPORT void ResolveInferredOpacity(
     views::Widget::InitParams* params);
 
+// Checks whether we should draw the restored window frame on |widget|.
+ASH_PUBLIC_EXPORT bool ShouldUseRestoreFrame(const views::Widget* widget);
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_FRAME_UTILS_H_

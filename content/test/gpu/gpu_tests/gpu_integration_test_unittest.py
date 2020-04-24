@@ -175,7 +175,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertEqual(
         _GetTagsToTest(browser),
         set(['win', 'win10', 'release', 'nvidia', 'nvidia-0x1cb3',
-             'd3d9', 'no-passthrough']))
+             'd3d9', 'no-passthrough', 'no-swiftshader-gl']))
 
   def testGenerateVendorTagUsingVendorString(self):
     platform = fakes.FakePlatform('mac', 'mojave')
@@ -188,7 +188,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         _GetTagsToTest(browser),
         set(['mac', 'mojave', 'release', 'imagination',
              'imagination-PowerVR-SGX-554',
-             'opengles', 'passthrough']))
+             'opengles', 'passthrough', 'no-swiftshader-gl']))
 
   def testGenerateVendorTagUsingDeviceString(self):
     platform = fakes.FakePlatform('mac', 'mojave')
@@ -200,7 +200,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         _GetTagsToTest(browser),
         set(['mac', 'mojave', 'release', 'imagination',
              'imagination-Triangle-Monster-3000',
-             'no-angle', 'no-passthrough']))
+             'no-angle', 'no-passthrough', 'no-swiftshader-gl']))
 
   def testSimpleIntegrationTest(self):
     self._RunIntegrationTest(

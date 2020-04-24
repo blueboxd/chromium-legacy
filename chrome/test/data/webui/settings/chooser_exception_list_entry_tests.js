@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import 'chrome://test/cr_elements/cr_policy_strings.js';
-// #import {ChooserType,ContentSetting,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-// #import {eventToPromise} from 'chrome://test/test_util.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
+import 'chrome://test/cr_elements/cr_policy_strings.js';
+import {ChooserType,ContentSetting,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
 // clang-format on
 
 /**
@@ -30,7 +30,7 @@ suite('ChooserExceptionListEntry', function() {
   // Initialize a chooser-exception-list-entry before each test.
   setup(function() {
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     testElement = document.createElement('chooser-exception-list-entry');
     document.body.appendChild(testElement);
@@ -43,7 +43,7 @@ suite('ChooserExceptionListEntry', function() {
           incognito: false,
           origin: origin,
           displayName: origin,
-          setting: settings.ContentSetting.DEFAULT,
+          setting: ContentSetting.DEFAULT,
           enforcement: null,
           controlledBy: chrome.settingsPrivate.ControlledBy.PRIMARY_USER,
         },
@@ -65,12 +65,12 @@ suite('ChooserExceptionListEntry', function() {
       'User granted chooser exceptions should show the reset button',
       function() {
         testElement.exception =
-            createChooserException(settings.ChooserType.USB_DEVICES, [
+            createChooserException(ChooserType.USB_DEVICES, [
               createSiteException('https://foo.com'),
             ]);
 
         // Flush the container to ensure that the container is populated.
-        Polymer.dom.flush();
+        flush();
 
         const siteListEntry = testElement.$$('site-list-entry');
         assertTrue(!!siteListEntry);
@@ -95,7 +95,7 @@ suite('ChooserExceptionListEntry', function() {
           'icon',
       function() {
         testElement.exception =
-            createChooserException(settings.ChooserType.USB_DEVICES, [
+            createChooserException(ChooserType.USB_DEVICES, [
               createSiteException('https://foo.com', {
                 enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
                 controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
@@ -103,7 +103,7 @@ suite('ChooserExceptionListEntry', function() {
             ]);
 
         // Flush the container to ensure that the container is populated.
-        Polymer.dom.flush();
+        flush();
 
         const siteListEntry = testElement.$$('site-list-entry');
         assertTrue(!!siteListEntry);
@@ -129,7 +129,7 @@ suite('ChooserExceptionListEntry', function() {
         // ordered by provider source, then alphabetically by requesting origin
         // and embedding origin.
         testElement.exception =
-            createChooserException(settings.ChooserType.USB_DEVICES, [
+            createChooserException(ChooserType.USB_DEVICES, [
               createSiteException('https://foo.com', {
                 enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
                 controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
@@ -138,7 +138,7 @@ suite('ChooserExceptionListEntry', function() {
             ]);
 
         // Flush the container to ensure that the container is populated.
-        Polymer.dom.flush();
+        flush();
 
         const siteListEntries =
             testElement.$.listContainer.querySelectorAll('site-list-entry');
@@ -176,7 +176,7 @@ suite('ChooserExceptionListEntry', function() {
       'The show-tooltip event is fired when mouse hovers over policy indicator',
       function() {
         testElement.exception =
-            createChooserException(settings.ChooserType.USB_DEVICES, [
+            createChooserException(ChooserType.USB_DEVICES, [
               createSiteException('https://foo.com', {
                 enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
                 controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
@@ -184,7 +184,7 @@ suite('ChooserExceptionListEntry', function() {
             ]);
 
         // Flush the container to ensure that the container is populated.
-        Polymer.dom.flush();
+        flush();
 
         const siteListEntry = testElement.$$('site-list-entry');
         assertTrue(!!siteListEntry);
@@ -204,7 +204,7 @@ suite('ChooserExceptionListEntry', function() {
             'none', paperTooltip.computedStyleMap().get('display').value);
         assertFalse(paperTooltip._showing);
 
-        const wait = test_util.eventToPromise('show-tooltip', document);
+        const wait = eventToPromise('show-tooltip', document);
         icon.$.indicator.dispatchEvent(
             new MouseEvent('mouseenter', {bubbles: true, composed: true}));
         return wait.then(() => {
@@ -218,12 +218,12 @@ suite('ChooserExceptionListEntry', function() {
       'The reset button calls the resetChooserExceptionForSite method',
       function() {
         testElement.exception =
-            createChooserException(settings.ChooserType.USB_DEVICES, [
+            createChooserException(ChooserType.USB_DEVICES, [
               createSiteException('https://foo.com'),
             ]);
 
         // Flush the container to ensure that the container is populated.
-        Polymer.dom.flush();
+        flush();
 
         const siteListEntry = testElement.$$('site-list-entry');
         assertTrue(!!siteListEntry);
@@ -243,7 +243,7 @@ suite('ChooserExceptionListEntry', function() {
             .then(function(args) {
               // The args should be the chooserType, origin, embeddingOrigin,
               // and object.
-              assertEquals(settings.ChooserType.USB_DEVICES, args[0]);
+              assertEquals(ChooserType.USB_DEVICES, args[0]);
               assertEquals('https://foo.com', args[1]);
               assertEquals('https://foo.com', args[2]);
               assertEquals('object', typeof args[3]);

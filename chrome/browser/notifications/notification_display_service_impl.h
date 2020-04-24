@@ -11,6 +11,7 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -76,6 +77,8 @@ class NotificationDisplayServiceImpl : public NotificationDisplayService {
   void Close(NotificationHandler::Type notification_type,
              const std::string& notification_id) override;
   void GetDisplayed(DisplayedNotificationsCallback callback) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
 
   static void ProfileLoadedCallback(NotificationCommon::Operation operation,
                                     NotificationHandler::Type notification_type,
@@ -106,6 +109,8 @@ class NotificationDisplayServiceImpl : public NotificationDisplayService {
   // Map containing the notification handlers responsible for processing events.
   std::map<NotificationHandler::Type, std::unique_ptr<NotificationHandler>>
       notification_handlers_;
+
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<NotificationDisplayServiceImpl> weak_factory_{this};
 

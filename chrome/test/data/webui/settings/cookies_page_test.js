@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {ContentSetting, SiteSettingsPrefsBrowserProxyImpl, CookieControlsMode, ContentSettingsTypes, SiteSettingSource} from 'chrome://settings/lazy_load.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
-// #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
-// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
-// #import {createRawSiteException, createDefaultContentSetting,createSiteSettingsPrefs,createContentSettingTypeToValuePair} from 'chrome://test/settings/test_util.m.js';
-// #import {isChildVisible, isVisible, flushTasks} from 'chrome://test/test_util.m.js';
+import {ContentSetting, SiteSettingsPrefsBrowserProxyImpl, CookieControlsMode, ContentSettingsTypes, SiteSettingSource} from 'chrome://settings/lazy_load.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
+import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {createRawSiteException, createDefaultContentSetting,createSiteSettingsPrefs,createContentSettingTypeToValuePair} from 'chrome://test/settings/test_util.js';
+import {isChildVisible, isVisible, flushTasks} from 'chrome://test/test_util.m.js';
 // clang-format on
 
 suite('CrSettingsCookiesPageTest', function() {
@@ -51,9 +51,9 @@ suite('CrSettingsCookiesPageTest', function() {
 
   setup(function() {
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-    settings.MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
+    MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ =
+    SiteSettingsPrefsBrowserProxyImpl.instance_ =
         siteSettingsBrowserProxy;
     PolymerTest.clearBody();
     page = document.createElement('settings-cookies-page');
@@ -64,7 +64,7 @@ suite('CrSettingsCookiesPageTest', function() {
       },
     };
     document.body.appendChild(page);
-    Polymer.dom.flush();
+    flush();
 
     allowAll = page.$$('#allowAll');
     blockThirdPartyIncognito = page.$$('#blockThirdPartyIncognito');
@@ -82,20 +82,20 @@ suite('CrSettingsCookiesPageTest', function() {
 
   /**
    * Updates the test proxy with the desired content setting for cookies.
-   * @param {settings.ContentSetting} setting
+   * @param {ContentSetting} setting
    */
   async function updateTestCookieContentSetting(setting) {
-    const defaultPrefs = test_util.createSiteSettingsPrefs(
-        [test_util.createContentSettingTypeToValuePair(
-            settings.ContentSettingsTypes.COOKIES,
-            test_util.createDefaultContentSetting({
+    const defaultPrefs = createSiteSettingsPrefs(
+        [createContentSettingTypeToValuePair(
+            ContentSettingsTypes.COOKIES,
+            createDefaultContentSetting({
               setting: setting,
             }))],
         []);
     siteSettingsBrowserProxy.setPrefs(defaultPrefs);
     await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
     siteSettingsBrowserProxy.reset();
-    Polymer.dom.flush();
+    flush();
   }
 
   test('ChangingCookieSettings', async function() {
@@ -106,8 +106,8 @@ suite('CrSettingsCookiesPageTest', function() {
       {
         element: blockAll,
         updates: {
-          contentSetting: settings.ContentSetting.BLOCK,
-          cookieControlsMode: settings.CookieControlsMode.ENABLED,
+          contentSetting: ContentSetting.BLOCK,
+          cookieControlsMode: CookieControlsMode.ENABLED,
           blockThirdParty: true,
           clearOnExitForcedOff: true,
         },
@@ -115,8 +115,8 @@ suite('CrSettingsCookiesPageTest', function() {
       {
         element: blockThirdParty,
         updates: {
-          contentSetting: settings.ContentSetting.ALLOW,
-          cookieControlsMode: settings.CookieControlsMode.ENABLED,
+          contentSetting: ContentSetting.ALLOW,
+          cookieControlsMode: CookieControlsMode.ENABLED,
           blockThirdParty: true,
           clearOnExitForcedOff: false,
         },
@@ -124,8 +124,8 @@ suite('CrSettingsCookiesPageTest', function() {
       {
         element: blockThirdPartyIncognito,
         updates: {
-          contentSetting: settings.ContentSetting.ALLOW,
-          cookieControlsMode: settings.CookieControlsMode.INCOGNITO_ONLY,
+          contentSetting: ContentSetting.ALLOW,
+          cookieControlsMode: CookieControlsMode.INCOGNITO_ONLY,
           blockThirdParty: false,
           clearOnExitForcedOff: false,
         },
@@ -133,21 +133,21 @@ suite('CrSettingsCookiesPageTest', function() {
       {
         element: allowAll,
         updates: {
-          contentSetting: settings.ContentSetting.ALLOW,
-          cookieControlsMode: settings.CookieControlsMode.DISABLED,
+          contentSetting: ContentSetting.ALLOW,
+          cookieControlsMode: CookieControlsMode.DISABLED,
           blockThirdParty: false,
           clearOnExitForcedOff: false,
         },
       }
     ];
-    await updateTestCookieContentSetting(settings.ContentSetting.ALLOW);
+    await updateTestCookieContentSetting(ContentSetting.ALLOW);
 
     for (const test of testList) {
       test.element.click();
       let update = await siteSettingsBrowserProxy.whenCalled(
           'setDefaultValueForContentType');
-      Polymer.dom.flush();
-      assertEquals(update[0], settings.ContentSettingsTypes.COOKIES);
+      flush();
+      assertEquals(update[0], ContentSettingsTypes.COOKIES);
       assertEquals(update[1], test.updates.contentSetting);
       assertEquals(
           page.prefs.profile.cookie_controls_mode.value,
@@ -166,8 +166,8 @@ suite('CrSettingsCookiesPageTest', function() {
         clearOnExit.click();
         update = await siteSettingsBrowserProxy.whenCalled(
             'setDefaultValueForContentType');
-        assertEquals(update[0], settings.ContentSettingsTypes.COOKIES);
-        assertEquals(update[1], settings.ContentSetting.SESSION_ONLY);
+        assertEquals(update[0], ContentSettingsTypes.COOKIES);
+        assertEquals(update[1], ContentSetting.SESSION_ONLY);
         siteSettingsBrowserProxy.reset();
         clearOnExit.checked = false;
       }
@@ -175,19 +175,19 @@ suite('CrSettingsCookiesPageTest', function() {
   });
 
   test('RespectChangedCookieSetting_ContentSetting', async function() {
-    await updateTestCookieContentSetting(settings.ContentSetting.BLOCK);
+    await updateTestCookieContentSetting(ContentSetting.BLOCK);
     assertTrue(blockAll.checked);
     assertFalse(clearOnExit.checked);
     assertTrue(clearOnExit.disabled);
     siteSettingsBrowserProxy.reset();
 
-    await updateTestCookieContentSetting(settings.ContentSetting.ALLOW);
+    await updateTestCookieContentSetting(ContentSetting.ALLOW);
     assertTrue(allowAll.checked);
     assertFalse(clearOnExit.checked);
     assertFalse(clearOnExit.disabled);
     siteSettingsBrowserProxy.reset();
 
-    await updateTestCookieContentSetting(settings.ContentSetting.SESSION_ONLY);
+    await updateTestCookieContentSetting(ContentSetting.SESSION_ONLY);
     assertTrue(allowAll.checked);
     assertTrue(clearOnExit.checked);
     assertFalse(clearOnExit.disabled);
@@ -197,8 +197,8 @@ suite('CrSettingsCookiesPageTest', function() {
   test('RespectChangedCookieSetting_CookieControlPref', async function() {
     page.set(
         'prefs.profile.cookie_controls_mode.value',
-        settings.CookieControlsMode.INCOGNITO_ONLY);
-    Polymer.dom.flush();
+        CookieControlsMode.INCOGNITO_ONLY);
+    flush();
     await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
     assertTrue(blockThirdPartyIncognito.checked);
     assertFalse(clearOnExit.checked);
@@ -207,7 +207,7 @@ suite('CrSettingsCookiesPageTest', function() {
 
   test('RespectChangedCookieSetting_BlockThirdPartyPref', async function() {
     page.set('prefs.profile.block_third_party_cookies.value', true);
-    Polymer.dom.flush();
+    flush();
     await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
     assertTrue(blockThirdParty.checked);
     assertFalse(clearOnExit.checked);
@@ -215,13 +215,13 @@ suite('CrSettingsCookiesPageTest', function() {
   });
 
   test('ElementVisibility', async function() {
-    await test_util.flushTasks();
-    assertTrue(test_util.isChildVisible(page, '#clearOnExit'));
-    assertTrue(test_util.isChildVisible(page, '#doNotTrack'));
-    assertTrue(test_util.isChildVisible(page, '#networkPrediction'));
+    await flushTasks();
+    assertTrue(isChildVisible(page, '#clearOnExit'));
+    assertTrue(isChildVisible(page, '#doNotTrack'));
+    assertTrue(isChildVisible(page, '#networkPrediction'));
     // Ensure that with the improvedCookieControls flag enabled that the block
     // third party cookies radio is visible.
-    assertTrue(test_util.isVisible(blockThirdPartyIncognito));
+    assertTrue(isVisible(blockThirdPartyIncognito));
   });
 
   test('NetworkPredictionClickRecorded', async function() {
@@ -229,44 +229,44 @@ suite('CrSettingsCookiesPageTest', function() {
     const result =
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
     assertEquals(
-        settings.PrivacyElementInteractions.NETWORK_PREDICTION, result);
+        PrivacyElementInteractions.NETWORK_PREDICTION, result);
   });
 
   test('CookieSettingExceptions_Search', async function() {
-    const exceptionPrefs = test_util.createSiteSettingsPrefs([], [
-      test_util.createContentSettingTypeToValuePair(
-          settings.ContentSettingsTypes.COOKIES,
+    const exceptionPrefs = createSiteSettingsPrefs([], [
+      createContentSettingTypeToValuePair(
+          ContentSettingsTypes.COOKIES,
           [
-            test_util.createRawSiteException('http://foo-block.com', {
+            createRawSiteException('http://foo-block.com', {
               embeddingOrigin: '',
-              setting: settings.ContentSetting.BLOCK,
+              setting: ContentSetting.BLOCK,
             }),
-            test_util.createRawSiteException('http://foo-allow.com', {
+            createRawSiteException('http://foo-allow.com', {
               embeddingOrigin: '',
             }),
-            test_util.createRawSiteException('http://foo-session.com', {
+            createRawSiteException('http://foo-session.com', {
               embeddingOrigin: '',
-              setting: settings.ContentSetting.SESSION_ONLY,
+              setting: ContentSetting.SESSION_ONLY,
             }),
           ]),
     ]);
     page.searchTerm = 'foo';
     siteSettingsBrowserProxy.setPrefs(exceptionPrefs);
     await siteSettingsBrowserProxy.whenCalled('getExceptionList');
-    Polymer.dom.flush();
+    flush();
 
     const exceptionLists = page.shadowRoot.querySelectorAll('site-list');
     assertEquals(exceptionLists.length, 3);
 
     for (const list of exceptionLists) {
-      assertTrue(test_util.isChildVisible(list, 'site-list-entry'));
+      assertTrue(isChildVisible(list, 'site-list-entry'));
     }
 
     page.searchTerm = 'unrelated.com';
-    Polymer.dom.flush();
+    flush();
 
     for (const list of exceptionLists) {
-      assertFalse(test_util.isChildVisible(list, 'site-list-entry'));
+      assertFalse(isChildVisible(list, 'site-list-entry'));
     }
   });
 
@@ -278,12 +278,12 @@ suite('CrSettingsCookiesPageTest', function() {
       blockAll: {disabled: true, indicator: 'devicePolicy'},
       sessionOnly: {disabled: true, indicator: 'devicePolicy'},
     };
-    const managedPrefs = test_util.createSiteSettingsPrefs(
-        [test_util.createContentSettingTypeToValuePair(
-            settings.ContentSettingsTypes.COOKIES,
-            test_util.createDefaultContentSetting({
-              setting: settings.ContentSetting.SESSION_ONLY,
-              source: settings.SiteSettingSource.POLICY
+    const managedPrefs = createSiteSettingsPrefs(
+        [createContentSettingTypeToValuePair(
+            ContentSettingsTypes.COOKIES,
+            createDefaultContentSetting({
+              setting: ContentSetting.SESSION_ONLY,
+              source: SiteSettingSource.POLICY
             }))],
         []);
     siteSettingsBrowserProxy.setResultFor(
@@ -291,7 +291,7 @@ suite('CrSettingsCookiesPageTest', function() {
     siteSettingsBrowserProxy.setPrefs(managedPrefs);
     await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
     await siteSettingsBrowserProxy.whenCalled('getCookieControlsManagedState');
-    Polymer.dom.flush();
+    flush();
 
     // Check the four radio buttons are correctly indicating they are managed.
     for (const button of radioButtons) {
@@ -303,7 +303,7 @@ suite('CrSettingsCookiesPageTest', function() {
     assertTrue(clearOnExit.checked);
     assertTrue(clearOnExit.controlDisabled());
     assertTrue(
-        test_util.isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
+        isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
     let exceptionLists = page.shadowRoot.querySelectorAll('site-list');
 
     // Check all exception lists are read only.
@@ -320,11 +320,11 @@ suite('CrSettingsCookiesPageTest', function() {
       blockAll: {disabled: false, indicator: 'none'},
       sessionOnly: {disabled: false, indicator: 'none'},
     };
-    const unmanagedPrefs = test_util.createSiteSettingsPrefs(
-        [test_util.createContentSettingTypeToValuePair(
-            settings.ContentSettingsTypes.COOKIES,
-            test_util.createDefaultContentSetting({
-              setting: settings.ContentSetting.ALLOW,
+    const unmanagedPrefs = createSiteSettingsPrefs(
+        [createContentSettingTypeToValuePair(
+            ContentSettingsTypes.COOKIES,
+            createDefaultContentSetting({
+              setting: ContentSetting.ALLOW,
             }))],
         []);
     siteSettingsBrowserProxy.reset();
@@ -345,7 +345,7 @@ suite('CrSettingsCookiesPageTest', function() {
     assertFalse(clearOnExit.checked);
     assertFalse(clearOnExit.controlDisabled());
     assertFalse(
-        test_util.isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
+        isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
 
     // Check all exception lists are no longer read only.
     exceptionLists = page.shadowRoot.querySelectorAll('site-list');
@@ -371,7 +371,7 @@ suite('CrSettingsCookiesPageTest_ImprovedCookieControlsDisabled', function() {
 
   setup(function() {
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ =
+    SiteSettingsPrefsBrowserProxyImpl.instance_ =
         siteSettingsBrowserProxy;
     PolymerTest.clearBody();
     page = document.createElement('settings-cookies-page');
@@ -382,7 +382,7 @@ suite('CrSettingsCookiesPageTest_ImprovedCookieControlsDisabled', function() {
       },
     };
     document.body.appendChild(page);
-    Polymer.dom.flush();
+    flush();
   });
 
   teardown(function() {
@@ -390,7 +390,7 @@ suite('CrSettingsCookiesPageTest_ImprovedCookieControlsDisabled', function() {
   });
 
   test('BlockThirdPartyRadio_Hidden', function() {
-    assertFalse(test_util.isChildVisible(page, '#blockThirdPartyIncognito'));
+    assertFalse(isChildVisible(page, '#blockThirdPartyIncognito'));
   });
 
   test('BlockThirdPartyRadio_NotSelected', async function() {
@@ -398,8 +398,8 @@ suite('CrSettingsCookiesPageTest_ImprovedCookieControlsDisabled', function() {
     // and ensure the correct radio button is instead selected.
     page.set(
         'prefs.profile.cookie_controls_mode.value',
-        settings.CookieControlsMode.INCOGNITO_ONLY);
-    Polymer.dom.flush();
+        CookieControlsMode.INCOGNITO_ONLY);
+    flush();
     await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
 
     assertTrue(page.$$('#allowAll').checked);

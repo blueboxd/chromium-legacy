@@ -180,7 +180,10 @@ NotificationDisplayServiceImpl::NotificationDisplayServiceImpl(Profile* profile)
   }
 }
 
-NotificationDisplayServiceImpl::~NotificationDisplayServiceImpl() = default;
+NotificationDisplayServiceImpl::~NotificationDisplayServiceImpl() {
+  for (auto& obs : observers_)
+    obs.OnWillBeDestroyed(this);
+}
 
 void NotificationDisplayServiceImpl::ProcessNotificationOperation(
     NotificationCommon::Operation operation,
@@ -279,6 +282,9 @@ void NotificationDisplayServiceImpl::Display(
   NotificationHandler* handler = GetNotificationHandler(notification_type);
   if (handler)
     handler->OnShow(profile_, notification.id());
+
+  for (auto& observer : observers_)
+    observer.OnDisplay(notification);
 }
 
 void NotificationDisplayServiceImpl::Close(
@@ -302,6 +308,9 @@ void NotificationDisplayServiceImpl::Close(
 
   bridge->Close(profile_, notification_id);
 #endif
+
+  for (auto& observer : observers_)
+    observer.OnClose(notification_id);
 }
 
 void NotificationDisplayServiceImpl::GetDisplayed(
@@ -314,6 +323,14 @@ void NotificationDisplayServiceImpl::GetDisplayed(
   }
 
   bridge_->GetDisplayed(profile_, std::move(callback));
+}
+
+void NotificationDisplayServiceImpl::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void NotificationDisplayServiceImpl::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 // Callback to run once the profile has been loaded in order to perform a

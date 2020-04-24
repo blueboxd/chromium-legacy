@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {eventToPromise} from 'chrome://test/test_util.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {Router, routes, ResetBrowserProxyImpl} from 'chrome://settings/settings.js';
-// #import 'chrome://settings/lazy_load.js';
-// #import {TestResetBrowserProxy} from 'chrome://test/settings/test_reset_browser_proxy.m.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {Router, routes, ResetBrowserProxyImpl} from 'chrome://settings/settings.js';
+import 'chrome://settings/lazy_load.js';
+import {TestResetBrowserProxy} from 'chrome://test/settings/test_reset_browser_proxy.js';
 // clang-format on
 
-cr.define('settings_reset_page', function() {
   /** @enum {string} */
   const TestNames = {
     ResetProfileDialogAction: 'ResetProfileDialogAction',
@@ -28,8 +27,8 @@ cr.define('settings_reset_page', function() {
     let resetPageBrowserProxy = null;
 
     setup(function() {
-      resetPageBrowserProxy = new reset_page.TestResetBrowserProxy();
-      settings.ResetBrowserProxyImpl.instance_ = resetPageBrowserProxy;
+      resetPageBrowserProxy = new TestResetBrowserProxy();
+      ResetBrowserProxyImpl.instance_ = resetPageBrowserProxy;
 
       PolymerTest.clearBody();
       resetPage = document.createElement('settings-reset-page');
@@ -51,12 +50,12 @@ cr.define('settings_reset_page', function() {
 
       // Open reset profile dialog.
       resetPage.$.resetProfile.click();
-      Polymer.dom.flush();
+      flush();
       const dialog = resetPage.$$('settings-reset-profile-dialog');
       assertTrue(!!dialog);
       assertTrue(dialog.$.dialog.open);
 
-      const whenDialogClosed = test_util.eventToPromise('close', dialog);
+      const whenDialogClosed = eventToPromise('close', dialog);
 
       return resetPageBrowserProxy.whenCalled('onShowResetProfileDialog')
           .then(function() {
@@ -78,7 +77,7 @@ cr.define('settings_reset_page', function() {
           .then(function() {
             return testOpenCloseResetProfileDialog(function(dialog) {
               // Test case where the browser's 'back' button is clicked.
-              resetPage.currentRouteChanged(settings.routes.BASIC);
+              resetPage.currentRouteChanged(routes.BASIC);
             });
           });
     });
@@ -88,7 +87,7 @@ cr.define('settings_reset_page', function() {
     test(TestNames.ResetProfileDialogAction, function() {
       // Open reset profile dialog.
       resetPage.$.resetProfile.click();
-      Polymer.dom.flush();
+      flush();
       const dialog = resetPage.$$('settings-reset-profile-dialog');
       assertTrue(!!dialog);
 
@@ -125,7 +124,7 @@ cr.define('settings_reset_page', function() {
     }
 
     test(TestNames.ResetProfileDialogOriginUnknown, function() {
-      settings.Router.getInstance().navigateTo(settings.routes.RESET_DIALOG);
+      Router.getInstance().navigateTo(routes.RESET_DIALOG);
       return resetPageBrowserProxy.whenCalled('onShowResetProfileDialog')
           .then(function() {
             return testResetRequestOrigin('');
@@ -141,13 +140,11 @@ cr.define('settings_reset_page', function() {
     });
 
     test(TestNames.ResetProfileDialogOriginTriggeredReset, function() {
-      settings.Router.getInstance().navigateTo(
-          settings.routes.TRIGGERED_RESET_DIALOG);
+      Router.getInstance().navigateTo(
+          routes.TRIGGERED_RESET_DIALOG);
       return resetPageBrowserProxy.whenCalled('onShowResetProfileDialog')
           .then(function() {
             return testResetRequestOrigin('triggeredreset');
           });
     });
   });
-  // #cr_define_end
-});

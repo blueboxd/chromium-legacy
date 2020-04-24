@@ -13,6 +13,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/image_fetcher/core/cache/proto/cached_image_metadata.pb.h"
+#include "components/image_fetcher/core/image_fetcher_metrics_reporter.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 
 using image_fetcher::CachedImageMetadataProto;
@@ -310,6 +311,7 @@ void ImageMetadataStoreLevelDB::GetMetadataToRemove(
   DCHECK(keys_to_remove);
   size_t total_bytes_stored = 0;
   int64_t expiration_database_time = ToDatabaseTime(expiration_time);
+  int total_entries_count = 0;
 
   switch (cache_option) {
     case CacheOption::kBestEffort:
@@ -320,6 +322,7 @@ void ImageMetadataStoreLevelDB::GetMetadataToRemove(
           keys_to_remove->emplace_back(entry->key());
         } else {
           total_bytes_stored += entry->data_size();
+          total_entries_count++;
         }
       }
 
@@ -333,25 +336,28 @@ void ImageMetadataStoreLevelDB::GetMetadataToRemove(
 
           keys_to_remove->emplace_back(entry->key());
           total_bytes_stored -= entry->data_size();
+          total_entries_count--;
         }
       }
-      estimated_size_[cache_option] = total_bytes_stored;
       break;
     case CacheOption::kHoldUntilExpired:
       int64_t now = ToDatabaseTime(clock_->Now());
-      int64_t total_size = 0;
       for (const auto* entry : entries) {
         DCHECK_EQ(entry->cache_strategy(), CacheStrategy::HOLD_UNTIL_EXPIRED);
         DCHECK(entry->has_expiration_interval());
         if (entry->last_used_time() + entry->expiration_interval() < now) {
           keys_to_remove->push_back(entry->key());
         } else {
-          total_size += entry->data_size();
+          total_bytes_stored += entry->data_size();
+          total_entries_count++;
         }
       }
-      estimated_size_[cache_option] = total_size;
       break;
   }
+
+  estimated_size_[cache_option] = total_bytes_stored;
+  ImageFetcherMetricsReporter::ReportCacheStatus(
+      cache_option, total_bytes_stored, total_entries_count);
 }
 
 void ImageMetadataStoreLevelDB::OnEvictImageMetadataDone(

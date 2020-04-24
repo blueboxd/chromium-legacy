@@ -755,6 +755,15 @@ blink::mojom::ServiceWorkerClientType ServiceWorkerContainerHost::client_type()
   return blink::mojom::ServiceWorkerClientType::kWindow;
 }
 
+ServiceWorkerClientInfo ServiceWorkerContainerHost::GetServiceWorkerClientInfo()
+    const {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsContainerForClient());
+
+  return ServiceWorkerClientInfo(process_id_, frame_id_, web_contents_getter_,
+                                 type_);
+}
+
 void ServiceWorkerContainerHost::OnBeginNavigationCommit(
     int container_process_id,
     int container_frame_id,

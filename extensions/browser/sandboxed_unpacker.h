@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "extensions/browser/api/declarative_net_request/index_helper.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
@@ -277,10 +276,6 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // The extension's ID. This will be calculated from the public key
   // in the CRX header.
   std::string extension_id_;
-
-  // If we unpacked a CRX file, the time at which unpacking started.
-  // Used to compute the time unpacking takes.
-  base::TimeTicks crx_unpack_start_time_;
 
   // Location to use for the unpacked extension.
   Manifest::Location location_;

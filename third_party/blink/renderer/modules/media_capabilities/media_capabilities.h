@@ -9,11 +9,12 @@
 #include "media/learning/mojo/public/cpp/mojo_learning_task_controller.h"
 #include "media/learning/mojo/public/mojom/learning_task_controller.mojom-blink.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom-blink.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_configuration.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -34,7 +35,7 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
   static const char kLearningBadWindowThresholdParamName[];
   static const char kLearningNnrThresholdParamName[];
 
-  MediaCapabilities();
+  explicit MediaCapabilities(ExecutionContext* context);
 
   void Trace(blink::Visitor* visitor) override;
 
@@ -112,19 +113,22 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
   // mapping in |pending_cb_map_|.
   int CreateCallbackId();
 
-  mojo::Remote<media::mojom::blink::VideoDecodePerfHistory>
+  HeapMojoRemote<media::mojom::blink::VideoDecodePerfHistory,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
       decode_history_service_;
 
   // Connection to a browser-process LearningTaskController for predicting the
   // number of consecutive "bad" dropped frame windows during a playback. See
   // media::SmoothnessHelper.
-  mojo::Remote<media::learning::mojom::blink::LearningTaskController>
+  HeapMojoRemote<media::learning::mojom::blink::LearningTaskController,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
       bad_window_predictor_;
 
   // Connects to a browser-process LearningTaskController for predicting the
   // number of consecutive non-network re-buffers (NNRs). See
   // media::SmoothnessHelper.
-  mojo::Remote<media::learning::mojom::blink::LearningTaskController>
+  HeapMojoRemote<media::learning::mojom::blink::LearningTaskController,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
       nnr_predictor_;
 
   // Holds the last key for callbacks in the map below. Incremented for each

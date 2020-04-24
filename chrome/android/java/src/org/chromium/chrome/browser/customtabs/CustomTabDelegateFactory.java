@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
-import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
@@ -47,6 +46,7 @@ import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDeleg
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappExtras;
@@ -475,7 +475,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     }
 
     @Override
-    public NativePageFactory getNativePageFactory() {
+    public NativePage createNativePage(String url, NativePage candidatePage, Tab tab) {
         // Custom tab does not create native pages.
         return null;
     }

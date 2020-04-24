@@ -758,6 +758,8 @@ generated_interface_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_image_bitmap_rendering_context.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_image_capture.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_image_capture.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_image_decoder.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_image_decoder.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_input_device_info.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_input_device_info.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_install_event.cc",

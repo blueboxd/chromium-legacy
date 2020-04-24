@@ -5,8 +5,8 @@
 /** @fileoverview Test implementation of PasswordManagerProxy. */
 
 // clang-format off
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-// #import {makePasswordCheckStatus, PasswordManagerExpectations} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {makePasswordCheckStatus, PasswordManagerExpectations} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 // clang-format on
 
 /**
@@ -14,7 +14,7 @@
  * @implements {PasswordManagerProxy}
  * @constructor
  */
-/* #export */ class TestPasswordManagerProxy extends TestBrowserProxy {
+export class TestPasswordManagerProxy extends TestBrowserProxy {
   constructor() {
     super([
       'requestPlaintextPassword',
@@ -29,14 +29,14 @@
       'recordPasswordCheckReferrer',
     ]);
 
-    this.actual_ = new autofill_test_util.PasswordManagerExpectations();
+    this.actual_ = new PasswordManagerExpectations();
 
     // Set these to have non-empty data.
     this.data = {
       passwords: [],
       exceptions: [],
       leakedCredentials: [],
-      checkStatus: autofill_test_util.makePasswordCheckStatus(),
+      checkStatus: makePasswordCheckStatus(),
     };
 
     // Holds the last callbacks so they can be called when needed/

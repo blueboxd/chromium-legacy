@@ -3,16 +3,15 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
-// #import {PaymentsManagerImpl} from 'chrome://settings/lazy_load.js'
-// #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
-// #import {TestPaymentsManager, createCreditCardEntry, createEmptyCreditCardEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {eventToPromise, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
+import {PaymentsManagerImpl} from 'chrome://settings/lazy_load.js';
+import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
+import {TestPaymentsManager, createCreditCardEntry, createEmptyCreditCardEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {eventToPromise, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // clang-format on
 
-cr.define('settings_payments_section', function() {
   suite('PaymentSectionUiTest', function() {
     test('testAutofillExtensionIndicator', function() {
       // Initializing with fake prefs
@@ -28,7 +27,7 @@ cr.define('settings_payments_section', function() {
       section.set(
           'prefs.autofill.credit_card_fido_auth_enabled.extensionId',
           'test-id-2');
-      Polymer.dom.flush();
+      flush();
 
       assertTrue(!!section.$$('#autofillExtensionIndicator'));
     });
@@ -51,15 +50,15 @@ cr.define('settings_payments_section', function() {
      */
     function createPaymentsSection(creditCards, upiIds, prefValues) {
       // Override the PaymentsManagerImpl for testing.
-      const paymentsManager = new autofill_test_util.TestPaymentsManager();
+      const paymentsManager = new TestPaymentsManager();
       paymentsManager.data.creditCards = creditCards;
       paymentsManager.data.upiIds = upiIds;
-      settings.PaymentsManagerImpl.instance_ = paymentsManager;
+      PaymentsManagerImpl.instance_ = paymentsManager;
 
       const section = document.createElement('settings-payments-section');
       section.prefs = {autofill: prefValues};
       document.body.appendChild(section);
-      Polymer.dom.flush();
+      flush();
 
       return section;
     }
@@ -74,7 +73,7 @@ cr.define('settings_payments_section', function() {
           document.createElement('settings-credit-card-edit-dialog');
       section.creditCard = creditCardItem;
       document.body.appendChild(section);
-      Polymer.dom.flush();
+      flush();
       return section;
     }
 
@@ -152,12 +151,12 @@ cr.define('settings_payments_section', function() {
 
     test('verifyCreditCardCount', function() {
       const creditCards = [
-        autofill_test_util.createCreditCardEntry(),
-        autofill_test_util.createCreditCardEntry(),
-        autofill_test_util.createCreditCardEntry(),
-        autofill_test_util.createCreditCardEntry(),
-        autofill_test_util.createCreditCardEntry(),
-        autofill_test_util.createCreditCardEntry(),
+        createCreditCardEntry(),
+        createCreditCardEntry(),
+        createCreditCardEntry(),
+        createCreditCardEntry(),
+        createCreditCardEntry(),
+        createCreditCardEntry(),
       ];
 
       const section = createPaymentsSection(
@@ -174,7 +173,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyCreditCardFields', function() {
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
       const section = createPaymentsSection(
           [creditCard], /*upiIds=*/[], /*prefValues=*/ {});
       const rowShadowRoot = getCardRowShadowRoot(section.$$('#paymentsList'));
@@ -188,7 +187,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyCreditCardRowButtonIsDropdownWhenLocal', function() {
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
       creditCard.metadata.isLocal = true;
       const section = createPaymentsSection(
           [creditCard], /*upiIds=*/[], /*prefValues=*/ {});
@@ -201,7 +200,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyCreditCardRowButtonIsOutlinkWhenRemote', function() {
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
       creditCard.metadata.isLocal = false;
       const section = createPaymentsSection(
           [creditCard], /*upiIds=*/[], /*prefValues=*/ {});
@@ -214,9 +213,9 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyAddVsEditCreditCardTitle', function() {
-      const newCreditCard = autofill_test_util.createEmptyCreditCardEntry();
+      const newCreditCard = createEmptyCreditCardEntry();
       const newCreditCardDialog = createCreditCardDialog(newCreditCard);
-      const oldCreditCard = autofill_test_util.createCreditCardEntry();
+      const oldCreditCard = createCreditCardEntry();
       const oldCreditCardDialog = createCreditCardDialog(oldCreditCard);
 
       assertNotEquals(oldCreditCardDialog.title_, newCreditCardDialog.title_);
@@ -225,13 +224,13 @@ cr.define('settings_payments_section', function() {
 
       // Wait for dialogs to open before finishing test.
       return Promise.all([
-        test_util.whenAttributeIs(newCreditCardDialog.$.dialog, 'open', ''),
-        test_util.whenAttributeIs(oldCreditCardDialog.$.dialog, 'open', ''),
+        whenAttributeIs(newCreditCardDialog.$.dialog, 'open', ''),
+        whenAttributeIs(oldCreditCardDialog.$.dialog, 'open', ''),
       ]);
     });
 
     test('verifyExpiredCreditCardYear', function() {
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
 
       // 2015 is over unless time goes wobbly.
       const twentyFifteen = 2015;
@@ -239,7 +238,7 @@ cr.define('settings_payments_section', function() {
 
       const creditCardDialog = createCreditCardDialog(creditCard);
 
-      return test_util.whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
+      return whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
           .then(function() {
             const now = new Date();
             const maxYear = now.getFullYear() + 19;
@@ -255,7 +254,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyVeryFutureCreditCardYear', function() {
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
 
       // Expiring 25 years from now is unusual.
       const now = new Date();
@@ -264,7 +263,7 @@ cr.define('settings_payments_section', function() {
 
       const creditCardDialog = createCreditCardDialog(creditCard);
 
-      return test_util.whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
+      return whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
           .then(function() {
             const yearOptions = creditCardDialog.$.year.options;
 
@@ -280,7 +279,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyVeryNormalCreditCardYear', function() {
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
 
       // Expiring 2 years from now is not unusual.
       const now = new Date();
@@ -290,7 +289,7 @@ cr.define('settings_payments_section', function() {
 
       const creditCardDialog = createCreditCardDialog(creditCard);
 
-      return test_util.whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
+      return whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
           .then(function() {
             const yearOptions = creditCardDialog.$.year.options;
 
@@ -306,7 +305,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verify save disabled for expired credit card', function() {
-      const creditCard = autofill_test_util.createEmptyCreditCardEntry();
+      const creditCard = createEmptyCreditCardEntry();
 
       const now = new Date();
       creditCard.expirationYear = now.getFullYear() - 2;
@@ -315,17 +314,17 @@ cr.define('settings_payments_section', function() {
 
       const creditCardDialog = createCreditCardDialog(creditCard);
 
-      return test_util.whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
+      return whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
           .then(function() {
             assertTrue(creditCardDialog.$.saveButton.disabled);
           });
     });
 
     test('verify save new credit card', function() {
-      const creditCard = autofill_test_util.createEmptyCreditCardEntry();
+      const creditCard = createEmptyCreditCardEntry();
       const creditCardDialog = createCreditCardDialog(creditCard);
 
-      return test_util.whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
+      return whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
           .then(function() {
             // Not expired, but still can't be saved, because there's no
             // name.
@@ -335,13 +334,13 @@ cr.define('settings_payments_section', function() {
             // Add a name and trigger the on-input handler.
             creditCardDialog.set('creditCard.name', 'Jane Doe');
             creditCardDialog.onCreditCardNameOrNumberChanged_();
-            Polymer.dom.flush();
+            flush();
 
             assertTrue(creditCardDialog.$.expired.hidden);
             assertFalse(creditCardDialog.$.saveButton.disabled);
 
             const savedPromise =
-                test_util.eventToPromise('save-credit-card', creditCardDialog);
+                eventToPromise('save-credit-card', creditCardDialog);
             creditCardDialog.$.saveButton.click();
             return savedPromise;
           })
@@ -351,12 +350,12 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyCancelCreditCardEdit', function(done) {
-      const creditCard = autofill_test_util.createEmptyCreditCardEntry();
+      const creditCard = createEmptyCreditCardEntry();
       const creditCardDialog = createCreditCardDialog(creditCard);
 
-      test_util.whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
+      whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
           .then(function() {
-            test_util.eventToPromise('save-credit-card', creditCardDialog)
+            eventToPromise('save-credit-card', creditCardDialog)
                 .then(function() {
                   // Fail the test because the save event should not be called
                   // when cancel is clicked.
@@ -364,7 +363,7 @@ cr.define('settings_payments_section', function() {
                   done();
                 });
 
-            test_util.eventToPromise('close', creditCardDialog)
+            eventToPromise('close', creditCardDialog)
                 .then(function() {
                   // Test is |done| in a timeout in order to ensure that
                   // 'save-credit-card' is NOT fired after this test.
@@ -376,7 +375,7 @@ cr.define('settings_payments_section', function() {
     });
 
     test('verifyLocalCreditCardMenu', function() {
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
 
       // When credit card is local, |isCached| will be undefined.
       creditCard.metadata.isLocal = true;
@@ -393,7 +392,7 @@ cr.define('settings_payments_section', function() {
       assertTrue(!!menuButton);
 
       menuButton.click();
-      Polymer.dom.flush();
+      flush();
 
       const menu = section.$.creditCardSharedMenu;
 
@@ -403,11 +402,11 @@ cr.define('settings_payments_section', function() {
       assertTrue(menu.querySelector('#menuClearCreditCard').hidden);
 
       menu.close();
-      Polymer.dom.flush();
+      flush();
     });
 
     test('verifyCachedCreditCardMenu', function() {
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
 
       creditCard.metadata.isLocal = false;
       creditCard.metadata.isCached = true;
@@ -423,7 +422,7 @@ cr.define('settings_payments_section', function() {
       assertTrue(!!menuButton);
 
       menuButton.click();
-      Polymer.dom.flush();
+      flush();
 
       const menu = section.$.creditCardSharedMenu;
 
@@ -433,11 +432,11 @@ cr.define('settings_payments_section', function() {
       assertFalse(menu.querySelector('#menuClearCreditCard').hidden);
 
       menu.close();
-      Polymer.dom.flush();
+      flush();
     });
 
     test('verifyNotCachedCreditCardMenu', function() {
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
 
       creditCard.metadata.isLocal = false;
       creditCard.metadata.isCached = false;
@@ -457,7 +456,7 @@ cr.define('settings_payments_section', function() {
       loadTimeData.overrideValues({migrationEnabled: false});
 
       // Add one migratable credit card.
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
       creditCard.metadata.isMigratable = true;
       const section = createPaymentsSection(
           [creditCard], /*upiIds=*/[], {credit_card_enabled: {value: true}});
@@ -467,7 +466,7 @@ cr.define('settings_payments_section', function() {
 
     test('verifyMigrationButtonNotShownIfCreditCardDisabled', function() {
       // Add one migratable credit card.
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
       creditCard.metadata.isMigratable = true;
       // Mock credit card save toggle is turned off by users.
       const section = createPaymentsSection(
@@ -478,7 +477,7 @@ cr.define('settings_payments_section', function() {
 
     test('verifyMigrationButtonNotShownIfNoCardIsMigratable', function() {
       // Add one migratable credit card.
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
       // Mock credit card is not valid.
       creditCard.metadata.isMigratable = false;
       const section = createPaymentsSection(
@@ -489,7 +488,7 @@ cr.define('settings_payments_section', function() {
 
     test('verifyMigrationButtonShown', function() {
       // Add one migratable credit card.
-      const creditCard = autofill_test_util.createCreditCardEntry();
+      const creditCard = createCreditCardEntry();
       creditCard.metadata.isMigratable = true;
       const section = createPaymentsSection(
           [creditCard], /*upiIds=*/[], {credit_card_enabled: {value: true}});
@@ -603,7 +602,7 @@ cr.define('settings_payments_section', function() {
       loadTimeData.overrideValues({'privacySettingsRedesignEnabled': true});
       const section = createPaymentsSection(
           /*creditCards=*/[], /*upiIds=*/[], /*prefValues=*/ {});
-      assertTrue(test_util.isVisible(section.$$('#canMakePaymentToggle')));
+      assertTrue(isVisible(section.$$('#canMakePaymentToggle')));
     });
 
     test('CanMakePaymentToggle_NotPresentBeforeRedesign', function() {
@@ -617,7 +616,7 @@ cr.define('settings_payments_section', function() {
 
     test('CanMakePaymentToggle_RecordsMetrics', async function() {
       const testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-      settings.MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
+      MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
 
       loadTimeData.overrideValues({'privacySettingsRedesignEnabled': true});
       const section = createPaymentsSection(
@@ -627,8 +626,6 @@ cr.define('settings_payments_section', function() {
       const result = await testMetricsBrowserProxy.whenCalled(
           'recordSettingsPageHistogram');
 
-      assertEquals(settings.PrivacyElementInteractions.PAYMENT_METHOD, result);
+      assertEquals(PrivacyElementInteractions.PAYMENT_METHOD, result);
     });
   });
-  // #cr_define_end
-});

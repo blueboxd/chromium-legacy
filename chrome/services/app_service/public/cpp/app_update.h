@@ -117,6 +117,9 @@ class AppUpdate {
   apps::mojom::OptionalBool ShowInManagement() const;
   bool ShowInManagementChanged() const;
 
+  apps::mojom::OptionalBool HasBadge() const;
+  bool HasBadgeChanged() const;
+
   apps::mojom::OptionalBool Paused() const;
   bool PausedChanged() const;
 

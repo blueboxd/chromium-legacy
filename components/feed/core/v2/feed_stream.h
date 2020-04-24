@@ -100,9 +100,6 @@ class FeedStream : public FeedStreamApi,
       std::vector<feedstore::DataOperation> operations) override;
   bool CommitEphemeralChange(EphemeralChangeId id) override;
   bool RejectEphemeralChange(EphemeralChangeId id) override;
-  DebugStreamData GetDebugStreamData() override;
-  void ForceRefreshForDebugging() override;
-  std::string DumpStateForDebugging() override;
 
   void ReportSliceViewed(const std::string& slice_id) override;
   void ReportNavigationStarted() override;

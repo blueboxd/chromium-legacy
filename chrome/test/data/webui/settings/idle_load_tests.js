@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // #clang-format off
-// #import 'chrome://settings/settings.js';
+import 'chrome://settings/settings.js';
 // #clang-format on
 
 suite('Settings idle load tests', function() {

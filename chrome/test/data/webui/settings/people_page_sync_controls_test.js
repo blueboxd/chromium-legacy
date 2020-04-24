@@ -3,16 +3,15 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {SyncBrowserProxyImpl, StatusAction, Router} from 'chrome://settings/settings.js';
-// #import 'chrome://settings/lazy_load.js';
-// #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {setupRouterWithSyncRoutes, getSyncAllPrefs} from 'chrome://test/settings/sync_test_util.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {waitBeforeNextRender} from 'chrome://test/test_util.m.js';
+import {SyncBrowserProxyImpl, StatusAction, Router} from 'chrome://settings/settings.js';
+import 'chrome://settings/lazy_load.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {setupRouterWithSyncRoutes, getSyncAllPrefs} from 'chrome://test/settings/sync_test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {waitBeforeNextRender} from 'chrome://test/test_util.m.js';
 // clang-format on
 
-cr.define('settings_people_page_sync_controls', function() {
   suite('SyncControlsTest', function() {
     let syncControls = null;
     let browserProxy = null;
@@ -24,9 +23,9 @@ cr.define('settings_people_page_sync_controls', function() {
     });
 
     setup(function() {
-      sync_test_util.setupRouterWithSyncRoutes();
+      setupRouterWithSyncRoutes();
       browserProxy = new TestSyncBrowserProxy();
-      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+      SyncBrowserProxyImpl.instance_ = browserProxy;
 
       PolymerTest.clearBody();
       syncControls = document.createElement('settings-sync-controls');
@@ -34,8 +33,8 @@ cr.define('settings_people_page_sync_controls', function() {
 
       // Start with Sync All.
       cr.webUIListenerCallback(
-          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
-      Polymer.dom.flush();
+          'sync-prefs-changed', getSyncAllPrefs());
+      flush();
     });
 
     teardown(function() {
@@ -61,7 +60,7 @@ cr.define('settings_people_page_sync_controls', function() {
       syncAllDataTypesControl.click();
 
       function verifyPrefs(prefs) {
-        const expected = sync_test_util.getSyncAllPrefs();
+        const expected = getSyncAllPrefs();
         expected.syncAllDataTypes = false;
         assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
 
@@ -79,7 +78,7 @@ cr.define('settings_people_page_sync_controls', function() {
         datatypeControls[2].click();
         return browserProxy.whenCalled('setSyncDatatypes')
             .then(function(prefs) {
-              const expected = sync_test_util.getSyncAllPrefs();
+              const expected = getSyncAllPrefs();
               expected.syncAllDataTypes = false;
               expected.extensionsSynced = false;
               assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
@@ -116,7 +115,7 @@ cr.define('settings_people_page_sync_controls', function() {
         disabled: false,
         hasError: true,
         signedIn: true,
-        statusAction: settings.StatusAction.ENTER_PASSPHRASE
+        statusAction: StatusAction.ENTER_PASSPHRASE
       };
       // Controls are available when there is a passphrase error.
       assertFalse(syncControls.hidden);
@@ -129,18 +128,18 @@ cr.define('settings_people_page_sync_controls', function() {
 
     setup(function() {
       browserProxy = new TestSyncBrowserProxy();
-      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+      SyncBrowserProxyImpl.instance_ = browserProxy;
 
       PolymerTest.clearBody();
 
       syncControls = document.createElement('settings-sync-controls');
-      const router = settings.Router.getInstance();
+      const router = Router.getInstance();
       router.navigateTo(router.getRoutes().SYNC_ADVANCED);
       document.body.appendChild(syncControls);
 
       syncControls
           .syncStatus = {disabled: false, hasError: false, signedIn: true};
-      Polymer.dom.flush();
+      flush();
 
       assertEquals(router.getRoutes().SYNC_ADVANCED, router.getCurrentRoute());
     });
@@ -152,7 +151,7 @@ cr.define('settings_people_page_sync_controls', function() {
     test('SignedOut', function() {
       syncControls
           .syncStatus = {disabled: false, hasError: false, signedIn: false};
-      const router = settings.Router.getInstance();
+      const router = Router.getInstance();
       assertEquals(router.getRoutes().SYNC.path, router.getCurrentRoute().path);
     });
 
@@ -161,9 +160,9 @@ cr.define('settings_people_page_sync_controls', function() {
         disabled: false,
         hasError: true,
         signedIn: true,
-        statusAction: settings.StatusAction.ENTER_PASSPHRASE
+        statusAction: StatusAction.ENTER_PASSPHRASE
       };
-      const router = settings.Router.getInstance();
+      const router = Router.getInstance();
       assertEquals(
           router.getRoutes().SYNC_ADVANCED.path, router.getCurrentRoute().path);
     });
@@ -173,9 +172,9 @@ cr.define('settings_people_page_sync_controls', function() {
         disabled: false,
         hasError: true,
         signedIn: true,
-        statusAction: settings.StatusAction.REAUTHENTICATE
+        statusAction: StatusAction.REAUTHENTICATE
       };
-      const router = settings.Router.getInstance();
+      const router = Router.getInstance();
       assertEquals(router.getRoutes().SYNC.path, router.getCurrentRoute().path);
     });
   });
@@ -196,7 +195,7 @@ cr.define('settings_people_page_sync_controls', function() {
 
     setup(function() {
       browserProxy = new TestSyncBrowserProxy();
-      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+      SyncBrowserProxyImpl.instance_ = browserProxy;
 
       PolymerTest.clearBody();
       syncControls = document.createElement('settings-sync-controls');
@@ -204,10 +203,10 @@ cr.define('settings_people_page_sync_controls', function() {
 
       // Start with Sync All.
       cr.webUIListenerCallback(
-          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
-      Polymer.dom.flush();
+          'sync-prefs-changed', getSyncAllPrefs());
+      flush();
 
-      return test_util.waitBeforeNextRender().then(() => {
+      return waitBeforeNextRender().then(() => {
         syncEverything =
             syncControls.$$('cr-radio-button[name="sync-everything"]');
         customizeSync =
@@ -222,7 +221,7 @@ cr.define('settings_people_page_sync_controls', function() {
     });
 
     function assertPrefs(prefs, datatypeControls) {
-      const expected = sync_test_util.getSyncAllPrefs();
+      const expected = getSyncAllPrefs();
       expected.syncAllDataTypes = false;
       assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
 
@@ -252,7 +251,7 @@ cr.define('settings_people_page_sync_controls', function() {
       }
 
       customizeSync.click();
-      Polymer.dom.flush();
+      flush();
       assertFalse(syncEverything.checked);
       assertTrue(customizeSync.checked);
 
@@ -260,5 +259,3 @@ cr.define('settings_people_page_sync_controls', function() {
           .then(prefs => assertPrefs(prefs, datatypeControls));
     });
   });
-  // #cr_define_end
-});

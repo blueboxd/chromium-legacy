@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {CrSettingsPrefs} from 'chrome://settings/settings.js';
-// #import {kMenuCloseDelay, LanguagesBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-// #import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
-// #import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
-// #import {getFakeLanguagePrefs} from 'chrome://test/settings/fake_language_settings_private.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {isChromeOS, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
-// #import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
-// #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-// #import {TestLanguagesBrowserProxy} from 'chrome://test/settings/test_languages_browser_proxy.m.js';
+import {CrSettingsPrefs} from 'chrome://settings/settings.js';
+import {kMenuCloseDelay, LanguagesBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
+import {getFakeLanguagePrefs} from 'chrome://test/settings/fake_language_settings_private.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {isChromeOS, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {TestLanguagesBrowserProxy} from 'chrome://test/settings/test_languages_browser_proxy.m.js';
 // clang-format on
 
   window.languages_page_tests = {};
@@ -34,11 +34,11 @@
     let languagesCollapse = null;
     /** @type {?CrActionMenuElement} */
     let actionMenu = null;
-    /** @type {?settings.LanguagesBrowserProxy} */
+    /** @type {?LanguagesBrowserProxy} */
     let browserProxy = null;
 
     // Enabled language pref name for the platform.
-    const languagesPref = cr.isChromeOS ?
+    const languagesPref = isChromeOS ?
         'settings.language.preferred_languages' :
         'intl.accept_languages';
 
@@ -54,13 +54,13 @@
     setup(function() {
       const settingsPrefs = document.createElement('settings-prefs');
       const settingsPrivate =
-          new settings.FakeSettingsPrivate(settings.getFakeLanguagePrefs());
+          new FakeSettingsPrivate(getFakeLanguagePrefs());
       settingsPrefs.initialize(settingsPrivate);
       document.body.appendChild(settingsPrefs);
       return CrSettingsPrefs.initialized.then(function() {
         // Set up test browser proxy.
-        browserProxy = new settings.TestLanguagesBrowserProxy();
-        settings.LanguagesBrowserProxyImpl.instance_ = browserProxy;
+        browserProxy = new TestLanguagesBrowserProxy();
+        LanguagesBrowserProxyImpl.instance_ = browserProxy;
 
         // Set up fake languageSettingsPrivate API.
         const languageSettingsPrivate =
@@ -71,7 +71,7 @@
 
         // Prefs would normally be data-bound to settings-languages-page.
         languagesPage.prefs = settingsPrefs.prefs;
-        test_util.fakeDataBind(settingsPrefs, languagesPage, 'prefs');
+        fakeDataBind(settingsPrefs, languagesPage, 'prefs');
 
         document.body.appendChild(languagesPage);
         languagesCollapse = languagesPage.$.languagesCollapse;
@@ -98,7 +98,7 @@
       // Resolves the PromiseResolver if the mutation includes removal of the
       // settings-add-languages-dialog.
       // TODO(michaelpg): Extract into a common method similar to
-      // test_util.whenAttributeIs for use elsewhere.
+      // whenAttributeIs for use elsewhere.
       const onMutation = function(mutations, observer) {
         if (mutations.some(function(mutation) {
               return mutation.type == 'childList' &&
@@ -116,7 +116,7 @@
         const addLanguagesButton =
             languagesCollapse.querySelector('#addLanguages');
         const whenDialogOpen =
-            test_util.eventToPromise('cr-dialog-open', languagesPage);
+            eventToPromise('cr-dialog-open', languagesPage);
         addLanguagesButton.click();
 
         // The page stamps the dialog, registers listeners, and populates the
@@ -135,7 +135,7 @@
           assertTrue(!!actionButton);
           cancelButton = dialog.$$('.cancel-button');
           assertTrue(!!cancelButton);
-          Polymer.dom.flush();
+          flush();
 
           // The fixed-height dialog's iron-list should stamp far fewer than
           // 50 items.
@@ -180,7 +180,7 @@
       test('add languages and confirm', function() {
         // No languages have been checked, so the action button is inert.
         actionButton.click();
-        Polymer.dom.flush();
+        flush();
         assertEquals(dialog, languagesPage.$$('settings-add-languages-dialog'));
 
         // Check and uncheck one language.
@@ -219,22 +219,22 @@
 
         // Issue query that matches the |displayedName|.
         searchInput.setValue('greek');
-        Polymer.dom.flush();
+        flush();
         assertEquals(1, getItems().length);
 
         // Issue query that matches the |nativeDisplayedName|.
         searchInput.setValue('Ελληνικά');
-        Polymer.dom.flush();
+        flush();
         assertEquals(1, getItems().length);
 
         // Issue query that does not match any language.
         searchInput.setValue('egaugnal');
-        Polymer.dom.flush();
+        flush();
         assertEquals(0, getItems().length);
 
         // Issue query that should never match any language.
         searchInput.setValue('_arc_ime_language_');
-        Polymer.dom.flush();
+        flush();
         assertEquals(0, getItems().length);
       });
 
@@ -244,13 +244,13 @@
 
         // Test that dialog is not closed if 'Escape' is pressed on the input
         // and a search query exists.
-        MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+        keyDownOn(searchInput, 19, [], 'Escape');
         assertTrue(dialog.$.dialog.open);
 
         // Test that dialog is closed if 'Escape' is pressed on the input and no
         // search query exists.
         searchInput.setValue('');
-        MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+        keyDownOn(searchInput, 19, [], 'Escape');
         assertFalse(dialog.$.dialog.open);
       });
     });
@@ -301,7 +301,7 @@
         // Chrome OS and Windows still show a checkbox and thus the separator.
         languageHelper.setPrefValue('translate.enabled', false);
         assertEquals(
-            cr.isChromeOS || cr.isWindows ? 1 : 0, separator.offsetHeight);
+            isChromeOS || isWindows ? 1 : 0, separator.offsetHeight);
       });
 
       test('test translate.enable toggle', function() {
@@ -382,7 +382,7 @@
               ['en-US', 'sw'],
               languageHelper.prefs.translate_blocked_languages.value);
           done();
-        }, settings.kMenuCloseDelay + 1);
+        }, kMenuCloseDelay + 1);
       });
 
       test('toggle translate for target language', function() {
@@ -420,7 +420,7 @@
         languageHelper.enableLanguage('no');
 
         // Populate the dom-repeat.
-        Polymer.dom.flush();
+        flush();
 
         // Find the new language item.
         const items = languagesCollapse.querySelectorAll('.list-item');
@@ -494,7 +494,7 @@
           languageHelper.enableLanguage(language);
         }
 
-        Polymer.dom.flush();
+        flush();
 
         const menuButtons = languagesCollapse.querySelectorAll(
             '.list-item cr-icon-button.icon-more-vert');
@@ -541,7 +541,7 @@
       test('structure', function() {
         const spellCheckCollapse = languagesPage.$.spellCheckCollapse;
         const spellCheckSettingsExist = !!spellCheckCollapse;
-        if (cr.isMac) {
+        if (isMac) {
           assertFalse(spellCheckSettingsExist);
           return;
         }
@@ -563,7 +563,7 @@
 
         // Force-enable a language via policy.
         languageHelper.setPrefValue('spellcheck.forced_dictionaries', ['nb']);
-        Polymer.dom.flush();
+        flush();
         const forceEnabledNbLanguageRow =
             spellCheckCollapse.querySelectorAll('.list-item')[2];
         assertTrue(!!forceEnabledNbLanguageRow);
@@ -577,7 +577,7 @@
         languageHelper.setPrefValue(
             'spellcheck.blacklisted_dictionaries', ['nb']);
         languageHelper.enableLanguage('nb');
-        Polymer.dom.flush();
+        flush();
         const forceDisabledNbLanguageRow =
             spellCheckCollapse.querySelectorAll('.list-item')[2];
         assertFalse(
@@ -606,7 +606,7 @@
 
         // Force-disable spellchecking via policy.
         setEnableSpellcheckingViaPolicy(false);
-        Polymer.dom.flush();
+        flush();
 
         // The policy indicator should be present.
         assertTrue(!!triggerRow.$$('cr-policy-pref-indicator'));
@@ -615,7 +615,7 @@
         // indicator is not present. |enable_spellchecking| can be forced to
         // true by policy, but no indicator should be shown in that case.
         setEnableSpellcheckingViaPolicy(true);
-        Polymer.dom.flush();
+        flush();
         assertFalse(!!triggerRow.querySelector('cr-policy-pref-indicator'));
 
         const spellCheckLanguagesCount =
@@ -623,14 +623,14 @@
         // Enabling a language without spellcheck support should not add it to
         // the list
         languageHelper.enableLanguage('tk');
-        Polymer.dom.flush();
+        flush();
         assertEquals(
             spellCheckCollapse.querySelectorAll('.list-item').length,
             spellCheckLanguagesCount);
       });
 
       test('only 1 supported language', () => {
-        if (cr.isMac) {
+        if (isMac) {
           return;
         }
 
@@ -638,7 +638,7 @@
         assertFalse(list.hidden);
 
         languageHelper.setPrefValue('intl.accept_languages', 'en-US');
-        if (cr.isChromeOS) {
+        if (isChromeOS) {
           languageHelper.setPrefValue(
               'settings.language.preferred_languages', 'en-US');
         }
@@ -662,7 +662,7 @@
       });
 
       test('no supported languages', () => {
-        if (cr.isMac) {
+        if (isMac) {
           return;
         }
 
@@ -678,7 +678,7 @@
 
         // Empty out supported languages
         languageHelper.setPrefValue('intl.accept_languages', '');
-        if (cr.isChromeOS) {
+        if (isChromeOS) {
           languageHelper.setPrefValue(
               'settings.language.preferred_languages', '');
         }
@@ -691,7 +691,7 @@
       });
 
       test('error handling', function() {
-        if (cr.isMac) {
+        if (isMac) {
           return;
         }
 
@@ -718,7 +718,7 @@
           {languageCode, isReady: false, downloadFailed: true},
         ]);
 
-        Polymer.dom.flush();
+        flush();
         assertFalse(errorDivs[0].hidden);
         checkAllHidden(errorDivs.slice(1));
         assertFalse(retryButtons[0].hidden);
@@ -733,11 +733,11 @@
             languagesPage.get('languages.enabled.0.downloadDictionaryStatus');
         languageSettingsPrivate.onSpellcheckDictionariesChanged.callListeners(
             [currentStatus]);
-        Polymer.dom.flush();
+        flush();
         assertTrue(moreInfo.hidden);
 
         retryButtons[0].click();
-        Polymer.dom.flush();
+        flush();
         assertFalse(moreInfo.hidden);
       });
     });
@@ -747,7 +747,7 @@
         const previousValue =
             languagesPage.prefs.spellcheck.use_spelling_service.value;
         languagesPage.$.spellingServiceEnable.click();
-        Polymer.dom.flush();
+        flush();
         assertNotEquals(
             previousValue,
             languagesPage.prefs.spellcheck.use_spelling_service.value);
@@ -757,7 +757,7 @@
         languageHelper.setPrefValue('browser.enable_spellchecking', true);
         languageHelper.setPrefValue('spellcheck.use_spelling_service', true);
         languagesPage.$.enableSpellcheckingToggle.click();
-        Polymer.dom.flush();
+        flush();
         assertFalse(
             languageHelper.getPref('spellcheck.use_spelling_service').value);
       });

@@ -18,7 +18,6 @@
 #include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
@@ -31,6 +30,7 @@
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/apps_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/bluetooth_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_strings_provider.h"
@@ -623,63 +623,6 @@ void AddPluginVmStrings(content::WebUIDataSource* html_source,
                               chromeos::features::kPluginVmShowCameraSetting));
 }
 
-void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"androidAppsPageLabel", IDS_SETTINGS_ANDROID_APPS_LABEL},
-      {"androidAppsEnable", IDS_SETTINGS_TURN_ON},
-      {"androidAppsManageApps", IDS_SETTINGS_ANDROID_APPS_MANAGE_APPS},
-      {"androidAppsRemove", IDS_SETTINGS_ANDROID_APPS_REMOVE},
-      {"androidAppsRemoveButton", IDS_SETTINGS_ANDROID_APPS_REMOVE_BUTTON},
-      {"androidAppsDisableDialogTitle",
-       IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_TITLE},
-      {"androidAppsDisableDialogMessage",
-       IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE},
-      {"androidAppsDisableDialogRemove",
-       IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE},
-      {"androidAppsManageAppLinks", IDS_SETTINGS_ANDROID_APPS_MANAGE_APP_LINKS},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-  html_source->AddLocalizedString("androidAppsPageTitle",
-                                  arc::IsPlayStoreAvailable()
-                                      ? IDS_SETTINGS_ANDROID_APPS_TITLE
-                                      : IDS_SETTINGS_ANDROID_SETTINGS_TITLE);
-  html_source->AddString(
-      "androidAppsSubtext",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_ANDROID_APPS_SUBTEXT, ui::GetChromeOSDeviceName(),
-          GetHelpUrlWithBoard(chrome::kAndroidAppsLearnMoreURL)));
-}
-
-void AddAppsStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"appsPageTitle", IDS_SETTINGS_APPS_TITLE},
-      {"appManagementTitle", IDS_SETTINGS_APPS_LINK_TEXT},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-}
-
-void AddAppManagementStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"appManagementAppInstalledByPolicyLabel",
-       IDS_APP_MANAGEMENT_POLICY_APP_POLICY_STRING},
-      {"appManagementCameraPermissionLabel", IDS_APP_MANAGEMENT_CAMERA},
-      {"appManagementContactsPermissionLabel", IDS_APP_MANAGEMENT_CONTACTS},
-      {"appManagementLocationPermissionLabel", IDS_APP_MANAGEMENT_LOCATION},
-      {"appManagementMicrophonePermissionLabel", IDS_APP_MANAGEMENT_MICROPHONE},
-      {"appManagementMoreSettingsLabel", IDS_APP_MANAGEMENT_MORE_SETTINGS},
-      {"appManagementNoAppsFound", IDS_APP_MANAGEMENT_NO_APPS_FOUND},
-      {"appManagementNoPermissions",
-       IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT},
-      {"appManagementNotificationsLabel", IDS_APP_MANAGEMENT_NOTIFICATIONS},
-      {"appManagementPermissionsLabel", IDS_APP_MANAGEMENT_PERMISSIONS},
-      {"appManagementPinToShelfLabel", IDS_APP_MANAGEMENT_PIN_TO_SHELF},
-      {"appManagementSearchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT},
-      {"appManagementStoragePermissionLabel", IDS_APP_MANAGEMENT_STORAGE},
-      {"appManagementUninstallLabel", IDS_APP_MANAGEMENT_UNINSTALL_APP},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-}
-
 void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
                             Profile* profile) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
@@ -1090,7 +1033,8 @@ OsSettingsLocalizedStringsProvider::OsSettingsLocalizedStringsProvider(
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
     syncer::SyncService* sync_service,
     SupervisedUserService* supervised_user_service,
-    KerberosCredentialsManager* kerberos_credentials_manager)
+    KerberosCredentialsManager* kerberos_credentials_manager,
+    ArcAppListPrefs* arc_app_list_prefs)
     : index_(local_search_service->GetIndex(
           local_search_service::IndexId::kCrosSettings)) {
   // Add per-page string providers.
@@ -1111,6 +1055,8 @@ OsSettingsLocalizedStringsProvider::OsSettingsLocalizedStringsProvider(
           profile, /*delegate=*/this, profile->GetPrefs()));
   per_page_providers_.push_back(
       std::make_unique<SearchStringsProvider>(profile, /*delegate=*/this));
+  per_page_providers_.push_back(std::make_unique<AppsStringsProvider>(
+      profile, /*delegate=*/this, profile->GetPrefs(), arc_app_list_prefs));
 }
 
 OsSettingsLocalizedStringsProvider::~OsSettingsLocalizedStringsProvider() =
@@ -1126,9 +1072,6 @@ void OsSettingsLocalizedStringsProvider::AddOsLocalizedStrings(
   // instances.
   AddAboutStrings(html_source, profile);
   AddA11yStrings(html_source);
-  AddAndroidAppStrings(html_source);
-  AddAppManagementStrings(html_source);
-  AddAppsStrings(html_source);
   AddChromeOSUserStrings(html_source, profile);
   AddCommonStrings(html_source, profile);
   AddCrostiniStrings(html_source, profile);

@@ -9,25 +9,16 @@ cast_source_set("le") {
   sources = [
     "ble_notification_logger.cc",
     "ble_notification_logger.h",
+    "ble_types.h",
     "gatt_client_manager.h",
-    "gatt_client_manager_impl.cc",
-    "gatt_client_manager_impl.h",
     "le_scan_manager.h",
     "le_scan_result.cc",
     "le_scan_result.h",
     "remote_characteristic.h",
-    "remote_characteristic_impl.cc",
-    "remote_characteristic_impl.h",
     "remote_descriptor.cc",
     "remote_descriptor.h",
-    "remote_descriptor_impl.cc",
-    "remote_descriptor_impl.h",
     "remote_device.h",
-    "remote_device_impl.cc",
-    "remote_device_impl.h",
     "remote_service.h",
-    "remote_service_impl.cc",
-    "remote_service_impl.h",
     "scan_filter.cc",
     "scan_filter.h",
   ]
@@ -38,7 +29,6 @@ cast_source_set("le") {
     "//base",
     "//chromecast/base",
     "//chromecast/device/bluetooth:util",
-    "//chromecast/device/bluetooth/shlib",
     "//chromecast/public",
     "//third_party/re2",
   ]
@@ -46,8 +36,18 @@ cast_source_set("le") {
 
 cast_source_set("le_impl") {
   sources = [
+    "gatt_client_manager_impl.cc",
+    "gatt_client_manager_impl.h",
     "le_scan_manager_impl.cc",
     "le_scan_manager_impl.h",
+    "remote_characteristic_impl.cc",
+    "remote_characteristic_impl.h",
+    "remote_descriptor_impl.cc",
+    "remote_descriptor_impl.h",
+    "remote_device_impl.cc",
+    "remote_device_impl.h",
+    "remote_service_impl.cc",
+    "remote_service_impl.h",
   ]
 
   deps = [
@@ -56,6 +56,7 @@ cast_source_set("le_impl") {
     "//chromecast/base",
     "//chromecast/device/bluetooth:util",
     "//chromecast/device/bluetooth/shlib",
+    "//chromecast/public",
   ]
 }
 

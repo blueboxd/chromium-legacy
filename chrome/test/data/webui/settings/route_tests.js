@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {buildRouter, pageVisibility, routes, Route, Router, setPageVisibilityForTesting} from 'chrome://settings/settings.js';
-// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {buildRouter, pageVisibility, routes, Route, Router, setPageVisibilityForTesting} from 'chrome://settings/settings.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 suite('route', function() {
@@ -30,32 +30,32 @@ suite('route', function() {
 
   /**
    * Tests a specific navigation situation.
-   * @param {!settings.Route} previousRoute
-   * @param {!settings.Route} currentRoute
-   * @param {!settings.Route} expectedNavigatePreviousResult
+   * @param {!Route} previousRoute
+   * @param {!Route} currentRoute
+   * @param {!Route} expectedNavigatePreviousResult
    * @return {!Promise}
    */
   function testNavigateBackUsesHistory(
       previousRoute, currentRoute, expectedNavigatePreviousResult) {
-    settings.Router.getInstance().navigateTo(previousRoute);
-    settings.Router.getInstance().navigateTo(currentRoute);
+    Router.getInstance().navigateTo(previousRoute);
+    Router.getInstance().navigateTo(currentRoute);
 
     return whenPopState(function() {
-             settings.Router.getInstance().navigateToPreviousRoute();
+             Router.getInstance().navigateToPreviousRoute();
            })
         .then(function() {
           assertEquals(
               expectedNavigatePreviousResult,
-              settings.Router.getInstance().getCurrentRoute());
+              Router.getInstance().getCurrentRoute());
         });
   }
 
   test('tree structure', function() {
     // Set up root page routes.
-    const BASIC = new settings.Route('/');
+    const BASIC = new Route('/');
     assertEquals(0, BASIC.depth);
 
-    const ADVANCED = new settings.Route('/advanced');
+    const ADVANCED = new Route('/advanced');
     assertFalse(ADVANCED.isSubpage());
     assertEquals(0, ADVANCED.depth);
 
@@ -96,7 +96,7 @@ suite('route', function() {
 
   test('no duplicate routes', function() {
     const paths = new Set();
-    Object.values(settings.routes).forEach(function(route) {
+    Object.values(routes).forEach(function(route) {
       assertFalse(paths.has(route.path), route.path);
       paths.add(route.path);
     });
@@ -104,122 +104,122 @@ suite('route', function() {
 
   test('navigate back to parent previous route', function() {
     return testNavigateBackUsesHistory(
-        settings.routes.BASIC, settings.routes.PEOPLE, settings.routes.BASIC);
+        routes.BASIC, routes.PEOPLE, routes.BASIC);
   });
 
   test('navigate back to non-ancestor shallower route', function() {
     return testNavigateBackUsesHistory(
-        settings.routes.ADVANCED, settings.routes.PEOPLE,
-        settings.routes.BASIC);
+        routes.ADVANCED, routes.PEOPLE,
+        routes.BASIC);
   });
 
   test('navigate back to sibling route', function() {
     return testNavigateBackUsesHistory(
-        settings.routes.APPEARANCE, settings.routes.PEOPLE,
-        settings.routes.APPEARANCE);
+        routes.APPEARANCE, routes.PEOPLE,
+        routes.APPEARANCE);
   });
 
   test('navigate back to parent when previous route is deeper', function() {
-    settings.Router.getInstance().navigateTo(settings.routes.SYNC);
-    settings.Router.getInstance().navigateTo(settings.routes.PEOPLE);
-    settings.Router.getInstance().navigateToPreviousRoute();
+    Router.getInstance().navigateTo(routes.SYNC);
+    Router.getInstance().navigateTo(routes.PEOPLE);
+    Router.getInstance().navigateToPreviousRoute();
     assertEquals(
-        settings.routes.BASIC, settings.Router.getInstance().getCurrentRoute());
+        routes.BASIC, Router.getInstance().getCurrentRoute());
   });
 
   test('navigate back to BASIC when going back from root pages', function() {
-    settings.Router.getInstance().navigateTo(settings.routes.PEOPLE);
-    settings.Router.getInstance().navigateTo(settings.routes.ADVANCED);
-    settings.Router.getInstance().navigateToPreviousRoute();
+    Router.getInstance().navigateTo(routes.PEOPLE);
+    Router.getInstance().navigateTo(routes.ADVANCED);
+    Router.getInstance().navigateToPreviousRoute();
     assertEquals(
-        settings.routes.BASIC, settings.Router.getInstance().getCurrentRoute());
+        routes.BASIC, Router.getInstance().getCurrentRoute());
   });
 
   test('navigateTo respects removeSearch optional parameter', function() {
     const params = new URLSearchParams('search=foo');
-    settings.Router.getInstance().navigateTo(settings.routes.BASIC, params);
+    Router.getInstance().navigateTo(routes.BASIC, params);
     assertEquals(
         params.toString(),
-        settings.Router.getInstance().getQueryParameters().toString());
+        Router.getInstance().getQueryParameters().toString());
 
-    settings.Router.getInstance().navigateTo(
-        settings.routes.SITE_SETTINGS, null,
+    Router.getInstance().navigateTo(
+        routes.SITE_SETTINGS, null,
         /* removeSearch */ false);
     assertEquals(
         params.toString(),
-        settings.Router.getInstance().getQueryParameters().toString());
+        Router.getInstance().getQueryParameters().toString());
 
-    settings.Router.getInstance().navigateTo(
-        settings.routes.SEARCH_ENGINES, null,
+    Router.getInstance().navigateTo(
+        routes.SEARCH_ENGINES, null,
         /* removeSearch */ true);
     assertEquals(
-        '', settings.Router.getInstance().getQueryParameters().toString());
+        '', Router.getInstance().getQueryParameters().toString());
   });
 
   test('navigateTo ADVANCED forwards to BASIC', function() {
-    settings.Router.getInstance().navigateTo(settings.routes.ADVANCED);
+    Router.getInstance().navigateTo(routes.ADVANCED);
     assertEquals(
-        settings.routes.BASIC, settings.Router.getInstance().getCurrentRoute());
+        routes.BASIC, Router.getInstance().getCurrentRoute());
   });
 
   test('popstate flag works', function() {
-    const router = settings.Router.getInstance();
-    router.navigateTo(settings.routes.BASIC);
+    const router = Router.getInstance();
+    router.navigateTo(routes.BASIC);
     assertFalse(router.lastRouteChangeWasPopstate());
 
-    router.navigateTo(settings.routes.PEOPLE);
+    router.navigateTo(routes.PEOPLE);
     assertFalse(router.lastRouteChangeWasPopstate());
 
     return whenPopState(function() {
              window.history.back();
            })
         .then(function() {
-          assertEquals(settings.routes.BASIC, router.getCurrentRoute());
+          assertEquals(routes.BASIC, router.getCurrentRoute());
           assertTrue(router.lastRouteChangeWasPopstate());
 
-          router.navigateTo(settings.routes.ADVANCED);
+          router.navigateTo(routes.ADVANCED);
           assertFalse(router.lastRouteChangeWasPopstate());
         });
   });
 
   test('getRouteForPath trailing slashes', function() {
     assertEquals(
-        settings.routes.BASIC,
-        settings.Router.getInstance().getRouteForPath('/'));
-    assertEquals(null, settings.Router.getInstance().getRouteForPath('//'));
+        routes.BASIC,
+        Router.getInstance().getRouteForPath('/'));
+    assertEquals(null, Router.getInstance().getRouteForPath('//'));
 
     // Simple path.
     assertEquals(
-        settings.routes.PEOPLE,
-        settings.Router.getInstance().getRouteForPath('/people/'));
+        routes.PEOPLE,
+        Router.getInstance().getRouteForPath('/people/'));
     assertEquals(
-        settings.routes.PEOPLE,
-        settings.Router.getInstance().getRouteForPath('/people'));
+        routes.PEOPLE,
+        Router.getInstance().getRouteForPath('/people'));
 
     // Path with a slash.
     assertEquals(
-        settings.routes.SITE_SETTINGS_COOKIES,
-        settings.Router.getInstance().getRouteForPath('/content/cookies'));
+        routes.SITE_SETTINGS_COOKIES,
+        Router.getInstance().getRouteForPath('/content/cookies'));
     assertEquals(
-        settings.routes.SITE_SETTINGS_COOKIES,
-        settings.Router.getInstance().getRouteForPath('/content/cookies/'));
+        routes.SITE_SETTINGS_COOKIES,
+        Router.getInstance().getRouteForPath('/content/cookies/'));
   });
 
   test('isNavigableDialog', function() {
-    assertTrue(settings.routes.CLEAR_BROWSER_DATA.isNavigableDialog);
-    assertTrue(settings.routes.RESET_DIALOG.isNavigableDialog);
-    assertTrue(settings.routes.SIGN_OUT.isNavigableDialog);
-    assertTrue(settings.routes.TRIGGERED_RESET_DIALOG.isNavigableDialog);
-    if (!cr.isChromeOS) {
-      assertTrue(settings.routes.IMPORT_DATA.isNavigableDialog);
+    assertTrue(routes.CLEAR_BROWSER_DATA.isNavigableDialog);
+    assertTrue(routes.RESET_DIALOG.isNavigableDialog);
+    assertTrue(routes.SIGN_OUT.isNavigableDialog);
+    assertTrue(routes.TRIGGERED_RESET_DIALOG.isNavigableDialog);
+    if (!isChromeOS) {
+      assertTrue(routes.IMPORT_DATA.isNavigableDialog);
     }
 
-    assertFalse(settings.routes.PRIVACY.isNavigableDialog);
-    assertFalse(settings.routes.DEFAULT_BROWSER.isNavigableDialog);
+    assertFalse(routes.PRIVACY.isNavigableDialog);
+    assertFalse(routes.DEFAULT_BROWSER.isNavigableDialog);
   });
 
   test('pageVisibility affects route availability', function() {
-    settings.setPageVisibilityForTesting({
+    setPageVisibilityForTesting({
       appearance: false,
       autofill: false,
       defaultBrowser: false,
@@ -228,7 +228,7 @@ suite('route', function() {
     });
     loadTimeData.overrideValues({showOSSettings: false});
 
-    const router = settings.buildRouterForTesting();
+    const router = buildRouter();
     const hasRoute = route => router.getRoutes().hasOwnProperty(route);
 
     assertTrue(hasRoute('BASIC'));
@@ -243,23 +243,23 @@ suite('route', function() {
   test(
       'getAbsolutePath works in direct and within-settings navigation',
       function() {
-        settings.Router.getInstance().resetRouteForTesting();
+        Router.getInstance().resetRouteForTesting();
         // Check getting the absolute path while not inside settings returns the
         // correct path.
         window.location.href = 'https://example.com/path/to/page.html';
         assertEquals(
             'chrome://settings/cloudPrinters',
-            settings.routes.CLOUD_PRINTERS.getAbsolutePath());
+            routes.CLOUD_PRINTERS.getAbsolutePath());
 
         // Check getting the absolute path while inside settings returns the
         // correct path for the current route and a different route.
-        settings.Router.getInstance().navigateTo(settings.routes.DOWNLOADS);
+        Router.getInstance().navigateTo(routes.DOWNLOADS);
         assertEquals(
             'chrome://settings/downloads',
-            settings.Router.getInstance().getCurrentRoute().getAbsolutePath());
+            Router.getInstance().getCurrentRoute().getAbsolutePath());
         assertEquals(
             'chrome://settings/languages',
-            settings.routes.LANGUAGES.getAbsolutePath());
+            routes.LANGUAGES.getAbsolutePath());
       });
 });
 
@@ -277,38 +277,38 @@ suite('DynamicParameters', function() {
 
   test('get parameters from URL and navigation', function(done) {
     assertEquals(
-        settings.routes.SEARCH,
-        settings.Router.getInstance().getCurrentRoute());
+        routes.SEARCH,
+        Router.getInstance().getCurrentRoute());
     assertEquals(
-        'a/b', settings.Router.getInstance().getQueryParameters().get('guid'));
+        'a/b', Router.getInstance().getQueryParameters().get('guid'));
     assertEquals(
-        '42', settings.Router.getInstance().getQueryParameters().get('foo'));
+        '42', Router.getInstance().getQueryParameters().get('foo'));
 
     const params = new URLSearchParams();
     params.set('bar', 'b=z');
     params.set('biz', '3');
-    settings.Router.getInstance().navigateTo(
-        settings.routes.SEARCH_ENGINES, params);
+    Router.getInstance().navigateTo(
+        routes.SEARCH_ENGINES, params);
     assertEquals(
-        settings.routes.SEARCH_ENGINES,
-        settings.Router.getInstance().getCurrentRoute());
+        routes.SEARCH_ENGINES,
+        Router.getInstance().getCurrentRoute());
     assertEquals(
-        'b=z', settings.Router.getInstance().getQueryParameters().get('bar'));
+        'b=z', Router.getInstance().getQueryParameters().get('bar'));
     assertEquals(
-        '3', settings.Router.getInstance().getQueryParameters().get('biz'));
+        '3', Router.getInstance().getQueryParameters().get('biz'));
     assertEquals('?bar=b%3Dz&biz=3', window.location.search);
 
     window.addEventListener('popstate', function(event) {
       assertEquals(
-          '/search', settings.Router.getInstance().getCurrentRoute().path);
+          '/search', Router.getInstance().getCurrentRoute().path);
       assertEquals(
-          settings.routes.SEARCH,
-          settings.Router.getInstance().getCurrentRoute());
+          routes.SEARCH,
+          Router.getInstance().getCurrentRoute());
       assertEquals(
           'a/b',
-          settings.Router.getInstance().getQueryParameters().get('guid'));
+          Router.getInstance().getQueryParameters().get('guid'));
       assertEquals(
-          '42', settings.Router.getInstance().getQueryParameters().get('foo'));
+          '42', Router.getInstance().getQueryParameters().get('foo'));
       done();
     });
     window.history.back();
@@ -329,7 +329,7 @@ suite('NonExistentRoute', function() {
 
   test('redirect to basic', function() {
     assertEquals(
-        settings.routes.BASIC, settings.Router.getInstance().getCurrentRoute());
+        routes.BASIC, Router.getInstance().getCurrentRoute());
     assertEquals('/', location.pathname);
   });
 });

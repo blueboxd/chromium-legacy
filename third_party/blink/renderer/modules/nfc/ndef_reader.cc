@@ -48,7 +48,7 @@ NDEFReader* NDEFReader::Create(ExecutionContext* context) {
 }
 
 NDEFReader::NDEFReader(ExecutionContext* context)
-    : ExecutionContextLifecycleObserver(context) {
+    : ExecutionContextLifecycleObserver(context), permission_service_(context) {
   // Call GetNFCProxy to create a proxy. This guarantees no allocation will
   // be needed when calling HasPendingActivity later during gc tracing.
   GetNfcProxy();
@@ -119,10 +119,11 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
 }
 
 PermissionService* NDEFReader::GetPermissionService() {
-  if (!permission_service_) {
+  if (!permission_service_.is_bound()) {
     ConnectToPermissionService(
         GetExecutionContext(),
-        permission_service_.BindNewPipeAndPassReceiver());
+        permission_service_.BindNewPipeAndPassReceiver(
+            GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
   return permission_service_.get();
 }
@@ -170,6 +171,7 @@ void NDEFReader::OnScanRequestCompleted(
 }
 
 void NDEFReader::Trace(Visitor* visitor) {
+  visitor->Trace(permission_service_);
   visitor->Trace(resolver_);
   visitor->Trace(signal_);
   EventTargetWithInlineData::Trace(visitor);

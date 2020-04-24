@@ -76,7 +76,6 @@ group("closure_compile") {
     "search_engines_page:closure_compile",
     "settings_page:closure_compile",
     "site_settings:closure_compile",
-    "site_settings_page:closure_compile",
   ]
 
   if (is_chromeos) {
@@ -391,7 +390,7 @@ group("polymer3_elements") {
     "settings_page:polymer3_elements",
     "settings_ui:polymer3_elements",
     "site_settings:polymer3_elements",
-    "site_settings_page:polymer3_elements",
+    "site_settings_page:web_components",
 
     # Local targets
     ":ensure_lazy_loaded_module",

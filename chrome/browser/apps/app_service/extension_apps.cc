@@ -34,6 +34,7 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -80,6 +81,7 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/switches.h"
+#include "ui/message_center/public/cpp/notification.h"
 #include "url/url_constants.h"
 
 // TODO(crbug.com/826982): life cycle events. Extensions can be installed and
@@ -300,6 +302,8 @@ void ExtensionApps::Initialize(
   app_window_registry_.Add(extensions::AppWindowRegistry::Get(profile_));
   content_settings_observer_.Add(
       HostContentSettingsMapFactory::GetForProfile(profile_));
+  notification_display_service_.Add(
+      NotificationDisplayServiceFactory::GetForProfile(profile_));
   app_service_ = app_service.get();
 
   auto* web_app_provider = web_app::WebAppProvider::Get(profile_);
@@ -1065,6 +1069,57 @@ void ExtensionApps::OnArcAppListPrefsDestroyed() {
   arc_prefs_ = nullptr;
 }
 
+void ExtensionApps::OnDisplay(
+    const message_center::Notification& notification) {
+  switch (notification.notifier_id().type) {
+    case message_center::NotifierType::APPLICATION:
+      MaybeAddNotification(notification.notifier_id().id, notification.id());
+      return;
+    case message_center::NotifierType::WEB_PAGE:
+      // TODO(crbug.com/1068884): Handle web page notifications.
+      return;
+    default:
+      return;
+  }
+}
+
+void ExtensionApps::OnClose(const std::string& notification_id) {
+  const std::string& app_id =
+      app_notifications_.GetAppIdForNotification(notification_id);
+  if (app_id.empty()) {
+    return;
+  }
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+          app_id);
+  if (!extension || !Accepts(extension)) {
+    return;
+  }
+
+  app_notifications_.RemoveNotification(notification_id);
+  Publish(app_notifications_.GetAppWithHasBadgeStatus(app_type_, app_id),
+          subscribers_);
+}
+
+void ExtensionApps::OnWillBeDestroyed(NotificationDisplayService* service) {
+  notification_display_service_.Remove(service);
+}
+
+void ExtensionApps::MaybeAddNotification(const std::string& app_id,
+                                         const std::string& notification_id) {
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+          app_id);
+  if (!extension || !Accepts(extension)) {
+    return;
+  }
+
+  app_notifications_.AddNotification(app_id, notification_id);
+  Publish(app_notifications_.GetAppWithHasBadgeStatus(app_type_, app_id),
+          subscribers_);
+}
+
 // static
 bool ExtensionApps::IsBlacklisted(const std::string& app_id) {
   // We blacklist (meaning we don't publish the app, in the App Service sense)
@@ -1280,6 +1335,9 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->is_platform_app = extension->is_platform_app()
                              ? apps::mojom::OptionalBool::kTrue
                              : apps::mojom::OptionalBool::kFalse;
+  app->has_badge = app_notifications_.HasNotification(extension->id())
+                       ? apps::mojom::OptionalBool::kTrue
+                       : apps::mojom::OptionalBool::kFalse;
   app->paused = paused ? apps::mojom::OptionalBool::kTrue
                        : apps::mojom::OptionalBool::kFalse;
   SetShowInFields(app, extension, profile_);

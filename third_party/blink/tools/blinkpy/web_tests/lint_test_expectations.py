@@ -113,40 +113,72 @@ def lint(host, options):
                 expectations_dict[path] = host.filesystem.read_text_file(path)
 
     for path, content in expectations_dict.items():
-        # check for expectations which start with the Bug(...) token
-        exp_lines = content.split('\n')
-        for lineno, line in enumerate(exp_lines, 1):
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-            if line.startswith('Bug('):
-                error = ((
-                    "%s:%d Expectation '%s' has the Bug(...) token, "
-                    "The token has been removed in the new expectations format"
-                ) % (host.filesystem.basename(path), lineno, line))
-                _log.error(error)
-                failures.append(error)
-                _log.error('')
+        # Check the expectations file content
+        failures.extend(_check_expectations_file_content(content))
 
-        # check for test expectations that start with leading spaces
-        for lineno, line in enumerate(exp_lines, 1):
-            if not line.strip() or line.strip().startswith('#'):
-                continue
-            if line.startswith(' '):
-                error = '%s:%d Line %d has a test expectation that has leading spaces.' % (
-                    host.filesystem.basename(path), lineno, lineno)
-                _log.error(error)
-                failures.append(error)
-                _log.error('')
-
-        # Create a TestExpectations instance and see if exception is raised
+        # Create a TestExpectations instance and see if an exception is raised
         try:
-            TestExpectations(
+            test_expectations = TestExpectations(
                 ports_to_lint[0], expectations_dict={path: content})
+            # Check each expectation for issues
+            failures.extend(_check_expectations(
+                host, ports_to_lint[0], path, test_expectations))
         except ParseError as error:
             _log.error(str(error))
             failures.append(str(error))
             _log.error('')
+
+    return failures
+
+
+def _check_expectations_file_content(content):
+    failures = []
+    for lineno, line in enumerate(content.splitlines(), 1):
+        if not line.strip() or line.strip().startswith('#'):
+            continue
+        # check for test expectations that start with leading spaces
+        if line.startswith(' '):
+            error = (
+                ('%s:%d Line %d has a test expectation'
+                 ' that has leading spaces.') % (
+                host.filesystem.basename(path), lineno, lineno))
+            _log.error(error)
+            failures.append(error)
+            _log.error('')
+
+        # check for test expectations that have a Bug(...) as the reason
+        if line.startswith('Bug('):
+            error = ((
+                "%s:%d Expectation '%s' has the Bug(...) token, "
+                "The token has been removed in the new expectations format") %
+                     (host.filesystem.basename(path), lineno, line))
+            _log.error(error)
+            failures.append(error)
+            _log.error('')
+
+    return failures
+
+
+def _check_expectations(host, port, path, test_expectations):
+    failures = []
+    for exp in test_expectations.get_updated_lines(path):
+        if (exp.is_glob or not exp.to_string().strip() or
+                exp.to_string().strip().startswith('#')):
+            continue
+
+        test_name, _ = port.split_webdriver_test_name(exp.test)
+        index = test_name.find('?')
+        if index != -1:
+            test_name = test_name[:index]
+
+        if port.test_isdir(test_name):
+            error = (("%s:%d Expectation '%s' is for a directory, however "
+                      "the name in the expectation does not have a glob in the end") %
+                      (host.filesystem.basename(path), exp.lineno, test_name))
+            _log.error(error)
+            failures.append(error)
+            _log.error('')
+
     return failures
 
 

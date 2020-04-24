@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/suggester.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
+#include "chrome/browser/chromeos/input_method/suggestion_handler_interface.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 
 namespace autofill {
@@ -26,7 +26,12 @@ AssistiveType ProposeAssistiveAction(const base::string16& text);
 // dismiss the suggestion according to the user action.
 class PersonalInfoSuggester : public Suggester {
  public:
-  explicit PersonalInfoSuggester(InputMethodEngine* engine, Profile* profile);
+  // If |personal_data_manager| is nullptr, we will obtain it from
+  // |PersonalDataManagerFactory| according to |profile|.
+  PersonalInfoSuggester(
+      SuggestionHandlerInterface* suggestion_handler,
+      Profile* profile,
+      autofill::PersonalDataManager* personal_data_manager = nullptr);
   ~PersonalInfoSuggester() override;
 
   // Suggester overrides:
@@ -48,7 +53,7 @@ class PersonalInfoSuggester : public Suggester {
 
   void AcceptSuggestion();
 
-  InputMethodEngine* const engine_;
+  SuggestionHandlerInterface* const suggestion_handler_;
 
   // ID of the focused text field, 0 if none is focused.
   int context_id_ = -1;

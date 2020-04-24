@@ -36,13 +36,6 @@
         padding: 20px;
       }
 
-      #addPrinterSection {
-        padding-inline-start:
-            var(--settings-list-frame-padding_-_padding-inline-start);
-        padding-inline-end:
-            var(--settings-list-frame-padding_-_padding-inline-end);
-      }
-
       #addPrinterText {
         flex: 1;
       }
@@ -132,7 +125,7 @@
       </template>
     </div>
 
-    <div id="addPrinterSection">
+    <div id="addPrinterSection" class="list-frame">
       <div class="layout horizontal center custom-list-item">
         <div id="addPrinterText" aria-hidden="true">
           $i18n{addCupsPrinter}

@@ -4,6 +4,9 @@
 
 #include "components/arc/session/arc_vm_client_adapter.h"
 
+#include <sys/socket.h>
+#include <sys/un.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -14,11 +17,13 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -40,6 +45,11 @@ constexpr const char kArcKeymasterJobName[] = "arc_2dkeymasterd";
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
 constexpr const char kArcVmPerBoardFeaturesJobName[] =
     "arcvm_2dper_2dboard_2dfeatures";
+constexpr const char kArcVmBootNotificationServerJobName[] =
+    "arcvm_2dboot_2dnotification_2dserver";
+constexpr const size_t kUnixMaxPathLen = sizeof(sockaddr_un::sun_path);
+constexpr const char kArcVmBootNotificationServerAddress[kUnixMaxPathLen] =
+    "\0test_arcvm_boot_notification_server";
 
 constexpr const char kUserIdHash[] = "this_is_a_valid_user_id_hash";
 constexpr const char kSerialNumber[] = "AAAABBBBCCCCDDDD1234";
@@ -121,6 +131,86 @@ class TestConciergeClient : public chromeos::FakeConciergeClient {
   DISALLOW_COPY_AND_ASSIGN(TestConciergeClient);
 };
 
+// A fake ArcVmBootNotificationServer that listens on an UDS and records
+// connections and the data sent to it.
+class TestArcVmBootNotificationServer
+    : public base::MessagePumpForUI::FdWatcher {
+ public:
+  TestArcVmBootNotificationServer() = default;
+  ~TestArcVmBootNotificationServer() override { Stop(); }
+  TestArcVmBootNotificationServer(const TestArcVmBootNotificationServer&) =
+      delete;
+  TestArcVmBootNotificationServer& operator=(
+      const TestArcVmBootNotificationServer&) = delete;
+
+  // Creates a socket and binds it to a name in the abstract namespace, then
+  // starts listening to the socket on another thread.
+  void Start() {
+    fd_.reset(socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0));
+    ASSERT_TRUE(fd_.is_valid());
+
+    sockaddr_un addr{.sun_family = AF_UNIX};
+    memcpy(addr.sun_path, kArcVmBootNotificationServerAddress,
+           sizeof(kArcVmBootNotificationServerAddress));
+
+    ASSERT_EQ(HANDLE_EINTR(bind(fd_.get(), reinterpret_cast<sockaddr*>(&addr),
+                                sizeof(sockaddr_un))),
+              0);
+    ASSERT_EQ(HANDLE_EINTR(listen(fd_.get(), 5)), 0);
+
+    controller_.reset(new base::MessagePumpForUI::FdWatchController(FROM_HERE));
+    ASSERT_TRUE(base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
+        fd_.get(), true, base::MessagePumpForUI::WATCH_READ, controller_.get(),
+        this));
+  }
+
+  // Release the socket.
+  void Stop() {
+    controller_.reset(nullptr);
+    fd_.reset(-1);
+  }
+
+  // Sets a callback to be run immediately after the next connection.
+  void SetConnectionCallback(base::OnceClosure callback) {
+    callback_ = std::move(callback);
+  }
+
+  int connection_count() { return num_connections_; }
+
+  std::string received_data() { return received_; }
+
+  // base::MessagePumpForUI::FdWatcher overrides
+  void OnFileCanReadWithoutBlocking(int fd) override {
+    base::ScopedFD client_fd(HANDLE_EINTR(accept(fd_.get(), nullptr, nullptr)));
+    ASSERT_TRUE(client_fd.is_valid());
+
+    ++num_connections_;
+
+    // Attempt to read from connection until EOF
+    std::string out;
+    char buf[256];
+    while (true) {
+      ssize_t len = HANDLE_EINTR(read(client_fd.get(), buf, sizeof(buf)));
+      if (len <= 0)
+        break;
+      out.append(buf, len);
+    }
+    received_.append(out);
+
+    if (callback_)
+      std::move(callback_).Run();
+  }
+
+  void OnFileCanWriteWithoutBlocking(int fd) override {}
+
+ private:
+  base::ScopedFD fd_;
+  std::unique_ptr<base::MessagePumpForUI::FdWatchController> controller_;
+  int num_connections_ = 0;
+  std::string received_;
+  base::OnceClosure callback_;
+};
+
 class ArcVmClientAdapterTest : public testing::Test,
                                public ArcClientAdapter::Observer {
  public:
@@ -142,9 +232,8 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   void SetUp() override {
     run_loop_ = std::make_unique<base::RunLoop>();
-    adapter_ = CreateArcVmClientAdapterForTesting(
-        base::BindRepeating(&ArcVmClientAdapterTest::RewriteStatus,
-                            base::Unretained(this)));
+    adapter_ = CreateArcVmClientAdapterForTesting(base::BindRepeating(
+        &ArcVmClientAdapterTest::RewriteStatus, base::Unretained(this)));
     arc_instance_stopped_called_ = false;
     adapter_->AddObserver(this);
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
@@ -162,6 +251,12 @@ class ArcVmClientAdapterTest : public testing::Test,
 
     // Reset to the original behavior.
     RemoveUpstartStartStopJobFailures();
+
+    boot_server_ = std::make_unique<TestArcVmBootNotificationServer>();
+    boot_server_->Start();
+    SetArcVmBootNotificationServerAddressForTesting(
+        std::string(kArcVmBootNotificationServerAddress,
+                    sizeof(kArcVmBootNotificationServerAddress)));
   }
 
   void TearDown() override {
@@ -314,6 +409,10 @@ class ArcVmClientAdapterTest : public testing::Test,
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
   }
 
+  TestArcVmBootNotificationServer* boot_notification_server() {
+    return boot_server_.get();
+  }
+
   void set_host_rootfs_writable(bool host_rootfs_writable) {
     host_rootfs_writable_ = host_rootfs_writable;
   }
@@ -343,6 +442,8 @@ class ArcVmClientAdapterTest : public testing::Test,
   // Variables to override the value in FileSystemStatus.
   bool host_rootfs_writable_;
   bool system_image_ext_format_;
+
+  std::unique_ptr<TestArcVmBootNotificationServer> boot_server_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcVmClientAdapterTest);
 };
@@ -1003,6 +1104,56 @@ TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNoNativeBridgeExperiment) {
   EXPECT_TRUE(
       base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
                      "androidboot.native_bridge=libhoudini.so"));
+}
+
+// Tests that ArcVmClientAdapter connects to the boot notification server
+// twice: once in StartMiniArc to check that it is listening, and the second
+// time in UpgradeArc to send props.
+TEST_F(ArcVmClientAdapterTest, TestConnectToBootNotificationServer) {
+  // Stop the RunLoop after a connection to the server.
+  boot_notification_server()->SetConnectionCallback(run_loop()->QuitClosure());
+  SetValidUserInfo();
+  adapter()->StartMiniArc(
+      {}, base::BindOnce([](bool result) { EXPECT_TRUE(result); }));
+  run_loop()->Run();
+
+  EXPECT_EQ(boot_notification_server()->connection_count(), 1);
+  EXPECT_TRUE(boot_notification_server()->received_data().empty());
+
+  RecreateRunLoop();
+  boot_notification_server()->SetConnectionCallback(run_loop()->QuitClosure());
+  adapter()->UpgradeArc(
+      GetPopulatedUpgradeParams(),
+      base::BindOnce([](bool result) { EXPECT_TRUE(result); }));
+  run_loop()->Run();
+
+  EXPECT_EQ(boot_notification_server()->connection_count(), 2);
+  EXPECT_FALSE(boot_notification_server()->received_data().empty());
+  // Compare received data to expected output
+  std::string expected_props =
+      base::JoinString(GenerateUpgradeProps(GetPopulatedUpgradeParams(),
+                                            kSerialNumber, "ro.boot"),
+                       "\n");
+  EXPECT_EQ(boot_notification_server()->received_data(), expected_props);
+}
+
+// Tests that StartMiniArc fails when the boot notification server's Upstart
+// job fails.
+TEST_F(ArcVmClientAdapterTest, TestBootNotificationServerUpstartJobFails) {
+  InjectUpstartStartJobFailure(kArcVmBootNotificationServerJobName);
+
+  StartMiniArcWithParams(false, {});
+}
+
+// Tests that StartMiniArc fails when the boot notification server is not
+// listening.
+TEST_F(ArcVmClientAdapterTest, TestBootNotificationServerIsNotListening) {
+  boot_notification_server()->Stop();
+  // Change timeout to 26 seconds to allow for exponential backoff.
+  base::test::ScopedRunLoopTimeout timeout(FROM_HERE,
+                                           base::TimeDelta::FromSeconds(26));
+
+  StartMiniArcWithParams(false, {});
 }
 
 }  // namespace

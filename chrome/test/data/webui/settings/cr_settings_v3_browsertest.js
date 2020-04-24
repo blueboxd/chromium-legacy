@@ -50,7 +50,7 @@ var CrSettingsV3BrowserTest = class extends PolymerTest {
 var CrSettingsAboutPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/about_page_tests.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/about_page_tests.js';
   }
 };
 
@@ -68,7 +68,7 @@ GEN('#endif');
 var CrSettingsLanguagesPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/languages_page_tests.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/languages_page_tests.js';
   }
 };
 
@@ -94,7 +94,7 @@ GEN('#endif');
 var CrSettingsClearBrowsingDataV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/clear_browsing_data_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/clear_browsing_data_test.js';
   }
 };
 
@@ -121,7 +121,7 @@ GEN('#endif');
 var CrSettingsMainPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/settings_main_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/settings_main_test.js';
   }
 };
 
@@ -141,7 +141,7 @@ TEST_F('CrSettingsMainPageV3Test', 'MAYBE_MainPageV3', function() {
 var CrSettingsAutofillPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/autofill_page_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/autofill_page_test.js';
   }
 
   /** @override */
@@ -159,7 +159,7 @@ var CrSettingsAutofillSectionCompanyEnabledV3Test =
     class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/autofill_section_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/autofill_section_test.js';
   }
 
   /** @override */
@@ -183,7 +183,7 @@ var CrSettingsAutofillSectionCompanyDisabledV3Test =
     class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/autofill_section_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/autofill_section_test.js';
   }
 
   /** @override */
@@ -204,7 +204,7 @@ TEST_F('CrSettingsAutofillSectionCompanyDisabledV3Test', 'All', function() {
 var CrSettingsPasswordsSectionV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/passwords_section_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/passwords_section_test.js';
   }
 
   /** @override */
@@ -221,7 +221,7 @@ TEST_F('CrSettingsPasswordsSectionV3Test', 'All', function() {
 var CrSettingsPasswordsCheckV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/password_check_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/password_check_test.js';
   }
 
   /** @override */
@@ -238,7 +238,7 @@ TEST_F('CrSettingsPasswordsCheckV3Test', 'All', function() {
 var CrSettingsSafetyCheckPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/safety_check_page_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/safety_check_page_test.js';
   }
 
   /** @override */
@@ -260,7 +260,7 @@ TEST_F('CrSettingsSafetyCheckPageV3Test', 'All', function() {
 var CrSettingsSiteListV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_list_tests.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/site_list_tests.js';
   }
 };
 
@@ -282,7 +282,7 @@ TEST_F('CrSettingsSiteListV3Test', 'AddExceptionDialog', function() {
 var CrSettingsSiteDetailsV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_details_tests.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/site_details_tests.js';
   }
 };
 
@@ -304,7 +304,7 @@ var CrSettingsPersonalizationOptionsV3Test =
     class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/personalization_options_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/personalization_options_test.js';
   }
 };
 
@@ -326,7 +326,7 @@ TEST_F('CrSettingsPersonalizationOptionsV3Test', 'AllBuildsOld', function() {
 var CrSettingsPrivacyPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.js';
   }
 
   /** @override */
@@ -368,7 +368,7 @@ var CrSettingsPrivacyPageRedesignV3Test =
     class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/privacy_page_test.js';
   }
 
   /** @override */
@@ -387,7 +387,7 @@ TEST_F(
 var CrSettingsRouteV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/route_tests.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/route_tests.js';
   }
 };
 
@@ -415,7 +415,7 @@ TEST_F('CrSettingsRouteV3Test', 'MAYBE_NonExistentRoute', function() {
 var CrSettingsAdvancedPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/advanced_page_test.m.js';
+    return 'chrome://settings/test_loader.html?module=settings/advanced_page_test.js';
   }
 };
 
@@ -432,90 +432,90 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
   mocha.run();
 });
 
-[['AllSites', 'all_sites_tests.m.js'],
- ['AppearanceFontsPage', 'appearance_fonts_page_test.m.js'],
- ['AppearancePage', 'appearance_page_test.m.js'],
- ['BasicPage', 'basic_page_test.m.js'],
- ['CategoryDefaultSetting', 'category_default_setting_tests.m.js'],
- ['CategorySettingExceptions', 'category_setting_exceptions_tests.m.js'],
- ['Checkbox', 'checkbox_tests.m.js'],
- ['ChooserExceptionList', 'chooser_exception_list_tests.m.js'],
- ['ChooserExceptionListEntry', 'chooser_exception_list_entry_tests.m.js'],
- ['CollapseRadioButton', 'collapse_radio_button_tests.m.js'],
- ['ControlledButton', 'controlled_button_tests.m.js'],
- ['ControlledRadioButton', 'controlled_radio_button_tests.m.js'],
- ['CookiesPage', 'cookies_page_test.m.js'],
- ['DoNotTrackToggle', 'do_not_track_toggle_test.m.js'],
- ['DownloadsPage', 'downloads_page_test.m.js'],
- ['DropdownMenu', 'dropdown_menu_tests.m.js'],
- ['ExtensionControlledIndicator', 'extension_controlled_indicator_tests.m.js'],
+[['AllSites', 'all_sites_tests.js'],
+ ['AppearanceFontsPage', 'appearance_fonts_page_test.js'],
+ ['AppearancePage', 'appearance_page_test.js'],
+ ['BasicPage', 'basic_page_test.js'],
+ ['CategoryDefaultSetting', 'category_default_setting_tests.js'],
+ ['CategorySettingExceptions', 'category_setting_exceptions_tests.js'],
+ ['Checkbox', 'checkbox_tests.js'],
+ ['ChooserExceptionList', 'chooser_exception_list_tests.js'],
+ ['ChooserExceptionListEntry', 'chooser_exception_list_entry_tests.js'],
+ ['CollapseRadioButton', 'collapse_radio_button_tests.js'],
+ ['ControlledButton', 'controlled_button_tests.js'],
+ ['ControlledRadioButton', 'controlled_radio_button_tests.js'],
+ ['CookiesPage', 'cookies_page_test.js'],
+ ['DoNotTrackToggle', 'do_not_track_toggle_test.js'],
+ ['DownloadsPage', 'downloads_page_test.js'],
+ ['DropdownMenu', 'dropdown_menu_tests.js'],
+ ['ExtensionControlledIndicator', 'extension_controlled_indicator_tests.js'],
  ['HelpPage', 'help_page_v3_test.js'],
- ['Languages', 'languages_tests.m.js'],
- ['Menu', 'settings_menu_test.m.js'],
- ['OnStartupPage', 'on_startup_page_tests.m.js'],
- ['PasswordsLeakDetectionToggle', 'passwords_leak_detection_toggle_test.m.js'],
- ['PaymentsSection', 'payments_section_test.m.js'],
- ['PeoplePage', 'people_page_test.m.js'],
- ['PeoplePageSyncControls', 'people_page_sync_controls_test.m.js'],
- ['PeoplePageSyncPage', 'people_page_sync_page_test.m.js'],
+ ['Languages', 'languages_tests.js'],
+ ['Menu', 'settings_menu_test.js'],
+ ['OnStartupPage', 'on_startup_page_tests.js'],
+ ['PasswordsLeakDetectionToggle', 'passwords_leak_detection_toggle_test.js'],
+ ['PaymentsSection', 'payments_section_test.js'],
+ ['PeoplePage', 'people_page_test.js'],
+ ['PeoplePageSyncControls', 'people_page_sync_controls_test.js'],
+ ['PeoplePageSyncPage', 'people_page_sync_page_test.js'],
  ['Prefs', 'prefs_tests.m.js'],
  ['PrefUtil', 'pref_util_tests.m.js'],
- ['ProtocolHandlers', 'protocol_handlers_tests.m.js'],
- ['RecentSitePermissions', 'recent_site_permissions_test.m.js'],
- ['ResetPage', 'reset_page_test.m.js'],
- ['ResetProfileBanner', 'reset_profile_banner_test.m.js'],
- ['SearchEngines', 'search_engines_page_test.m.js'],
- ['SearchPage', 'search_page_test.m.js'],
- ['Search', 'search_settings_test.m.js'],
- ['SecurityKeysSubpage', 'security_keys_subpage_test.m.js'],
- ['SecurityPage', 'security_page_test.m.js'],
- ['SecureDns', 'secure_dns_test.m.js'],
+ ['ProtocolHandlers', 'protocol_handlers_tests.js'],
+ ['RecentSitePermissions', 'recent_site_permissions_test.js'],
+ ['ResetPage', 'reset_page_test.js'],
+ ['ResetProfileBanner', 'reset_profile_banner_test.js'],
+ ['SearchEngines', 'search_engines_page_test.js'],
+ ['SearchPage', 'search_page_test.js'],
+ ['Search', 'search_settings_test.js'],
+ ['SecurityKeysSubpage', 'security_keys_subpage_test.js'],
+ ['SecurityPage', 'security_page_test.js'],
+ ['SecureDns', 'secure_dns_test.js'],
  // Copied from P2 test: Disabled for flakiness, see https://crbug.com/1061249
- ['SiteData', 'site_data_test.m.js', 'DISABLED_All'],
- ['SiteDataDetails', 'site_data_details_subpage_tests.m.js'],
- ['SiteDetailsPermission', 'site_details_permission_tests.m.js'],
- ['SiteEntry', 'site_entry_tests.m.js'],
- ['SiteFavicon', 'site_favicon_test.m.js'],
- ['SiteListEntry', 'site_list_entry_tests.m.js'],
- ['SiteSettingsPage', 'site_settings_page_test.m.js'],
+ ['SiteData', 'site_data_test.js', 'DISABLED_All'],
+ ['SiteDataDetails', 'site_data_details_subpage_tests.js'],
+ ['SiteDetailsPermission', 'site_details_permission_tests.js'],
+ ['SiteEntry', 'site_entry_tests.js'],
+ ['SiteFavicon', 'site_favicon_test.js'],
+ ['SiteListEntry', 'site_list_entry_tests.js'],
+ ['SiteSettingsPage', 'site_settings_page_test.js'],
  ['Slider', 'settings_slider_tests.m.js'],
- ['StartupUrlsPage', 'startup_urls_page_test.m.js'],
- ['Subpage', 'settings_subpage_test.m.js'],
- ['SyncAccountControl', 'sync_account_control_test.m.js'],
+ ['StartupUrlsPage', 'startup_urls_page_test.js'],
+ ['Subpage', 'settings_subpage_test.js'],
+ ['SyncAccountControl', 'sync_account_control_test.js'],
  ['Textarea', 'settings_textarea_tests.m.js'],
  ['ToggleButton', 'settings_toggle_button_tests.m.js'],
- ['ZoomLevels', 'zoom_levels_tests.m.js'],
+ ['ZoomLevels', 'zoom_levels_tests.js'],
 ].forEach(test => registerTest(...test));
 
 GEN('#if defined(OS_CHROMEOS)');
-[['PasswordsSectionCros', 'passwords_section_test_cros.m.js'],
- ['PeoplePageChromeOS', 'people_page_test_cros.m.js'],
+[['PasswordsSectionCros', 'passwords_section_test_cros.js'],
+ ['PeoplePageChromeOS', 'people_page_test_cros.js'],
  // Copied from Polymer 2 test. TODO(crbug.com/929455): flaky, fix.
- ['SiteListChromeOS', 'site_list_tests_cros.m.js', 'DISABLED_AndroidSmsInfo'],
+ ['SiteListChromeOS', 'site_list_tests_cros.js', 'DISABLED_AndroidSmsInfo'],
 ].forEach(test => registerTest(...test));
 GEN('#endif  // defined(OS_CHROMEOS)');
 
 GEN('#if !defined(OS_MACOSX)');
-[['EditDictionaryPage', 'edit_dictionary_page_test.m.js'],
+[['EditDictionaryPage', 'edit_dictionary_page_test.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif  //!defined(OS_MACOSX)');
 
 GEN('#if !defined(OS_CHROMEOS)');
-[['DefaultBrowser', 'default_browser_browsertest.m.js'],
- ['ImportDataDialog', 'import_data_dialog_test.m.js'],
- ['PeoplePageManageProfile', 'people_page_manage_profile_test.m.js'],
- ['SystemPage', 'system_page_tests.m.js'],
+[['DefaultBrowser', 'default_browser_browsertest.js'],
+ ['ImportDataDialog', 'import_data_dialog_test.js'],
+ ['PeoplePageManageProfile', 'people_page_manage_profile_test.js'],
+ ['SystemPage', 'system_page_tests.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif  // !defined(OS_CHROMEOS)');
 
 GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-[['ChromeCleanupPage', 'chrome_cleanup_page_test.m.js'],
- ['IncompatibleApplicationsPage', 'incompatible_applications_page_test.m.js'],
+[['ChromeCleanupPage', 'chrome_cleanup_page_test.js'],
+ ['IncompatibleApplicationsPage', 'incompatible_applications_page_test.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)');
-registerTest('MetricsReporting', 'metrics_reporting_tests.m.js');
+registerTest('MetricsReporting', 'metrics_reporting_tests.js');
 GEN('#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)');
 
 function registerTest(testName, module, caseName) {

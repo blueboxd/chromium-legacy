@@ -613,16 +613,18 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
 }
 
 - (CWVTranslationController*)newTranslationController {
+  ios_web_view::WebViewBrowserState* browserState =
+      ios_web_view::WebViewBrowserState::FromBrowserState(
+          _webState->GetBrowserState());
   language::IOSLanguageDetectionTabHelper::CreateForWebState(
       _webState.get(),
       ios_web_view::WebViewUrlLanguageHistogramFactory::GetForBrowserState(
-          ios_web_view::WebViewBrowserState::FromBrowserState(
-              _webState->GetBrowserState())));
-  ios_web_view::WebViewTranslateClient::CreateForWebState(_webState.get());
-  ios_web_view::WebViewTranslateClient* translateClient =
-      ios_web_view::WebViewTranslateClient::FromWebState(_webState.get());
+          browserState));
+  auto translateClient = ios_web_view::WebViewTranslateClient::Create(
+      browserState, _webState.get());
   return [[CWVTranslationController alloc]
-      initWithTranslateClient:translateClient];
+      initWithWebState:_webState.get()
+       translateClient:std::move(translateClient)];
 }
 
 #pragma mark - Autofill

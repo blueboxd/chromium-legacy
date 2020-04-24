@@ -626,7 +626,9 @@ void ShelfLayoutManager::UpdateContextualNudges() {
 
   // Create home to overview nudge controller if home to overview nudge is
   // allowed by the current shelf state.
-  const bool allow_home_to_overview_nudge = in_tablet_mode && !in_app_shelf;
+  const bool allow_home_to_overview_nudge =
+      in_tablet_mode && !in_app_shelf &&
+      !ShelfConfig::Get()->shelf_controls_shown();
   if (allow_home_to_overview_nudge && !home_to_overview_nudge_controller_) {
     home_to_overview_nudge_controller_ =
         std::make_unique<HomeToOverviewNudgeController>(

@@ -102,6 +102,8 @@ class NotificationDisplayServiceMock : public NotificationDisplayService {
 
   MOCK_METHOD2(Close, void(NotificationHandler::Type, const std::string&));
   MOCK_METHOD1(GetDisplayed, void(DisplayedNotificationsCallback));
+  MOCK_METHOD1(AddObserver, void(Observer* observer));
+  MOCK_METHOD1(RemoveObserver, void(Observer* observer));
 };
 
 std::unique_ptr<KeyedService> BuildTestNotificationDisplayService(

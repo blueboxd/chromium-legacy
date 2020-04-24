@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-// #import {isMac} from 'chrome://resources/js/cr.m.js';
-// #import {UpdateStatus} from 'chrome://settings/settings.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {isMac} from 'chrome://resources/js/cr.m.js';
+import {UpdateStatus} from 'chrome://settings/settings.js';
 
-/** @implements {settings.AboutPageBrowserProxy} */
-/* #export */ class TestAboutPageBrowserProxy extends TestBrowserProxy {
+/** @implements {AboutPageBrowserProxy} */
+export class TestAboutPageBrowserProxy extends TestBrowserProxy {
   constructor() {
     const methodNames = [
       'pageReady',
@@ -16,7 +16,7 @@
       'openFeedbackDialog',
     ];
 
-    if (cr.isMac) {
+    if (isMac) {
       methodNames.push('promoteUpdater');
     }
 
@@ -65,7 +65,7 @@
   }
 }
 
-if (cr.isMac) {
+if (isMac) {
   /** @override */
   TestAboutPageBrowserProxy.prototype.promoteUpdater = function() {
     this.methodCalled('promoteUpdater');

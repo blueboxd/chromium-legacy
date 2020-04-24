@@ -9,6 +9,8 @@ blink_modules_sources("webcodecs") {
     "encoded_video_chunk.cc",
     "encoded_video_chunk.h",
     "encoded_video_metadata.h",
+    "image_decoder_external.cc",
+    "image_decoder_external.h",
     "video_decoder.cc",
     "video_decoder.h",
     "video_encoder.cc",

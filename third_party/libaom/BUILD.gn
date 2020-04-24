@@ -8,7 +8,7 @@ import("//build/config/arm.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//third_party/libaom/libaom_srcs.gni")
 import("//third_party/libaom/options.gni")
-import("//third_party/yasm/yasm_assemble.gni")
+import("//third_party/nasm/nasm_assemble.gni")
 
 buildflag_header("libaom_buildflags") {
   header = "libaom_buildflags.h"
@@ -70,7 +70,7 @@ if (enable_libaom) {
   }
 
   if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
-    yasm_assemble("libaom_yasm") {
+    nasm_assemble("libaom_nasm") {
       sources = aom_dsp_common_asm_sse2
       sources += aom_dsp_common_asm_ssse3
       sources += aom_ports_asm_x86
@@ -227,7 +227,7 @@ if (enable_libaom) {
         ":libaom_intrinsics_sse4_1",
         ":libaom_intrinsics_sse4_2",
         ":libaom_intrinsics_ssse3",
-        ":libaom_yasm",
+        ":libaom_nasm",
       ]
     }
     if (current_cpu == "arm64" || cpu_arch_full == "arm-neon" ||

@@ -218,6 +218,34 @@ class LintTest(LoggingTestCase):
         all_logs = ''.join(self.logMessages())
         self.assertIn('conflict', all_logs)
 
+    def test_lint_globs(
+            self):
+        options = optparse.Values({
+            'additional_expectations': [],
+            'platform': 'test',
+            'debug_rwt_logging': False
+        })
+        host = MockHost()
+
+        port = host.port_factory.get(options.platform, options=options)
+        test_expectations = ('# tags: [ mac mac10.10 ]\n'
+                             '# results: [ Failure Pass ]\n'
+                             '[ mac ] test1 [ Failure ]\n'
+                             '[ mac10.10 ] test2 [ Pass ]\n')
+        port.expectations_dict = lambda: {
+            'testexpectations': test_expectations}
+        host.filesystem.maybe_make_directory(
+            host.filesystem.join(port.web_tests_dir(), 'test2'))
+
+        host.port_factory.get = lambda platform, options=None: port
+        host.port_factory.all_port_names = lambda platform=None: [port.name()]
+
+        res = lint_test_expectations.lint(host, options)
+
+        self.assertTrue(res)
+        all_logs = ''.join(self.logMessages())
+        self.assertIn('directory', all_logs)
+
 
 class CheckVirtualSuiteTest(unittest.TestCase):
     def setUp(self):

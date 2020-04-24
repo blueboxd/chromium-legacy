@@ -1643,7 +1643,7 @@ class MetaBuildWrapper(object):
       # mimicking what generated_script would do
       script = 'bin/run_{}'.format(target)
       cmdline += ['../../testing/test_env.py', script]
-    elif is_android and test_type != "script":
+    elif is_android and test_type not in ('script', 'windowed_script'):
       if asan:
         cmdline += [os.path.join('bin', 'run_with_asan'), '--']
       cmdline += [
@@ -1654,14 +1654,14 @@ class MetaBuildWrapper(object):
           '--store-tombstones']
       if clang_coverage or java_coverage:
         cmdline += ['--coverage-dir', '${ISOLATED_OUTDIR}']
-    elif is_fuchsia and test_type != 'script':
+    elif is_fuchsia and test_type not in ('script', 'windowed_script'):
       cmdline += [
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
           '--test-launcher-bot-mode',
           '--system-log-file', '${ISOLATED_OUTDIR}/system_log'
       ]
-    elif is_cros_device and test_type != 'script':
+    elif is_cros_device and test_type not in ('script', 'windowed_script'):
       cmdline += [
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),

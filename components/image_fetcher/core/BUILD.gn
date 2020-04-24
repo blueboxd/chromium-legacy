@@ -44,6 +44,11 @@ static_library("metrics") {
     "image_fetcher_metrics_reporter.h",
   ]
   public_deps = [ "//base" ]
+
+  deps = [
+    "cache:types",
+    "cache/proto",
+  ]
 }
 
 static_library("test_support") {
@@ -80,7 +85,7 @@ source_set("unit_tests") {
     ":metrics",
     ":test_support",
     "cache",
-    "cache:cache_unit_tests",
+    "cache:unit_tests",
     "cache/proto",
     "//components/leveldb_proto:test_support",
     "//components/prefs:test_support",

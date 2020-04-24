@@ -196,8 +196,9 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   test::OobeJS().ExpectVisiblePath({"connect", "keyboardSelect"});
 }
 
+// Flaky: https://crbug.com/1025396.
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
-                       WelcomeScreenLanguageSelection) {
+                       DISABLED_WelcomeScreenLanguageSelection) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 
   test::OobeJS().TapOnPath(

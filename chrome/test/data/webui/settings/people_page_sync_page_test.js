@@ -3,17 +3,16 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {Router, routes, SyncBrowserProxyImpl, PageStatus, StatusAction} from 'chrome://settings/settings.js';
-// #import 'chrome://settings/lazy_load.js';
-// #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-// #import {getSyncAllPrefs, setupRouterWithSyncRoutes, simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.m.js';
-// #import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js';
+import {Router, routes, SyncBrowserProxyImpl, PageStatus, StatusAction} from 'chrome://settings/settings.js';
+import 'chrome://settings/lazy_load.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {getSyncAllPrefs, setupRouterWithSyncRoutes, simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.m.js';
+import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js';
 // clang-format on
 
-cr.define('settings_people_page_sync_page', function() {
   suite('SyncSettingsTests', function() {
     let syncPage = null;
     let browserProxy = null;
@@ -25,7 +24,7 @@ cr.define('settings_people_page_sync_page', function() {
     function setupSyncPage() {
       PolymerTest.clearBody();
       syncPage = document.createElement('settings-sync-page');
-      const router = settings.Router.getInstance();
+      const router = Router.getInstance();
       router.navigateTo(router.getRoutes().SYNC);
       // Preferences should exist for embedded
       // 'personalization_options.html'. We don't perform tests on them.
@@ -42,17 +41,17 @@ cr.define('settings_people_page_sync_page', function() {
       document.body.appendChild(syncPage);
 
       cr.webUIListenerCallback(
-          'page-status-changed', settings.PageStatus.CONFIGURE);
-      assertFalse(syncPage.$$('#' + settings.PageStatus.CONFIGURE).hidden);
-      assertTrue(syncPage.$$('#' + settings.PageStatus.SPINNER).hidden);
+          'page-status-changed', PageStatus.CONFIGURE);
+      assertFalse(syncPage.$$('#' + PageStatus.CONFIGURE).hidden);
+      assertTrue(syncPage.$$('#' + PageStatus.SPINNER).hidden);
 
       // Start with Sync All with no encryption selected. Also, ensure
       // that this is not a supervised user, so that Sync Passphrase is
       // enabled.
       cr.webUIListenerCallback(
-          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
+          'sync-prefs-changed', getSyncAllPrefs());
       syncPage.set('syncStatus', {supervisedUser: false});
-      Polymer.dom.flush();
+      flush();
     }
 
     suiteSetup(function() {
@@ -63,13 +62,13 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     setup(function() {
-      sync_test_util.setupRouterWithSyncRoutes();
+      setupRouterWithSyncRoutes();
       browserProxy = new TestSyncBrowserProxy();
-      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+      SyncBrowserProxyImpl.instance_ = browserProxy;
 
       setupSyncPage();
 
-      return test_util.waitBeforeNextRender().then(() => {
+      return waitBeforeNextRender().then(() => {
         encryptionElement = syncPage.$$('settings-sync-encryption-options');
         assertTrue(!!encryptionElement);
         encryptionRadioGroup = encryptionElement.$$('#encryptionRadioGroup');
@@ -92,7 +91,7 @@ cr.define('settings_people_page_sync_page', function() {
     // #######################
 
     test('NotifiesHandlerOfNavigation', function() {
-      const router = settings.Router.getInstance();
+      const router = Router.getInstance();
       function testNavigateAway() {
         router.navigateTo(router.getRoutes().PEOPLE);
         return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
@@ -134,9 +133,9 @@ cr.define('settings_people_page_sync_page', function() {
         signedIn: true,
         disabled: false,
         hasError: false,
-        statusAction: settings.StatusAction.NO_ACTION,
+        statusAction: StatusAction.NO_ACTION,
       };
-      Polymer.dom.flush();
+      flush();
       assertFalse(syncSection.hidden);
       assertTrue(syncPage.$$('#sync-separator').hidden);
       assertTrue(otherItems.classList.contains('list-frame'));
@@ -150,7 +149,7 @@ cr.define('settings_people_page_sync_page', function() {
         signedIn: true,
         disabled: false,
         hasError: true,
-        statusAction: settings.StatusAction.REAUTHENTICATE
+        statusAction: StatusAction.REAUTHENTICATE
       };
       assertTrue(syncSection.hidden);
       assertFalse(syncPage.$$('#sync-separator').hidden);
@@ -160,7 +159,7 @@ cr.define('settings_people_page_sync_page', function() {
         signedIn: true,
         disabled: false,
         hasError: true,
-        statusAction: settings.StatusAction.ENTER_PASSPHRASE
+        statusAction: StatusAction.ENTER_PASSPHRASE
       };
       assertFalse(syncSection.hidden);
       assertTrue(syncPage.$$('#sync-separator').hidden);
@@ -173,9 +172,9 @@ cr.define('settings_people_page_sync_page', function() {
         signedIn: false,
         disabled: false,
         hasError: false,
-        statusAction: settings.StatusAction.NO_ACTION,
+        statusAction: StatusAction.NO_ACTION,
       };
-      Polymer.dom.flush();
+      flush();
       assertTrue(syncSection.hidden);
       assertFalse(syncPage.$$('#sync-separator').hidden);
     });
@@ -187,31 +186,31 @@ cr.define('settings_people_page_sync_page', function() {
         signedIn: false,
         disabled: true,
         hasError: false,
-        statusAction: settings.StatusAction.NO_ACTION,
+        statusAction: StatusAction.NO_ACTION,
       };
-      Polymer.dom.flush();
+      flush();
       assertTrue(syncSection.hidden);
     });
 
     test('LoadingAndTimeout', function() {
-      const configurePage = syncPage.$$('#' + settings.PageStatus.CONFIGURE);
-      const spinnerPage = syncPage.$$('#' + settings.PageStatus.SPINNER);
+      const configurePage = syncPage.$$('#' + PageStatus.CONFIGURE);
+      const spinnerPage = syncPage.$$('#' + PageStatus.SPINNER);
 
       // NOTE: This isn't called in production, but the test suite starts the
       // tests with PageStatus.CONFIGURE.
       cr.webUIListenerCallback(
-          'page-status-changed', settings.PageStatus.SPINNER);
+          'page-status-changed', PageStatus.SPINNER);
       assertTrue(configurePage.hidden);
       assertFalse(spinnerPage.hidden);
 
       cr.webUIListenerCallback(
-          'page-status-changed', settings.PageStatus.CONFIGURE);
+          'page-status-changed', PageStatus.CONFIGURE);
       assertFalse(configurePage.hidden);
       assertTrue(spinnerPage.hidden);
 
       // Should remain on the CONFIGURE page even if the passphrase failed.
       cr.webUIListenerCallback(
-          'page-status-changed', settings.PageStatus.PASSPHRASE_FAILED);
+          'page-status-changed', PageStatus.PASSPHRASE_FAILED);
       assertFalse(configurePage.hidden);
       assertTrue(spinnerPage.hidden);
     });
@@ -230,10 +229,10 @@ cr.define('settings_people_page_sync_page', function() {
 
       // Data encrypted with custom passphrase.
       // The encryption menu should be expanded.
-      const prefs = sync_test_util.getSyncAllPrefs();
+      const prefs = getSyncAllPrefs();
       prefs.encryptAllData = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
-      Polymer.dom.flush();
+      flush();
       assertTrue(encryptionCollapse.opened);
 
       // Clicking |reset Sync| does not change the expansion state.
@@ -260,7 +259,7 @@ cr.define('settings_people_page_sync_page', function() {
       assertFalse(!!encryptionElement.$$('#create-password-box'));
 
       encryptWithPassphrase.click();
-      Polymer.dom.flush();
+      flush();
 
       assertTrue(!!encryptionElement.$$('#create-password-box'));
       const saveNewPassphrase = encryptionElement.$$('#saveNewPassphrase');
@@ -268,8 +267,8 @@ cr.define('settings_people_page_sync_page', function() {
 
       // Test that a sync prefs update does not reset the selection.
       cr.webUIListenerCallback(
-          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
-      Polymer.dom.flush();
+          'sync-prefs-changed', getSyncAllPrefs());
+      flush();
       assertTrue(encryptWithPassphrase.checked);
     });
 
@@ -298,7 +297,7 @@ cr.define('settings_people_page_sync_page', function() {
 
     test('SaveButtonDisabledWhenPassphraseOrConfirmationEmpty', function() {
       encryptWithPassphrase.click();
-      Polymer.dom.flush();
+      flush();
 
       assertTrue(!!encryptionElement.$$('#create-password-box'));
       const saveNewPassphrase = encryptionElement.$$('#saveNewPassphrase');
@@ -321,7 +320,7 @@ cr.define('settings_people_page_sync_page', function() {
 
     test('CreatingPassphraseMismatchedPassphrase', function() {
       encryptWithPassphrase.click();
-      Polymer.dom.flush();
+      flush();
 
       assertTrue(!!encryptionElement.$$('#create-password-box'));
       const saveNewPassphrase = encryptionElement.$$('#saveNewPassphrase');
@@ -334,7 +333,7 @@ cr.define('settings_people_page_sync_page', function() {
       passphraseConfirmationInput.value = 'bar';
 
       saveNewPassphrase.click();
-      Polymer.dom.flush();
+      flush();
 
       assertFalse(passphraseInput.invalid);
       assertTrue(passphraseConfirmationInput.invalid);
@@ -344,7 +343,7 @@ cr.define('settings_people_page_sync_page', function() {
 
     test('CreatingPassphraseValidPassphrase', function() {
       encryptWithPassphrase.click();
-      Polymer.dom.flush();
+      flush();
 
       assertTrue(!!encryptionElement.$$('#create-password-box'));
       const saveNewPassphrase = encryptionElement.$$('#saveNewPassphrase');
@@ -358,7 +357,7 @@ cr.define('settings_people_page_sync_page', function() {
       saveNewPassphrase.click();
 
       function verifyPrefs(prefs) {
-        const expected = sync_test_util.getSyncAllPrefs();
+        const expected = getSyncAllPrefs();
         expected.setNewPassphrase = true;
         expected.passphrase = 'foo';
         expected.encryptAllData = true;
@@ -367,9 +366,9 @@ cr.define('settings_people_page_sync_page', function() {
         expected.fullEncryptionBody = 'Encrypted with custom passphrase';
         cr.webUIListenerCallback('sync-prefs-changed', expected);
 
-        Polymer.dom.flush();
+        flush();
 
-        return test_util.waitBeforeNextRender(syncPage).then(() => {
+        return waitBeforeNextRender(syncPage).then(() => {
           // Need to re-retrieve this, as a different show passphrase radio
           // button is shown once |syncPrefs.fullEncryptionBody| is non-empty.
           encryptWithPassphrase = encryptionElement.$$(
@@ -385,13 +384,13 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     test('RadioBoxesHiddenWhenPassphraseRequired', function() {
-      const prefs = sync_test_util.getSyncAllPrefs();
+      const prefs = getSyncAllPrefs();
       prefs.encryptAllData = true;
       prefs.passphraseRequired = true;
       prefs.fullEncryptionBody = 'Sync already encrypted.';
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
 
-      Polymer.dom.flush();
+      flush();
 
       assertTrue(syncPage.$$('#encryptionDescription').hidden);
       assertEquals(
@@ -402,11 +401,11 @@ cr.define('settings_people_page_sync_page', function() {
     test(
         'ExistingPassphraseSubmitButtonDisabledWhenExistingPassphraseEmpty',
         function() {
-          const prefs = sync_test_util.getSyncAllPrefs();
+          const prefs = getSyncAllPrefs();
           prefs.encryptAllData = true;
           prefs.passphraseRequired = true;
           cr.webUIListenerCallback('sync-prefs-changed', prefs);
-          Polymer.dom.flush();
+          flush();
 
           const existingPassphraseInput =
               syncPage.$$('#existingPassphraseInput');
@@ -421,64 +420,64 @@ cr.define('settings_people_page_sync_page', function() {
         });
 
     test('EnterExistingWrongPassphrase', function() {
-      const prefs = sync_test_util.getSyncAllPrefs();
+      const prefs = getSyncAllPrefs();
       prefs.encryptAllData = true;
       prefs.passphraseRequired = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
-      Polymer.dom.flush();
+      flush();
 
       const existingPassphraseInput = syncPage.$$('#existingPassphraseInput');
       assertTrue(!!existingPassphraseInput);
       existingPassphraseInput.value = 'wrong';
-      browserProxy.encryptionResponse = settings.PageStatus.PASSPHRASE_FAILED;
+      browserProxy.encryptionResponse = PageStatus.PASSPHRASE_FAILED;
 
       const submitExistingPassphrase = syncPage.$$('#submitExistingPassphrase');
       assertTrue(!!submitExistingPassphrase);
       submitExistingPassphrase.click();
 
       return browserProxy.whenCalled('setSyncEncryption').then(function(prefs) {
-        const expected = sync_test_util.getSyncAllPrefs();
+        const expected = getSyncAllPrefs();
         expected.setNewPassphrase = false;
         expected.passphrase = 'wrong';
         expected.encryptAllData = true;
         expected.passphraseRequired = true;
         assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
 
-        Polymer.dom.flush();
+        flush();
 
         assertTrue(existingPassphraseInput.invalid);
       });
     });
 
     test('EnterExistingCorrectPassphrase', function() {
-      const prefs = sync_test_util.getSyncAllPrefs();
+      const prefs = getSyncAllPrefs();
       prefs.encryptAllData = true;
       prefs.passphraseRequired = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
-      Polymer.dom.flush();
+      flush();
 
       const existingPassphraseInput = syncPage.$$('#existingPassphraseInput');
       assertTrue(!!existingPassphraseInput);
       existingPassphraseInput.value = 'right';
-      browserProxy.encryptionResponse = settings.PageStatus.CONFIGURE;
+      browserProxy.encryptionResponse = PageStatus.CONFIGURE;
 
       const submitExistingPassphrase = syncPage.$$('#submitExistingPassphrase');
       assertTrue(!!submitExistingPassphrase);
       submitExistingPassphrase.click();
 
       return browserProxy.whenCalled('setSyncEncryption').then(function(prefs) {
-        const expected = sync_test_util.getSyncAllPrefs();
+        const expected = getSyncAllPrefs();
         expected.setNewPassphrase = false;
         expected.passphrase = 'right';
         expected.encryptAllData = true;
         expected.passphraseRequired = true;
         assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
 
-        const newPrefs = sync_test_util.getSyncAllPrefs();
+        const newPrefs = getSyncAllPrefs();
         newPrefs.encryptAllData = true;
         cr.webUIListenerCallback('sync-prefs-changed', newPrefs);
 
-        Polymer.dom.flush();
+        flush();
 
         // Verify that the encryption radio boxes are shown but disabled.
         assertTrue(encryptionRadioGroup.disabled);
@@ -488,17 +487,17 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     test('SyncAdvancedRow', function() {
-      Polymer.dom.flush();
+      flush();
 
       const syncAdvancedRow = syncPage.$$('#sync-advanced-row');
       assertFalse(syncAdvancedRow.hidden);
 
       syncAdvancedRow.click();
-      Polymer.dom.flush();
+      flush();
 
       assertEquals(
-          settings.routes.SYNC_ADVANCED.path,
-          settings.Router.getInstance().getCurrentRoute().path);
+          routes.SYNC_ADVANCED.path,
+          Router.getInstance().getCurrentRoute().path);
     });
 
     // This test checks whether the passphrase encryption options are
@@ -510,11 +509,11 @@ cr.define('settings_people_page_sync_page', function() {
 
       // 1) Normal user (full data encryption allowed)
       // EXPECTED: encryptionOptions enabled
-      const prefs1 = sync_test_util.getSyncAllPrefs();
+      const prefs1 = getSyncAllPrefs();
       prefs1.encryptAllDataAllowed = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs1);
       syncPage.syncStatus = {supervisedUser: false};
-      Polymer.dom.flush();
+      flush();
       assertFalse(encryptionRadioGroup.disabled);
       assertEquals(encryptWithGoogle.ariaDisabled, 'false');
       assertEquals(encryptWithPassphrase.ariaDisabled, 'false');
@@ -523,22 +522,22 @@ cr.define('settings_people_page_sync_page', function() {
       // encryptAllDataAllowed is usually false only for supervised
       // users, but it's better to be check this case.
       // EXPECTED: encryptionOptions disabled
-      const prefs2 = sync_test_util.getSyncAllPrefs();
+      const prefs2 = getSyncAllPrefs();
       prefs2.encryptAllDataAllowed = false;
       cr.webUIListenerCallback('sync-prefs-changed', prefs2);
       syncPage.syncStatus = {supervisedUser: false};
-      Polymer.dom.flush();
+      flush();
       assertTrue(encryptionRadioGroup.disabled);
       assertEquals(encryptWithGoogle.ariaDisabled, 'true');
       assertEquals(encryptWithPassphrase.ariaDisabled, 'true');
 
       // 3) Supervised user (full data encryption not allowed)
       // EXPECTED: encryptionOptions disabled
-      const prefs3 = sync_test_util.getSyncAllPrefs();
+      const prefs3 = getSyncAllPrefs();
       prefs3.encryptAllDataAllowed = false;
       cr.webUIListenerCallback('sync-prefs-changed', prefs3);
       syncPage.syncStatus = {supervisedUser: true};
-      Polymer.dom.flush();
+      flush();
       assertTrue(encryptionRadioGroup.disabled);
       assertEquals(encryptWithGoogle.ariaDisabled, 'true');
       assertEquals(encryptWithPassphrase.ariaDisabled, 'true');
@@ -546,11 +545,11 @@ cr.define('settings_people_page_sync_page', function() {
       // 4) Supervised user (full data encryption allowed)
       // This never happens in practice, but just to be safe.
       // EXPECTED: encryptionOptions disabled
-      const prefs4 = sync_test_util.getSyncAllPrefs();
+      const prefs4 = getSyncAllPrefs();
       prefs4.encryptAllDataAllowed = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs4);
       syncPage.syncStatus = {supervisedUser: true};
-      Polymer.dom.flush();
+      flush();
       assertTrue(encryptionRadioGroup.disabled);
       assertEquals(encryptWithGoogle.ariaDisabled, 'true');
       assertEquals(encryptWithPassphrase.ariaDisabled, 'true');
@@ -561,17 +560,17 @@ cr.define('settings_people_page_sync_page', function() {
     test('SyncDashboardHiddenFromSupervisedUsers', function() {
       const dashboardLink = syncPage.$$('#syncDashboardLink');
 
-      const prefs = sync_test_util.getSyncAllPrefs();
+      const prefs = getSyncAllPrefs();
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
 
       // Normal user
       syncPage.syncStatus = {supervisedUser: false};
-      Polymer.dom.flush();
+      flush();
       assertFalse(dashboardLink.hidden);
 
       // Supervised user
       syncPage.syncStatus = {supervisedUser: true};
-      Polymer.dom.flush();
+      flush();
       assertTrue(dashboardLink.hidden);
     });
 
@@ -579,15 +578,15 @@ cr.define('settings_people_page_sync_page', function() {
     // TESTS THAT ARE SKIPPED ON CHROMEOS
     // ##################################
 
-    if (!cr.isChromeOS) {
+    if (!isChromeOS) {
       test('SyncSetupCancel', function() {
         syncPage.syncStatus = {
           syncSystemEnabled: true,
           firstSetupInProgress: true,
           signedIn: true
         };
-        Polymer.dom.flush();
-        sync_test_util.simulateStoredAccounts([{email: 'foo@foo.com'}]);
+        flush();
+        simulateStoredAccounts([{email: 'foo@foo.com'}]);
 
         const cancelButton =
             syncPage.$$('settings-sync-account-control')
@@ -608,8 +607,8 @@ cr.define('settings_people_page_sync_page', function() {
           firstSetupInProgress: true,
           signedIn: true
         };
-        Polymer.dom.flush();
-        sync_test_util.simulateStoredAccounts([{email: 'foo@foo.com'}]);
+        flush();
+        simulateStoredAccounts([{email: 'foo@foo.com'}]);
 
         const confirmButton =
             syncPage.$$('settings-sync-account-control')
@@ -630,13 +629,13 @@ cr.define('settings_people_page_sync_page', function() {
           firstSetupInProgress: true,
           signedIn: true
         };
-        Polymer.dom.flush();
+        flush();
 
         // Navigating away while setup is in progress opens the 'Cancel sync?'
         // dialog.
-        const router = settings.Router.getInstance();
-        router.navigateTo(settings.routes.BASIC);
-        return test_util.eventToPromise('cr-dialog-open', syncPage)
+        const router = Router.getInstance();
+        router.navigateTo(routes.BASIC);
+        return eventToPromise('cr-dialog-open', syncPage)
             .then(() => {
               assertEquals(router.getRoutes().SYNC, router.getCurrentRoute());
               assertTrue(syncPage.$$('#setupCancelDialog').open);
@@ -647,18 +646,18 @@ cr.define('settings_people_page_sync_page', function() {
                   .querySelector('.cancel-button')
                   .click();
 
-              return test_util.eventToPromise(
+              return eventToPromise(
                   'close', syncPage.$$('#setupCancelDialog'));
             })
             .then(() => {
-              Polymer.dom.flush();
+              flush();
               assertEquals(router.getRoutes().SYNC, router.getCurrentRoute());
               assertFalse(!!syncPage.$$('#setupCancelDialog'));
 
               // Navigating away while setup is in progress opens the
               // dialog again.
-              router.navigateTo(settings.routes.BASIC);
-              return test_util.eventToPromise('cr-dialog-open', syncPage);
+              router.navigateTo(routes.BASIC);
+              return eventToPromise('cr-dialog-open', syncPage);
             })
             .then(() => {
               assertTrue(syncPage.$$('#setupCancelDialog').open);
@@ -680,10 +679,10 @@ cr.define('settings_people_page_sync_page', function() {
           firstSetupInProgress: true,
           signedIn: true
         };
-        Polymer.dom.flush();
+        flush();
 
         // Searching settings while setup is in progress cancels sync.
-        const router = settings.Router.getInstance();
+        const router = Router.getInstance();
         router.navigateTo(
             router.getRoutes().BASIC, new URLSearchParams('search=foo'));
 
@@ -696,10 +695,10 @@ cr.define('settings_people_page_sync_page', function() {
       test('ShowAccountRow', function() {
         assertFalse(!!syncPage.$$('settings-sync-account-control'));
         syncPage.syncStatus = {syncSystemEnabled: false};
-        Polymer.dom.flush();
+        flush();
         assertFalse(!!syncPage.$$('settings-sync-account-control'));
         syncPage.syncStatus = {syncSystemEnabled: true};
-        Polymer.dom.flush();
+        flush();
         assertTrue(!!syncPage.$$('settings-sync-account-control'));
       });
 
@@ -709,13 +708,11 @@ cr.define('settings_people_page_sync_page', function() {
 
         assertFalse(!!syncPage.$$('settings-sync-account-control'));
         syncPage.syncStatus = {syncSystemEnabled: false};
-        Polymer.dom.flush();
+        flush();
         assertFalse(!!syncPage.$$('settings-sync-account-control'));
         syncPage.syncStatus = {syncSystemEnabled: true};
-        Polymer.dom.flush();
+        flush();
         assertFalse(!!syncPage.$$('settings-sync-account-control'));
       });
     }
   });
-  // #cr_define_end
-});

@@ -23,7 +23,6 @@ function updatePageWithProperties() {
     $('is-feed-visible').textContent = properties.isFeedVisible;
     $('is-feed-allowed').textContent = properties.isFeedAllowed;
     $('is-prefetching-enabled').textContent = properties.isPrefetchingEnabled;
-    $('load-stream-status').textContent = properties.loadStreamStatus;
     $('feed-fetch-url').textContent = properties.feedFetchUrl.url;
   });
 }
@@ -100,15 +99,23 @@ function setLinkNode(node, url) {
 }
 
 /**
- * Convert timeSinceEpoch to string for display.
+ * Convert time to string for display.
  *
- * @param {mojom_base.mojom.TimeDelta} timeSinceEpoch
+ * @param {feedInternals.mojom.Time|undefined} time
  * @return {string}
  */
-function toDateString(timeSinceEpoch) {
-  return timeSinceEpoch.microseconds === 0 ?
-      '' :
-      new Date(timeSinceEpoch.microseconds / 1000).toLocaleString();
+function toDateString(time) {
+  return time == null ? '' : new Date(time.msSinceEpoch).toLocaleString();
+}
+
+/**
+ * Update last fetch properties and current content following a Feed refresh.
+ */
+function updateAfterRefresh() {
+  // TODO(crbug.com/939907): Listen for Feed update events rather than waiting
+  // an arbitrary period of time.
+  setTimeout(updatePageWithLastFetchProperties, 1000);
+  setTimeout(updatePageWithCurrentContent, 1000);
 }
 
 /**
@@ -122,10 +129,12 @@ function setupEventListeners() {
 
   $('clear-cached-data').addEventListener('click', function() {
     pageHandler.clearCachedDataAndRefreshFeed();
+    updateAfterRefresh();
   });
 
   $('refresh-feed').addEventListener('click', function() {
     pageHandler.refreshFeed();
+    updateAfterRefresh();
   });
 
   $('dump-feed-process-scope').addEventListener('click', function() {
@@ -143,23 +152,18 @@ function setupEventListeners() {
   });
 
   $('feed-host-override-apply').addEventListener('click', function() {
-    pageHandler.overrideFeedHost({url: $('feed-host-override').value});
+    pageHandler.overrideFeedHost($('feed-host-override').value);
   });
-}
-
-function updatePage() {
-  updatePageWithProperties();
-  updatePageWithUserClass();
-  updatePageWithLastFetchProperties();
-  updatePageWithCurrentContent();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
   // Setup backend mojo.
   pageHandler = feedInternals.mojom.PageHandler.getRemote();
 
-  setInterval(updatePage, 2000);
-  updatePage();
+  updatePageWithProperties();
+  updatePageWithUserClass();
+  updatePageWithLastFetchProperties();
+  updatePageWithCurrentContent();
 
   setupEventListeners();
 });

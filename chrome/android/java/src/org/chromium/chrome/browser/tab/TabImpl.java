@@ -1080,10 +1080,9 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         // While detached for reparenting we don't have an owning Activity, or TabModelSelector,
         // so we can't create the native page. The native page will be created once reparenting is
         // completed.
-        if (isDetached(this) || mDelegateFactory.getNativePageFactory() == null) return false;
+        if (isDetached(this)) return false;
         NativePage candidateForReuse = forceReload ? null : getNativePage();
-        NativePage nativePage = mDelegateFactory.getNativePageFactory().createNativePageForURL(
-                url, candidateForReuse, this);
+        NativePage nativePage = mDelegateFactory.createNativePage(url, candidateForReuse, this);
         if (nativePage != null) {
             showNativePage(nativePage);
             notifyPageTitleChanged();

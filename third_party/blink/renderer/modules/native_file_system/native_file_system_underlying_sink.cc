@@ -22,9 +22,10 @@ namespace blink {
 NativeFileSystemUnderlyingSink::NativeFileSystemUnderlyingSink(
     ExecutionContext* context,
     mojo::PendingRemote<mojom::blink::NativeFileSystemFileWriter> writer_remote)
-    : ExecutionContextLifecycleObserver(context),
-      writer_remote_(std::move(writer_remote)) {
-  DCHECK(writer_remote_);
+    : writer_remote_(context) {
+  writer_remote_.Bind(std::move(writer_remote),
+                      context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+  DCHECK(writer_remote_.is_bound());
 }
 
 ScriptPromise NativeFileSystemUnderlyingSink::start(
@@ -72,7 +73,7 @@ ScriptPromise NativeFileSystemUnderlyingSink::write(
 ScriptPromise NativeFileSystemUnderlyingSink::close(
     ScriptState* script_state,
     ExceptionState& exception_state) {
-  if (!writer_remote_ || pending_operation_) {
+  if (!writer_remote_.is_bound() || pending_operation_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Object reached an invalid state");
     return ScriptPromise();
@@ -93,7 +94,7 @@ ScriptPromise NativeFileSystemUnderlyingSink::abort(
   // The specification guarantees that this will only be called after all
   // pending writes have been aborted. Terminating the remote connection
   // will ensure that the writes are not closed successfully.
-  if (writer_remote_)
+  if (writer_remote_.is_bound())
     writer_remote_.reset();
   return ScriptPromise::CastUndefined(script_state);
 }
@@ -177,7 +178,7 @@ ScriptPromise NativeFileSystemUnderlyingSink::WriteBlob(
     uint64_t position,
     Blob* blob,
     ExceptionState& exception_state) {
-  if (!writer_remote_ || pending_operation_) {
+  if (!writer_remote_.is_bound() || pending_operation_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Object reached an invalid state");
     return ScriptPromise();
@@ -196,7 +197,7 @@ ScriptPromise NativeFileSystemUnderlyingSink::Truncate(
     ScriptState* script_state,
     uint64_t size,
     ExceptionState& exception_state) {
-  if (!writer_remote_ || pending_operation_) {
+  if (!writer_remote_.is_bound() || pending_operation_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Object reached an invalid state");
     return ScriptPromise();
@@ -214,7 +215,7 @@ ScriptPromise NativeFileSystemUnderlyingSink::Seek(
     ScriptState* script_state,
     uint64_t offset,
     ExceptionState& exception_state) {
-  if (!writer_remote_ || pending_operation_) {
+  if (!writer_remote_.is_bound() || pending_operation_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Object reached an invalid state");
     return ScriptPromise();
@@ -262,13 +263,9 @@ void NativeFileSystemUnderlyingSink::CloseComplete(
 
 void NativeFileSystemUnderlyingSink::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
   UnderlyingSinkBase::Trace(visitor);
+  visitor->Trace(writer_remote_);
   visitor->Trace(pending_operation_);
-}
-
-void NativeFileSystemUnderlyingSink::ContextDestroyed() {
-  writer_remote_.reset();
 }
 
 }  // namespace blink

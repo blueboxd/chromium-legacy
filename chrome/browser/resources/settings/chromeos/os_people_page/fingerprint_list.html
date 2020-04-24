@@ -31,10 +31,6 @@
         color: var(--google-grey-500);
       }
 
-      .body {
-        @apply --settings-list-frame-padding;
-      }
-
       .list-item {
         background-color: white;
       }
@@ -49,7 +45,7 @@
     </style>
 
     <h2 class="settings-box">$i18n{lockScreenRegisteredFingerprints}</h2>
-    <div class="body layout vertical">
+    <div class="list-frame layout vertical">
       <iron-list id="fingerprintsList" items="[[fingerprints_]]">
         <template>
           <div class="list-item">

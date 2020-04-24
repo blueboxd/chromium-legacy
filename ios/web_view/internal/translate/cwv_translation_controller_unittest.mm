@@ -9,7 +9,13 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/language/core/browser/language_prefs.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/translate/core/browser/mock_translate_ranker.h"
+#include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
@@ -18,7 +24,7 @@
 #include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web_view/internal/translate/cwv_translation_language_internal.h"
-#import "ios/web_view/internal/translate/fake_web_view_translate_client.h"
+#import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_translation_controller_delegate.h"
 #import "ios/web_view/public/cwv_translation_policy.h"
@@ -40,25 +46,84 @@ NSString* const kTestToLangCode = @"en";
 NSString* const kTestPageHost = @"www.chromium.org";
 }  // namespace
 
+class MockWebViewTranslateClient : public WebViewTranslateClient {
+ public:
+  MockWebViewTranslateClient(
+      PrefService* pref_service,
+      translate::TranslateRanker* translate_ranker,
+      language::LanguageModel* language_model,
+      web::WebState* web_state,
+      translate::TranslateAcceptLanguages* accept_languages)
+      : WebViewTranslateClient(pref_service,
+                               translate_ranker,
+                               language_model,
+                               web_state,
+                               accept_languages) {}
+  MOCK_METHOD3(TranslatePage,
+               void(const std::string&, const std::string&, bool));
+  MOCK_METHOD0(RevertTranslation, void());
+};
+
+class TestLanguageModel : public language::LanguageModel {
+  std::vector<LanguageDetails> GetLanguages() override { return {}; }
+};
+
 class CWVTranslationControllerTest : public TestWithLocaleAndResources {
  protected:
-  CWVTranslationControllerTest()
-      : web_client_(std::make_unique<web::WebClient>()),
-        browser_state_(/*off_the_record=*/false) {
-    web_state_.SetBrowserState(&browser_state_);
+  CWVTranslationControllerTest() {
     auto test_navigation_manager =
         std::make_unique<web::TestNavigationManager>();
     web_state_.SetNavigationManager(std::move(test_navigation_manager));
     CRWTestJSInjectionReceiver* injection_receiver =
         [[CRWTestJSInjectionReceiver alloc] init];
     web_state_.SetJSInjectionReceiver(injection_receiver);
+
     language::IOSLanguageDetectionTabHelper::CreateForWebState(
         &web_state_,
         /*url_language_histogram=*/nullptr);
-    translate_client_ = std::make_unique<FakeWebViewTranslateClient>(
-        &web_state_, /*page_lang=*/"en");
+
+    pref_service_.registry()->RegisterStringPref(
+        language::prefs::kAcceptLanguages, "en");
+    pref_service_.registry()->RegisterListPref(
+        language::prefs::kFluentLanguages,
+        language::LanguagePrefs::GetDefaultFluentLanguages());
+    pref_service_.registry()->RegisterBooleanPref(prefs::kOfferTranslateEnabled,
+                                                  true);
+    pref_service_.registry()->RegisterListPref(
+        translate::TranslatePrefs::kPrefTranslateSiteBlacklistDeprecated);
+    pref_service_.registry()->RegisterDictionaryPref(
+        translate::TranslatePrefs::kPrefTranslateSiteBlacklistWithTime);
+    pref_service_.registry()->RegisterDictionaryPref(
+        translate::TranslatePrefs::kPrefTranslateWhitelists);
+    pref_service_.registry()->RegisterDictionaryPref(
+        translate::TranslatePrefs::kPrefTranslateDeniedCount);
+    pref_service_.registry()->RegisterDictionaryPref(
+        translate::TranslatePrefs::kPrefTranslateIgnoredCount);
+    pref_service_.registry()->RegisterDictionaryPref(
+        translate::TranslatePrefs::kPrefTranslateAcceptedCount);
+    pref_service_.registry()->RegisterDictionaryPref(
+        translate::TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage);
+    pref_service_.registry()->RegisterDictionaryPref(
+        translate::TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage);
+    pref_service_.registry()->RegisterStringPref(
+        translate::TranslatePrefs::kPrefTranslateRecentTarget, "");
+    pref_service_.registry()->RegisterDictionaryPref(
+        translate::TranslatePrefs::kPrefTranslateAutoAlwaysCount);
+    pref_service_.registry()->RegisterDictionaryPref(
+        translate::TranslatePrefs::kPrefTranslateAutoNeverCount);
+
+    accept_languages_ = std::make_unique<translate::TranslateAcceptLanguages>(
+        &pref_service_, language::prefs::kAcceptLanguages);
+
+    auto translate_client = std::make_unique<MockWebViewTranslateClient>(
+        &pref_service_, &translate_ranker_, &language_model_, &web_state_,
+        accept_languages_.get());
+    translate_client_ = translate_client.get();
+
     translation_controller_ = [[CWVTranslationController alloc]
-        initWithTranslateClient:translate_client_.get()];
+        initWithWebState:&web_state_
+         translateClient:std::move(translate_client)];
+
     translate_prefs_ = translate_client_->GetTranslatePrefs();
     translate_prefs_->ResetToDefaults();
   }
@@ -75,10 +140,12 @@ class CWVTranslationControllerTest : public TestWithLocaleAndResources {
   }
 
   web::WebTaskEnvironment task_environment_;
-  web::ScopedTestingWebClient web_client_;
-  WebViewBrowserState browser_state_;
-  std::unique_ptr<FakeWebViewTranslateClient> translate_client_;
+  translate::testing::MockTranslateRanker translate_ranker_;
+  TestLanguageModel language_model_;
+  TestingPrefServiceSimple pref_service_;
+  std::unique_ptr<translate::TranslateAcceptLanguages> accept_languages_;
   web::TestWebState web_state_;
+  MockWebViewTranslateClient* translate_client_;
   CWVTranslationController* translation_controller_;
   std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
 };
@@ -193,20 +260,14 @@ TEST_F(CWVTranslationControllerTest, TranslatePageAndRevert) {
   std::string from_code = base::SysNSStringToUTF8(from_lang.languageCode);
   std::string to_code = base::SysNSStringToUTF8(to_lang.languageCode);
 
+  EXPECT_CALL(*translate_client_, TranslatePage(from_code, to_code, true));
+
   [translation_controller_ translatePageFromLanguage:from_lang
                                           toLanguage:to_lang
                                        userInitiated:YES];
-  EXPECT_EQ(to_code, translate_client_->GetCurrentLang());
 
-  TranslatePageInvocation invocation =
-      translate_client_->GetLastTraslatePageInvocation();
-  EXPECT_EQ(from_code, invocation.source_lang);
-  EXPECT_EQ(to_code, invocation.target_lang);
-  EXPECT_TRUE(invocation.triggered_from_menu);
-
+  EXPECT_CALL(*translate_client_, RevertTranslation);
   [translation_controller_ revertTranslation];
-  EXPECT_EQ(translate_client_->GetPageLang(),
-            translate_client_->GetCurrentLang());
 }
 
 }  // namespace ios_web_view

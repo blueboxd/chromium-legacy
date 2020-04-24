@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "components/image_fetcher/core/cache/image_store_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace image_fetcher {
@@ -160,6 +161,15 @@ TEST_F(ImageFetcherMetricsReporterTest, TestReportReponseStatusCode) {
   ImageFetcherMetricsReporter::ReportRequestStatusCode(kUmaClientNameOther,
                                                        200);
   histogram_tester().ExpectTotalCount(kNetworkRequestStatusCodes, 1);
+}
+
+TEST_F(ImageFetcherMetricsReporterTest, ReportCacheStatus) {
+  ImageFetcherMetricsReporter::ReportCacheStatus(CacheOption::kHoldUntilExpired,
+                                                 1024 * 1024 /*bytes*/, 10);
+  histogram_tester().ExpectBucketCount(
+      "ImageFetcher.CacheSize.HoldUntilExpired", 1024 /*kb*/, 1);
+  histogram_tester().ExpectBucketCount(
+      "ImageFetcher.CacheMetadataCount.HoldUntilExpired", 10, 1);
 }
 
 }  // namespace image_fetcher

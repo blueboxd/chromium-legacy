@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/constants.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image.h"

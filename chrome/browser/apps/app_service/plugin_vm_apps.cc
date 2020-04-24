@@ -23,6 +23,20 @@
 
 namespace {
 
+void SetAppAllowed(apps::mojom::App* app, bool allowed) {
+  app->readiness = allowed ? apps::mojom::Readiness::kReady
+                           : apps::mojom::Readiness::kDisabledByPolicy;
+
+  const apps::mojom::OptionalBool opt_allowed =
+      allowed ? apps::mojom::OptionalBool::kTrue
+              : apps::mojom::OptionalBool::kFalse;
+
+  app->recommendable = opt_allowed;
+  app->searchable = opt_allowed;
+  app->show_in_launcher = opt_allowed;
+  app->show_in_search = opt_allowed;
+}
+
 apps::mojom::AppPtr GetPluginVmApp(bool allowed) {
   apps::mojom::AppPtr app = apps::PublisherBase::MakeApp(
       apps::mojom::AppType::kPluginVm, plugin_vm::kPluginVmAppId,
@@ -37,14 +51,8 @@ apps::mojom::AppPtr GetPluginVmApp(bool allowed) {
 
   app->show_in_management = apps::mojom::OptionalBool::kFalse;
 
-  const apps::mojom::OptionalBool opt_allowed =
-      allowed ? apps::mojom::OptionalBool::kTrue
-              : apps::mojom::OptionalBool::kFalse;
+  SetAppAllowed(app.get(), allowed);
 
-  app->recommendable = opt_allowed;
-  app->searchable = opt_allowed;
-  app->show_in_launcher = opt_allowed;
-  app->show_in_search = opt_allowed;
   return app;
 }
 
@@ -57,6 +65,16 @@ PluginVmApps::PluginVmApps(
     Profile* profile)
     : profile_(profile) {
   PublisherBase::Initialize(app_service, apps::mojom::AppType::kPluginVm);
+
+  // Register for Plugin VM policy changes, so that we can update the
+  // availability of the Plugin VM app. This subscription is automatically
+  // cleaned-up when this object is destroyed.
+  policy_subscription_ =
+      std::make_unique<plugin_vm::PluginVmPolicySubscription>(
+          profile_, base::BindRepeating(&PluginVmApps::OnPluginVmAllowedChanged,
+                                        base::Unretained(this)));
+
+  is_allowed_ = plugin_vm::IsPluginVmAllowedForProfile(profile_);
 }
 
 PluginVmApps::~PluginVmApps() = default;
@@ -65,12 +83,12 @@ void PluginVmApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
     apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
-  bool is_allowed = plugin_vm::IsPluginVmAllowedForProfile(profile_);
-  apps.push_back(GetPluginVmApp(is_allowed));
+  apps.push_back(GetPluginVmApp(is_allowed_));
 
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));
   subscriber->OnApps(std::move(apps));
+  subscribers_.Add(std::move(subscriber));
 }
 
 void PluginVmApps::LoadIcon(const std::string& app_id,
@@ -126,6 +144,18 @@ void PluginVmApps::GetMenuModel(const std::string& app_id,
   }
 
   std::move(callback).Run(std::move(menu_items));
+}
+
+void PluginVmApps::OnPluginVmAllowedChanged(bool is_allowed) {
+  // Republish the Plugin VM app when policy changes have changed
+  // its availability. Only changed fields need to be republished.
+  is_allowed_ = is_allowed;
+
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kPluginVm;
+  app->app_id = plugin_vm::kPluginVmAppId;
+  SetAppAllowed(app.get(), is_allowed);
+  Publish(std::move(app), subscribers_);
 }
 
 }  // namespace apps

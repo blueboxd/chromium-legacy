@@ -732,6 +732,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter width
 [Worker]     method constructor
 [Worker]     method getColorSettings
+[Worker] interface ImageDecoder
+[Worker]     attribute @@toStringTag
+[Worker]     getter frameCount
+[Worker]     getter repetitionCount
+[Worker]     getter type
+[Worker]     method constructor
+[Worker]     method decode
 [Worker] interface Lock
 [Worker]     attribute @@toStringTag
 [Worker]     getter mode

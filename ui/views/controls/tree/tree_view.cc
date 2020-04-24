@@ -41,7 +41,6 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
-#include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/vector_icons.h"
 
@@ -193,14 +192,7 @@ void TreeView::StartEditing(TreeModelNode* node) {
   DCHECK(!editing_);
   editing_ = true;
   if (!editor_) {
-    LayoutProvider* provider = LayoutProvider::Get();
-    gfx::Insets text_insets(
-        provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
-        provider->GetDistanceMetric(
-            DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
     editor_ = new Textfield;
-    editor_->SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidBorder(1, gfx::kGoogleBlue700), text_insets));
     // Add the editor immediately as GetPreferredSize returns the wrong thing if
     // not parented.
     AddChildView(editor_);

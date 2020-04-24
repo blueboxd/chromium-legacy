@@ -1920,6 +1920,62 @@ TEST_F(WorkspaceWindowResizerTest, ResizeHistogram) {
   histograms.ExpectTotalCount("Ash.InteractiveWindowResize.TimeToPresent", 1);
 }
 
+// Tests that windows that are snapped and maximized have to be dragged a
+// certain amount before the window bounds change.
+TEST_F(WorkspaceWindowResizerTest, DraggingThresholdForSnappedAndMaximized) {
+  UpdateDisplay("800x648");
+  const gfx::Rect restore_bounds(30, 30, 300, 300);
+  window_->SetBounds(restore_bounds);
+
+  // Test that on a normal window, there is no minimal drag amount.
+  std::unique_ptr<WindowResizer> resizer(
+      CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+  resizer->Drag(gfx::PointF(1.f, 1.f), 0);
+  EXPECT_EQ(gfx::Rect(31, 31, 300, 300), window_->bounds());
+
+  // End the drag in a snap region, and verify the window has snapped.
+  resizer->Drag(gfx::PointF(2.f, 2.f), 0);
+  resizer->CompleteDrag();
+  auto* window_state = WindowState::Get(window_.get());
+  ASSERT_TRUE(window_state->IsSnapped());
+  const gfx::Rect snapped_bounds(400, 600);
+  EXPECT_EQ(snapped_bounds, window_->bounds());
+
+  resizer.reset();
+  resizer.reset(CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+
+  // Tests that small drags do not change the window bounds.
+  resizer->Drag(gfx::PointF(1.f, 1.f), 0);
+  EXPECT_EQ(snapped_bounds, window_->bounds());
+
+  // A large enough drag will change the window bounds to its restore bounds.
+  resizer->Drag(gfx::PointF(10.f, 10.f), 0);
+  EXPECT_EQ(restore_bounds.size(), window_->bounds().size());
+
+  // Tests that on drag end, the window will get restored. Make sure the drag
+  // does not end in a snap region.
+  resizer->Drag(gfx::PointF(200.f, 200.f), 0);
+  resizer->CompleteDrag();
+  EXPECT_EQ(restore_bounds.size(), window_->bounds().size());
+  EXPECT_TRUE(window_state->IsNormalStateType());
+
+  // Tests the same things as the snapped window case for the maximized window
+  // case.
+  window_state->Maximize();
+  const gfx::Rect maximized_bounds(800, 600);
+  EXPECT_EQ(maximized_bounds, window_->bounds());
+  resizer.reset();
+  resizer.reset(CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+  resizer->Drag(gfx::PointF(1.f, 1.f), 0);
+  EXPECT_EQ(maximized_bounds, window_->bounds());
+  resizer->Drag(gfx::PointF(10.f, 10.f), 0);
+  EXPECT_EQ(restore_bounds.size(), window_->bounds().size());
+  resizer->Drag(gfx::PointF(200.f, 200.f), 0);
+  resizer->CompleteDrag();
+  EXPECT_EQ(restore_bounds.size(), window_->bounds().size());
+  EXPECT_TRUE(window_state->IsNormalStateType());
+}
+
 using MultiDisplayWorkspaceWindowResizerTest = AshTestBase;
 
 // Makes sure that window drag magnetism still works when a window is dragged

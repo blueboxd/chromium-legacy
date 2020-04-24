@@ -769,16 +769,16 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/zoom_levels.m.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_PAGE_RECENT_SITE_PERMISSIONS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings_page/recent_site_permissions.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_PAGE_RECENT_SITE_PERMISSIONS_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings_page/recent_site_permissions.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_PAGE_SITE_SETTINGS_LIST_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings_page/site_settings_list.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_PAGE_SITE_SETTINGS_LIST_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings_page/site_settings_list.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_PAGE_SITE_SETTINGS_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings_page/site_settings_page.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_PAGE_SITE_SETTINGS_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings_page/site_settings_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />

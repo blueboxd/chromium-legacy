@@ -14,6 +14,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+class ArcAppListPrefs;
 class Profile;
 class SupervisedUserService;
 
@@ -72,7 +73,8 @@ class OsSettingsLocalizedStringsProvider
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       syncer::SyncService* sync_service,
       SupervisedUserService* supervised_user_service,
-      KerberosCredentialsManager* kerberos_credentials_manager);
+      KerberosCredentialsManager* kerberos_credentials_manager,
+      ArcAppListPrefs* arc_app_list_prefs);
   OsSettingsLocalizedStringsProvider(
       const OsSettingsLocalizedStringsProvider& other) = delete;
   OsSettingsLocalizedStringsProvider& operator=(

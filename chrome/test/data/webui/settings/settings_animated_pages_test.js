@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {Route, Router} from 'chrome://settings/settings.js';
-// #import {eventToPromise} from 'chrome://test/test_util.m.js';
-// #import {setupPopstateListener} from 'chrome://test/settings/test_util.m.js';
+import {Route, Router} from 'chrome://settings/settings.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {setupPopstateListener} from 'chrome://test/settings/test_util.js';
 // clang-format on
 
 suite('settings-animated-pages', function() {
@@ -14,7 +14,7 @@ suite('settings-animated-pages', function() {
 
   setup(function() {
     testRoutes = {
-      BASIC: new settings.Route('/'),
+      BASIC: new Route('/'),
     };
     testRoutes.SEARCH = testRoutes.BASIC.createSection('/search', 'search');
     testRoutes.SEARCH_ENGINES = testRoutes.SEARCH.createChild('/searchEngines');
@@ -24,8 +24,8 @@ suite('settings-animated-pages', function() {
     testRoutes.SITE_SETTINGS_COOKIES =
         testRoutes.PRIVACY.createChild('/cookies');
 
-    settings.Router.resetInstanceForTesting(new settings.Router(testRoutes));
-    test_util.setupPopstateListener();
+    Router.resetInstanceForTesting(new Router(testRoutes));
+    setupPopstateListener();
   });
 
   // Test simple case where the |focusConfig| key captures only the previous
@@ -47,12 +47,12 @@ suite('settings-animated-pages', function() {
 
     const trigger = document.body.querySelector('#subpage-trigger');
     assertTrue(!!trigger);
-    const whenDone = test_util.eventToPromise('focus', trigger);
+    const whenDone = eventToPromise('focus', trigger);
 
     // Trigger subpage exit navigation.
-    settings.Router.getInstance().navigateTo(testRoutes.BASIC);
-    settings.Router.getInstance().navigateTo(testRoutes.SEARCH_ENGINES);
-    settings.Router.getInstance().navigateToPreviousRoute();
+    Router.getInstance().navigateTo(testRoutes.BASIC);
+    Router.getInstance().navigateTo(testRoutes.SEARCH_ENGINES);
+    Router.getInstance().navigateToPreviousRoute();
     await whenDone;
   });
 
@@ -86,22 +86,22 @@ suite('settings-animated-pages', function() {
     // correct element #subpageTrigger1 is focused.
     const trigger1 = document.body.querySelector('#subpage-trigger1');
     assertTrue(!!trigger1);
-    let whenDone = test_util.eventToPromise('focus', trigger1);
+    let whenDone = eventToPromise('focus', trigger1);
 
-    settings.Router.getInstance().navigateTo(testRoutes.PRIVACY);
-    settings.Router.getInstance().navigateTo(testRoutes.SITE_SETTINGS_COOKIES);
-    settings.Router.getInstance().navigateToPreviousRoute();
+    Router.getInstance().navigateTo(testRoutes.PRIVACY);
+    Router.getInstance().navigateTo(testRoutes.SITE_SETTINGS_COOKIES);
+    Router.getInstance().navigateToPreviousRoute();
     await whenDone;
 
     // Trigger subpage back navigation from entry point B, and check that the
     // correct element #subpageTrigger1 is focused.
     const trigger2 = document.body.querySelector('#subpage-trigger2');
     assertTrue(!!trigger2);
-    whenDone = test_util.eventToPromise('focus', trigger2);
+    whenDone = eventToPromise('focus', trigger2);
 
-    settings.Router.getInstance().navigateTo(testRoutes.SITE_SETTINGS);
-    settings.Router.getInstance().navigateTo(testRoutes.SITE_SETTINGS_COOKIES);
-    settings.Router.getInstance().navigateToPreviousRoute();
+    Router.getInstance().navigateTo(testRoutes.SITE_SETTINGS);
+    Router.getInstance().navigateTo(testRoutes.SITE_SETTINGS_COOKIES);
+    Router.getInstance().navigateToPreviousRoute();
     await whenDone;
   });
 });

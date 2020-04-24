@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -43,6 +44,7 @@ OsSettingsLocalizedStringsProviderFactory::
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(SupervisedUserServiceFactory::GetInstance());
   DependsOn(KerberosCredentialsManagerFactory::GetInstance());
+  DependsOn(ArcAppListPrefsFactory::GetInstance());
 }
 
 OsSettingsLocalizedStringsProviderFactory::
@@ -60,7 +62,8 @@ OsSettingsLocalizedStringsProviderFactory::BuildServiceInstanceFor(
       multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(profile),
       ProfileSyncServiceFactory::GetForProfile(profile),
       SupervisedUserServiceFactory::GetForProfile(profile),
-      KerberosCredentialsManagerFactory::Get(profile));
+      KerberosCredentialsManagerFactory::Get(profile),
+      ArcAppListPrefsFactory::GetForBrowserContext(profile));
 }
 
 bool OsSettingsLocalizedStringsProviderFactory::ServiceIsNULLWhileTesting()

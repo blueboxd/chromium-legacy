@@ -118,7 +118,8 @@ TEST_F(CrostiniDiskTest, IsUserChosenSizeIsReportedCorrectly) {
   image->set_user_chosen_size(true);
   image->set_min_size(1);
 
-  auto disk_info_user_size = OnListVmDisksWithResult("vm_name", 1, response);
+  auto disk_info_user_size =
+      OnListVmDisksWithResult("vm_name", 1 * 1024 * 1024 * 1024, response);
 
   ASSERT_TRUE(disk_info_user_size);
   EXPECT_TRUE(disk_info_user_size->can_resize);
@@ -127,7 +128,7 @@ TEST_F(CrostiniDiskTest, IsUserChosenSizeIsReportedCorrectly) {
   image->set_user_chosen_size(false);
 
   auto disk_info_not_user_size =
-      OnListVmDisksWithResult("vm_name", 1, response);
+      OnListVmDisksWithResult("vm_name", 1 * 1024 * 1024 * 1024, response);
 
   ASSERT_TRUE(disk_info_not_user_size);
   EXPECT_TRUE(disk_info_not_user_size->can_resize);
@@ -145,7 +146,11 @@ TEST_F(CrostiniDiskTest, AreTicksCalculated) {
   image->set_min_size(1000);
   image->set_size(1000);
 
-  auto disk_info = OnListVmDisksWithResult("vm_name", 100, response);
+  // 100 MiB is reserved for the outside system, so 100 bytes + 100MiB of free
+  // space, and a minimum size of 1000 bytes, means our range of possible sizes
+  // should go from 1000 -> 1000 + 100 bytes.
+  auto disk_info =
+      OnListVmDisksWithResult("vm_name", 100 + 100 * 1024 * 1024, response);
 
   ASSERT_TRUE(disk_info);
   EXPECT_EQ(disk_info->ticks.front()->value, 1000);
@@ -162,7 +167,8 @@ TEST_F(CrostiniDiskTest, DefaultIsCurrentValue) {
   image->set_image_type(vm_tools::concierge::DiskImageType::DISK_IMAGE_RAW);
   image->set_min_size(1000);
   image->set_size(9033);
-  auto disk_info = OnListVmDisksWithResult("vm_name", 11100, response);
+  auto disk_info =
+      OnListVmDisksWithResult("vm_name", 111 * 1024 * 1024, response);
   ASSERT_TRUE(disk_info);
 
   ASSERT_TRUE(disk_info->ticks.size() > 3);

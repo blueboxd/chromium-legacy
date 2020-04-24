@@ -10,17 +10,16 @@
  */
 
 // clang-format off
-// #import {PasswordManagerImpl} from 'chrome://settings/settings.js';
-// #import {BlockingRequestManager} from 'chrome://settings/lazy_load.js';
-// #import {PasswordSectionElementFactory, createPasswordEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.m.js';
-// #import {runStartExportTest, runExportFlowFastTest, runExportFlowErrorTest, runExportFlowErrorRetryTest, runExportFlowSlowTest, runCancelExportTest, runFireCloseEventAfterExportCompleteTest} from 'chrome://test/settings/passwords_export_test.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {MockTimer} from 'chrome://test/mock_timer.m.js';
-// #import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.m.js';
+import {PasswordManagerImpl} from 'chrome://settings/settings.js';
+import {BlockingRequestManager} from 'chrome://settings/lazy_load.js';
+import {PasswordSectionElementFactory, createPasswordEntry} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
+import {runStartExportTest, runExportFlowFastTest, runExportFlowErrorTest, runExportFlowErrorRetryTest, runExportFlowSlowTest, runCancelExportTest, runFireCloseEventAfterExportCompleteTest} from 'chrome://test/settings/passwords_export_test.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {MockTimer} from 'chrome://test/mock_timer.m.js';
+import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
 // clang-format on
 
-cr.define('settings_passwords_section_cros', function() {
   suite('PasswordsSection_Cros', function() {
     /**
      * Promise resolved when an auth token request is made.
@@ -39,7 +38,7 @@ cr.define('settings_passwords_section_cros', function() {
      * tests to track auth token and saved password requests.
      */
     class CrosPasswordSectionElementFactory extends
-        autofill_test_util.PasswordSectionElementFactory {
+        PasswordSectionElementFactory {
       /**
        * @param {HTMLDocument} document The test's |document| object.
        * @param {request: Function} tokenRequestManager Fake for
@@ -76,7 +75,7 @@ cr.define('settings_passwords_section_cros', function() {
       /** @override */
       createExportPasswordsDialog(passwordManager, overrideRequestManager) {
         const dialog = super.createExportPasswordsDialog(passwordManager);
-        dialog.tokenRequestManager = new settings.BlockingRequestManager();
+        dialog.tokenRequestManager = new BlockingRequestManager();
         return overrideRequestManager ?
             Object.assign(
                 dialog, {tokenRequestManager: this.tokenRequestManager}) :
@@ -96,7 +95,7 @@ cr.define('settings_passwords_section_cros', function() {
         element.item = this.passwordItem;
         element.tokenRequestManager = this.tokenRequestManager;
         this.document.body.appendChild(element);
-        Polymer.dom.flush();
+        flush();
         return element;
       }
     }
@@ -133,7 +132,7 @@ cr.define('settings_passwords_section_cros', function() {
       let passwordItem;
       passwordPromise = new Promise(resolve => {
         passwordItem = {
-          entry: autofill_test_util.createPasswordEntry(),
+          entry: createPasswordEntry(),
           set password(newPassword) {
             if (newPassword && newPassword != this.password_) {
               resolve(newPassword);
@@ -214,7 +213,7 @@ cr.define('settings_passwords_section_cros', function() {
               elementFactory.createPasswordsSection(passwordManager);
           assertTrue(!passwordsSection.$$('settings-password-prompt-dialog'));
           passwordsSection.tokenRequestManager_.request(fail);
-          Polymer.dom.flush();
+          flush();
           assertTrue(!!passwordsSection.$$('settings-password-prompt-dialog'));
         });
 
@@ -248,10 +247,10 @@ cr.define('settings_passwords_section_cros', function() {
           loadTimeData.overrideValues({userCannotManuallyEnterPassword: true});
           const passwordsSection = document.createElement('passwords-section');
           document.body.appendChild(passwordsSection);
-          Polymer.dom.flush();
+          flush();
           assertTrue(!passwordsSection.$$('settings-password-prompt-dialog'));
           passwordsSection.tokenRequestManager_.request(() => {
-            Polymer.dom.flush();
+            flush();
             assertTrue(!passwordsSection.$$('settings-password-prompt-dialog'));
             done();
           });
@@ -261,7 +260,7 @@ cr.define('settings_passwords_section_cros', function() {
     test('startExport', function(done) {
       const exportDialog =
           elementFactory.createExportPasswordsDialog(passwordManager, false);
-      export_passwords_tests.runStartExportTest(
+      runStartExportTest(
           exportDialog, passwordManager, done);
     });
 
@@ -270,7 +269,7 @@ cr.define('settings_passwords_section_cros', function() {
     test('exportFlowFast', function(done) {
       const exportDialog =
           elementFactory.createExportPasswordsDialog(passwordManager, false);
-      export_passwords_tests.runExportFlowFastTest(
+      runExportFlowFastTest(
           exportDialog, passwordManager, done);
     });
 
@@ -278,7 +277,7 @@ cr.define('settings_passwords_section_cros', function() {
     test('exportFlowError', function(done) {
       const exportDialog =
           elementFactory.createExportPasswordsDialog(passwordManager, false);
-      export_passwords_tests.runExportFlowErrorTest(
+      runExportFlowErrorTest(
           exportDialog, passwordManager, done);
     });
 
@@ -286,7 +285,7 @@ cr.define('settings_passwords_section_cros', function() {
     test('exportFlowErrorRetry', function(done) {
       const exportDialog =
           elementFactory.createExportPasswordsDialog(passwordManager, false);
-      export_passwords_tests.runExportFlowErrorRetryTest(
+      runExportFlowErrorRetryTest(
           exportDialog, passwordManager, done);
     });
 
@@ -295,7 +294,7 @@ cr.define('settings_passwords_section_cros', function() {
     test('exportFlowSlow', function(done) {
       const exportDialog =
           elementFactory.createExportPasswordsDialog(passwordManager, false);
-      export_passwords_tests.runExportFlowSlowTest(
+      runExportFlowSlowTest(
           exportDialog, passwordManager, done);
     });
 
@@ -304,16 +303,14 @@ cr.define('settings_passwords_section_cros', function() {
     test('cancelExport', function(done) {
       const exportDialog =
           elementFactory.createExportPasswordsDialog(passwordManager, false);
-      export_passwords_tests.runCancelExportTest(
+      runCancelExportTest(
           exportDialog, passwordManager, done);
     });
 
     test('fires close event after export complete', () => {
       const exportDialog =
           elementFactory.createExportPasswordsDialog(passwordManager, false);
-      return export_passwords_tests.runFireCloseEventAfterExportCompleteTest(
+      return runFireCloseEventAfterExportCompleteTest(
           exportDialog, passwordManager);
     });
   });
-  // #cr_define_end
-});

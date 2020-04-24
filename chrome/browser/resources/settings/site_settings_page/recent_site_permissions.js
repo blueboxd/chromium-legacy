@@ -2,11 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+import '../settings_shared_css.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {routes} from '../route.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+import {AllSitesAction, ContentSetting, SiteSettingSource} from '../site_settings/constants.m.js';
+import {SiteSettingsBehavior} from '../site_settings/site_settings_behavior.m.js';
+import {RawSiteException, RecentSitePermissions} from '../site_settings/site_settings_prefs_browser_proxy.m.js';
+
 Polymer({
   is: 'settings-recent-site-permissions',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
-    settings.RouteObserverBehavior,
+    RouteObserverBehavior,
     SiteSettingsBehavior,
     WebUIListenerBehavior,
     I18nBehavior,
@@ -61,20 +81,19 @@ Polymer({
     // only fire once.
     assert(!oldConfig);
 
-    this.focusConfig.set(
-        settings.routes.SITE_SETTINGS_SITE_DETAILS.path, () => {
-          this.shouldFocusAfterPopulation_ = true;
-        });
+    this.focusConfig.set(routes.SITE_SETTINGS_SITE_DETAILS.path, () => {
+      this.shouldFocusAfterPopulation_ = true;
+    });
   },
 
   /**
    * Reload the site recent site permission list whenever the user navigates
    * to the site settings page.
-   * @param {!settings.Route} currentRoute
+   * @param {!Route} currentRoute
    * @protected
    */
   currentRouteChanged(currentRoute) {
-    if (currentRoute.path == settings.routes.SITE_SETTINGS.path) {
+    if (currentRoute.path == routes.SITE_SETTINGS.path) {
       this.populateList_();
     }
   },
@@ -167,12 +186,12 @@ Polymer({
    */
   getI18nPermissionChangeString_({setting, source, type}, sentenceStart) {
     let change;
-    if (setting === settings.ContentSetting.ALLOW) {
+    if (setting === ContentSetting.ALLOW) {
       change = 'Allowed';
-    } else if (setting === settings.ContentSetting.BLOCK) {
-      if (source === settings.SiteSettingSource.EMBARGO) {
+    } else if (setting === ContentSetting.BLOCK) {
+      if (source === SiteSettingSource.EMBARGO) {
         change = 'Autoblocked';
-      } else if (source === settings.SiteSettingSource.PREFERENCE) {
+      } else if (source === SiteSettingSource.PREFERENCE) {
         change = 'Blocked';
       } else {
         return '';
@@ -276,10 +295,9 @@ Polymer({
    */
   onRecentSitePermissionClick_(e) {
     const origin = this.recentSitePermissionsList_[e.model.index].origin;
-    settings.Router.getInstance().navigateTo(
-        settings.routes.SITE_SETTINGS_SITE_DETAILS,
-        new URLSearchParams({site: origin}));
-    this.browserProxy.recordAction(settings.AllSitesAction.ENTER_SITE_DETAILS);
+    Router.getInstance().navigateTo(
+        routes.SITE_SETTINGS_SITE_DETAILS, new URLSearchParams({site: origin}));
+    this.browserProxy.recordAction(AllSitesAction.ENTER_SITE_DETAILS);
     this.lastSelected_ = {
       index: e.model.index,
       origin: e.model.item.origin,
@@ -337,12 +355,11 @@ Polymer({
     const index = currentIndex > -1 ? currentIndex : fallbackIndex;
 
     if (this.recentSitePermissionsList_[index].incognito) {
-      cr.ui.focusWithoutInk(
-          assert(/** @type {{getFocusableElement: Function}} */ (
-                     this.$$(`#incognitoInfoIcon_${index}`))
-                     .getFocusableElement()));
+      focusWithoutInk(assert(/** @type {{getFocusableElement: Function}} */ (
+                                 this.$$(`#incognitoInfoIcon_${index}`))
+                                 .getFocusableElement()));
     } else {
-      cr.ui.focusWithoutInk(assert(this.$$(`#siteEntryButton_${index}`)));
+      focusWithoutInk(assert(this.$$(`#siteEntryButton_${index}`)));
     }
   },
 

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import 'chrome://settings/lazy_load.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://settings/lazy_load.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
 suite('controlled button', function() {
@@ -39,7 +39,7 @@ suite('controlled button', function() {
     controlledButton = document.createElement('controlled-button');
     controlledButton.pref = uncontrolledPref;
     document.body.appendChild(controlledButton);
-    Polymer.dom.flush();
+    flush();
   });
 
   test('controlled prefs', function() {
@@ -47,31 +47,31 @@ suite('controlled button', function() {
     assertFalse(!!controlledButton.$$('cr-policy-pref-indicator'));
 
     controlledButton.pref = extensionControlledPref;
-    Polymer.dom.flush();
+    flush();
     assertTrue(controlledButton.$$('cr-button').disabled);
     assertTrue(!!controlledButton.$$('cr-policy-pref-indicator'));
 
     controlledButton.pref = policyControlledPref;
-    Polymer.dom.flush();
+    flush();
     assertTrue(controlledButton.$$('cr-button').disabled);
     const indicator = controlledButton.$$('cr-policy-pref-indicator');
     assertTrue(!!indicator);
     assertGT(indicator.clientHeight, 0);
 
     controlledButton.pref = uncontrolledPref;
-    Polymer.dom.flush();
+    flush();
     assertFalse(controlledButton.$$('cr-button').disabled);
     assertFalse(!!controlledButton.$$('cr-policy-pref-indicator'));
   });
 
   test('null pref', function() {
     controlledButton.pref = extensionControlledPref;
-    Polymer.dom.flush();
+    flush();
     assertTrue(controlledButton.$$('cr-button').disabled);
     assertTrue(!!controlledButton.$$('cr-policy-pref-indicator'));
 
     controlledButton.pref = null;
-    Polymer.dom.flush();
+    flush();
     assertFalse(controlledButton.$$('cr-button').disabled);
     assertFalse(!!controlledButton.$$('cr-policy-pref-indicator'));
   });
@@ -84,7 +84,7 @@ suite('controlled button', function() {
     controlledActionButton.pref = uncontrolledPref;
     controlledActionButton.className = 'action-button';
     document.body.appendChild(controlledActionButton);
-    Polymer.dom.flush();
+    flush();
     assertEquals(
         'action-button', controlledActionButton.$$('cr-button').className);
   });

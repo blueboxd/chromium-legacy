@@ -14,7 +14,7 @@ import './privacy_page/security_keys_subpage.js';
 import './privacy_page/security_page.js';
 import './site_settings/all_sites.m.js';
 import './site_settings/site_data_details_subpage.m.js';
-import './site_settings_page/site_settings_page.m.js';
+import './site_settings_page/site_settings_page.js';
 import './site_settings/category_default_setting.m.js';
 import './site_settings/category_setting_exceptions.m.js';
 import './site_settings/chooser_exception_list.m.js';
@@ -88,7 +88,7 @@ export {LocalDataBrowserProxyImpl} from './site_settings/local_data_browser_prox
 export {kControlledByLookup} from './site_settings/site_settings_behavior.m.js';
 export {ContentSettingProvider, SiteSettingsPrefsBrowserProxyImpl} from './site_settings/site_settings_prefs_browser_proxy.m.js';
 export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.m.js';
-export {defaultSettingLabel} from './site_settings_page/site_settings_list.m.js';
+export {defaultSettingLabel} from './site_settings_page/site_settings_list.js';
 // <if expr="not chromeos">
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.js';
 // </if>

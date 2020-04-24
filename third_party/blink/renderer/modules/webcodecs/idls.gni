@@ -4,6 +4,7 @@
 
 modules_idl_files = [
   "encoded_video_chunk.idl",
+  "image_decoder.idl",
   "video_decoder.idl",
   "video_encoder.idl",
   "video_frame.idl",
@@ -19,6 +20,8 @@ modules_callback_function_idl_files = [
 
 modules_dictionary_idl_files = [
   "encoded_video_config.idl",
+  "image_decoder_init.idl",
+  "image_frame.idl",
   "video_decoder_init.idl",
   "video_encoder_init.idl",
   "video_encoder_encode_options.idl",

@@ -1,0 +1,39 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/dalecurtis/image-decoder-api/blob/master/explainer.md
+
+// An ImageDecoder decodes images.
+[
+    Exposed=(Window,Worker),
+    RuntimeEnabled=WebCodecs,
+    ImplementedAs=ImageDecoderExternal
+] interface ImageDecoder {
+  [CallWith=ScriptState, RaisesException] constructor(ImageDecoderInit init);
+
+  // Decodes the frame at the given index. If we're still receiving data, this
+  // method will wait to resolve the promise until the given |frameIndex| is
+  // available or reject the promise if we receive all data or fail before
+  // |frameIndex| is available.
+  Promise<ImageFrame> decode(unsigned long frameIndex);
+
+  // The number of frames in the image.
+  //
+  // When decoding a ReadableStream the value will be 0 until enough data to
+  // decode the frame count has been received. If the format has no fixed count,
+  // the value will increase as frames are received by the decoder.
+  readonly attribute unsigned long frameCount;
+
+  // The detected mime type for the decoded image.
+  //
+  // When decoding a ReadableStream the value will be an empty string until
+  // enough data to detect the mime type has been received.
+  readonly attribute USVString type;
+
+  // The image's preferred repetition count.
+  //
+  // When decoding a ReadableStream the value will be 0 until enough data to
+  // decode the repetition count has been received.
+  readonly attribute unsigned long repetitionCount;
+};

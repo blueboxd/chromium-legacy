@@ -169,6 +169,9 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
                           IDR_NEW_TAB_PAGE_SKCOLOR_MOJO_LITE_JS);
   source->AddResourcePath("new_tab_page.mojom-lite.js",
                           IDR_NEW_TAB_PAGE_MOJO_LITE_JS);
+#if BUILDFLAG(OPTIMIZE_WEBUI)
+  source->AddResourcePath("new_tab_page.js", IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_JS);
+#endif  // BUILDFLAG(OPTIMIZE_WEBUI)
   webui::SetupWebUIDataSource(
       source, base::make_span(kNewTabPageResources, kNewTabPageResourcesSize),
       kGeneratedPath, IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_HTML);

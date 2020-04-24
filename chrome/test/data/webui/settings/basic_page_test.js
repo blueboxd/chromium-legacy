@@ -5,10 +5,10 @@
 /** @fileoverview Suite of tests for the Settings basic page. */
 
 // clang-format off
-// #import 'chrome://settings/settings.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import 'chrome://settings/settings.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // clang-format on
 
 // Register mocha tests.
@@ -36,11 +36,11 @@ suite('SettingsBasicPage', function() {
       'appearance', 'onStartup', 'people', 'search', 'autofill', 'safetyCheck',
       'privacy'
     ];
-    if (!cr.isChromeOS) {
+    if (!isChromeOS) {
       sections.push('defaultBrowser');
     }
 
-    Polymer.dom.flush();
+    flush();
 
     for (const section of sections) {
       const sectionElement = page.$$(`settings-section[section=${section}]`);
@@ -69,7 +69,7 @@ suite('SettingsBasicPagePrivacyRedesignFlagOff', function() {
   });
 
   test('safetyCheckNotInBasicPage', function() {
-    Polymer.dom.flush();
+    flush();
     assertFalse(!!page.$$('settings-section[section=safetyCheck'));
   });
 });

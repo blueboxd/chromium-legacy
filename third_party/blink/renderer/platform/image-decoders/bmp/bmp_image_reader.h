@@ -274,7 +274,7 @@ class PLATFORM_EXPORT BMPImageReader final {
   // Sets the current pixel to the color given by |color_index|.  This also
   // increments the relevant local variables to move the current pixel
   // right by one.
-  inline void SetI(size_t color_index) {
+  inline void SetI(wtf_size_t color_index) {
     SetRGBA(color_table_[color_index].rgb_red,
             color_table_[color_index].rgb_green,
             color_table_[color_index].rgb_blue, 0xff);

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {flushTasks} from 'chrome://test/test_util.m.js';
-// #import {Route, Router} from 'chrome://settings/settings.js';
-// #import {setupPopstateListener} from 'chrome://test/settings/test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flushTasks} from 'chrome://test/test_util.m.js';
+import {Route, Router} from 'chrome://settings/settings.js';
+import {setupPopstateListener} from 'chrome://test/settings/test_util.js';
 // clang-format on
 
 suite('SettingsSubpage', function() {
@@ -14,7 +14,7 @@ suite('SettingsSubpage', function() {
 
   setup(function() {
     testRoutes = {
-      BASIC: new settings.Route('/'),
+      BASIC: new Route('/'),
     };
     testRoutes.SEARCH = testRoutes.BASIC.createSection('/search', 'search');
     testRoutes.SEARCH_ENGINES = testRoutes.SEARCH.createChild('/searchEngines');
@@ -23,9 +23,9 @@ suite('SettingsSubpage', function() {
     testRoutes.PRIVACY = testRoutes.BASIC.createSection('/privacy', 'privacy');
     testRoutes.CERTIFICATES = testRoutes.PRIVACY.createChild('/certificates');
 
-    settings.Router.resetInstanceForTesting(new settings.Router(testRoutes));
+    Router.resetInstanceForTesting(new Router(testRoutes));
 
-    test_util.setupPopstateListener();
+    setupPopstateListener();
 
     PolymerTest.clearBody();
   });
@@ -35,12 +35,12 @@ suite('SettingsSubpage', function() {
     // Having a searchLabel will create the cr-search-field.
     subpage.searchLabel = 'test';
     document.body.appendChild(subpage);
-    Polymer.dom.flush();
+    flush();
     const search = subpage.$$('cr-search-field');
     assertTrue(!!search);
     search.setValue('Hello');
     subpage.fire('clear-subpage-search');
-    Polymer.dom.flush();
+    flush();
     assertEquals('', search.getValue());
   });
 
@@ -49,13 +49,13 @@ suite('SettingsSubpage', function() {
     // Having a searchLabel will create the cr-search-field.
     subpage.searchLabel = 'test';
     document.body.appendChild(subpage);
-    Polymer.dom.flush();
+    flush();
     const search = subpage.$$('cr-search-field');
     assertTrue(!!search);
     search.setValue('Hello');
     assertEquals(null, search.root.activeElement);
     search.$.clearSearch.click();
-    await test_util.flushTasks();
+    await flushTasks();
     assertEquals('', search.getValue());
     assertEquals(search.$.searchInput, search.root.activeElement);
   });
@@ -63,24 +63,24 @@ suite('SettingsSubpage', function() {
   test('navigates to parent when there is no history', function() {
     // Pretend that we initially started on the CERTIFICATES route.
     window.history.replaceState(undefined, '', testRoutes.CERTIFICATES.path);
-    settings.Router.getInstance().initializeRouteFromUrl();
+    Router.getInstance().initializeRouteFromUrl();
     assertEquals(
         testRoutes.CERTIFICATES,
-        settings.Router.getInstance().getCurrentRoute());
+        Router.getInstance().getCurrentRoute());
 
     const subpage = document.createElement('settings-subpage');
     document.body.appendChild(subpage);
 
     subpage.$$('cr-icon-button').click();
     assertEquals(
-        testRoutes.PRIVACY, settings.Router.getInstance().getCurrentRoute());
+        testRoutes.PRIVACY, Router.getInstance().getCurrentRoute());
   });
 
   test('navigates to any route via window.back()', function(done) {
-    settings.Router.getInstance().navigateTo(testRoutes.BASIC);
-    settings.Router.getInstance().navigateTo(testRoutes.SYNC);
+    Router.getInstance().navigateTo(testRoutes.BASIC);
+    Router.getInstance().navigateTo(testRoutes.SYNC);
     assertEquals(
-        testRoutes.SYNC, settings.Router.getInstance().getCurrentRoute());
+        testRoutes.SYNC, Router.getInstance().getCurrentRoute());
 
     const subpage = document.createElement('settings-subpage');
     document.body.appendChild(subpage);
@@ -89,21 +89,21 @@ suite('SettingsSubpage', function() {
 
     window.addEventListener('popstate', function(event) {
       assertEquals(
-          settings.Router.getInstance().getRoutes().BASIC,
-          settings.Router.getInstance().getCurrentRoute());
+          Router.getInstance().getRoutes().BASIC,
+          Router.getInstance().getCurrentRoute());
       done();
     });
   });
 
   test('updates the title of the document when active', function() {
     const expectedTitle = 'My Subpage Title';
-    settings.Router.getInstance().navigateTo(testRoutes.SEARCH);
+    Router.getInstance().navigateTo(testRoutes.SEARCH);
     const subpage = document.createElement('settings-subpage');
     subpage.setAttribute('route-path', testRoutes.SEARCH_ENGINES.path);
     subpage.setAttribute('page-title', expectedTitle);
     document.body.appendChild(subpage);
 
-    settings.Router.getInstance().navigateTo(testRoutes.SEARCH_ENGINES);
+    Router.getInstance().navigateTo(testRoutes.SEARCH_ENGINES);
     assertEquals(
         document.title,
         loadTimeData.getStringF('settingsAltPageTitle', expectedTitle));

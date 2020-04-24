@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "components/image_fetcher/core/cache/image_store_types.h"
 
 namespace image_fetcher {
 
@@ -72,6 +73,12 @@ class ImageFetcherMetricsReporter {
 
   // Report the network error for the network fetch.
   static void ReportRequestStatusCode(const std::string& client_name, int code);
+
+  // Report the total cache size and number of metadata entries for a given
+  // CacheOption.
+  static void ReportCacheStatus(CacheOption cache_option,
+                                size_t total_bytes,
+                                int metadata_count);
 };
 
 }  // namespace image_fetcher

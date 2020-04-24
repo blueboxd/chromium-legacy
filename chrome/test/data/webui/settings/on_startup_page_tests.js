@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from 'chrome://settings/settings.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // clang-format on
 
-/** @implements {settings.OnStartupBrowserProxy} */
+/** @implements {OnStartupBrowserProxy} */
 class TestOnStartupBrowserProxy extends TestBrowserProxy {
   constructor() {
     super(['getNtpExtension']);
@@ -71,7 +71,7 @@ suite('OnStartupPage', function() {
     };
     document.body.appendChild(testElement);
     return onStartupBrowserProxy.whenCalled('getNtpExtension').then(function() {
-      Polymer.dom.flush();
+      flush();
     });
   }
 
@@ -84,7 +84,7 @@ suite('OnStartupPage', function() {
 
   setup(function() {
     onStartupBrowserProxy = new TestOnStartupBrowserProxy();
-    settings.OnStartupBrowserProxyImpl.instance_ = onStartupBrowserProxy;
+    OnStartupBrowserProxyImpl.instance_ = onStartupBrowserProxy;
     return initPage();
   });
 
@@ -124,7 +124,7 @@ suite('OnStartupPage', function() {
   test('given ntp extension, extension indicator always exists', function() {
     onStartupBrowserProxy.setNtpExtension(ntpExtension);
     return onStartupBrowserProxy.whenCalled('getNtpExtension').then(function() {
-      Polymer.dom.flush();
+      flush();
       assertTrue(extensionControlledIndicatorExists());
       Object.values(RestoreOnStartupEnum).forEach(function(option) {
         testElement.set('prefs.session.restore_on_startup.value', option);
@@ -147,7 +147,7 @@ suite('OnStartupPage', function() {
     assertFalse(extensionControlledIndicatorExists());
     onStartupBrowserProxy.setNtpExtension(ntpExtension);
     return onStartupBrowserProxy.whenCalled('getNtpExtension').then(function() {
-      Polymer.dom.flush();
+      flush();
       assertTrue(extensionControlledIndicatorExists());
     });
   });

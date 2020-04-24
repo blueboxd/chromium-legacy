@@ -5,15 +5,16 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_PLUGIN_VM_APPS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_PLUGIN_VM_APPS_H_
 
+#include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/services/app_service/public/cpp/publisher_base.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 class Profile;
 
@@ -28,8 +29,11 @@ class PluginVmApps : public apps::PublisherBase {
                Profile* profile);
   ~PluginVmApps() override;
 
+  PluginVmApps(const PluginVmApps&) = delete;
+  PluginVmApps& operator=(const PluginVmApps&) = delete;
+
  private:
-  // apps::mojom::Publisher overrides.
+  // apps::PublisherBase overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
@@ -47,9 +51,16 @@ class PluginVmApps : public apps::PublisherBase {
                     int64_t display_id,
                     GetMenuModelCallback callback) override;
 
+  void OnPluginVmAllowedChanged(bool is_allowed);
+
+  mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
+
   Profile* const profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(PluginVmApps);
+  // Whether the Plugin VM app is allowed by policy.
+  bool is_allowed_;
+
+  std::unique_ptr<plugin_vm::PluginVmPolicySubscription> policy_subscription_;
 };
 
 }  // namespace apps

@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
@@ -69,8 +70,8 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
     }
 
     @Override
-    public NativePageFactory getNativePageFactory() {
+    public NativePage createNativePage(String url, NativePage candidatePage, Tab tab) {
         if (mNativePageFactory == null) mNativePageFactory = new NativePageFactory(mActivity);
-        return mNativePageFactory;
+        return mNativePageFactory.createNativePage(url, candidatePage, tab);
     }
 }

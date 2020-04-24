@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from 'chrome://settings/lazy_load.js';
-// #import {Router, routes} from 'chrome://settings/settings.js';
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from 'chrome://settings/lazy_load.js';
+import {Router, routes} from 'chrome://settings/settings.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
-cr.define('settings_people_page_manage_profile', function() {
-  /** @implements {settings.ManageProfileBrowserProxy} */
+  /** @implements {ManageProfileBrowserProxy} */
   class TestManageProfileBrowserProxy extends TestBrowserProxy {
     constructor() {
       super([
@@ -23,12 +22,12 @@ cr.define('settings_people_page_manage_profile', function() {
         'removeProfileShortcut',
       ]);
 
-      /** @private {!settings.ProfileShortcutStatus} */
+      /** @private {!ProfileShortcutStatus} */
       this.profileShortcutStatus_ =
-          settings.ProfileShortcutStatus.PROFILE_SHORTCUT_FOUND;
+          ProfileShortcutStatus.PROFILE_SHORTCUT_FOUND;
     }
 
-    /** @param {!settings.ProfileShortcutStatus} status */
+    /** @param {!ProfileShortcutStatus} status */
     setProfileShortcutStatus(status) {
       this.profileShortcutStatus_ = status;
     }
@@ -81,14 +80,14 @@ cr.define('settings_people_page_manage_profile', function() {
 
     setup(function() {
       browserProxy = new TestManageProfileBrowserProxy();
-      settings.ManageProfileBrowserProxyImpl.instance_ = browserProxy;
+      ManageProfileBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
       manageProfile = document.createElement('settings-manage-profile');
       manageProfile.profileIconUrl = 'fake-icon-1.png';
       manageProfile.profileName = 'Initial Fake Name';
       manageProfile.syncStatus = {supervisedUser: false, childUser: false};
       document.body.appendChild(manageProfile);
-      settings.Router.getInstance().navigateTo(settings.routes.MANAGE_PROFILE);
+      Router.getInstance().navigateTo(routes.MANAGE_PROFILE);
     });
 
     teardown(function() {
@@ -102,7 +101,7 @@ cr.define('settings_people_page_manage_profile', function() {
       let items = null;
       return browserProxy.whenCalled('getAvailableIcons')
           .then(function() {
-            Polymer.dom.flush();
+            flush();
             items = manageProfile.$.selector.$['avatar-grid'].querySelectorAll(
                 '.avatar');
 
@@ -157,7 +156,7 @@ cr.define('settings_people_page_manage_profile', function() {
       return browserProxy.whenCalled('getAvailableIcons').then(function() {
         manageProfile.profileName = 'New Name From Browser';
 
-        Polymer.dom.flush();
+        flush();
 
         assertEquals('New Name From Browser', nameField.value);
       });
@@ -181,7 +180,7 @@ cr.define('settings_people_page_manage_profile', function() {
       });
 
       browserProxy = new TestManageProfileBrowserProxy();
-      settings.ManageProfileBrowserProxyImpl.instance_ = browserProxy;
+      ManageProfileBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
       manageProfile = document.createElement('settings-manage-profile');
       manageProfile.profileIconUrl = 'fake-icon-1.png';
@@ -197,14 +196,14 @@ cr.define('settings_people_page_manage_profile', function() {
     // Tests profile shortcut toggle is visible and toggling it removes and
     // creates the profile shortcut respectively.
     test('ManageProfileShortcutToggle', function() {
-      settings.Router.getInstance().navigateTo(settings.routes.MANAGE_PROFILE);
-      Polymer.dom.flush();
+      Router.getInstance().navigateTo(routes.MANAGE_PROFILE);
+      flush();
 
       assertFalse(!!manageProfile.$$('#hasShortcutToggle'));
 
       return browserProxy.whenCalled('getProfileShortcutStatus')
           .then(function() {
-            Polymer.dom.flush();
+            flush();
 
             const hasShortcutToggle = manageProfile.$$('#hasShortcutToggle');
             assertTrue(!!hasShortcutToggle);
@@ -216,7 +215,7 @@ cr.define('settings_people_page_manage_profile', function() {
             hasShortcutToggle.click();
             return browserProxy.whenCalled('removeProfileShortcut')
                 .then(function() {
-                  Polymer.dom.flush();
+                  flush();
 
                   // The profile shortcut toggle is checked.
                   assertFalse(hasShortcutToggle.checked);
@@ -232,16 +231,16 @@ cr.define('settings_people_page_manage_profile', function() {
     // profile shortcut is found.
     test('ManageProfileShortcutToggle', function() {
       browserProxy.setProfileShortcutStatus(
-          settings.ProfileShortcutStatus.PROFILE_SHORTCUT_NOT_FOUND);
+          ProfileShortcutStatus.PROFILE_SHORTCUT_NOT_FOUND);
 
-      settings.Router.getInstance().navigateTo(settings.routes.MANAGE_PROFILE);
-      Polymer.dom.flush();
+      Router.getInstance().navigateTo(routes.MANAGE_PROFILE);
+      flush();
 
       assertFalse(!!manageProfile.$$('#hasShortcutToggle'));
 
       return browserProxy.whenCalled('getProfileShortcutStatus')
           .then(function() {
-            Polymer.dom.flush();
+            flush();
 
             const hasShortcutToggle = manageProfile.$$('#hasShortcutToggle');
             assertTrue(!!hasShortcutToggle);
@@ -254,20 +253,18 @@ cr.define('settings_people_page_manage_profile', function() {
     // occur in the single profile case.
     test('ManageProfileShortcutSettingHIdden', function() {
       browserProxy.setProfileShortcutStatus(
-          settings.ProfileShortcutStatus.PROFILE_SHORTCUT_SETTING_HIDDEN);
+          ProfileShortcutStatus.PROFILE_SHORTCUT_SETTING_HIDDEN);
 
-      settings.Router.getInstance().navigateTo(settings.routes.MANAGE_PROFILE);
-      Polymer.dom.flush();
+      Router.getInstance().navigateTo(routes.MANAGE_PROFILE);
+      flush();
 
       assertFalse(!!manageProfile.$$('#hasShortcutToggle'));
 
       return browserProxy.whenCalled('getProfileShortcutStatus')
           .then(function() {
-            Polymer.dom.flush();
+            flush();
 
             assertFalse(!!manageProfile.$$('#hasShortcutToggle'));
           });
     });
   });
-  // #cr_define_end
-});

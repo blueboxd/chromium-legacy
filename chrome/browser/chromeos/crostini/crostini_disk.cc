@@ -100,6 +100,8 @@ void OnListVmDisks(
     std::move(callback).Run(nullptr);
     return;
   }
+  // User has to leave at least 100MiB for the host system.
+  int64_t max_size = free_space - 100l * 1024 * 1024;
   auto disk_info = std::make_unique<CrostiniDiskInfo>();
   auto image =
       std::find_if(response->images().begin(), response->images().end(),
@@ -129,11 +131,11 @@ void OnListVmDisks(
 
   std::vector<crostini::mojom::DiskSliderTickPtr> ticks =
       GetTicks(*image, image->min_size(), image->size(),
-               free_space + image->size(), &(disk_info->default_index));
+               max_size + image->size(), &(disk_info->default_index));
   if (ticks.size() == 0) {
-    LOG(ERROR) << "Unable to calculate the number of ticks for "
-               << image->min_size() << " " << image->size() << " "
-               << free_space + image->size();
+    LOG(ERROR) << "Unable to calculate the number of ticks for min: "
+               << image->min_size() << " current: " << image->size()
+               << " max: " << max_size + image->size();
     std::move(callback).Run(nullptr);
     return;
   }
@@ -156,7 +158,7 @@ std::vector<crostini::mojom::DiskSliderTickPtr> GetTicks(
     current = min;
   }
   if (current > max) {
-    LOG(ERROR) << "current > max";
+    LOG(ERROR) << "current (" << current << ") > max (" << max << ")";
     return {};
   }
   std::vector<int64_t> values = GetTicksForDiskSize(min, max);

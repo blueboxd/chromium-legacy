@@ -3,22 +3,21 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from 'chrome://settings/lazy_load.js';
-// #import {Router, Route} from 'chrome://settings/settings.js';
+import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from 'chrome://settings/lazy_load.js';
+import {Router, Route} from 'chrome://settings/settings.js';
 // clang-format on
 
-cr.define('test_util', function() {
 
   /**
    * Helper to create an object containing a ContentSettingsType key to array or
    * object value. This is a convenience function that can eventually be
    * replaced with ES6 computed properties.
-   * @param {settings.ContentSettingsTypes} contentType The ContentSettingsType
+   * @param {ContentSettingsTypes} contentType The ContentSettingsType
    *     to use as the key.
    * @param {Object} value The value to map to |contentType|.
-   * @return {Object<setting: settings.ContentSettingsTypes, value: Object>}
+   * @return {Object<setting: ContentSettingsTypes, value: Object>}
    */
-  /* #export */ function createContentSettingTypeToValuePair(
+  export function createContentSettingTypeToValuePair(
       contentType, value) {
     return {setting: contentType, value: value};
   }
@@ -30,14 +29,14 @@ cr.define('test_util', function() {
    * overwrite the defaults in this function's return value.
    * @return {DefaultContentSetting}
    */
-  /* #export */ function createDefaultContentSetting(override) {
+  export function createDefaultContentSetting(override) {
     if (override === undefined) {
       override = {};
     }
     return Object.assign(
         {
-          setting: settings.ContentSetting.ASK,
-          source: settings.SiteSettingSource.PREFERENCE,
+          setting: ContentSetting.ASK,
+          source: SiteSettingSource.PREFERENCE,
         },
         override);
   }
@@ -50,7 +49,7 @@ cr.define('test_util', function() {
    *     defaults in this function's return value.
    * @return {RawSiteException}
    */
-  /* #export */ function createRawSiteException(origin, override) {
+  export function createRawSiteException(origin, override) {
     if (override === undefined) {
       override = {};
     }
@@ -60,15 +59,15 @@ cr.define('test_util', function() {
           incognito: false,
           origin: origin,
           displayName: '',
-          setting: settings.ContentSetting.ALLOW,
-          source: settings.SiteSettingSource.PREFERENCE,
+          setting: ContentSetting.ALLOW,
+          source: SiteSettingSource.PREFERENCE,
         },
         override);
   }
 
   /**
    * Helper to create a mock RawChooserException.
-   * @param {!settings.ChooserType} chooserType The chooser exception type.
+   * @param {!ChooserType} chooserType The chooser exception type.
    * @param {Array<!RawSiteException>} sites A list of SiteExceptions
    *     corresponding to the chooser exception.
    * @param {!Object=} override An object with a subset of the properties of
@@ -76,7 +75,7 @@ cr.define('test_util', function() {
    *     the defaults in this function's return value.
    * @return {RawChooserException}
    */
-  /* #export */ function createRawChooserException(
+  export function createRawChooserException(
       chooserType, sites, override) {
     return Object.assign(
         {chooserType: chooserType, displayName: '', object: {}, sites: sites},
@@ -85,61 +84,61 @@ cr.define('test_util', function() {
 
   /**
    * Helper to create a mock SiteSettingsPref.
-   * @param {!Array<{setting: settings.ContentSettingsTypes,
+   * @param {!Array<{setting: ContentSettingsTypes,
    *                 value: DefaultContentSetting}>} defaultsList A list of
    *     DefaultContentSettings and the content settings they apply to, which
    *     will overwrite the defaults in the SiteSettingsPref returned by this
    *     function.
-   * @param {!Array<{setting: settings.ContentSettingsTypes,
+   * @param {!Array<{setting: ContentSettingsTypes,
    *                 value: !Array<RawSiteException>}>} exceptionsList A list of
    *     RawSiteExceptions and the content settings they apply to, which will
    *     overwrite the exceptions in the SiteSettingsPref returned by this
    *     function.
-   * @param {!Array<{setting: settings.ContentSettingsTypes,
+   * @param {!Array<{setting: ContentSettingsTypes,
    *                 value: !Array<RawChooserException>}>} chooserExceptionsList
    *     A list of RawChooserExceptions and the chooser type that they apply to,
    *     which will overwrite the exceptions in the SiteSettingsPref returned by
    *     this function.
    * @return {SiteSettingsPref}
    */
-  /* #export */ function createSiteSettingsPrefs(
+  export function createSiteSettingsPrefs(
       defaultsList, exceptionsList, chooserExceptionsList = []) {
     // These test defaults reflect the actual defaults assigned to each
     // ContentSettingType, but keeping these in sync shouldn't matter for tests.
     const defaults = {};
-    for (const type in settings.ContentSettingsTypes) {
-      defaults[settings.ContentSettingsTypes[type]] =
+    for (const type in ContentSettingsTypes) {
+      defaults[ContentSettingsTypes[type]] =
           createDefaultContentSetting({});
     }
-    defaults[settings.ContentSettingsTypes.COOKIES].setting =
-        settings.ContentSetting.ALLOW;
-    defaults[settings.ContentSettingsTypes.IMAGES].setting =
-        settings.ContentSetting.ALLOW;
-    defaults[settings.ContentSettingsTypes.JAVASCRIPT].setting =
-        settings.ContentSetting.ALLOW;
-    defaults[settings.ContentSettingsTypes.SOUND].setting =
-        settings.ContentSetting.ALLOW;
-    defaults[settings.ContentSettingsTypes.POPUPS].setting =
-        settings.ContentSetting.BLOCK;
-    defaults[settings.ContentSettingsTypes.PROTOCOL_HANDLERS].setting =
-        settings.ContentSetting.ALLOW;
-    defaults[settings.ContentSettingsTypes.BACKGROUND_SYNC].setting =
-        settings.ContentSetting.ALLOW;
-    defaults[settings.ContentSettingsTypes.ADS].setting =
-        settings.ContentSetting.BLOCK;
-    defaults[settings.ContentSettingsTypes.SENSORS].setting =
-        settings.ContentSetting.ALLOW;
-    defaults[settings.ContentSettingsTypes.USB_DEVICES].setting =
-        settings.ContentSetting.ASK;
+    defaults[ContentSettingsTypes.COOKIES].setting =
+        ContentSetting.ALLOW;
+    defaults[ContentSettingsTypes.IMAGES].setting =
+        ContentSetting.ALLOW;
+    defaults[ContentSettingsTypes.JAVASCRIPT].setting =
+        ContentSetting.ALLOW;
+    defaults[ContentSettingsTypes.SOUND].setting =
+        ContentSetting.ALLOW;
+    defaults[ContentSettingsTypes.POPUPS].setting =
+        ContentSetting.BLOCK;
+    defaults[ContentSettingsTypes.PROTOCOL_HANDLERS].setting =
+        ContentSetting.ALLOW;
+    defaults[ContentSettingsTypes.BACKGROUND_SYNC].setting =
+        ContentSetting.ALLOW;
+    defaults[ContentSettingsTypes.ADS].setting =
+        ContentSetting.BLOCK;
+    defaults[ContentSettingsTypes.SENSORS].setting =
+        ContentSetting.ALLOW;
+    defaults[ContentSettingsTypes.USB_DEVICES].setting =
+        ContentSetting.ASK;
     defaultsList.forEach((override) => {
       defaults[override.setting] = override.value;
     });
 
     const chooserExceptions = {};
     const exceptions = {};
-    for (const type in settings.ContentSettingsTypes) {
-      chooserExceptions[settings.ContentSettingsTypes[type]] = [];
-      exceptions[settings.ContentSettingsTypes[type]] = [];
+    for (const type in ContentSettingsTypes) {
+      chooserExceptions[ContentSettingsTypes[type]] = [];
+      exceptions[ContentSettingsTypes[type]] = [];
     }
     exceptionsList.forEach(override => {
       exceptions[override.setting] = override.value;
@@ -165,7 +164,7 @@ cr.define('test_util', function() {
    *     in the site group.
    * @return {SiteGroup}
    */
-  /* #export */ function createSiteGroup(eTLDPlus1Name, originList, mockUsage) {
+  export function createSiteGroup(eTLDPlus1Name, originList, mockUsage) {
     if (mockUsage == undefined) {
       mockUsage = 0;
     }
@@ -178,7 +177,7 @@ cr.define('test_util', function() {
     };
   }
 
-  /* #export */ function createOriginInfo(origin, override) {
+  export function createOriginInfo(origin, override) {
     if (override === undefined) {
       override = {};
     }
@@ -196,42 +195,28 @@ cr.define('test_util', function() {
   /**
    * Helper to retrieve the category of a permission from the given
    * |chooserType|.
-   * @param {settings.ChooserType} chooserType The chooser type of the
+   * @param {ChooserType} chooserType The chooser type of the
    *     permission.
-   * @return {?settings.ContentSettingsType}
+   * @return {?ContentSettingsType}
    */
-  /* #export */ function getContentSettingsTypeFromChooserType(chooserType) {
+  export function getContentSettingsTypeFromChooserType(chooserType) {
     switch (chooserType) {
-      case settings.ChooserType.USB_DEVICES:
-        return settings.ContentSettingsTypes.USB_DEVICES;
+      case ChooserType.USB_DEVICES:
+        return ContentSettingsTypes.USB_DEVICES;
       default:
         return null;
     }
   }
 
-  /* #export */ function setupPopstateListener() {
+  export function setupPopstateListener() {
     window.addEventListener('popstate', function(event) {
       // On pop state, do not push the state onto the window.history again.
-      const routerInstance = settings.Router.getInstance();
+      const routerInstance = Router.getInstance();
       routerInstance.setCurrentRoute(
-          /** @type {!settings.Route} */ (
+          /** @type {!Route} */ (
               routerInstance.getRouteForPath(window.location.pathname) ||
               routerInstance.getRoutes().BASIC),
           new URLSearchParams(window.location.search), true);
     });
   }
 
-  // #cr_define_end
-  return {
-    createContentSettingTypeToValuePair: createContentSettingTypeToValuePair,
-    createDefaultContentSetting: createDefaultContentSetting,
-    createOriginInfo: createOriginInfo,
-    createRawChooserException: createRawChooserException,
-    createRawSiteException: createRawSiteException,
-    createSiteGroup: createSiteGroup,
-    createSiteSettingsPrefs: createSiteSettingsPrefs,
-    getContentSettingsTypeFromChooserType:
-        getContentSettingsTypeFromChooserType,
-    setupPopstateListener: setupPopstateListener,
-  };
-});

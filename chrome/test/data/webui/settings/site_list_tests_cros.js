@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {AndroidInfoBrowserProxyImpl,ContentSetting,ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-// #import {createContentSettingTypeToValuePair,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {Router} from 'chrome://settings/settings.js';
-// #import {TestAndroidInfoBrowserProxy, TEST_ANDROID_SMS_ORIGIN} from 'chrome://test/settings/test_android_info_browser_proxy.m.js';
-// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
+import {AndroidInfoBrowserProxyImpl,ContentSetting,ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {createContentSettingTypeToValuePair,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {Router} from 'chrome://settings/settings.js';
+import {TestAndroidInfoBrowserProxy, TEST_ANDROID_SMS_ORIGIN} from 'chrome://test/settings/test_android_info_browser_proxy.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
 // clang-format on
 
 suite('SiteListChromeOS', function() {
@@ -38,20 +38,20 @@ suite('SiteListChromeOS', function() {
 
   // Initialize a site-list before each test.
   setup(function() {
-    prefsAndroidSms = test_util.createSiteSettingsPrefs(
-        [], [test_util.createContentSettingTypeToValuePair(
-                settings.ContentSettingsTypes.NOTIFICATIONS, [
+    prefsAndroidSms = createSiteSettingsPrefs(
+        [], [createContentSettingTypeToValuePair(
+                ContentSettingsTypes.NOTIFICATIONS, [
                   // android sms setting.
-                  test_util.createRawSiteException(
-                      android_info.TEST_ANDROID_SMS_ORIGIN),
+                  createRawSiteException(
+                      TEST_ANDROID_SMS_ORIGIN),
                   // Non android sms setting that should be handled as usual.
-                  test_util.createRawSiteException('http://bar.com')
+                  createRawSiteException('http://bar.com')
                 ])]);
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
-    androidInfoBrowserProxy = new android_info.TestAndroidInfoBrowserProxy();
-    settings.AndroidInfoBrowserProxyImpl.instance_ = androidInfoBrowserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    androidInfoBrowserProxy = new TestAndroidInfoBrowserProxy();
+    AndroidInfoBrowserProxyImpl.instance_ = androidInfoBrowserProxy;
 
     PolymerTest.clearBody();
     testElement = document.createElement('site-list');
@@ -62,7 +62,7 @@ suite('SiteListChromeOS', function() {
   teardown(function() {
     // The code being tested changes the Route. Reset so that state is not
     // leaked across tests.
-    settings.Router.getInstance().resetRouteForTesting();
+    Router.getInstance().resetRouteForTesting();
 
     // Reset multidevice enabled flag.
     loadTimeData.overrideValues({multideviceAllowedByPolicy: false});
@@ -71,14 +71,14 @@ suite('SiteListChromeOS', function() {
   /** Configures the test element. */
   function setUpAndroidSmsNotifications() {
     browserProxy.setPrefs(prefsAndroidSms);
-    testElement.categorySubtype = settings.ContentSetting.ALLOW;
+    testElement.categorySubtype = ContentSetting.ALLOW;
     // Some route is needed, but the actual route doesn't matter.
     testElement.currentRoute = {
       page: 'dummy',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-location'],
     };
-    testElement.category = settings.ContentSettingsTypes.NOTIFICATIONS;
+    testElement.category = ContentSettingsTypes.NOTIFICATIONS;
   }
 
   test('update androidSmsInfo', function() {
@@ -97,9 +97,9 @@ suite('SiteListChromeOS', function() {
         ])
         .then(results => {
           const contentType = results[1];
-          Polymer.dom.flush();
+          flush();
           assertEquals(
-              settings.ContentSettingsTypes.NOTIFICATIONS, contentType);
+              ContentSettingsTypes.NOTIFICATIONS, contentType);
           assertEquals(2, testElement.sites.length);
 
           assertEquals(

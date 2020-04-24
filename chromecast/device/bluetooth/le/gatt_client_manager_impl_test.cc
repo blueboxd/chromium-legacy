@@ -11,8 +11,8 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/device/bluetooth/bluetooth_util.h"
-#include "chromecast/device/bluetooth/le/remote_characteristic.h"
-#include "chromecast/device/bluetooth/le/remote_descriptor.h"
+#include "chromecast/device/bluetooth/le/remote_characteristic_impl.h"
+#include "chromecast/device/bluetooth/le/remote_descriptor_impl.h"
 #include "chromecast/device/bluetooth/le/remote_device_impl.h"
 #include "chromecast/device/bluetooth/le/remote_service.h"
 #include "chromecast/device/bluetooth/shlib/mock_gatt_client.h"
@@ -24,7 +24,6 @@ using ::testing::Return;
 
 namespace chromecast {
 namespace bluetooth {
-
 
 namespace {
 
@@ -844,7 +843,9 @@ TEST_F(GattClientManagerTest, RemoteDeviceCharacteristic) {
   std::vector<scoped_refptr<RemoteCharacteristic>> characteristics =
       service->GetCharacteristics();
   ASSERT_GE(characteristics.size(), 1ul);
-  auto characteristic = characteristics[0];
+  ASSERT_TRUE(characteristics[0]);
+  auto* characteristic =
+      static_cast<RemoteCharacteristicImpl*>(characteristics[0].get());
 
   EXPECT_CALL(*gatt_client_,
               WriteCharacteristic(kTestAddr1, characteristic->characteristic(),
@@ -875,8 +876,8 @@ TEST_F(GattClientManagerTest, RemoteDeviceCharacteristic) {
   EXPECT_CALL(cb_, Run(true));
   characteristic->SetNotification(true, cb_.Get());
 
-  EXPECT_CALL(*observer_,
-              OnCharacteristicNotification(device, characteristic, kTestData3));
+  EXPECT_CALL(*observer_, OnCharacteristicNotification(
+                              device, characteristics[0], kTestData3));
   delegate->OnNotification(kTestAddr1, characteristic->handle(), kTestData3);
   task_environment_.RunUntilIdle();
 }
@@ -898,7 +899,9 @@ TEST_F(GattClientManagerTest,
   std::vector<scoped_refptr<RemoteCharacteristic>> characteristics =
       service->GetCharacteristics();
   ASSERT_GE(characteristics.size(), 1ul);
-  scoped_refptr<RemoteCharacteristic> characteristic = characteristics[0];
+  ASSERT_TRUE(characteristics[0]);
+  RemoteCharacteristicImpl* characteristic =
+      static_cast<RemoteCharacteristicImpl*>(characteristics[0].get());
 
   scoped_refptr<RemoteDescriptor> cccd =
       characteristic->GetDescriptorByUuid(RemoteDescriptor::kCccdUuid);
@@ -911,16 +914,19 @@ TEST_F(GattClientManagerTest,
   std::vector<uint8_t> cccd_enable_notification = {
       std::begin(bluetooth::RemoteDescriptor::kEnableNotificationValue),
       std::end(bluetooth::RemoteDescriptor::kEnableNotificationValue)};
-  EXPECT_CALL(*gatt_client_, WriteDescriptor(kTestAddr1, cccd->descriptor(), _,
-                                             cccd_enable_notification))
+  EXPECT_CALL(*gatt_client_,
+              WriteDescriptor(
+                  kTestAddr1,
+                  static_cast<RemoteDescriptorImpl*>(cccd.get())->descriptor(),
+                  _, cccd_enable_notification))
       .WillOnce(Return(true));
 
   characteristic->SetRegisterNotification(true, cb_.Get());
   EXPECT_CALL(cb_, Run(true));
   delegate->OnDescriptorWriteResponse(kTestAddr1, true, cccd->handle());
 
-  EXPECT_CALL(*observer_,
-              OnCharacteristicNotification(device, characteristic, kTestData1));
+  EXPECT_CALL(*observer_, OnCharacteristicNotification(
+                              device, characteristics[0], kTestData1));
   delegate->OnNotification(kTestAddr1, characteristic->handle(), kTestData1);
   task_environment_.RunUntilIdle();
 }
@@ -943,7 +949,9 @@ TEST_F(GattClientManagerTest, RemoteDeviceCharacteristicSetRegisterIndication) {
   ASSERT_EQ(characteristics.size(), 4ul);
 
   // |characteristics[2]| supports indication only.
-  scoped_refptr<RemoteCharacteristic> characteristic = characteristics[2];
+  ASSERT_TRUE(characteristics[2]);
+  RemoteCharacteristicImpl* characteristic =
+      static_cast<RemoteCharacteristicImpl*>(characteristics[2].get());
 
   scoped_refptr<RemoteDescriptor> cccd =
       characteristic->GetDescriptorByUuid(RemoteDescriptor::kCccdUuid);
@@ -956,21 +964,26 @@ TEST_F(GattClientManagerTest, RemoteDeviceCharacteristicSetRegisterIndication) {
   std::vector<uint8_t> cccd_enable_indication = {
       std::begin(bluetooth::RemoteDescriptor::kEnableIndicationValue),
       std::end(bluetooth::RemoteDescriptor::kEnableIndicationValue)};
-  EXPECT_CALL(*gatt_client_, WriteDescriptor(kTestAddr1, cccd->descriptor(), _,
-                                             cccd_enable_indication))
+  EXPECT_CALL(*gatt_client_,
+              WriteDescriptor(
+                  kTestAddr1,
+                  static_cast<RemoteDescriptorImpl*>(cccd.get())->descriptor(),
+                  _, cccd_enable_indication))
       .WillOnce(Return(true));
 
   characteristic->SetRegisterNotificationOrIndication(true, cb_.Get());
   EXPECT_CALL(cb_, Run(true));
   delegate->OnDescriptorWriteResponse(kTestAddr1, true, cccd->handle());
 
-  EXPECT_CALL(*observer_,
-              OnCharacteristicNotification(device, characteristic, kTestData1));
+  EXPECT_CALL(*observer_, OnCharacteristicNotification(
+                              device, characteristics[2], kTestData1));
   delegate->OnNotification(kTestAddr1, characteristic->handle(), kTestData1);
   task_environment_.RunUntilIdle();
 
   // |characteristics[3]| supports both notification and indication.
-  characteristic = characteristics[3];
+  ASSERT_TRUE(characteristics[3]);
+  characteristic =
+      static_cast<RemoteCharacteristicImpl*>(characteristics[3].get());
 
   cccd = characteristic->GetDescriptorByUuid(RemoteDescriptor::kCccdUuid);
   ASSERT_TRUE(cccd);
@@ -985,16 +998,19 @@ TEST_F(GattClientManagerTest, RemoteDeviceCharacteristicSetRegisterIndication) {
   std::vector<uint8_t> cccd_enable_notification = {
       std::begin(bluetooth::RemoteDescriptor::kEnableNotificationValue),
       std::end(bluetooth::RemoteDescriptor::kEnableNotificationValue)};
-  EXPECT_CALL(*gatt_client_, WriteDescriptor(kTestAddr1, cccd->descriptor(), _,
-                                             cccd_enable_notification))
+  EXPECT_CALL(*gatt_client_,
+              WriteDescriptor(
+                  kTestAddr1,
+                  static_cast<RemoteDescriptorImpl*>(cccd.get())->descriptor(),
+                  _, cccd_enable_notification))
       .WillOnce(Return(true));
 
   characteristic->SetRegisterNotificationOrIndication(true, cb_.Get());
   EXPECT_CALL(cb_, Run(true));
   delegate->OnDescriptorWriteResponse(kTestAddr1, true, cccd->handle());
 
-  EXPECT_CALL(*observer_,
-              OnCharacteristicNotification(device, characteristic, kTestData1));
+  EXPECT_CALL(*observer_, OnCharacteristicNotification(
+                              device, characteristics[3], kTestData1));
   delegate->OnNotification(kTestAddr1, characteristic->handle(), kTestData1);
   task_environment_.RunUntilIdle();
 }
@@ -1023,7 +1039,8 @@ TEST_F(GattClientManagerTest, RemoteDeviceDescriptor) {
   std::vector<scoped_refptr<RemoteDescriptor>> descriptors =
       characteristic->GetDescriptors();
   ASSERT_GE(descriptors.size(), 1ul);
-  auto descriptor = descriptors[0];
+  ASSERT_TRUE(descriptors[0]);
+  auto* descriptor = static_cast<RemoteDescriptorImpl*>(descriptors[0].get());
 
   EXPECT_CALL(*gatt_client_,
               WriteDescriptor(kTestAddr1, descriptor->descriptor(), kAuthReq,
@@ -1146,7 +1163,9 @@ TEST_F(GattClientManagerTest, WriteType) {
                                    WriteType::WRITE_TYPE_SIGNED};
 
   for (size_t i = 0; i < characteristics.size(); ++i) {
-    const auto& characteristic = characteristics[i];
+    ASSERT_TRUE(characteristics[i]);
+    auto* characteristic =
+        static_cast<RemoteCharacteristicImpl*>(characteristics[i].get());
     EXPECT_CALL(
         *gatt_client_,
         WriteCharacteristic(kTestAddr1, characteristic->characteristic(),
@@ -1250,8 +1269,12 @@ TEST_F(GattClientManagerTest, Queuing) {
   std::vector<scoped_refptr<RemoteCharacteristic>> characteristics =
       service->GetCharacteristics();
   ASSERT_GE(characteristics.size(), 2ul);
-  auto characteristic1 = characteristics[0];
-  auto characteristic2 = characteristics[1];
+  ASSERT_TRUE(characteristics[0]);
+  ASSERT_TRUE(characteristics[1]);
+  auto* characteristic1 =
+      static_cast<RemoteCharacteristicImpl*>(characteristics[0].get());
+  auto* characteristic2 =
+      static_cast<RemoteCharacteristicImpl*>(characteristics[1].get());
 
   // Issue a write to one characteristic.
   EXPECT_CALL(*gatt_client_,
@@ -1303,14 +1326,16 @@ TEST_F(GattClientManagerTest, CommandTimeout) {
   std::vector<scoped_refptr<RemoteCharacteristic>> characteristics =
       service->GetCharacteristics();
   ASSERT_GE(characteristics.size(), 1ul);
-  auto characteristic1 = characteristics[0];
+  ASSERT_TRUE(characteristics[0]);
+  auto* characteristic =
+      static_cast<RemoteCharacteristicImpl*>(characteristics[0].get());
 
   // Issue a write to one characteristic.
   EXPECT_CALL(*gatt_client_,
-              WriteCharacteristic(kTestAddr1, characteristic1->characteristic(),
+              WriteCharacteristic(kTestAddr1, characteristic->characteristic(),
                                   kAuthReq, kWriteType, kTestData))
       .WillOnce(Return(true));
-  characteristic1->WriteAuth(kAuthReq, kWriteType, kTestData, cb_.Get());
+  characteristic->WriteAuth(kAuthReq, kWriteType, kTestData, cb_.Get());
 
   // Let the command timeout
   // We should request a disconnect.

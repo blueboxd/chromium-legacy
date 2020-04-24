@@ -3,17 +3,16 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
 /** @fileoverview Test utils for Settings page tests. */
 
-cr.define('settings_page_test_util', function() {
   /**
    * @param {string} type The settings page type, e.g. 'about' or 'basic'.
    * @return {!PolymerElement} The PolymerElement for the page.
    */
-  /* #export */ function getPage(type) {
+  export function getPage(type) {
     const settingsUi = document.querySelector('settings-ui');
     assertTrue(!!settingsUi);
     const settingsMain = settingsUi.$$('settings-main');
@@ -27,7 +26,7 @@ cr.define('settings_page_test_util', function() {
     }
 
     return idleRender.get().then(function() {
-      Polymer.dom.flush();
+      flush();
       return page;
     });
   }
@@ -38,7 +37,7 @@ cr.define('settings_page_test_util', function() {
    * @param {string} section The settings page section, e.g. 'appearance'.
    * @return {Node|undefined} The DOM node for the section.
    */
-  /* #export */ function getSection(page, section) {
+  export function getSection(page, section) {
     const sections = page.shadowRoot.querySelectorAll('settings-section');
     assertTrue(!!sections);
     for (let i = 0; i < sections.length; ++i) {
@@ -50,9 +49,3 @@ cr.define('settings_page_test_util', function() {
     return undefined;
   }
 
-  // #cr_define_end
-  return {
-    getPage: getPage,
-    getSection: getSection,
-  };
-});

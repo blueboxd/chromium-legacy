@@ -3,10 +3,6 @@
 // found in the LICENSE file.
 
 #include "components/feed/core/v2/feed_network_impl.h"
-
-#include <memory>
-#include <utility>
-
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
@@ -56,30 +52,26 @@ constexpr char kBackgroundQueryUrl[] =
     "https://www.google.com/httpservice/noretry/TrellisClankService/"
     "FeedQuery";
 
-GURL GetUrlWithoutQuery(const GURL& url) {
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  return url.ReplaceComponents(replacements);
-}
-
 using RawResponse = FeedNetworkImpl::RawResponse;
 }  // namespace
 
 struct FeedNetworkImpl::RawResponse {
+  // A union of net::Error (if the request failed) and the http
+  // status code(if the request succeeded in reaching the server).
+  int32_t status_code;
   // HTTP response body.
   std::string response_bytes;
-  NetworkResponseInfo response_info;
 };
 
 namespace {
 template <typename RESULT, NetworkRequestType REQUEST_TYPE>
 void ParseAndForwardResponse(base::OnceCallback<void(RESULT)> result_callback,
                              RawResponse raw_response) {
-  MetricsReporter::NetworkRequestComplete(
-      REQUEST_TYPE, raw_response.response_info.status_code);
+  MetricsReporter::NetworkRequestComplete(REQUEST_TYPE,
+                                          raw_response.status_code);
   RESULT result;
-  result.response_info = raw_response.response_info;
-  if (result.response_info.status_code == 200) {
+  result.status_code = raw_response.status_code;
+  if (result.status_code == 200) {
     auto response_message = std::make_unique<typename decltype(
         result.response_body)::element_type>();
 
@@ -300,13 +292,7 @@ class FeedNetworkImpl::NetworkFetch {
   }
 
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response) {
-    NetworkResponseInfo response_info;
-    response_info.status_code = simple_loader_->NetError();
-    response_info.fetch_duration =
-        tick_clock_->NowTicks() - entire_send_start_ticks_;
-    response_info.fetch_time = base::Time::Now();
-    response_info.base_request_url = GetUrlWithoutQuery(url_);
-
+    int32_t status_code = simple_loader_->NetError();
     // If overriding the feed host, try to grab the Bless nonce. This is
     // strictly informational, and only displayed in snippets-internals.
     if (host_overridden_ && simple_loader_->ResponseInfo()) {
@@ -318,7 +304,8 @@ class FeedNetworkImpl::NetworkFetch {
         if (pos != std::string::npos) {
           std::string nonce = value.substr(pos + 7, 16);
           if (nonce.size() == 16) {
-            response_info.bless_nonce = nonce;
+            pref_service_->SetString(feed::prefs::kHostOverrideBlessNonce,
+                                     nonce);
             break;
           }
         }
@@ -327,11 +314,10 @@ class FeedNetworkImpl::NetworkFetch {
 
     std::string response_body;
     if (response) {
-      response_info.status_code =
-          simple_loader_->ResponseInfo()->headers->response_code();
+      status_code = simple_loader_->ResponseInfo()->headers->response_code();
       response_body = std::move(*response);
 
-      if (response_info.status_code == net::HTTP_UNAUTHORIZED) {
+      if (status_code == net::HTTP_UNAUTHORIZED) {
         signin::ScopeSet scopes{kAuthenticationScope};
         CoreAccountId account_id = identity_manager_->GetPrimaryAccountId();
         if (!account_id.empty()) {
@@ -341,8 +327,10 @@ class FeedNetworkImpl::NetworkFetch {
       }
     }
 
+    base::TimeDelta entire_send_duration =
+        tick_clock_->NowTicks() - entire_send_start_ticks_;
     UMA_HISTOGRAM_MEDIUM_TIMES("ContentSuggestions.Feed.Network.Duration",
-                               response_info.fetch_duration);
+                               entire_send_duration);
 
     base::TimeDelta loader_only_duration =
         tick_clock_->NowTicks() - loader_only_start_ticks_;
@@ -352,15 +340,12 @@ class FeedNetworkImpl::NetworkFetch {
 
     // The below is true even if there is a protocol error, so this will
     // record response size as long as the request completed.
-    if (response_info.status_code >= 200) {
+    if (status_code >= 200) {
       UMA_HISTOGRAM_COUNTS_1M("ContentSuggestions.Feed.Network.ResponseSizeKB",
                               static_cast<int>(response_body.size() / 1024));
     }
 
-    RawResponse raw_response;
-    raw_response.response_info = std::move(response_info);
-    raw_response.response_bytes = std::move(response_body);
-    std::move(done_callback_).Run(std::move(raw_response));
+    std::move(done_callback_).Run({status_code, std::move(response_body)});
   }
 
  private:

@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/chromeos/input_method/suggestion_handler_interface.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
@@ -35,7 +36,8 @@ class InputMethodEngineBase;
 namespace chromeos {
 struct AssistiveWindowProperties;
 
-class InputMethodEngine : public ::input_method::InputMethodEngineBase {
+class InputMethodEngine : public ::input_method::InputMethodEngineBase,
+                          public SuggestionHandlerInterface {
  public:
   enum {
     MENU_ITEM_MODIFIED_LABEL = 0x0001,
@@ -97,6 +99,15 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   void SetMirroringEnabled(bool mirroring_enabled) override;
   void SetCastingEnabled(bool casting_enabled) override;
 
+  // SuggestionHandlerInterface overrides.
+  bool DismissSuggestion(int context_id, std::string* error) override;
+  bool SetSuggestion(int context_id,
+                     const base::string16& text,
+                     const size_t confirmed_length,
+                     const bool show_tab,
+                     std::string* error) override;
+  bool AcceptSuggestion(int context_id, std::string* error) override;
+
   // This function returns the current property of the candidate window.
   // The caller can use the returned value as the default property and
   // modify some of specified items.
@@ -116,22 +127,6 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
 
   // Set the position of the cursor in the candidate window.
   bool SetCursorPosition(int context_id, int candidate_id, std::string* error);
-
-  // Dismiss suggestion window.
-  bool DismissSuggestion(int context_id, std::string* error);
-
-  // Sets text and show suggestion window.
-  // text - the full suggestion text.
-  // confirmed_text - the confirmed text that the user has typed so far.
-  // show_tab - whether to show "tab" in the suggestion window.
-  bool SetSuggestion(int context_id,
-                     const base::string16& text,
-                     const size_t confirmed_length,
-                     const bool show_tab,
-                     std::string* error);
-
-  // Commit the suggestion and hide the window.
-  bool AcceptSuggestion(int context_id, std::string* error);
 
   // Show/Hide given assistive window.
   bool SetAssistiveWindowProperties(

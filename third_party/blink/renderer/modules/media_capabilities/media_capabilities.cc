@@ -573,9 +573,15 @@ const char MediaCapabilities::kLearningBadWindowThresholdParamName[] =
 const char MediaCapabilities::kLearningNnrThresholdParamName[] =
     "nnr_threshold";
 
-MediaCapabilities::MediaCapabilities() = default;
+MediaCapabilities::MediaCapabilities(ExecutionContext* context)
+    : decode_history_service_(context),
+      bad_window_predictor_(context),
+      nnr_predictor_(context) {}
 
 void MediaCapabilities::Trace(blink::Visitor* visitor) {
+  visitor->Trace(decode_history_service_);
+  visitor->Trace(bad_window_predictor_);
+  visitor->Trace(nnr_predictor_);
   visitor->Trace(pending_cb_map_);
   ScriptWrappable::Trace(visitor);
 }
@@ -797,7 +803,7 @@ bool MediaCapabilities::EnsureLearningPredictors(
   DCHECK(execution_context && !execution_context->IsContextDestroyed());
 
   // One or both of these will have been bound in an earlier pass.
-  if (bad_window_predictor_ || nnr_predictor_)
+  if (bad_window_predictor_.is_bound() || nnr_predictor_.is_bound())
     return true;
 
   // MediaMetricsProvider currently only exposed via render frame.
@@ -820,22 +826,22 @@ bool MediaCapabilities::EnsureLearningPredictors(
     DCHECK_GE(GetLearningBadWindowThreshold(), 0);
     metrics_provider->AcquireLearningTaskController(
         media::learning::tasknames::kConsecutiveBadWindows,
-        bad_window_predictor_.BindNewPipeAndPassReceiver());
+        bad_window_predictor_.BindNewPipeAndPassReceiver(task_runner));
   }
 
   if (GetLearningNnrThreshold() != -1.0) {
     DCHECK_GE(GetLearningNnrThreshold(), 0);
     metrics_provider->AcquireLearningTaskController(
         media::learning::tasknames::kConsecutiveNNRs,
-        nnr_predictor_.BindNewPipeAndPassReceiver());
+        nnr_predictor_.BindNewPipeAndPassReceiver(task_runner));
   }
 
-  return bad_window_predictor_ || nnr_predictor_;
+  return bad_window_predictor_.is_bound() || nnr_predictor_.is_bound();
 }
 
 bool MediaCapabilities::EnsurePerfHistoryService(
     ExecutionContext* execution_context) {
-  if (decode_history_service_)
+  if (decode_history_service_.is_bound())
     return true;
 
   if (!execution_context)
@@ -1066,13 +1072,13 @@ void MediaCapabilities::GetPerfInfo_ML(ExecutionContext* execution_context,
        media::learning::FeatureValue(width),
        media::learning::FeatureValue(framerate)});
 
-  if (bad_window_predictor_) {
+  if (bad_window_predictor_.is_bound()) {
     bad_window_predictor_->PredictDistribution(
         ml_features, WTF::Bind(&MediaCapabilities::OnBadWindowPrediction,
                                WrapPersistent(this), callback_id));
   }
 
-  if (nnr_predictor_) {
+  if (nnr_predictor_.is_bound()) {
     nnr_predictor_->PredictDistribution(
         ml_features, WTF::Bind(&MediaCapabilities::OnNnrPrediction,
                                WrapPersistent(this), callback_id));
@@ -1088,10 +1094,11 @@ void MediaCapabilities::ResolveCallbackIfReady(int callback_id) {
   // Both db_* fields should be set simultaneously by the DB callback.
   DCHECK(pending_cb->db_is_smooth.has_value());
 
-  if (nnr_predictor_ && !pending_cb->is_nnr_prediction_smooth.has_value())
+  if (nnr_predictor_.is_bound() &&
+      !pending_cb->is_nnr_prediction_smooth.has_value())
     return;
 
-  if (bad_window_predictor_ &&
+  if (bad_window_predictor_.is_bound() &&
       !pending_cb->is_bad_window_prediction_smooth.has_value())
     return;
 

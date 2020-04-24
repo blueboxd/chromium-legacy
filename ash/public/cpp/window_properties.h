@@ -211,6 +211,11 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
 // A property key to store the inactive color on the window frame.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
     kFrameInactiveColorKey;
+// A property key that is set to true when the window frame should look like it
+// is in restored state, but actually isn't. Set while dragging a maximized
+// window.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kFrameRestoreLookKey;
 
 // A property key whose value is shown in alt-tab/overview mode. If non-value
 // is set, the window's title is used.

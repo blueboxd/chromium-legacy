@@ -24,14 +24,17 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     const Vector<String>& platforms)
     : Event(name, Bubbles::kNo, Cancelable::kYes),
       ExecutionContextClient(&frame),
-      banner_service_remote_(std::move(service_remote)),
-      receiver_(this,
-                std::move(event_receiver),
-                frame.GetTaskRunner(TaskType::kApplicationLifeCycle)),
+      banner_service_remote_(frame.DomWindow()),
+      receiver_(this, frame.DomWindow()),
       platforms_(platforms),
       user_choice_(
           MakeGarbageCollected<UserChoiceProperty>(frame.DomWindow())) {
-  DCHECK(banner_service_remote_);
+  banner_service_remote_.Bind(
+      std::move(service_remote),
+      frame.GetTaskRunner(TaskType::kApplicationLifeCycle));
+  receiver_.Bind(std::move(event_receiver),
+                 frame.GetTaskRunner(TaskType::kApplicationLifeCycle));
+  DCHECK(banner_service_remote_.is_bound());
   DCHECK(receiver_.is_bound());
   UseCounter::Count(frame.GetDocument(), WebFeature::kBeforeInstallPromptEvent);
 }
@@ -40,17 +43,15 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     ExecutionContext* execution_context,
     const AtomicString& name,
     const BeforeInstallPromptEventInit* init)
-    : Event(name, init), ExecutionContextClient(execution_context) {
+    : Event(name, init),
+      ExecutionContextClient(execution_context),
+      banner_service_remote_(execution_context),
+      receiver_(this, execution_context) {
   if (init->hasPlatforms())
     platforms_ = init->platforms();
 }
 
 BeforeInstallPromptEvent::~BeforeInstallPromptEvent() = default;
-
-void BeforeInstallPromptEvent::Dispose() {
-  banner_service_remote_.reset();
-  receiver_.reset();
-}
 
 Vector<String> BeforeInstallPromptEvent::platforms() const {
   return platforms_;
@@ -128,6 +129,8 @@ void BeforeInstallPromptEvent::BannerDismissed() {
 }
 
 void BeforeInstallPromptEvent::Trace(Visitor* visitor) {
+  visitor->Trace(banner_service_remote_);
+  visitor->Trace(receiver_);
   visitor->Trace(user_choice_);
   Event::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

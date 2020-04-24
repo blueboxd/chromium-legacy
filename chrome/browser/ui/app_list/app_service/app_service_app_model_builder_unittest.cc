@@ -689,6 +689,24 @@ TEST_F(PluginVmAppTest, PluginVmDisabled) {
   EXPECT_THAT(GetModelContent(model_updater_.get()), testing::IsEmpty());
 }
 
+TEST_F(PluginVmAppTest, EnableAndDisablePluginVm) {
+  app_service_test_.FlushMojoCalls();
+  EXPECT_THAT(GetModelContent(model_updater_.get()), testing::IsEmpty());
+
+  test_helper_->AllowPluginVm();
+
+  app_service_test_.FlushMojoCalls();
+  EXPECT_EQ(std::vector<std::string>{l10n_util::GetStringUTF8(
+                IDS_PLUGIN_VM_APP_NAME)},
+            GetModelContent(model_updater_.get()));
+
+  testing_profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
+      chromeos::kPluginVmAllowed, false);
+
+  app_service_test_.FlushMojoCalls();
+  EXPECT_THAT(GetModelContent(model_updater_.get()), testing::IsEmpty());
+}
+
 TEST_F(PluginVmAppTest, PluginVmEnabled) {
   test_helper_->AllowPluginVm();
 

@@ -5,7 +5,7 @@
 /** @fileoverview Test implementation of PluralStringProxy. */
 
 // clang-format off
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // clang-format on
 
 /**
@@ -13,7 +13,7 @@
  * @implements {PluralStringProxy}
  * @constructor
  */
-/* #export */ class TestPluralStringProxy extends TestBrowserProxy {
+export class TestPluralStringProxy extends TestBrowserProxy {
   constructor() {
     super([
       'getPluralString',

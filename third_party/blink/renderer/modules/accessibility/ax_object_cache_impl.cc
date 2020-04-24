@@ -1144,8 +1144,13 @@ void AXObjectCacheImpl::ScheduleVisualUpdate() {
   Page* page = GetDocument().GetPage();
   if (!frame_view || !page)
     return;
-  if (!frame_view->CanThrottleRendering())
+
+  if (!frame_view->CanThrottleRendering() &&
+      (!GetDocument().GetPage()->Animator().IsServicingAnimations() ||
+       GetDocument().Lifecycle().GetState() >=
+           DocumentLifecycle::kInAccessibility)) {
     page->Animator().ScheduleVisualUpdate(GetDocument().GetFrame());
+  }
 }
 
 void AXObjectCacheImpl::FireTreeUpdatedEventImmediately(

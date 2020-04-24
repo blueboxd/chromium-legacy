@@ -154,11 +154,12 @@ void BrowserFrameHeaderAsh::DoPaintHeader(gfx::Canvas* canvas) {
 
 views::CaptionButtonLayoutSize BrowserFrameHeaderAsh::GetButtonLayoutSize()
     const {
-  return target_widget()->IsMaximized() || target_widget()->IsFullscreen() ||
-                 (ash::TabletMode::Get() &&
-                  ash::TabletMode::Get()->InTabletMode())
-             ? views::CaptionButtonLayoutSize::kBrowserCaptionMaximized
-             : views::CaptionButtonLayoutSize::kBrowserCaptionRestored;
+  if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
+    return views::CaptionButtonLayoutSize::kBrowserCaptionMaximized;
+
+  return ash::ShouldUseRestoreFrame(target_widget())
+             ? views::CaptionButtonLayoutSize::kBrowserCaptionRestored
+             : views::CaptionButtonLayoutSize::kBrowserCaptionMaximized;
 }
 
 SkColor BrowserFrameHeaderAsh::GetTitleColor() const {

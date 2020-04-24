@@ -27,6 +27,8 @@ namespace bluetooth {
 class GattClientManagerImpl;
 class RemoteCharacteristicImpl;
 class RemoteDescriptorImpl;
+class RemoteService;
+class RemoteServiceImpl;
 
 class RemoteDeviceImpl : public RemoteDevice {
  public:
@@ -169,7 +171,7 @@ class RemoteDeviceImpl : public RemoteDevice {
   std::atomic<bool> connected_{false};
   std::atomic<bool> bonded_{false};
   std::atomic<int> mtu_{kDefaultMtu};
-  std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteService>>
+  std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteServiceImpl>>
       uuid_to_service_;
   std::map<uint16_t, scoped_refptr<RemoteCharacteristicImpl>>
       handle_to_characteristic_;

@@ -4,17 +4,17 @@
 
 
 // clang-format off
-// #import {LifetimeBrowserProxyImpl} from 'chrome://settings/settings.js';
-// #import {SystemPageBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-// #import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {LifetimeBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {SystemPageBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
 /** @const {boolean} */
 const HARDWARE_ACCELERATION_AT_STARTUP = true;
 
-/** @implements {settings.SystemPageBrowserProxy} */
+/** @implements {SystemPageBrowserProxy} */
 class TestSystemPageBrowserProxy extends TestBrowserProxy {
   constructor() {
     super(['showProxySettings']);
@@ -35,7 +35,7 @@ suite('settings system page', function() {
   /** @type {TestSystemPageBrowserProxy} */
   let systemBrowserProxy;
 
-  /** @type {settings.TestLifetimeBrowserProxy} */
+  /** @type {TestLifetimeBrowserProxy} */
   let lifetimeBrowserProxy;
 
   /** @type {SettingsSystemPageElement} */
@@ -43,10 +43,10 @@ suite('settings system page', function() {
 
   setup(function() {
     PolymerTest.clearBody();
-    lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
-    settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
+    lifetimeBrowserProxy = new TestLifetimeBrowserProxy();
+    LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
     systemBrowserProxy = new TestSystemPageBrowserProxy();
-    settings.SystemPageBrowserProxyImpl.instance_ = systemBrowserProxy;
+    SystemPageBrowserProxyImpl.instance_ = systemBrowserProxy;
 
     systemPage = document.createElement('settings-system-page');
     systemPage.set('prefs', {
@@ -87,7 +87,7 @@ suite('settings system page', function() {
     systemPage.set(
         'prefs.hardware_acceleration_mode.enabled.value',
         !HARDWARE_ACCELERATION_AT_STARTUP);
-    Polymer.dom.flush();
+    flush();
     expectNotEquals(HARDWARE_ACCELERATION_AT_STARTUP, control.checked);
 
     const restart = control.querySelector('cr-button');
@@ -117,7 +117,7 @@ suite('settings system page', function() {
       extensionId: 'blah',
       enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
     });
-    Polymer.dom.flush();
+    flush();
 
     // When managed by extensions, we disable the ability to show proxy
     // settings.
@@ -132,7 +132,7 @@ suite('settings system page', function() {
       controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
       enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
     });
-    Polymer.dom.flush();
+    flush();
 
     // When managed by policy directly, we disable the ability to show proxy
     // settings.

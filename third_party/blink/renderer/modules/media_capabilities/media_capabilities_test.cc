@@ -260,7 +260,8 @@ class MediaCapabilitiesTestContext {
                 &MockPerfHistoryService::BindRequest,
                 base::Unretained(perf_history_service_.get()))));
 
-    media_capabilities_ = MakeGarbageCollected<MediaCapabilities>();
+    media_capabilities_ = MakeGarbageCollected<MediaCapabilities>(
+        v8_scope_.GetDocument().ToExecutionContext());
   }
 
   ~MediaCapabilitiesTestContext() {

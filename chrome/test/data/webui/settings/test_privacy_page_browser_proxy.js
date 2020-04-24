@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-// #import {SecureDnsUiManagementMode, SecureDnsMode} from 'chrome://settings/settings.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {SecureDnsUiManagementMode, SecureDnsMode} from 'chrome://settings/settings.js';
 // clang-format on
 
-/** @implements {settings.PrivacyPageBrowserProxy} */
-/* #export */ class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
+/** @implements {PrivacyPageBrowserProxy} */
+export class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'getMetricsReporting',
@@ -34,9 +34,9 @@
      * @private
      */
     this.secureDnsSetting = {
-      mode: settings.SecureDnsMode.SECURE,
+      mode: SecureDnsMode.SECURE,
       templates: [],
-      managementMode: settings.SecureDnsUiManagementMode.NO_OVERRIDE,
+      managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,
     };
 
     /**

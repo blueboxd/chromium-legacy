@@ -3,18 +3,17 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {Router, routes, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-// #import {ClearBrowsingDataBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-// #import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-// #import {TestClearBrowsingDataBrowserProxy} from 'chrome://test/settings/test_clear_browsing_data_browser_proxy.m.js';
-// #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-// #import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-// #import {isChildVisible, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
+import {Router, routes, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {ClearBrowsingDataBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {TestClearBrowsingDataBrowserProxy} from 'chrome://test/settings/test_clear_browsing_data_browser_proxy.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {isChildVisible, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
 // clang-format on
 
-cr.define('settings_clear_browsing_data_test', function() {
   function getClearBrowsingDataPrefs() {
     return {
       browser: {
@@ -95,7 +94,7 @@ cr.define('settings_clear_browsing_data_test', function() {
   }
 
   suite('ClearBrowsingDataDesktop', function() {
-    /** @type {settings.TestClearBrowsingDataBrowserProxy} */
+    /** @type {TestClearBrowsingDataBrowserProxy} */
     let testBrowserProxy;
 
     /** @type {TestSyncBrowserProxy} */
@@ -106,9 +105,9 @@ cr.define('settings_clear_browsing_data_test', function() {
 
     setup(function() {
       testBrowserProxy = new TestClearBrowsingDataBrowserProxy();
-      settings.ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
+      ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
       testSyncBrowserProxy = new TestSyncBrowserProxy();
-      settings.SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
+      SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
       PolymerTest.clearBody();
       element = document.createElement('settings-clear-browsing-data-dialog');
       element.set('prefs', getClearBrowsingDataPrefs());
@@ -124,75 +123,75 @@ cr.define('settings_clear_browsing_data_test', function() {
 
     test('ClearBrowsingDataSyncAccountInfoDesktop', function() {
       // Not syncing: the footer is hidden.
-      cr.webUIListenerCallback('sync-status-changed', {
+      webUIListenerCallback('sync-status-changed', {
         signedIn: false,
         hasError: false,
       });
-      Polymer.dom.flush();
+      flush();
       assertFalse(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
 
       // Syncing: the footer is shown, with the normal sync info.
-      cr.webUIListenerCallback('sync-status-changed', {
+      webUIListenerCallback('sync-status-changed', {
         signedIn: true,
         hasError: false,
       });
-      Polymer.dom.flush();
+      flush();
       assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
-      assertTrue(test_util.isChildVisible(element, '#sync-info'));
-      assertFalse(test_util.isChildVisible(element, '#sync-paused-info'));
+      assertTrue(isChildVisible(element, '#sync-info'));
+      assertFalse(isChildVisible(element, '#sync-paused-info'));
       assertFalse(
-          test_util.isChildVisible(element, '#sync-passphrase-error-info'));
-      assertFalse(test_util.isChildVisible(element, '#sync-other-error-info'));
+          isChildVisible(element, '#sync-passphrase-error-info'));
+      assertFalse(isChildVisible(element, '#sync-other-error-info'));
 
       // Sync is paused.
-      cr.webUIListenerCallback('sync-status-changed', {
+      webUIListenerCallback('sync-status-changed', {
         signedIn: true,
         hasError: true,
-        statusAction: settings.StatusAction.REAUTHENTICATE,
+        statusAction: StatusAction.REAUTHENTICATE,
       });
-      Polymer.dom.flush();
-      assertFalse(test_util.isChildVisible(element, '#sync-info'));
-      assertTrue(test_util.isChildVisible(element, '#sync-paused-info'));
+      flush();
+      assertFalse(isChildVisible(element, '#sync-info'));
+      assertTrue(isChildVisible(element, '#sync-paused-info'));
       assertFalse(
-          test_util.isChildVisible(element, '#sync-passphrase-error-info'));
-      assertFalse(test_util.isChildVisible(element, '#sync-other-error-info'));
+          isChildVisible(element, '#sync-passphrase-error-info'));
+      assertFalse(isChildVisible(element, '#sync-other-error-info'));
 
       // Sync passphrase error.
-      cr.webUIListenerCallback('sync-status-changed', {
+      webUIListenerCallback('sync-status-changed', {
         signedIn: true,
         hasError: true,
-        statusAction: settings.StatusAction.ENTER_PASSPHRASE,
+        statusAction: StatusAction.ENTER_PASSPHRASE,
       });
-      Polymer.dom.flush();
-      assertFalse(test_util.isChildVisible(element, '#sync-info'));
-      assertFalse(test_util.isChildVisible(element, '#sync-paused-info'));
+      flush();
+      assertFalse(isChildVisible(element, '#sync-info'));
+      assertFalse(isChildVisible(element, '#sync-paused-info'));
       assertTrue(
-          test_util.isChildVisible(element, '#sync-passphrase-error-info'));
-      assertFalse(test_util.isChildVisible(element, '#sync-other-error-info'));
+          isChildVisible(element, '#sync-passphrase-error-info'));
+      assertFalse(isChildVisible(element, '#sync-other-error-info'));
 
       // Other sync error.
-      cr.webUIListenerCallback('sync-status-changed', {
+      webUIListenerCallback('sync-status-changed', {
         signedIn: true,
         hasError: true,
-        statusAction: settings.StatusAction.NO_ACTION,
+        statusAction: StatusAction.NO_ACTION,
       });
-      Polymer.dom.flush();
-      assertFalse(test_util.isChildVisible(element, '#sync-info'));
-      assertFalse(test_util.isChildVisible(element, '#sync-paused-info'));
+      flush();
+      assertFalse(isChildVisible(element, '#sync-info'));
+      assertFalse(isChildVisible(element, '#sync-paused-info'));
       assertFalse(
-          test_util.isChildVisible(element, '#sync-passphrase-error-info'));
-      assertTrue(test_util.isChildVisible(element, '#sync-other-error-info'));
+          isChildVisible(element, '#sync-passphrase-error-info'));
+      assertTrue(isChildVisible(element, '#sync-other-error-info'));
     });
 
     test('ClearBrowsingDataPauseSyncDesktop', function() {
-      cr.webUIListenerCallback('sync-status-changed', {
+      webUIListenerCallback('sync-status-changed', {
         signedIn: true,
         hasError: false,
       });
-      Polymer.dom.flush();
+      flush();
       assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
       const syncInfo = element.$$('#sync-info');
-      assertTrue(test_util.isVisible(syncInfo));
+      assertTrue(isVisible(syncInfo));
       const signoutLink = syncInfo.querySelector('a[href]');
       assertTrue(!!signoutLink);
       assertEquals(0, testSyncBrowserProxy.getCallCount('pauseSync'));
@@ -201,15 +200,15 @@ cr.define('settings_clear_browsing_data_test', function() {
     });
 
     test('ClearBrowsingDataStartSignInDesktop', function() {
-      cr.webUIListenerCallback('sync-status-changed', {
+      webUIListenerCallback('sync-status-changed', {
         signedIn: true,
         hasError: true,
-        statusAction: settings.StatusAction.REAUTHENTICATE,
+        statusAction: StatusAction.REAUTHENTICATE,
       });
-      Polymer.dom.flush();
+      flush();
       assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
       const syncInfo = element.$$('#sync-paused-info');
-      assertTrue(test_util.isVisible(syncInfo));
+      assertTrue(isVisible(syncInfo));
       const signinLink = syncInfo.querySelector('a[href]');
       assertTrue(!!signinLink);
       assertEquals(0, testSyncBrowserProxy.getCallCount('startSignIn'));
@@ -218,26 +217,26 @@ cr.define('settings_clear_browsing_data_test', function() {
     });
 
     test('ClearBrowsingDataHandlePassphraseErrorDesktop', function() {
-      cr.webUIListenerCallback('sync-status-changed', {
+      webUIListenerCallback('sync-status-changed', {
         signedIn: true,
         hasError: true,
-        statusAction: settings.StatusAction.ENTER_PASSPHRASE,
+        statusAction: StatusAction.ENTER_PASSPHRASE,
       });
-      Polymer.dom.flush();
+      flush();
       assertTrue(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
       const syncInfo = element.$$('#sync-passphrase-error-info');
-      assertTrue(test_util.isVisible(syncInfo));
+      assertTrue(isVisible(syncInfo));
       const passphraseLink = syncInfo.querySelector('a[href]');
       assertTrue(!!passphraseLink);
       passphraseLink.click();
       assertEquals(
-          settings.routes.SYNC,
-          settings.Router.getInstance().getCurrentRoute());
+          routes.SYNC,
+          Router.getInstance().getCurrentRoute());
     });
   });
 
   suite('ClearBrowsingDataAllPlatforms', function() {
-    /** @type {settings.TestClearBrowsingDataBrowserProxy} */
+    /** @type {TestClearBrowsingDataBrowserProxy} */
     let testBrowserProxy;
 
     /** @type {SettingsClearBrowsingDataDialogElement} */
@@ -245,7 +244,7 @@ cr.define('settings_clear_browsing_data_test', function() {
 
     setup(function() {
       testBrowserProxy = new TestClearBrowsingDataBrowserProxy();
-      settings.ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
+      ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
       PolymerTest.clearBody();
       element = document.createElement('settings-clear-browsing-data-dialog');
       element.set('prefs', getClearBrowsingDataPrefs());
@@ -296,7 +295,7 @@ cr.define('settings_clear_browsing_data_test', function() {
 
             // Simulate signal from browser indicating that clearing has
             // completed.
-            cr.webUIListenerCallback('browsing-data-removing', false);
+            webUIListenerCallback('browsing-data-removing', false);
             promiseResolver.resolve();
             // Yields to the message loop to allow the callback chain of the
             // Promise that was just resolved to execute before the
@@ -361,7 +360,7 @@ cr.define('settings_clear_browsing_data_test', function() {
             // assertions.
           })
           .then(function() {
-            Polymer.dom.flush();
+            flush();
             const notice = element.$$('#notice');
             assertTrue(!!notice);
             const noticeActionButton = notice.$$('.action-button');
@@ -395,7 +394,7 @@ cr.define('settings_clear_browsing_data_test', function() {
 
       // Simulate a browsing data counter result for history. This checkbox's
       // sublabel should be updated.
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'update-counter-text', checkbox.pref.key, 'result');
       assertEquals('result', checkbox.subLabel);
     });
@@ -412,7 +411,7 @@ cr.define('settings_clear_browsing_data_test', function() {
 
       element = document.createElement('settings-clear-browsing-data-dialog');
       document.body.appendChild(element);
-      Polymer.dom.flush();
+      flush();
 
       return testBrowserProxy.whenCalled('initialize').then(function() {
         assertTrue(element.$$('#browsingCheckbox').hidden);
@@ -421,50 +420,50 @@ cr.define('settings_clear_browsing_data_test', function() {
       });
     });
 
-    if (cr.isChromeOS) {
+    if (isChromeOS) {
       // On ChromeOS the footer is never shown.
       test('ClearBrowsingDataSyncAccountInfo', function() {
         assertTrue(element.$$('#clearBrowsingDataDialog').open);
 
         // Not syncing.
-        cr.webUIListenerCallback('sync-status-changed', {
+        webUIListenerCallback('sync-status-changed', {
           signedIn: false,
           hasError: false,
         });
-        Polymer.dom.flush();
+        flush();
         assertFalse(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
 
         // Syncing.
-        cr.webUIListenerCallback('sync-status-changed', {
+        webUIListenerCallback('sync-status-changed', {
           signedIn: true,
           hasError: false,
         });
-        Polymer.dom.flush();
+        flush();
         assertFalse(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
 
         // Sync passphrase error.
-        cr.webUIListenerCallback('sync-status-changed', {
+        webUIListenerCallback('sync-status-changed', {
           signedIn: true,
           hasError: true,
-          statusAction: settings.StatusAction.ENTER_PASSPHRASE,
+          statusAction: StatusAction.ENTER_PASSPHRASE,
         });
-        Polymer.dom.flush();
+        flush();
         assertFalse(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
 
         // Other sync error.
-        cr.webUIListenerCallback('sync-status-changed', {
+        webUIListenerCallback('sync-status-changed', {
           signedIn: true,
           hasError: true,
-          statusAction: settings.StatusAction.NO_ACTION,
+          statusAction: StatusAction.NO_ACTION,
         });
-        Polymer.dom.flush();
+        flush();
         assertFalse(!!element.$$('#clearBrowsingDataDialog [slot=footer]'));
       });
     }
   });
 
   suite('InstalledApps', function() {
-    /** @type {settings.TestClearBrowsingDataBrowserProxy} */
+    /** @type {TestClearBrowsingDataBrowserProxy} */
     let testBrowserProxy;
 
     /** @type {SettingsClearBrowsingDataDialogElement} */
@@ -480,7 +479,7 @@ cr.define('settings_clear_browsing_data_test', function() {
       loadTimeData.overrideValues({installedAppsInCbd: true});
       testBrowserProxy = new TestClearBrowsingDataBrowserProxy();
       testBrowserProxy.setInstalledApps(installedApps);
-      settings.ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
+      ClearBrowsingDataBrowserProxyImpl.instance_ = testBrowserProxy;
       PolymerTest.clearBody();
       element = document.createElement('settings-clear-browsing-data-dialog');
       element.set('prefs', getClearBrowsingDataPrefs());
@@ -504,7 +503,7 @@ cr.define('settings_clear_browsing_data_test', function() {
       assertTrue(element.$.clearBrowsingDataDialog.open);
 
       await testBrowserProxy.whenCalled('getInstalledApps');
-      await test_util.whenAttributeIs(
+      await whenAttributeIs(
           element.$.installedAppsDialog, 'open', '');
       const firstInstalledApp = element.$$('installed-app-checkbox');
       assertTrue(!!firstInstalledApp);
@@ -527,5 +526,3 @@ cr.define('settings_clear_browsing_data_test', function() {
       assertTrue(apps[1].isChecked);
     });
   });
-  // #cr_define_end
-});

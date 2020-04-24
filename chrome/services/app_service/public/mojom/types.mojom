@@ -53,6 +53,9 @@ struct App {
   OptionalBool show_in_search;
   OptionalBool show_in_management;
 
+  // Whether the app icon should add the notification badging.
+  OptionalBool has_badge;
+
   // Paused apps cannot be launched, and any running apps that become paused
   // will be stopped. This is independent of whether or not the app is ready to
   // be launched (defined by the Readiness field).

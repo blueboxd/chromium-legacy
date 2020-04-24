@@ -79,4 +79,18 @@ void ResolveInferredOpacity(views::Widget::InitParams* params) {
   }
 }
 
+bool ShouldUseRestoreFrame(const views::Widget* widget) {
+  aura::Window* window = widget->GetNativeWindow();
+  // This is true when dragging a maximized window in ash. During this phase,
+  // the window should look as if it was restored, but keep its maximized state.
+  if (window->GetProperty(kFrameRestoreLookKey))
+    return true;
+
+  // Maximized and fullscreen windows should use the maximized frame.
+  if (widget->IsMaximized() || widget->IsFullscreen())
+    return false;
+
+  return true;
+}
+
 }  // namespace ash

@@ -551,11 +551,19 @@ void BrowserNonClientFrameViewAsh::OnWindowDestroying(aura::Window* window) {
 void BrowserNonClientFrameViewAsh::OnWindowPropertyChanged(aura::Window* window,
                                                            const void* key,
                                                            intptr_t old) {
-  if (key == aura::client::kShowStateKey && frame_header_) {
+  if (key == ash::kIsShowingInOverviewKey) {
+    OnAddedToOrRemovedFromOverview();
+    return;
+  }
+
+  if (!frame_header_)
+    return;
+
+  if (key == aura::client::kShowStateKey) {
     frame_header_->OnShowStateChanged(
         window->GetProperty(aura::client::kShowStateKey));
-  } else if (key == ash::kIsShowingInOverviewKey) {
-    OnAddedToOrRemovedFromOverview();
+  } else if (key == ash::kFrameRestoreLookKey) {
+    frame_header_->view()->InvalidateLayout();
   }
 }
 

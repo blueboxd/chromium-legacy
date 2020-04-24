@@ -3095,6 +3095,8 @@ jumbo_static_library("browser") {
       "apps/app_service/app_icon_source.h",
       "apps/app_service/app_launch_params.cc",
       "apps/app_service/app_launch_params.h",
+      "apps/app_service/app_notifications.cc",
+      "apps/app_service/app_notifications.h",
       "apps/app_service/app_service_metrics.cc",
       "apps/app_service/app_service_metrics.h",
       "apps/app_service/app_service_proxy.cc",

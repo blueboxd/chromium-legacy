@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {ExtensionControlBrowserProxyImpl} from 'chrome://settings/settings.js';
-// #import {TestExtensionControlBrowserProxy} from 'chrome://test/settings/test_extension_control_browser_proxy.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ExtensionControlBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {TestExtensionControlBrowserProxy} from 'chrome://test/settings/test_extension_control_browser_proxy.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
 suite('extension controlled indicator', function() {
@@ -18,13 +18,13 @@ suite('extension controlled indicator', function() {
   setup(function() {
     PolymerTest.clearBody();
     browserProxy = new TestExtensionControlBrowserProxy();
-    settings.ExtensionControlBrowserProxyImpl.instance_ = browserProxy;
+    ExtensionControlBrowserProxyImpl.instance_ = browserProxy;
     indicator = document.createElement('extension-controlled-indicator');
     indicator.extensionId = 'peiafolljookckjknpgofpbjobgbmpge';
     indicator.extensionCanBeDisabled = true;
     indicator.extensionName = 'The Bestest Name Ever';
     document.body.appendChild(indicator);
-    Polymer.dom.flush();
+    flush();
   });
 
   test('disable button tracks extensionCanBeDisabled', function() {
@@ -32,7 +32,7 @@ suite('extension controlled indicator', function() {
     assertTrue(!!indicator.$$('cr-button'));
 
     indicator.extensionCanBeDisabled = false;
-    Polymer.dom.flush();
+    flush();
     assertFalse(!!indicator.$$('cr-button'));
   });
 
@@ -51,7 +51,7 @@ suite('extension controlled indicator', function() {
 
     indicator.extensionId = 'dpjamkmjmigaoobjbekmfgabipmfilij';
     indicator.extensionName = 'A Slightly Less Good Name (Can\'t Beat That ^)';
-    Polymer.dom.flush();
+    flush();
 
     imgSrc = indicator.$$('img').src;
     assertTrue(imgSrc.includes(indicator.extensionId));

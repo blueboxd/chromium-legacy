@@ -18,6 +18,8 @@ namespace chromecast {
 namespace bluetooth {
 
 class GattClientManagerImpl;
+class RemoteDescriptor;
+class RemoteDescriptorImpl;
 class RemoteDeviceImpl;
 
 // A proxy for a remote characteristic on a RemoteDevice. Unless otherwise
@@ -42,12 +44,12 @@ class RemoteCharacteristicImpl : public RemoteCharacteristic {
   void Write(const std::vector<uint8_t>& value,
              StatusCallback callback) override;
   bool NotificationEnabled() override;
-  const bluetooth_v2_shlib::Gatt::Characteristic& characteristic()
-      const override;
   const bluetooth_v2_shlib::Uuid& uuid() const override;
-  uint16_t handle() const override;
+  HandleId handle() const override;
   bluetooth_v2_shlib::Gatt::Permissions permissions() const override;
   bluetooth_v2_shlib::Gatt::Properties properties() const override;
+
+  const bluetooth_v2_shlib::Gatt::Characteristic& characteristic() const;
 
   // Mark the object as out of scope.
   void Invalidate();
@@ -64,7 +66,7 @@ class RemoteCharacteristicImpl : public RemoteCharacteristic {
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~RemoteCharacteristicImpl() override;
 
-  std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>>
+  std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptorImpl>>
   CreateDescriptorMap();
 
   // If |indication| is true, register or deregister indication.
@@ -86,7 +88,7 @@ class RemoteCharacteristicImpl : public RemoteCharacteristic {
   // characteristics which do not have a CCCD.
   const std::unique_ptr<bluetooth_v2_shlib::Gatt::Descriptor> fake_cccd_;
 
-  const std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>>
+  const std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptorImpl>>
       uuid_to_descriptor_;
 
   std::atomic<bool> notification_enabled_{false};

@@ -8,6 +8,8 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/swipe_home_to_overview_controller.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_nudge.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -175,6 +177,17 @@ class HomeToOverviewNudgeControllerTest : public AshTestBase {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+class HomeToOverviewNudgeControllerTestWithA11yPrefs
+    : public HomeToOverviewNudgeControllerTest,
+      public ::testing::WithParamInterface<std::string> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    all,
+    HomeToOverviewNudgeControllerTestWithA11yPrefs,
+    testing::Values(prefs::kAccessibilityAutoclickEnabled,
+                    prefs::kAccessibilitySpokenFeedbackEnabled,
+                    prefs::kAccessibilitySwitchAccessEnabled));
 
 // Tests that home to overview gesture nudge is not shown if contextual nudges
 // are disabled.
@@ -689,4 +702,47 @@ TEST_F(HomeToOverviewNudgeControllerTest,
   }
 }
 
+// Home to Overview Nudge should be hidden when shelf controls are enabled.
+TEST_P(HomeToOverviewNudgeControllerTestWithA11yPrefs,
+       HideNudgesForShelfControls) {
+  SCOPED_TRACE(testing::Message() << "Pref=" << GetParam());
+
+  // Enters tablet mode and sets up two minimized windows. This will create the
+  // show nudge timer.
+  TabletModeControllerTestApi().EnterTabletMode();
+  CreateUserSessions(1);
+  ScopedWindowList windows = CreateAndMinimizeWindows(2);
+  ASSERT_TRUE(GetNudgeController());
+  EXPECT_TRUE(GetNudgeController()->HasShowTimerForTesting());
+
+  // Fires the show nudge timer to make the nudge visible.
+  GetNudgeController()->FireShowTimerForTesting();
+  EXPECT_TRUE(GetNudgeController()->nudge_for_testing());
+
+  // Enabling accessibility shelf controls should hide the nudge.
+  Shell::Get()
+      ->session_controller()
+      ->GetLastActiveUserPrefService()
+      ->SetBoolean(GetParam(), true);
+  EXPECT_FALSE(GetNudgeController()->nudge_for_testing());
+}
+
+// Home to Overview Nudge should not be shown when shelf controls are enabled.
+TEST_P(HomeToOverviewNudgeControllerTestWithA11yPrefs,
+       DisableNudgesForShelfControls) {
+  SCOPED_TRACE(testing::Message() << "Pref=" << GetParam());
+  // Enabling accessibility shelf controls should disable the nudge.
+  Shell::Get()
+      ->session_controller()
+      ->GetLastActiveUserPrefService()
+      ->SetBoolean(GetParam(), true);
+
+  // Enters tablet mode and sets up two minimized windows. This should not
+  // trigger the nudge show timer because shelf controls are on.
+  TabletModeControllerTestApi().EnterTabletMode();
+  CreateUserSessions(1);
+  ScopedWindowList windows = CreateAndMinimizeWindows(2);
+
+  EXPECT_FALSE(GetNudgeController());
+}
 }  // namespace ash

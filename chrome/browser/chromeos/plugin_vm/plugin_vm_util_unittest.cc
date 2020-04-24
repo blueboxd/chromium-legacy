@@ -12,7 +12,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace plugin_vm {
@@ -24,6 +26,8 @@ const char kDriveExtraParam[] = "&foobar=barfoo";
 class PluginVmUtilTest : public testing::Test {
  public:
   PluginVmUtilTest() = default;
+
+  MOCK_METHOD(void, OnPolicyChanged, (bool));
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
@@ -78,6 +82,40 @@ TEST_F(PluginVmUtilTest, GetPluginVmLicenseKey) {
   testing_profile_->ScopedCrosSettingsTestHelper()->SetString(
       chromeos::kPluginVmLicenseKey, kLicenseKey);
   EXPECT_EQ(kLicenseKey, GetPluginVmLicenseKey());
+}
+
+TEST_F(PluginVmUtilTest, AddPluginVmPolicyObserver) {
+  const std::unique_ptr<PluginVmPolicySubscription> subscription =
+      std::make_unique<plugin_vm::PluginVmPolicySubscription>(
+          testing_profile_.get(),
+          base::BindRepeating(&PluginVmUtilTest::OnPolicyChanged,
+                              base::Unretained(this)));
+
+  EXPECT_FALSE(IsPluginVmAllowedForProfile(testing_profile_.get()));
+
+  EXPECT_CALL(*this, OnPolicyChanged(true));
+  test_helper_->AllowPluginVm();
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  EXPECT_CALL(*this, OnPolicyChanged(false));
+  testing_profile_->ScopedCrosSettingsTestHelper()->SetString(
+      chromeos::kPluginVmLicenseKey, "");
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  EXPECT_CALL(*this, OnPolicyChanged(true));
+  const std::string kLicenseKey = "LICENSE_KEY";
+  testing_profile_->ScopedCrosSettingsTestHelper()->SetString(
+      chromeos::kPluginVmLicenseKey, kLicenseKey);
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  EXPECT_CALL(*this, OnPolicyChanged(false));
+  testing_profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
+      chromeos::kPluginVmAllowed, false);
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  EXPECT_CALL(*this, OnPolicyChanged(true));
+  testing_profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
+      chromeos::kPluginVmAllowed, true);
 }
 
 TEST_F(PluginVmUtilTest, DriveLinkDetection) {

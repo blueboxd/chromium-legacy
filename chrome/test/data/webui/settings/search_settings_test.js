@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {getSearchManager} from 'chrome://settings/settings.js';
-// #import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {getSearchManager} from 'chrome://settings/settings.js';
+import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
 suite('SearchSettingsTest', function() {
@@ -20,7 +20,7 @@ suite('SearchSettingsTest', function() {
   });
 
   setup(function() {
-    searchManager = settings.getSearchManager();
+    searchManager = getSearchManager();
     PolymerTest.clearBody();
   });
 

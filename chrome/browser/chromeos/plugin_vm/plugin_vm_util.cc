@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/observer_list.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_drive_image_download_service.h"
@@ -34,6 +35,11 @@ namespace {
 static std::string& GetFakeLicenseKey() {
   static base::NoDestructor<std::string> license_key;
   return *license_key;
+}
+
+static base::CallbackList<void(void)>& GetFakeLicenceKeyListeners() {
+  static base::NoDestructor<base::CallbackList<void(void)>> instance;
+  return *instance;
 }
 
 }  // namespace
@@ -138,6 +144,8 @@ void SetFakePluginVmPolicy(Profile* profile,
   dict->SetPath("hash", base::Value(image_hash));
 
   GetFakeLicenseKey() = license_key;
+
+  GetFakeLicenceKeyListeners().Notify();
 }
 
 bool FakeLicenseKeyIsSet() {
@@ -185,5 +193,37 @@ dlcservice::DlcModuleList GetPluginVmDlcModuleList() {
   dlc_module_info->set_dlc_id("pita");
   return dlc_module_list;
 }
+
+PluginVmPolicySubscription::PluginVmPolicySubscription(
+    Profile* profile,
+    base::RepeatingCallback<void(bool)> callback)
+    : profile_(profile), callback_(callback) {
+  DCHECK(chromeos::CrosSettings::IsInitialized());
+  chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
+  // Subscriptions are automatically removed when this object is destroyed.
+  allowed_subscription_ = cros_settings->AddSettingsObserver(
+      chromeos::kPluginVmAllowed,
+      base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
+                          base::Unretained(this)));
+  license_subscription_ = cros_settings->AddSettingsObserver(
+      chromeos::kPluginVmLicenseKey,
+      base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
+                          base::Unretained(this)));
+  fake_license_subscription_ = GetFakeLicenceKeyListeners().Add(
+      base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
+                          base::Unretained(this)));
+
+  is_allowed_ = IsPluginVmAllowedForProfile(profile);
+}
+
+void PluginVmPolicySubscription::OnPolicyChanged() {
+  bool allowed = IsPluginVmAllowedForProfile(profile_);
+  if (allowed != is_allowed_) {
+    is_allowed_ = allowed;
+    callback_.Run(allowed);
+  }
+}
+
+PluginVmPolicySubscription::~PluginVmPolicySubscription() = default;
 
 }  // namespace plugin_vm

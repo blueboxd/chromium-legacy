@@ -8,16 +8,30 @@
  * security site settings.
  */
 
-(function() {
-  const Id = settings.ContentSettingsTypes;
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import {routes} from '../route.m.js';
+import {Route, Router} from '../router.m.js';
+import '../settings_shared_css.m.js';
+import {ContentSettingsTypes} from '../site_settings/constants.m.js';
+import './recent_site_permissions.js';
+import {CategoryListItem} from './site_settings_list.js';
+
+  const Id = ContentSettingsTypes;
 
   /**
-   * @type {?Map<!settings.ContentSettingsTypes, !settings.CategoryListItem>}
+   * @type {?Map<!ContentSettingsTypes, !CategoryListItem>}
    */
   let categoryItemMap = null;
 
   /**
-   * @return {!Map<!settings.ContentSettingsTypes, !settings.CategoryListItem>}
+   * @return {!Map<!ContentSettingsTypes, !CategoryListItem>}
    */
   function getCategoryItemMap() {
     if (categoryItemMap !== null) {
@@ -28,7 +42,7 @@
     // these appear in the UI is determined elsewhere in this file.
     const categoryList = [
       {
-        route: settings.routes.SITE_SETTINGS_ADS,
+        route: routes.SITE_SETTINGS_ADS,
         id: Id.ADS,
         label: 'siteSettingsAds',
         icon: 'settings:ads',
@@ -38,7 +52,7 @@
             loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter'),
       },
       {
-        route: settings.routes.SITE_SETTINGS_AR,
+        route: routes.SITE_SETTINGS_AR,
         id: Id.AR,
         label: 'siteSettingsAr',
         icon: 'settings:vr-headset',
@@ -47,7 +61,7 @@
         shouldShow: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
       },
       {
-        route: settings.routes.SITE_SETTINGS_AUTOMATIC_DOWNLOADS,
+        route: routes.SITE_SETTINGS_AUTOMATIC_DOWNLOADS,
         id: Id.AUTOMATIC_DOWNLOADS,
         label: 'siteSettingsAutomaticDownloads',
         icon: 'cr:file-download',
@@ -55,7 +69,7 @@
         disabledLabel: 'siteSettingsAutoDownloadBlock',
       },
       {
-        route: settings.routes.SITE_SETTINGS_BACKGROUND_SYNC,
+        route: routes.SITE_SETTINGS_BACKGROUND_SYNC,
         id: Id.BACKGROUND_SYNC,
         label: 'siteSettingsBackgroundSync',
         icon: 'cr:sync',
@@ -63,7 +77,7 @@
         disabledLabel: 'siteSettingsBackgroundSyncBlocked',
       },
       {
-        route: settings.routes.SITE_SETTINGS_BLUETOOTH_DEVICES,
+        route: routes.SITE_SETTINGS_BLUETOOTH_DEVICES,
         id: Id.BLUETOOTH_DEVICES,
         label: 'siteSettingsBluetoothDevices',
         icon: 'settings:bluetooth',
@@ -73,7 +87,7 @@
             loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
       },
       {
-        route: settings.routes.SITE_SETTINGS_BLUETOOTH_SCANNING,
+        route: routes.SITE_SETTINGS_BLUETOOTH_SCANNING,
         id: Id.BLUETOOTH_SCANNING,
         label: 'siteSettingsBluetoothScanning',
         icon: 'settings:bluetooth-scanning',
@@ -83,7 +97,7 @@
             loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures'),
       },
       {
-        route: settings.routes.SITE_SETTINGS_CAMERA,
+        route: routes.SITE_SETTINGS_CAMERA,
         id: Id.CAMERA,
         label: 'siteSettingsCamera',
         icon: 'cr:videocam',
@@ -91,7 +105,7 @@
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: settings.routes.SITE_SETTINGS_CLIPBOARD,
+        route: routes.SITE_SETTINGS_CLIPBOARD,
         id: Id.CLIPBOARD,
         label: 'siteSettingsClipboard',
         icon: 'settings:clipboard',
@@ -101,8 +115,8 @@
       {
         route: (function() {
           return loadTimeData.getBoolean('privacySettingsRedesignEnabled') ?
-              settings.routes.COOKIES :
-              settings.routes.SITE_SETTINGS_COOKIES;
+              routes.COOKIES :
+              routes.SITE_SETTINGS_COOKIES;
         })(),
         id: Id.COOKIES,
         label: 'siteSettingsCookies',
@@ -112,7 +126,7 @@
         otherLabel: 'deleteDataPostSession',
       },
       {
-        route: settings.routes.SITE_SETTINGS_LOCATION,
+        route: routes.SITE_SETTINGS_LOCATION,
         id: Id.GEOLOCATION,
         label: 'siteSettingsLocation',
         icon: 'cr:location-on',
@@ -120,7 +134,7 @@
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: settings.routes.SITE_SETTINGS_HID_DEVICES,
+        route: routes.SITE_SETTINGS_HID_DEVICES,
         id: Id.HID_DEVICES,
         label: 'siteSettingsHidDevices',
         icon: 'settings:hid-device',
@@ -130,7 +144,7 @@
             loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures'),
       },
       {
-        route: settings.routes.SITE_SETTINGS_IMAGES,
+        route: routes.SITE_SETTINGS_IMAGES,
         id: Id.IMAGES,
         label: 'siteSettingsImages',
         icon: 'settings:photo',
@@ -138,7 +152,7 @@
         disabledLabel: 'siteSettingsDontShowImages',
       },
       {
-        route: settings.routes.SITE_SETTINGS_JAVASCRIPT,
+        route: routes.SITE_SETTINGS_JAVASCRIPT,
         id: Id.JAVASCRIPT,
         label: 'siteSettingsJavascript',
         icon: 'settings:code',
@@ -146,7 +160,7 @@
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: settings.routes.SITE_SETTINGS_MICROPHONE,
+        route: routes.SITE_SETTINGS_MICROPHONE,
         id: Id.MIC,
         label: 'siteSettingsMic',
         icon: 'cr:mic',
@@ -154,7 +168,7 @@
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: settings.routes.SITE_SETTINGS_MIDI_DEVICES,
+        route: routes.SITE_SETTINGS_MIDI_DEVICES,
         id: Id.MIDI_DEVICES,
         label: 'siteSettingsMidiDevices',
         icon: 'settings:midi',
@@ -162,7 +176,7 @@
         disabledLabel: 'siteSettingsMidiDevicesBlock',
       },
       {
-        route: settings.routes.SITE_SETTINGS_MIXEDSCRIPT,
+        route: routes.SITE_SETTINGS_MIXEDSCRIPT,
         id: Id.MIXEDSCRIPT,
         label: 'siteSettingsInsecureContent',
         icon: 'settings:insecure-content',
@@ -171,7 +185,7 @@
             loadTimeData.getBoolean('enableInsecureContentContentSetting'),
       },
       {
-        route: settings.routes.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE,
+        route: routes.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE,
         id: Id.NATIVE_FILE_SYSTEM_WRITE,
         label: 'siteSettingsNativeFileSystemWrite',
         icon: 'settings:save-original',
@@ -181,7 +195,7 @@
             'enableNativeFileSystemWriteContentSetting'),
       },
       {
-        route: settings.routes.SITE_SETTINGS_NOTIFICATIONS,
+        route: routes.SITE_SETTINGS_NOTIFICATIONS,
         id: Id.NOTIFICATIONS,
         label: 'siteSettingsNotifications',
         icon: 'settings:notifications',
@@ -189,7 +203,7 @@
         disabledLabel: 'siteSettingsBlocked',
       },
       {
-        route: settings.routes.SITE_SETTINGS_PAYMENT_HANDLER,
+        route: routes.SITE_SETTINGS_PAYMENT_HANDLER,
         id: Id.PAYMENT_HANDLER,
         label: 'siteSettingsPaymentHandler',
         icon: 'settings:payment-handler',
@@ -199,13 +213,13 @@
             loadTimeData.getBoolean('enablePaymentHandlerContentSetting'),
       },
       {
-        route: settings.routes.SITE_SETTINGS_PDF_DOCUMENTS,
+        route: routes.SITE_SETTINGS_PDF_DOCUMENTS,
         id: 'pdfDocuments',
         label: 'siteSettingsPdfDocuments',
         icon: 'settings:pdf',
       },
       {
-        route: settings.routes.SITE_SETTINGS_FLASH,
+        route: routes.SITE_SETTINGS_FLASH,
         id: Id.PLUGINS,
         label: 'siteSettingsFlash',
         icon: 'cr:extension',
@@ -213,7 +227,7 @@
         disabledLabel: 'siteSettingsFlashBlock',
       },
       {
-        route: settings.routes.SITE_SETTINGS_POPUPS,
+        route: routes.SITE_SETTINGS_POPUPS,
         id: Id.POPUPS,
         label: 'siteSettingsPopups',
         icon: 'cr:open-in-new',
@@ -222,14 +236,14 @@
       },
       // <if expr="chromeos">
       {
-        route: settings.routes.SITE_SETTINGS_PROTECTED_CONTENT,
+        route: routes.SITE_SETTINGS_PROTECTED_CONTENT,
         id: Id.PROTECTED_CONTENT,
         label: 'siteSettingsProtectedContent',
         icon: 'settings:protected-content',
       },
       // </if>
       {
-        route: settings.routes.SITE_SETTINGS_HANDLERS,
+        route: routes.SITE_SETTINGS_HANDLERS,
         id: Id.PROTOCOL_HANDLERS,
         label: 'siteSettingsHandlers',
         icon: 'settings:protocol-handler',
@@ -238,7 +252,7 @@
         shouldShow: () => !loadTimeData.getBoolean('isGuest'),
       },
       {
-        route: settings.routes.SITE_SETTINGS_SENSORS,
+        route: routes.SITE_SETTINGS_SENSORS,
         id: Id.SENSORS,
         label: 'siteSettingsSensors',
         icon: 'settings:sensors',
@@ -246,7 +260,7 @@
         disabledLabel: 'siteSettingsSensorsBlock',
       },
       {
-        route: settings.routes.SITE_SETTINGS_SERIAL_PORTS,
+        route: routes.SITE_SETTINGS_SERIAL_PORTS,
         id: Id.SERIAL_PORTS,
         label: 'siteSettingsSerialPorts',
         icon: 'settings:serial-port',
@@ -254,7 +268,7 @@
         disabledLabel: 'siteSettingsSerialPortsBlock',
       },
       {
-        route: settings.routes.SITE_SETTINGS_SOUND,
+        route: routes.SITE_SETTINGS_SOUND,
         id: Id.SOUND,
         label: 'siteSettingsSound',
         icon: 'settings:volume-up',
@@ -262,7 +276,7 @@
         disabledLabel: 'siteSettingsSoundBlock',
       },
       {
-        route: settings.routes.SITE_SETTINGS_UNSANDBOXED_PLUGINS,
+        route: routes.SITE_SETTINGS_UNSANDBOXED_PLUGINS,
         id: Id.UNSANDBOXED_PLUGINS,
         label: 'siteSettingsUnsandboxedPlugins',
         icon: 'cr:extension',
@@ -270,7 +284,7 @@
         disabledLabel: 'siteSettingsUnsandboxedPluginsBlock',
       },
       {
-        route: settings.routes.SITE_SETTINGS_USB_DEVICES,
+        route: routes.SITE_SETTINGS_USB_DEVICES,
         id: Id.USB_DEVICES,
         label: 'siteSettingsUsbDevices',
         icon: 'settings:usb',
@@ -278,7 +292,7 @@
         disabledLabel: 'siteSettingsUsbDevicesBlock',
       },
       {
-        route: settings.routes.SITE_SETTINGS_VR,
+        route: routes.SITE_SETTINGS_VR,
         id: Id.VR,
         label: 'siteSettingsVr',
         icon: 'settings:vr-headset',
@@ -287,7 +301,7 @@
         shouldShow: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
       },
       {
-        route: settings.routes.SITE_SETTINGS_ZOOM_LEVELS,
+        route: routes.SITE_SETTINGS_ZOOM_LEVELS,
         id: Id.ZOOM_LEVELS,
         label: 'siteSettingsZoomLevels',
         icon: 'settings:zoom-in',
@@ -299,8 +313,8 @@
   }
 
   /**
-   * @param {!Array<!settings.ContentSettingsTypes>} orderedIdList
-   * @return {!Array<!settings.CategoryListItem>}
+   * @param {!Array<!ContentSettingsTypes>} orderedIdList
+   * @return {!Array<!CategoryListItem>}
    */
   function buildItemListFromIds(orderedIdList) {
     const map = getCategoryItemMap();
@@ -317,14 +331,16 @@
   Polymer({
     is: 'settings-site-settings-page',
 
+    _template: html`{__html_template__}`,
+
     properties: {
       /**
        * @private {{
-       *   all: (!Array<!settings.CategoryListItem>|undefined),
-       *   permissionsBasic: (!Array<!settings.CategoryListItem>|undefined),
-       *   permissionsAdvanced: (!Array<!settings.CategoryListItem>|undefined),
-       *   contentBasic: (!Array<!settings.CategoryListItem>|undefined),
-       *   contentAdvanced: (!Array<!settings.CategoryListItem>|undefined)
+       *   all: (!Array<!CategoryListItem>|undefined),
+       *   permissionsBasic: (!Array<!CategoryListItem>|undefined),
+       *   permissionsAdvanced: (!Array<!CategoryListItem>|undefined),
+       *   contentBasic: (!Array<!CategoryListItem>|undefined),
+       *   contentAdvanced: (!Array<!CategoryListItem>|undefined)
        * }}
        */
       lists_: {
@@ -449,15 +465,15 @@
       // focusConfig is set only once on the parent, so this observer should
       // only fire once.
       assert(!oldConfig);
-      this.focusConfig.set(settings.routes.SITE_SETTINGS_ALL.path, () => {
-        cr.ui.focusWithoutInk(assert(this.$$('#allSites')));
+      this.focusConfig.set(routes.SITE_SETTINGS_ALL.path, () => {
+        focusWithoutInk(assert(this.$$('#allSites')));
       });
     },
 
     /** @private */
     onSiteSettingsAllClick_() {
-      settings.Router.getInstance().navigateTo(
-          settings.routes.SITE_SETTINGS_ALL);
+      Router.getInstance().navigateTo(
+          routes.SITE_SETTINGS_ALL);
     },
 
     /**
@@ -471,4 +487,3 @@
           '';
     },
   });
-})();

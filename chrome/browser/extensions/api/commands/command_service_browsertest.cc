@@ -10,12 +10,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/manifest_constants.h"
 
 namespace {

@@ -282,8 +282,6 @@ static_library("common") {
       "cast_messages.h",
       "extensions/api/commands/commands_handler.cc",
       "extensions/api/commands/commands_handler.h",
-      "extensions/api/extension_action/action_info.cc",
-      "extensions/api/extension_action/action_info.h",
       "extensions/api/notifications/notification_style.cc",
       "extensions/api/notifications/notification_style.h",
       "extensions/api/omnibox/omnibox_handler.cc",

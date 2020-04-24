@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
@@ -62,7 +63,7 @@ class BookmarkNodeDataTest : public testing::Test {
 
 namespace {
 
-std::unique_ptr<ui::OSExchangeData::Provider> CloneProvider(
+std::unique_ptr<ui::OSExchangeDataProvider> CloneProvider(
     const ui::OSExchangeData& data) {
   return data.provider().Clone();
 }
@@ -144,8 +145,8 @@ TEST_F(BookmarkNodeDataTest, URL) {
   // Writing should also put the URL and title on the clipboard.
   GURL read_url;
   base::string16 read_title;
-  EXPECT_TRUE(data2.GetURLAndTitle(
-      ui::OSExchangeData::CONVERT_FILENAMES, &read_url, &read_title));
+  EXPECT_TRUE(
+      data2.GetURLAndTitle(ui::CONVERT_FILENAMES, &read_url, &read_title));
   EXPECT_EQ(url, read_url);
   EXPECT_EQ(title, read_title);
 }

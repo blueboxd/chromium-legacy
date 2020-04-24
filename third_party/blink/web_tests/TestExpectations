@@ -6151,9 +6151,10 @@ crbug.com/1015187 external/wpt/html/cross-origin-embedder-policy/none.https.html
 crbug.com/1019079 virtual/gpu/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
 crbug.com/1019079 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
 #crbug.com/1027434 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+#crbug.com/1027434 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
 # Temporarily disabled until V8 roll
 crbug.com/793406 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Skip ]
-crbug.com/1027434 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+crbug.com/793406 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Skip ]
 
 # Sheriff 2019-12-02
 crbug.com/1029528 [ Linux ] http/tests/devtools/network/oopif-content.js [ Pass Failure ]

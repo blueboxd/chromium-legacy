@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://new-tab-page/voice_search_overlay.js';
-
-import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
+import {BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flushTasks, isVisible} from 'chrome://test/test_util.m.js';
 import {assertStyle, createTestProxy} from './test_support.js';
@@ -139,7 +137,7 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
   test('on final result received queries google', async () => {
     // Arrange.
     const googleBaseUrl = 'https://google.com';
-    loadTimeData.data = {googleBaseUrl: googleBaseUrl};
+    loadTimeData.overrideValues({googleBaseUrl: googleBaseUrl});
     testProxy.setResultFor('random', 0);
 
     // Act.

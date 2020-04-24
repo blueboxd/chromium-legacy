@@ -151,23 +151,7 @@ std::string DeterminePageLanguage(const std::string& code,
                                   const base::string16& contents,
                                   std::string* cld_language_p,
                                   bool* is_cld_reliable_p) {
-  // First determine the language for the test contents.
   bool is_cld_reliable;
-  std::string cld_language = DetermineTextLanguage(contents, &is_cld_reliable);
-  if (cld_language_p != nullptr)
-    *cld_language_p = cld_language;
-  if (is_cld_reliable_p != nullptr)
-    *is_cld_reliable_p = is_cld_reliable;
-  language::ToTranslateLanguageSynonym(&cld_language);
-
-  return DeterminePageLanguage(code, html_lang, cld_language, is_cld_reliable);
-}
-
-// Now consider the web page language details along with the contents language.
-std::string DeterminePageLanguage(const std::string& code,
-                                  const std::string& html_lang,
-                                  const std::string& cld_language,
-                                  bool is_cld_reliable) {
   // Check if html lang attribute is valid.
   std::string modified_html_lang;
   if (!html_lang.empty()) {
@@ -184,6 +168,14 @@ std::string DeterminePageLanguage(const std::string& code,
     ApplyLanguageCodeCorrection(&modified_code);
     translate::ReportContentLanguage(code, modified_code);
   }
+
+  std::string cld_language = DetermineTextLanguage(contents, &is_cld_reliable);
+
+  if (cld_language_p != nullptr)
+    *cld_language_p = cld_language;
+  if (is_cld_reliable_p != nullptr)
+    *is_cld_reliable_p = is_cld_reliable;
+  language::ToTranslateLanguageSynonym(&cld_language);
 
   // Adopt |modified_html_lang| if it is valid. Otherwise, adopt
   // |modified_code|.

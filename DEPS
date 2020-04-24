@@ -187,7 +187,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'e20f36f49562d7860bcb122e99a24dc142a80fd4',
+  'angle_revision': '5578fc8431bdd18e282e6b4082571f048d3fb79c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '4f5d3771dd9f3dd97fa6124d82572c326335f567',
+  'pdfium_revision': 'cf5d3830eac715407c60cd858c5961be38ba8133',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '966040b2c0bcb237726b6aff0e415e9e89b0f077',
+  'devtools_frontend_revision': 'dbc5c39b0dc19ff6bbe8e106ce5ce0c1f83c50c4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -298,7 +298,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'c9e28b1463c3e1c014ac12d17b077b8ff4920e70',
+  'dawn_revision': '635239faf8ef1685a2e82e24e3f4c6191195a292',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -868,7 +868,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '11b341547a92b6b33d8a175c39b23ebeef49dda2',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '5e18b605d39548f9811b9192dda6eec0b0743318',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1217,7 +1217,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'bb30100372668dfae854d488fc822f29f139cc11',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'a7534f07e8b6c18564724eba5f4f76ab5d458062',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1478,9 +1478,6 @@ deps = {
       'dep_type': 'cipd',
   },
 
-  'src/third_party/yasm/source/patched-yasm':
-    Var('chromium_git') + '/chromium/deps/yasm/patched-yasm.git' + '@' + '720b70524a4424b15fc57e82263568c8ba0496ad',
-
   'src/tools/page_cycler/acid3':
     Var('chromium_git') + '/chromium/deps/acid3.git' + '@' + '6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
 
@@ -1522,7 +1519,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@68a1fd5ce40981f7161483983f432cac0fcbd605',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@af074245eba10a9cc387f17881b1f558c8ac225c',
     'condition': 'checkout_src_internal',
   },
 

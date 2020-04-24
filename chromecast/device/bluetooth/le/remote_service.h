@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chromecast/device/bluetooth/le/ble_types.h"
 #include "chromecast/public/bluetooth/gatt.h"
 
 namespace chromecast {
@@ -32,7 +33,7 @@ class RemoteService : public base::RefCountedThreadSafe<RemoteService> {
       const bluetooth_v2_shlib::Uuid& uuid) = 0;
 
   virtual const bluetooth_v2_shlib::Uuid& uuid() const = 0;
-  virtual uint16_t handle() const = 0;
+  virtual HandleId handle() const = 0;
   virtual bool primary() const = 0;
 
  protected:

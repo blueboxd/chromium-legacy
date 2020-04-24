@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
-// #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
+import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
 // clang-format on
 
 suite('CrSettingsDoNotTrackToggleTest', function() {
@@ -17,14 +17,14 @@ suite('CrSettingsDoNotTrackToggleTest', function() {
 
   setup(function() {
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-    settings.MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
+    MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
     PolymerTest.clearBody();
     testElement = document.createElement('settings-do-not-track-toggle');
     testElement.prefs = {
       enable_do_not_track: {value: false},
     };
     document.body.appendChild(testElement);
-    Polymer.dom.flush();
+    flush();
   });
 
   teardown(function() {
@@ -35,12 +35,12 @@ suite('CrSettingsDoNotTrackToggleTest', function() {
     testElement.$.toggle.click();
     const result =
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(settings.PrivacyElementInteractions.DO_NOT_TRACK, result);
+    assertEquals(PrivacyElementInteractions.DO_NOT_TRACK, result);
   });
 
   test('DialogAndToggleBehavior', function() {
     testElement.$.toggle.click();
-    Polymer.dom.flush();
+    flush();
     assertTrue(testElement.$.toggle.checked);
 
     testElement.$$('.cancel-button').click();
@@ -48,7 +48,7 @@ suite('CrSettingsDoNotTrackToggleTest', function() {
     assertFalse(testElement.prefs.enable_do_not_track.value);
 
     testElement.$.toggle.click();
-    Polymer.dom.flush();
+    flush();
     assertTrue(testElement.$.toggle.checked);
     testElement.$$('.action-button').click();
     assertTrue(testElement.$.toggle.checked);

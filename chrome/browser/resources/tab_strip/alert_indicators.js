@@ -47,7 +47,7 @@ export class AlertIndicatorsElement extends CustomElement {
 
     let alertIndicatorCount = 0;
     for (const [index, alertState] of alertStates.entries()) {
-      const alertIndicator = alertIndicators[index];
+      const alertIndicator = alertIndicators[/** @type {number} */ (index)];
 
       // Don't show unsupported indicators.
       if (!alertIndicator) {

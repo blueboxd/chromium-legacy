@@ -1999,7 +1999,7 @@
     ],
 
     'official_goma_mac_pgo': [
-      'official', 'goma', 'no_keystone_registration_framework', 'static', 'no_symbols', 'disable_nacl', 'pgo_phase_1'
+      'official', 'goma', 'no_keystone_registration_framework', 'static', 'no_symbols', 'pgo_phase_1'
     ],
 
     'official_goma_perf': [
@@ -2035,7 +2035,7 @@
     ],
 
     'official_goma_x64_pgo': [
-      'official', 'goma', 'x64', 'static', 'no_symbols', 'disable_nacl', 'pgo_phase_1'
+      'official', 'goma', 'x64', 'static', 'minimal_symbols', 'pgo_phase_1'
     ],
 
     'official_goma_x86': [
@@ -2043,7 +2043,7 @@
     ],
 
     'official_goma_x86_pgo': [
-      'official', 'goma', 'x86', 'static', 'no_symbols', 'disable_nacl', 'pgo_phase_1'
+      'official', 'goma', 'x86', 'static', 'minimal_symbols', 'pgo_phase_1'
     ],
 
     'ozone_linux_release_bot': [
@@ -2680,7 +2680,7 @@
     },
 
     'pgo_phase_1': {
-      'mixins': ['use_clang_profiling', 'strip_absolute_paths_from_debug_symbols'],
+      'mixins': ['strip_absolute_paths_from_debug_symbols'],
       'gn_args': 'chrome_pgo_phase=1'
     },
 
@@ -2781,10 +2781,6 @@
 
     'use_clang_coverage': {
       'gn_args': 'use_clang_coverage=true',
-    },
-
-    'use_clang_profiling': {
-      'gn_args': 'use_clang_profiling=true'
     },
 
     'use_cxx11': {

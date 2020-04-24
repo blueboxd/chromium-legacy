@@ -29,8 +29,7 @@ namespace ui {
 
 namespace {
 
-constexpr OSExchangeData::FilenameToURLPolicy kFilenameToURLPolicy =
-    OSExchangeData::FilenameToURLPolicy::CONVERT_FILENAMES;
+constexpr FilenameToURLPolicy kFilenameToURLPolicy = CONVERT_FILENAMES;
 
 // Converts raw data to either narrow or wide string.
 template <typename StringType>

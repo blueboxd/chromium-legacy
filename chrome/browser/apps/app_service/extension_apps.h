@@ -14,8 +14,10 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_notifications.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
@@ -46,6 +48,12 @@ class AppWindow;
 class ExtensionSet;
 }
 
+namespace message_center {
+class Notification;
+}
+
+class NotificationDisplayService;
+
 namespace apps {
 class ExtensionAppsEnableFlow;
 
@@ -61,7 +69,8 @@ class ExtensionApps : public apps::PublisherBase,
                       public extensions::ExtensionPrefsObserver,
                       public extensions::ExtensionRegistryObserver,
                       public content_settings::Observer,
-                      public ArcAppListPrefs::Observer {
+                      public ArcAppListPrefs::Observer,
+                      public NotificationDisplayService::Observer {
  public:
   ExtensionApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                 Profile* profile,
@@ -164,6 +173,14 @@ class ExtensionApps : public apps::PublisherBase,
   void OnPackageListInitialRefreshed() override;
   void OnArcAppListPrefsDestroyed() override;
 
+  // NotificationDisplayService::Observer overrides.
+  void OnDisplay(const message_center::Notification& notification) override;
+  void OnClose(const std::string& notification_id) override;
+  void OnWillBeDestroyed(NotificationDisplayService* service) override;
+
+  void MaybeAddNotification(const std::string& app_id,
+                            const std::string& notification_id);
+
   // Checks if extension is disabled and if enable flow should be started.
   // Returns true if extension enable flow is started or there is already one
   // running, and run |callback| to launch the app.
@@ -252,6 +269,12 @@ class ExtensionApps : public apps::PublisherBase,
 
   // TODO(crbug.com/1061843): Remove web_app_launch_manager_ when BMO launches.
   std::unique_ptr<web_app::WebAppLaunchManager> web_app_launch_manager_;
+
+  ScopedObserver<NotificationDisplayService,
+                 NotificationDisplayService::Observer>
+      notification_display_service_{this};
+
+  AppNotifications app_notifications_;
 
   base::WeakPtrFactory<ExtensionApps> weak_factory_{this};
 

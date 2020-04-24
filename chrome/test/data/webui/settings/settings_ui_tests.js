@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {CrSettingsPrefs, Router, routes} from 'chrome://settings/settings.js';
-// #import {eventToPromise} from 'chrome://test/test_util.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrSettingsPrefs, Router, routes} from 'chrome://settings/settings.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for the Settings layout. */
@@ -18,7 +18,7 @@ suite('settings-ui', function() {
     ui = document.createElement('settings-ui');
     document.body.appendChild(ui);
     return CrSettingsPrefs.initialized.then(() => {
-      Polymer.dom.flush();
+      flush();
     });
   });
 
@@ -37,9 +37,9 @@ suite('settings-ui', function() {
     const drawer = ui.$.drawer;
     assertFalse(!!drawer.open);
 
-    const whenDone = test_util.eventToPromise('cr-drawer-opened', drawer);
+    const whenDone = eventToPromise('cr-drawer-opened', drawer);
     drawer.openDrawer();
-    Polymer.dom.flush();
+    flush();
 
     // Validate that dialog is open and menu is shown so it will animate.
     assertTrue(drawer.open);
@@ -47,7 +47,7 @@ suite('settings-ui', function() {
 
     return whenDone
         .then(function() {
-          const whenClosed = test_util.eventToPromise('close', drawer);
+          const whenClosed = eventToPromise('close', drawer);
           drawer.cancel();
           return whenClosed;
         })
@@ -68,12 +68,12 @@ suite('settings-ui', function() {
     // Mimic narrow mode and open the drawer
     toolbar.narrow = true;
     drawer.openDrawer();
-    Polymer.dom.flush();
-    await test_util.eventToPromise('cr-drawer-opened', drawer);
+    flush();
+    await eventToPromise('cr-drawer-opened', drawer);
 
     toolbar.narrow = false;
-    Polymer.dom.flush();
-    await test_util.eventToPromise('close', drawer);
+    flush();
+    await eventToPromise('close', drawer);
     assertFalse(drawer.open);
   });
 
@@ -90,7 +90,7 @@ suite('settings-ui', function() {
     assertFalse(main.advancedToggleExpanded);
 
     main.advancedToggleExpanded = true;
-    Polymer.dom.flush();
+    flush();
 
     assertFalse(!!ui.$$('cr-drawer settings-menu'));
     assertTrue(ui.advancedOpenedInMain_);
@@ -99,7 +99,7 @@ suite('settings-ui', function() {
     assertTrue(main.advancedToggleExpanded);
 
     ui.$.drawerTemplate.if = true;
-    Polymer.dom.flush();
+    flush();
 
     const drawerMenu = ui.$$('cr-drawer settings-menu');
     assertTrue(!!drawerMenu);
@@ -108,7 +108,7 @@ suite('settings-ui', function() {
 
     // Collapse 'Advanced' in the menu
     drawerMenu.$.advancedButton.click();
-    Polymer.dom.flush();
+    flush();
 
     // Collapsing it in the menu should not collapse it in the main area
     assertFalse(drawerMenu.advancedOpened);
@@ -122,7 +122,7 @@ suite('settings-ui', function() {
 
     // Collapse 'Advanced' in the main area
     main.advancedToggleExpanded = false;
-    Polymer.dom.flush();
+    flush();
 
     // Collapsing it in the main area should not collapse it in the menu
     assertFalse(ui.advancedOpenedInMain_);
@@ -138,8 +138,8 @@ suite('settings-ui', function() {
     assertEquals('', searchField.getSearchInput().value);
 
     const query = 'foo';
-    settings.Router.getInstance().navigateTo(
-        settings.routes.BASIC, new URLSearchParams(`search=${query}`));
+    Router.getInstance().navigateTo(
+        routes.BASIC, new URLSearchParams(`search=${query}`));
     assertEquals(query, searchField.getSearchInput().value);
   });
 
@@ -148,25 +148,25 @@ suite('settings-ui', function() {
     const searchField =
         /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
 
-    settings.Router.getInstance().navigateTo(
-        settings.routes.BASIC, /* dynamicParams */ null,
+    Router.getInstance().navigateTo(
+        routes.BASIC, /* dynamicParams */ null,
         /* removeSearch */ true);
     assertEquals('', searchField.getSearchInput().value);
     assertFalse(
-        settings.Router.getInstance().getQueryParameters().has('search'));
+        Router.getInstance().getQueryParameters().has('search'));
 
     let value = 'GOOG';
     searchField.setValue(value);
     assertEquals(
         value,
-        settings.Router.getInstance().getQueryParameters().get('search'));
+        Router.getInstance().getQueryParameters().get('search'));
 
     // Test that search queries are properly URL encoded.
     value = '+++';
     searchField.setValue(value);
     assertEquals(
         value,
-        settings.Router.getInstance().getQueryParameters().get('search'));
+        Router.getInstance().getQueryParameters().get('search'));
   });
 
   test('whitespace only search query is ignored', function() {
@@ -174,19 +174,19 @@ suite('settings-ui', function() {
     const searchField =
         /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
     searchField.setValue('    ');
-    let urlParams = settings.Router.getInstance().getQueryParameters();
+    let urlParams = Router.getInstance().getQueryParameters();
     assertFalse(urlParams.has('search'));
 
     searchField.setValue('   foo');
-    urlParams = settings.Router.getInstance().getQueryParameters();
+    urlParams = Router.getInstance().getQueryParameters();
     assertEquals('foo', urlParams.get('search'));
 
     searchField.setValue('   foo ');
-    urlParams = settings.Router.getInstance().getQueryParameters();
+    urlParams = Router.getInstance().getQueryParameters();
     assertEquals('foo ', urlParams.get('search'));
 
     searchField.setValue('   ');
-    urlParams = settings.Router.getInstance().getQueryParameters();
+    urlParams = Router.getInstance().getQueryParameters();
     assertFalse(urlParams.has('search'));
   });
 });

@@ -404,11 +404,8 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
       embedded_worker()->worker_devtools_agent_route_id());
   for (const auto& controllee : controllee_map_) {
     ServiceWorkerContainerHost* container_host = controllee.second;
-    info.clients.insert(std::make_pair(
-        container_host->client_uuid(),
-        ServiceWorkerClientInfo(
-            container_host->process_id(), container_host->frame_id(),
-            container_host->web_contents_getter(), container_host->type())));
+    info.clients.emplace(container_host->client_uuid(),
+                         container_host->GetServiceWorkerClientInfo());
   }
 
   info.script_response_time = script_response_time_for_devtools_;
@@ -791,13 +788,9 @@ void ServiceWorkerVersion::AddControllee(
 
   // Notify observers asynchronously for consistency with RemoveControllee.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &ServiceWorkerVersion::NotifyControlleeAdded,
-          weak_factory_.GetWeakPtr(), uuid,
-          ServiceWorkerClientInfo(
-              container_host->process_id(), container_host->frame_id(),
-              container_host->web_contents_getter(), container_host->type())));
+      FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeAdded,
+                                weak_factory_.GetWeakPtr(), uuid,
+                                container_host->GetServiceWorkerClientInfo()));
 }
 
 void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {

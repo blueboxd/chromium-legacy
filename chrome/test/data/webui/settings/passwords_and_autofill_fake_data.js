@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
-cr.define('autofill_test_util', function() {
   /**
    * Creates a single item for the list of passwords.
    * @param {string=} url
@@ -14,7 +13,7 @@ cr.define('autofill_test_util', function() {
    * @param {number=} id
    * @return {chrome.passwordsPrivate.PasswordUiEntry}
    */
-  /* #export */ function createPasswordEntry(url, username, id) {
+  export function createPasswordEntry(url, username, id) {
     // Generate fake data if param is undefined.
     url = url || patternMaker_('www.xxxxxx.com', 16);
     username = username || patternMaker_('user_xxxxx', 16);
@@ -37,7 +36,7 @@ cr.define('autofill_test_util', function() {
    * @param {number=} id
    * @return {chrome.passwordsPrivate.ExceptionEntry}
    */
-  /* #export */ function createExceptionEntry(url, id) {
+  export function createExceptionEntry(url, id) {
     url = url || patternMaker_('www.xxxxxx.com', 16);
     id = id || 0;
     return {
@@ -54,7 +53,7 @@ cr.define('autofill_test_util', function() {
    * Creates a new fake address entry for testing.
    * @return {!chrome.autofillPrivate.AddressEntry}
    */
-  /* #export */ function createEmptyAddressEntry() {
+  export function createEmptyAddressEntry() {
     return {};
   }
 
@@ -62,7 +61,7 @@ cr.define('autofill_test_util', function() {
    * Creates a fake address entry for testing.
    * @return {!chrome.autofillPrivate.AddressEntry}
    */
-  /* #export */ function createAddressEntry() {
+  export function createAddressEntry() {
     const ret = {};
     ret.guid = makeGuid_();
     ret.fullNames = ['John Doe'];
@@ -85,7 +84,7 @@ cr.define('autofill_test_util', function() {
    * Creates a new empty credit card entry for testing.
    * @return {!chrome.autofillPrivate.CreditCardEntry}
    */
-  /* #export */ function createEmptyCreditCardEntry() {
+  export function createEmptyCreditCardEntry() {
     const now = new Date();
     const expirationMonth = now.getMonth() + 1;
     const ret = {};
@@ -98,7 +97,7 @@ cr.define('autofill_test_util', function() {
    * Creates a new random credit card entry for testing.
    * @return {!chrome.autofillPrivate.CreditCardEntry}
    */
-  /* #export */ function createCreditCardEntry() {
+  export function createCreditCardEntry() {
     const ret = {};
     ret.guid = makeGuid_();
     ret.name = 'Jane Doe';
@@ -123,7 +122,7 @@ cr.define('autofill_test_util', function() {
    * @return {chrome.passwordsPrivate.CompromisedCredential}
    * @private
    */
-  /* #export */ function makeCompromisedCredential(
+  export function makeCompromisedCredential(
       url, username, type, id, elapsedMinSinceCompromise) {
     return {
       id: id,
@@ -144,7 +143,7 @@ cr.define('autofill_test_util', function() {
    * @param {string=} lastCheck
    * @return {!chrome.passwordsPrivate.PasswordCheckStatus}
    */
-  /* #export */ function makePasswordCheckStatus(
+  export function makePasswordCheckStatus(
       state, checked, remaining, lastCheck) {
     return {
       state: state || chrome.passwordsPrivate.PasswordCheckState.IDLE,
@@ -180,7 +179,7 @@ cr.define('autofill_test_util', function() {
    * Helper class for creating password-section sub-element from fake data and
    * appending them to the document.
    */
-  /* #export */ class PasswordSectionElementFactory {
+  export class PasswordSectionElementFactory {
     /**
      * @param {HTMLDocument} document The test's |document| object.
      */
@@ -211,7 +210,7 @@ cr.define('autofill_test_util', function() {
         },
       };
       this.document.body.appendChild(passwordsSection);
-      Polymer.dom.flush();
+      flush();
       return passwordsSection;
     }
 
@@ -225,7 +224,7 @@ cr.define('autofill_test_util', function() {
           this.document.createElement('password-list-item');
       passwordListItem.item = {entry: passwordEntry, password: ''};
       this.document.body.appendChild(passwordListItem);
-      Polymer.dom.flush();
+      flush();
       return passwordListItem;
     }
 
@@ -239,7 +238,7 @@ cr.define('autofill_test_util', function() {
           this.document.createElement('password-edit-dialog');
       passwordDialog.item = {entry: passwordEntry, password: ''};
       this.document.body.appendChild(passwordDialog);
-      Polymer.dom.flush();
+      flush();
       return passwordDialog;
     }
 
@@ -261,13 +260,13 @@ cr.define('autofill_test_util', function() {
 
       const dialog = this.document.createElement('passwords-export-dialog');
       this.document.body.appendChild(dialog);
-      Polymer.dom.flush();
+      flush();
 
       return dialog;
     }
   }
 
-  /* #export */ class PasswordManagerExpectations {
+  export class PasswordManagerExpectations {
     constructor() {
       this.requested = {
         passwords: 0,
@@ -290,7 +289,7 @@ cr.define('autofill_test_util', function() {
   }
 
   /** Helper class to track AutofillManager expectations. */
-  /* #export */ class AutofillManagerExpectations {
+  export class AutofillManagerExpectations {
     constructor() {
       this.requestedAddresses = 0;
       this.listeningAddresses = 0;
@@ -301,7 +300,7 @@ cr.define('autofill_test_util', function() {
    * Test implementation
    * @implements {AutofillManager}
    */
-  /* #export */ class TestAutofillManager {
+  export class TestAutofillManager {
     constructor() {
       this.actual_ = new AutofillManagerExpectations();
 
@@ -345,7 +344,7 @@ cr.define('autofill_test_util', function() {
   }
 
   /** Helper class to track PaymentsManager expectations. */
-  /* #export */ class PaymentsManagerExpectations {
+  export class PaymentsManagerExpectations {
     constructor() {
       this.requestedCreditCards = 0;
       this.listeningCreditCards = 0;
@@ -356,7 +355,7 @@ cr.define('autofill_test_util', function() {
    * Test implementation
    * @implements {PaymentsManager}
    */
-  /* #export */ class TestPaymentsManager {
+  export class TestPaymentsManager {
     constructor() {
       this.actual_ = new PaymentsManagerExpectations();
 
@@ -406,21 +405,3 @@ cr.define('autofill_test_util', function() {
     }
   }
 
-  // #cr_define_end
-  return {
-    createPasswordEntry: createPasswordEntry,
-    createExceptionEntry: createExceptionEntry,
-    createEmptyAddressEntry: createEmptyAddressEntry,
-    createAddressEntry: createAddressEntry,
-    createEmptyCreditCardEntry: createEmptyCreditCardEntry,
-    createCreditCardEntry: createCreditCardEntry,
-    makeCompromisedCredential: makeCompromisedCredential,
-    makePasswordCheckStatus: makePasswordCheckStatus,
-    TestPaymentsManager: TestPaymentsManager,
-    PaymentsManagerExpectations: PaymentsManagerExpectations,
-    TestAutofillManager: TestAutofillManager,
-    AutofillManagerExpectations: AutofillManagerExpectations,
-    PasswordSectionElementFactory: PasswordSectionElementFactory,
-    PasswordManagerExpectations: PasswordManagerExpectations,
-  };
-});

@@ -8,11 +8,11 @@
  */
 
 // clang-format off
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.m.js';
-// #import {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from 'chrome://settings/settings.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {flushTasks} from 'chrome://test/test_util.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
+import {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from 'chrome://settings/settings.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flushTasks} from 'chrome://test/test_util.m.js';
 // clang-format on
 
 suite('SettingsSecureDnsInput', function() {
@@ -42,11 +42,11 @@ suite('SettingsSecureDnsInput', function() {
 
   setup(function() {
     testBrowserProxy = new TestPrivacyPageBrowserProxy();
-    settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+    PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
     PolymerTest.clearBody();
     testElement = document.createElement('secure-dns-input');
     document.body.appendChild(testElement);
-    Polymer.dom.flush();
+    flush();
     crInput = testElement.$$('#input');
     assertFalse(crInput.invalid);
     assertEquals('', testElement.value);
@@ -132,7 +132,7 @@ suite('SettingsSecureDns', function() {
   /** @type {CrRadioGroupElement} */
   let secureDnsRadioGroup;
 
-  /** @type {!Array<!settings.ResolverOption>} */
+  /** @type {!Array<!ResolverOption>} */
   const resolverList = [
     {name: 'Custom', value: 'custom', policy: ''},
   ];
@@ -166,19 +166,19 @@ suite('SettingsSecureDns', function() {
   setup(async function() {
     testBrowserProxy = new TestPrivacyPageBrowserProxy();
     testBrowserProxy.setResolverList(resolverList);
-    settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+    PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
     PolymerTest.clearBody();
     testElement = document.createElement('settings-secure-dns');
     testElement.prefs = {
       dns_over_https: {
-        mode: {value: settings.SecureDnsMode.AUTOMATIC},
+        mode: {value: SecureDnsMode.AUTOMATIC},
         templates: {value: ''}
       },
     };
     document.body.appendChild(testElement);
 
     await testBrowserProxy.whenCalled('getSecureDnsSetting');
-    await test_util.flushTasks();
+    await flushTasks();
     secureDnsToggle = testElement.$$('#secureDnsToggle');
     secureDnsRadioGroup = testElement.$$('#secureDnsRadioGroup');
     assertRadioButtonsShown();
@@ -192,11 +192,11 @@ suite('SettingsSecureDns', function() {
 
   test('SecureDnsOff', function() {
     cr.webUIListenerCallback('secure-dns-setting-changed', {
-      mode: settings.SecureDnsMode.OFF,
+      mode: SecureDnsMode.OFF,
       templates: [],
-      managementMode: settings.SecureDnsUiManagementMode.NO_OVERRIDE,
+      managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,
     });
-    Polymer.dom.flush();
+    flush();
     assertFalse(secureDnsToggle.hasAttribute('checked'));
     assertFalse(secureDnsToggle.$$('cr-toggle').disabled);
     assertTrue(secureDnsRadioGroup.hidden);
@@ -206,38 +206,38 @@ suite('SettingsSecureDns', function() {
 
   test('SecureDnsAutomatic', function() {
     cr.webUIListenerCallback('secure-dns-setting-changed', {
-      mode: settings.SecureDnsMode.AUTOMATIC,
+      mode: SecureDnsMode.AUTOMATIC,
       templates: [],
-      managementMode: settings.SecureDnsUiManagementMode.NO_OVERRIDE,
+      managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,
     });
-    Polymer.dom.flush();
+    flush();
     assertRadioButtonsShown();
     assertEquals(defaultDescription, secureDnsToggle.subLabel);
     assertFalse(!!secureDnsToggle.$$('cr-policy-pref-indicator'));
     assertEquals(
-        settings.SecureDnsMode.AUTOMATIC, secureDnsRadioGroup.selected);
+        SecureDnsMode.AUTOMATIC, secureDnsRadioGroup.selected);
   });
 
   test('SecureDnsSecure', function() {
     cr.webUIListenerCallback('secure-dns-setting-changed', {
-      mode: settings.SecureDnsMode.SECURE,
+      mode: SecureDnsMode.SECURE,
       templates: [],
-      managementMode: settings.SecureDnsUiManagementMode.NO_OVERRIDE,
+      managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,
     });
-    Polymer.dom.flush();
+    flush();
     assertRadioButtonsShown();
     assertEquals(defaultDescription, secureDnsToggle.subLabel);
     assertFalse(!!secureDnsToggle.$$('cr-policy-pref-indicator'));
-    assertEquals(settings.SecureDnsMode.SECURE, secureDnsRadioGroup.selected);
+    assertEquals(SecureDnsMode.SECURE, secureDnsRadioGroup.selected);
   });
 
   test('SecureDnsManagedEnvironment', function() {
     cr.webUIListenerCallback('secure-dns-setting-changed', {
-      mode: settings.SecureDnsMode.OFF,
+      mode: SecureDnsMode.OFF,
       templates: [],
-      managementMode: settings.SecureDnsUiManagementMode.DISABLED_MANAGED,
+      managementMode: SecureDnsUiManagementMode.DISABLED_MANAGED,
     });
-    Polymer.dom.flush();
+    flush();
     assertFalse(secureDnsToggle.hasAttribute('checked'));
     assertTrue(secureDnsToggle.$$('cr-toggle').disabled);
     assertTrue(secureDnsRadioGroup.hidden);
@@ -250,12 +250,12 @@ suite('SettingsSecureDns', function() {
 
   test('SecureDnsParentalControl', function() {
     cr.webUIListenerCallback('secure-dns-setting-changed', {
-      mode: settings.SecureDnsMode.OFF,
+      mode: SecureDnsMode.OFF,
       templates: [],
       managementMode:
-          settings.SecureDnsUiManagementMode.DISABLED_PARENTAL_CONTROLS,
+          SecureDnsUiManagementMode.DISABLED_PARENTAL_CONTROLS,
     });
-    Polymer.dom.flush();
+    flush();
     assertFalse(secureDnsToggle.hasAttribute('checked'));
     assertTrue(secureDnsToggle.$$('cr-toggle').disabled);
     assertTrue(secureDnsRadioGroup.hidden);
@@ -273,11 +273,11 @@ suite('SettingsSecureDns', function() {
         chrome.settingsPrivate.ControlledBy.DEVICE_POLICY;
 
     cr.webUIListenerCallback('secure-dns-setting-changed', {
-      mode: settings.SecureDnsMode.AUTOMATIC,
+      mode: SecureDnsMode.AUTOMATIC,
       templates: [],
-      managementMode: settings.SecureDnsUiManagementMode.NO_OVERRIDE,
+      managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,
     });
-    Polymer.dom.flush();
+    flush();
     assertTrue(secureDnsToggle.hasAttribute('checked'));
     assertTrue(secureDnsToggle.$$('cr-toggle').disabled);
     assertTrue(secureDnsRadioGroup.hidden);

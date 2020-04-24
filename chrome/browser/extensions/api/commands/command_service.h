@@ -10,11 +10,11 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/command.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/extension.h"
 
 class Profile;

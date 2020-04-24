@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/browser/resources/optimize_webui.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/grit/grit_rule.gni")
 import("//tools/polymer/html_to_js.gni")
 
 js_type_check("closure_compile") {
@@ -174,4 +176,51 @@ html_to_js("web_components") {
     "untrusted_iframe.js",
     "voice_search_overlay.js",
   ]
+}
+
+if (optimize_webui) {
+  grit("unoptimized_resources") {
+    source = "new_tab_page_resources.grd"
+
+    deps = [
+      "//chrome/browser/resources/new_tab_page:web_components",
+      "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_js",
+      "//skia/public/mojom:mojom_js",
+    ]
+
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    outputs = [
+      "grit/new_tab_page_resources.h",
+      "grit/new_tab_page_resources_map.cc",
+      "grit/new_tab_page_resources_map.h",
+      "new_tab_page_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome/browser/resources/new_tab_page"
+  }
+
+  unpak("unpak") {
+    pak_file = "new_tab_page_resources.pak"
+    out_folder = "unpak"
+    deps = [ ":unoptimized_resources" ]
+  }
+
+  optimize_webui("optimized_js") {
+    host = "new-tab-page"
+    input = rebase_path("$target_gen_dir/unpak", root_build_dir)
+    deps = [ ":unpak" ]
+    js_module_in_files = [ "new_tab_page.js" ]
+    js_out_files = [ "new_tab_page.rollup.js" ]
+    excludes = [
+      "chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js",
+      "chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js",
+      "skcolor.mojom-lite.js",
+      "new_tab_page.mojom-lite.js",
+      "chrome://resources/mojo/url/mojom/url.mojom-lite.js",
+      "chrome://resources/js/cr.m.js",
+    ]
+  }
 }

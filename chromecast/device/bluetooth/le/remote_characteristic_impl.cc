@@ -111,9 +111,9 @@ RemoteCharacteristicImpl::RemoteCharacteristicImpl(
 
 RemoteCharacteristicImpl::~RemoteCharacteristicImpl() = default;
 
-std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>>
+std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptorImpl>>
 RemoteCharacteristicImpl::CreateDescriptorMap() {
-  std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>> ret;
+  std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptorImpl>> ret;
   for (const auto& descriptor : characteristic_->descriptors) {
     ret[descriptor.uuid] = new RemoteDescriptorImpl(
         device_, gatt_client_manager_, &descriptor, io_task_runner_);
@@ -317,7 +317,7 @@ const bluetooth_v2_shlib::Uuid& RemoteCharacteristicImpl::uuid() const {
   return characteristic_->uuid;
 }
 
-uint16_t RemoteCharacteristicImpl::handle() const {
+HandleId RemoteCharacteristicImpl::handle() const {
   return characteristic_->handle;
 }
 

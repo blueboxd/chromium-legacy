@@ -46,12 +46,16 @@ AssistiveType ProposeAssistiveAction(const base::string16& text) {
   return action;
 }
 
-PersonalInfoSuggester::PersonalInfoSuggester(InputMethodEngine* engine,
-                                             Profile* profile)
-    : engine_(engine),
+PersonalInfoSuggester::PersonalInfoSuggester(
+    SuggestionHandlerInterface* suggestion_handler,
+    Profile* profile,
+    autofill::PersonalDataManager* personal_data_manager)
+    : suggestion_handler_(suggestion_handler),
       profile_(profile),
       personal_data_manager_(
-          autofill::PersonalDataManagerFactory::GetForProfile(profile)) {}
+          personal_data_manager
+              ? personal_data_manager
+              : autofill::PersonalDataManagerFactory::GetForProfile(profile)) {}
 
 PersonalInfoSuggester::~PersonalInfoSuggester() {}
 
@@ -145,7 +149,8 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
                                            const size_t confirmed_length) {
   std::string error;
   suggestion_shown_ = true;
-  engine_->SetSuggestion(context_id_, text, confirmed_length, true, &error);
+  suggestion_handler_->SetSuggestion(context_id_, text, confirmed_length, true,
+                                     &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
@@ -158,7 +163,7 @@ AssistiveType PersonalInfoSuggester::GetProposeActionType() {
 void PersonalInfoSuggester::AcceptSuggestion() {
   std::string error;
   suggestion_shown_ = false;
-  engine_->AcceptSuggestion(context_id_, &error);
+  suggestion_handler_->AcceptSuggestion(context_id_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to accept suggestion. " << error;
   }
@@ -167,7 +172,7 @@ void PersonalInfoSuggester::AcceptSuggestion() {
 void PersonalInfoSuggester::DismissSuggestion() {
   std::string error;
   suggestion_shown_ = false;
-  engine_->DismissSuggestion(context_id_, &error);
+  suggestion_handler_->DismissSuggestion(context_id_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;
   }

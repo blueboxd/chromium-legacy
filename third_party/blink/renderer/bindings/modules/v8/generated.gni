@@ -21,6 +21,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/array_buffer_or_array_buffer_view_or_blob_or_usv_string_or_write_params.h",
   "$bindings_modules_v8_output_dir/array_buffer_or_array_buffer_view_or_json_web_key.cc",
   "$bindings_modules_v8_output_dir/array_buffer_or_array_buffer_view_or_json_web_key.h",
+  "$bindings_modules_v8_output_dir/array_buffer_or_array_buffer_view_or_readable_stream.cc",
+  "$bindings_modules_v8_output_dir/array_buffer_or_array_buffer_view_or_readable_stream.h",
   "$bindings_modules_v8_output_dir/array_buffer_or_array_buffer_view_or_string.cc",
   "$bindings_modules_v8_output_dir/array_buffer_or_array_buffer_view_or_string.h",
   "$bindings_modules_v8_output_dir/array_buffer_or_array_buffer_view_or_usv_string.cc",

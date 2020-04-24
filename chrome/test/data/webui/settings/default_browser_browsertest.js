@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {DefaultBrowserBrowserProxyImpl} from 'chrome://settings/settings.js';
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DefaultBrowserBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
 /**
@@ -13,7 +13,7 @@
  * for allowing tests to know when a method was called, as well as
  * specifying mock responses.
  *
- * @implements {settings.DefaultBrowserBrowserProxy}
+ * @implements {DefaultBrowserBrowserProxy}
  */
 class TestDefaultBrowserBrowserProxy extends TestBrowserProxy {
   constructor() {
@@ -59,7 +59,7 @@ suite('DefaultBrowserPageTest', function() {
 
   setup(function() {
     browserProxy = new TestDefaultBrowserBrowserProxy();
-    settings.DefaultBrowserBrowserProxyImpl.instance_ = browserProxy;
+    DefaultBrowserBrowserProxyImpl.instance_ = browserProxy;
     return initPage();
   });
 
@@ -86,7 +86,7 @@ suite('DefaultBrowserPageTest', function() {
     });
 
     return initPage().then(function() {
-      Polymer.dom.flush();
+      flush();
       assertTrue(!!page.$$('#canBeDefaultBrowser'));
       assertTrue(!page.$$('#isDefault'));
       assertTrue(!page.$$('#isSecondaryInstall'));
@@ -104,7 +104,7 @@ suite('DefaultBrowserPageTest', function() {
     });
 
     return initPage().then(function() {
-      Polymer.dom.flush();
+      flush();
       assertFalse(!!page.$$('#canBeDefaultBrowser'));
       assertFalse(page.$$('#isDefault').hidden);
       assertTrue(page.$$('#isSecondaryInstall').hidden);
@@ -121,7 +121,7 @@ suite('DefaultBrowserPageTest', function() {
     });
 
     return initPage().then(function() {
-      Polymer.dom.flush();
+      flush();
       assertFalse(!!page.$$('#canBeDefaultBrowser'));
       assertTrue(page.$$('#isDefault').hidden);
       assertFalse(page.$$('#isSecondaryInstall').hidden);
@@ -138,7 +138,7 @@ suite('DefaultBrowserPageTest', function() {
     });
 
     return initPage().then(function() {
-      Polymer.dom.flush();
+      flush();
       assertFalse(!!page.$$('#canBeDefaultBrowser'));
       assertTrue(page.$$('#isDefault').hidden);
       assertTrue(page.$$('#isSecondaryInstall').hidden);
@@ -155,7 +155,7 @@ suite('DefaultBrowserPageTest', function() {
     });
 
     return initPage().then(function() {
-      Polymer.dom.flush();
+      flush();
       assertFalse(!!page.$$('#canBeDefaultBrowser'));
       assertTrue(page.$$('#isDefault').hidden);
       assertTrue(page.$$('#isSecondaryInstall').hidden);

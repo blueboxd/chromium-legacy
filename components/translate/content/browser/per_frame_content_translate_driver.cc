@@ -349,27 +349,10 @@ void PerFrameContentTranslateDriver::OnWebLanguageDetectionDetails(
 void PerFrameContentTranslateDriver::OnPageContents(
     base::TimeTicks capture_begin_time,
     const base::string16& contents) {
+  awaiting_contents_ = false;
   details_.contents = contents;
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeTicks::Now() - capture_begin_time);
-
-  // Run language detection of contents in a sandboxed utility process.
-  mojo::Remote<language_detection::mojom::LanguageDetectionService> service =
-      language_detection::LaunchLanguageDetectionService();
-  service->DetermineLanguage(
-      contents,
-      base::BindOnce(&PerFrameContentTranslateDriver::OnPageContentsLanguage,
-                     weak_pointer_factory_.GetWeakPtr(), std::move(service)));
-}
-
-void PerFrameContentTranslateDriver::OnPageContentsLanguage(
-    mojo::Remote<language_detection::mojom::LanguageDetectionService>
-        service_handle,
-    const std::string& contents_language,
-    bool is_contents_language_reliable) {
-  awaiting_contents_ = false;
-  details_.cld_language = contents_language;
-  details_.is_cld_reliable = is_contents_language_reliable;
 
   if (!details_.url.is_empty())
     ComputeActualPageLanguage();
@@ -379,8 +362,8 @@ void PerFrameContentTranslateDriver::ComputeActualPageLanguage() {
   // TODO(crbug.com/1063520): Move this language detection to a sandboxed
   // utility process.
   std::string language = DeterminePageLanguage(
-      details_.content_language, details_.html_root_language,
-      details_.cld_language, details_.is_cld_reliable);
+      details_.content_language, details_.html_root_language, details_.contents,
+      &details_.cld_language, &details_.is_cld_reliable);
 
   if (!language.empty()) {
     details_.time = base::Time::Now();

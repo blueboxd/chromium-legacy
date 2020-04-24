@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_DEVICE_BLUETOOTH_LE_REMOTE_DESCRIPTOR_IMPL_H_
 #define CHROMECAST_DEVICE_BLUETOOTH_LE_REMOTE_DESCRIPTOR_IMPL_H_
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -22,7 +21,7 @@ class RemoteDeviceImpl;
 
 class RemoteDescriptorImpl : public RemoteDescriptor {
  public:
-  // RemoteDescriptorImpl implementation:
+  // RemoteDescriptor implementation:
   void ReadAuth(bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
                 ReadCallback callback) override;
   void Read(ReadCallback callback) override;
@@ -31,10 +30,11 @@ class RemoteDescriptorImpl : public RemoteDescriptor {
                  StatusCallback callback) override;
   void Write(const std::vector<uint8_t>& value,
              StatusCallback callback) override;
-  const bluetooth_v2_shlib::Gatt::Descriptor& descriptor() const override;
   const bluetooth_v2_shlib::Uuid uuid() const override;
-  uint16_t handle() const override;
+  HandleId handle() const override;
   bluetooth_v2_shlib::Gatt::Permissions permissions() const override;
+
+  const bluetooth_v2_shlib::Gatt::Descriptor& descriptor() const;
 
   // Mark the object as out of scope.
   void Invalidate();
@@ -47,7 +47,7 @@ class RemoteDescriptorImpl : public RemoteDescriptor {
   RemoteDescriptorImpl(
       RemoteDeviceImpl* device,
       base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
-      const bluetooth_v2_shlib::Gatt::Descriptor* characteristic,
+      const bluetooth_v2_shlib::Gatt::Descriptor* descriptor,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~RemoteDescriptorImpl() override;
 

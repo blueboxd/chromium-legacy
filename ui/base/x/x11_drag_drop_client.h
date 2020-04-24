@@ -64,8 +64,22 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
     virtual void EndMoveLoop() = 0;
 
    protected:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
   };
+
+  XDragDropClient(Delegate* delegate, Display* xdisplay, XID xwindow);
+  virtual ~XDragDropClient();
+  XDragDropClient(const XDragDropClient&) = delete;
+  XDragDropClient& operator=(const XDragDropClient&) = delete;
+
+  XID xwindow() const { return xwindow_; }
+  XDragContext* target_current_context() {
+    return target_current_context_.get();
+  }
+  const XOSExchangeDataProvider* source_provider() const {
+    return source_provider_;
+  }
+  int current_modifier_state() const { return current_modifier_state_; }
 
   // Handling XdndPosition can be paused while waiting for more data; this is
   // called either synchronously from OnXdndPosition, or asynchronously after
@@ -75,26 +89,37 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   void ProcessMouseMove(const gfx::Point& screen_point,
                         unsigned long event_time);
 
-  const XOSExchangeDataProvider* source_provider() const {
-    return source_provider_;
-  }
-  int current_modifier_state() const { return current_modifier_state_; }
-
   // During the blocking StartDragAndDrop() call, this converts the views-style
   // |drag_operation_| bitfield into a vector of Atoms to offer to other
   // processes.
   std::vector<Atom> GetOfferedDragOperations() const;
 
-  // These methods handle the various X11 client messages from the platform.
-  void OnXdndEnter(const XClientMessageEvent& event);
-  void OnXdndPosition(const XClientMessageEvent& event);
-  void OnXdndStatus(const XClientMessageEvent& event);
-  void OnXdndLeave(const XClientMessageEvent& event);
-  void OnXdndDrop(const XClientMessageEvent& event);
-  void OnXdndFinished(const XClientMessageEvent& event);
+  // Tries to handle the XDND event.  Returns true for all known event types:
+  // XdndEnter, XdndLeave, XdndPosition, XdndStatus, XdndDrop, and XdndFinished;
+  // returns false if an event of an unexpected type has been passed.
+  bool HandleXdndEvent(const XClientMessageEvent& event);
+
+  // These |Handle...| methods essentially implement the
+  // views::X11MoveLoopDelegate interface.
+  void HandleMouseMovement(const gfx::Point& screen_point,
+                           int flags,
+                           base::TimeTicks event_time);
+  void HandleMouseReleased();
+  void HandleMoveLoopEnded();
 
   // Called when XSelection data has been copied to our process.
   void OnSelectionNotify(const XSelectionEvent& xselection);
+
+  // Resets the drag state so the object is ready to handle the drag.  Sets
+  // X window properties so that the desktop environment is aware of available
+  // actions.  Sets |source_provider_| so properties of dragged data can be
+  // queried afterwards.  Should be called before entering the main drag loop.
+  void InitDrag(int operation, const OSExchangeData* data);
+
+  // Cleans up the drag state after the drag is done.  Removes the X window
+  // properties related to the drag operation.  Should be called after exiting
+  // the main drag loop.
+  void CleanupDrag();
 
  protected:
   enum class SourceState {
@@ -112,30 +137,9 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
     kOther,
   };
 
-  XDragDropClient(Delegate* delegate, Display* xdisplay, XID xwindow);
-  virtual ~XDragDropClient();
-
-  XDragDropClient(const XDragDropClient&) = delete;
-  XDragDropClient& operator=(const XDragDropClient&) = delete;
-
-  XID xwindow() const { return xwindow_; }
-  XDragContext* target_current_context() {
-    return target_current_context_.get();
-  }
   DragDropTypes::DragOperation negotiated_operation() const {
     return negotiated_operation_;
   }
-
-  // Resets the drag state so the object is ready to handle the drag.  Sets
-  // X window properties so that the desktop environment is aware of available
-  // actions.  Sets |source_provider_| so properties of dragged data can be
-  // queried afterwards.  Should be called before entering the main drag loop.
-  void InitDrag(int operation, OSExchangeData* data);
-
-  // Cleans up the drag state after the drag is done.  Removes the X window
-  // properties related to the drag operation.  Should be called after exiting
-  // the main drag loop.
-  void CleanupDrag();
 
   // Updates |current_modifier_state_| with the given set of flags.
   void UpdateModifierState(int flags);
@@ -150,15 +154,15 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   void StartEndMoveLoopTimer();
   void StopEndMoveLoopTimer();
 
-  // These |Handle...| methods essentially implement the
-  // views::X11MoveLoopDelegate interface.
-  void HandleMouseMovement(const gfx::Point& screen_point,
-                           int flags,
-                           base::TimeTicks event_time);
-  void HandleMouseReleased();
-  void HandleMoveLoopEnded();
-
  private:
+  // These methods handle the various X11 client messages from the platform.
+  void OnXdndEnter(const XClientMessageEvent& event);
+  void OnXdndPosition(const XClientMessageEvent& event);
+  void OnXdndStatus(const XClientMessageEvent& event);
+  void OnXdndLeave(const XClientMessageEvent& event);
+  void OnXdndDrop(const XClientMessageEvent& event);
+  void OnXdndFinished(const XClientMessageEvent& event);
+
   // Creates an XEvent and fills it in with values typical for XDND messages:
   // the type of event is set to ClientMessage, the format is set to 32 (longs),
   // and the zero member of data payload is set to |xwindow_|.  All other data

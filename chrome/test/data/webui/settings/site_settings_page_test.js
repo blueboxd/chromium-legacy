@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {ContentSetting,defaultSettingLabel,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-// #import {eventToPromise} from 'chrome://test/test_util.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
+import {ContentSetting,defaultSettingLabel,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
 // clang-format on
 
 suite('SiteSettingsPage', function() {
@@ -27,14 +27,14 @@ suite('SiteSettingsPage', function() {
 
   function setupPage() {
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ =
+    SiteSettingsPrefsBrowserProxyImpl.instance_ =
         siteSettingsBrowserProxy;
     siteSettingsBrowserProxy.setResultFor(
         'getCookieSettingDescription', Promise.resolve(testLabels[0]));
     PolymerTest.clearBody();
     page = document.createElement('settings-site-settings-page');
     document.body.appendChild(page);
-    Polymer.dom.flush();
+    flush();
   }
 
   setup(setupPage);
@@ -46,34 +46,34 @@ suite('SiteSettingsPage', function() {
   test('DefaultLabels', function() {
     assertEquals(
         'a',
-        settings.defaultSettingLabel(settings.ContentSetting.ALLOW, 'a', 'b'));
+        defaultSettingLabel(ContentSetting.ALLOW, 'a', 'b'));
     assertEquals(
         'b',
-        settings.defaultSettingLabel(settings.ContentSetting.BLOCK, 'a', 'b'));
+        defaultSettingLabel(ContentSetting.BLOCK, 'a', 'b'));
     assertEquals(
         'a',
-        settings.defaultSettingLabel(
-            settings.ContentSetting.ALLOW, 'a', 'b', 'c'));
+        defaultSettingLabel(
+            ContentSetting.ALLOW, 'a', 'b', 'c'));
     assertEquals(
         'b',
-        settings.defaultSettingLabel(
-            settings.ContentSetting.BLOCK, 'a', 'b', 'c'));
+        defaultSettingLabel(
+            ContentSetting.BLOCK, 'a', 'b', 'c'));
     assertEquals(
         'c',
-        settings.defaultSettingLabel(
-            settings.ContentSetting.SESSION_ONLY, 'a', 'b', 'c'));
+        defaultSettingLabel(
+            ContentSetting.SESSION_ONLY, 'a', 'b', 'c'));
     assertEquals(
         'c',
-        settings.defaultSettingLabel(
-            settings.ContentSetting.DEFAULT, 'a', 'b', 'c'));
+        defaultSettingLabel(
+            ContentSetting.DEFAULT, 'a', 'b', 'c'));
     assertEquals(
         'c',
-        settings.defaultSettingLabel(
-            settings.ContentSetting.ASK, 'a', 'b', 'c'));
+        defaultSettingLabel(
+            ContentSetting.ASK, 'a', 'b', 'c'));
     assertEquals(
         'c',
-        settings.defaultSettingLabel(
-            settings.ContentSetting.IMPORTANT_CONTENT, 'a', 'b', 'c'));
+        defaultSettingLabel(
+            ContentSetting.IMPORTANT_CONTENT, 'a', 'b', 'c'));
   });
 
   test('CookiesLinkRowSublabel', async function() {
@@ -82,7 +82,7 @@ suite('SiteSettingsPage', function() {
     });
     setupPage();
     const allSettingsList = page.$$('#allSettingsList');
-    await test_util.eventToPromise(
+    await eventToPromise(
         'site-settings-list-labels-updated-for-testing', allSettingsList);
     assertEquals(
         allSettingsList.i18n('siteSettingsCookiesAllowed'),
@@ -95,7 +95,7 @@ suite('SiteSettingsPage', function() {
     });
     setupPage();
     await siteSettingsBrowserProxy.whenCalled('getCookieSettingDescription');
-    Polymer.dom.flush();
+    flush();
     const cookiesLinkRow = page.$$('#basicContentList').$$('#cookies');
     assertEquals(testLabels[0], cookiesLinkRow.subLabel);
 

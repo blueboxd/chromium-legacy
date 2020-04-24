@@ -914,12 +914,12 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessRLEData() {
         // RLE8 has one color index that gets repeated; RLE4 has two
         // color indexes in the upper and lower 4 bits of the byte,
         // which are alternated.
-        size_t color_indexes[2] = {code, code};
+        wtf_size_t color_indexes[2] = {code, code};
         if (info_header_.compression == RLE4) {
           color_indexes[0] = (color_indexes[0] >> 4) & 0xf;
           color_indexes[1] &= 0xf;
         }
-        for (int which = 0; coord_.X() < end_x;) {
+        for (wtf_size_t which = 0; coord_.X() < end_x;) {
           // Some images specify color values past the end of the
           // color table; set these pixels to black.
           if (color_indexes[which] < info_header_.clr_used)
@@ -980,7 +980,7 @@ BMPImageReader::ProcessingResult BMPImageReader::ProcessNonRLEData(
         uint8_t pixel_data = ReadUint8(0);
         for (size_t pixel = 0;
              (pixel < pixels_per_byte) && (coord_.X() < end_x); ++pixel) {
-          const size_t color_index =
+          const wtf_size_t color_index =
               (pixel_data >> (8 - info_header_.bit_count)) & mask;
           if (decoding_and_mask_) {
             // There's no way to accurately represent an AND + XOR

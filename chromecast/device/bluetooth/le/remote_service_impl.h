@@ -17,6 +17,8 @@ namespace chromecast {
 namespace bluetooth {
 
 class GattClientManagerImpl;
+class RemoteCharacteristic;
+class RemoteCharacteristicImpl;
 class RemoteDeviceImpl;
 
 class RemoteServiceImpl : public RemoteService {
@@ -27,13 +29,14 @@ class RemoteServiceImpl : public RemoteService {
   scoped_refptr<RemoteCharacteristic> GetCharacteristicByUuid(
       const bluetooth_v2_shlib::Uuid& uuid) override;
   const bluetooth_v2_shlib::Uuid& uuid() const override;
-  uint16_t handle() const override;
+  HandleId handle() const override;
   bool primary() const override;
 
  private:
   friend class RemoteDeviceImpl;
 
-  static std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteCharacteristic>>
+  static std::map<bluetooth_v2_shlib::Uuid,
+                  scoped_refptr<RemoteCharacteristicImpl>>
   CreateCharMap(RemoteDeviceImpl* remote_device,
                 base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
                 const bluetooth_v2_shlib::Gatt::Service& service,
@@ -49,7 +52,8 @@ class RemoteServiceImpl : public RemoteService {
 
   const bluetooth_v2_shlib::Gatt::Service service_;
 
-  const std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteCharacteristic>>
+  const std::map<bluetooth_v2_shlib::Uuid,
+                 scoped_refptr<RemoteCharacteristicImpl>>
       uuid_to_characteristic_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteServiceImpl);

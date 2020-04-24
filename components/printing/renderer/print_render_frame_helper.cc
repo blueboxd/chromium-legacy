@@ -28,6 +28,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/grit/components_resources.h"
 #include "components/printing/common/print_messages.h"
@@ -582,6 +583,9 @@ bool CopyMetafileDataToReadOnlySharedMem(
   if (buf_size == 0)
     return false;
 
+  TRACE_EVENT1("print", "CopyMetafileDataToReadOnlySharedMem", "size",
+               buf_size);
+
   base::MappedReadOnlyRegion region_mapping =
       base::ReadOnlySharedMemoryRegion::Create(buf_size);
   if (!region_mapping.IsValid())
@@ -744,6 +748,9 @@ float PrintRenderFrameHelper::RenderPageContent(blink::WebLocalFrame* frame,
                                                 const gfx::Rect& content_area,
                                                 double scale_factor,
                                                 cc::PaintCanvas* canvas) {
+  TRACE_EVENT1("print", "PrintRenderFrameHelper::RenderPageContent",
+               "page_number", page_number);
+
   cc::PaintCanvasAutoRestore auto_restore(canvas, true);
   canvas->translate((content_area.x() - canvas_area.x()) / scale_factor,
                     (content_area.y() - canvas_area.y()) / scale_factor);
@@ -835,6 +842,8 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
       node_to_print_(node),
       should_print_backgrounds_(params.should_print_backgrounds),
       should_print_selection_only_(params.selection_only) {
+  TRACE_EVENT0("print", "PrepareFrameAndViewForPrint");
+
   PrintMsg_Print_Params print_params = params;
   bool source_is_pdf = IsPrintingNodeOrPdfFrame(frame, node_to_print_);
   if (!should_print_selection_only_) {
@@ -858,6 +867,8 @@ PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
 }
 
 void PrepareFrameAndViewForPrint::ResizeForPrinting() {
+  TRACE_EVENT0("print", "PrepareFrameAndViewForPrint::ResizeForPrinting");
+
   // Layout page according to printer page size. Since WebKit shrinks the
   // size of the page automatically (from 133.3% to 200%) we trick it to
   // think the page is 133.3% larger so the size of the page is correct for
@@ -1043,6 +1054,8 @@ void PrepareFrameAndViewForPrint::RestoreSize() {
 }
 
 void PrepareFrameAndViewForPrint::FinishPrinting() {
+  TRACE_EVENT0("print", "PrepareFrameAndViewForPrint::FinishPrinting");
+
   blink::WebLocalFrame* frame = frame_.GetFrame();
   if (frame) {
     blink::WebView* web_view = frame->View();
@@ -1330,11 +1343,14 @@ void PrintRenderFrameHelper::PrintFrameContent(
   // moved out-of-process
   // (https://bugs.chromium.org/p/chromium/issues/detail?id=464269). So don't
   // try to handle pdf plugin element until that bug is fixed.
-  if (frame->PrintBegin(web_print_params,
-                        /*constrain_to_node=*/blink::WebElement())) {
-    frame->PrintPage(0, canvas);
+  {
+    TRACE_EVENT0("print", "PrintRenderFrameHelper::PrintFrameContent");
+    if (frame->PrintBegin(web_print_params,
+                          /*constrain_to_node=*/blink::WebElement())) {
+      frame->PrintPage(0, canvas);
+    }
+    frame->PrintEnd();
   }
-  frame->PrintEnd();
 
   // Done printing. Close the canvas to retrieve the compiled metafile.
   bool ret = metafile.FinishPage();
@@ -1550,6 +1566,9 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
 }
 
 bool PrintRenderFrameHelper::RenderPreviewPage(int page_number) {
+  TRACE_EVENT1("print", "PrintRenderFrameHelper::RenderPreviewPage",
+               "page_number", page_number);
+
   const PrintMsg_Print_Params& print_params = print_pages_params_->params;
   MetafileSkia* render_metafile = print_preview_context_.metafile();
   std::unique_ptr<MetafileSkia> page_render_metafile;
@@ -1587,6 +1606,8 @@ bool PrintRenderFrameHelper::RenderPreviewPage(int page_number) {
 }
 
 bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
+  TRACE_EVENT0("print", "PrintRenderFrameHelper::FinalizePrintReadyDocument");
+
   DCHECK(!is_print_ready_metafile_sent_);
   print_preview_context_.FinalizePrintReadyDocument();
 
@@ -2387,6 +2408,9 @@ bool PrintRenderFrameHelper::PreviewPageRendered(
   DCHECK_GE(page_number, FIRST_PAGE_INDEX);
   DCHECK(metafile);
   DCHECK(print_preview_context_.IsModifiable());
+
+  TRACE_EVENT1("print", "PrintRenderFrameHelper::PreviewPageRendered",
+               "page_number", page_number);
 
 #if BUILDFLAG(ENABLE_TAGGED_PDF)
   // For tagged PDF exporting, send a snapshot of the accessibility tree

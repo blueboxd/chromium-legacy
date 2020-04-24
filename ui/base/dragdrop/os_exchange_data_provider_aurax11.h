@@ -10,7 +10,7 @@
 
 namespace ui {
 
-// OSExchangeData::Provider implementation for aura on linux.
+// OSExchangeDataProvider implementation for aura on linux.
 class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
     : public XOSExchangeDataProvider,
       public XEventDispatcher {
@@ -30,8 +30,8 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   OSExchangeDataProviderAuraX11& operator=(
       const OSExchangeDataProviderAuraX11&) = delete;
 
-  // OSExchangeData::Provider:
-  std::unique_ptr<Provider> Clone() const override;
+  // OSExchangeDataProvider:
+  std::unique_ptr<OSExchangeDataProvider> Clone() const override;
   void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents) override;
 

@@ -9,7 +9,7 @@
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "extensions/common/api/extension_action/action_info.h"
 
 namespace {
 

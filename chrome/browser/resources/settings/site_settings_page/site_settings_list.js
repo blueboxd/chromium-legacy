@@ -2,11 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('settings', function() {
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import '../icons.m.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import {Route, Router} from '../router.m.js';
+import '../settings_shared_css.m.js';
+import {ContentSetting, ContentSettingsTypes} from '../site_settings/constants.m.js';
+import {SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.m.js';
+
   /**
    * @typedef{{
-   *   route: !settings.Route,
-   *   id: settings.ContentSettingsTypes,
+   *   route: !Route,
+   *   id: ContentSettingsTypes,
    *   label: string,
    *   icon: (string|undefined),
    *   enabledLabel: (string|undefined),
@@ -15,19 +29,19 @@ cr.define('settings', function() {
    *   shouldShow: function():boolean,
    * }}
    */
-  /* #export */ let CategoryListItem;
+  export let CategoryListItem;
 
   /**
-   * @param {string} setting Value from settings.ContentSetting.
+   * @param {string} setting Value from ContentSetting.
    * @param {string} enabled Non-block label ('feature X not allowed').
    * @param {string} disabled Block label (likely just, 'Blocked').
    * @param {?string} other Tristate value (maybe, 'session only').
    */
-  /* #export */ function defaultSettingLabel(setting, enabled, disabled, other) {
-    if (setting == settings.ContentSetting.BLOCK) {
+  export function defaultSettingLabel(setting, enabled, disabled, other) {
+    if (setting == ContentSetting.BLOCK) {
       return disabled;
     }
-    if (setting == settings.ContentSetting.ALLOW) {
+    if (setting == ContentSetting.ALLOW) {
       return enabled;
     }
 
@@ -37,10 +51,12 @@ cr.define('settings', function() {
   Polymer({
     is: 'settings-site-settings-list',
 
+    _template: html`{__html_template__}`,
+
     behaviors: [WebUIListenerBehavior, I18nBehavior],
 
     properties: {
-      /** @type {!Array<!settings.CategoryListItem>} */
+      /** @type {!Array<!CategoryListItem>} */
       categoryList: Array,
 
       /** @type {!Map<string, (string|Function)>} */
@@ -50,7 +66,7 @@ cr.define('settings', function() {
       },
     },
 
-    /** @type {?settings.SiteSettingsPrefsBrowserProxy} */
+    /** @type {?SiteSettingsPrefsBrowserProxy} */
     browserProxy: null,
 
     /**
@@ -68,7 +84,7 @@ cr.define('settings', function() {
       // elements residing in this element's Shadow DOM.
       for (const item of this.categoryList) {
         this.focusConfig.set(item.route.path, () => this.async(() => {
-          cr.ui.focusWithoutInk(assert(this.$$(`#${item.id}`)));
+          focusWithoutInk(assert(this.$$(`#${item.id}`)));
         }));
       }
     },
@@ -76,7 +92,7 @@ cr.define('settings', function() {
     /** @override */
     ready() {
       this.browserProxy_ =
-          settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+          SiteSettingsPrefsBrowserProxyImpl.getInstance();
 
       Promise
           .all(this.categoryList.map(
@@ -90,23 +106,23 @@ cr.define('settings', function() {
           this.refreshDefaultValueLabel_.bind(this));
 
       const hasProtocolHandlers = this.categoryList.some(item => {
-        return item.id === settings.ContentSettingsTypes.PROTOCOL_HANDLERS;
+        return item.id === ContentSettingsTypes.PROTOCOL_HANDLERS;
       });
 
       if (hasProtocolHandlers) {
         // The protocol handlers have a separate enabled/disabled notifier.
         this.addWebUIListener('setHandlersEnabled', enabled => {
           this.updateDefaultValueLabel_(
-              settings.ContentSettingsTypes.PROTOCOL_HANDLERS,
-              enabled ? settings.ContentSetting.ALLOW :
-                        settings.ContentSetting.BLOCK);
+              ContentSettingsTypes.PROTOCOL_HANDLERS,
+              enabled ? ContentSetting.ALLOW :
+                        ContentSetting.BLOCK);
         });
         this.browserProxy_.observeProtocolHandlersEnabledState();
       }
 
       if (loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
         const hasCookies = this.categoryList.some(item => {
-          return item.id === settings.ContentSettingsTypes.COOKIES;
+          return item.id === ContentSettingsTypes.COOKIES;
         });
         if (hasCookies) {
           // The cookies sub-label is provided by an update from C++.
@@ -120,7 +136,7 @@ cr.define('settings', function() {
     },
 
     /**
-     * @param {!settings.ContentSettingsTypes} category The category to refresh
+     * @param {!ContentSettingsTypes} category The category to refresh
      *     (fetch current value + update UI)
      * @return {!Promise<void>} A promise firing after the label has been
      *     updated.
@@ -128,12 +144,12 @@ cr.define('settings', function() {
      */
     refreshDefaultValueLabel_(category) {
       // Default labels are not applicable to ZOOM_LEVELS or PDF.
-      if (category === settings.ContentSettingsTypes.ZOOM_LEVELS ||
+      if (category === ContentSettingsTypes.ZOOM_LEVELS ||
           category === 'pdfDocuments') {
         return Promise.resolve();
       }
 
-      if (category == settings.ContentSettingsTypes.COOKIES &&
+      if (category == ContentSettingsTypes.COOKIES &&
           loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
         // Updates to the cookies label are handled by the
         // cookieSettingDescriptionChanged event listener.
@@ -149,8 +165,8 @@ cr.define('settings', function() {
     /**
      * Updates the DOM for the given |category| to display a label that
      * corresponds to the given |setting|.
-     * @param {!settings.ContentSettingsTypes} category
-     * @param {!settings.ContentSetting} setting
+     * @param {!ContentSettingsTypes} category
+     * @param {!ContentSetting} setting
      * @private
      */
     updateDefaultValueLabel_(category, setting) {
@@ -187,14 +203,8 @@ cr.define('settings', function() {
      * @private
      */
     onClick_(event) {
-      settings.Router.getInstance().navigateTo(
+      Router.getInstance().navigateTo(
           this.categoryList[event.model.index].route);
     },
   });
 
-  // #cr_define_end
-  return {
-    CategoryListItem: CategoryListItem,
-    defaultSettingLabel: defaultSettingLabel,
-  };
-});

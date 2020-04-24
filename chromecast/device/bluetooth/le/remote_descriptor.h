@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chromecast/device/bluetooth/le/ble_types.h"
 #include "chromecast/public/bluetooth/gatt.h"
 
 namespace chromecast {
@@ -52,9 +53,8 @@ class RemoteDescriptor : public base::RefCountedThreadSafe<RemoteDescriptor> {
   virtual void Write(const std::vector<uint8_t>& value,
                      StatusCallback callback) = 0;
 
-  virtual const bluetooth_v2_shlib::Gatt::Descriptor& descriptor() const = 0;
   virtual const bluetooth_v2_shlib::Uuid uuid() const = 0;
-  virtual uint16_t handle() const = 0;
+  virtual HandleId handle() const = 0;
   virtual bluetooth_v2_shlib::Gatt::Permissions permissions() const = 0;
 
  protected:

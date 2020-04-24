@@ -18,9 +18,8 @@
 
 <dom-module id="settings-bluetooth-subpage">
   <template>
-    <style include="cr-shared settings-shared iron-flex">
+    <style include="cr-shared-style settings-shared iron-flex">
       .container {
-        @apply --settings-list-frame-padding;
         display: flex;
         flex-direction: column;
         min-height: 10px;
@@ -65,7 +64,7 @@
             pairedDeviceList_.splices)]]">
       $i18n{bluetoothNoDevices}
     </div>
-    <div id="pairedContainer" class="container"
+    <div id="pairedContainer" class="container list-frame"
         scrollable on-device-event="onDeviceEvent_"
         hidden="[[!showDevices_(bluetoothToggleState, pairedDeviceList_,
             pairedDeviceList_.splices)]]">
@@ -92,7 +91,7 @@
             unpairedDeviceList_.splices)]]">
       $i18n{bluetoothNoDevicesFound}
     </div>
-    <div id="unpairedContainer" class="container"
+    <div id="unpairedContainer" class="container list-frame"
         scrollable on-device-event="onDeviceEvent_"
         hidden="[[!showDevices_(bluetoothToggleState, unpairedDeviceList_,
             unpairedDeviceList_.splices)]]">

@@ -10,10 +10,10 @@
 #include <string>
 
 #include "base/scoped_observer.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/api/extension_action/action_info.h"
 
 class ExtensionAction;
 class Profile;

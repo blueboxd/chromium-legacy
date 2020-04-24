@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
-// #import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.m.js';
-// #import {PrivacyPageBrowserProxyImpl, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-// #import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.m.js';
-// #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-// #import {simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
+import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
+import {PrivacyPageBrowserProxyImpl, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.m.js';
 // clang-format on
 
 suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
@@ -20,7 +20,7 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
   /** @type {settings.TestPrivacyPageBrowserProxy} */
   let privacyPageBrowserProxy;
 
-  /** @type {settings.SyncBrowserProxy} */
+  /** @type {SyncBrowserProxy} */
   let syncBrowserProxy;
 
   /** @type {SettingsPersonalizationOptionsElement} */
@@ -45,11 +45,11 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
 
   setup(function() {
     privacyPageBrowserProxy = new TestPrivacyPageBrowserProxy();
-    settings.PrivacyPageBrowserProxyImpl.instance_ = privacyPageBrowserProxy;
+    PrivacyPageBrowserProxyImpl.instance_ = privacyPageBrowserProxy;
     syncBrowserProxy = new TestSyncBrowserProxy();
-    settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+    SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-    settings.MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
+    MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
     PolymerTest.clearBody();
     testElement =
         document.createElement('settings-passwords-leak-detection-toggle');
@@ -62,7 +62,7 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
       },
     };
     document.body.appendChild(testElement);
-    Polymer.dom.flush();
+    flush();
   });
 
   teardown(function() {
@@ -73,13 +73,13 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
     testElement.set(
         'prefs.profile.password_manager_leak_detection.value', true);
     testElement.syncStatus = {signedIn: true};
-    Polymer.dom.flush();
+    flush();
     console.log(testElement.$$('#passwordsLeakDetectionCheckbox').disabled);
     testElement.$$('#passwordsLeakDetectionCheckbox').click();
     return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
         .then(result => {
           assertEquals(
-              settings.PrivacyElementInteractions.PASSWORD_CHECK, result);
+              PrivacyElementInteractions.PASSWORD_CHECK, result);
         });
   });
 
@@ -87,7 +87,7 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
     testElement.set(
         'prefs.profile.password_manager_leak_detection.value', false);
     testElement.syncStatus = {signedIn: false};
-    Polymer.dom.flush();
+    flush();
 
     assertTrue(testElement.$.passwordsLeakDetectionCheckbox.disabled);
     assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
@@ -98,7 +98,7 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
 
   test('leakDetectionToggleSignedOutWithTruePref', function() {
     testElement.syncStatus = {signedIn: false};
-    Polymer.dom.flush();
+    flush();
 
     assertTrue(testElement.$.passwordsLeakDetectionCheckbox.disabled);
     assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
@@ -107,19 +107,19 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
         testElement.$.passwordsLeakDetectionCheckbox.subLabel);
   });
 
-  if (!cr.isChromeOS) {
+  if (!isChromeOS) {
     test('leakDetectionToggleSignedInNotSyncingWithFalsePref', function() {
       testElement.set(
           'prefs.profile.password_manager_leak_detection.value', false);
       testElement.syncStatus = {signedIn: false};
-      sync_test_util.simulateStoredAccounts([
+      simulateStoredAccounts([
         {
           fullName: 'testName',
           givenName: 'test',
           email: 'test@test.com',
         },
       ]);
-      Polymer.dom.flush();
+      flush();
 
       assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
       assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
@@ -130,14 +130,14 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
 
     test('leakDetectionToggleSignedInNotSyncingWithTruePref', function() {
       testElement.syncStatus = {signedIn: false};
-      sync_test_util.simulateStoredAccounts([
+      simulateStoredAccounts([
         {
           fullName: 'testName',
           givenName: 'test',
           email: 'test@test.com',
         },
       ]);
-      Polymer.dom.flush();
+      flush();
 
       assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
       assertTrue(testElement.$.passwordsLeakDetectionCheckbox.checked);
@@ -151,7 +151,7 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
     testElement.set(
         'prefs.profile.password_manager_leak_detection.value', false);
     testElement.syncStatus = {signedIn: true};
-    Polymer.dom.flush();
+    flush();
 
     assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
     assertFalse(testElement.$.passwordsLeakDetectionCheckbox.checked);
@@ -162,7 +162,7 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
 
   test('leakDetectionToggleSignedInAndSyncingWithTruePref', function() {
     testElement.syncStatus = {signedIn: true};
-    Polymer.dom.flush();
+    flush();
 
     assertFalse(testElement.$.passwordsLeakDetectionCheckbox.disabled);
     assertTrue(testElement.$.passwordsLeakDetectionCheckbox.checked);

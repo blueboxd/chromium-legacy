@@ -3,20 +3,20 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {ContentSetting,SiteSettingSource} from 'chrome://settings/lazy_load.js';
-// #import {createSiteGroup,createSiteSettingsPrefs, getContentSettingsTypeFromChooserType} from 'chrome://test/settings/test_util.m.js';
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {ContentSetting,SiteSettingSource} from 'chrome://settings/lazy_load.js';
+import {createSiteGroup,createSiteSettingsPrefs, getContentSettingsTypeFromChooserType} from 'chrome://test/settings/test_util.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // clang-format on
 
 /**
  * In the real (non-test) code, this data comes from the C++ handler.
  * Only used for tests.
- * @typedef {{defaults: !Object<settings.ContentSettingsTypes,
+ * @typedef {{defaults: !Object<ContentSettingsTypes,
  *                             !DefaultContentSetting>,
- *            exceptions: !Object<settings.ContentSettingsTypes,
+ *            exceptions: !Object<ContentSettingsTypes,
  *                                !Array<!RawSiteException>>,
- *            chooserExceptions: !Object<settings.ContentSettingsTypes,
+ *            chooserExceptions: !Object<ContentSettingsTypes,
  *                                       !Array<!RawChooserException>>}}
  */
 let SiteSettingsPref;
@@ -26,9 +26,9 @@ let SiteSettingsPref;
  * for allowing tests to know when a method was called, as well as
  * specifying mock responses.
  *
- * @implements {settings.SiteSettingsPrefsBrowserProxy}
+ * @implements {SiteSettingsPrefsBrowserProxy}
  */
-/* #export */ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
+export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'clearFlashPref',
@@ -63,7 +63,7 @@ let SiteSettingsPref;
     this.hasIncognito_ = false;
 
     /** @private {!SiteSettingsPref} */
-    this.prefs_ = test_util.createSiteSettingsPrefs([], [], []);
+    this.prefs_ = createSiteSettingsPrefs([], [], []);
 
     /** @private {!Array<ZoomLevelEntry>} */
     this.zoomList_ = [];
@@ -127,7 +127,7 @@ let SiteSettingsPref;
   /**
    * Sets one exception for a given category, replacing any existing exceptions
    * for the same origin. Note this ignores embedding origins.
-   * @param {!settings.ContentSettingsTypes} category The category the new
+   * @param {!ContentSettingsTypes} category The category the new
    *     exception belongs to.
    * @param {!RawSiteException} newException The new preference to add/replace.
    */
@@ -185,9 +185,9 @@ let SiteSettingsPref;
       const exceptionList = this.prefs_.exceptions[type];
       for (let j = 0; j < exceptionList.length; ++j) {
         let effectiveSetting = blanketSetting;
-        if (blanketSetting == settings.ContentSetting.DEFAULT) {
+        if (blanketSetting == ContentSetting.DEFAULT) {
           effectiveSetting = this.prefs_.defaults[type].setting;
-          exceptionList[j].source = settings.SiteSettingSource.DEFAULT;
+          exceptionList[j].source = SiteSettingSource.DEFAULT;
         }
         exceptionList[j].setting = effectiveSetting;
       }
@@ -237,11 +237,11 @@ let SiteSettingsPref;
       // true.
       if (existing) {
         const originInfo =
-            test_util.createOriginInfo(origin, {usage: mockUsage});
+            createOriginInfo(origin, {usage: mockUsage});
         existing.origins.push(originInfo);
       } else {
         const entry =
-            test_util.createSiteGroup(etldPlus1Name, [origin], mockUsage);
+            createSiteGroup(etldPlus1Name, [origin], mockUsage);
         result.push(entry);
       }
     });
@@ -293,7 +293,7 @@ let SiteSettingsPref;
     // category, so we need to get the content settings type that pertains to
     // this chooser type.
     const setting =
-        test_util.getContentSettingsTypeFromChooserType(chooserType);
+        getContentSettingsTypeFromChooserType(chooserType);
     assert(
         setting != null,
         'ContentSettingsType mapping missing for ' + chooserType);
@@ -311,7 +311,7 @@ let SiteSettingsPref;
           // Skip preferences that are not controlled by policy since opening an
           // incognito session does not automatically grant permission to
           // chooser exceptions that have been granted in the main session.
-          if (pref[i].sites[j].source != settings.SiteSettingSource.POLICY) {
+          if (pref[i].sites[j].source != SiteSettingSource.POLICY) {
             continue;
           }
 

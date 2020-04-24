@@ -260,6 +260,9 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // Can only be called when IsContainerForClient() is true.
   blink::mojom::ServiceWorkerClientType client_type() const;
 
+  // Returns the client info for this container host.
+  ServiceWorkerClientInfo GetServiceWorkerClientInfo() const;
+
   // For service worker window clients. Called when the navigation is ready to
   // commit. Updates this host with information about the frame committed to.
   // After this is called, is_response_committed() and is_execution_ready()

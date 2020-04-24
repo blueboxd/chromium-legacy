@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "components/image_fetcher/core/cache/image_store_types.h"
@@ -135,6 +136,7 @@ class CachedImageFetcherImageMetadataStoreLevelDBTest : public testing::Test {
   base::SimpleTestClock* clock() { return clock_.get(); }
   ImageMetadataStore* metadata_store() { return metadata_store_.get(); }
   FakeDB<CachedImageMetadataProto>* db() { return db_; }
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
   MOCK_METHOD0(OnInitialized, void());
   MOCK_METHOD1(OnKeysReturned, void(std::vector<std::string>));
@@ -148,6 +150,7 @@ class CachedImageFetcherImageMetadataStoreLevelDBTest : public testing::Test {
   std::map<std::string, CachedImageMetadataProto> db_store_;
   std::unique_ptr<ImageMetadataStoreLevelDB> metadata_store_;
 
+  base::HistogramTester histogram_tester_;
   base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherImageMetadataStoreLevelDBTest);
@@ -383,6 +386,14 @@ TEST_F(CachedImageFetcherImageMetadataStoreLevelDBTest, GarbageCollect) {
   EXPECT_EQ(metadata_store()->GetEstimatedSize(CacheOption::kBestEffort), 0);
   EXPECT_EQ(metadata_store()->GetEstimatedSize(CacheOption::kHoldUntilExpired),
             0);
+  histogram_tester().ExpectBucketCount("ImageFetcher.CacheSize.BestEffort", 0,
+                                       1);
+  histogram_tester().ExpectBucketCount(
+      "ImageFetcher.CacheMetadataCount.BestEffort", 0, 1);
+  histogram_tester().ExpectBucketCount(
+      "ImageFetcher.CacheSize.HoldUntilExpired", 0, 1);
+  histogram_tester().ExpectBucketCount(
+      "ImageFetcher.CacheMetadataCount.HoldUntilExpired", 0, 1);
 }
 
 TEST_F(CachedImageFetcherImageMetadataStoreLevelDBTest, GarbageCollectNoHits) {
@@ -399,6 +410,11 @@ TEST_F(CachedImageFetcherImageMetadataStoreLevelDBTest, GarbageCollectNoHits) {
   db()->UpdateCallback(true);
 
   ASSERT_TRUE(IsDataPresent(kImageKey));
+
+  histogram_tester().ExpectBucketCount("ImageFetcher.CacheSize.BestEffort",
+                                       0 /*kb*/, 1);
+  histogram_tester().ExpectBucketCount(
+      "ImageFetcher.CacheMetadataCount.BestEffort", 1, 1);
 }
 
 TEST_F(CachedImageFetcherImageMetadataStoreLevelDBTest,

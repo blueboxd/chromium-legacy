@@ -110,21 +110,7 @@ void DesktopWindowTreeHostX11::OnXWindowSelectionEvent(XEvent* xev) {
 void DesktopWindowTreeHostX11::OnXWindowDragDropEvent(XEvent* xev) {
   DCHECK(xev);
   DCHECK(drag_drop_client_);
-
-  ::Atom message_type = xev->xclient.message_type;
-  if (message_type == gfx::GetAtom("XdndEnter")) {
-    drag_drop_client_->OnXdndEnter(xev->xclient);
-  } else if (message_type == gfx::GetAtom("XdndLeave")) {
-    drag_drop_client_->OnXdndLeave(xev->xclient);
-  } else if (message_type == gfx::GetAtom("XdndPosition")) {
-    drag_drop_client_->OnXdndPosition(xev->xclient);
-  } else if (message_type == gfx::GetAtom("XdndStatus")) {
-    drag_drop_client_->OnXdndStatus(xev->xclient);
-  } else if (message_type == gfx::GetAtom("XdndFinished")) {
-    drag_drop_client_->OnXdndFinished(xev->xclient);
-  } else if (message_type == gfx::GetAtom("XdndDrop")) {
-    drag_drop_client_->OnXdndDrop(xev->xclient);
-  }
+  drag_drop_client_->HandleXdndEvent(xev->xclient);
 }
 
 const ui::XWindow* DesktopWindowTreeHostX11::GetXWindow() const {

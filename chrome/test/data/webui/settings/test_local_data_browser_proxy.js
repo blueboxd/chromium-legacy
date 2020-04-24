@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // clang-format on
 
 /**
@@ -11,9 +11,9 @@
  * for allowing tests to know when a method was called, as well as
  * specifying mock responses.
  *
- * @implements {settings.LocalDataBrowserProxy}
+ * @implements {LocalDataBrowserProxy}
  */
-/* #export */ class TestLocalDataBrowserProxy extends TestBrowserProxy {
+export class TestLocalDataBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'getDisplayList',

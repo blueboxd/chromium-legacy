@@ -239,6 +239,7 @@ void DesktopDragDropClientOzone::PerformDrop() {
     drag_operation_ = drag_drop_delegate_->OnPerformDrop(
         *event, std::move(os_exchange_data_));
   DragDropSessionCompleted();
+  ResetDragDropTarget();
 }
 
 }  // namespace views

@@ -178,7 +178,7 @@ public class NativePageFactory {
      * @param tab The Tab that will show the page.
      * @return A NativePage showing the specified url or null.
      */
-    public NativePage createNativePageForURL(String url, NativePage candidatePage, Tab tab) {
+    public NativePage createNativePage(String url, NativePage candidatePage, Tab tab) {
         return createNativePageForURL(url, candidatePage, tab, tab.isIncognito());
     }
 

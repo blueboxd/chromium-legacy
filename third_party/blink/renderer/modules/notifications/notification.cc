@@ -169,7 +169,8 @@ Notification::Notification(ExecutionContext* context,
       data_(std::move(data)),
       prepare_show_timer_(context->GetTaskRunner(TaskType::kMiscPlatformAPI),
                           this,
-                          &Notification::PrepareShow) {
+                          &Notification::PrepareShow),
+      listener_receiver_(this, context) {
   if (data_->show_trigger_timestamp.has_value()) {
     show_trigger_ = TimestampTrigger::Create(static_cast<DOMTimeStamp>(
         data_->show_trigger_timestamp.value().ToJsTime()));
@@ -479,8 +480,6 @@ const AtomicString& Notification::InterfaceName() const {
 }
 
 void Notification::ContextDestroyed() {
-  listener_receiver_.reset();
-
   state_ = State::kClosed;
 
   if (prepare_show_timer_.IsActive())
@@ -502,6 +501,7 @@ bool Notification::HasPendingActivity() const {
 void Notification::Trace(Visitor* visitor) {
   visitor->Trace(show_trigger_);
   visitor->Trace(loader_);
+  visitor->Trace(listener_receiver_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

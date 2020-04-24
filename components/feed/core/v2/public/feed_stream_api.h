@@ -94,14 +94,6 @@ class FeedStreamApi {
   virtual void ReportContextMenuOpened() = 0;
   // The user scrolled the feed by |distance_dp| and then stopped.
   virtual void ReportStreamScrolled(int distance_dp) = 0;
-
-  // The following methods are used for the internals page.
-
-  virtual DebugStreamData GetDebugStreamData() = 0;
-  // Forces a Feed refresh from the server.
-  virtual void ForceRefreshForDebugging() = 0;
-  // Dumps some state information for debugging.
-  virtual std::string DumpStateForDebugging() = 0;
 };
 
 }  // namespace feed

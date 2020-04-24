@@ -3,36 +3,36 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {SyncBrowserProxyImpl, Router} from 'chrome://settings/settings.js';
-// #import 'chrome://settings/lazy_load.js';
-// #import {setupRouterWithSyncRoutes} from 'chrome://test/settings/sync_test_util.m.js';
-// #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {SyncBrowserProxyImpl, Router} from 'chrome://settings/settings.js';
+import 'chrome://settings/lazy_load.js';
+import {setupRouterWithSyncRoutes} from 'chrome://test/settings/sync_test_util.m.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 suite('sync-page-test', function() {
   /** @type {SyncPageElement} */ let syncPage;
 
   setup(function() {
-    sync_test_util.setupRouterWithSyncRoutes();
+    setupRouterWithSyncRoutes();
     PolymerTest.clearBody();
-    settings.SyncBrowserProxyImpl.instance_ = new TestSyncBrowserProxy();
-    const router = settings.Router.getInstance();
+    SyncBrowserProxyImpl.instance_ = new TestSyncBrowserProxy();
+    const router = Router.getInstance();
     router.navigateTo(router.getRoutes().SYNC);
     syncPage = document.createElement('settings-sync-page');
     document.body.appendChild(syncPage);
-    Polymer.dom.flush();
+    flush();
   });
 
   test('autofocus passphrase input', function() {
-    cr.webUIListenerCallback('sync-prefs-changed', {passphraseRequired: false});
-    Polymer.dom.flush();
+    webUIListenerCallback('sync-prefs-changed', {passphraseRequired: false});
+    flush();
     // Passphrase input is not available when no passphrase is required.
     assertFalse(!!syncPage.$$('#existingPassphraseInput'));
 
-    cr.webUIListenerCallback('sync-prefs-changed', {passphraseRequired: true});
-    Polymer.dom.flush();
+    webUIListenerCallback('sync-prefs-changed', {passphraseRequired: true});
+    flush();
     // Passphrase input is available and focused when a passphrase is required.
     assertTrue(!!syncPage.$$('#existingPassphraseInput'));
     assertEquals(

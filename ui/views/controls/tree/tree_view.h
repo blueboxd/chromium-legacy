@@ -134,7 +134,7 @@ class VIEWS_EXPORT TreeView : public View,
   // Maps a node to a row, returns -1 if node is not valid.
   int GetRowForNode(ui::TreeModelNode* node);
 
-  views::Textfield* editor() { return editor_; }
+  Textfield* editor() { return editor_; }
 
   // Replaces this TreeView's TreeViewDrawingProvider with |provider|.
   void SetDrawingProvider(std::unique_ptr<TreeViewDrawingProvider> provider);

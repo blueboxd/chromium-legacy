@@ -141,7 +141,8 @@ DEFINE_TEXT_PROTO_FUZZER(const mc_fuzzer::MediaDecodingConfigProto& proto) {
       ToScriptStateForMainWorld(&page_holder->GetFrame());
   ScriptState::Scope scope(script_state);
 
-  auto* media_capabilities = MakeGarbageCollected<MediaCapabilities>();
+  auto* media_capabilities = MakeGarbageCollected<MediaCapabilities>(
+      ExecutionContext::From(script_state));
   media_capabilities->decodingInfo(script_state, config,
                                    IGNORE_EXCEPTION_FOR_TESTING);
 

@@ -98,8 +98,12 @@ void CrostiniInstallerPageHandler::RequestAmountOfFreeDiskSpace() {
 }
 
 void CrostiniInstallerPageHandler::OnAmountOfFreeDiskSpace(int64_t free_bytes) {
+  int64_t max_bytes =
+      free_bytes -
+      100l * 1024 *
+          1024;  // User has to leave at least 100MiB for the host system.
   std::vector<int64_t> values = crostini::GetTicksForDiskSize(
-      crostini::CrostiniInstallerUIDelegate::kMinimumFreeDiskSpace, free_bytes);
+      crostini::CrostiniInstallerUIDelegate::kMinimumFreeDiskSpace, max_bytes);
 
   std::vector<crostini::mojom::DiskSliderTickPtr> ticks;
   for (const auto& val : values) {

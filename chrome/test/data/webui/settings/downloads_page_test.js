@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import 'chrome://settings/settings.js';
-// #import {DownloadsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://settings/settings.js';
+import {DownloadsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
-/** @implements {settings.DownloadsBrowserProxy} */
+/** @implements {DownloadsBrowserProxy} */
 class TestDownloadsBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
@@ -43,7 +43,7 @@ suite('DownloadsHandler', function() {
 
   setup(function() {
     downloadsBrowserProxy = new TestDownloadsBrowserProxy();
-    settings.DownloadsBrowserProxyImpl.instance_ = downloadsBrowserProxy;
+    DownloadsBrowserProxyImpl.instance_ = downloadsBrowserProxy;
 
     PolymerTest.clearBody();
 
@@ -71,7 +71,7 @@ suite('DownloadsHandler', function() {
     assertTrue(!button);
 
     cr.webUIListenerCallback('auto-open-downloads-changed', true);
-    Polymer.dom.flush();
+    flush();
     button = downloadsPage.$$('#resetAutoOpenFileTypes');
     assertTrue(!!button);
 
@@ -79,13 +79,13 @@ suite('DownloadsHandler', function() {
     return downloadsBrowserProxy.whenCalled('resetAutoOpenFileTypes')
         .then(function() {
           cr.webUIListenerCallback('auto-open-downloads-changed', false);
-          Polymer.dom.flush();
+          flush();
           const button = downloadsPage.$$('#resetAutoOpenFileTypes');
           assertTrue(!button);
         });
   });
 
-  if (cr.isChromeOS) {
+  if (isChromeOS) {
     /** @override */
     TestDownloadsBrowserProxy.prototype.getDownloadLocationText = function(
         path) {
@@ -116,7 +116,7 @@ suite('DownloadsHandler', function() {
       return downloadsBrowserProxy.whenCalled('getDownloadLocationText')
           .then(path => {
             assertEquals('downloads-path', path);
-            Polymer.dom.flush();
+            flush();
             assertEquals('downloads-text', getDefaultDownloadPathString());
           });
     });

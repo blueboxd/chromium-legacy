@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "extensions/common/api/extension_action/action_info.h"
 
 namespace extensions {
 class Extension;

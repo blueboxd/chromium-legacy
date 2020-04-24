@@ -3,21 +3,20 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {AboutPageBrowserProxyImpl, LifetimeBrowserProxyImpl, Route, Router, UpdateStatus} from 'chrome://settings/settings.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {isChromeOS, isMac} from 'chrome://resources/js/cr.m.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {TestAboutPageBrowserProxy} from 'chrome://test/settings/test_about_page_browser_proxy.m.js';
-// #import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.m.js';
+import {AboutPageBrowserProxyImpl, LifetimeBrowserProxyImpl, Route, Router, UpdateStatus} from 'chrome://settings/settings.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {isChromeOS, isMac, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {TestAboutPageBrowserProxy} from 'chrome://test/settings/test_about_page_browser_proxy.js';
+import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.m.js';
 // clang-format on
 
-cr.define('settings_about_page', function() {
   function setupRouter() {
     const routes = {
-      BASIC: new settings.Route('/'),
-      ABOUT: new settings.Route('/help'),
+      BASIC: new Route('/'),
+      ABOUT: new Route('/help'),
     };
-    settings.Router.resetInstanceForTesting(new settings.Router(routes));
+    Router.resetInstanceForTesting(new Router(routes));
     return routes;
   }
 
@@ -30,7 +29,7 @@ cr.define('settings_about_page', function() {
    */
   function fireStatusChanged(status, opt_options) {
     const options = opt_options || {};
-    cr.webUIListenerCallback('update-status-changed', {
+    webUIListenerCallback('update-status-changed', {
       progress: options.progress === undefined ? 1 : options.progress,
       message: options.message,
       status: status,
@@ -43,7 +42,7 @@ cr.define('settings_about_page', function() {
     /** @type {?settings.TestAboutPageBrowserProxy} */
     let aboutBrowserProxy = null;
 
-    /** @type {?settings.TestLifetimeBrowserProxy} */
+    /** @type {?TestLifetimeBrowserProxy} */
     let lifetimeBrowserProxy = null;
 
     const SPINNER_ICON = 'chrome://resources/images/throbber_small.svg';
@@ -57,11 +56,11 @@ cr.define('settings_about_page', function() {
       });
 
       testRoutes = setupRouter();
-      lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
-      settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
+      lifetimeBrowserProxy = new TestLifetimeBrowserProxy();
+      LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
 
       aboutBrowserProxy = new TestAboutPageBrowserProxy();
-      settings.AboutPageBrowserProxyImpl.instance_ = aboutBrowserProxy;
+      AboutPageBrowserProxyImpl.instance_ = aboutBrowserProxy;
       return initNewPage();
     });
 
@@ -76,14 +75,14 @@ cr.define('settings_about_page', function() {
       lifetimeBrowserProxy.reset();
       PolymerTest.clearBody();
       page = document.createElement('settings-about-page');
-      settings.Router.getInstance().navigateTo(testRoutes.ABOUT);
+      Router.getInstance().navigateTo(testRoutes.ABOUT);
       document.body.appendChild(page);
-      return cr.isChromeOS ?
+      return isChromeOS ?
           Promise.resolve() :
           aboutBrowserProxy.whenCalled('refreshUpdateStatus');
     }
 
-    if (!cr.isChromeOS) {
+    if (!isChromeOS) {
       /**
        * Test that the status icon and status message update according to
        * incoming 'update-status-changed' events.
@@ -285,7 +284,7 @@ cr.define('settings_about_page', function() {
     setup(function() {
       testRoutes = setupRouter();
       browserProxy = new TestAboutPageBrowserProxy();
-      settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
+      AboutPageBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
       page = document.createElement('settings-about-page');
       document.body.appendChild(page);
@@ -297,7 +296,7 @@ cr.define('settings_about_page', function() {
       return browserProxy.whenCalled('openFeedbackDialog');
     });
 
-    if (cr.isMac) {
+    if (isMac) {
       /**
        * A list of possible scenarios for the promoteUpdater.
        * @enum {!PromoteUpdaterStatus}
@@ -329,7 +328,7 @@ cr.define('settings_about_page', function() {
        * @param {!PromoteUpdaterStatus} status
        */
       function firePromoteUpdaterStatusChanged(status) {
-        cr.webUIListenerCallback('promotion-state-changed', status);
+        webUIListenerCallback('promotion-state-changed', status);
       }
 
       /**
@@ -342,14 +341,14 @@ cr.define('settings_about_page', function() {
         assertFalse(!!arrow);
 
         firePromoteUpdaterStatusChanged(PromoStatusScenarios.CANT_PROMOTE);
-        Polymer.dom.flush();
+        flush();
         item = page.$$('#promoteUpdater');
         arrow = page.$$('#promoteUpdater cr-icon-button');
         assertFalse(!!item);
         assertFalse(!!arrow);
 
         firePromoteUpdaterStatusChanged(PromoStatusScenarios.CAN_PROMOTE);
-        Polymer.dom.flush();
+        flush();
 
         item = page.$$('#promoteUpdater');
         assertTrue(!!item);
@@ -363,7 +362,7 @@ cr.define('settings_about_page', function() {
         assertFalse(arrow.hasAttribute('disabled'));
 
         firePromoteUpdaterStatusChanged(PromoStatusScenarios.IN_BETWEEN);
-        Polymer.dom.flush();
+        flush();
         item = page.$$('#promoteUpdater');
         assertTrue(!!item);
         assertTrue(item.hasAttribute('disabled'));
@@ -376,7 +375,7 @@ cr.define('settings_about_page', function() {
         assertTrue(arrow.hasAttribute('disabled'));
 
         firePromoteUpdaterStatusChanged(PromoStatusScenarios.PROMOTED);
-        Polymer.dom.flush();
+        flush();
         item = page.$$('#promoteUpdater');
         assertTrue(!!item);
         assertTrue(item.hasAttribute('disabled'));
@@ -391,7 +390,7 @@ cr.define('settings_about_page', function() {
 
       test('PromoteUpdaterButtonWorksWhenEnabled', function() {
         firePromoteUpdaterStatusChanged(PromoStatusScenarios.CAN_PROMOTE);
-        Polymer.dom.flush();
+        flush();
         const item = page.$$('#promoteUpdater');
         assertTrue(!!item);
 
@@ -401,5 +400,3 @@ cr.define('settings_about_page', function() {
       });
     }
   });
-  // #cr_define_end
-});

@@ -5,9 +5,9 @@
 /** @fileoverview Suite of tests for the Settings advanced page. */
 
 // clang-format off
-// #import {CrSettingsPrefs} from 'chrome://settings/settings.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {getPage, getSection} from 'chrome://test/settings/settings_page_test_util.m.js';
+import {CrSettingsPrefs} from 'chrome://settings/settings.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {getPage, getSection} from 'chrome://test/settings/settings_page_test_util.js';
 // clang-format on
 
 suite('AdvancedPage', function() {
@@ -19,7 +19,7 @@ suite('AdvancedPage', function() {
     document.body.appendChild(ui);
     return CrSettingsPrefs.initialized
         .then(() => {
-          return settings_page_test_util.getPage('basic');
+          return getPage('basic');
         })
         .then(page => {
           basicPage = page;
@@ -28,7 +28,7 @@ suite('AdvancedPage', function() {
           assertTrue(!!settingsMain);
           settingsMain.advancedToggleExpanded =
               !settingsMain.advancedToggleExpanded;
-          Polymer.dom.flush();
+          flush();
         });
   });
 
@@ -82,7 +82,7 @@ suite('AdvancedPage', function() {
     }
     for (let i = 0; i < sections.length; i++) {
       const section =
-          settings_page_test_util.getSection(basicPage, sections[i]);
+          getSection(basicPage, sections[i]);
       assertTrue(!!section);
       verifySubpagesHidden(section);
     }

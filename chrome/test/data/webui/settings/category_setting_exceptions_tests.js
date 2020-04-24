@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {ContentSetting,ContentSettingProvider,ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl,SiteSettingSource} from 'chrome://settings/lazy_load.js';
-// #import {createContentSettingTypeToValuePair,createDefaultContentSetting,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.m.js';
+import {ContentSetting,ContentSettingProvider,ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl,SiteSettingSource} from 'chrome://settings/lazy_load.js';
+import {createContentSettingTypeToValuePair,createDefaultContentSetting,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for category-setting-exceptions. */
@@ -26,7 +26,7 @@ suite('CategorySettingExceptions', function() {
   // Initialize a category-setting-exceptions before each test.
   setup(function() {
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     testElement = document.createElement('category-setting-exceptions');
     document.body.appendChild(testElement);
@@ -43,7 +43,7 @@ suite('CategorySettingExceptions', function() {
         testElement.showAllowSiteList_ = false;
 
         // Flush to be sure that the container is updated.
-        Polymer.dom.flush();
+        flush();
 
         // Make sure that the Allow and Session Only site lists are hidden.
         const siteListElements = testElement.querySelectorAll('site-list');
@@ -66,7 +66,7 @@ suite('CategorySettingExceptions', function() {
         testElement.showBlockSiteList_ = false;
 
         // Flush to be sure that the container is updated.
-        Polymer.dom.flush();
+        flush();
 
         // Make sure that the Allow and Session Only site lists are hidden.
         const siteListElements = testElement.querySelectorAll('site-list');
@@ -86,10 +86,10 @@ suite('CategorySettingExceptions', function() {
 
   test('allow site list is hidden for NATIVE_FILE_SYSTEM_WRITE', function() {
     testElement.category =
-        settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
+        ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
 
     // Flush to be sure that the container is updated.
-    Polymer.dom.flush();
+    flush();
 
     assertFalse(
         testElement.showAllowSiteList_, 'showAllowSiteList_ should be false');
@@ -115,13 +115,13 @@ suite('CategorySettingExceptions', function() {
       'all lists are read-only if the default policy is set by policy',
       function() {
         PolymerTest.clearBody();
-        const policyPref = test_util.createSiteSettingsPrefs(
+        const policyPref = createSiteSettingsPrefs(
             [
-              test_util.createContentSettingTypeToValuePair(
-                  settings.ContentSettingsTypes.COOKIES,
-                  test_util.createDefaultContentSetting({
-                    setting: settings.ContentSetting.ALLOW,
-                    source: settings.SiteSettingSource.POLICY
+              createContentSettingTypeToValuePair(
+                  ContentSettingsTypes.COOKIES,
+                  createDefaultContentSetting({
+                    setting: ContentSetting.ALLOW,
+                    source: SiteSettingSource.POLICY
                   })),
             ],
             []);
@@ -131,7 +131,7 @@ suite('CategorySettingExceptions', function() {
         // Creates a new category-setting-exceptions element to that it is
         // initialized with the right value.
         testElement = document.createElement('category-setting-exceptions');
-        testElement.category = settings.ContentSettingsTypes.COOKIES;
+        testElement.category = ContentSettingsTypes.COOKIES;
         document.body.appendChild(testElement);
 
         const initializationTest =
@@ -139,7 +139,7 @@ suite('CategorySettingExceptions', function() {
                 .then(function() {
                   // Flush the container to ensure that the container is
                   // populated.
-                  Polymer.dom.flush();
+                  flush();
 
                   assertTrue(testElement.getReadOnlyList_());
                   assertTrue(testElement.defaultManaged_);
@@ -153,12 +153,12 @@ suite('CategorySettingExceptions', function() {
                   });
                 });
 
-        const dummyPref = test_util.createSiteSettingsPrefs(
+        const dummyPref = createSiteSettingsPrefs(
             [
-              test_util.createContentSettingTypeToValuePair(
-                  settings.ContentSettingsTypes.COOKIES,
-                  test_util.createDefaultContentSetting({
-                    setting: settings.ContentSetting.ALLOW,
+              createContentSettingTypeToValuePair(
+                  ContentSettingsTypes.COOKIES,
+                  createDefaultContentSetting({
+                    setting: ContentSetting.ALLOW,
                   })),
             ],
             []);
@@ -169,7 +169,7 @@ suite('CategorySettingExceptions', function() {
                 .then(function() {
                   // Flush the container to ensure that the container is
                   // populated.
-                  Polymer.dom.flush();
+                  flush();
 
                   assertFalse(testElement.getReadOnlyList_());
                   assertFalse(testElement.defaultManaged_);

@@ -24,6 +24,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
+#include "build/buildflag.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -1228,8 +1230,12 @@ void ChromeLauncherController::CreateLacrosBrowserShortcut() {
   shortcut.type = ash::TYPE_LACROS_BROWSER;
   shortcut.id = ash::ShelfID(kLacrosAppId);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  // TODO(jamescook): Custom icon.
-  shortcut.image = *rb.GetImageSkiaNamed(IDR_CHROME_APP_ICON_192);
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Canary icon only exists in branded builds.
+  shortcut.image = *rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_256_CANARY);
+#else
+  shortcut.image = *rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_256);
+#endif
   // TODO(jamescook): Real name.
   shortcut.title = base::ASCIIToUTF16("LaCrOS");
   // Set the delegate first to avoid constructing another one in ShelfItemAdded.

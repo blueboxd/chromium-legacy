@@ -8,8 +8,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/image_util.h"

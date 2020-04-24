@@ -4586,6 +4586,13 @@ interface ImageData
     getter width
     method constructor
     method getColorSettings
+interface ImageDecoder
+    attribute @@toStringTag
+    getter frameCount
+    getter repetitionCount
+    getter type
+    method constructor
+    method decode
 interface InputDeviceCapabilities
     attribute @@toStringTag
     getter firesTouchEvents

@@ -3,22 +3,21 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {PrivacyPageBrowserProxyImpl, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-// #import 'chrome://settings/lazy_load.js';
-// #import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-// #import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.m.js';
-// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {isVisible, isChildVisible, eventToPromise} from 'chrome://test/test_util.m.js';
+import {PrivacyPageBrowserProxyImpl, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import 'chrome://settings/lazy_load.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {isVisible, isChildVisible, eventToPromise} from 'chrome://test/test_util.m.js';
 // clang-format on
 
-cr.define('settings_personalization_options', function() {
 
   suite('PersonalizationOptionsTests_AllBuilds', function() {
     /** @type {settings.TestPrivacyPageBrowserProxy} */
     let testBrowserProxy;
 
-    /** @type {settings.SyncBrowserProxy} */
+    /** @type {SyncBrowserProxy} */
     let syncBrowserProxy;
 
     /** @type {SettingsPersonalizationOptionsElement} */
@@ -33,9 +32,9 @@ cr.define('settings_personalization_options', function() {
 
     setup(function() {
       testBrowserProxy = new TestPrivacyPageBrowserProxy();
-      settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+      PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
       syncBrowserProxy = new TestSyncBrowserProxy();
-      settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+      SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
       PolymerTest.clearBody();
       testElement = document.createElement('settings-personalization-options');
       testElement.prefs = {
@@ -48,7 +47,7 @@ cr.define('settings_personalization_options', function() {
             {enabled: {value: true}, scout_reporting_enabled: {value: true}},
       };
       document.body.appendChild(testElement);
-      Polymer.dom.flush();
+      flush();
     });
 
     teardown(function() {
@@ -60,16 +59,16 @@ cr.define('settings_personalization_options', function() {
 
       testElement.syncStatus = {
         signedIn: true,
-        statusAction: settings.StatusAction.NO_ACTION
+        statusAction: StatusAction.NO_ACTION
       };
-      Polymer.dom.flush();
+      flush();
       assertTrue(!!testElement.$$('#driveSuggestControl'));
 
       testElement.syncStatus = {
         signedIn: true,
-        statusAction: settings.StatusAction.REAUTHENTICATE
+        statusAction: StatusAction.REAUTHENTICATE
       };
-      Polymer.dom.flush();
+      flush();
       assertFalse(!!testElement.$$('#driveSuggestControl'));
     });
 
@@ -82,10 +81,10 @@ cr.define('settings_personalization_options', function() {
       assertFalse(!!testElement.$$('#linkDoctor'));
     });
 
-    if (!cr.isChromeOS) {
+    if (!isChromeOS) {
       test('signinAllowedToggle', function() {
         const toggle = testElement.$.signinAllowedToggle;
-        assertTrue(test_util.isVisible(toggle));
+        assertTrue(isVisible(toggle));
 
         testElement.syncStatus = {signedIn: false};
         // Check initial setup.
@@ -122,9 +121,9 @@ cr.define('settings_personalization_options', function() {
         // sign-out dialog.
         assertFalse(!!testElement.$$('settings-signout-dialog'));
         toggle.click();
-        return test_util.eventToPromise('cr-dialog-open', testElement)
+        return eventToPromise('cr-dialog-open', testElement)
             .then(function() {
-              Polymer.dom.flush();
+              flush();
               // The toggle remains on.
               assertTrue(toggle.checked);
               assertTrue(
@@ -139,10 +138,10 @@ cr.define('settings_personalization_options', function() {
               const cancel = signoutDialog.$$('#disconnectCancel');
               cancel.click();
 
-              return test_util.eventToPromise('close', signoutDialog);
+              return eventToPromise('close', signoutDialog);
             })
             .then(function() {
-              Polymer.dom.flush();
+              flush();
               assertFalse(!!testElement.$$('settings-signout-dialog'));
 
               // After the dialog is closed, the toggle remains turned on.
@@ -153,10 +152,10 @@ cr.define('settings_personalization_options', function() {
 
               // The user clicks the toggle again.
               toggle.click();
-              return test_util.eventToPromise('cr-dialog-open', testElement);
+              return eventToPromise('cr-dialog-open', testElement);
             })
             .then(function() {
-              Polymer.dom.flush();
+              flush();
               const signoutDialog = testElement.$$('settings-signout-dialog');
               assertTrue(!!signoutDialog);
               assertTrue(signoutDialog.$$('#dialog').open);
@@ -165,10 +164,10 @@ cr.define('settings_personalization_options', function() {
               const disconnectConfirm = signoutDialog.$$('#disconnectConfirm');
               disconnectConfirm.click();
 
-              return test_util.eventToPromise('close', signoutDialog);
+              return eventToPromise('close', signoutDialog);
             })
             .then(function() {
-              Polymer.dom.flush();
+              flush();
               // After the dialog is closed, the toggle is turned off and the
               // toast is shown.
               assertFalse(toggle.checked);
@@ -189,7 +188,7 @@ cr.define('settings_personalization_options', function() {
 
     setup(function() {
       testBrowserProxy = new TestPrivacyPageBrowserProxy();
-      settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+      PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
       PolymerTest.clearBody();
       testElement = document.createElement('settings-personalization-options');
       document.body.appendChild(testElement);
@@ -206,7 +205,7 @@ cr.define('settings_personalization_options', function() {
             {enabled: {value: true}, scout_reporting_enabled: {value: true}},
         spellcheck: {dictionaries: {value: ['en-US']}}
       };
-      Polymer.dom.flush();
+      flush();
       assertFalse(testElement.$.spellCheckControl.hidden);
 
       testElement.prefs = {
@@ -215,7 +214,7 @@ cr.define('settings_personalization_options', function() {
             {enabled: {value: true}, scout_reporting_enabled: {value: true}},
         spellcheck: {dictionaries: {value: []}}
       };
-      Polymer.dom.flush();
+      flush();
       assertTrue(testElement.$.spellCheckControl.hidden);
 
       testElement.prefs = {
@@ -228,7 +227,7 @@ cr.define('settings_personalization_options', function() {
           use_spelling_service: {value: false}
         }
       };
-      Polymer.dom.flush();
+      flush();
       testElement.$.spellCheckControl.click();
       assertTrue(testElement.prefs.spellcheck.use_spelling_service.value);
     });
@@ -255,7 +254,7 @@ cr.define('settings_personalization_options', function() {
       PolymerTest.clearBody();
       testElement = document.createElement('settings-personalization-options');
       document.body.appendChild(testElement);
-      Polymer.dom.flush();
+      flush();
     });
 
     teardown(function() {
@@ -265,8 +264,6 @@ cr.define('settings_personalization_options', function() {
     test('LinkDoctor', function() {
       // The Link Doctor setting exists if the |privacySettingsRedesignEnabled|
       // has not been turned on.
-      assertTrue(test_util.isChildVisible(testElement, '#linkDoctor'));
+      assertTrue(isChildVisible(testElement, '#linkDoctor'));
     });
   });
-  // #cr_define_end
-});

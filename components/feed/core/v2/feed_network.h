@@ -6,9 +6,7 @@
 #define COMPONENTS_FEED_CORE_V2_FEED_NETWORK_H_
 
 #include <memory>
-
 #include "base/callback.h"
-#include "components/feed/core/v2/public/types.h"
 
 namespace feedwire {
 class ActionRequest;
@@ -27,7 +25,8 @@ class FeedNetwork {
     ~QueryRequestResult();
     QueryRequestResult(QueryRequestResult&&);
     QueryRequestResult& operator=(QueryRequestResult&&);
-    NetworkResponseInfo response_info;
+    // HTTP status code if one was received, 0 otherwise.
+    int32_t status_code = 0;
     // Response body if one was received.
     std::unique_ptr<feedwire::Response> response_body;
   };
@@ -38,7 +37,8 @@ class FeedNetwork {
     ~ActionRequestResult();
     ActionRequestResult(ActionRequestResult&&);
     ActionRequestResult& operator=(ActionRequestResult&&);
-    NetworkResponseInfo response_info;
+    // HTTP status code if one was received, 0 otherwise.
+    int32_t status_code = 0;
     // Response body if one was received.
     std::unique_ptr<feedwire::FeedActionResponse> response_body;
   };

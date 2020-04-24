@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 
-/** @implements {settings.ClearBrowsingDataBrowserProxy} */
-/* #export */ class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
+/** @implements {ClearBrowsingDataBrowserProxy} */
+export class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
   constructor() {
     super(['initialize', 'clearBrowsingData', 'getInstalledApps']);
 

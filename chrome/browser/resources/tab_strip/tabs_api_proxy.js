@@ -29,20 +29,20 @@ export const TabNetworkState = {
 /**
  * Must be kept in sync with TabAlertState from
  * //chrome/browser/ui/tabs/tab_utils.h
- * @enum {number}
+ * @enum {string}
  */
 export const TabAlertState = {
-  MEDIA_RECORDING: 0,
-  TAB_CAPTURING: 1,
-  AUDIO_PLAYING: 2,
-  AUDIO_MUTING: 3,
-  BLUETOOTH_CONNECTED: 4,
-  USB_CONNECTED: 5,
-  HID_CONNECTED: 6,
-  SERIAL_CONNECTED: 7,
-  PIP_PLAYING: 8,
-  DESKTOP_CAPTURING: 9,
-  VR_PRESENTING_IN_HEADSET: 10,
+  AUDIO_MUTING: 'audio-muting',
+  AUDIO_PLAYING: 'audio-playing',
+  BLUETOOTH_CONNECTED: 'bluetooth-connected',
+  DESKTOP_CAPTURING: 'desktop-capturing',
+  HID_CONNECTED: 'hid-connected',
+  MEDIA_RECORDING: 'media-recording',
+  PIP_PLAYING: 'pip-playing',
+  SERIAL_CONNECTED: 'serial-connected',
+  TAB_CAPTURING: 'tab-capturing',
+  USB_CONNECTED: 'usb-connected',
+  VR_PRESENTING_IN_HEADSET: 'vr-presenting',
 };
 
 /**

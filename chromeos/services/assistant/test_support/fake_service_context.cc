@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/test_support/fake_service_context.h"
 
 namespace chromeos {
@@ -46,12 +47,6 @@ FakeServiceContext& FakeServiceContext::set_assistant_state(
   return *this;
 }
 
-FakeServiceContext& FakeServiceContext::set_device_actions(
-    mojom::DeviceActions* value) {
-  device_actions_ = value;
-  return *this;
-}
-
 FakeServiceContext& FakeServiceContext::set_assistant_notification_controller(
     ash::mojom::AssistantNotificationController* value) {
   assistant_notification_controller_ = value;
@@ -91,9 +86,8 @@ CrasAudioHandler* FakeServiceContext::cras_audio_handler() {
   return nullptr;
 }
 
-mojom::DeviceActions* FakeServiceContext::device_actions() {
-  DCHECK(device_actions_ != nullptr);
-  return device_actions_;
+DeviceActions* FakeServiceContext::device_actions() {
+  return DeviceActions::Get();
 }
 
 scoped_refptr<base::SequencedTaskRunner>

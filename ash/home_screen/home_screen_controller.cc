@@ -28,7 +28,7 @@
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
 #include "base/barrier_closure.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"

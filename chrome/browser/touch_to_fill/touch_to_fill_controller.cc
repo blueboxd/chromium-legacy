@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"

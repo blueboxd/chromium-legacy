@@ -79,6 +79,13 @@ class MediaHistoryFeedItemsTable : public MediaHistoryTableBase {
   base::Optional<int64_t> StoreSafeSearchResult(
       int64_t feed_item_id,
       media_feeds::mojom::SafeSearchResult result);
+
+  // Increments the shown count for the feed item and returns true if
+  // successful.
+  bool IncrementShownCount(const int64_t feed_item_id);
+
+  // Marks the feed item as clicked and returns true if successful.
+  bool MarkAsClicked(const int64_t feed_item_id);
 };
 
 }  // namespace media_history

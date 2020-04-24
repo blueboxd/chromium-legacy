@@ -459,7 +459,10 @@ void DocumentProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  if (input.type() == metrics::OmniboxInputType::EMPTY) {
+  // There should be no document suggestions fetched for on-focus suggestion
+  // requests, or if the input is empty.
+  if (input.from_omnibox_focus() ||
+      input.type() == metrics::OmniboxInputType::EMPTY) {
     return;
   }
 

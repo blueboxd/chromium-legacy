@@ -4,7 +4,7 @@
 
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/field_trial.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"

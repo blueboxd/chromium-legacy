@@ -4,7 +4,6 @@
 
 #include "ash/system/tray/tray_constants.h"
 
-#include "base/logging.h"
 
 namespace ash {
 

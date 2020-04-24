@@ -4,8 +4,8 @@
 
 #include "media/blink/cdm_result_promise_helper.h"
 
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 
 namespace media {
 

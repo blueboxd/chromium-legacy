@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 using content::WebContents;

@@ -23,7 +23,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/hash/md5.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"

@@ -101,10 +101,6 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
-    name = 'android-lollipop-arm-rel',
-)
-
-try_.chromium_android_builder(
     name = 'android-marshmallow-x86-fyi-rel',
 )
 

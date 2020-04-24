@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/chrome_cleaner/chrome_utils/extensions_util.h"
 #include "chrome/chrome_cleaner/chrome_utils/force_installed_extension.h"
 #include "chrome/chrome_cleaner/engines/broker/sandbox_setup.h"

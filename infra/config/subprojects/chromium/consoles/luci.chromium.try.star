@@ -2,7 +2,7 @@ luci.list_view(
     name = 'luci.chromium.try',
     entries = [
         'try/android-cronet-arm-dbg',
-        'try/android-kitkat-arm-rel',
+        'try/android-lollipop-arm-rel',
         'try/android-marshmallow-arm64-rel',
         'try/android-oreo-arm64-cts-networkservice-dbg',
         'try/android-pie-arm64-coverage-rel',

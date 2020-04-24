@@ -14,11 +14,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/containers/span.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "gpu/config/gpu_finch_features.h"

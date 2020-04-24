@@ -14,6 +14,7 @@
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/services/assistant/cros_platform_api.h"
+#include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/service_context.h"
 #include "libassistant/shared/public/platform_audio_output.h"
@@ -149,7 +150,7 @@ class SettingWithDeviceAction : public Setting {
   explicit SettingWithDeviceAction(ServiceContext* context)
       : context_(context) {}
 
-  mojom::DeviceActions* device_actions() { return context_->device_actions(); }
+  DeviceActions* device_actions() { return context_->device_actions(); }
 
  private:
   ServiceContext* context_;

@@ -97,6 +97,7 @@ source_set("core_unit_tests") {
     "test/proto_printer.h",
     "test/stream_builder.cc",
     "test/stream_builder.h",
+    "types_unittest.cc",
   ]
 
   deps = [

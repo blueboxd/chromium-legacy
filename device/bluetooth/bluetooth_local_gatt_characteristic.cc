@@ -4,7 +4,7 @@
 
 #include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
 

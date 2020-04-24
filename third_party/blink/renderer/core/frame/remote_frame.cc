@@ -154,7 +154,8 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
     initiator_frame_is_ad = frame->IsAdSubframe();
     if (frame_request.ClientRedirectReason() != ClientNavigationReason::kNone) {
       probe::FrameRequestedNavigation(frame, this, url,
-                                      frame_request.ClientRedirectReason());
+                                      frame_request.ClientRedirectReason(),
+                                      kNavigationPolicyCurrentTab);
     }
   }
 

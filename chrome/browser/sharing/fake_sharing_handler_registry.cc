@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sharing/fake_sharing_handler_registry.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 
 FakeSharingHandlerRegistry::FakeSharingHandlerRegistry() = default;

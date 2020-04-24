@@ -8,7 +8,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_service_wrapper.h"

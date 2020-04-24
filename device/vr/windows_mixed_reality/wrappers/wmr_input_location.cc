@@ -6,7 +6,7 @@
 #include <windows.ui.input.spatial.h>
 #include <wrl.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace WFN = ABI::Windows::Foundation::Numerics;
 

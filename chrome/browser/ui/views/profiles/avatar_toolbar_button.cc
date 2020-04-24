@@ -6,8 +6,9 @@
 
 #include <vector>
 
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/avatar_menu.h"

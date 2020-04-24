@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/debug/debugger.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "device/vr/test/test_hook.h"

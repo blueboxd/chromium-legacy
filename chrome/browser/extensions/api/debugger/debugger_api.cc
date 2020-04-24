@@ -530,7 +530,7 @@ ExtensionFunction::ResponseAction DebuggerAttachFunction::Run() {
   CopyDebuggee(&debuggee_, params->target);
   std::string error;
   if (!InitAgentHost(&error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   if (!DevToolsAgentHost::IsSupportedProtocolVersion(
           params->required_version)) {
@@ -569,7 +569,7 @@ ExtensionFunction::ResponseAction DebuggerDetachFunction::Run() {
   CopyDebuggee(&debuggee_, params->target);
   std::string error;
   if (!InitClientHost(&error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   client_host_->RespondDetachedToPendingRequests();
   client_host_->Close();
@@ -590,7 +590,7 @@ ExtensionFunction::ResponseAction DebuggerSendCommandFunction::Run() {
   CopyDebuggee(&debuggee_, params->target);
   std::string error;
   if (!InitClientHost(&error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   client_host_->SendMessageToBackend(this, params->method,
       params->command_params.get());
@@ -605,7 +605,7 @@ void DebuggerSendCommandFunction::SendResponseBody(
   if (response->Get("error", &error_body)) {
     std::string error;
     base::JSONWriter::Write(*error_body, &error);
-    Respond(Error(error));
+    Respond(Error(std::move(error)));
     return;
   }
 

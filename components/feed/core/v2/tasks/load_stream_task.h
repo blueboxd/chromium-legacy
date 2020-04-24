@@ -9,8 +9,10 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
+#include "components/feed/core/v2/public/types.h"
 #include "components/feed/core/v2/tasks/load_stream_from_store_task.h"
 #include "components/offline_pages/task/task.h"
 #include "components/version_info/channel.h"
@@ -34,15 +36,20 @@ class LoadStreamTask : public offline_pages::Task {
   };
 
   struct Result {
-    Result() = default;
-    explicit Result(LoadStreamStatus a_final_status)
-        : final_status(a_final_status) {}
+    Result();
+    explicit Result(LoadStreamStatus status);
+    ~Result();
+    Result(const Result&);
+    Result& operator=(const Result&);
+
     // Final status of loading the stream.
     LoadStreamStatus final_status = LoadStreamStatus::kNoStatus;
     // Status of just loading the stream from the persistent store, if that
     // was attempted.
     LoadStreamStatus load_from_store_status = LoadStreamStatus::kNoStatus;
     LoadType load_type;
+    // Information about the network request, if one was made.
+    base::Optional<NetworkResponseInfo> network_response_info;
   };
 
   LoadStreamTask(LoadType load_type,
@@ -65,7 +72,11 @@ class LoadStreamTask : public offline_pages::Task {
   LoadType load_type_;
   FeedStream* stream_;  // Unowned.
   std::unique_ptr<LoadStreamFromStoreTask> load_from_store_task_;
+
+  // Information to be stuffed in |Result|.
   LoadStreamStatus load_from_store_status_ = LoadStreamStatus::kNoStatus;
+  base::Optional<NetworkResponseInfo> network_response_info_;
+
   base::TimeTicks fetch_start_time_;
   base::OnceCallback<void(Result)> done_callback_;
   base::WeakPtrFactory<LoadStreamTask> weak_ptr_factory_{this};

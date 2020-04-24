@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
 #include "base/numerics/ranges.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "ui/gfx/animation/tween.h"

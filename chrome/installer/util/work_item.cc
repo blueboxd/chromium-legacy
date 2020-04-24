@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/installer/util/callback_work_item.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/copy_tree_work_item.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/accessibility.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"

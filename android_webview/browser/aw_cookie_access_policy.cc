@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "android_webview/browser/aw_contents_io_thread_client.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"

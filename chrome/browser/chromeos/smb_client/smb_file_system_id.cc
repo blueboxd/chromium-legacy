@@ -8,8 +8,8 @@
 
 #include <string>
 
+#include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"

@@ -7,7 +7,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/locale/locale_detailed_view.h"
 #include "ash/system/tray/detailed_view_delegate.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {

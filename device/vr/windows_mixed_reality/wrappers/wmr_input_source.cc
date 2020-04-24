@@ -9,7 +9,8 @@
 
 #include <cstdint>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_pointer_source_pose.h"
 
 using SourceHandedness =

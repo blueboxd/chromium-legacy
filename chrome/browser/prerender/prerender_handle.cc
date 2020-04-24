@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"

@@ -1958,11 +1958,6 @@
     "expiry_milestone": 77
   },
   {
-    "name": "enable-send-tab-to-self-broadcast",
-    "owners": [ "//components/send_tab_to_self/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-send-tab-to-self-omnibox-sending-animation",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
     "expiry_milestone": 84
@@ -3204,11 +3199,6 @@
     "name": "omnibox-rich-autocompletion",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "omnibox-rich-entity-suggestions",
-    "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
   },
   {
     "name": "omnibox-search-engine-logo",

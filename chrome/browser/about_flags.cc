@@ -3142,11 +3142,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kOmniboxOnFocusSuggestionsVariations,
                                     "OmniboxBundledExperimentV1")},
 
-    {"omnibox-rich-entity-suggestions",
-     flag_descriptions::kOmniboxRichEntitySuggestionsName,
-     flag_descriptions::kOmniboxRichEntitySuggestionsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxRichEntitySuggestions)},
-
     {"omnibox-preserve-default-match-against-async-update",
      flag_descriptions::kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName,
      flag_descriptions::
@@ -4544,11 +4539,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          browsing_data::features::kEnableRemovingAllThirdPartyCookies)},
-
-    {"enable-send-tab-to-self-broadcast",
-     flag_descriptions::kSendTabToSelfBroadcastName,
-     flag_descriptions::kSendTabToSelfBroadcastDescription, kOsAll,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfBroadcast)},
 
     {"cookies-without-same-site-must-be-secure",
      flag_descriptions::kCookiesWithoutSameSiteMustBeSecureName,

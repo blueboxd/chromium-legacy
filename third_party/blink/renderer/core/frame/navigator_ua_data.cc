@@ -53,7 +53,7 @@ bool NavigatorUAData::mobile() const {
   return false;
 }
 
-const HeapVector<Member<NavigatorUABrandVersion>>& NavigatorUAData::uaList()
+const HeapVector<Member<NavigatorUABrandVersion>>& NavigatorUAData::brands()
     const {
   if (GetExecutionContext()) {
     return brand_set_;

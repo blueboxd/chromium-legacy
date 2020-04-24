@@ -2627,7 +2627,7 @@ WebRequestInternalAddEventListenerFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(filter.InitFromValue(*value, &error) ||
                               !error.empty());
   if (!error.empty())
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   int extra_info_spec = 0;
   if (HasOptionalArgument(2)) {

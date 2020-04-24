@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/router/media_routes_observer.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/media/router/media_router.h"
 
 namespace media_router {

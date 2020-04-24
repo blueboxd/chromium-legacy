@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/no_destructor.h"
 #include "device/vr/test/test_hook.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_statics.h"

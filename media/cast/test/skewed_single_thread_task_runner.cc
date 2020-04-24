@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/time/tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

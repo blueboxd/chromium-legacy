@@ -6,7 +6,6 @@
 
 #include <ostream>
 
-#include "base/logging.h"
 
 namespace media {
 

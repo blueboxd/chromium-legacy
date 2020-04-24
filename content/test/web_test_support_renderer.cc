@@ -59,12 +59,7 @@ std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
-  // RenderFrameImpl always has a RenderViewImpl for it.
-  RenderViewImpl* render_view_impl = params.render_view;
-
-  auto* render_frame_proxy = new WebFrameTestProxy(std::move(params));
-  render_frame_proxy->Initialize(render_view_impl);
-  return render_frame_proxy;
+  return new WebFrameTestProxy(std::move(params));
 }
 
 }  // namespace

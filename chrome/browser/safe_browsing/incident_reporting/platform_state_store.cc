@@ -20,8 +20,8 @@
 
 #if defined(USE_PLATFORM_STATE_STORE)
 
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/safe_browsing/incident_reporting/state_store_data.pb.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"

@@ -109,11 +109,13 @@ class PaintPreviewBaseService : public KeyedService {
   // Captures the main frame of |web_contents| (an observer for capturing Paint
   // Previews is created for web contents if it does not exist). The capture is
   // attributed to the URL of the main frame and is stored in |root_dir|. The
-  // captured area is clipped to |clip_rect| if it is non-zero. On completion
+  // captured area is clipped to |clip_rect| if it is non-zero. Caps the per
+  // frame SkPicture size to |max_per_capture_size| if non-zero. On completion
   // the status of the capture is provided via |callback|.
   void CapturePaintPreview(content::WebContents* web_contents,
                            const base::FilePath& root_dir,
                            gfx::Rect clip_rect,
+                           size_t max_per_capture_size,
                            OnCapturedCallback callback);
   // Same as above except |render_frame_host| is directly captured rather than
   // the main frame.
@@ -121,6 +123,7 @@ class PaintPreviewBaseService : public KeyedService {
                            content::RenderFrameHost* render_frame_host,
                            const base::FilePath& root_dir,
                            gfx::Rect clip_rect,
+                           size_t max_per_capture_size,
                            OnCapturedCallback callback);
 
   // Starts the compositor service in a utility process.

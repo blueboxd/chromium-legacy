@@ -62,23 +62,23 @@ WebTouchPoint::State ToWebTouchPointState(
     SyntheticPointerActionParams::PointerActionType action_type) {
   switch (action_type) {
     case SyntheticPointerActionParams::PointerActionType::PRESS:
-      return WebTouchPoint::kStatePressed;
+      return WebTouchPoint::State::kStatePressed;
     case SyntheticPointerActionParams::PointerActionType::MOVE:
-      return WebTouchPoint::kStateMoved;
+      return WebTouchPoint::State::kStateMoved;
     case SyntheticPointerActionParams::PointerActionType::RELEASE:
-      return WebTouchPoint::kStateReleased;
+      return WebTouchPoint::State::kStateReleased;
     case SyntheticPointerActionParams::PointerActionType::CANCEL:
-      return WebTouchPoint::kStateCancelled;
+      return WebTouchPoint::State::kStateCancelled;
     case SyntheticPointerActionParams::PointerActionType::IDLE:
-      return WebTouchPoint::kStateStationary;
+      return WebTouchPoint::State::kStateStationary;
     case SyntheticPointerActionParams::PointerActionType::LEAVE:
     case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
       NOTREACHED()
           << "Invalid SyntheticPointerActionParams::PointerActionType.";
-      return WebTouchPoint::kStateUndefined;
+      return WebTouchPoint::State::kStateUndefined;
   }
   NOTREACHED() << "Invalid SyntheticPointerActionParams::PointerActionType.";
-  return WebTouchPoint::kStateUndefined;
+  return WebTouchPoint::State::kStateUndefined;
 }
 
 WebInputEvent::Type ToWebMouseEventType(
@@ -106,13 +106,13 @@ WebInputEvent::Type ToWebMouseEventType(
 WebInputEvent::Type WebTouchPointStateToEventType(
     blink::WebTouchPoint::State state) {
   switch (state) {
-    case blink::WebTouchPoint::kStateReleased:
+    case blink::WebTouchPoint::State::kStateReleased:
       return WebInputEvent::Type::kTouchEnd;
-    case blink::WebTouchPoint::kStatePressed:
+    case blink::WebTouchPoint::State::kStatePressed:
       return WebInputEvent::Type::kTouchStart;
-    case blink::WebTouchPoint::kStateMoved:
+    case blink::WebTouchPoint::State::kStateMoved:
       return WebInputEvent::Type::kTouchMove;
-    case blink::WebTouchPoint::kStateCancelled:
+    case blink::WebTouchPoint::State::kStateCancelled:
       return WebInputEvent::Type::kTouchCancel;
     default:
       return WebInputEvent::Type::kUndefined;

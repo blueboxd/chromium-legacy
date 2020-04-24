@@ -396,20 +396,6 @@ bool ExecutionContext::IsFeatureEnabled(
     mojom::blink::FeaturePolicyFeature feature,
     ReportOptions report_on_failure,
     const String& message) const {
-  PolicyValue threshold_value =
-      PolicyValue::CreateMaxPolicyValue(GetSecurityContext()
-                                            .GetFeaturePolicy()
-                                            ->GetFeatureList()
-                                            .at(feature)
-                                            .second);
-  return IsFeatureEnabled(feature, threshold_value, report_on_failure, message);
-}
-
-bool ExecutionContext::IsFeatureEnabled(
-    mojom::blink::FeaturePolicyFeature feature,
-    PolicyValue threshold_value,
-    ReportOptions report_on_failure,
-    const String& message) const {
   if (report_on_failure == ReportOptions::kReportOnFailure) {
     // We are expecting a violation report in case the feature is disabled in
     // the context. Therefore, this qualifies as a potential violation (i.e.,
@@ -418,16 +404,14 @@ bool ExecutionContext::IsFeatureEnabled(
   }
 
   bool should_report;
-  bool enabled = GetSecurityContext().IsFeatureEnabled(feature, threshold_value,
-                                                       &should_report);
+  bool enabled = GetSecurityContext().IsFeatureEnabled(feature, &should_report);
 
   if (enabled) {
     // Report if the proposed header semantics change would have affected the
     // outcome. (https://crbug.com/937131)
     const FeaturePolicy* policy = GetSecurityContext().GetFeaturePolicy();
     url::Origin origin = GetSecurityOrigin()->ToUrlOrigin();
-    if (policy->GetProposedFeatureValueForOrigin(feature, origin) <
-        threshold_value) {
+    if (!policy->GetProposedFeatureValueForOrigin(feature, origin)) {
       // Count that there was a change in this page load.
       const_cast<ExecutionContext*>(this)->CountUse(
           WebFeature::kFeaturePolicyProposalWouldChangeBehaviour);

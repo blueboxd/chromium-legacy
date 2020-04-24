@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/values.h"
 #include "net/base/url_util.h"
 

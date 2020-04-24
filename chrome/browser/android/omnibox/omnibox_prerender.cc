@@ -5,7 +5,8 @@
 #include "chrome/browser/android/omnibox/omnibox_prerender.h"
 
 #include "base/android/jni_string.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "chrome/android/chrome_jni_headers/OmniboxPrerender_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"

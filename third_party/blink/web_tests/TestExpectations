@@ -171,8 +171,6 @@ virtual/composite-after-paint/paint/frames/* [ Pass ]
 virtual/composite-after-paint/scrollingcoordinator/* [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
-crbug.com/1067174 wpt_internal/display-lock/css-subtree-visibility/subtree-visibility-051.html [ Failure ]
-
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]

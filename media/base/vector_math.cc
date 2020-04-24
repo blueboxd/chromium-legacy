@@ -7,7 +7,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 
 // NaCl does not allow intrinsics.

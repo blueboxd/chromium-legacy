@@ -8,7 +8,7 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "printing/print_settings.h"
 
 namespace printing {

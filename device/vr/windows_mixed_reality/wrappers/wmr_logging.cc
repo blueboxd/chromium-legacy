@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 #include "device/vr/windows_mixed_reality/wrappers/wmr_logging.h"
 
-#include "base/logging.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_types.h"

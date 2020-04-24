@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/web_applications/web_app.h"
 

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_unittest_helpers.h"
 
+#include "base/check.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace webrtc_event_logging {

@@ -4,7 +4,7 @@
 
 #include "media/blink/webinbandtexttrack_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace media {
 

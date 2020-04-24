@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -176,12 +177,6 @@ public class IntentHandler {
      * For multi-window, passes the id of the window.
      */
     public static final String EXTRA_WINDOW_ID = "org.chromium.chrome.browser.window_id";
-
-    /**
-     * Records package names of other applications in the system that could have handled
-     * this intent.
-     */
-    public static final String EXTRA_EXTERNAL_NAV_PACKAGES = "org.chromium.chrome.browser.eenp";
 
     /**
      * Extra to indicate the launch type of the tab to be created.
@@ -416,8 +411,8 @@ public class IntentHandler {
      * This doesn't include generic URL handlers, such as browsers.
      */
     private void recordAppHandlersForIntent(Intent intent) {
-        List<String> packages = IntentUtils.safeGetStringArrayListExtra(intent,
-                IntentHandler.EXTRA_EXTERNAL_NAV_PACKAGES);
+        List<String> packages = IntentUtils.safeGetStringArrayListExtra(
+                intent, ExternalNavigationHandler.EXTRA_EXTERNAL_NAV_PACKAGES);
         if (packages != null && packages.size() > 0) {
             RecordUserAction.record("MobileExternalNavigationReceived");
         }

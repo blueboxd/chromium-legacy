@@ -5,7 +5,7 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_keyed_service.h"
 
 #include "base/callback_forward.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "content/public/browser/browser_context.h"
 

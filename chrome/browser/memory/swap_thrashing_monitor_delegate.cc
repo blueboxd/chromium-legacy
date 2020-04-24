@@ -4,7 +4,7 @@
 
 #include "chrome/browser/memory/swap_thrashing_monitor_delegate.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace memory {
 

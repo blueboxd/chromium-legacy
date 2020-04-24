@@ -368,13 +368,6 @@ viz_source_set("gpu_service_dependencies") {
 
   deps = [ "//gpu/config" ]
 
-  if (is_win) {
-    sources += [
-      "gl/info_collection_gpu_service_impl.cc",
-      "gl/info_collection_gpu_service_impl.h",
-    ]
-  }
-
   if (is_chromeos) {
     deps += [
       "//components/arc/video_accelerator",

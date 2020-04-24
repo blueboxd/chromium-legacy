@@ -4,6 +4,7 @@
 
 module feed_internals.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/url.mojom";
 
 // General properties of Feed suggestions.
@@ -19,6 +20,9 @@ struct Properties {
 
   // Whether prefetching for offline availability is enabled.
   bool is_prefetching_enabled;
+
+  // Last load stream status, human readable.
+  string load_stream_status;
 
   // Feed fetch URL.
   url.mojom.Url feed_fetch_url;
@@ -44,12 +48,12 @@ struct LastFetchProperties {
   // Reason for the last fetch.
   string last_fetch_trigger;
 
-  // Last fetch time.
-  Time? last_fetch_time;
+  // Last fetch time. Zero if there was no last fetch.
+  mojo_base.mojom.TimeDelta last_fetch_time;
 
-  // Time until which the scheduler will stop requesting refreshes, unless there
-  // is direct user interaction.
-  Time? refresh_suppress_time;
+  // Time until which the scheduler will stop requesting refreshes.
+  // Zero if there is direct user interaction.
+  mojo_base.mojom.TimeDelta refresh_suppress_time;
 
   // For test server authentication.
   string last_bless_nonce;
@@ -71,11 +75,6 @@ struct Suggestion {
 
   // URL of the suggested page's favicon.
   url.mojom.Url favicon_url;
-};
-
-// Time wrapper to allow for nullable objects.
-struct Time {
-  double ms_since_epoch;
 };
 
 // Browser interface for the page. Consists of calls for data and hooks for
@@ -103,12 +102,15 @@ interface PageHandler {
   // Get the last known content with metadata.
   GetCurrentContent() => (array<Suggestion> suggestions);
 
-  // Internal state dump of the Feed library's process scope.
+  // Internal state dump of the Feed library's process scope. Human-readable.
   GetFeedProcessScopeDump() => (string dump);
 
-  // Record all Feed metrics into a log.
+  // Record all Feed metrics into a human-readable log.
   GetFeedHistograms() => (string log);
 
-  // Set feed host override. Empty to clear override.
-  OverrideFeedHost(string host);
+  // Overrides the scheme, host, and port used to make Feed Query requests.
+  // Other URL components, like the path, are ignored.
+  // Empty to clear override.
+  // This allows for testing the Feed against a development server.
+  OverrideFeedHost(url.mojom.Url host);
 };

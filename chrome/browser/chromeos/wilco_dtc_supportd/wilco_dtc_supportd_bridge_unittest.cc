@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/test/task_environment.h"

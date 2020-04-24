@@ -162,7 +162,7 @@ public class ReaderModeManagerTest {
     public void testUI_notTriggered_afterDismiss() {
         mDistillabilityObserver.onIsPageDistillableResult(mTab, true, true, false);
         verify(mReaderModeInfobarJniMock).create(mTab);
-        mManager.onClosed(mTab, 0);
+        mManager.onClosed();
 
         mManager.tryShowingInfoBar();
         verifyNoMoreInteractions(mReaderModeInfobarJniMock);

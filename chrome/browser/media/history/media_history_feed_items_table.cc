@@ -194,8 +194,8 @@ sql::InitStatus MediaHistoryFeedItemsTable::CreateTableIfNonExistent() {
       "tv_episode BLOB, "
       "play_next_candidate BLOB, "
       "identifiers BLOB, "
-      "shown_count INTEGER,"
-      "clicked INTEGER, "
+      "shown_count INTEGER DEFAULT 0,"
+      "clicked INTEGER DEFAULT 0, "
       "images BLOB, "
       "safe_search_result INTEGER DEFAULT 0, "
       "CONSTRAINT fk_feed "
@@ -732,6 +732,22 @@ base::Optional<int64_t> MediaHistoryFeedItemsTable::StoreSafeSearchResult(
   }
 
   return base::nullopt;
+}
+
+bool MediaHistoryFeedItemsTable::IncrementShownCount(
+    const int64_t feed_item_id) {
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE mediaFeedItem SET shown_count = shown_count + 1 WHERE id = ?"));
+  statement.BindInt64(0, feed_item_id);
+  return statement.Run() && DB()->GetLastChangeCount() == 1;
+}
+
+bool MediaHistoryFeedItemsTable::MarkAsClicked(const int64_t feed_item_id) {
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, "UPDATE mediaFeedItem SET clicked = 1 WHERE id = ?"));
+  statement.BindInt64(0, feed_item_id);
+  return statement.Run();
 }
 
 }  // namespace media_history

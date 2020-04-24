@@ -9,7 +9,6 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/shell.h"
-#include "base/logging.h"
 #include "ui/aura/env.h"
 #include "ui/events/event.h"
 #include "ui/wm/core/cursor_manager.h"

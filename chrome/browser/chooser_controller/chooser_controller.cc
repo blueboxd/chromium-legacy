@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"

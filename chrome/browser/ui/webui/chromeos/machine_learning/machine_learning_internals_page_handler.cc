@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 
 namespace chromeos {

@@ -12,6 +12,8 @@
 
 // Opens the passphrase dialog.
 - (void)openPassphraseDialog;
+// Opens the trusted vault reauthentication dialog.
+- (void)openTrustedVaultReauth;
 // Opens the "Web & App Activity" dialog.
 - (void)openWebAppActivityDialog;
 // Opens the "Data from Chrome sync" web page.

@@ -145,13 +145,7 @@ class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 };
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_Standard DISABLED_Standard
-#else
-#define MAYBE_Standard Standard
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_Standard) {
+IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, Standard) {
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetBoolean(embedder_support::kAlternateErrorPagesEnabled, false);
   prefs->SetBoolean(autofill::prefs::kAutofillEnabledDeprecated, false);

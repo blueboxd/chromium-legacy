@@ -4,7 +4,7 @@
 
 #include "media/base/watch_time_keys.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace media {
 

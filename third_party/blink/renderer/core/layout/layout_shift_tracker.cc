@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/location.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -364,8 +365,16 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
 }
 
 LayoutShift::AttributionList LayoutShiftTracker::CreateAttributionList() const {
-  // TODO(crbug.com/1053510): Implement.
-  return LayoutShift::AttributionList();
+  LayoutShift::AttributionList list;
+  for (const Attribution& att : attributions_) {
+    if (att.node_id == kInvalidDOMNodeId)
+      break;
+    list.push_back(LayoutShiftAttribution::Create(
+        DOMNodeIds::NodeForId(att.node_id),
+        DOMRectReadOnly::FromIntRect(att.old_visual_rect),
+        DOMRectReadOnly::FromIntRect(att.new_visual_rect)));
+  }
+  return list;
 }
 
 void LayoutShiftTracker::SubmitPerformanceEntry(double score_delta,

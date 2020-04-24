@@ -6,8 +6,8 @@
 
 #include <string>
 
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"

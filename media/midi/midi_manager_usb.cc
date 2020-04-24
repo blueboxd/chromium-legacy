@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/stringprintf.h"
 #include "media/midi/midi_service.h"
 #include "media/midi/task_service.h"

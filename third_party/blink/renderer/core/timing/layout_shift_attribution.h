@@ -18,7 +18,12 @@ class CORE_EXPORT LayoutShiftAttribution : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  LayoutShiftAttribution();
+  static LayoutShiftAttribution* Create(Node*,
+                                        DOMRectReadOnly* previous,
+                                        DOMRectReadOnly* current);
+  LayoutShiftAttribution(Node*,
+                         DOMRectReadOnly* previous,
+                         DOMRectReadOnly* current);
   ~LayoutShiftAttribution() override;
 
   Node* node() const;
@@ -27,6 +32,10 @@ class CORE_EXPORT LayoutShiftAttribution : public ScriptWrappable {
 
   ScriptValue toJSONForBinding(ScriptState*) const;
   void Trace(Visitor*) override;
+
+  WeakMember<Node> node_;
+  Member<DOMRectReadOnly> previous_rect_;
+  Member<DOMRectReadOnly> current_rect_;
 };
 
 }  // namespace blink

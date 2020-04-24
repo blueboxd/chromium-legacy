@@ -4,7 +4,7 @@
 
 #include "media/base/android/media_drm_bridge_client.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 
 namespace media {

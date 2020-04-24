@@ -153,7 +153,8 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
         static_cast<const WebTouchEvent&>(*event);
     for (unsigned i = 0; i < touch_event.touches_length; ++i) {
       if (touch_event.touches[i].id == pointer_event.id &&
-          touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
+          touch_event.touches[i].state !=
+              WebTouchPoint::State::kStateStationary) {
         related_pointer_events.emplace_back(
             WebPointerEvent(touch_event, touch_event.touches[i]));
       }
@@ -166,7 +167,8 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
         static_cast<const WebTouchEvent&>(*event);
     for (unsigned i = 0; i < touch_event.touches_length; ++i) {
       if (touch_event.touches[i].id == pointer_event.id &&
-          touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
+          touch_event.touches[i].state !=
+              WebTouchPoint::State::kStateStationary) {
         predicted_pointer_events.emplace_back(
             WebPointerEvent(touch_event, touch_event.touches[i]));
       }
@@ -319,7 +321,7 @@ WebInputEventResult RenderWidgetInputHandler::HandleTouchEvent(
       static_cast<const WebTouchEvent&>(input_event);
   for (unsigned i = 0; i < touch_event.touches_length; ++i) {
     const WebTouchPoint& touch_point = touch_event.touches[i];
-    if (touch_point.state != blink::WebTouchPoint::kStateStationary) {
+    if (touch_point.state != blink::WebTouchPoint::State::kStateStationary) {
       const WebPointerEvent& pointer_event =
           WebPointerEvent(touch_event, touch_point);
       const blink::WebCoalescedInputEvent& coalesced_pointer_event =

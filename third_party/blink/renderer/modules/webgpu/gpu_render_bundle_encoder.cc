@@ -108,16 +108,18 @@ void GPURenderBundleEncoder::setPipeline(GPURenderPipeline* pipeline) {
 }
 
 void GPURenderBundleEncoder::setIndexBuffer(GPUBuffer* buffer,
-                                            uint64_t offset) {
+                                            uint64_t offset,
+                                            uint64_t size) {
   GetProcs().renderBundleEncoderSetIndexBuffer(GetHandle(), buffer->GetHandle(),
-                                               offset);
+                                               offset, size);
 }
 
 void GPURenderBundleEncoder::setVertexBuffer(uint32_t slot,
                                              const GPUBuffer* buffer,
-                                             uint64_t offset) {
-  GetProcs().renderBundleEncoderSetVertexBuffer(GetHandle(), slot,
-                                                buffer->GetHandle(), offset);
+                                             uint64_t offset,
+                                             uint64_t size) {
+  GetProcs().renderBundleEncoderSetVertexBuffer(
+      GetHandle(), slot, buffer->GetHandle(), offset, size);
 }
 
 void GPURenderBundleEncoder::draw(uint32_t vertexCount,

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/web_applications/web_app_file_handler_manager.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"

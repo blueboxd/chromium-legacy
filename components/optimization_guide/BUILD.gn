@@ -76,12 +76,15 @@ static_library("test_support") {
     "proto_database_provider_test_base.h",
     "test_hints_component_creator.cc",
     "test_hints_component_creator.h",
+    "test_optimization_guide_decider.cc",
+    "test_optimization_guide_decider.h",
   ]
   deps = [
     ":optimization_guide",
     "//base",
     "//components/leveldb_proto",
     "//components/optimization_guide/proto:optimization_guide_proto",
+    "//content/public/browser",
     "//testing/gtest",
   ]
 }

@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/files/file.h"
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

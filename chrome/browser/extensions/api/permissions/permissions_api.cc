@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -64,7 +65,7 @@ ExtensionFunction::ResponseAction PermissionsContainsFunction::Run() {
           &error);
 
   if (!unpack_result)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   const PermissionSet& active_permissions =
       extension()->permissions_data()->active_permissions();
@@ -123,7 +124,7 @@ ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
           &error);
 
   if (!unpack_result)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   // We can't remove any permissions that weren't specified in the manifest.
   if (!unpack_result->unlisted_apis.empty() ||
@@ -216,7 +217,7 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
           &error);
 
   if (!unpack_result)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   // Don't allow the extension to request any permissions that weren't specified
   // in the manifest.

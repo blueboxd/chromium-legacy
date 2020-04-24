@@ -12,7 +12,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/win/com_init_util.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"

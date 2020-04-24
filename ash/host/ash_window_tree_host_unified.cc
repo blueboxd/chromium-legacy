@@ -9,7 +9,8 @@
 
 #include "ash/host/ash_window_tree_host_mirroring_delegate.h"
 #include "ash/host/root_window_transformer.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

@@ -10,7 +10,9 @@
 #include "base/debug/alias.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/win/win_util.h"
 #include "base/win/wrapped_window_proc.h"
@@ -135,7 +137,16 @@ ATOM ClassRegistrar::RetrieveClassAtom(const ClassInfo& class_info) {
       class_info.icon, class_info.small_icon, &window_class);
   HMODULE instance = window_class.hInstance;
   ATOM atom = RegisterClassEx(&window_class);
-  CHECK(atom) << GetLastError();
+  if (!atom) {
+    // Perhaps the Window session has run out of atoms; see
+    // https://crbug.com/653493.
+    auto last_error = ::GetLastError();
+    base::debug::Alias(&last_error);
+    wchar_t name_copy[64];
+    base::wcslcpy(name_copy, name.c_str(), base::size(name_copy));
+    base::debug::Alias(name_copy);
+    PCHECK(atom);
+  }
 
   registered_classes_.push_back(RegisteredClass(
       class_info, name, atom, instance));

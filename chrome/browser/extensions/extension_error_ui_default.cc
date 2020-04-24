@@ -4,7 +4,8 @@
 
 #include "chrome/browser/extensions/extension_error_ui_default.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

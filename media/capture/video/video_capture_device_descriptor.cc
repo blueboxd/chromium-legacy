@@ -4,7 +4,6 @@
 
 #include "media/capture/video/video_capture_device_descriptor.h"
 
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 
 namespace media {

@@ -97,6 +97,7 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest, CaptureFrame) {
   params.document_guid = guid;
   params.is_main_frame = true;
   params.root_dir = temp_dir_.GetPath();
+  params.max_per_capture_size = 0;
   base::RunLoop loop;
 
   CreateClient();
@@ -152,6 +153,7 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest, CaptureMainFrameWithSubframe) {
   params.document_guid = guid;
   params.is_main_frame = true;
   params.root_dir = temp_dir_.GetPath();
+  params.max_per_capture_size = 0;
   base::RunLoop loop;
 
   CreateClient();

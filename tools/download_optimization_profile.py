@@ -67,7 +67,13 @@ def RetrieveProfile(desired_profile_name, out_path, gs_url_base):
   # vpython is > python 2.7.9, so we can expect urllib to validate HTTPS certs
   # properly.
   ext = os.path.splitext(desired_profile_name)[1]
-  compressed_path = out_path + ext
+  if ext in ['.bz2', '.xz']:
+    # For extension that requires explicit decompression, decompression will
+    # change the eventual file names by dropping the extension, and that's why
+    # an extra extension is appended here to make sure that the decompressed
+    # file path matches the |out_path| passed in as parameter.
+    out_path += ext
+
   gs_prefix = 'gs://'
   if not desired_profile_name.startswith(gs_prefix):
     gs_url = os.path.join(GS_HTTP_URL, gs_url_base, desired_profile_name)
@@ -75,7 +81,7 @@ def RetrieveProfile(desired_profile_name, out_path, gs_url_base):
     gs_url = os.path.join(GS_HTTP_URL, desired_profile_name[len(gs_prefix):])
 
   with contextlib.closing(urllib2.urlopen(gs_url)) as u:
-    with open(compressed_path, 'wb') as f:
+    with open(out_path, 'wb') as f:
       while True:
         buf = u.read(4096)
         if not buf:
@@ -87,16 +93,11 @@ def RetrieveProfile(desired_profile_name, out_path, gs_url_base):
     # multi-stream bzip files. It will silently succeed and give us a garbage
     # profile.
     # bzip2 removes the compressed file on success.
-    CheckCallOrExit(['bzip2', '-d', compressed_path])
+    CheckCallOrExit(['bzip2', '-d', out_path])
   elif ext == '.xz':
     # ...And we can't use the `lzma` module, since it was introduced in python3.
     # xz removes the compressed file on success.
-    CheckCallOrExit(['xz', '-d', compressed_path])
-  else:
-    # Wait until after downloading the file to check the file extension, so the
-    # user has something usable locally if the file extension is unrecognized.
-    raise ValueError(
-        'Only bz2 and xz extensions are supported; "%s" is not' % ext)
+    CheckCallOrExit(['xz', '-d', out_path])
 
 
 def main():

@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "components/component_updater/component_updater_paths.h"

@@ -74,6 +74,7 @@ contribution can be accepted:
 - If the author or their company is not listed, the CL should include a new
   AUTHORS entry.
   - Ensure the new entry is reviewed by a reviewer who works for Google.
+  - Contributor License Agreement can be verified by Googlers at http://go/cla.
   - If there is a corporate CLA for the author's company, it must list the
     person explicitly (or the list of authorized contributors must say
     something like "All employees"). If the author is not on their company's

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/wake_lock/wake_lock_permission_context.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 WakeLockPermissionContext::WakeLockPermissionContext(

@@ -8,6 +8,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../strings.m.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination} from '../data/destination.js';
@@ -44,11 +45,20 @@ Polymer({
         return loadTimeData.getString('printButton');
       },
     },
+
+    // <if expr="chromeos">
+    /** @private */
+    errorMessage_: {
+      type: String,
+      computed: 'computeErrorMessage_(destination.id, maxSheets, sheetCount)',
+      observer: 'errorMessageChanged_',
+    },
+    // </if>
   },
 
   observers: [
     'updatePrintButtonLabel_(destination.id)',
-    'updatePrintButtonEnabled_(state, destination.id, maxSheets, sheetCount)'
+    'updatePrintButtonEnabled_(state, destination.id, maxSheets, sheetCount)',
   ],
 
   /** @private {!State} */
@@ -134,8 +144,8 @@ Polymer({
    * @return {string} Localized message to show as an error.
    * @private
    */
-  getErrorMessage_() {
-    if (this.maxSheets === 0) {
+  computeErrorMessage_() {
+    if (!this.showSheetsError_()) {
       return '';
     }
 
@@ -143,6 +153,17 @@ Polymer({
     const label = loadTimeData.getString(`sheetsLimitLabel${singularOrPlural}`);
     return loadTimeData.getStringF(
         'sheetsLimitErrorMessage', this.maxSheets.toLocaleString(), label);
+  },
+
+  /**
+   * Uses IronA11yAnnouncer to notify screen readers that an error is set.
+   * @private
+   */
+  errorMessageChanged_() {
+    if (this.errorMessage_ !== '') {
+      IronA11yAnnouncer.requestAvailability();
+      this.fire('iron-announce', {text: this.errorMessage_});
+    }
   },
   // </if>
 });

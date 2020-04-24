@@ -17,6 +17,8 @@ component("cpp") {
     "assistant_service.h",
     "default_assistant_interaction_subscriber.cc",
     "default_assistant_interaction_subscriber.h",
+    "device_actions.cc",
+    "device_actions.h",
     "features.cc",
     "features.h",
   ]

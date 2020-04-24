@@ -8,7 +8,7 @@
 #include <mach-o/fat.h>
 #include <mach-o/loader.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/numerics/safe_math.h"
 
 namespace safe_browsing {

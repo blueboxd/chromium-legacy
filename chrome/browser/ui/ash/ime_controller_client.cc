@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"

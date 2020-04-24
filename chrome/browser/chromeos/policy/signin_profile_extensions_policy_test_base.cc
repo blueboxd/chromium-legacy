@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/policy/signin_profile_extensions_policy_test_base.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

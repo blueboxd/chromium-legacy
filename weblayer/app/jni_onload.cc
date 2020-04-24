@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/android/library_loader/library_loader_hooks.h"
-#include "base/logging.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
 #include "content/public/app/content_jni_onload.h"

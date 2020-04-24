@@ -421,7 +421,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void FireSubmissionIfFormDisappear(mojom::SubmissionIndicatorEvent event);
 
   void OnFrameDetached();
-  void OnWillSubmitForm(const blink::WebFormElement& form);
 
   void HidePopup();
 

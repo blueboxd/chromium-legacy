@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"

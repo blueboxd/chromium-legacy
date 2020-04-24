@@ -6,7 +6,7 @@
 
 #include "chrome/browser/media_galleries/win/mtp_device_object_enumerator.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 MTPDeviceObjectEnumerator::MTPDeviceObjectEnumerator(
     const MTPDeviceObjectEntries& entries)

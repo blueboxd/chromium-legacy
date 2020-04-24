@@ -164,9 +164,7 @@ class CORE_EXPORT SecurityContext {
   // Use ExecutionContext::IsFeatureEnabled if a failure should be reported.
   // |should_report| is an extra return value that indicates whether
   // the potential violation should be reported.
-  bool IsFeatureEnabled(mojom::blink::FeaturePolicyFeature) const;
   bool IsFeatureEnabled(mojom::blink::FeaturePolicyFeature,
-                        PolicyValue threshold_value,
                         bool* should_report = nullptr) const;
 
   bool IsFeatureEnabled(mojom::blink::DocumentPolicyFeature) const;

@@ -7,7 +7,8 @@
 #include <stddef.h>
 
 #include "base/callback_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"

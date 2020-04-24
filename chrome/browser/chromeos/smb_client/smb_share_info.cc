@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/smb_client/smb_share_info.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace chromeos {
 namespace smb_client {

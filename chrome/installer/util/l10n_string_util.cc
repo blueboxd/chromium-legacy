@@ -13,8 +13,9 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

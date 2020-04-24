@@ -9,7 +9,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 #include "chrome/browser/notifications/scheduler/internal/stats.h"

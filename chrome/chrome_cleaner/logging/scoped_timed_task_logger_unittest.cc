@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

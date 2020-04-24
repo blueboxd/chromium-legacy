@@ -285,6 +285,7 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
       ax::mojom::Role::kMark,
       ax::mojom::Role::kMath,
       ax::mojom::Role::kMeter,
+      ax::mojom::Role::kPluginObject,
       ax::mojom::Role::kProgressIndicator,
       ax::mojom::Role::kRuby,
       ax::mojom::Role::kSplitter,
@@ -3145,10 +3146,16 @@ HTMLLabelElement* AXNodeObject::LabelElementContainer() const {
 }
 
 bool AXNodeObject::OnNativeFocusAction() {
+  // Checking if node is focusable in a native focus action requires that we
+  // have updated style and layout tree, since the focus check relies on the
+  // existence of layout objects to determine the result. However, these layout
+  // objects may have been deferred by display-locking.
+  Document* document = GetDocument();
+  document->UpdateStyleAndLayoutTreeForNode(GetNode());
+
   if (!CanSetFocusAttribute())
     return false;
 
-  Document* document = GetDocument();
   if (IsWebArea()) {
     // If another Frame has focused content (e.g. nested iframe), then we
     // need to clear focus for the other Document Frame.

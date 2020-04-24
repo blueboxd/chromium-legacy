@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 
-#include "base/logging.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/profiles/profile.h"

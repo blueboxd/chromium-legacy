@@ -4,7 +4,7 @@
 
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/build_config.h"
 
 namespace web_app {

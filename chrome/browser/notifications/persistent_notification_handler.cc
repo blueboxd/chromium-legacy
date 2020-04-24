@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/notifications/metrics/notification_metrics_logger.h"

@@ -6,7 +6,8 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_file_stream_reader.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_file_stream_writer.h"
 #include "content/public/browser/browser_thread.h"

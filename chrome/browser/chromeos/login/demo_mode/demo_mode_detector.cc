@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/time/default_tick_clock.h"

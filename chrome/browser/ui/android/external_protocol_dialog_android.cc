@@ -4,7 +4,6 @@
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
-#include "base/logging.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"

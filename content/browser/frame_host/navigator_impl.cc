@@ -257,14 +257,10 @@ void NavigatorImpl::DidNavigate(
     render_frame_host->ResetContentSecurityPolicies();
     frame_tree_node->ResetForNavigation();
 
-    // Save the new page's embedding token and propagate to any frames that
-    // embed it.
-    // - A token will have a value if it is a cross-origin frame.
-    // - An empty token will occur for;
-    //   - main frames
-    //   - a previously out-of-process frame that navigated to be same-process
-    //     as its parent
-    frame_tree_node->SetEmbeddingToken(params.embedding_token);
+    // Save the new document's embedding token and propagate to any parent
+    // document that embeds it. A token is only assigned to cross-process
+    // child frames.
+    render_frame_host->SetEmbeddingToken(params.embedding_token);
   }
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless

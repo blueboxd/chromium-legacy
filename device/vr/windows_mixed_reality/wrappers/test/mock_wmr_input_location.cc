@@ -4,7 +4,7 @@
 
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_input_location.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "device/vr/test/test_hook.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform_util.h"

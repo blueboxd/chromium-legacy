@@ -4,7 +4,6 @@
 
 #include "media/capture/video/win/sink_filter_win.h"
 
-#include "base/logging.h"
 #include "media/capture/video/win/sink_input_pin_win.h"
 
 namespace media {

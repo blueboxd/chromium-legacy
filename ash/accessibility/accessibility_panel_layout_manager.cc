@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/work_area_insets.h"
-#include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"

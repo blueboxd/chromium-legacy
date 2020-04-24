@@ -6,11 +6,12 @@
 
 #include <vector>
 
+#include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"

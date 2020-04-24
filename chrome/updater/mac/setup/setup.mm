@@ -24,6 +24,7 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
+#import "chrome/updater/mac/setup/info_plist.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
@@ -76,13 +77,6 @@ const base::FilePath GetUpdaterFolderPath() {
   return GetLibraryFolderPath().Append(GetUpdateFolderName());
 }
 
-const base::FilePath GetUpdaterExecutablePath() {
-  return GetLibraryFolderPath()
-      .Append(GetUpdateFolderName())
-      .Append(GetUpdaterAppName())
-      .Append(GetUpdaterAppExecutablePath());
-}
-
 Launchd::Domain LaunchdDomain() {
   return IsSystemInstall() ? Launchd::Domain::Local : Launchd::Domain::User;
 }
@@ -96,9 +90,7 @@ Launchd::Type UpdateCheckLaunchdType() {
 }
 
 #pragma mark Setup
-bool CopyBundle() {
-  const base::FilePath dest_path = GetUpdaterFolderPath();
-
+bool CopyBundle(const base::FilePath& dest_path) {
   if (!base::PathExists(dest_path)) {
     base::File::Error error;
     if (!base::CreateDirectoryAndGetError(dest_path, &error)) {
@@ -108,8 +100,7 @@ bool CopyBundle() {
     }
   }
 
-  const base::FilePath src_path = base::mac::OuterBundlePath();
-  if (!base::CopyDirectory(src_path, dest_path, true)) {
+  if (!base::CopyDirectory(base::mac::OuterBundlePath(), dest_path, true)) {
     LOG(ERROR) << "Copying app to '" << dest_path.value().c_str() << "' failed";
     return false;
   }
@@ -121,18 +112,19 @@ NSString* MakeProgramArgument(const char* argument) {
 }
 
 base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateCheckLaunchdPlist(
-    const base::FilePath* updater_path) {
+    const base::ScopedCFTypeRef<CFStringRef> label,
+    const base::FilePath& updater_path) {
   // See the man page for launchd.plist.
   NSMutableArray* programArguments = [NSMutableArray array];
   [programArguments addObjectsFromArray:@[
-    base::SysUTF8ToNSString(updater_path->value()),
+    base::SysUTF8ToNSString(updater_path.value()),
     MakeProgramArgument(kUpdateAppsSwitch)
   ]];
   if (IsSystemInstall())
     [programArguments addObject:MakeProgramArgument(kSystemSwitch)];
 
   NSDictionary* launchd_plist = @{
-    @LAUNCH_JOBKEY_LABEL : GetGoogleUpdateCheckLaunchDLabel(),
+    @LAUNCH_JOBKEY_LABEL : base::mac::CFToNSCast(label),
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : programArguments,
     @LAUNCH_JOBKEY_STARTINTERVAL : @18000,
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
@@ -145,15 +137,17 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateCheckLaunchdPlist(
 }
 
 base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateServiceLaunchdPlist(
-    const base::FilePath* updater_path) {
+    const base::ScopedCFTypeRef<CFStringRef> label,
+    const base::FilePath& updater_path) {
   // See the man page for launchd.plist.
   NSDictionary* launchd_plist = @{
-    @LAUNCH_JOBKEY_LABEL : GetGoogleUpdateServiceLaunchDLabel(),
+    @LAUNCH_JOBKEY_LABEL : base::mac::CFToNSCast(label),
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : @[
-      base::SysUTF8ToNSString(updater_path->value()),
+      base::SysUTF8ToNSString(updater_path.value()),
       MakeProgramArgument(kServerSwitch)
     ],
-    @LAUNCH_JOBKEY_MACHSERVICES : @{GetGoogleUpdateServiceMachName() : @YES},
+    @LAUNCH_JOBKEY_MACHSERVICES :
+        @{GetGoogleUpdateServiceMachName(base::mac::CFToNSCast(label)) : @YES},
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
     @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @"Aqua"
   };
@@ -163,38 +157,40 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateServiceLaunchdPlist(
       base::scoped_policy::RETAIN);
 }
 
-bool CreateLaunchdCheckItem() {
+bool CreateLaunchdCheckItem(const base::ScopedCFTypeRef<CFStringRef> name,
+                            const base::FilePath& updater_path) {
   // We're creating directories and writing a file.
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateCheckLaunchDName());
-
-  const base::FilePath updater_path = GetUpdaterExecutablePath();
 
   base::ScopedCFTypeRef<CFDictionaryRef> plist(
-      CreateGoogleUpdateCheckLaunchdPlist(&updater_path));
+      CreateGoogleUpdateCheckLaunchdPlist(name, updater_path));
   return Launchd::GetInstance()->WritePlistToFile(
       LaunchdDomain(), UpdateCheckLaunchdType(), name, plist);
 }
 
-bool CreateLaunchdServiceItem() {
+bool CreateLaunchdServiceItem(const base::ScopedCFTypeRef<CFStringRef> name,
+                              const base::FilePath& updater_path) {
   // We're creating directories and writing a file.
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateServiceLaunchDName());
-
-  const base::FilePath updater_path = GetUpdaterExecutablePath();
 
   base::ScopedCFTypeRef<CFDictionaryRef> plist(
-      CreateGoogleUpdateServiceLaunchdPlist(&updater_path));
+      CreateGoogleUpdateServiceLaunchdPlist(name, updater_path));
   return Launchd::GetInstance()->WritePlistToFile(
       LaunchdDomain(), ServiceLaunchdType(), name, plist);
 }
 
-bool StartLaunchdUpdateCheckTask() {
-  base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateCheckLaunchDName());
+bool StartLaunchdUpdateCheckVersionedTask(
+    const base::ScopedCFTypeRef<CFStringRef> name) {
   return Launchd::GetInstance()->RestartJob(
       LaunchdDomain(), UpdateCheckLaunchdType(), name, CFSTR("Aqua"));
+}
+
+bool StartLaunchdServiceVersionedTask(
+    const base::ScopedCFTypeRef<CFStringRef> name) {
+  return Launchd::GetInstance()->RestartJob(
+      LaunchdDomain(), ServiceLaunchdType(), name, CFSTR("Aqua"));
 }
 
 bool StartLaunchdServiceTask() {
@@ -206,20 +202,74 @@ bool StartLaunchdServiceTask() {
 }  // namespace
 
 int SetupUpdater() {
-  if (!CopyBundle())
+  const base::FilePath info_plist_path =
+      base::mac::OuterBundlePath().Append("Contents").Append("Info.plist");
+
+  InfoPlist info_plist(info_plist_path);
+  CHECK(info_plist.Valid());
+
+  const base::FilePath dest_path =
+      info_plist.UpdaterVersionedFolderPath(GetUpdaterFolderPath());
+
+  if (!CopyBundle(dest_path))
     return -1;
 
-  if (!CreateLaunchdCheckItem())
+  base::FilePath updater_executable_path = info_plist.UpdaterExecutablePath(
+      GetLibraryFolderPath(), GetUpdateFolderName(), GetUpdaterAppName(),
+      GetUpdaterAppExecutablePath());
+
+  if (!CreateLaunchdCheckItem(
+          info_plist.GoogleUpdateCheckLaunchdNameVersioned(),
+          updater_executable_path)) {
     return -2;
+  }
 
-  if (!CreateLaunchdServiceItem())
+  if (!CreateLaunchdServiceItem(
+          info_plist.GoogleUpdateServiceLaunchdNameVersioned(),
+          updater_executable_path)) {
     return -3;
+  }
 
-  if (!StartLaunchdUpdateCheckTask())
+  if (!StartLaunchdUpdateCheckVersionedTask(
+          info_plist.GoogleUpdateCheckLaunchdNameVersioned())) {
     return -4;
+  }
+
+  if (!StartLaunchdServiceVersionedTask(
+          info_plist.GoogleUpdateServiceLaunchdNameVersioned())) {
+    return -5;
+  }
+
+  return 0;
+}
+
+int SwapToUpgradedUpdater() {
+  const base::FilePath info_plist_path =
+      base::mac::OuterBundlePath().Append("Contents").Append("Info.plist");
+
+  InfoPlist info_plist(info_plist_path);
+  CHECK(info_plist.Valid());
+
+  base::FilePath updater_executable_path = info_plist.UpdaterExecutablePath(
+      GetLibraryFolderPath(), GetUpdateFolderName(), GetUpdaterAppName(),
+      GetUpdaterAppExecutablePath());
+
+  // Create an unversioned launchd updater service plist. Located at a path
+  // that is static and doesn't include any version. The name of the service is
+  // also static and doesn't include the updater's version, so that it can be
+  // discovered by other applications.
+  if (!CreateLaunchdServiceItem(CopyGoogleUpdateServiceLaunchDName(),
+                                updater_executable_path)) {
+    return -1;
+  }
 
   if (!StartLaunchdServiceTask())
-    return -5;
+    return -2;
+
+  // TODO(crbug.com/1072061):
+  // Stop and remove the old version of the launchd updater check plist.
+  // Stop and remove the old version of the launchd updater service plist.
+  // Remove the old version of the updater.
 
   return 0;
 }

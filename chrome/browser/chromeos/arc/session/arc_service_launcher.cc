@@ -8,8 +8,8 @@
 
 #include "ash/public/cpp/default_scale_factor_retriever.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"

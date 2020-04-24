@@ -6,7 +6,6 @@
 #include <stdint.h>
 
 #include "base/base64.h"
-#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

@@ -5,7 +5,7 @@
 #include "chrome/browser/sharing/click_to_call/click_to_call_message_handler_android.h"
 
 #include "base/android/jni_string.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/android/chrome_jni_headers/ClickToCallMessageHandler_jni.h"
 #include "chrome/browser/sharing/proto/click_to_call_message.pb.h"

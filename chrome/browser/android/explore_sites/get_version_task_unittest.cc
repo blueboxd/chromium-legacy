@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/android/explore_sites/explore_sites_schema.h"

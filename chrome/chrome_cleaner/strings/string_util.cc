@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/i18n/streaming_utf8_validator.h"
-#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 

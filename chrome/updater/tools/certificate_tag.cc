@@ -4,7 +4,7 @@
 
 #include "chrome/updater/tools/certificate_tag.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 

@@ -1239,9 +1239,7 @@ base::UnguessableToken RenderFrameHostImpl::GetDevToolsFrameToken() {
 
 base::Optional<base::UnguessableToken>
 RenderFrameHostImpl::GetEmbeddingToken() {
-  if (!IsCurrent())
-    return base::nullopt;
-  return frame_tree_node_->GetEmbeddingToken();
+  return embedding_token_;
 }
 
 const std::string& RenderFrameHostImpl::GetFrameName() {
@@ -2583,6 +2581,22 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
   OnDidStopLoading();
 }
 
+void RenderFrameHostImpl::SetEmbeddingToken(
+    const base::Optional<base::UnguessableToken>& embedding_token) {
+  embedding_token_ = embedding_token;
+  if (!embedding_token_.has_value())
+    return;
+
+  // Only non-null tokens are propagated to the parent document. The token is
+  // automatically reset in the parent document when the child document is
+  // navigated cross-origin.
+  RenderFrameProxyHost* proxy_to_parent =
+      frame_tree_node()->render_manager()->GetProxyToParent();
+  DCHECK(proxy_to_parent);
+  proxy_to_parent->GetAssociatedRemoteFrame()->SetEmbeddingToken(
+      embedding_token_.value());
+}
+
 void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
     NavigationRequest* committing_navigation_request,
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
@@ -3359,18 +3373,8 @@ void RenderFrameHostImpl::DoNotDeleteForTesting() {
 
 bool RenderFrameHostImpl::IsFeatureEnabled(
     blink::mojom::FeaturePolicyFeature feature) {
-  blink::mojom::PolicyValueType feature_type =
-      feature_policy_->GetFeatureList().at(feature).second;
-  return IsFeatureEnabled(
-      feature, blink::PolicyValue::CreateMaxPolicyValue(feature_type));
-}
-
-bool RenderFrameHostImpl::IsFeatureEnabled(
-    blink::mojom::FeaturePolicyFeature feature,
-    blink::PolicyValue threshold_value) {
-  return feature_policy_ &&
-         feature_policy_->IsFeatureEnabledForOrigin(
-             feature, GetLastCommittedOrigin(), threshold_value);
+  return feature_policy_ && feature_policy_->IsFeatureEnabledForOrigin(
+                                feature, GetLastCommittedOrigin());
 }
 
 bool RenderFrameHostImpl::IsFeatureEnabled(

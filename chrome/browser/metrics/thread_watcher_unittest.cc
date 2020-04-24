@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"

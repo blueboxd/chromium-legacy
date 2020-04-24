@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/power/smart_charging/smart_charging_ukm_logger.h"
 
-#include "base/logging.h"
 #include "chrome/browser/chromeos/power/smart_charging/user_charging_event.pb.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"

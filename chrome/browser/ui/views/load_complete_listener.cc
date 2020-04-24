@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/load_complete_listener.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"

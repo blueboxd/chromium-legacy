@@ -59,7 +59,7 @@ bool RunOneTest(const content::TestInfo& test_info,
 
   main_runner->Run();
 
-  return blink_test_controller->ResetAfterWebTest();
+  return blink_test_controller->ResetBrowserAfterWebTest();
 }
 
 void RunTests(content::BrowserMainRunner* main_runner) {

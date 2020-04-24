@@ -46,6 +46,21 @@
     ]
   },
 
+  "DefaultPopupsSetting": {
+    "os": [ "ios" ],
+    "note": "TODO(crbug.com/106682): Flag this with can_be_recommended",
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "DefaultPopupsSetting": 1 },
+        "prefs": { "profile.managed_default_content_settings.popups": {} }
+      },
+      {
+        "policies": { "DefaultPopupsSetting": 2 },
+        "prefs": { "profile.managed_default_content_settings.popups": {} }
+      }
+    ]
+  },
+
   "DefaultSearchProviderEnabled": {
     "os": [ "ios" ],
     "policy_pref_mapping_test": [
@@ -268,6 +283,28 @@
     ]
   },
 
+  "PopupsAllowedForUrls": {
+    "os": [ "ios" ],
+    "note": "TODO(crbug.com/106682): Flag this with can_be_recommended",
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "PopupsAllowedForUrls": ["[*.]google.com"]},
+        "prefs": { "profile.managed_popups_allowed_for_urls": {} }
+      }
+    ]
+  },
+
+  "PopupsBlockedForUrls": {
+    "os": [ "ios" ],
+    "note": "TODO(crbug.com/106682): Flag this with can_be_recommended",
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "PopupsBlockedForUrls": ["[*.]google.com"]},
+        "prefs": { "profile.managed_popups_blocked_for_urls": {} }
+      }
+    ]
+  },
+
   "SavingBrowserHistoryDisabled": {
     "os": [ "ios" ],
     "can_be_recommended": true,
@@ -314,6 +351,5 @@
     ]
   },
 
-  "DefaultPopupsSetting": {},
   "ManagedBookmarks": {}
 }

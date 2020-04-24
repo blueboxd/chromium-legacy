@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ssl/typed_navigation_timing_throttle.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"

@@ -10,11 +10,12 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/debug/alias.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/free_deleter.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

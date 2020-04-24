@@ -506,9 +506,6 @@ class CONTENT_EXPORT RenderFrameHostManager
     attach_to_inner_delegate_state_ = AttachToInnerDelegateState::ATTACHED;
   }
 
-  // Sets an embedding token to track the relationship of a frame to its parent.
-  void SetEmbeddingToken(const base::UnguessableToken& embedding_token);
-
  private:
   friend class NavigatorTest;
   friend class RenderFrameHostManagerTest;

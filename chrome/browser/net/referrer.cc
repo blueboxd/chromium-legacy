@@ -10,8 +10,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/values.h"
 
 namespace chrome_browser_net {

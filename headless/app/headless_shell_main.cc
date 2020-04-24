@@ -9,7 +9,7 @@
 #include "content/public/app/sandbox_helper_win.h"
 #include "sandbox/win/src/sandbox_types.h"
 #elif defined(OS_MACOSX)
-#include "base/logging.h"
+#include "base/check.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #endif
 

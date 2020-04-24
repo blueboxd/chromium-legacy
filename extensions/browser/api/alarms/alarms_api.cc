@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
@@ -97,7 +99,7 @@ ExtensionFunction::ResponseAction AlarmsCreateFunction::Run() {
   std::string error;
   if (!ValidateAlarmCreateInfo(alarm_name, params->alarm_info, extension(),
                                &error, &warnings)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
   for (std::vector<std::string>::const_iterator it = warnings.begin();
        it != warnings.end(); ++it)

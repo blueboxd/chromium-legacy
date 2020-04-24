@@ -534,6 +534,9 @@ bool BluetoothAdapterWinrt::IsPowered() const {
 }
 
 bool BluetoothAdapterWinrt::IsPeripheralRoleSupported() const {
+  if (!adapter_) {
+    return false;
+  }
   boolean supported = false;
   HRESULT hr = adapter_->get_IsPeripheralRoleSupported(&supported);
   if (FAILED(hr)) {

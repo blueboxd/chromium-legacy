@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
 
 BluetoothChooserDesktop::BluetoothChooserDesktop(

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <fontconfig/fontconfig.h>
+#include <string.h>
 #include <time.h>
 #include <utime.h>
 

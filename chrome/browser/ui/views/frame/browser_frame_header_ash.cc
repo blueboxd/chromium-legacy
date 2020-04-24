@@ -10,7 +10,7 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"

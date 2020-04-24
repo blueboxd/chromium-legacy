@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace media {
 

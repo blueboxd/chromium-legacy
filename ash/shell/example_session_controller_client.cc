@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace ash {
 namespace shell {

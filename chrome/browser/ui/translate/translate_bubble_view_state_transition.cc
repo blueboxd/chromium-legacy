@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace translate {

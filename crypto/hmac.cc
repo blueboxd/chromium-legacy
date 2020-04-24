@@ -9,7 +9,8 @@
 #include <algorithm>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/secure_util.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/background_sync/background_sync_permission_context.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 

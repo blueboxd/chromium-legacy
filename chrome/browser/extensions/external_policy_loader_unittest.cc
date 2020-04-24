@@ -5,7 +5,6 @@
 #include <set>
 #include <string>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "base/version.h"

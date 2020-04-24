@@ -824,7 +824,13 @@ void ExtensionService::PerformActionBasedOnOmahaAttributes(
       extension_registrar_.IsExtensionEnabled(extension_id),
       ExtensionUpdateCheckDataKey::kMalware);
 
-  DisableExtension(extension_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
+  // Add the extension to the blacklisted extensions set.
+  UpdateBlacklistedExtensions({extension_id},
+                              registry_->blacklisted_extensions().GetIDs());
+  extension_prefs_->AddDisableReason(
+      extension_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
+  // Show an error for the newly blacklisted extension.
+  error_controller_->ShowErrorIfNeeded();
 }
 
 void ExtensionService::MaybeEnableRemotelyDisabledExtension(
@@ -834,14 +840,15 @@ void ExtensionService::MaybeEnableRemotelyDisabledExtension(
   if ((disable_reasons & disable_reason::DISABLE_REMOTELY_FOR_MALWARE) == 0)
     return;
 
-  bool only_disabled_for_malware =
-      disable_reasons == disable_reason::DISABLE_REMOTELY_FOR_MALWARE;
   extension_prefs_->RemoveDisableReason(
       extension_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
-  if (only_disabled_for_malware) {
-    ReportReenableExtensionFromMalware();
-    extension_registrar_.EnableExtension(extension_id);
-  }
+
+  ExtensionIdSet unchanged = registry_->blacklisted_extensions().GetIDs();
+  DCHECK(base::Contains(unchanged, extension_id));
+  unchanged.erase(extension_id);
+  // Remove the extension from the blacklist.
+  UpdateBlacklistedExtensions({}, unchanged);
+  ReportReenableExtensionFromMalware();
 }
 
 void ExtensionService::EnableExtension(const std::string& extension_id) {
@@ -2118,6 +2125,15 @@ void ExtensionService::ManageBlacklist(
   ExtensionIdSet greylist;
   ExtensionIdSet unchanged;
   for (const auto& it : state_map) {
+    // If it was previously disabled remotely for malware, do not remove from
+    // the blacklisted_extensions set. The disable reason should be removed
+    // first before updating its blacklist state.
+    if (extension_prefs_->HasDisableReason(
+            it.first, disable_reason::DISABLE_REMOTELY_FOR_MALWARE)) {
+      unchanged.insert(it.first);
+      continue;
+    }
+
     switch (it.second) {
       case NOT_BLACKLISTED:
         break;

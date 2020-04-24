@@ -4,7 +4,9 @@
 
 #include "chrome/browser/vr/renderers/base_renderer.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/check.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 
 namespace vr {

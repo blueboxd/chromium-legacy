@@ -7,7 +7,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/themes/theme_properties.h"

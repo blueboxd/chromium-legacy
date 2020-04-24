@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/power/auto_screen_brightness/metrics_reporter.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/common/pref_names.h"

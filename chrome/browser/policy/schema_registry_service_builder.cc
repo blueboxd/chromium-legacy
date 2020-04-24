@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/build_config.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "components/policy/core/common/schema.h"

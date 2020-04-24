@@ -4,7 +4,8 @@
 
 #include "chrome/browser/vr/gesture_detector.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/numerics/math_constants.h"
 #include "chrome/browser/vr/input_event.h"
 #include "chrome/browser/vr/platform_controller.h"

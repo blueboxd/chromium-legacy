@@ -4,8 +4,9 @@
 
 #include "chrome/browser/safe_browsing/android/services_delegate_android.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/telemetry/android/android_telemetry_service.h"
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"

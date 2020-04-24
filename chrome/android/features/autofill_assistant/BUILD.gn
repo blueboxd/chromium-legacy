@@ -233,7 +233,6 @@ android_library("test_java") {
 
   sources = [
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AssistantOnboardingCoordinatorTest.java",
-    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantAccessibilityIntegrationTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantActionsCarouselUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantAutostartTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantBottomsheetTest.java",

@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "media/base/bit_reader.h"
 #include "media/formats/mp2t/mp2t_common.h"
 

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "content/public/browser/browser_thread.h"
 

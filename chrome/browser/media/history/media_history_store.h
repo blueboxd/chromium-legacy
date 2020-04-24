@@ -172,6 +172,10 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   // Cancels pending DB transactions. Should only be called on the UI thread.
   void SetCancelled();
 
+  void IncrementMediaFeedItemsShownCount(const std::set<int64_t> feed_item_ids);
+
+  void MarkMediaFeedItemAsClicked(const int64_t& feed_item_id);
+
  private:
   friend class base::RefCountedThreadSafe<MediaHistoryStore>;
 

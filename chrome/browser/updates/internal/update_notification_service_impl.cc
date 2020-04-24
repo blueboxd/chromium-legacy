@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/notifications/scheduler/public/client_overview.h"

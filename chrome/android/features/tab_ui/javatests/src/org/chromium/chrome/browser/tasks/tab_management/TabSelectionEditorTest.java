@@ -8,6 +8,8 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
 
+import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,6 +17,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.BaseSwitches;
+import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -36,6 +39,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +67,8 @@ public class TabSelectionEditorTest {
     private TabSelectionEditorCoordinator
             .TabSelectionEditorController mTabSelectionEditorController;
     private TabSelectionEditorLayout mTabSelectionEditorLayout;
+    private TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
+    private WeakReference<TabSelectionEditorLayout> mRef;
 
     @Before
     public void setUp() throws Exception {
@@ -71,17 +77,25 @@ public class TabSelectionEditorTest {
         mTabModelSelector = mActivityTestRule.getActivity().getTabModelSelector();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            TabSelectionEditorCoordinator tabSelectionEditorCoordinator =
-                    new TabSelectionEditorCoordinator(mActivityTestRule.getActivity(),
-                            (ViewGroup) mActivityTestRule.getActivity().getWindow().getDecorView(),
-                            mTabModelSelector,
-                            mActivityTestRule.getActivity().getTabContentManager(), null,
-                            getMode());
+            mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
+                    mActivityTestRule.getActivity(),
+                    (ViewGroup) mActivityTestRule.getActivity().getWindow().getDecorView(),
+                    mTabModelSelector, mActivityTestRule.getActivity().getTabContentManager(), null,
+                    getMode());
 
-            mTabSelectionEditorController = tabSelectionEditorCoordinator.getController();
+            mTabSelectionEditorController = mTabSelectionEditorCoordinator.getController();
             mTabSelectionEditorLayout =
-                    tabSelectionEditorCoordinator.getTabSelectionEditorLayoutForTesting();
+                    mTabSelectionEditorCoordinator.getTabSelectionEditorLayoutForTesting();
+            mRef = new WeakReference<>(mTabSelectionEditorLayout);
         });
+    }
+
+    @After
+    public void tearDown() {
+        if (mTabSelectionEditorCoordinator != null) {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> { mTabSelectionEditorCoordinator.destroy(); });
+        }
     }
 
     private @TabListCoordinator.TabListMode int getMode() {
@@ -414,6 +428,21 @@ public class TabSelectionEditorTest {
 
         ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
         mRenderTestRule.render(mTabSelectionEditorLayout, "list_view_one_selected_tab");
+    }
+
+    @Test
+    @MediumTest
+    @DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    public void testTabSelectionEditorLayoutCanBeGarbageCollected() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTabSelectionEditorCoordinator.destroy();
+            mTabSelectionEditorCoordinator = null;
+            mTabSelectionEditorLayout = null;
+            mTabSelectionEditorController = null;
+        });
+
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        Assert.assertTrue(GarbageCollectionTestUtils.canBeGarbageCollected(mRef));
     }
 
     private List<Tab> getTabsInCurrentTabModel() {

@@ -8,7 +8,6 @@
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
-#include "base/logging.h"
 #include "chrome/android/chrome_jni_headers/NotificationSchedulerTask_jni.h"
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"

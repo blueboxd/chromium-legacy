@@ -6,11 +6,12 @@
 
 #include <string>
 
+#include "base/check_op.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/common/prerender_util.h"

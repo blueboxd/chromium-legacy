@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"

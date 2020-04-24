@@ -12,12 +12,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
@@ -318,7 +319,7 @@ ExtensionFunction::ResponseAction WindowsGetFunction::Run() {
   if (!windows_util::GetBrowserFromWindowID(this, params->window_id,
                                             extractor.type_filters(), &browser,
                                             &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
 
   ExtensionTabUtil::PopulateTabBehavior populate_tab_behavior =
@@ -341,7 +342,7 @@ ExtensionFunction::ResponseAction WindowsGetCurrentFunction::Run() {
   if (!windows_util::GetBrowserFromWindowID(
           this, extension_misc::kCurrentWindowId, extractor.type_filters(),
           &browser, &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
 
   ExtensionTabUtil::PopulateTabBehavior populate_tab_behavior =
@@ -496,7 +497,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   bool open_incognito_window =
       ShouldOpenIncognitoWindow(create_data, &urls, &error);
   if (!error.empty())
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   Profile* calling_profile = Profile::FromBrowserContext(browser_context());
   Profile* window_profile = open_incognito_window
@@ -511,7 +512,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     if (!GetTabById(*create_data->tab_id, calling_profile,
                     include_incognito_information(), &source_browser,
                     &source_tab_strip, nullptr, &tab_index, &error)) {
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
     }
 
     if (!source_browser->window()->IsTabStripEditable())
@@ -681,7 +682,7 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
   if (!windows_util::GetBrowserFromWindowID(
           this, params->window_id, WindowController::GetAllWindowFilter(),
           &browser, &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
 
   // Don't allow locked fullscreen operations on a window without the proper
@@ -809,7 +810,7 @@ ExtensionFunction::ResponseAction WindowsRemoveFunction::Run() {
   if (!windows_util::GetBrowserFromWindowID(this, params->window_id,
                                             WindowController::kNoWindowFilter,
                                             &browser, &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
 
   if (platform_util::IsBrowserLockedFullscreen(browser) &&
@@ -844,7 +845,7 @@ ExtensionFunction::ResponseAction TabsGetSelectedFunction::Run() {
   Browser* browser = NULL;
   std::string error;
   if (!GetBrowserFromWindowID(this, window_id, &browser, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   TabStripModel* tab_strip = browser->tab_strip_model();
   WebContents* contents = tab_strip->GetActiveWebContents();
@@ -867,7 +868,7 @@ ExtensionFunction::ResponseAction TabsGetAllInWindowFunction::Run() {
   Browser* browser = NULL;
   std::string error;
   if (!GetBrowserFromWindowID(this, window_id, &browser, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   return RespondNow(OneArgument(ExtensionTabUtil::CreateTabList(
       browser, extension(), source_context_type())));
@@ -893,7 +894,7 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
     std::string error;
     if (!url_patterns.Populate(url_pattern_strings, URLPattern::SCHEME_ALL,
                                true, &error)) {
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
     }
   }
 
@@ -1070,7 +1071,7 @@ ExtensionFunction::ResponseAction TabsCreateFunction::Run() {
   std::unique_ptr<base::DictionaryValue> result(
       ExtensionTabUtil::OpenTab(this, options, user_gesture(), &error));
   if (!result)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   // Return data about the newly created tab.
   return RespondNow(has_callback() ? OneArgument(std::move(result))
@@ -1089,7 +1090,7 @@ ExtensionFunction::ResponseAction TabsDuplicateFunction::Run() {
   std::string error;
   if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
                   &browser, &tab_strip, NULL, &tab_index, &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
 
   WebContents* new_contents = chrome::DuplicateTabAt(browser, tab_index);
@@ -1123,7 +1124,7 @@ ExtensionFunction::ResponseAction TabsGetFunction::Run() {
   std::string error;
   if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
                   NULL, &tab_strip, &contents, &tab_index, &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
 
   return RespondNow(ArgumentList(tabs::Get::Results::Create(
@@ -1158,7 +1159,7 @@ ExtensionFunction::ResponseAction TabsHighlightFunction::Run() {
   Browser* browser = NULL;
   std::string error;
   if (!GetBrowserFromWindowID(this, window_id, &browser, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   TabStripModel* tabstrip = browser->tab_strip_model();
   ui::ListSelectionModel selection;
@@ -1170,14 +1171,14 @@ ExtensionFunction::ResponseAction TabsHighlightFunction::Run() {
     for (size_t i = 0; i < tab_indices.size(); ++i) {
       if (!HighlightTab(tabstrip, &selection, &active_index, tab_indices[i],
                         &error)) {
-        return RespondNow(Error(error));
+        return RespondNow(Error(std::move(error)));
       }
     }
   } else {
     EXTENSION_FUNCTION_VALIDATE(params->highlight_info.tabs.as_integer);
     if (!HighlightTab(tabstrip, &selection, &active_index,
                       *params->highlight_info.tabs.as_integer, &error)) {
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
     }
   }
 
@@ -1240,7 +1241,7 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
   std::string error;
   if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
                   &browser, &tab_strip, &contents, &tab_index, &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
 
   if (!ExtensionTabUtil::BrowserSupportsTabs(browser))
@@ -1261,7 +1262,7 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
           tabs_constants::kURLsNotAllowedInIncognitoError, updated_url)));
     }
     if (!UpdateURL(updated_url, tab_id, &error))
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
   }
 
   bool active = false;
@@ -1423,7 +1424,7 @@ ExtensionFunction::ResponseAction TabsMoveFunction::Run() {
     for (size_t i = 0; i < tab_ids.size(); ++i) {
       if (!MoveTab(tab_ids[i], &new_index, i, tab_values.get(), window_id,
                    &error)) {
-        return RespondNow(Error(error));
+        return RespondNow(Error(std::move(error)));
       }
     }
   } else {
@@ -1431,7 +1432,7 @@ ExtensionFunction::ResponseAction TabsMoveFunction::Run() {
     num_tabs = 1;
     if (!MoveTab(*params->tab_ids.as_integer, &new_index, 0, tab_values.get(),
                  window_id, &error)) {
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
     }
   }
 
@@ -1585,7 +1586,7 @@ ExtensionFunction::ResponseAction TabsReloadFunction::Run() {
     std::string error;
     if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
                     &browser, NULL, &web_contents, NULL, &error)) {
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
     }
   }
 
@@ -1617,12 +1618,12 @@ ExtensionFunction::ResponseAction TabsRemoveFunction::Run() {
     std::vector<int>& tab_ids = *params->tab_ids.as_integers;
     for (size_t i = 0; i < tab_ids.size(); ++i) {
       if (!RemoveTab(tab_ids[i], &error))
-        return RespondNow(Error(error));
+        return RespondNow(Error(std::move(error)));
     }
   } else {
     EXTENSION_FUNCTION_VALIDATE(params->tab_ids.as_integer);
     if (!RemoveTab(*params->tab_ids.as_integer, &error))
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
   }
   return RespondNow(NoArguments());
 }
@@ -1704,7 +1705,7 @@ ExtensionFunction::ResponseAction TabsCaptureVisibleTabFunction::Run() {
   std::string error;
   WebContents* contents = GetWebContentsForID(context_id, &error);
   if (!contents)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   const CaptureResult capture_result = CaptureAsync(
       contents, image_details.get(),
@@ -1778,7 +1779,7 @@ ExtensionFunction::ResponseAction TabsDetectLanguageFunction::Run() {
     tab_id = *params->tab_id;
     if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
                     &browser, nullptr, &contents, nullptr, &error)) {
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
     }
     // TODO(devlin): Can this happen? GetTabById() should return false if
     // |browser| or |contents| is null.
@@ -2003,11 +2004,11 @@ ExtensionFunction::ResponseAction TabsSetZoomFunction::Run() {
   WebContents* web_contents =
       GetTabsAPIDefaultWebContents(this, tab_id, &error);
   if (!web_contents)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   GURL url(web_contents->GetVisibleURL());
   if (extension()->permissions_data()->IsRestrictedUrl(url, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(web_contents);
@@ -2035,7 +2036,7 @@ ExtensionFunction::ResponseAction TabsGetZoomFunction::Run() {
   WebContents* web_contents =
       GetTabsAPIDefaultWebContents(this, tab_id, &error);
   if (!web_contents)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   double zoom_level =
       ZoomController::FromWebContents(web_contents)->GetZoomLevel();
@@ -2056,11 +2057,11 @@ ExtensionFunction::ResponseAction TabsSetZoomSettingsFunction::Run() {
   WebContents* web_contents =
       GetTabsAPIDefaultWebContents(this, tab_id, &error);
   if (!web_contents)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   GURL url(web_contents->GetVisibleURL());
   if (extension()->permissions_data()->IsRestrictedUrl(url, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   // "per-origin" scope is only available in "automatic" mode.
   if (params->zoom_settings.scope == tabs::ZOOM_SETTINGS_SCOPE_PER_ORIGIN &&
@@ -2106,7 +2107,7 @@ ExtensionFunction::ResponseAction TabsGetZoomSettingsFunction::Run() {
   WebContents* web_contents =
       GetTabsAPIDefaultWebContents(this, tab_id, &error);
   if (!web_contents)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(web_contents);
 
@@ -2135,7 +2136,7 @@ ExtensionFunction::ResponseAction TabsDiscardFunction::Run() {
     std::string error;
     if (!GetTabById(tab_id, browser_context(), include_incognito_information(),
                     nullptr, nullptr, &contents, nullptr, &error)) {
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
     }
   }
   // Discard the tab.
@@ -2170,7 +2171,7 @@ ExtensionFunction::ResponseAction TabsGoForwardFunction::Run() {
   WebContents* web_contents =
       GetTabsAPIDefaultWebContents(this, tab_id, &error);
   if (!web_contents)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   NavigationController& controller = web_contents->GetController();
   if (!controller.CanGoForward())
@@ -2190,7 +2191,7 @@ ExtensionFunction::ResponseAction TabsGoBackFunction::Run() {
   WebContents* web_contents =
       GetTabsAPIDefaultWebContents(this, tab_id, &error);
   if (!web_contents)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   NavigationController& controller = web_contents->GetController();
   if (!controller.CanGoBack())

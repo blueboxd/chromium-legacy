@@ -4,8 +4,8 @@
 
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 
-#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"

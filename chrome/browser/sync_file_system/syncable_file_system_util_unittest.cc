@@ -5,7 +5,6 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "storage/browser/file_system/external_mount_points.h"

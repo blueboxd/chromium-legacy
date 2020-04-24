@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/no_destructor.h"
 #include "base/timer/timer.h"
 #include "chrome/common/chrome_features.h"

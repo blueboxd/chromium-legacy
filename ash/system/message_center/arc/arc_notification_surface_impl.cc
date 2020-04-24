@@ -4,7 +4,7 @@
 
 #include "ash/system/message_center/arc/arc_notification_surface_impl.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"

@@ -12,7 +12,8 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/eme_constants.h"

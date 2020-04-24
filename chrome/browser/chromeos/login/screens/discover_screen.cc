@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/discover_screen.h"
 
 #include "ash/public/cpp/tablet_mode.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/profiles/profile_manager.h"

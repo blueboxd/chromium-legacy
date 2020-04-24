@@ -408,18 +408,6 @@ class CONTENT_EXPORT FrameTreeNode {
   void SetOpenerFeaturePolicyState(
       const blink::FeaturePolicy::FeatureState& feature_state);
 
-  // Returns the embedding token for the frame. A frame is embedded if it is the
-  // child to a parent frame that is cross-process. As such, this will return
-  // base::nullopt for:
-  // - The main frame.
-  // - Child frames that are in the same process as their parent.
-  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const;
-
-  // Called by NavigationImpl::DidNavigate() on completion of a navigation to
-  // update the embedding token for the frame.
-  void SetEmbeddingToken(
-      const base::Optional<base::UnguessableToken>& embedding_token);
-
   void SetAdFrameType(blink::mojom::AdFrameType ad_frame_type);
 
  private:
@@ -520,13 +508,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // sent back from the renderer in the control calls. It should be never used
   // to look up the FrameTreeNode instance.
   base::UnguessableToken devtools_frame_token_;
-
-  // A token tracking the embedding relationship between a out-of-process
-  // frames. This is only accessible by the renderer for the active
-  // RenderFrameHost and the renderer for the RenderFrameProxyHost from
-  // RenderFrameProxyHostManager::GetProxyToParent(). Should only be set
-  // if the frame is embedded in a parent frame.
-  base::Optional<base::UnguessableToken> embedding_token_;
 
   // Tracks the scrolling and margin properties for this frame.  These
   // properties affect the child renderer but are stored on its parent's

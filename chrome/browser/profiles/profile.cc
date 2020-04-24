@@ -57,8 +57,8 @@
 #if DCHECK_IS_ON()
 
 #include <set>
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/synchronization/lock.h"
 
 namespace {

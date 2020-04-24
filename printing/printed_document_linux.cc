@@ -4,7 +4,6 @@
 
 #include "printing/printed_document.h"
 
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "printing/printing_context_linux.h"
 

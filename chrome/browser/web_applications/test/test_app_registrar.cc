@@ -5,7 +5,8 @@
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "url/gurl.h"
 

@@ -219,7 +219,6 @@ base::Optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
         LogApplySyncChangesStatus(UMAApplySyncChangesStatus::NOTIFY_DELETED);
       }
     } else {
-
       const sync_pb::SendTabToSelfSpecifics& specifics =
           change->data().specifics.send_tab_to_self();
 
@@ -550,23 +549,19 @@ void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryAdded(
 
   std::vector<const SendTabToSelfEntry*> new_local_entries;
 
-  if (base::FeatureList::IsEnabled(kSendTabToSelfBroadcast)) {
-    new_local_entries = new_entries;
-  } else {
-    // Only pass along entries that are not dismissed or opened, and are
-    // targeted at this device, which is determined by comparing the cache guid
-    // associated with the entry to each device's local list of recently used
-    // cache_guids
-    DCHECK(!change_processor()->TrackedCacheGuid().empty());
-    for (const SendTabToSelfEntry* entry : new_entries) {
-      if (device_info_tracker_->IsRecentLocalCacheGuid(
-              entry->GetTargetDeviceSyncCacheGuid()) &&
-          !entry->GetNotificationDismissed() && !entry->IsOpened()) {
-        new_local_entries.push_back(entry);
-        LogLocalDeviceNotified(UMANotifyLocalDevice::LOCAL);
-      } else {
-        LogLocalDeviceNotified(UMANotifyLocalDevice::REMOTE);
-      }
+  // Only pass along entries that are not dismissed or opened, and are
+  // targeted at this device, which is determined by comparing the cache guid
+  // associated with the entry to each device's local list of recently used
+  // cache_guids
+  DCHECK(!change_processor()->TrackedCacheGuid().empty());
+  for (const SendTabToSelfEntry* entry : new_entries) {
+    if (device_info_tracker_->IsRecentLocalCacheGuid(
+            entry->GetTargetDeviceSyncCacheGuid()) &&
+        !entry->GetNotificationDismissed() && !entry->IsOpened()) {
+      new_local_entries.push_back(entry);
+      LogLocalDeviceNotified(UMANotifyLocalDevice::LOCAL);
+    } else {
+      LogLocalDeviceNotified(UMANotifyLocalDevice::REMOTE);
     }
   }
 

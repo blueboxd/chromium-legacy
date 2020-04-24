@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"

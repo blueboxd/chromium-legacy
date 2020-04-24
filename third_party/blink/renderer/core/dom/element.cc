@@ -590,15 +590,15 @@ int Element::DefaultTabIndex() const {
 }
 
 bool Element::IsFocusableStyle() const {
-  // In order to check focusable style, we use the existence of LayoutObjects
-  // as a proxy for determining whether the element would have a display mode
-  // that restricts visibility (such as display: none). However, with
-  // display-locking, it is possible that we deferred such LayoutObject
-  // creation. We need to ensure to update style and layout tree to have
-  // up-to-date information.
-  if (RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
-    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
-
+  // TODO(vmpstr): Note that this may be called by accessibility during layout
+  // tree attachment, at which point we might not have cleared all of the dirty
+  // bits to ensure that the layout tree doesn't need an update. This should be
+  // fixable by deferring AX tree updates as a separate phase after layout tree
+  // attachment has happened. At that point `InStyleRecalc()` portion of the
+  // following DCHECK can be removed.
+  DCHECK(
+      !GetDocument().IsActive() || GetDocument().InStyleRecalc() ||
+      !GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*this));
   // Elements in canvas fallback content are not rendered, but they are allowed
   // to be focusable as long as their canvas is displayed and visible.
   if (IsInCanvasSubtree()) {
@@ -4412,12 +4412,24 @@ bool Element::IsFocusable() const {
   return Element::IsMouseFocusable() || Element::IsKeyboardFocusable();
 }
 
+bool Element::IsFocusableStyleAfterUpdate() const {
+  // In order to check focusable style, we use the existence of LayoutObjects
+  // as a proxy for determining whether the element would have a display mode
+  // that restricts visibility (such as display: none). However, with
+  // display-locking, it is possible that we deferred such LayoutObject
+  // creation. We need to ensure to update style and layout tree to have
+  // up-to-date information.
+  //
+  // Note that this isn't a part of `IsFocusableStyle()` because there are
+  // callers of that function which cannot do a layout tree update (e.g.
+  // accessibility).
+  if (RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+  return IsFocusableStyle();
+}
+
 bool Element::IsKeyboardFocusable() const {
-  // No point in checking NeedsLayoutTreeUpdateForNode when the document
-  // isn't active (style can't be invalidated in a non-active document).
-  DCHECK(!GetDocument().IsActive() ||
-         !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
-  return isConnected() && !IsInert() && IsFocusableStyle() &&
+  return isConnected() && !IsInert() && IsFocusableStyleAfterUpdate() &&
          ((SupportsFocus() &&
            GetIntegralAttribute(html_names::kTabindexAttr, 0) >= 0) ||
           (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
@@ -4427,11 +4439,8 @@ bool Element::IsKeyboardFocusable() const {
 }
 
 bool Element::IsMouseFocusable() const {
-  // No point in checking NeedsLayoutTreeUpdateForNode when the document
-  // isn't active (style can't be invalidated in a non-active document).
-  DCHECK(!GetDocument().IsActive() ||
-         !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
-  return isConnected() && !IsInert() && IsFocusableStyle() && SupportsFocus() &&
+  return isConnected() && !IsInert() && IsFocusableStyleAfterUpdate() &&
+         SupportsFocus() &&
          !DisplayLockPreventsActivation(
              DisplayLockActivationReason::kUserFocus);
 }

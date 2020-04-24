@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "chrome/browser/engagement/site_engagement_service.h"

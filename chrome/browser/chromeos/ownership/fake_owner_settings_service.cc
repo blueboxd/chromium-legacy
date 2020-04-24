@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chromeos/tpm/install_attributes.h"

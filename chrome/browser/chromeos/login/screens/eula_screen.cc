@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"

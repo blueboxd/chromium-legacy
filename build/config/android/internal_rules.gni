@@ -1044,18 +1044,17 @@ if (enable_java_templates) {
         if (defined(invoker.proguard_expectations_file)) {
           _expected_configs_file = invoker.proguard_expectations_file
           inputs += [ _expected_configs_file ]
+          _failed_proguard_expectation_file =
+              "$android_configuration_failure_dir/" +
+              string_replace(_expected_configs_file, "/", "_")
           args += [
             "--expected-configs-file",
             rebase_path(_expected_configs_file, root_build_dir),
+            "--proguard-expectations-failure-file",
+            rebase_path(_failed_proguard_expectation_file, root_build_dir),
           ]
-          if (check_android_configuration) {
-            _failed_proguard_expectation_file =
-                "$android_configuration_failure_dir/" +
-                "${invoker.failed_proguard_expectation_file}"
-            args += [
-              "--proguard-expectations-failure-file",
-              rebase_path(_failed_proguard_expectation_file, root_build_dir),
-            ]
+          if (fail_on_android_expectations) {
+            args += [ "--fail-on-expectations" ]
           }
         }
       }
@@ -1215,7 +1214,6 @@ if (enable_java_templates) {
                                  "disable_checkdiscard",
                                  "disable_r8_outlining",
                                  "deps",
-                                 "failed_proguard_expectation_file",
                                  "proguard_expectations_file",
                                  "proguard_jar_path",
                                  "proguard_mapping_path",
@@ -2452,21 +2450,19 @@ if (enable_java_templates) {
         inputs += [ invoker.expected_manifest ]
         _normalized_output = "${invoker.android_manifest}.normalized"
         outputs += [ _normalized_output ]
+        _manifest_expectations_failure_filepath =
+            "$android_configuration_failure_dir/" +
+            string_replace(invoker.expected_manifest, "/", "_")
         args += [
           "--android-manifest-expected",
           rebase_path(invoker.expected_manifest, root_build_dir),
           "--android-manifest-normalized",
           rebase_path(_normalized_output, root_build_dir),
+          "--android-manifest-expectations-failure-file",
+          rebase_path(_manifest_expectations_failure_filepath, root_build_dir),
         ]
-        if (check_android_configuration) {
-          _manifest_expectations_failure_filepath =
-              "$android_configuration_failure_dir/" +
-              "${invoker.failed_manifest_expectation_file}"
-          args += [
-            "--android-manifest-expectations-failure-file",
-            rebase_path(_manifest_expectations_failure_filepath,
-                        root_build_dir),
-          ]
+        if (fail_on_android_expectations) {
+          args += [ "--fail-on-expectations" ]
         }
       }
       if (defined(invoker.manifest_package)) {
@@ -2755,22 +2751,20 @@ if (enable_java_templates) {
             "$_target_src_dir/java/" +
             "${invoker.verify_native_libs_and_assets_target_name}." +
             "native_libs_and_assets.expected"
+        inputs += [ _expected_native_libs_and_assets ]
+        _native_libs_and_assets_expectation_failure_filepath =
+            "$android_configuration_failure_dir/" +
+            "${invoker.verify_native_libs_and_assets_target_name}." +
+            "native_libs_and_assets.failed"
         args += [
           "--expected-native-libs-and-assets",
           rebase_path(_expected_native_libs_and_assets, root_build_dir),
+          "--native-libs-and-assets-expectation-failure-file",
+          rebase_path(_native_libs_and_assets_expectation_failure_filepath,
+                      root_build_dir),
         ]
-        inputs += [ _expected_native_libs_and_assets ]
-
-        if (check_android_configuration) {
-          _native_libs_and_assets_expectation_failure_filepath =
-              "$android_configuration_failure_dir/" +
-              "${invoker.verify_native_libs_and_assets_target_name}." +
-              "native_libs_and_assets.failed"
-          args += [
-            "--native-libs-and-assets-expectation-failure-file",
-            rebase_path(_native_libs_and_assets_expectation_failure_filepath,
-                        root_build_dir),
-          ]
+        if (fail_on_android_expectations) {
+          args += [ "--fail-on-expectations" ]
         }
       }
     }
@@ -3934,22 +3928,20 @@ template("create_android_app_bundle_module") {
           "$_target_src_dir/java/" +
           "${invoker.verify_native_libs_and_assets_target_name}." +
           "native_libs_and_assets.expected"
+      inputs += [ _expected_native_libs_and_assets ]
+      _native_libs_and_assets_expectation_failure_filepath =
+          "$android_configuration_failure_dir/" +
+          "${invoker.verify_native_libs_and_assets_target_name}." +
+          "native_libs_and_assets.failed"
       args += [
         "--expected-native-libs-and-assets",
         rebase_path(_expected_native_libs_and_assets, root_build_dir),
+        "--native-libs-and-assets-expectation-failure-file",
+        rebase_path(_native_libs_and_assets_expectation_failure_filepath,
+                    root_build_dir),
       ]
-      inputs += [ _expected_native_libs_and_assets ]
-
-      if (check_android_configuration) {
-        _native_libs_and_assets_expectation_failure_filepath =
-            "$android_configuration_failure_dir/" +
-            "${invoker.verify_native_libs_and_assets_target_name}." +
-            "native_libs_and_assets.failed"
-        args += [
-          "--native-libs-and-assets-expectation-failure-file",
-          rebase_path(_native_libs_and_assets_expectation_failure_filepath,
-                      root_build_dir),
-        ]
+      if (fail_on_android_expectations) {
+        args += [ "--fail-on-expectations" ]
       }
     }
 

@@ -34,6 +34,8 @@ import sys
 
 INTERNAL_ERROR_EXIT_CODE = -1000
 
+DEFAULT_ANDROID_DEVICE_TYPE = "walleye"
+
 
 def _ReadVpythonPin():
   """Reads the vpython CIPD package name and version from
@@ -93,8 +95,19 @@ def _Spawn(args):
         '-d',
         'cpu=' + args.arch,
     ]
+
+  # The aliases for device type are stored here:
+  # luci/appengine/swarming/ui2/modules/alias.js
+  # for example 'blueline' = 'Pixel 3'
   if args.target_os == 'android':
+    if args.device_type is None and args.device_os is None:
+      trigger_args += ['-d', 'device_type=' + DEFAULT_ANDROID_DEVICE_TYPE]
+  if args.device_type:
+    trigger_args += ['-d', 'device_type=' + args.device_type]
+
+  if args.device_os:
     trigger_args += ['-d', 'device_os=' + args.device_os]
+
   # The canonical version numbers are stored in the infra repository here:
   # build/scripts/slave/recipe_modules/swarming/api.py
   #
@@ -182,8 +195,12 @@ def main():
                       help='path to isolate map file if not using default')
   parser.add_argument('--copies', '-n', type=int, default=1,
                       help='Number of copies to spawn.')
-  parser.add_argument('--device-os', default='M',
-                      help='Run tests on the given version of Android.')
+  parser.add_argument(
+      '--device-os', help='Run tests on the given version of Android.')
+  parser.add_argument(
+      '--device-type',
+      help='device_type specifier for Swarming'
+      ' from https://chromium-swarm.appspot.com/botlist .')
   # TODO(crbug.com/812428): Switch this back to chromium.tests once
   # that pool runs with task templates.
   parser.add_argument(

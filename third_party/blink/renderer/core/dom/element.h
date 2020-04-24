@@ -980,6 +980,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // This method cannot be moved to LayoutObject because some focusable nodes
   // don't have layoutObjects. e.g., HTMLOptionElement.
   virtual bool IsFocusableStyle() const;
+  // Similar to above, except that it will ensure that any deferred work to
+  // create layout objects is completed (e.g. in display-locked trees).
+  bool IsFocusableStyleAfterUpdate() const;
 
   // classAttributeChanged() exists to share code between
   // parseAttribute (called via setAttribute()) and
@@ -1007,6 +1010,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void HideNonce();
 
  private:
+  friend class AXObject;
+
   void ScrollLayoutBoxBy(const ScrollToOptions*);
   void ScrollLayoutBoxTo(const ScrollToOptions*);
   void ScrollFrameBy(const ScrollToOptions*);

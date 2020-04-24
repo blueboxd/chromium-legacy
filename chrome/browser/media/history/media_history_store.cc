@@ -774,6 +774,51 @@ void MediaHistoryStore::SetCancelled() {
   }
 }
 
+void MediaHistoryStore::IncrementMediaFeedItemsShownCount(
+    const std::set<int64_t> feed_item_ids) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!CanAccessDatabase())
+    return;
+
+  if (!feed_items_table_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  for (auto& feed_item_id : feed_item_ids) {
+    if (!feed_items_table_->IncrementShownCount(feed_item_id)) {
+      DB()->RollbackTransaction();
+      return;
+    }
+  }
+
+  DB()->CommitTransaction();
+}
+
+void MediaHistoryStore::MarkMediaFeedItemAsClicked(
+    const int64_t& feed_item_id) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!CanAccessDatabase())
+    return;
+
+  if (!feed_items_table_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  if (feed_items_table_->MarkAsClicked(feed_item_id)) {
+    DB()->CommitTransaction();
+  } else {
+    DB()->RollbackTransaction();
+  }
+}
+
 bool MediaHistoryStore::CanAccessDatabase() const {
   return !IsCancelled() && initialization_successful_ && db_ && db_->is_open();
 }

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_private_api.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
@@ -99,7 +100,7 @@ ImageWriterPrivateWriteFromFileFunction::Run() {
   if (!extensions::app_file_handler_util::ValidateFileEntryAndGetPath(
           filesystem_name, filesystem_path, source_process_id(), &path,
           &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
 
   image_writer::OperationManager::Get(browser_context())

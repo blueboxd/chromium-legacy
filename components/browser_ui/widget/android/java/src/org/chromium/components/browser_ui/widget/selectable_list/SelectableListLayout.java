@@ -45,6 +45,9 @@ import java.util.List;
  * After the SelectableListLayout is inflated, it should be initialized through calls to
  * #initializeRecyclerView(), #initializeToolbar(), and #initializeEmptyView().
  *
+ * Must call #onDestroyed() to destroy SelectableListLayout properly, otherwise this would cause
+ * memory leak consistently.
+ *
  * @param <E> The type of the selectable items this layout holds.
  */
 public class SelectableListLayout<E>
@@ -249,6 +252,7 @@ public class SelectableListLayout<E>
         mAdapter.unregisterAdapterDataObserver(mAdapterObserver);
         mToolbar.getSelectionDelegate().removeObserver(this);
         mToolbar.destroy();
+        mLoadingView.destroy();
         mRecyclerView.setAdapter(null);
     }
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/external_policy_loader.h"
 
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/external_provider_impl.h"

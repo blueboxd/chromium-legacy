@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -301,7 +302,7 @@ CertificateProviderStopPinRequestFunction::Run() {
   }
   // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
   VLOG(1) << "PIN stop request failed: " << error_result;
-  return RespondNow(Error(error_result));
+  return RespondNow(Error(std::move(error_result)));
 }
 
 void CertificateProviderStopPinRequestFunction::OnPinRequestStopped() {
@@ -406,7 +407,7 @@ ExtensionFunction::ResponseAction CertificateProviderRequestPinFunction::Run() {
   }
   // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
   VLOG(1) << "PIN request failed: " << error_result;
-  return RespondNow(Error(error_result));
+  return RespondNow(Error(std::move(error_result)));
 }
 
 void CertificateProviderRequestPinFunction::OnInputReceived(

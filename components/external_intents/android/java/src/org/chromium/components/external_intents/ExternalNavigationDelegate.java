@@ -107,9 +107,6 @@ public interface ExternalNavigationDelegate {
     /** Adds a window id to the intent, if necessary. */
     void maybeSetWindowId(Intent intent);
 
-    /** Adds the package name of a specialized intent handler. */
-    void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> info);
-
     /** Records the pending referrer if desired. */
     void maybeSetPendingReferrer(Intent intent, @NonNull String referrerUrl);
 

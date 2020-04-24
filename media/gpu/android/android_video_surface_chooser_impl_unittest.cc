@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/android/mock_android_overlay.h"
 #include "testing/gmock/include/gmock/gmock.h"

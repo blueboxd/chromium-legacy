@@ -9,7 +9,7 @@
 #include <dxgi.h>
 #include <dxgiformat.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "device/vr/test/test_hook.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
 #include "ui/gfx/transform.h"

@@ -8,7 +8,8 @@
 #include <algorithm>
 #include <array>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "device/vr/openxr/openxr_input_helper.h"
 #include "device/vr/openxr/openxr_util.h"
 #include "device/vr/test/test_hook.h"

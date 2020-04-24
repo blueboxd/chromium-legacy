@@ -9,11 +9,11 @@
 #include <memory>
 #include <string>
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/h264_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -4,7 +4,7 @@
 
 #include "device/fido/fido_parsing_utils.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 

@@ -21,6 +21,7 @@
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/chromium_api_delegate.h"
+#include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-shared.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
@@ -260,9 +261,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   void HandleOpenAndroidAppResponse(const action::InteractionInfo& interaction,
                                     bool app_opened);
-  void HandleVerifyAndroidAppResponse(
-      const action::InteractionInfo& interaction,
-      std::vector<mojom::AndroidAppInfoPtr> apps_info);
 
   void HandleLaunchMediaIntentResponse(bool app_opened);
 
@@ -312,7 +310,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   ash::mojom::AssistantScreenContextController*
   assistant_screen_context_controller();
   ash::AssistantStateBase* assistant_state();
-  mojom::DeviceActions* device_actions();
+  DeviceActions* device_actions();
   scoped_refptr<base::SequencedTaskRunner> main_task_runner();
 
   void SetStateAndInformObservers(State new_state);

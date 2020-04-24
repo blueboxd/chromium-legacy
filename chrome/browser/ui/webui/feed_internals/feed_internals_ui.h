@@ -14,6 +14,7 @@
 #include "ui/webui/mojo_web_ui_controller.h"
 
 class Profile;
+class FeedV2InternalsPageHandler;
 
 // During the interim migration to Feed, this page will be co-located with
 // snippets-internals. Once migration is complete, and snippets-internals is
@@ -36,6 +37,7 @@ class FeedInternalsUI : public ui::MojoWebUIController {
   Profile* profile_;
 
   std::unique_ptr<FeedInternalsPageHandler> page_handler_;
+  std::unique_ptr<FeedV2InternalsPageHandler> v2_page_handler_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 

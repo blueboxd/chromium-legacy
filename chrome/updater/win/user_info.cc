@@ -4,7 +4,7 @@
 
 #include "chrome/updater/win/user_info.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/updater/win/util.h"
 
 namespace updater {

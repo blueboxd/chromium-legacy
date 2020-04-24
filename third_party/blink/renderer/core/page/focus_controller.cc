@@ -961,6 +961,8 @@ bool FocusController::AdvanceFocus(
     mojom::blink::FocusType type,
     bool initial_focus,
     InputDeviceCapabilities* source_capabilities) {
+  // TODO (liviutinta) remove TRACE after fixing crbug.com/1063548
+  TRACE_EVENT0("input", "FocusController::AdvanceFocus");
   switch (type) {
     case mojom::blink::FocusType::kForward:
     case mojom::blink::FocusType::kBackward: {
@@ -1016,6 +1018,8 @@ bool FocusController::AdvanceFocusInDocumentOrder(
     mojom::blink::FocusType type,
     bool initial_focus,
     InputDeviceCapabilities* source_capabilities) {
+  // TODO (liviutinta) remove TRACE after fixing crbug.com/1063548
+  TRACE_EVENT0("input", "FocusController::AdvanceFocusInDocumentOrder");
   DCHECK(frame);
   Document* document = frame->GetDocument();
   document->UpdateDistributionForLegacyDistributedNodes();
@@ -1063,8 +1067,14 @@ bool FocusController::AdvanceFocusInDocumentOrder(
     element = FindFocusableElementDescendingDownIntoFrameDocument(type, element,
                                                                   owner_map);
 
-    if (!element)
+    if (!element) {
+      // TODO (liviutinta) remove TRACE after fixing crbug.com/1063548
+      TRACE_EVENT_INSTANT1(
+          "input", "FocusController::AdvanceFocusInDocumentOrder",
+          TRACE_EVENT_SCOPE_THREAD, "reason_for_no_focus_element",
+          "no_recursive_focusable_element");
       return false;
+    }
   }
 
   if (element == document->FocusedElement()) {
@@ -1093,8 +1103,14 @@ bool FocusController::AdvanceFocusInDocumentOrder(
        !element->IsKeyboardFocusable())) {
     // FIXME: We should not focus frames that have no scrollbars, as focusing
     // them isn't useful to the user.
-    if (!owner->ContentFrame())
+    if (!owner->ContentFrame()) {
+      // TODO (liviutinta) remove TRACE after fixing crbug.com/1063548
+      TRACE_EVENT_INSTANT1(
+          "input", "FocusController::AdvanceFocusInDocumentOrder",
+          TRACE_EVENT_SCOPE_THREAD, "reason_for_no_focus_element",
+          "portal blocks focus");
       return false;
+    }
 
     document->ClearFocusedElement();
 

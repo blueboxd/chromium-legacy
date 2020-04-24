@@ -160,6 +160,8 @@ source_set("tests") {
     "test_support/fully_initialized_assistant_state.h",
     "test_support/scoped_assistant_client.cc",
     "test_support/scoped_assistant_client.h",
+    "test_support/scoped_device_actions.cc",
+    "test_support/scoped_device_actions.h",
   ]
 
   if (enable_cros_libassistant) {

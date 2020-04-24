@@ -8,8 +8,9 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "base/time/default_tick_clock.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

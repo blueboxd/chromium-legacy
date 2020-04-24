@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 

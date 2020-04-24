@@ -4707,7 +4707,15 @@ interface LayoutShift : PerformanceEntry
     attribute @@toStringTag
     getter hadRecentInput
     getter lastInputTime
+    getter sources
     getter value
+    method constructor
+    method toJSON
+interface LayoutShiftAttribution
+    attribute @@toStringTag
+    getter currentRect
+    getter node
+    getter previousRect
     method constructor
     method toJSON
 interface LinearAccelerationSensor : Accelerometer
@@ -5518,8 +5526,8 @@ interface Navigator
     method webkitGetUserMedia
 interface NavigatorUAData
     attribute @@toStringTag
+    getter brands
     getter mobile
-    getter uaList
     method constructor
     method getHighEntropyValues
 interface NetworkInformation : EventTarget
@@ -11277,7 +11285,7 @@ interface XRAnchor
     attribute @@toStringTag
     getter anchorSpace
     method constructor
-    method detach
+    method delete
 interface XRAnchorSet
     attribute @@toStringTag
     getter size

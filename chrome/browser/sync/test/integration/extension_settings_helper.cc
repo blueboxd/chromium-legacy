@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"

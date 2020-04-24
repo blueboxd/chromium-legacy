@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"

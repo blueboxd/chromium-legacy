@@ -9,7 +9,6 @@
 #include <limits>
 #include <memory>
 
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"

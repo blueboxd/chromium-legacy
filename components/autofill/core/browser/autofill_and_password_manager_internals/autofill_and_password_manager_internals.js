@@ -174,6 +174,7 @@ function setUpLogDisplayConfig() {
     'Submission',
     'AutofillServer',
     'Metrics',
+    'AddressProfileFormImport',
   ];
   const displayConfigDiv = document.getElementById('log-display-config');
   const logDiv = document.getElementById('log-entries');

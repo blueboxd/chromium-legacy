@@ -7,7 +7,7 @@
 #include <array>
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/chromeos/power/ml/screen_brightness_event.pb.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
 #include "services/metrics/public/cpp/ukm_builders.h"

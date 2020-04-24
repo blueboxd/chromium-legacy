@@ -7,7 +7,7 @@
 #include <limits>
 #include <numeric>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/numerics/checked_math.h"
 
 namespace media {

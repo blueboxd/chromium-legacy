@@ -10,9 +10,9 @@
 
 #include "ash/public/cpp/wallpaper_types.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"

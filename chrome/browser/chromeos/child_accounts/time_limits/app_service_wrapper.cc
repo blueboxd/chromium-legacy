@@ -13,13 +13,16 @@
 #include "base/optional.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/cpp/instance_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
@@ -29,10 +32,24 @@ namespace {
 
 // Return whether app with |app_id| should be included for per-app time
 // limits.
-bool ShouldIncludeApp(const AppId& app_id) {
+bool ShouldIncludeApp(const AppId& app_id, Profile* profile) {
+  if (app_id.app_type() == apps::mojom::AppType::kExtension) {
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+            app_id.app_id(),
+            extensions::ExtensionRegistry::IncludeFlag::EVERYTHING);
+
+    // If we are not able to find the extension, return false.
+    if (!extension)
+      return false;
+
+    // Some preinstalled apps that open in browser window are legacy packaged
+    // apps. Example Google Slides app.
+    return extension->is_hosted_app() || extension->is_legacy_packaged_app();
+  }
+
   return app_id.app_type() == apps::mojom::AppType::kArc ||
-         app_id.app_type() == apps::mojom::AppType::kWeb ||
-         app_id.app_id() == extension_misc::kChromeAppId;
+         app_id.app_type() == apps::mojom::AppType::kWeb;
 }
 
 // Gets AppId from |update|.
@@ -106,16 +123,18 @@ void AppServiceWrapper::LaunchApp(const std::string& app_service_id) {
 
 std::vector<AppId> AppServiceWrapper::GetInstalledApps() const {
   std::vector<AppId> installed_apps;
-  GetAppCache().ForEachApp([&installed_apps](const apps::AppUpdate& update) {
-    if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser)
-      return;
+  Profile* profile = profile_;
+  GetAppCache().ForEachApp(
+      [&installed_apps, &profile](const apps::AppUpdate& update) {
+        if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser)
+          return;
 
-    const AppId app_id = AppIdFromAppUpdate(update);
-    if (!ShouldIncludeApp(app_id))
-      return;
+        const AppId app_id = AppIdFromAppUpdate(update);
+        if (!ShouldIncludeApp(app_id, profile))
+          return;
 
-    installed_apps.push_back(app_id);
-  });
+        installed_apps.push_back(app_id);
+      });
   return installed_apps;
 }
 
@@ -194,7 +213,7 @@ void AppServiceWrapper::OnAppUpdate(const apps::AppUpdate& update) {
     return;
 
   const AppId app_id = AppIdFromAppUpdate(update);
-  if (!ShouldIncludeApp(app_id))
+  if (!ShouldIncludeApp(app_id, profile_))
     return;
 
   switch (update.Readiness()) {
@@ -234,7 +253,7 @@ void AppServiceWrapper::OnInstanceUpdate(const apps::InstanceUpdate& update) {
     return;
 
   const AppId app_id = AppIdFromInstanceUpdate(update, &GetAppCache());
-  if (!ShouldIncludeApp(app_id))
+  if (!ShouldIncludeApp(app_id, profile_))
     return;
 
   bool is_active = update.State() & apps::InstanceState::kActive;

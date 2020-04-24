@@ -99,4 +99,12 @@ public class LoadingView extends ProgressBar {
                                     - SystemClock.elapsedRealtime()));
         }
     }
+
+    /**
+     * Remove all callbacks when this view is no longer needed.
+     */
+    public void destroy() {
+        removeCallbacks(mDelayedShow);
+        removeCallbacks(mDelayedHide);
+    }
 }

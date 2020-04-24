@@ -8,7 +8,7 @@
 #include <mutex>
 #include <thread>
 
-#include "base/logging.h"
+#include "base/compiler_specific.h"
 #include "v8/include/libplatform/libplatform.h"
 #include "v8/include/v8.h"
 

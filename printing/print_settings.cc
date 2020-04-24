@@ -6,7 +6,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 

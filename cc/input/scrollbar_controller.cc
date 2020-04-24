@@ -592,14 +592,16 @@ int ScrollbarController::GetScrollDeltaForScrollbarPart(
     const ScrollbarPart scrollbar_part,
     const bool shift_modifier) {
   int scroll_delta = 0;
-  if (layer_tree_host_impl_->settings().percent_based_scrolling) {
-    // TODO(arakeri): Implement percent based deltas.
-  }
 
   switch (scrollbar_part) {
     case ScrollbarPart::BACK_BUTTON:
     case ScrollbarPart::FORWARD_BUTTON:
-      scroll_delta = kPixelsPerLineStep * ScreenSpaceScaleFactor();
+      if (layer_tree_host_impl_->settings().percent_based_scrolling) {
+        scroll_delta =
+            kPercentDeltaForDirectionalScroll * GetViewportLength(scrollbar);
+      } else {
+        scroll_delta = kPixelsPerLineStep * ScreenSpaceScaleFactor();
+      }
       break;
     case ScrollbarPart::BACK_TRACK:
     case ScrollbarPart::FORWARD_TRACK: {

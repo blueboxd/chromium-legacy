@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://new-tab-page/most_visited.js';
-import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js';
-
-import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
+import {BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {assertFocus, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise} from 'chrome://test/test_util.m.js';
 

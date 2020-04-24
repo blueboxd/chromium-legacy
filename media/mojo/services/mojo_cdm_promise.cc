@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/decryptor.h"
 

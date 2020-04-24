@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 
-#include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_window_delegate_android.h"

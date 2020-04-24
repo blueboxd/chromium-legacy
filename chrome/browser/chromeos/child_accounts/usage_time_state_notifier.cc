@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/child_accounts/usage_time_state_notifier.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/session_manager/core/session_manager.h"
 

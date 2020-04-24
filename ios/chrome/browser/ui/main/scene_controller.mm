@@ -753,10 +753,24 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController {
   Browser* mainBrowser = self.mainInterface.browser;
-  self.signinInteractionCoordinator =
-      [[SigninInteractionCoordinator alloc] initWithBrowser:mainBrowser];
+  if (!self.signinInteractionCoordinator) {
+    self.signinInteractionCoordinator =
+        [[SigninInteractionCoordinator alloc] initWithBrowser:mainBrowser];
+  }
   [self.signinInteractionCoordinator
       showAdvancedSigninSettingsWithPresentingViewController:
+          baseViewController];
+}
+
+- (void)showTrustedVaultReauthenticationFromViewController:
+    (UIViewController*)baseViewController {
+  Browser* mainBrowser = self.mainInterface.browser;
+  if (!self.signinInteractionCoordinator) {
+    self.signinInteractionCoordinator =
+        [[SigninInteractionCoordinator alloc] initWithBrowser:mainBrowser];
+  }
+  [self.signinInteractionCoordinator
+      showTrustedVaultReauthenticationWithPresentingViewController:
           baseViewController];
 }
 
@@ -1579,15 +1593,27 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 - (void)closeSettingsAnimated:(BOOL)animated
                    completion:(ProceduralBlock)completion {
   if (self.settingsNavigationController) {
-    [self.settingsNavigationController cleanUpSettings];
-    UIViewController* presentingViewController =
-        [self.settingsNavigationController presentingViewController];
-    // If presentingViewController is nil it means the VC was already dismissed
-    // by some other action like swiping down.
-    DCHECK(presentingViewController);
-    [presentingViewController dismissViewControllerAnimated:animated
-                                                 completion:completion];
-    self.settingsNavigationController = nil;
+    ProceduralBlock dismissSettings = ^() {
+      [self.settingsNavigationController cleanUpSettings];
+      UIViewController* presentingViewController =
+          [self.settingsNavigationController presentingViewController];
+      // If presentingViewController is nil it means the VC was already
+      // dismissed by some other action like swiping down.
+      DCHECK(presentingViewController);
+      [presentingViewController dismissViewControllerAnimated:animated
+                                                   completion:completion];
+      self.settingsNavigationController = nil;
+    };
+    // |self.signinInteractionCoordinator| can be presented on top of the
+    // settings, to present the Trusted Vault reauthentication.
+    // |self.signinInteractionCoordinator| has to be closed first.
+    if (self.signinInteractionCoordinator.isActive) {
+      [self.signinInteractionCoordinator
+          abortAndDismissSettingsViewAnimated:animated
+                                   completion:dismissSettings];
+    } else if (dismissSettings) {
+      dismissSettings();
+    }
     return;
   }
   // |self.signinInteractionCoordinator| can also present settings, like

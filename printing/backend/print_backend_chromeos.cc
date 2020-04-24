@@ -4,8 +4,8 @@
 
 #include "printing/backend/print_backend.h"
 
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "base/values.h"
 
 #if defined(USE_CUPS)

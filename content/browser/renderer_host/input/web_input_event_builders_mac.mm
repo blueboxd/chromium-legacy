@@ -640,15 +640,16 @@ blink::WebTouchEvent WebTouchEventBuilder::Build(NSEvent* event, NSView* view) {
   blink::WebInputEvent::Type event_type =
       blink::WebInputEvent::Type::kUndefined;
   NSEventType type = [event type];
-  blink::WebTouchPoint::State state = blink::WebTouchPoint::kStateUndefined;
+  blink::WebTouchPoint::State state =
+      blink::WebTouchPoint::State::kStateUndefined;
   switch (type) {
     case NSLeftMouseDown:
       event_type = blink::WebInputEvent::Type::kTouchStart;
-      state = blink::WebTouchPoint::kStatePressed;
+      state = blink::WebTouchPoint::State::kStatePressed;
       break;
     case NSLeftMouseUp:
       event_type = blink::WebInputEvent::Type::kTouchEnd;
-      state = blink::WebTouchPoint::kStateReleased;
+      state = blink::WebTouchPoint::State::kStateReleased;
       break;
     case NSLeftMouseDragged:
     case NSRightMouseDragged:
@@ -659,7 +660,7 @@ blink::WebTouchEvent WebTouchEventBuilder::Build(NSEvent* event, NSView* view) {
     case NSRightMouseUp:
     case NSOtherMouseUp:
       event_type = blink::WebInputEvent::Type::kTouchMove;
-      state = blink::WebTouchPoint::kStateMoved;
+      state = blink::WebTouchPoint::State::kStateMoved;
       break;
     default:
       NOTREACHED() << "Invalid types for touch events." << type;

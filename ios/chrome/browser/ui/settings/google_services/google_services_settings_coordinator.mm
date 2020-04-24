@@ -266,6 +266,14 @@
   [handler closeSettingsUIAndOpenURL:command];
 }
 
+- (void)openTrustedVaultReauth {
+  id<ApplicationCommands> applicationCommands =
+      static_cast<id<ApplicationCommands>>(
+          self.browser->GetCommandDispatcher());
+  [applicationCommands showTrustedVaultReauthenticationFromViewController:
+                           self.googleServicesSettingsViewController];
+}
+
 #pragma mark - GoogleServicesSettingsViewControllerPresentationDelegate
 
 - (void)googleServicesSettingsViewControllerDidRemove:

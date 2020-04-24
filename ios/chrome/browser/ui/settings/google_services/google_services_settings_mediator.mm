@@ -802,7 +802,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       [self.commandHandler openPassphraseDialog];
       break;
     case SyncNeedsTrustedVaultKeyErrorItemType:
-      // TODO(crbug.com/1019685): Open key retrieval dialog.
+      [self.commandHandler openTrustedVaultReauth];
       break;
     case ManageSyncItemType:
       [self.commandHandler openManageSyncSettings];

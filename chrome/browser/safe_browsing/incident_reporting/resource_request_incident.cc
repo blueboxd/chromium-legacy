@@ -4,7 +4,7 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/resource_request_incident.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_handler_util.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 

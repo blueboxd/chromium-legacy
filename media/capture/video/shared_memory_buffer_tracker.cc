@@ -4,7 +4,8 @@
 
 #include "media/capture/video/shared_memory_buffer_tracker.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"

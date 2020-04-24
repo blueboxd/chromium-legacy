@@ -41,7 +41,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "third_party/protobuf/src/google/protobuf/descriptor.h"
 #include "third_party/protobuf/src/google/protobuf/message.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"

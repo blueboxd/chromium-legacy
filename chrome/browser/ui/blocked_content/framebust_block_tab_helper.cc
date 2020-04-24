@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "content/public/browser/navigation_handle.h"
 

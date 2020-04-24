@@ -122,7 +122,7 @@ class BlinkTestController : public WebContentsObserver,
   // True if the controller is ready for testing.
   bool PrepareForWebTest(const TestInfo& test_info);
   // True if the controller was reset successfully.
-  bool ResetAfterWebTest();
+  bool ResetBrowserAfterWebTest();
 
   // IPC messages forwarded from elsewhere.
   void OnWebTestRuntimeFlagsChanged(
@@ -196,7 +196,7 @@ class BlinkTestController : public WebContentsObserver,
 
   // BlinkTestClient implementation.
   void InitiateLayoutDump() override;
-  void ResetDone() override;
+  void ResetRendererAfterWebTestDone() override;
   void PrintMessageToStderr(const std::string& message) override;
   void PrintMessage(const std::string& message) override;
   void Reload() override;
@@ -342,6 +342,7 @@ class BlinkTestController : public WebContentsObserver,
   mojom::BlinkTestDumpPtr main_frame_dump_;
   bool waiting_for_pixel_results_ = false;
   bool waiting_for_main_frame_dump_ = false;
+  int waiting_for_reset_done_ = 0;
 
   std::vector<std::unique_ptr<Node>> composite_all_frames_node_storage_;
   std::queue<Node*> composite_all_frames_node_queue_;

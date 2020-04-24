@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/chrome_process_manager_delegate.h"
 
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_management.h"

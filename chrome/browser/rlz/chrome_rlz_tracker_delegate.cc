@@ -5,8 +5,9 @@
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"

@@ -8,7 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_process.h"

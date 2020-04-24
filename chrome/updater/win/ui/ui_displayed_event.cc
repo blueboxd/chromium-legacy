@@ -4,7 +4,7 @@
 
 #include "chrome/updater/win/ui/ui_displayed_event.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "chrome/updater/win/ui/constants.h"

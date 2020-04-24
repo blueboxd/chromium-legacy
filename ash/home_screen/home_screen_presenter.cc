@@ -13,7 +13,7 @@
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"

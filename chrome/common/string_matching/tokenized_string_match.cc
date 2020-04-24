@@ -8,8 +8,8 @@
 
 #include <cmath>
 
+#include "base/check.h"
 #include "base/i18n/string_search.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/string_matching/tokenized_string_char_iterator.h"

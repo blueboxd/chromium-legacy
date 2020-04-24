@@ -7,7 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "media/learning/impl/voting_ensemble.h"
 
 namespace media {

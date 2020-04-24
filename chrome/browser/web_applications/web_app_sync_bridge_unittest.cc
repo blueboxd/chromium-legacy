@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

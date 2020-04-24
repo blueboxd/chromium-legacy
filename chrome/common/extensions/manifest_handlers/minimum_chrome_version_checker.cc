@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/manifest_handlers/minimum_chrome_version_checker.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/grit/chromium_strings.h"

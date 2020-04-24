@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/stringprintf.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/pulse/audio_manager_pulse.h"

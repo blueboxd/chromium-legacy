@@ -351,8 +351,6 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   static bool ignore_all_did_respond_for_testing_do_not_use;
 
  protected:
-  friend struct ExtensionFunctionDeleteTraits;
-
   // ResponseValues.
   //
   // Success, no arguments to pass to caller.

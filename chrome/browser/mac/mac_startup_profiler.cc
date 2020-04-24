@@ -4,7 +4,7 @@
 
 #include "chrome/browser/mac/mac_startup_profiler.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 

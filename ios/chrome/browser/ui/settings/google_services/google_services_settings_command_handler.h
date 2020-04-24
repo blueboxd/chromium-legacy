@@ -26,8 +26,11 @@
 // Opens the manage sync settings view.
 - (void)openManageSyncSettings;
 
-// Open the "Manage Your Google Account" web page
+// Opens the "Manage Your Google Account" web page
 - (void)openManageGoogleAccountWebPage;
+
+// Opens the trusted vault reauthentication dialog.
+- (void)openTrustedVaultReauth;
 
 @end
 

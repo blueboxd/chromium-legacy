@@ -11,9 +11,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"

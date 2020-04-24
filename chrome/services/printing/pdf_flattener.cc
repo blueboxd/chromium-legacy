@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/containers/span.h"
-#include "base/logging.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "pdf/pdf.h"
 

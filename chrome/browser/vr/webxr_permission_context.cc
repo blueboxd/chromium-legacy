@@ -4,7 +4,7 @@
 
 #include "chrome/browser/vr/webxr_permission_context.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 #if defined(OS_ANDROID)

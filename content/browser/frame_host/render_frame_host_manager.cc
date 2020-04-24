@@ -1614,14 +1614,6 @@ void RenderFrameHostManager::PrepareForInnerDelegateAttach(
   CreateNewFrameForInnerDelegateAttachIfNecessary();
 }
 
-void RenderFrameHostManager::SetEmbeddingToken(
-    const base::UnguessableToken& embedding_token) {
-  RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
-  DCHECK(proxy_to_parent);
-  proxy_to_parent->GetAssociatedRemoteFrame()->SetEmbeddingToken(
-      embedding_token);
-}
-
 RenderFrameHostManager::SiteInstanceDescriptor
 RenderFrameHostManager::DetermineSiteInstanceForURL(
     const GURL& dest_url,

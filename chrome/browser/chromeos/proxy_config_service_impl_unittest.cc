@@ -11,7 +11,7 @@
 
 #include "base/format_macros.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"

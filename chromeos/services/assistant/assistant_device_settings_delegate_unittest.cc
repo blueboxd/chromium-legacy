@@ -11,6 +11,7 @@
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/services/assistant/test_support/fake_service_context.h"
+#include "chromeos/services/assistant/test_support/scoped_device_actions.h"
 #include "libassistant/shared/public/platform_audio_output.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,41 +48,27 @@ const std::vector<std::string> kAlwaysSupportedSettings = {
     kWiFi, kBluetooth, kScreenBrightness, kDoNotDisturb, kNightLight,
 };
 
-class DeviceActionsMock : public mojom::DeviceActions {
+class ScopedDeviceActionsMock : public ScopedDeviceActions {
  public:
-  // mojom::DeviceActions implementation:
+  // DeviceActions implementation:
   MOCK_METHOD(void, SetWifiEnabled, (bool enabled));
   MOCK_METHOD(void, SetBluetoothEnabled, (bool enabled));
   MOCK_METHOD(void, SetScreenBrightnessLevel, (double level, bool gradual));
   MOCK_METHOD(void, SetNightLightEnabled, (bool enabled));
   MOCK_METHOD(void, SetSwitchAccessEnabled, (bool enabled));
-  MOCK_METHOD(void,
+  MOCK_METHOD(bool,
               OpenAndroidApp,
-              (chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-               OpenAndroidAppCallback callback));
-  MOCK_METHOD(
-      void,
-      VerifyAndroidApp,
-      (std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
-       VerifyAndroidAppCallback callback));
+              (chromeos::assistant::mojom::AndroidAppInfoPtr app_info));
+  MOCK_METHOD(void,
+              VerifyAndroidApp,
+              (std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> *
+               apps_info));
   MOCK_METHOD(void, LaunchAndroidIntent, (const std::string& intent));
   MOCK_METHOD(
       void,
       AddAppListEventSubscriber,
       (mojo::PendingRemote<chromeos::assistant::mojom::AppListEventSubscriber>
            subscriber));
-
-  void GetScreenBrightnessLevel(
-      GetScreenBrightnessLevelCallback callback) override {
-    std::move(callback).Run(/*success=*/true, current_brightness_);
-  }
-
-  // Set the brightness value that will be returned by
-  // GetScreenBrightnessLevel();
-  void set_current_brightness(double value) { current_brightness_ = value; }
-
- private:
-  double current_brightness_ = 0.0;
 };
 
 class AssistantNotificationControllerMock
@@ -206,8 +193,7 @@ TEST_F(AssistantDeviceSettingsDelegateTest,
 }
 
 TEST_F(AssistantDeviceSettingsDelegateTest, ShouldTurnWifiOnAndOff) {
-  StrictMock<DeviceActionsMock> device_actions;
-  service_context()->set_device_actions(&device_actions);
+  StrictMock<ScopedDeviceActionsMock> device_actions;
   CreateAssistantDeviceSettingsDelegate();
 
   ModifySettingArgs args;
@@ -223,8 +209,7 @@ TEST_F(AssistantDeviceSettingsDelegateTest, ShouldTurnWifiOnAndOff) {
 }
 
 TEST_F(AssistantDeviceSettingsDelegateTest, ShouldTurnBluetoothOnAndOff) {
-  StrictMock<DeviceActionsMock> device_actions;
-  service_context()->set_device_actions(&device_actions);
+  StrictMock<ScopedDeviceActionsMock> device_actions;
   CreateAssistantDeviceSettingsDelegate();
 
   ModifySettingArgs args;
@@ -261,8 +246,7 @@ TEST_F(AssistantDeviceSettingsDelegateTest, ShouldTurnSwitchAccessOnAndOff) {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilitySwitchAccess);
-  StrictMock<DeviceActionsMock> device_actions;
-  service_context()->set_device_actions(&device_actions);
+  StrictMock<ScopedDeviceActionsMock> device_actions;
   CreateAssistantDeviceSettingsDelegate();
 
   ModifySettingArgs args;
@@ -278,8 +262,7 @@ TEST_F(AssistantDeviceSettingsDelegateTest, ShouldTurnSwitchAccessOnAndOff) {
 }
 
 TEST_F(AssistantDeviceSettingsDelegateTest, ShouldTurnNightLightOnAndOff) {
-  StrictMock<DeviceActionsMock> device_actions;
-  service_context()->set_device_actions(&device_actions);
+  StrictMock<ScopedDeviceActionsMock> device_actions;
   CreateAssistantDeviceSettingsDelegate();
 
   ModifySettingArgs args;
@@ -295,8 +278,7 @@ TEST_F(AssistantDeviceSettingsDelegateTest, ShouldTurnNightLightOnAndOff) {
 }
 
 TEST_F(AssistantDeviceSettingsDelegateTest, ShouldSetBrightness) {
-  StrictMock<DeviceActionsMock> device_actions;
-  service_context()->set_device_actions(&device_actions);
+  StrictMock<ScopedDeviceActionsMock> device_actions;
   CreateAssistantDeviceSettingsDelegate();
 
   ModifySettingArgs args;
@@ -322,8 +304,7 @@ TEST_F(AssistantDeviceSettingsDelegateTest, ShouldSetBrightness) {
 
 TEST_F(AssistantDeviceSettingsDelegateTest,
        ShouldIncreaseAndDecreaseBrightness) {
-  StrictMock<DeviceActionsMock> device_actions;
-  service_context()->set_device_actions(&device_actions);
+  StrictMock<ScopedDeviceActionsMock> device_actions;
   CreateAssistantDeviceSettingsDelegate();
 
   ModifySettingArgs args;

@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_SERVICE_CONTEXT_H_
 #define CHROMEOS_SERVICES_ASSISTANT_SERVICE_CONTEXT_H_
 
+#include <string>
+
 #include "base/memory/scoped_refptr.h"
 
 namespace ash {
@@ -24,7 +26,6 @@ class PowerManagerClient;
 namespace assistant {
 namespace mojom {
 class AssistantController;
-class DeviceActions;
 }  // namespace mojom
 }  // namespace assistant
 }  // namespace chromeos
@@ -35,6 +36,8 @@ class SequencedTaskRunner;
 
 namespace chromeos {
 namespace assistant {
+
+class DeviceActions;
 
 // Context object passed around so classes can access some of the |Service|
 // functionality without directly depending on the |Service| class.
@@ -57,7 +60,7 @@ class ServiceContext {
 
   virtual CrasAudioHandler* cras_audio_handler() = 0;
 
-  virtual mojom::DeviceActions* device_actions() = 0;
+  virtual DeviceActions* device_actions() = 0;
 
   virtual scoped_refptr<base::SequencedTaskRunner> main_task_runner() = 0;
 

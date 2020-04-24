@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_tokenizer.h"
 
 INIParser::INIParser() : used_(false) {}

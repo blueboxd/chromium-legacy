@@ -792,7 +792,7 @@ ExtensionFunction::ResponseAction ManagementCreateAppShortcutFunction::Run() {
     // Response is sent async in OnCloseShortcutPrompt().
     return RespondLater();
   } else {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
 }
 

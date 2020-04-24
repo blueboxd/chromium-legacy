@@ -4,7 +4,6 @@
 
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
 
-#include "base/logging.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"

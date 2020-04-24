@@ -140,6 +140,11 @@ def _ParseOptions():
       help='Path to file written to if the expected merged ProGuard configs '
       'differ from the generated merged ProGuard configs.')
   parser.add_argument(
+      '--fail-on-expectations',
+      action="store_true",
+      help='When passed fails the build on proguard config expectation '
+      'mismatches.')
+  parser.add_argument(
       '--classpath',
       action='append',
       help='GN-list of .jar files to include as libraries.')
@@ -188,7 +193,8 @@ def _ParseOptions():
   return options
 
 
-def _VerifyExpectedConfigs(expected_path, actual_path, failure_file_path):
+def _VerifyExpectedConfigs(expected_path, actual_path, failure_file_path,
+                           fail_on_mismatch):
   msg = diff_utils.DiffFileContents(expected_path, actual_path)
   if not msg:
     return
@@ -204,6 +210,8 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README
     with open(failure_file_path, 'w') as f:
       f.write(msg_header)
       f.write(msg)
+  if fail_on_mismatch:
+    sys.exit(1)
 
 
 def _OptimizeWithR8(options,
@@ -477,7 +485,8 @@ def main():
     if options.expected_configs_file:
       _VerifyExpectedConfigs(options.expected_configs_file,
                              options.output_config,
-                             options.proguard_expectations_failure_file)
+                             options.proguard_expectations_failure_file,
+                             options.fail_on_expectations)
 
   if options.r8_path:
     _OptimizeWithR8(options, proguard_configs, libraries, dynamic_config_data,

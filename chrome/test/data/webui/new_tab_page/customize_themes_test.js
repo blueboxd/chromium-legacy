@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://new-tab-page/customize_themes.js';
-
-import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
+import {BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {assertStyle, createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
 

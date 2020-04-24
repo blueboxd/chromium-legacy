@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"

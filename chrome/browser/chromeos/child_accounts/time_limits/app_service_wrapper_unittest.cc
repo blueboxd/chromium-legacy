@@ -224,8 +224,8 @@ TEST_F(AppServiceWrapperTest, GetInstalledApps) {
   // extensions (with exception of Chrome) now.
   const AppId app2(apps::mojom::AppType::kExtension,
                    web_app::GenerateAppIdFromURL(GURL(kExtensionAppUrl)));
-  // PATL does not support extensions, so there will be no install notification.
-  EXPECT_CALL(test_listener(), OnAppInstalled(app2)).Times(0);
+
+  EXPECT_CALL(test_listener(), OnAppInstalled(app2)).Times(1);
   SimulateAppInstalled(app2, kExtensionNameA, kExtensionAppUrl);
 
   // Add web app.
@@ -234,10 +234,10 @@ TEST_F(AppServiceWrapperTest, GetInstalledApps) {
   EXPECT_CALL(test_listener(), OnAppInstalled(app3)).Times(1);
   SimulateAppInstalled(app3, kWebAppName1, kWebAppUrl1);
 
-  // We get ARC and web app plus Chrome that is 'preinstalled'.
-  const std::vector<AppId> expected_apps = {chrome, app1, app3};
+  // Expect, chrome, ARC app, hosted extension app and web app to be included.
+  const std::vector<AppId> expected_apps = {chrome, app1, app2, app3};
   installed_apps = tested_wrapper().GetInstalledApps();
-  ASSERT_EQ(3u, installed_apps.size());
+  ASSERT_EQ(4u, installed_apps.size());
   for (const auto& app : expected_apps) {
     EXPECT_TRUE(base::Contains(installed_apps, app));
   }
@@ -254,8 +254,8 @@ TEST_F(AppServiceWrapperTest, GetAppName) {
 
   const AppId app2(apps::mojom::AppType::kExtension,
                    web_app::GenerateAppIdFromURL(GURL(kExtensionAppUrl)));
-  // PATL does not support extensions, so there will be no install notification.
-  EXPECT_CALL(test_listener(), OnAppInstalled(app2)).Times(0);
+
+  EXPECT_CALL(test_listener(), OnAppInstalled(app2)).Times(1);
   SimulateAppInstalled(app2, kExtensionNameA, kExtensionAppUrl);
 
   const AppId app3(apps::mojom::AppType::kWeb,
@@ -374,12 +374,16 @@ TEST_F(AppServiceWrapperTest, IgnoreOtherExtensions) {
 
   const AppId app1(apps::mojom::AppType::kExtension,
                    web_app::GenerateAppIdFromURL(GURL(kExtensionAppUrl)));
-  EXPECT_CALL(test_listener(), OnAppInstalled(app1)).Times(0);
+  EXPECT_CALL(test_listener(), OnAppInstalled(app1)).Times(1);
   SimulateAppInstalled(app1, kExtensionNameA, kExtensionAppUrl);
 
   installed_apps = tested_wrapper().GetInstalledApps();
-  EXPECT_EQ(1u, installed_apps.size());
+  EXPECT_EQ(2u, installed_apps.size());
   EXPECT_TRUE(base::Contains(installed_apps, chrome));
+
+  // TODO(yilkal): simulate install for non hosted extension apps (such as
+  // platform extensions apps, normal extensions, theme extensions for this
+  // test)
 }
 
 // TODO(agawronska): Add tests for ARC apps activity once crrev.com/c/1906614 is

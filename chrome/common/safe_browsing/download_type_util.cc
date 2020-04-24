@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "components/safe_browsing/core/features.h"

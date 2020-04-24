@@ -8,12 +8,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/run_loop.h"

@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/arc_notifications_host_initializer.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace ash {
 

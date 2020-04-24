@@ -5,7 +5,8 @@
 #include "ash/system/tray/tri_view.h"
 
 #include "ash/system/tray/size_range_layout.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"

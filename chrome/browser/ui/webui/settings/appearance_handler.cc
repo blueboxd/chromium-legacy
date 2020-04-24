@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"

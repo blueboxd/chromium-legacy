@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/deferred_sequenced_task_runner.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"

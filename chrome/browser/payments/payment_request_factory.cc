@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/payments/chrome_payment_request_delegate.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"

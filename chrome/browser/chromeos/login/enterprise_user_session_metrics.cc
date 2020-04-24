@@ -6,9 +6,10 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"

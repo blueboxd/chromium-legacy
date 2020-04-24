@@ -1119,16 +1119,6 @@ bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
                                       feature, report_on_failure, message);
 }
 
-bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
-                                PolicyValue threshold_value,
-                                ReportOptions report_on_failure,
-                                const String& message,
-                                const String& source_file) const {
-  return GetExecutionContext() &&
-         GetExecutionContext()->IsFeatureEnabled(feature, threshold_value,
-                                                 report_on_failure, message);
-}
-
 bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
                                 ReportOptions report_option,
                                 const String& message,

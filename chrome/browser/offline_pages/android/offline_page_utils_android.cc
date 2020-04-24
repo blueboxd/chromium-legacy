@@ -4,7 +4,6 @@
 
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 
-#include "base/logging.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.h"

@@ -4,7 +4,7 @@
 
 #include "crypto/mock_apple_keychain.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"

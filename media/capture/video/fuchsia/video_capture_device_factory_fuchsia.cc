@@ -4,7 +4,8 @@
 
 #include "media/capture/video/fuchsia/video_capture_device_factory_fuchsia.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace media {
 

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/policy/cloud/remote_commands_invalidator_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/time/clock.h"
 #include "chrome/browser/policy/cloud/policy_invalidation_util.h"
 #include "components/invalidation/public/invalidation.h"

@@ -338,11 +338,6 @@ extern const char kSaveCardInfobarMessagesUIDescription[];
 extern const char kSendTabToSelfName[];
 extern const char kSendTabToSelfDescription[];
 
-// Title and description for the flag to enable the tab to be broadcasted to all
-// of the users devices.
-extern const char kSendTabToSelfBroadcastName[];
-extern const char kSendTabToSelfBroadcastDescription[];
-
 // Title and description for the flag to send UMA data over any network.
 extern const char kSendUmaOverAnyNetwork[];
 extern const char kSendUmaOverAnyNetworkDescription[];

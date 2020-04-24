@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class XRSession;
 class XRSpace;
 
@@ -27,11 +28,11 @@ class XRAnchor : public ScriptWrappable {
 
   uint64_t id() const;
 
-  XRSpace* anchorSpace() const;
+  XRSpace* anchorSpace(ExceptionState& exception_state) const;
 
   base::Optional<TransformationMatrix> MojoFromObject() const;
 
-  void detach();
+  void Delete();
 
   void Update(const device::mojom::blink::XRAnchorData& anchor_data);
 
@@ -41,6 +42,8 @@ class XRAnchor : public ScriptWrappable {
   void SetMojoFromAnchor(const TransformationMatrix& mojo_from_anchor);
 
   const uint64_t id_;
+
+  bool is_deleted_;
 
   Member<XRSession> session_;
 

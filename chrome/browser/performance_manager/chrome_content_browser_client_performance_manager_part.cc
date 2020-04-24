@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/graph/process_node_impl.h"

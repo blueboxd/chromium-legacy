@@ -594,14 +594,6 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = 'android-lollipop-arm-rel',
-    console_view_entry = ci.console_view_entry(
-        category = 'on_cq',
-        short_name = 'L',
-    ),
-)
-
-ci.android_builder(
     name = 'android-pie-x86-rel',
     console_view_entry = ci.console_view_entry(
         category = 'builder_tester|x86',

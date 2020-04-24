@@ -33,6 +33,7 @@
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
@@ -160,22 +161,13 @@ void SecurityContext::SetDocumentPolicyForTesting(
 }
 
 bool SecurityContext::IsFeatureEnabled(
-    mojom::blink::FeaturePolicyFeature feature) const {
-  return IsFeatureEnabled(
-      feature, PolicyValue::CreateMaxPolicyValue(
-                   feature_policy_->GetFeatureList().at(feature).second));
-}
-
-bool SecurityContext::IsFeatureEnabled(
     mojom::blink::FeaturePolicyFeature feature,
-    PolicyValue threshold_value,
     bool* should_report) const {
   DCHECK(feature_policy_);
-  bool feature_policy_result =
-      feature_policy_->IsFeatureEnabled(feature, threshold_value);
+  bool feature_policy_result = feature_policy_->IsFeatureEnabled(feature);
   bool report_only_feature_policy_result =
       !report_only_feature_policy_ ||
-      report_only_feature_policy_->IsFeatureEnabled(feature, threshold_value);
+      report_only_feature_policy_->IsFeatureEnabled(feature);
 
   if (should_report) {
     *should_report =

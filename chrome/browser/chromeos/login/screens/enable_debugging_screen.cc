@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {

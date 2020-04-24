@@ -13,11 +13,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/hash/md5.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"

@@ -5,7 +5,7 @@
 #include "ash/keyboard/arc/arc_virtual_keyboard_container_layout_manager.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace ash {
 

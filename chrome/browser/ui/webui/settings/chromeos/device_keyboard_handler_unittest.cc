@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/constants/chromeos_switches.h"

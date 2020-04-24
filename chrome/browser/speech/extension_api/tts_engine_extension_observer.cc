@@ -4,7 +4,7 @@
 
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"

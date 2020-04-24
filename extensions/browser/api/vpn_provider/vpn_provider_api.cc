@@ -5,6 +5,7 @@
 #include "extensions/browser/api/vpn_provider/vpn_provider_api.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -261,7 +262,7 @@ ExtensionFunction::ResponseAction VpnProviderSetParametersFunction::Run() {
   std::string error;
   ConvertParameters(params->parameters, &parameter_value, &error);
   if (!error.empty()) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
 
   service->SetParameters(

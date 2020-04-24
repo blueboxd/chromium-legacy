@@ -13,10 +13,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"

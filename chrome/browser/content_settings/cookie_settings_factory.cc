@@ -4,7 +4,7 @@
 
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"

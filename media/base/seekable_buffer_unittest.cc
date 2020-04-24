@@ -9,7 +9,6 @@
 
 #include <cstdlib>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "media/base/data_buffer.h"

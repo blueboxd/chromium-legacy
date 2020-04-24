@@ -310,10 +310,12 @@ class CONTENT_EXPORT RenderFrameImpl
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetLocalRootRenderWidget();
 
-  // This method must be called after the frame has been added to the frame
-  // tree. It creates all objects that depend on the frame being at its proper
-  // spot.
-  void Initialize();
+  // This method must be called after the WebLocalFrame backing this RenderFrame
+  // has been created and added to the frame tree. It creates all objects that
+  // depend on the frame being at its proper spot.
+  //
+  // Virtual for web tests to inject their own behaviour into the WebLocalFrame.
+  virtual void Initialize();
 
   // Notifications from RenderWidget.
   void WasHidden();

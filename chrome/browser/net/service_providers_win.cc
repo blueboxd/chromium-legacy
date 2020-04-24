@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 

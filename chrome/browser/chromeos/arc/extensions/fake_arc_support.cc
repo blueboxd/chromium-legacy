@@ -7,9 +7,10 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
 #include "chrome/browser/profiles/profile.h"

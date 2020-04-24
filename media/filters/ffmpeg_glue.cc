@@ -4,9 +4,10 @@
 
 #include "media/filters/ffmpeg_glue.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "media/base/container_names.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 

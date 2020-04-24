@@ -5,13 +5,10 @@
 #ifndef CONTENT_SHELL_TEST_RUNNER_WEB_FRAME_TEST_CLIENT_H_
 #define CONTENT_SHELL_TEST_RUNNER_WEB_FRAME_TEST_CLIENT_H_
 
-#include <map>
 #include <string>
 
 #include "base/macros.h"
-#include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
-#include "ui/accessibility/ax_event.h"
 
 namespace content {
 class BlinkTestRunner;
@@ -33,6 +30,10 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
                      WebFrameTestProxy* web_frame_test_proxy);
 
   ~WebFrameTestClient() override;
+
+  // Called when the WebLocalFrame backing the RenderFrame exists and knows its
+  // position in the frame tree.
+  void Initialize();
 
   // Reset state between tests.
   void Reset();

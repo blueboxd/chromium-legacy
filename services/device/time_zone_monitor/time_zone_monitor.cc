@@ -12,8 +12,8 @@
 
 namespace device {
 
-TimeZoneMonitor::TimeZoneMonitor() {
-}
+TimeZoneMonitor::TimeZoneMonitor()
+    : timezone_(icu::TimeZone::createDefault()) {}
 
 TimeZoneMonitor::~TimeZoneMonitor() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -36,6 +36,13 @@ void TimeZoneMonitor::NotifyClients(base::StringPiece zone_id_str) {
 void TimeZoneMonitor::UpdateIcuAndNotifyClients(
     std::unique_ptr<icu::TimeZone> new_zone) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Do not notify clients if the timezone didn't change.
+  if (*timezone_ == *new_zone) {
+    return;
+  }
+  // Keep track of the last timezone sent to clients.
+  timezone_ = base::WrapUnique(new_zone->clone());
 
   std::string zone_id_str = GetTimeZoneId(*new_zone);
 

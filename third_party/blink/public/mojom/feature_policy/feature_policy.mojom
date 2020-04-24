@@ -6,7 +6,6 @@ module blink.mojom;
 
 import "url/mojom/origin.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom";
-import "third_party/blink/public/mojom/feature_policy/policy_value.mojom";
 
 // This struct holds feature policy allowlist data that needs to be replicated
 // between a RenderFrame and any of its associated RenderFrameProxies. A list of
@@ -14,7 +13,7 @@ import "third_party/blink/public/mojom/feature_policy/policy_value.mojom";
 // NOTE: These types are used for replication frame state between processes.
 struct ParsedFeaturePolicyDeclaration {
   FeaturePolicyFeature feature;
-  map<url.mojom.Origin, PolicyValue> values;
-  PolicyValue fallback_value;
-  PolicyValue opaque_value;
+  array<url.mojom.Origin> allowed_origins;
+  bool fallback_value;
+  bool opaque_value;
 };

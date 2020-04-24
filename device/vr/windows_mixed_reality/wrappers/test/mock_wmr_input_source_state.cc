@@ -4,7 +4,7 @@
 
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_input_source_state.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_input_location.h"
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_input_source.h"
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_pointer_pose.h"

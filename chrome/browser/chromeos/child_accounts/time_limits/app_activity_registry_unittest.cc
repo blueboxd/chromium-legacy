@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/persisted_app_info.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chrome/test/base/testing_profile.h"
@@ -35,6 +36,8 @@ namespace {
 
 const AppId kApp1(apps::mojom::AppType::kArc, "1");
 const AppId kApp2(apps::mojom::AppType::kWeb, "3");
+const AppId kGoogleSlidesApp(apps::mojom::AppType::kExtension,
+                             extension_misc::kGoogleSlidesAppId);
 
 class AppTimeNotificationDelegateMock : public AppTimeNotificationDelegate {
  public:
@@ -1118,6 +1121,36 @@ TEST_F(AppActivityRegistryTest, AppBlocked) {
       .Times(1);
 
   registry().UpdateAppLimits(std::map<AppId, AppLimit>());
+}
+
+TEST_F(AppActivityRegistryTest, GoogleSlidesPaused) {
+  registry().OnAppInstalled(kGoogleSlidesApp);
+  registry().OnAppAvailable(kGoogleSlidesApp);
+  AppStateObserverMock state_observer_mock;
+  registry().AddAppStateObserver(&state_observer_mock);
+  const AppLimit web_limit(AppRestriction::kTimeLimit,
+                           base::TimeDelta::FromHours(2), base::Time::Now());
+  const std::map<AppId, AppLimit> limits{{GetChromeAppId(), web_limit}};
+  registry().UpdateAppLimits(limits);
+  EXPECT_EQ(registry().GetTimeLimit(kGoogleSlidesApp), web_limit.daily_limit());
+
+  EXPECT_CALL(
+      state_observer_mock,
+      OnAppLimitReached(GetChromeAppId(), web_limit.daily_limit().value(),
+                        /* was_active */ false))
+      .Times(1);
+  EXPECT_CALL(state_observer_mock,
+              OnAppLimitReached(kApp2, web_limit.daily_limit().value(),
+                                /* was_active */ false))
+      .Times(1);
+  EXPECT_CALL(
+      state_observer_mock,
+      OnAppLimitReached(kGoogleSlidesApp, web_limit.daily_limit().value(),
+                        /* was_active */ true))
+      .Times(1);
+
+  CreateAppActivityForApp(kApp2, base::TimeDelta::FromHours(1));
+  CreateAppActivityForApp(kGoogleSlidesApp, base::TimeDelta::FromHours(1));
 }
 
 }  // namespace app_time

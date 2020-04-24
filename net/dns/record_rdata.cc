@@ -555,12 +555,15 @@ std::unique_ptr<IntegrityRecordRdata> IntegrityRecordRdata::Create(
   // Note that even if this parse fails, we still want to create a record.
   bool parse_success = reader.ReadU16LengthPrefixed(&parsed_nonce) &&
                        reader.ReadPiece(&parsed_digest, kDigestLen);
+
+  const std::string kZeroDigest = std::string(kDigestLen, 0);
   if (!parse_success) {
-    parsed_nonce = "";
-    parsed_digest = "";
+    parsed_nonce = base::StringPiece();
+    parsed_digest = base::StringPiece(kZeroDigest);
   }
 
-  Digest digest_copy;
+  Digest digest_copy{};
+  CHECK_EQ(parsed_digest.size(), digest_copy.size());
   std::copy_n(parsed_digest.begin(), parsed_digest.size(), digest_copy.begin());
 
   auto record = base::WrapUnique(
@@ -611,7 +614,7 @@ base::Optional<std::vector<uint8_t>> IntegrityRecordRdata::Serialize() const {
 
 // static
 IntegrityRecordRdata::Digest IntegrityRecordRdata::Hash(const Nonce& nonce) {
-  Digest digest;
+  Digest digest{};
   SHA256(nonce.data(), nonce.size(), digest.data());
   return digest;
 }

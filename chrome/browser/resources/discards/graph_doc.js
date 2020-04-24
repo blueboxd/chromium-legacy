@@ -38,8 +38,12 @@ class ToolTip {
                     .style('opacity', 0)
                     .style('left', `${node.x}px`)
                     .style('top', `${node.y - 28}px`);
+    this.div_.append('table').append('tbody');
     this.div_.transition().duration(200).style('opacity', .9);
-    this.onDescription('... updating ...');
+
+    /** @private {string} */
+    this.description_json_ = '';
+    this.onDescription(JSON.stringify(null));
   }
 
   nodeMoved() {
@@ -53,19 +57,50 @@ class ToolTip {
 
   /**
    * Updates the description displayed.
-   * @param {string} description A JSON string.
+   * @param {string} description_json A JSON string.
    */
-  onDescription(description) {
-    // TODO(siggi): Improve the presentation of the description.
+  onDescription(description_json) {
+    if (this.description_json_ === description_json) {
+      return;
+    }
+
     // The JSON is either 'null', or it's a dictionary of data describer name
     // to data. Assuming a convention that describers emit a dictionary from
-    // string->string, this can be flattened to an array. Each top-level
-    // dictionary entry is flattened to a 'heading' with the describer's name,
-    // followed by some number of entries with a two-element list, each
-    // representing a key/value pair. This can then be presented as a
-    // two-column table, where each 'heading' is a <th> element with colspan=2,
-    // whereas each key/value pair is presented in two columns.
-    this.div_.text(description);
+    // string->string, this is flattened to an array. Each top-level dictionary
+    // entry is flattened to a 'heading' with the describer's name, followed by
+    // some number of entries with a two-element list, each representing a
+    // key/value pair.
+    this.description_json_ = description_json;
+    const description = JSON.parse(description_json);
+    const flattenedDescription = [];
+    if (!description) {
+      flattenedDescription.push(['No Data']);
+    } else {
+      for (const [title, value] of Object.entries(
+               /** @type {!Object<?,?>} */ (description))) {
+        flattenedDescription.push([title]);
+        flattenedDescription.push(...Object.entries(value));
+      }
+    }
+
+    const selection =
+        this.div_.select('tbody').selectAll('tr').data(flattenedDescription);
+    selection.enter().append('tr').each(function(d) {
+      const tr = d3.select(this);
+      if (d.length > 1) {
+        tr.append('td').classed('key', true).text(d[0]);
+        tr.append('td').classed('value', true).text(d[1]);
+      } else {
+        tr.append('td').classed('heading', true).attr('colspan', 2).text(d[0]);
+      }
+    });
+
+    // Update the existing datums.
+    selection.each(function(d) {
+      d3.select(this).selectAll('td').data(d).text(i => i);
+    });
+
+    selection.exit().remove();
   }
 }
 

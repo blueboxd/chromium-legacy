@@ -12,9 +12,10 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"

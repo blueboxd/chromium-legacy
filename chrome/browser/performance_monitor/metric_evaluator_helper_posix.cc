@@ -4,7 +4,7 @@
 
 #include "chrome/browser/performance_monitor/metric_evaluator_helper_posix.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace performance_monitor {
 

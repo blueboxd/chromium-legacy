@@ -4,8 +4,8 @@
 
 #include "chrome/browser/profiles/profiles_state.h"
 
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"

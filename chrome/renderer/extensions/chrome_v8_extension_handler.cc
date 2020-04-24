@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
 
-#include "base/logging.h"
 #include "content/public/renderer/render_thread.h"
 
 using content::RenderThread;

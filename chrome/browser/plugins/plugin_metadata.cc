@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"

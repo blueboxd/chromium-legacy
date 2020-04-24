@@ -33,7 +33,6 @@ class FakeServiceContext : public ServiceContext {
   FakeServiceContext& set_power_manager_client(PowerManagerClient*);
   FakeServiceContext& set_primary_account_gaia_id(std::string);
   FakeServiceContext& set_assistant_state(ash::AssistantStateBase*);
-  FakeServiceContext& set_device_actions(mojom::DeviceActions*);
   FakeServiceContext& set_assistant_notification_controller(
       ash::mojom::AssistantNotificationController*);
 
@@ -47,7 +46,7 @@ class FakeServiceContext : public ServiceContext {
   assistant_screen_context_controller() override;
   ash::AssistantStateBase* assistant_state() override;
   CrasAudioHandler* cras_audio_handler() override;
-  mojom::DeviceActions* device_actions() override;
+  DeviceActions* device_actions() override;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner() override;
   PowerManagerClient* power_manager_client() override;
   std::string primary_account_gaia_id() override;
@@ -59,7 +58,6 @@ class FakeServiceContext : public ServiceContext {
   std::string gaia_id_ = kGaiaId;
   ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller_ =
       nullptr;
-  mojom::DeviceActions* device_actions_ = nullptr;
   ash::mojom::AssistantNotificationController*
       assistant_notification_controller_ = nullptr;
 };

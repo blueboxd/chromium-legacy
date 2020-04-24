@@ -435,10 +435,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          omnibox::kOmniboxPreserveDefaultMatchAgainstAsyncUpdate)},
-    {"enable-send-tab-to-self-broadcast",
-     flag_descriptions::kSendTabToSelfBroadcastName,
-     flag_descriptions::kSendTabToSelfBroadcastDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfBroadcast)},
     {"autofill-use-mobile-label-disambiguation",
      flag_descriptions::kAutofillUseMobileLabelDisambiguationName,
      flag_descriptions::kAutofillUseMobileLabelDisambiguationDescription,

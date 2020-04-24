@@ -12,8 +12,8 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"

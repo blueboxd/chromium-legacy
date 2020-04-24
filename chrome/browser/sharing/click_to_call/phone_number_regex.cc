@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"

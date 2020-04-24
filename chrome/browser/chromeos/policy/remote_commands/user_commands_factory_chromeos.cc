@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/remote_commands/user_commands_factory_chromeos.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/browser/chromeos/policy/remote_commands/user_command_arc_job.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/proto/device_management_backend.pb.h"

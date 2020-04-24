@@ -4,7 +4,6 @@
 
 #include "media/cast/net/rtp/receiver_stats.h"
 
-#include "base/logging.h"
 #include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {

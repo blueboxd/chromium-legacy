@@ -18,18 +18,13 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
 import org.chromium.components.browser_ui.widget.text.AccessibleTextView;
 
-/**
- * This is the InfoBar implementation of the Reader Mode UI. This is used in place of the
- * {@link OverlayPanel} implementation when Chrome Home is enabled.
- */
+/** This is the InfoBar implementation of the Reader Mode UI. */
 public class ReaderModeInfoBar extends InfoBar {
     /** If the infobar has started hiding. */
     private boolean mIsHiding;
@@ -90,7 +85,7 @@ public class ReaderModeInfoBar extends InfoBar {
     @Override
     public void onCloseButtonClicked() {
         if (getReaderModeManager() != null) {
-            getReaderModeManager().onClosed(getTab(), StateChangeReason.CLOSE_BUTTON);
+            getReaderModeManager().onClosed();
         }
         super.onCloseButtonClicked();
     }

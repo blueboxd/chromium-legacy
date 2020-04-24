@@ -5,8 +5,9 @@
 #include "chrome/browser/sync_file_system/drive_backend/fake_drive_uploader.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/drive/drive_api_parser.h"

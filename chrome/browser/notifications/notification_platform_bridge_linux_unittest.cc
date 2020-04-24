@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"

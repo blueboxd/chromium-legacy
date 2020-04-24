@@ -6,7 +6,7 @@
 #include <windows.perception.h>
 #include <wrl.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 using ABI::Windows::Foundation::DateTime;
 using ABI::Windows::Foundation::TimeSpan;

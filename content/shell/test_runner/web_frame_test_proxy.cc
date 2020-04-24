@@ -13,6 +13,7 @@
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_testing_support.h"
+#include "third_party/blink/public/web/web_view.h"
 
 namespace content {
 
@@ -73,15 +74,6 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
     }
   }
 
-  void DidFailProvisionalLoad() override {
-    if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
-      std::string description = WebFrameTestClient::GetFrameDescription(
-          render_frame()->GetWebFrame());
-      blink_test_runner()->PrintMessage(description +
-                                        " - didFailProvisionalLoadWithError\n");
-    }
-  }
-
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override {
     if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
@@ -89,6 +81,22 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
           render_frame()->GetWebFrame());
       blink_test_runner()->PrintMessage(description +
                                         " - didCommitLoadForFrame\n");
+    }
+
+    // Looking for navigations to about:blank after a test completes.
+    if (render_frame()->IsMainFrame() && !is_same_document_navigation) {
+      render_frame()->GetRenderView()->GetWebView()->SetFocusedFrame(
+          render_frame()->GetWebFrame());
+      blink_test_runner()->DidCommitNavigationInMainFrame();
+    }
+  }
+
+  void DidFailProvisionalLoad() override {
+    if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
+      std::string description = WebFrameTestClient::GetFrameDescription(
+          render_frame()->GetWebFrame());
+      blink_test_runner()->PrintMessage(description +
+                                        " - didFailProvisionalLoadWithError\n");
     }
   }
 
@@ -125,20 +133,26 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
 
 }  // namespace
 
+WebFrameTestProxy::WebFrameTestProxy(RenderFrameImpl::CreateParams params)
+    : RenderFrameImpl(std::move(params)),
+      web_view_test_proxy_(static_cast<WebViewTestProxy*>(render_view())),
+      test_client_(web_view_test_proxy_, this) {}
+
 WebFrameTestProxy::~WebFrameTestProxy() = default;
 
-void WebFrameTestProxy::Initialize(
-    content::RenderViewImpl* render_view_for_frame) {
-  // The RenderViewImpl will also be a test proxy type.
-  auto* view_proxy_for_frame =
-      static_cast<WebViewTestProxy*>(render_view_for_frame);
+void WebFrameTestProxy::Initialize() {
+  RenderFrameImpl::Initialize();
 
-  // Creates a WebLocalFrameClient implementation providing test behavior (i.e.
-  // forwarding javascript console output to the test harness).
-  test_client_ =
-      std::make_unique<WebFrameTestClient>(view_proxy_for_frame, this);
+  test_client_.Initialize();
 
-  new TestRenderFrameObserver(this, view_proxy_for_frame);  // deletes itself.
+  GetAssociatedInterfaceRegistry()->AddInterface(
+      base::BindRepeating(&WebFrameTestProxy::BindReceiver,
+                          // The registry goes away and stops using this
+                          // callback when RenderFrameImpl (which is this class)
+                          // is destroyed.
+                          base::Unretained(this)));
+
+  new TestRenderFrameObserver(this, web_view_test_proxy_);  // deletes itself.
 }
 
 void WebFrameTestProxy::Reset() {
@@ -160,7 +174,7 @@ void WebFrameTestProxy::Reset() {
     GetLocalRootWebWidgetTestProxy()->EndSyntheticGestures();
   }
 
-  test_client_->Reset();
+  test_client_.Reset();
 }
 
 std::string WebFrameTestProxy::GetFrameNameForWebTests() {
@@ -177,7 +191,7 @@ void WebFrameTestProxy::UpdateAllLifecyclePhasesAndCompositeForTesting() {
 // WebLocalFrameClient implementation.
 blink::WebPlugin* WebFrameTestProxy::CreatePlugin(
     const blink::WebPluginParams& params) {
-  blink::WebPlugin* plugin = test_client_->CreatePlugin(params);
+  blink::WebPlugin* plugin = test_client_.CreatePlugin(params);
   if (plugin)
     return plugin;
   return RenderFrameImpl::CreatePlugin(params);
@@ -188,73 +202,73 @@ void WebFrameTestProxy::DidAddMessageToConsole(
     const blink::WebString& source_name,
     unsigned source_line,
     const blink::WebString& stack_trace) {
-  test_client_->DidAddMessageToConsole(message, source_name, source_line,
-                                       stack_trace);
+  test_client_.DidAddMessageToConsole(message, source_name, source_line,
+                                      stack_trace);
   RenderFrameImpl::DidAddMessageToConsole(message, source_name, source_line,
                                           stack_trace);
 }
 
 void WebFrameTestProxy::DidStartLoading() {
-  test_client_->DidStartLoading();
+  test_client_.DidStartLoading();
   RenderFrameImpl::DidStartLoading();
 }
 
 void WebFrameTestProxy::DidStopLoading() {
   RenderFrameImpl::DidStopLoading();
-  test_client_->DidStopLoading();
+  test_client_.DidStopLoading();
 }
 
 void WebFrameTestProxy::DidChangeSelection(bool is_selection_empty) {
-  test_client_->DidChangeSelection(is_selection_empty);
+  test_client_.DidChangeSelection(is_selection_empty);
   RenderFrameImpl::DidChangeSelection(is_selection_empty);
 }
 
 void WebFrameTestProxy::DidChangeContents() {
-  test_client_->DidChangeContents();
+  test_client_.DidChangeContents();
   RenderFrameImpl::DidChangeContents();
 }
 
 blink::WebEffectiveConnectionType
 WebFrameTestProxy::GetEffectiveConnectionType() {
-  if (test_client_->GetEffectiveConnectionType() !=
+  if (test_client_.GetEffectiveConnectionType() !=
       blink::WebEffectiveConnectionType::kTypeUnknown) {
-    return test_client_->GetEffectiveConnectionType();
+    return test_client_.GetEffectiveConnectionType();
   }
   return RenderFrameImpl::GetEffectiveConnectionType();
 }
 
 void WebFrameTestProxy::ShowContextMenu(
     const blink::WebContextMenuData& context_menu_data) {
-  test_client_->ShowContextMenu(context_menu_data);
+  test_client_.ShowContextMenu(context_menu_data);
   RenderFrameImpl::ShowContextMenu(context_menu_data);
 }
 
 void WebFrameTestProxy::DidDispatchPingLoader(const blink::WebURL& url) {
   // This is not implemented in RenderFrameImpl, so need to explicitly call
   // into the base proxy.
-  test_client_->DidDispatchPingLoader(url);
+  test_client_.DidDispatchPingLoader(url);
   RenderFrameImpl::DidDispatchPingLoader(url);
 }
 
 void WebFrameTestProxy::WillSendRequest(blink::WebURLRequest& request) {
   RenderFrameImpl::WillSendRequest(request);
-  test_client_->WillSendRequest(request);
+  test_client_.WillSendRequest(request);
 }
 
 void WebFrameTestProxy::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
-  if (test_client_->ShouldContinueNavigation(info.get()))
+  if (test_client_.ShouldContinueNavigation(info.get()))
     RenderFrameImpl::BeginNavigation(std::move(info));
 }
 
 void WebFrameTestProxy::PostAccessibilityEvent(const ui::AXEvent& event) {
-  test_client_->PostAccessibilityEvent(event);
+  test_client_.PostAccessibilityEvent(event);
   RenderFrameImpl::PostAccessibilityEvent(event);
 }
 
 void WebFrameTestProxy::MarkWebAXObjectDirty(const blink::WebAXObject& object,
                                              bool subtree) {
-  test_client_->MarkWebAXObjectDirty(object, subtree);
+  test_client_.MarkWebAXObjectDirty(object, subtree);
   // Guard against the case where |this| was deleted as a result of an
   // accessibility listener detaching a frame. If that occurs, the
   // WebAXObject will be detached.
@@ -266,12 +280,12 @@ void WebFrameTestProxy::MarkWebAXObjectDirty(const blink::WebAXObject& object,
 void WebFrameTestProxy::CheckIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
     blink::WebSetSinkIdCompleteCallback completion_callback) {
-  test_client_->CheckIfAudioSinkExistsAndIsAuthorized(
+  test_client_.CheckIfAudioSinkExistsAndIsAuthorized(
       sink_id, std::move(completion_callback));
 }
 
 void WebFrameTestProxy::DidClearWindowObject() {
-  test_client_->DidClearWindowObject();
+  test_client_.DidClearWindowObject();
   blink::WebTestingSupport::InjectInternalsObject(GetWebFrame());
 
   RenderFrameImpl::DidClearWindowObject();
@@ -279,6 +293,68 @@ void WebFrameTestProxy::DidClearWindowObject() {
 
 WebWidgetTestProxy* WebFrameTestProxy::GetLocalRootWebWidgetTestProxy() {
   return static_cast<WebWidgetTestProxy*>(GetLocalRootRenderWidget());
+}
+
+void WebFrameTestProxy::CaptureDump(CaptureDumpCallback callback) {
+  blink_test_runner()->CaptureDump(std::move(callback));
+}
+
+void WebFrameTestProxy::CompositeWithRaster(
+    CompositeWithRasterCallback callback) {
+  // When the TestFinished() occurred, if the browser is capturing pixels, it
+  // asks each composited RenderFrame to submit a new frame via here.
+  UpdateAllLifecyclePhasesAndCompositeForTesting();
+  std::move(callback).Run();
+}
+
+void WebFrameTestProxy::DumpFrameLayout(DumpFrameLayoutCallback callback) {
+  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
+  TestRunner* test_runner = interfaces->GetTestRunner();
+  std::string dump = test_runner->DumpLayout(GetWebFrame());
+  std::move(callback).Run(std::move(dump));
+}
+
+void WebFrameTestProxy::ReplicateTestConfiguration(
+    mojom::ShellTestConfigurationPtr config) {
+  blink_test_runner()->OnReplicateTestConfiguration(std::move(config));
+}
+
+void WebFrameTestProxy::SetTestConfiguration(
+    mojom::ShellTestConfigurationPtr config) {
+  blink_test_runner()->OnSetTestConfiguration(std::move(config));
+}
+
+void WebFrameTestProxy::SetupRendererProcessForNonTestWindow() {
+  blink_test_runner()->OnSetupRendererProcessForNonTestWindow();
+}
+
+void WebFrameTestProxy::ResetRendererAfterWebTest() {
+  blink_test_runner()->OnResetRendererAfterWebTest();
+}
+
+void WebFrameTestProxy::TestFinishedInSecondaryRenderer() {
+  blink_test_runner()->OnTestFinishedInSecondaryRenderer();
+}
+
+void WebFrameTestProxy::LayoutDumpCompleted(
+    const std::string& completed_layout_dump) {
+  blink_test_runner()->OnLayoutDumpCompleted(completed_layout_dump);
+}
+
+void WebFrameTestProxy::ReplyBluetoothManualChooserEvents(
+    const std::vector<std::string>& events) {
+  blink_test_runner()->OnReplyBluetoothManualChooserEvents(events);
+}
+
+void WebFrameTestProxy::BindReceiver(
+    mojo::PendingAssociatedReceiver<mojom::BlinkTestControl> receiver) {
+  blink_test_control_receiver_.Bind(
+      std::move(receiver),
+      GetWebFrame()->GetTaskRunner(blink::TaskType::kInternalTest));
+}
+
+BlinkTestRunner* WebFrameTestProxy::blink_test_runner() {
+  return web_view_test_proxy_->blink_test_runner();
 }
 
 }  // namespace content

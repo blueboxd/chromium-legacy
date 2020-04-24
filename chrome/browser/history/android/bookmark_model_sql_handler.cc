@@ -5,7 +5,7 @@
 #include "chrome/browser/history/android/bookmark_model_sql_handler.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"

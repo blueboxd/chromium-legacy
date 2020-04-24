@@ -810,6 +810,7 @@ group("gn_all") {
 
   if (build_dawn_tests) {
     deps += [
+      "//third_party/dawn/src/fuzzers:dawn_fuzzers",
       "//third_party/dawn/src/tests:dawn_end2end_tests",
       "//third_party/dawn/src/tests:dawn_unittests",
     ]

@@ -4,7 +4,7 @@
 
 #include "device/fido/fido_constants.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace device {
 

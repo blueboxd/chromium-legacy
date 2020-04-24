@@ -181,7 +181,8 @@ class CORE_EXPORT InspectorPageAgent final
   void FrameStoppedLoading(LocalFrame*);
   void FrameRequestedNavigation(Frame* target_frame,
                                 const KURL&,
-                                ClientNavigationReason);
+                                ClientNavigationReason,
+                                NavigationPolicy);
   void FrameScheduledNavigation(LocalFrame*,
                                 const KURL&,
                                 base::TimeDelta delay,

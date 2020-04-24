@@ -9,7 +9,7 @@
 
 #include <wrl.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_location.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_source.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_origins.h"

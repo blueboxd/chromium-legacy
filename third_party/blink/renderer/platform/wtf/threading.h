@@ -48,6 +48,7 @@ WTF_EXPORT base::PlatformThreadId CurrentThread();
 #if DCHECK_IS_ON()
 WTF_EXPORT bool IsBeforeThreadCreated();
 WTF_EXPORT void WillCreateThread();
+WTF_EXPORT void SetIsBeforeThreadCreatedForTest();
 #endif
 
 class AtomicStringTable;

@@ -10,6 +10,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "chrome/common/mac/launchd.h"
+#include "chrome/updater/mac/setup/info_plist.h"
 #include "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/updater_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,6 +20,16 @@ namespace updater {
 namespace test {
 
 namespace {
+
+base::FilePath GetInfoPlistPath() {
+  base::FilePath test_executable;
+  if (!base::PathService::Get(base::FILE_EXE, &test_executable))
+    return base::FilePath();
+  return test_executable.DirName()
+      .Append(FILE_PATH_LITERAL(PRODUCT_FULLNAME_STRING ".App"))
+      .Append(FILE_PATH_LITERAL("Contents"))
+      .Append(FILE_PATH_LITERAL("Info.plist"));
+}
 
 base::FilePath GetExecutablePath() {
   base::FilePath test_executable;
@@ -71,14 +82,17 @@ void ExpectClean() {
 }
 
 void ExpectInstalled() {
+  InfoPlist info_plist(GetInfoPlistPath());
+  EXPECT_TRUE(info_plist.Valid());
+
   // Files must exist on the file system.
   EXPECT_TRUE(base::PathExists(GetProductPath()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent,
-      updater::CopyGoogleUpdateCheckLaunchDName()));
+      info_plist.GoogleUpdateCheckLaunchdNameVersioned()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent,
-      updater::CopyGoogleUpdateCheckLaunchDName()));
+      info_plist.GoogleUpdateServiceLaunchdNameVersioned()));
 }
 
 void Install() {

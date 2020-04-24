@@ -6,7 +6,7 @@
 
 #include "android_webview/common/aw_resource_bundle.h"
 #include "base/android/base_jni_onload.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace android_webview {
 

@@ -8,10 +8,18 @@
 #include <wrl/implements.h>
 #include <wrl/module.h>
 
+#include <string>
+
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/synchronization/lock.h"
 #include "chrome/updater/server/win/updater_idl.h"
 #include "chrome/updater/update_service.h"
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace updater {
 
@@ -31,7 +39,7 @@ class LegacyOnDemandImpl
           ICurrentState,
           IDispatch> {
  public:
-  LegacyOnDemandImpl() = default;
+  LegacyOnDemandImpl();
   LegacyOnDemandImpl(const LegacyOnDemandImpl&) = delete;
   LegacyOnDemandImpl& operator=(const LegacyOnDemandImpl&) = delete;
 
@@ -110,14 +118,34 @@ class LegacyOnDemandImpl
                         UINT*) override;
 
  private:
+  ~LegacyOnDemandImpl() override;
+
   void UpdateStateCallback(UpdateService::UpdateState state_update);
   void UpdateResultCallback(UpdateService::Result result);
 
-  std::string app_id_;
-  int state_value_ = STATE_INIT;
-  HRESULT error_code_ = S_OK;
+  // Returns the state of the update and the error code as seen by the
+  // on-demand client.
+  CurrentState GetOnDemandCurrentState() const;
+  HRESULT GetOnDemandError() const;
 
-  ~LegacyOnDemandImpl() override = default;
+  // Handles the update service callbacks.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  // Synchronized accessors.
+  std::string app_id() const {
+    base::AutoLock lock{lock_};
+    return app_id_;
+  }
+  void set_app_id(const std::string& app_id) {
+    base::AutoLock lock{lock_};
+    app_id_ = app_id;
+  }
+
+  // Access to these members must be serialized by using the lock.
+  mutable base::Lock lock_;
+  std::string app_id_;
+  base::Optional<UpdateService::UpdateState> state_update_;
+  base::Optional<UpdateService::Result> result_;
 };
 
 // This class implements the ICompleteStatus interface and exposes it as a COM
@@ -137,10 +165,10 @@ class CompleteStatusImpl
   IFACEMETHODIMP get_statusMessage(BSTR* message) override;
 
  private:
+  ~CompleteStatusImpl() override = default;
+
   const int code_;
   const base::string16 message_;
-
-  ~CompleteStatusImpl() override = default;
 };
 
 // This class implements the IUpdater interface and exposes it as a COM object.

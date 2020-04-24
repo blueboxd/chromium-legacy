@@ -4,8 +4,8 @@
 
 #include "chrome/browser/vr/model/color_scheme.h"
 
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "ui/gfx/color_palette.h"
 

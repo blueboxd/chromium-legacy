@@ -519,7 +519,7 @@ WebViewInternalAddContentScriptsFunction::Run() {
       ParseContentScripts(params->content_script_list, extension(), host_id,
                           incognito_enabled, owner_base_url, &error);
   if (!result)
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   WebViewContentScriptManager* manager =
       WebViewContentScriptManager::Get(browser_context());
@@ -790,7 +790,7 @@ WebViewInternalLoadDataWithBaseUrlFunction::Run() {
       params->data_url, params->base_url, virtual_url, &error);
   if (successful)
     return RespondNow(NoArguments());
-  return RespondNow(Error(error));
+  return RespondNow(Error(std::move(error)));
 }
 
 WebViewInternalGoFunction::WebViewInternalGoFunction() {

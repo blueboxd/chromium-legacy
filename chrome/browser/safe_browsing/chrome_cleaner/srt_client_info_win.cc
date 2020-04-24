@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"

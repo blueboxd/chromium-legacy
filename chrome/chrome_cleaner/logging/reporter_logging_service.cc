@@ -8,8 +8,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/singleton.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/i18n.h"
 #include "base/win/windows_version.h"

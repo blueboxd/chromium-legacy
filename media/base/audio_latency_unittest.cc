@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/limits.h"

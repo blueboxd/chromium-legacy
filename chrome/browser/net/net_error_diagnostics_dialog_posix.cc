@@ -4,7 +4,7 @@
 
 #include "chrome/browser/net/net_error_diagnostics_dialog.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 bool CanShowNetworkDiagnosticsDialog(content::WebContents* web_contents) {
   return false;

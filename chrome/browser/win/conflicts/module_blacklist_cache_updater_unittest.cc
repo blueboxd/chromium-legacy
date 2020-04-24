@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"

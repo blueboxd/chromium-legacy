@@ -4,8 +4,9 @@
 
 #include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"

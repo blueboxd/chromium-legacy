@@ -7,7 +7,7 @@
 #include <string>
 
 #include <gtest/gtest.h>
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/vector_icons.h"

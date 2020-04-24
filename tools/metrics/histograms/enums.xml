@@ -20013,6 +20013,7 @@ Called by update_document_policy_enum.py.-->
   <int value="692" label="PrintingMaxSheetsAllowed"/>
   <int value="693" label="OnFileAttachedEnterpriseConnector"/>
   <int value="694" label="VoiceInteractionQuickAnswersEnabled"/>
+  <int value="695" label="DeviceCrostiniArcAdbSideloadingAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -39213,7 +39214,6 @@ from previous Chrome versions.
   <int value="-544629557" label="CSSBackdropFilter:enabled"/>
   <int value="-541611402" label="OfflinePagesPrefetching:enabled"/>
   <int value="-540150399" label="TapVisualizerApp:enabled"/>
-  <int value="-539105193" label="SendTabToSelfBroadcast:disabled"/>
   <int value="-538141684" label="SafetyTip:enabled"/>
   <int value="-536289234" label="ssl-interstitial-v2-colorful"/>
   <int value="-536230323" label="SingleClickAutofill:disabled"/>
@@ -39994,7 +39994,6 @@ from previous Chrome versions.
   <int value="379326303" label="enable-add-to-shelf"/>
   <int value="379428799" label="security-chip-animation"/>
   <int value="380372760" label="V8Orinoco:disabled"/>
-  <int value="381538377" label="SendTabToSelfBroadcast:enabled"/>
   <int value="385969127" label="disable-win32k-lockdown"/>
   <int value="386138870" label="DesktopPWAsOmniboxInstall:enabled"/>
   <int value="387178525" label="VideoFullscreenOrientationLock:enabled"/>

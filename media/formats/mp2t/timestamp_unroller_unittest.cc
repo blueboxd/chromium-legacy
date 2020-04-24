@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/test/perf_test_suite.h"
 #include "media/formats/mp2t/timestamp_unroller.h"

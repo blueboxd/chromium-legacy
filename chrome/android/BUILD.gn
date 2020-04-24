@@ -1870,8 +1870,6 @@ template("monochrome_public_apk_or_module_tmpl") {
                            [
                              "apk_name",
                              "bundle_target",
-                             "failed_manifest_expectation_file",
-                             "failed_proguard_expectation_file",
                              "include_32_bit_webview",
                              "include_64_bit_webview",
                              "is_64_bit_browser",
@@ -2542,10 +2540,6 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     if (defined(invoker.verify_android_configuration) &&
         invoker.verify_android_configuration) {
       verify_manifest = true
-      if (check_android_configuration) {
-        failed_manifest_expectation_file =
-            "monochrome_public_bundle.android_manifest.failed"
-      }
     }
 
     if (!_is_trichrome ||
@@ -2578,10 +2572,6 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
       if (defined(invoker.verify_android_configuration) &&
           invoker.verify_android_configuration) {
         verify_proguard_flags = true
-        if (check_android_configuration) {
-          failed_proguard_expectation_file =
-              "monochrome_public_bundle.proguard_flags.failed"
-        }
       }
     }
   }

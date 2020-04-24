@@ -14,8 +14,8 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "chrome/browser/history/android/android_provider_backend.h"
 #include "components/history/core/browser/history_backend.h"
 #endif

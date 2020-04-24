@@ -4,7 +4,8 @@
 
 #include "chrome/browser/extensions/api/web_navigation/frame_navigation_state.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_frame_host.h"

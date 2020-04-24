@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/system/sys_info.h"
 
 namespace media {

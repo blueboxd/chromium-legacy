@@ -9,7 +9,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/logging.h"
 #include "chrome/android/chrome_jni_headers/PasswordGenerationPopupBridge_jni.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"

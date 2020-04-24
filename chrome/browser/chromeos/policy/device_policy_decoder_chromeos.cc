@@ -1788,6 +1788,19 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           std::make_unique<base::Value>(container.enabled()), nullptr);
     }
   }
+
+  if (policy.has_device_crostini_arc_adb_sideloading_allowed()) {
+    const em::DeviceCrostiniArcAdbSideloadingAllowedProto& container(
+        policy.device_crostini_arc_adb_sideloading_allowed());
+    if (container.has_mode()) {
+      std::unique_ptr<base::Value> value(DecodeIntegerValue(container.mode()));
+      if (value) {
+        policies->Set(key::kDeviceCrostiniArcAdbSideloadingAllowed,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_CLOUD, std::move(value), nullptr);
+      }
+    }
+  }
 }
 
 }  // namespace

@@ -143,6 +143,9 @@ void ShellContentRendererClient::ExposeInterfacesToBrowser(
 }
 
 void ShellContentRendererClient::RenderFrameCreated(RenderFrame* render_frame) {
+  // TODO(danakj): The ShellRenderFrameObserver is doing stuff only for
+  // browser tests. If we only create that for browser tests then the override
+  // of this method in WebTestContentRendererClient would not be needed.
   new ShellRenderFrameObserver(render_frame);
 }
 

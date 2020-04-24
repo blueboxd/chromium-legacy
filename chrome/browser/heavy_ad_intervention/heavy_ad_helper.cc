@@ -4,7 +4,7 @@
 
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_helper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/grit/generated_resources.h"

@@ -21,7 +21,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
@@ -49,13 +48,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     protected final Context mApplicationContext;
     private final TabImpl mTab;
     private boolean mTabDestroyed;
-
-    // TODO(crbug.com/1031465): Componentize IntentHandler's constant to dedupe this.
-    /**
-     * Records package names of other applications in the system that could have handled
-     * this intent.
-     */
-    public static final String EXTRA_EXTERNAL_NAV_PACKAGES = "org.chromium.chrome.browser.eenp";
 
     public ExternalNavigationDelegateImpl(TabImpl tab) {
         mTab = tab;
@@ -146,7 +138,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             Context context = getAvailableContext();
             if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
-            recordExternalNavigationDispatched(intent);
+            ExternalNavigationHandler.recordExternalNavigationDispatched(intent);
         } catch (RuntimeException e) {
             IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
         }
@@ -168,7 +160,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             } else {
                 activityWasLaunched = false;
             }
-            if (activityWasLaunched) recordExternalNavigationDispatched(intent);
+            if (activityWasLaunched) {
+                ExternalNavigationHandler.recordExternalNavigationDispatched(intent);
+            }
             return activityWasLaunched;
         } catch (SecurityException e) {
             // https://crbug.com/808494: Handle the URL in WebLayer if dispatching to another
@@ -180,14 +174,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             return false;
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
-        }
-    }
-
-    private void recordExternalNavigationDispatched(Intent intent) {
-        ArrayList<String> specializedHandlers =
-                intent.getStringArrayListExtra(EXTRA_EXTERNAL_NAV_PACKAGES);
-        if (specializedHandlers != null && specializedHandlers.size() > 0) {
-            RecordUserAction.record("MobileExternalNavigationDispatched");
         }
     }
 
@@ -291,11 +277,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         // parameters are specified such that this flow should never be invoked.
         // TODO(crbug.com/1031465): Adapt //chrome's logic for closing of tabs.
         assert false;
-    }
-
-    @Override
-    public void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> infos) {
-        intent.putExtra(EXTRA_EXTERNAL_NAV_PACKAGES, getSpecializedHandlersWithFilter(infos, null));
     }
 
     @Override

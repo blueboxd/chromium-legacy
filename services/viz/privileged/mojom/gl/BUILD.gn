@@ -26,10 +26,6 @@ mojom("gl") {
     ]
   }
 
-  if (is_win) {
-    sources += [ "info_collection_gpu_service.mojom" ]
-  }
-
   enabled_features = []
   if (!is_android) {
     enabled_features += [ "is_not_android" ]

@@ -7,8 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"

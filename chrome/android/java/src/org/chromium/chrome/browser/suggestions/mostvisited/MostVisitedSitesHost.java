@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.suggestions.mostvisited;
 
-import android.content.Context;
-
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
@@ -30,6 +29,9 @@ import java.util.Set;
 
 /**
  * Class for saving most visited sites info.
+ *
+ * This class is a singleton, since at any point at most one MostVisitedSitesHost can exist for
+ * ensuring that saving files is atomic.
  */
 public class MostVisitedSitesHost implements MostVisitedSites.Observer {
     private static final String TAG = "TopSites";
@@ -46,11 +48,14 @@ public class MostVisitedSitesHost implements MostVisitedSites.Observer {
     // suggestions available.
     private final Set<String> mUrlsToUpdateFavicon = new HashSet<>();
 
-    private final MostVisitedSites mMostVisitedSites;
-    private final MostVisitedSitesFaviconHelper mFaviconSaver;
-
     private static boolean sSkipRestoreFromDiskForTests;
+    /** The singleton helper class for this class. */
+    private static class SingletonHelper {
+        private static final MostVisitedSitesHost INSTANCE = new MostVisitedSitesHost();
+    }
 
+    private MostVisitedSites mMostVisitedSites;
+    private MostVisitedSitesFaviconHelper mFaviconSaver;
     private Runnable mCurrentTask;
     private Runnable mPendingTask;
     // Whether restoreFromDisk() is finished.
@@ -61,15 +66,17 @@ public class MostVisitedSitesHost implements MostVisitedSites.Observer {
     // replace mCurrentFilesNeedToSaveCount when updating pending to current task.
     private int mPendingFilesNeedToSaveCount;
 
-    public MostVisitedSitesHost(Context context, Profile profile) {
-        LargeIconBridge largeIconBridge =
-                SuggestionsDependencyFactory.getInstance().createLargeIconBridge(profile);
-        mFaviconSaver = new MostVisitedSitesFaviconHelper(context, largeIconBridge);
-        mMostVisitedSites =
-                SuggestionsDependencyFactory.getInstance().createMostVisitedSites(profile);
+    private MostVisitedSitesHost() {
         if (!sSkipRestoreFromDiskForTests) {
             restoreFromDisk();
         }
+    }
+
+    /**
+     * @return The singleton instance.
+     */
+    public static MostVisitedSitesHost getInstance() {
+        return SingletonHelper.INSTANCE;
     }
 
     /**
@@ -80,6 +87,14 @@ public class MostVisitedSitesHost implements MostVisitedSites.Observer {
      * @param siteSuggestions The new SiteSuggestions.
      */
     public void saveMostVisitedSitesInfo(List<SiteSuggestion> siteSuggestions) {
+        if (mFaviconSaver == null) {
+            LargeIconBridge largeIconBridge =
+                    SuggestionsDependencyFactory.getInstance().createLargeIconBridge(
+                            Profile.getLastUsedRegularProfile());
+            mFaviconSaver = new MostVisitedSitesFaviconHelper(
+                    ContextUtils.getApplicationContext(), largeIconBridge);
+        }
+
         // Ensure that saving happens after map and set are updated. Use finishOneFileSaving() as
         // callback to record when this current task has been finished.
         Runnable newTask = () -> updateMapAndSetForNewSites(siteSuggestions, () -> {
@@ -119,6 +134,10 @@ public class MostVisitedSitesHost implements MostVisitedSites.Observer {
      * @param maxResults The max number of sites to observe.
      */
     public void startObserving(int maxResults) {
+        if (mMostVisitedSites == null) {
+            mMostVisitedSites = SuggestionsDependencyFactory.getInstance().createMostVisitedSites(
+                    Profile.getLastUsedRegularProfile());
+        }
         mMostVisitedSites.setObserver(this, maxResults);
     }
 

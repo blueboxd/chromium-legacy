@@ -5,7 +5,8 @@
 #include "chrome/browser/storage_access_api/storage_access_grant_permission_context.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"

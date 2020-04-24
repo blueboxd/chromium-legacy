@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/web_footer_experiment_view.h"
 
-#include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/common/webui_url_constants.h"

@@ -6,11 +6,11 @@
 
 #include <string>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/win/conflicts/module_info.h"
 

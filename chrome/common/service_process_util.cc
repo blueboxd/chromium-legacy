@@ -11,11 +11,12 @@
 #include <utility>
 
 #include "base/base_switches.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/hash/sha1.h"
-#include "base/logging.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/singleton.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"

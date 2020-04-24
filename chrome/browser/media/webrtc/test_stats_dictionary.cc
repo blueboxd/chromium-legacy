@@ -4,8 +4,8 @@
 
 #include "chrome/browser/media/webrtc/test_stats_dictionary.h"
 
+#include "base/check.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 
 namespace content {
 

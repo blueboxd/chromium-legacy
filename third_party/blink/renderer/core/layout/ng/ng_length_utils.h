@@ -41,14 +41,6 @@ inline bool NeedMinMaxSize(const ComputedStyle& style) {
          style.LogicalMaxWidth().IsIntrinsic();
 }
 
-// Like NeedMinMaxSize, but for use when calling
-// ComputeMinAndMaxContentContribution.
-// Because content contributions are commonly needed by a block's parent,
-// we also take a writing mode here so we can check this in the parent's
-// coordinate system.
-CORE_EXPORT bool NeedMinMaxSizeForContentContribution(WritingMode mode,
-                                                      const ComputedStyle&);
-
 // Returns if the given |Length| is unresolvable, e.g. the length is %-based
 // during the intrinsic phase. For block lengths we also consider 'auto',
 // 'min-content', 'max-content', 'fit-content' and 'none' (for max-block-size)
@@ -279,10 +271,9 @@ inline LayoutUnit ResolveMainBlockLength(
 // we also take a writing mode here so we can compute this in the parent's
 // coordinate system.
 CORE_EXPORT MinMaxSizes
-ComputeMinAndMaxContentContribution(WritingMode writing_mode,
-                                    const ComputedStyle&,
-                                    const NGBoxStrut& border_padding,
-                                    const base::Optional<MinMaxSizes>&);
+ComputeMinAndMaxContentContributionForTest(WritingMode writing_mode,
+                                           const ComputedStyle&,
+                                           const MinMaxSizes&);
 
 // A version of ComputeMinAndMaxContentContribution that does not require you
 // to compute the min/max content size of the child. Instead, this function

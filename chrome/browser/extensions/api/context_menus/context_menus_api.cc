@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/context_menus/context_menus_api.h"
 
 #include <string>
+#include <utility>
 
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -52,7 +53,7 @@ ExtensionFunction::ResponseAction ContextMenusCreateFunction::Run() {
   if (!extensions::context_menus_api_helpers::CreateMenuItem(
           params->create_properties, browser_context(), extension(), id,
           &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
   return RespondNow(NoArguments());
 }
@@ -75,7 +76,7 @@ ExtensionFunction::ResponseAction ContextMenusUpdateFunction::Run() {
   if (!extensions::context_menus_api_helpers::UpdateMenuItem(
           params->update_properties, browser_context(), extension(), item_id,
           &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
   return RespondNow(NoArguments());
 }

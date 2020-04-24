@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/content_settings/content_setting_image_model_states.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 ContentSettingImageModelStates::~ContentSettingImageModelStates() = default;
 

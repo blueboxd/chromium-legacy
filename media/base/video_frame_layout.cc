@@ -8,7 +8,7 @@
 #include <numeric>
 #include <sstream>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace media {
 

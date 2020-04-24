@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"

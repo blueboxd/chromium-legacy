@@ -32,7 +32,8 @@ bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
                           PaintPreviewTracker* tracker,
                           const gfx::Rect& dimensions,
                           base::File file,
-                          size_t max_size) {
+                          size_t max_size,
+                          size_t* serialized_size) {
   if (!file.IsValid())
     return false;
 
@@ -54,6 +55,8 @@ bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
   skp->serialize(&stream, &serial_procs);
   stream.flush();
   stream.Close();
+  DCHECK(serialized_size);
+  *serialized_size = stream.ActualBytesWritten();
   return !stream.DidWriteFail();
 }
 

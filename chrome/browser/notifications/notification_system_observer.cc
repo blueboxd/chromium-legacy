@@ -4,7 +4,8 @@
 
 #include "chrome/browser/notifications/notification_system_observer.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"

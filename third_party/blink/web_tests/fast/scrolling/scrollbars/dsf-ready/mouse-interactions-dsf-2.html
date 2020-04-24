@@ -92,8 +92,12 @@ window.onload = () => {
     await mouseClickOn(SCROLLBAR_BUTTON_FWD.x, SCROLLBAR_BUTTON_FWD.y);
     await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollTop;});
 
-    const EXPECTED_SCROLL = (internals.runtimeFlags.percentBasedScrollingEnabled) ?
-        Math.floor(standardDivFast.clientHeight * SCROLLBAR_SCROLL_PERCENTAGE) : SCROLLBAR_SCROLL_PIXELS;
+    const EXPECTED_SCROLL = (internals.runtimeFlags.percentBasedScrollingEnabled)
+      ? Math.floor(window.devicePixelRatio
+                  * standardDivFast.clientHeight
+                  * SCROLLBAR_SCROLL_PERCENTAGE)
+        / window.devicePixelRatio
+      : SCROLLBAR_SCROLL_PIXELS;
 
     assert_equals(standardDivFast.scrollTop, EXPECTED_SCROLL, "Pressing the down arrow didn't scroll.");
   }, "Test mouse click on non-custom composited div scrollbar arrows.");

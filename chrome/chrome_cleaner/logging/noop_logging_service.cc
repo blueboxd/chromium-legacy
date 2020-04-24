@@ -6,8 +6,9 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/singleton.h"
+#include "base/notreached.h"
 #include "chrome/chrome_cleaner/os/disk_util_types.h"
 
 namespace chrome_cleaner {

@@ -14,7 +14,7 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chromeos/strings/grit/chromeos_strings.h"

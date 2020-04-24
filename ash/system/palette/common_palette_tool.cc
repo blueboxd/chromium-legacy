@@ -11,7 +11,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/view_click_listener.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"

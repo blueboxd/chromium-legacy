@@ -5,8 +5,8 @@
 #include "ipc/ipc_sync_message_filter.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"

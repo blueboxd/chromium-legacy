@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/web_contents.h"

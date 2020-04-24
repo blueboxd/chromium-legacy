@@ -290,9 +290,6 @@ size_t AssociatedUserValidator::GetAssociatedUsersCount() {
 
 bool AssociatedUserValidator::IsUserAccessBlockingEnforced(
     CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) const {
-  if (!MdmEnrollmentEnabled())
-    return false;
-
   if (!CGaiaCredentialProvider::IsUsageScenarioSupported(cpus))
     return false;
 
@@ -363,8 +360,7 @@ void AssociatedUserValidator::AllowSigninForAllAssociatedUsers(
     CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
   base::AutoLock locker(validator_lock_);
 
-  if (!MdmEnrollmentEnabled() ||
-      !CGaiaCredentialProvider::IsUsageScenarioSupported(cpus))
+  if (!CGaiaCredentialProvider::IsUsageScenarioSupported(cpus))
     return;
 
   std::map<base::string16, base::string16> sids_to_handle;

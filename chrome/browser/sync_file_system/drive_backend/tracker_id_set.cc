@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/tracker_id_set.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 

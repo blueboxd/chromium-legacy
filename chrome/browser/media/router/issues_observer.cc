@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/router/issues_observer.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/media/router/issue_manager.h"
 
 namespace media_router {

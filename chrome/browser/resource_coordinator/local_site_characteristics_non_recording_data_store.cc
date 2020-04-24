@@ -4,7 +4,7 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_non_recording_data_store.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_noop_data_writer.h"
 

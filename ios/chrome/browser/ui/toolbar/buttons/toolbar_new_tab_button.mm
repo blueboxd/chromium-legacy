@@ -4,9 +4,11 @@
 
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_new_tab_button.h"
 
+#include "base/feature_list.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -53,6 +55,28 @@ const CGFloat kSpotlightHeight = 36.0f;
   [spotlightView.widthAnchor constraintEqualToConstant:kSpotlightHeight]
       .active = YES;
   self.spotlightView = spotlightView;
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      // Customize the pointer highlight tomatch the spotlight view.
+      self.pointerStyleProvider =
+          ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
+                           UIPointerShape* proposedShape) {
+        CGRect rect = button.frame;
+        UITargetedPreview* preview =
+            [[UITargetedPreview alloc] initWithView:button];
+        UIPointerLiftEffect* effect =
+            [UIPointerLiftEffect effectWithPreview:preview];
+        return [UIPointerStyle
+            styleWithEffect:effect
+                      shape:[UIPointerShape
+                                shapeWithRoundedRect:rect
+                                        cornerRadius:rect.size.width / 2]];
+      };
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 }
 
 @end

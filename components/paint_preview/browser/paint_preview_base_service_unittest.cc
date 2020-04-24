@@ -171,6 +171,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureMainFrame) {
   auto params = mojom::PaintPreviewCaptureParams::New();
   params->clip_rect = gfx::Rect(0, 0, 0, 0);
   params->is_main_frame = true;
+  params->max_capture_size = 50;
   recorder.SetExpectedParams(std::move(params));
   auto response = mojom::PaintPreviewCaptureResponse::New();
   response->embedding_token = base::nullopt;
@@ -185,7 +186,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureMainFrame) {
 
   base::RunLoop loop;
   service->CapturePaintPreview(
-      web_contents(), path, gfx::Rect(0, 0, 0, 0),
+      web_contents(), path, gfx::Rect(0, 0, 0, 0), 50,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,
@@ -224,6 +225,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureFailed) {
   auto params = mojom::PaintPreviewCaptureParams::New();
   params->clip_rect = gfx::Rect(0, 0, 0, 0);
   params->is_main_frame = true;
+  params->max_capture_size = 0;
   recorder.SetExpectedParams(std::move(params));
   auto response = mojom::PaintPreviewCaptureResponse::New();
   response->embedding_token = base::nullopt;
@@ -238,7 +240,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureFailed) {
 
   base::RunLoop loop;
   service->CapturePaintPreview(
-      web_contents(), path, gfx::Rect(0, 0, 0, 0),
+      web_contents(), path, gfx::Rect(0, 0, 0, 0), 0,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,
@@ -258,6 +260,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureDisallowed) {
   auto params = mojom::PaintPreviewCaptureParams::New();
   params->clip_rect = gfx::Rect(0, 0, 0, 0);
   params->is_main_frame = true;
+  params->max_capture_size = 0;
   recorder.SetExpectedParams(std::move(params));
   auto response = mojom::PaintPreviewCaptureResponse::New();
   response->embedding_token = base::nullopt;
@@ -272,7 +275,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureDisallowed) {
 
   base::RunLoop loop;
   service->CapturePaintPreview(
-      web_contents(), path, gfx::Rect(0, 0, 0, 0),
+      web_contents(), path, gfx::Rect(0, 0, 0, 0), 0,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,

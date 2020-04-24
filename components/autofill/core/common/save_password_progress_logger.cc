@@ -314,14 +314,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Form is visible";
     case SavePasswordProgressLogger::STRING_FORM_IS_PASSWORD:
       return "Form is a password form";
-    case SavePasswordProgressLogger::STRING_FORM_IS_NOT_PASSWORD:
-      return "Form isn't a password form";
-    case SavePasswordProgressLogger::STRING_WILL_SUBMIT_FORM_METHOD:
-      return "PasswordAutofillAgent::WillSubmitForm";
     case SavePasswordProgressLogger::STRING_HTML_FORM_FOR_SUBMIT:
       return "HTML form for submit";
-    case SavePasswordProgressLogger::STRING_CREATED_PASSWORD_FORM:
-      return "Created PasswordForm";
     case SavePasswordProgressLogger::STRING_DID_START_PROVISIONAL_LOAD_METHOD:
       return "PasswordAutofillAgent::DidStartProvisionalLoad";
     case SavePasswordProgressLogger::STRING_FRAME_NOT_MAIN_FRAME:

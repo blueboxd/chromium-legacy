@@ -6,7 +6,6 @@
 
 #include <shlobj.h>
 
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"

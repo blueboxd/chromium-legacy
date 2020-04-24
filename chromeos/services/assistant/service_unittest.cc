@@ -27,6 +27,7 @@
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/test_support/fully_initialized_assistant_state.h"
 #include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
+#include "chromeos/services/assistant/test_support/scoped_device_actions.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -76,40 +77,6 @@ class ScopedFakeAssistantClient : public ScopedAssistantClient {
   DISALLOW_COPY_AND_ASSIGN(ScopedFakeAssistantClient);
 };
 
-class FakeDeviceActions : mojom::DeviceActions {
- public:
-  FakeDeviceActions() {}
-
-  mojo::PendingRemote<mojom::DeviceActions> CreatePendingRemoteAndBind() {
-    return receiver_.BindNewPipeAndPassRemote();
-  }
-
- private:
-  // mojom::DeviceActions:
-  void SetWifiEnabled(bool enabled) override {}
-  void SetBluetoothEnabled(bool enabled) override {}
-  void GetScreenBrightnessLevel(
-      GetScreenBrightnessLevelCallback callback) override {
-    std::move(callback).Run(true, 1.0);
-  }
-  void SetScreenBrightnessLevel(double level, bool gradual) override {}
-  void SetNightLightEnabled(bool enabled) override {}
-  void SetSwitchAccessEnabled(bool enabled) override {}
-  void OpenAndroidApp(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-                      OpenAndroidAppCallback callback) override {}
-  void VerifyAndroidApp(
-      std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
-      VerifyAndroidAppCallback callback) override {}
-  void LaunchAndroidIntent(const std::string& intent) override {}
-  void AddAppListEventSubscriber(
-      mojo::PendingRemote<chromeos::assistant::mojom::AppListEventSubscriber>
-          subscriber) override {}
-
-  mojo::Receiver<mojom::DeviceActions> receiver_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDeviceActions);
-};
-
 class AssistantServiceTest : public testing::Test {
  public:
   AssistantServiceTest() = default;
@@ -143,7 +110,7 @@ class AssistantServiceTest : public testing::Test {
     service_->SetAssistantManagerServiceForTesting(
         std::make_unique<FakeAssistantManagerServiceImpl>());
 
-    service_->Init(fake_device_actions_.CreatePendingRemoteAndBind());
+    service_->Init();
     // Wait for AssistantManagerService to be set.
     base::RunLoop().RunUntilIdle();
 
@@ -208,7 +175,7 @@ class AssistantServiceTest : public testing::Test {
   FullyInitializedAssistantState assistant_state_;
   signin::IdentityTestEnvironment identity_test_env_;
   ScopedFakeAssistantClient fake_assistant_client_{&assistant_state_};
-  FakeDeviceActions fake_device_actions_;
+  ScopedDeviceActions fake_device_actions_;
 
   TestingPrefServiceSimple pref_service_;
 

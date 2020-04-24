@@ -4,7 +4,10 @@
 
 #include "chrome/browser/chromeos/attestation/tpm_challenge_key_result.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace chromeos {
 namespace attestation {

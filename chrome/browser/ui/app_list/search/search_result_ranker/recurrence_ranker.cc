@@ -8,10 +8,10 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/hash/hash.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"

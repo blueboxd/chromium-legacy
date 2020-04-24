@@ -12,10 +12,11 @@
 #include <memory>
 
 #include "base/base64.h"
+#include "base/check.h"
 #include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"

@@ -18,7 +18,7 @@
 #include "ash/accessibility/accessibility_highlight_layer.h"
 #include "ash/accessibility/focus_ring_layer.h"
 #include "ash/accessibility/layer_animation_info.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace ash {
 

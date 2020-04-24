@@ -10,11 +10,12 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/nix/xdg_util.h"
+#include "base/notreached.h"
 #include "base/numerics/checked_math.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"

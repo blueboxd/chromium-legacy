@@ -142,7 +142,7 @@ public class SigninHelper {
         }
 
         // Always check for account deleted.
-        if (syncAccount != null && !accountExists(syncAccount)) {
+        if (!accountExists(syncAccount)) {
             // It is possible that Chrome got to this point without account
             // rename notification. Let us signout before doing a rename.
             AsyncTask<Void> task = new AsyncTask<Void>() {

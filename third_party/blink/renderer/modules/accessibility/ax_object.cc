@@ -1416,6 +1416,43 @@ bool AXObject::CanSetValueAttribute() const {
   return false;
 }
 
+bool AXObject::IsFocusableStyleUsingBestAvailableState() const {
+  auto* element = GetElement();
+  DCHECK(element);
+
+  // If this element's layout tree does not need an update, it means that we can
+  // rely on Element's IsFocusableStyle directly, which is the best available
+  // source of information.
+  // Note that we also allow this to be used if we're in a style recalc, since
+  // we might get here through layout object attachment. In that case, the dirty
+  // bits may not have been cleared yet, but all relevant style and layout tree
+  // should be up to date. Note that this quirk can be fixed by deferring AX
+  // tree updates to happen after the layout tree attachment has finished.
+  if (GetDocument()->InStyleRecalc() ||
+      !GetDocument()->NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
+          *element)) {
+    return element->IsFocusableStyle();
+  }
+
+  // The best available source of information is now the AX tree, so use that to
+  // figure out whether we have focusable style.
+
+  // If we're in a canvas subtree, then use the canvas visibility instead of
+  // self visibility. The elements in a canvas subtree are fallback elements,
+  // which are not necessarily rendered but are allowed to be focusable.
+  if (element->IsInCanvasSubtree()) {
+    const HTMLCanvasElement* canvas =
+        Traversal<HTMLCanvasElement>::FirstAncestorOrSelf(*element);
+    DCHECK(canvas);
+    return canvas->GetLayoutObject() &&
+           canvas->GetLayoutObject()->Style()->Visibility() ==
+               EVisibility::kVisible;
+  }
+
+  return GetLayoutObject() &&
+         GetLayoutObject()->Style()->Visibility() == EVisibility::kVisible;
+}
+
 // This does not use Element::IsFocusable(), as that can sometimes recalculate
 // styles because of IsFocusableStyle() check, resetting the document lifecycle.
 bool AXObject::CanSetFocusAttribute() const {
@@ -1428,6 +1465,16 @@ bool AXObject::CanSetFocusAttribute() const {
                        GetDocument()->GetPage()->InsidePortal();
   if (inside_portal)
     return false;
+
+  // Display-locked nodes that have subtree-visibility: hidden are not exposed
+  // to accessibility in any way, so they are not focusable. Note that for
+  // subtree-visibility: auto cases, `ShouldIgnoreNodeDueToDisplayLock()` would
+  // return false, since we're not ignoring the element in that case.
+  if (!GetNode() ||
+      DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
+          *GetNode(), DisplayLockActivationReason::kAccessibility)) {
+    return false;
+  }
 
   // Focusable: web area -- this is the only focusable non-element. Web areas
   // inside portals are not focusable though (portal contents cannot get focus).
@@ -1459,29 +1506,9 @@ bool AXObject::CanSetFocusAttribute() const {
     return true;
 
   // NOT focusable: hidden elements.
-  // This is imperfect, because the only way to really know whether something
-  // is hidden via style is to EnsureComputedStyle(). The method
-  // AXObject::IsHiddenViaStyle() does this, but it relies on
-  // EnsureComputedStyle() which could cause instability in callers.
-  // This code assumes that a canvas descendant has the same visibility as
-  // the canvas itself.
   // TODO(aleventhal) Consider caching visibility when it's safe to compute.
-  if (!IsA<HTMLAreaElement>(elem)) {
-    if (!GetLayoutObject()) {
-      if (!elem->IsInCanvasSubtree())
-        return false;
-      const HTMLCanvasElement* canvas =
-          Traversal<HTMLCanvasElement>::FirstAncestorOrSelf(*elem);
-      if (!canvas->GetLayoutObject() ||
-          canvas->GetLayoutObject()->Style()->Visibility() !=
-              EVisibility::kVisible) {
-        return false;
-      }
-    } else if (GetLayoutObject()->Style()->Visibility() !=
-               EVisibility::kVisible) {
-      return false;
-    }
-  }
+  if (!IsA<HTMLAreaElement>(elem) && !IsFocusableStyleUsingBestAvailableState())
+    return false;
 
   // Focusable: options in a combobox or listbox.
   // Similar to menu list option treatment above, but not focusable if hidden.

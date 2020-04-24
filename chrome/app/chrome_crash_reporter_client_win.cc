@@ -20,7 +20,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/install_static/install_util.h"

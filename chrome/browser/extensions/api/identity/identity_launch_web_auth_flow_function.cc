@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/identity/identity_launch_web_auth_flow_function.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
@@ -84,7 +85,7 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
       error = identity_constants::kInvalidRedirect;
       break;
   }
-  Respond(Error(error));
+  Respond(Error(std::move(error)));
   if (auth_flow_)
     auth_flow_.release()->DetachDelegateAndDelete();
   Release();  // Balanced in Run.

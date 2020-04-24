@@ -7,8 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "printing/metafile.h"
 #include "printing/print_dialog_gtk_interface.h"

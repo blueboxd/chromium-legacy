@@ -4,7 +4,7 @@
 
 #include "device/fido/fido_discovery_factory.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "device/fido/ble/fido_ble_discovery.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/features.h"

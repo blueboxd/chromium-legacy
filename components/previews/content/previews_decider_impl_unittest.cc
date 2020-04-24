@@ -38,9 +38,9 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
+#include "components/optimization_guide/test_optimization_guide_decider.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
@@ -149,34 +149,6 @@ class TestPreviewsBlackList : public PreviewsBlackList {
 
  private:
   PreviewsEligibilityReason status_;
-};
-
-class TestOptimizationGuideDecider
-    : public optimization_guide::OptimizationGuideDecider {
- public:
-  void RegisterOptimizationTypesAndTargets(
-      const std::vector<optimization_guide::proto::OptimizationType>&
-          optimization_types,
-      const std::vector<optimization_guide::proto::OptimizationTarget>&
-          optimization_targets) override {}
-  optimization_guide::OptimizationGuideDecision ShouldTargetNavigation(
-      content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationTarget optimization_target)
-      override {
-    return optimization_guide::OptimizationGuideDecision::kFalse;
-  }
-  optimization_guide::OptimizationGuideDecision CanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationType optimization_type,
-      optimization_guide::OptimizationMetadata* optimization_metadata)
-      override {
-    return optimization_guide::OptimizationGuideDecision::kFalse;
-  }
-  void CanApplyOptimizationAsync(
-      content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationType optimization_type,
-      optimization_guide::OptimizationGuideDecisionCallback callback) override {
-  }
 };
 
 // Stub class of PreviewsOptimizationGuide to control what is allowed when
@@ -500,7 +472,7 @@ class PreviewsDeciderImplTest
  private:
   base::test::TaskEnvironment task_environment_;
   TestPreviewsDeciderImpl* previews_decider_impl_;
-  TestOptimizationGuideDecider optimization_guide_decider_;
+  optimization_guide::TestOptimizationGuideDecider optimization_guide_decider_;
   TestPreviewsOptimizationGuide* previews_opt_guide_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
   network::TestNetworkQualityTracker network_quality_tracker_;

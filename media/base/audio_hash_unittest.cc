@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_hash.h"

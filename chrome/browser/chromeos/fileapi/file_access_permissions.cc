@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/fileapi/file_access_permissions.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace chromeos {
 

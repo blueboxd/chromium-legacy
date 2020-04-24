@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"

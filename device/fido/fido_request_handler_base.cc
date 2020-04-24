@@ -194,9 +194,11 @@ void FidoRequestHandlerBase::CancelActiveAuthenticators(
   }
 }
 
-void FidoRequestHandlerBase::OnBluetoothAdapterEnumerated(bool is_present,
-                                                          bool is_powered_on,
-                                                          bool can_power_on) {
+void FidoRequestHandlerBase::OnBluetoothAdapterEnumerated(
+    bool is_present,
+    bool is_powered_on,
+    bool can_power_on,
+    bool is_peripheral_role_supported) {
   if (!is_present) {
     transport_availability_info_.available_transports.erase(
         FidoTransportProtocol::kBluetoothLowEnergy);
@@ -206,7 +208,6 @@ void FidoRequestHandlerBase::OnBluetoothAdapterEnumerated(bool is_present,
 
   transport_availability_info_.is_ble_powered = is_powered_on;
   transport_availability_info_.can_power_on_ble_adapter = can_power_on;
-  DCHECK(notify_observer_callback_);
   notify_observer_callback_.Run();
 }
 

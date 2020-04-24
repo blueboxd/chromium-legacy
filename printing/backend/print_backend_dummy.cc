@@ -8,7 +8,6 @@
 
 #include "printing/backend/print_backend.h"
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
 

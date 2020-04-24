@@ -4,7 +4,7 @@
 
 #include "chrome/chrome_cleaner/http/user_agent.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace chrome_cleaner {

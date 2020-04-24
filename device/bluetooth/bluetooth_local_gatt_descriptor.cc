@@ -4,7 +4,7 @@
 
 #include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 
 namespace device {

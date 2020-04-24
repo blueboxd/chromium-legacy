@@ -9,8 +9,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 

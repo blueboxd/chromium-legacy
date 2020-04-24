@@ -471,7 +471,7 @@ BlinkTestController::BlinkTestController()
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
   GpuDataManager::GetInstance()->AddObserver(this);
-  ResetAfterWebTest();
+  ResetBrowserAfterWebTest();
 }
 
 BlinkTestController::~BlinkTestController() {
@@ -605,7 +605,7 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
   return true;
 }
 
-bool BlinkTestController::ResetAfterWebTest() {
+bool BlinkTestController::ResetBrowserAfterWebTest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
@@ -751,9 +751,9 @@ void BlinkTestController::EnqueueSurfaceCopyRequest() {
 void BlinkTestController::CompositeAllFramesThen(
     base::OnceCallback<void()> callback) {
   // Only allow a single call to CompositeAllFramesThen(), without a call to
-  // ResetAfterWebTest() in between. More than once risks overlapping calls,
-  // due to the asynchronous nature of CompositeNodeQueueThen(), which can lead
-  // to use-after-free, e.g.
+  // ResetBrowserAfterWebTest() in between. More than once risks overlapping
+  // calls, due to the asynchronous nature of CompositeNodeQueueThen(), which
+  // can lead to use-after-free, e.g.
   // https://clusterfuzz.com/v2/testcase-detail/4929420383748096
   if (!composite_all_frames_node_storage_.empty() ||
       !composite_all_frames_node_queue_.empty()) {
@@ -1142,13 +1142,15 @@ void BlinkTestController::OnCleanupFinished() {
     secondary_window_->web_contents()->Stop();
     GetBlinkTestControlRemote(
         secondary_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
-        ->Reset();
+        ->ResetRendererAfterWebTest();
+    ++waiting_for_reset_done_;
   }
   if (main_window_) {
     main_window_->web_contents()->Stop();
     GetBlinkTestControlRemote(
         main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
-        ->Reset();
+        ->ResetRendererAfterWebTest();
+    ++waiting_for_reset_done_;
   }
 }
 
@@ -1450,7 +1452,10 @@ void BlinkTestController::CloseRemainingWindows() {
   base::RunLoop().RunUntilIdle();
 }
 
-void BlinkTestController::ResetDone() {
+void BlinkTestController::ResetRendererAfterWebTestDone() {
+  if (--waiting_for_reset_done_ > 0)
+    return;
+
   if (leak_detector_) {
     if (main_window_ && main_window_->web_contents()) {
       RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();

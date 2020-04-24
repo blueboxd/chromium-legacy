@@ -10,7 +10,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"

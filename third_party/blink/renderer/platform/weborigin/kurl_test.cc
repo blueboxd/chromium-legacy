@@ -37,6 +37,7 @@
 
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/url_util.h"
@@ -871,6 +872,43 @@ TEST(KURLTest, strippedForUseAsReferrer) {
     const KURL kurl(referrer_cases[i].input);
     EXPECT_EQ(referrer_cases[i].output, kurl.StrippedForUseAsReferrer().Utf8());
   }
+}
+
+TEST(KURLTest, ThreadSafesStaticKurlGetters) {
+#if DCHECK_IS_ON()
+  // Simulate the static getters being called during/after threads have been
+  // started, so that StaticSingleton's thread checks will be applied.
+  WTF::WillCreateThread();
+#endif
+
+  // Take references to the static KURLs, so that each has two references to
+  // its internal StringImpl, rather than one.
+  KURL blank_url = BlankURL();
+  EXPECT_FALSE(blank_url.IsEmpty());
+  KURL srcdoc_url = SrcdocURL();
+  EXPECT_FALSE(srcdoc_url.IsEmpty());
+  KURL null_url = NullURL();
+  EXPECT_TRUE(null_url.IsNull());
+
+  auto thread =
+      Thread::CreateThread(ThreadCreationParams(ThreadType::kTestThread));
+  thread->GetTaskRunner()->PostTask(FROM_HERE, base::BindOnce([]() {
+                                      // Reference each of the static KURLs
+                                      // again, from the background thread,
+                                      // which should succeed without thread
+                                      // verifier checks firing.
+                                      KURL blank_url = BlankURL();
+                                      EXPECT_FALSE(blank_url.IsEmpty());
+                                      KURL srcdoc_url = SrcdocURL();
+                                      EXPECT_FALSE(srcdoc_url.IsEmpty());
+                                      KURL null_url = NullURL();
+                                      EXPECT_TRUE(null_url.IsNull());
+                                    }));
+
+#if DCHECK_IS_ON()
+  // Restore the IsBeforeThreadCreated() flag.
+  WTF::SetIsBeforeThreadCreatedForTest();
+#endif
 }
 
 enum class PortIsValid {

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/apps/platform_apps/api/media_galleries/media_galleries_api_util.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/common/apps/platform_apps/api/media_galleries.h"
 
 namespace chrome_apps {

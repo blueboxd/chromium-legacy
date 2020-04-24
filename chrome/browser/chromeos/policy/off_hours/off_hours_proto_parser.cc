@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
 
-#include "base/logging.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chromeos/policy/weekly_time/time_utils.h"

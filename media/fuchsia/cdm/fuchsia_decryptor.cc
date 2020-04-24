@@ -4,9 +4,10 @@
 
 #include "media/fuchsia/cdm/fuchsia_decryptor.h"
 
+#include "base/check.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/location.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_frame.h"

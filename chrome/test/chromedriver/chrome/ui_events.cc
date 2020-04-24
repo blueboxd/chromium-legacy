@@ -4,7 +4,7 @@
 
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"

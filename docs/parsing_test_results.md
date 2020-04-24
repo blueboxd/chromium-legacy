@@ -17,8 +17,8 @@ of the configuration. Some examples:
 
 * *android_compile_dbg* is a compile-only [no tests] build of Chromium for
   Android, using the *debug* configuration.
-* *android-kitkat-arm-rel* builds and runs tests for Chromium for Android,
-  using the *release* configuration on a kitkat device.
+* *android-lollipop-arm-rel* builds and runs tests for Chromium for Android,
+  using the *release* configuration on a lollipop device.
 * *win7-rel* builds and runs tests for Chromium on Windows, using
   the release configuration on a Windows 7 device. *ng* stands for next
   generation, but this has no meaning as the previous generation was already

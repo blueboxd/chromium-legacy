@@ -7,10 +7,10 @@
 #include <shellapi.h>
 #include <string>
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,7 +21,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-
 
 namespace {
 

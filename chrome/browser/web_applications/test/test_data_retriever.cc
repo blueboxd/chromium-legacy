@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 

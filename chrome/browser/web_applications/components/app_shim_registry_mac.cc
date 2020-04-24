@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"

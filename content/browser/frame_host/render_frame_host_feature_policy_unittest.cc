@@ -33,12 +33,6 @@ class RenderFrameHostFeaturePolicyTest
   static const blink::mojom::FeaturePolicyFeature kDefaultSelfFeature =
       blink::mojom::FeaturePolicyFeature::kGeolocation;
 
-  const blink::PolicyValue sample_double_value =
-      blink::PolicyValue(2.5, blink::mojom::PolicyValueType::kDecDouble);
-  const blink::PolicyValue min_double_value =
-      blink::PolicyValue(2.0, blink::mojom::PolicyValueType::kDecDouble);
-  const blink::PolicyValue sample_bool_value = blink::PolicyValue(true);
-
   RenderFrameHost* GetMainRFH(const char* origin) {
     RenderFrameHost* result = web_contents()->GetMainFrame();
     RenderFrameHostTester::For(result)->InitializeRenderFrameIfNeeded();
@@ -56,26 +50,24 @@ class RenderFrameHostFeaturePolicyTest
 
   // The header policy should only be set once on page load, so we refresh the
   // page to simulate that.
-  void RefreshPageAndSetHeaderPolicy(
-      RenderFrameHost** rfh,
-      blink::mojom::FeaturePolicyFeature feature,
-      const std::map<std::string, blink::PolicyValue>& values) {
+  void RefreshPageAndSetHeaderPolicy(RenderFrameHost** rfh,
+                                     blink::mojom::FeaturePolicyFeature feature,
+                                     const std::vector<std::string>& origins) {
     RenderFrameHost* current = *rfh;
     SimulateNavigation(&current, current->GetLastCommittedURL());
     static_cast<TestRenderFrameHost*>(current)->DidSetFramePolicyHeaders(
-        network::mojom::WebSandboxFlags::kNone, CreateFPHeader(feature, values),
-        {} /* document_policy_header */);
+        network::mojom::WebSandboxFlags::kNone,
+        CreateFPHeader(feature, origins), {} /* document_policy_header */);
     *rfh = current;
   }
 
-  void SetContainerPolicy(
-      RenderFrameHost* parent,
-      RenderFrameHost* child,
-      blink::mojom::FeaturePolicyFeature feature,
-      const std::map<std::string, blink::PolicyValue>& values) {
+  void SetContainerPolicy(RenderFrameHost* parent,
+                          RenderFrameHost* child,
+                          blink::mojom::FeaturePolicyFeature feature,
+                          const std::vector<std::string>& origins) {
     static_cast<TestRenderFrameHost*>(parent)->OnDidChangeFramePolicy(
         child->GetRoutingID(), {network::mojom::WebSandboxFlags::kNone,
-                                CreateFPHeader(feature, values),
+                                CreateFPHeader(feature, origins),
                                 {} /* required_document_policy */});
   }
 
@@ -89,12 +81,11 @@ class RenderFrameHostFeaturePolicyTest
  private:
   blink::ParsedFeaturePolicy CreateFPHeader(
       blink::mojom::FeaturePolicyFeature feature,
-      const std::map<std::string, blink::PolicyValue>& values) {
+      const std::vector<std::string>& origins) {
     blink::ParsedFeaturePolicy result(1);
     result[0].feature = feature;
-    for (auto const& value : values)
-      result[0].values.insert(std::pair<url::Origin, blink::PolicyValue>(
-          url::Origin::Create(GURL(value.first)), value.second));
+    for (auto const& origin : origins)
+      result[0].allowed_origins.push_back(url::Origin::Create(GURL(origin)));
     return result;
   }
 };
@@ -114,8 +105,7 @@ TEST_F(RenderFrameHostFeaturePolicyTest, HeaderPolicy) {
 
   // Enable the feature for the child in the parent frame.
   RefreshPageAndSetHeaderPolicy(&parent, kDefaultSelfFeature,
-                                {{std::string(kOrigin1), sample_bool_value},
-                                 {std::string(kOrigin2), sample_bool_value}});
+                                {std::string(kOrigin1), std::string(kOrigin2)});
 
   // Create the child.
   RenderFrameHost* child = AddChildRFH(parent, kOrigin2);
@@ -126,14 +116,14 @@ TEST_F(RenderFrameHostFeaturePolicyTest, HeaderPolicy) {
   // Set an empty allowlist in the child to test that the policies combine
   // correctly.
   RefreshPageAndSetHeaderPolicy(&child, kDefaultSelfFeature,
-                                std::map<std::string, blink::PolicyValue>());
+                                std::vector<std::string>());
 
   EXPECT_TRUE(parent->IsFeatureEnabled(kDefaultSelfFeature));
   EXPECT_FALSE(child->IsFeatureEnabled(kDefaultSelfFeature));
 
   // Re-enable the feature in the child.
   RefreshPageAndSetHeaderPolicy(&child, kDefaultSelfFeature,
-                                {{std::string(kOrigin2), sample_bool_value}});
+                                {std::string(kOrigin2)});
   EXPECT_TRUE(child->IsFeatureEnabled(kDefaultSelfFeature));
 
   // Navigate the child. Check that the feature is disabled.
@@ -148,8 +138,7 @@ TEST_F(RenderFrameHostFeaturePolicyTest, ContainerPolicy) {
   // Set a container policy on origin 3 to give it the feature. It should not
   // be enabled because container policy will only take effect after navigation.
   SetContainerPolicy(parent, child, kDefaultSelfFeature,
-                     {{std::string(kOrigin2), sample_bool_value},
-                      {std::string(kOrigin3), sample_bool_value}});
+                     {std::string(kOrigin2), std::string(kOrigin3)});
   EXPECT_FALSE(child->IsFeatureEnabled(kDefaultSelfFeature));
 
   // Navigate the child so that the container policy takes effect.
@@ -166,12 +155,11 @@ TEST_F(RenderFrameHostFeaturePolicyTest, HeaderAndContainerPolicy) {
 
   // Set a header policy and container policy. Check that they both take effect.
   RefreshPageAndSetHeaderPolicy(&parent, kDefaultSelfFeature,
-                                {{std::string(kOrigin1), sample_bool_value},
-                                 {std::string(kOrigin2), sample_bool_value}});
+                                {std::string(kOrigin1), std::string(kOrigin2)});
 
   RenderFrameHost* child = AddChildRFH(parent, kOrigin2);
   SetContainerPolicy(parent, child, kDefaultSelfFeature,
-                     {{std::string(kOrigin3), sample_bool_value}});
+                     {std::string(kOrigin3)});
 
   // The feature should be enabled in kOrigin2, kOrigin3 but not kOrigin4.
   EXPECT_TRUE(child->IsFeatureEnabled(kDefaultSelfFeature));
@@ -183,10 +171,10 @@ TEST_F(RenderFrameHostFeaturePolicyTest, HeaderAndContainerPolicy) {
   // Change the header policy to turn off the feature. It should be disabled in
   // all children.
   RefreshPageAndSetHeaderPolicy(&parent, kDefaultSelfFeature,
-                                std::map<std::string, blink::PolicyValue>());
+                                std::vector<std::string>());
   child = AddChildRFH(parent, kOrigin2);
   SetContainerPolicy(parent, child, kDefaultSelfFeature,
-                     {{std::string(kOrigin3), sample_bool_value}});
+                     {std::string(kOrigin3)});
 
   SimulateNavigation(&child, GURL(kOrigin2));
   EXPECT_FALSE(child->IsFeatureEnabled(kDefaultSelfFeature));

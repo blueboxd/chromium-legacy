@@ -54,24 +54,6 @@ inline EBlockAlignment BlockAlignment(const ComputedStyle& style,
 
 }  // anonymous namespace
 
-bool NeedMinMaxSizeForContentContribution(WritingMode mode,
-                                          const ComputedStyle& style) {
-  // During the intrinsic sizes pass percentages/calc() are defined to behave
-  // like 'auto'. As a result we need to calculate the intrinsic sizes for any
-  // children with percentages. E.g.
-  // <div style="float:left;">
-  //   <div style="width:30%;">text text</div>
-  // </div>
-  if (mode == WritingMode::kHorizontalTb) {
-    return style.Width().IsIntrinsicOrAuto() ||
-           style.Width().IsPercentOrCalc() || style.MinWidth().IsIntrinsic() ||
-           style.MaxWidth().IsIntrinsic();
-  }
-  return style.Height().IsIntrinsicOrAuto() ||
-         style.Height().IsPercentOrCalc() || style.MinHeight().IsIntrinsic() ||
-         style.MaxHeight().IsIntrinsic();
-}
-
 // Check if we shouldn't resolve a percentage/calc()/-webkit-fill-available
 // if we are in the intrinsic sizes phase.
 bool InlineLengthUnresolvable(const Length& length, LengthResolvePhase phase) {
@@ -242,11 +224,13 @@ LayoutUnit ResolveBlockLengthInternal(
   }
 }
 
-MinMaxSizes ComputeMinAndMaxContentContribution(
+namespace {
+
+template <typename MinMaxSizesFunc>
+MinMaxSizes ComputeMinAndMaxContentContributionInternal(
     WritingMode parent_writing_mode,
     const ComputedStyle& style,
-    const NGBoxStrut& border_padding,
-    const base::Optional<MinMaxSizes>& min_max_sizes) {
+    const MinMaxSizesFunc& min_max_sizes_func) {
   WritingMode child_writing_mode = style.GetWritingMode();
 
   // Synthesize a zero-sized constraint space for resolving sizes against.
@@ -254,9 +238,8 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
       NGConstraintSpaceBuilder(child_writing_mode, child_writing_mode,
                                /* is_new_fc */ false)
           .ToConstraintSpace();
-
-  LayoutUnit content_size =
-      min_max_sizes ? min_max_sizes->max_size : kIndefiniteSize;
+  NGBoxStrut border_padding =
+      ComputeBorders(space, style) + ComputePadding(space, style);
 
   MinMaxSizes computed_sizes;
   const Length& inline_size = parent_writing_mode == WritingMode::kHorizontalTb
@@ -264,16 +247,18 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
                                   : style.Height();
   if (inline_size.IsAuto() || inline_size.IsPercentOrCalc() ||
       inline_size.IsFillAvailable() || inline_size.IsFitContent()) {
-    CHECK(min_max_sizes.has_value());
-    computed_sizes = *min_max_sizes;
+    computed_sizes = min_max_sizes_func();
   } else {
     if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
       computed_sizes = ResolveMainInlineLength(space, style, border_padding,
-                                               min_max_sizes, inline_size);
+                                               min_max_sizes_func, inline_size);
     } else {
-      computed_sizes =
-          ResolveMainBlockLength(space, style, border_padding, inline_size,
-                                 content_size, LengthResolvePhase::kIntrinsic);
+      auto IntrinsicBlockSizeFunc = [&]() -> LayoutUnit {
+        return min_max_sizes_func().max_size;
+      };
+      computed_sizes = ResolveMainBlockLength(
+          space, style, border_padding, inline_size, IntrinsicBlockSizeFunc,
+          LengthResolvePhase::kIntrinsic);
     }
   }
 
@@ -282,8 +267,9 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
                                  : style.MaxHeight();
   LayoutUnit max;
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
-    max = ResolveMaxInlineLength(space, style, border_padding, min_max_sizes,
-                                 max_length, LengthResolvePhase::kIntrinsic);
+    max =
+        ResolveMaxInlineLength(space, style, border_padding, min_max_sizes_func,
+                               max_length, LengthResolvePhase::kIntrinsic);
   } else {
     max = ResolveMaxBlockLength(space, style, border_padding, max_length,
                                 LengthResolvePhase::kIntrinsic);
@@ -295,8 +281,9 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
                                  : style.MinHeight();
   LayoutUnit min;
   if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
-    min = ResolveMinInlineLength(space, style, border_padding, min_max_sizes,
-                                 min_length, LengthResolvePhase::kIntrinsic);
+    min =
+        ResolveMinInlineLength(space, style, border_padding, min_max_sizes_func,
+                               min_length, LengthResolvePhase::kIntrinsic);
   } else {
     min = ResolveMinBlockLength(space, style, border_padding, min_length,
                                 LengthResolvePhase::kIntrinsic);
@@ -304,6 +291,17 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
   computed_sizes.Encompass(min);
 
   return computed_sizes;
+}
+
+}  // namespace
+
+MinMaxSizes ComputeMinAndMaxContentContributionForTest(
+    WritingMode parent_writing_mode,
+    const ComputedStyle& style,
+    const MinMaxSizes& min_max_sizes) {
+  auto MinMaxSizesFunc = [&]() -> MinMaxSizes { return min_max_sizes; };
+  return ComputeMinAndMaxContentContributionInternal(parent_writing_mode, style,
+                                                     MinMaxSizesFunc);
 }
 
 MinMaxSizes ComputeMinAndMaxContentContribution(
@@ -339,10 +337,9 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
     }
   }
 
-  base::Optional<MinMaxSizes> min_max_sizes;
-  if (NeedMinMaxSizeForContentContribution(parent_writing_mode, child_style)) {
+  auto MinMaxSizesFunc = [&]() -> MinMaxSizes {
     // We need to set up a constraint space with correct fallback available
-    // inline size in case of orthogonal children.
+    // inline-size in case of orthogonal children.
     NGConstraintSpace indefinite_constraint_space;
     const NGConstraintSpace* child_constraint_space = nullptr;
     if (!IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
@@ -350,20 +347,12 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
           CreateIndefiniteConstraintSpaceForChild(parent_style, child);
       child_constraint_space = &indefinite_constraint_space;
     }
-    min_max_sizes = child.ComputeMinMaxSizes(parent_writing_mode, input,
-                                             child_constraint_space);
-  }
-  // Synthesize a zero-sized constraint space for determining the borders, and
-  // padding.
-  NGConstraintSpace space =
-      NGConstraintSpaceBuilder(child_writing_mode, child_writing_mode,
-                               /* is_new_fc */ false)
-          .ToConstraintSpace();
-  NGBoxStrut border_padding =
-      ComputeBorders(space, child_style) + ComputePadding(space, child_style);
+    return child.ComputeMinMaxSizes(parent_writing_mode, input,
+                                    child_constraint_space);
+  };
 
-  return ComputeMinAndMaxContentContribution(parent_writing_mode, child_style,
-                                             border_padding, min_max_sizes);
+  return ComputeMinAndMaxContentContributionInternal(
+      parent_writing_mode, child_style, MinMaxSizesFunc);
 }
 
 LayoutUnit ComputeInlineSizeForFragment(

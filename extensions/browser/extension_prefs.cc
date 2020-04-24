@@ -800,7 +800,11 @@ bool ExtensionPrefs::HasDisableReason(
 void ExtensionPrefs::AddDisableReason(
     const std::string& extension_id,
     disable_reason::DisableReason disable_reason) {
-  DCHECK(!DoesExtensionHaveState(extension_id, Extension::ENABLED));
+  // TODO(https://crbug.com/1073570): Extensions can be blacklisted but in
+  // enabled state. This checks the kPrefState which is the state of the
+  // extension.
+  DCHECK(!DoesExtensionHaveState(extension_id, Extension::ENABLED) ||
+         disable_reason == disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
   ModifyDisableReasons(extension_id, disable_reason, DISABLE_REASON_ADD);
 }
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/optimization_guide/optimization_guide_util.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "net/base/url_util.h"
 #include "url/url_canon.h"
 

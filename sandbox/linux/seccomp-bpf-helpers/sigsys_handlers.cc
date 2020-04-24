@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 

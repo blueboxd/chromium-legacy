@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/web_footer_experiment_ui.h"
 
-#include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"

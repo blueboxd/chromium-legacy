@@ -5,9 +5,9 @@
 
 #include "chrome/installer/util/duplicate_tree_detector.h"
 
+#include "base/check.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 
 namespace installer {
 

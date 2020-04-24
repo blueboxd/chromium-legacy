@@ -108,7 +108,7 @@ class SharedWorkerHostTest : public testing::Test {
         provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
     base::WeakPtr<ServiceWorkerContainerHost> service_worker_container_host =
         ServiceWorkerContainerHost::CreateForWebWorker(
-            blink::mojom::ServiceWorkerContainerType::kForSharedWorker,
+            blink::mojom::ServiceWorkerClientType::kSharedWorker,
             mock_render_process_host_.GetID(), std::move(host_receiver),
             std::move(client_remote), helper_->context()->AsWeakPtr());
     service_worker_handle->OnCreatedProviderHost(std::move(provider_info));

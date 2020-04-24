@@ -6,10 +6,11 @@
 
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"

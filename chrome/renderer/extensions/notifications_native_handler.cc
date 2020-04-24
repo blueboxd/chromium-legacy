@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/notifications/notification_style.h"
 #include "extensions/renderer/script_context.h"

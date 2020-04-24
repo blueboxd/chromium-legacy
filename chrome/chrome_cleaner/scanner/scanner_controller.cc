@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/chrome_cleaner/chrome_utils/chrome_util.h"

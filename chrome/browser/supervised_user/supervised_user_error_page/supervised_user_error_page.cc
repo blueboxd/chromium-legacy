@@ -4,8 +4,9 @@
 
 #include "chrome/browser/supervised_user/supervised_user_error_page/supervised_user_error_page.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

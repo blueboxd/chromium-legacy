@@ -7,7 +7,8 @@
 #include <iomanip>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/limits.h"
 #include "media/base/media_util.h"

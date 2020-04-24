@@ -83,7 +83,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
     return;
   }
   base::TimeTicks timestamp = web_wheel.TimeStamp();
-  int modifiers = ui::EF_NONE;
+  int modifiers = ui::WebEventModifiersToEventFlags(web_wheel.GetModifiers());
   if (web_wheel.delta_units == ui::ScrollGranularity::kScrollByPrecisePixel) {
     modifiers |= ui::EF_PRECISION_SCROLLING_DELTA;
   } else if (web_wheel.delta_units == ui::ScrollGranularity::kScrollByPage) {

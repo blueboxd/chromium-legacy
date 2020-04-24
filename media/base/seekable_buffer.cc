@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "media/base/data_buffer.h"
 #include "media/base/timestamp_constants.h"
 

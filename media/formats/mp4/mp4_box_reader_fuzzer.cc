@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "media/base/media_util.h"
 #include "media/formats/mp4/box_reader.h"
 

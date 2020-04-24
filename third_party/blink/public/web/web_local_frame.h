@@ -187,9 +187,9 @@ class WebLocalFrame : public WebFrame {
   // kind of lookup what |window.open(..., name)| would in Javascript.
   virtual WebFrame* FindFrameByName(const WebString& name) = 0;
 
-  // Sets an embedding token for the frame. This token is propagated to the
-  // remote parent of this frame (via the browser) such that it can uniquely
-  // refer to this frame.
+  // Sets an embedding token for the document in this frame. This token is
+  // propagated to the remote parent of this frame (via the browser) such
+  // that it can uniquely refer to the document in this frame.
   virtual void SetEmbeddingToken(
       const base::UnguessableToken& embedding_token) = 0;
 

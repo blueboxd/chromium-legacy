@@ -9,9 +9,10 @@
 #endif
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_ppapi_host.h"

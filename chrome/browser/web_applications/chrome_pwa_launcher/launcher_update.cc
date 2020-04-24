@@ -7,10 +7,10 @@
 #include <windows.h>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/web_applications/chrome_pwa_launcher/chrome_pwa_launcher_util.h"
 #include "chrome/installer/util/callback_work_item.h"

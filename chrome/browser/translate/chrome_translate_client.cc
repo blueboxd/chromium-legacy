@@ -7,8 +7,9 @@
 #include <memory>
 #include <vector>
 
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"

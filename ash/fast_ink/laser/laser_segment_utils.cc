@@ -7,7 +7,7 @@
 #include <cmath>
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"

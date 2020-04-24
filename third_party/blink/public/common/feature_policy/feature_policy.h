@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/common/feature_policy/policy_value.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-forward.h"
 #include "url/origin.h"
@@ -87,11 +86,6 @@ namespace blink {
 // determined by the feature's default policy. (Again, see the comments in
 // FeaturePolicy::FeatureDefault for details)
 
-// ListValue (PolicyValue)
-// ----------------------
-// PolicyValue is a union of types (int / double / set<int> / bool ) that can be
-// used to specify the parameter of a policy.
-
 // This struct holds feature policy allowlist data that needs to be replicated
 // between a RenderFrame and any of its associated RenderFrameProxies. A list of
 // these form a ParsedFeaturePolicy.
@@ -99,30 +93,28 @@ namespace blink {
 
 struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   ParsedFeaturePolicyDeclaration();
+  explicit ParsedFeaturePolicyDeclaration(mojom::FeaturePolicyFeature feature);
   ParsedFeaturePolicyDeclaration(mojom::FeaturePolicyFeature feature,
-                                 mojom::PolicyValueType type);
-  ParsedFeaturePolicyDeclaration(
-      mojom::FeaturePolicyFeature feature,
-      const std::map<url::Origin, PolicyValue> values,
-      const PolicyValue& fallback_value,
-      const PolicyValue& opaque_value);
+                                 const std::vector<url::Origin>& values,
+                                 bool fallback_value,
+                                 bool opaque_value);
   ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& rhs);
   ParsedFeaturePolicyDeclaration& operator=(
       const ParsedFeaturePolicyDeclaration& rhs);
   ~ParsedFeaturePolicyDeclaration();
 
   mojom::FeaturePolicyFeature feature;
+
+  // An alphabetically sorted list of all the origins allowed.
+  std::vector<url::Origin> allowed_origins;
+  // Fallback value is used when feature is enabled for all or disabled for all.
+  bool fallback_value;
   // This flag is set true for a declared policy on an <iframe sandbox>
   // container, for a feature which is supposed to be allowed in the sandboxed
   // document. Usually, the 'src' keyword in a declaration will cause the origin
   // of the iframe to be present in |origins|, but for sandboxed iframes, this
   // flag is set instead.
-
-  // This map records all the allowed origins and their corresponding values.
-  std::map<url::Origin, PolicyValue> values;
-  // Fallback value is used when feature is enabled for all or disabled for all.
-  PolicyValue fallback_value;
-  PolicyValue opaque_value;
+  bool opaque_value;
 };
 
 using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
@@ -134,7 +126,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
  public:
   // TODO(iclelland): Generate, instead of this map, a set of bool flags, one
   // for each feature, as all features are supposed to be represented here.
-  using FeatureState = std::map<mojom::FeaturePolicyFeature, PolicyValue>;
+  using FeatureState = std::map<mojom::FeaturePolicyFeature, bool>;
 
   // Represents a collection of origins which make up an allowlist in a feature
   // policy. This collection may be set to match every origin (corresponding to
@@ -142,40 +134,38 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   // will always return true.
   class BLINK_COMMON_EXPORT Allowlist final {
    public:
-    Allowlist(mojom::PolicyValueType type);
+    Allowlist();
     Allowlist(const Allowlist& rhs);
     ~Allowlist();
 
     // Adds a single origin to the allowlist.
-    void Add(const url::Origin& origin, const PolicyValue& value);
+    void Add(const url::Origin& origin);
 
     // Returns the value of the given origin if specified, fallback value
     // otherwise.
     // fallback value should be set to maximum unless it is set to 'none'.
-    PolicyValue GetValueForOrigin(const url::Origin& origin) const;
+    bool GetValueForOrigin(const url::Origin& origin) const;
 
     // Returns the fallback value.
-    const PolicyValue& GetFallbackValue() const;
+    bool GetFallbackValue() const;
 
     // Sets the fallback value.
-    void SetFallbackValue(const PolicyValue& fallback_value);
+    void SetFallbackValue(bool fallback_value);
 
     // Returns the opaque value.
-    const PolicyValue& GetOpaqueValue() const;
+    bool GetOpaqueValue() const;
 
     // Sets the opaque value.
-    void SetOpaqueValue(const PolicyValue& opaque_value);
+    void SetOpaqueValue(bool opaque_value);
 
-    // Returns set of origins in the allowlist.
-    const base::flat_set<url::Origin>& Origins() const;
-
-    // Returns set of <origin, value> pair in the allowlist.
-    const base::flat_map<url::Origin, PolicyValue>& Values() const;
+    const std::vector<url::Origin>& AllowedOrigins() const {
+      return allowed_origins_;
+    }
 
    private:
-    base::flat_map<url::Origin, PolicyValue> values_;
-    PolicyValue fallback_value_;
-    PolicyValue opaque_value_;
+    std::vector<url::Origin> allowed_origins_;
+    bool fallback_value_;
+    bool opaque_value_;
   };
 
   // The FeaturePolicy::FeatureDefault enum defines the default enable state for
@@ -199,10 +189,8 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
     EnableForAll
   };
 
-  using FeatureDefaultValue =
-      std::pair<FeaturePolicy::FeatureDefault, mojom::PolicyValueType>;
   using FeatureList =
-      std::map<mojom::FeaturePolicyFeature, FeaturePolicy::FeatureDefaultValue>;
+      std::map<mojom::FeaturePolicyFeature, FeaturePolicy::FeatureDefault>;
 
   ~FeaturePolicy();
 
@@ -217,24 +205,17 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
 
   bool IsFeatureEnabled(mojom::FeaturePolicyFeature feature) const;
 
-  bool IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
-                        const PolicyValue& threshold_value) const;
-
   // Returns whether or not the given feature is enabled by this policy for a
   // specific origin.
   bool IsFeatureEnabledForOrigin(mojom::FeaturePolicyFeature feature,
                                  const url::Origin& origin) const;
-  bool IsFeatureEnabledForOrigin(mojom::FeaturePolicyFeature feature,
-                                 const url::Origin& origin,
-                                 const PolicyValue& threshold_value) const;
 
   // Returns the value of the given feature on the given origin.
-  PolicyValue GetFeatureValueForOrigin(mojom::FeaturePolicyFeature feature,
-                                       const url::Origin& origin) const;
+  bool GetFeatureValueForOrigin(mojom::FeaturePolicyFeature feature,
+                                const url::Origin& origin) const;
 
-  PolicyValue GetProposedFeatureValueForOrigin(
-      mojom::FeaturePolicyFeature feature,
-      const url::Origin& origin) const;
+  bool GetProposedFeatureValueForOrigin(mojom::FeaturePolicyFeature feature,
+                                        const url::Origin& origin) const;
 
   // Returns the allowlist of a given feature by this policy.
   const Allowlist GetAllowlistForFeature(

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/idle/idle_detection_permission_context.h"
 
-#include "base/logging.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/permissions/permission_request_id.h"
 #include "url/gurl.h"

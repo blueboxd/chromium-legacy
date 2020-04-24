@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/signin_reauth_popup_delegate.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/signin/reauth_tab_helper.h"
 #include "chrome/browser/ui/browser.h"

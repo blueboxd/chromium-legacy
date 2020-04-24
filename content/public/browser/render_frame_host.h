@@ -184,11 +184,12 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // never used to look up the FrameTreeNode instance.
   virtual base::UnguessableToken GetDevToolsFrameToken() = 0;
 
-  // Returns the embedding token for this frame that is used by a remote parent
-  // to uniquely identify it. This will be null if the frame
-  // - is not embedded by a parent
-  // - is a local child
-  // - is not the current RFH (for example, when pending deletion)
+  // Returns the embedding token for the current document in this
+  // RenderFrameHost. This token is used by a remote parent to uniquely identify
+  // it. The token will be changed when a new document commits in this
+  // RenderFrameHost. This will be null if the document is:
+  // - not embedded by a parent
+  // - a local child
   virtual base::Optional<base::UnguessableToken> GetEmbeddingToken() = 0;
 
   // Returns the assigned name of the frame, the name of the iframe tag
@@ -388,18 +389,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual bool GetSuddenTerminationDisablerState(
       blink::mojom::SuddenTerminationDisablerType disabler_type) = 0;
 
-  // Returns true if the given |threshold_value| is below the threshold value
-  // specified in the policy for |feature| for this RenderFrameHost. See
-  // third_party/blink/public/common/feature_policy/feature_policy.h for how to
-  // compare values of different types. Use this in the browser process to
-  // determine whether access to a feature is allowed.
-  //
-  // TODO(chenleihu): remove this method when policy with non-boolean value
-  // fully migrated to document policy. After the migration, feature policy
-  // feature will only only hold boolean type value, and this method signature
-  // will no longer be needed.
-  virtual bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature,
-                                blink::PolicyValue threshold_value) = 0;
   // Returns true if the queried FeaturePolicyFeature is allowed by
   // feature policy.
   virtual bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) = 0;

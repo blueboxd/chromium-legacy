@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/device_local_account_extension_tracker.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/extensions/policy_handlers.h"

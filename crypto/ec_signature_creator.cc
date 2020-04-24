@@ -4,7 +4,7 @@
 
 #include "crypto/ec_signature_creator.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "crypto/ec_signature_creator_impl.h"
 

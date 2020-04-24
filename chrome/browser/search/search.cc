@@ -314,9 +314,19 @@ GURL GetNewTabPageURL(Profile* profile) {
 #if !defined(OS_ANDROID)
 
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
-  return url.is_valid() && profile && IsInstantExtendedAPIEnabled() &&
-         (url.SchemeIs(chrome::kChromeSearchScheme) ||
-          IsNTPOrRelatedURLHelper(url, profile));
+  if (!url.is_valid() || !profile || !IsInstantExtendedAPIEnabled())
+    return false;
+
+  bool is_ntp_related_url = IsNTPOrRelatedURLHelper(url, profile);
+
+  // When the WebUI NTP feature is enabled, it should be running in a WebUI
+  // process instead of the instant process.
+  if (base::FeatureList::IsEnabled(ntp_features::kWebUI) &&
+      is_ntp_related_url && url.SchemeIs(content::kChromeUIScheme)) {
+    return false;
+  }
+
+  return is_ntp_related_url || url.SchemeIs(chrome::kChromeSearchScheme);
 }
 
 bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {

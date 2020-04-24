@@ -4,7 +4,8 @@
 
 #include "chrome/browser/web_applications/extensions/bookmark_app_icon_manager.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"

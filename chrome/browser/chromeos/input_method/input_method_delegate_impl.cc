@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_delegate_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"

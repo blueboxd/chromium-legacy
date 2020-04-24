@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"

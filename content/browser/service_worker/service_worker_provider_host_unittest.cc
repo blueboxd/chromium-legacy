@@ -304,14 +304,13 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   }
 
   void TestReservedClientsAreNotExposed(
-      blink::mojom::ServiceWorkerContainerType provider_type,
+      blink::mojom::ServiceWorkerClientType client_type,
       const GURL& url);
   void TestClientPhaseTransition(
-      blink::mojom::ServiceWorkerContainerType provider_type,
+      blink::mojom::ServiceWorkerClientType client_type,
       const GURL& url);
 
   void TestBackForwardCachedClientsAreNotExposed(
-      blink::mojom::ServiceWorkerContainerType provider_type,
       const GURL& url);
 
   BrowserTaskEnvironment task_environment_;
@@ -980,7 +979,7 @@ TEST_F(ServiceWorkerProviderHostTest,
 // when iterating over client container hosts. If it were, it'd be undesirably
 // exposed via the Clients API.
 void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
-    blink::mojom::ServiceWorkerContainerType provider_type,
+    blink::mojom::ServiceWorkerClientType client_type,
     const GURL& url) {
   {
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
@@ -995,7 +994,7 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
         provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
     base::WeakPtr<ServiceWorkerContainerHost> container_host =
         ServiceWorkerContainerHost::CreateForWebWorker(
-            provider_type, helper_->mock_render_process_id(),
+            client_type, helper_->mock_render_process_id(),
             std::move(host_receiver), std::move(client_remote),
             context_->AsWeakPtr());
     container_host->UpdateUrls(url, net::SiteForCookies::FromUrl(url),
@@ -1031,14 +1030,14 @@ TEST_F(ServiceWorkerProviderHostTestWithPlzDedicatedWorker,
   ASSERT_TRUE(
       base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   TestReservedClientsAreNotExposed(
-      blink::mojom::ServiceWorkerContainerType::kForDedicatedWorker,
+      blink::mojom::ServiceWorkerClientType::kDedicatedWorker,
       GURL("https://www.example.com/dedicated_worker.js"));
 }
 
 TEST_F(ServiceWorkerProviderHostTest,
        ReservedClientsAreNotExposedToClientsApiForSharedWorker) {
   TestReservedClientsAreNotExposed(
-      blink::mojom::ServiceWorkerContainerType::kForSharedWorker,
+      blink::mojom::ServiceWorkerClientType::kSharedWorker,
       GURL("https://www.example.com/shared_worker.js"));
 }
 
@@ -1068,7 +1067,7 @@ TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
 
 // Tests the client phase transitions for workers.
 void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
-    blink::mojom::ServiceWorkerContainerType provider_type,
+    blink::mojom::ServiceWorkerClientType client_type,
     const GURL& url) {
   mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
       client_remote;
@@ -1081,7 +1080,7 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
       provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       ServiceWorkerContainerHost::CreateForWebWorker(
-          provider_type, helper_->mock_render_process_id(),
+          client_type, helper_->mock_render_process_id(),
           std::move(host_receiver), std::move(client_remote),
           helper_->context()->AsWeakPtr());
   EXPECT_FALSE(container_host->is_response_committed());
@@ -1101,13 +1100,13 @@ TEST_F(ServiceWorkerProviderHostTestWithPlzDedicatedWorker,
   ASSERT_TRUE(
       base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   TestClientPhaseTransition(
-      blink::mojom::ServiceWorkerContainerType::kForDedicatedWorker,
+      blink::mojom::ServiceWorkerClientType::kDedicatedWorker,
       GURL("https://www.example.com/dedicated_worker.js"));
 }
 
 TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForSharedWorker) {
   TestClientPhaseTransition(
-      blink::mojom::ServiceWorkerContainerType::kForSharedWorker,
+      blink::mojom::ServiceWorkerClientType::kSharedWorker,
       GURL("https://www.example.com/shared_worker.js"));
 }
 
@@ -1136,7 +1135,6 @@ class ServiceWorkerProviderHostTestWithBackForwardCache
 // when iterating over client container hosts. If it were, it'd be undesirably
 // exposed via the Clients API.
 void ServiceWorkerProviderHostTest::TestBackForwardCachedClientsAreNotExposed(
-    blink::mojom::ServiceWorkerContainerType provider_type,
     const GURL& url) {
   std::unique_ptr<ServiceWorkerProviderHost> provider_host;
   {
@@ -1183,7 +1181,6 @@ TEST_F(ServiceWorkerProviderHostTestWithBackForwardCache,
   ASSERT_TRUE(ServiceWorkerContext::IsServiceWorkerOnUIEnabled());
 
   TestBackForwardCachedClientsAreNotExposed(
-      blink::mojom::ServiceWorkerContainerType::kForServiceWorker,
       GURL("https://www.example.com/sw.js"));
 }
 

@@ -12,12 +12,12 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/hash/md5.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/win/conflicts/module_list_filter.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/test/integration/themes_helper.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"

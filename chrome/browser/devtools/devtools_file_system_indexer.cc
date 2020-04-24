@@ -10,10 +10,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"

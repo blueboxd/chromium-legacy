@@ -4,7 +4,7 @@
 
 #include "media/base/sample_rates.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace media {
 

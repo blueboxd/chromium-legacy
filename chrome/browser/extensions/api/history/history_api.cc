@@ -264,7 +264,7 @@ ExtensionFunction::ResponseAction HistoryGetVisitsFunction::Run() {
   GURL url;
   std::string error;
   if (!ValidateUrl(params->details.url, &url, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
@@ -333,7 +333,7 @@ ExtensionFunction::ResponseAction HistoryAddUrlFunction::Run() {
   GURL url;
   std::string error;
   if (!ValidateUrl(params->details.url, &url, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
@@ -348,11 +348,11 @@ ExtensionFunction::ResponseAction HistoryDeleteUrlFunction::Run() {
 
   std::string error;
   if (!VerifyDeleteAllowed(&error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   GURL url;
   if (!ValidateUrl(params->details.url, &url, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
@@ -380,7 +380,7 @@ ExtensionFunction::ResponseAction HistoryDeleteRangeFunction::Run() {
 
   std::string error;
   if (!VerifyDeleteAllowed(&error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   base::Time start_time = GetTime(params->range.start_time);
   base::Time end_time = GetTime(params->range.end_time);
@@ -415,7 +415,7 @@ void HistoryDeleteRangeFunction::DeleteComplete() {
 ExtensionFunction::ResponseAction HistoryDeleteAllFunction::Run() {
   std::string error;
   if (!VerifyDeleteAllowed(&error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   std::set<GURL> restrict_urls;
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(

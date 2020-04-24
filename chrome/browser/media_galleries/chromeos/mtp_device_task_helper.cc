@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/media_galleries/chromeos/mtp_device_object_enumerator.h"
 #include "chrome/browser/media_galleries/chromeos/mtp_read_file_worker.h"

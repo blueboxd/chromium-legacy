@@ -6,7 +6,7 @@
 
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

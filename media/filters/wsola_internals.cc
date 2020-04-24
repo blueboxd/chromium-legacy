@@ -9,7 +9,7 @@
 #include <limits>
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/numerics/math_constants.h"
 #include "build/build_config.h"
 #include "media/base/audio_bus.h"

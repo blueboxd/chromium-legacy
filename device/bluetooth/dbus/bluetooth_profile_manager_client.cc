@@ -5,7 +5,7 @@
 #include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

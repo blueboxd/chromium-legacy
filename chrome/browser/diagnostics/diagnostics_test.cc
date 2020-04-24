@@ -5,7 +5,6 @@
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "build/build_config.h"

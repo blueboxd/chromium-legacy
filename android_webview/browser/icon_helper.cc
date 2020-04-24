@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/hash/hash.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"

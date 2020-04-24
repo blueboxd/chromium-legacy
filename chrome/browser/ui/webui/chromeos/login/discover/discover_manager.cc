@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_launch_help_app.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_pin_setup.h"

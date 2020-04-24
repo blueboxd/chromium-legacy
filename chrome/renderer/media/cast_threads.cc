@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/media/cast_threads.h"
 
-#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 
 CastThreads::CastThreads()

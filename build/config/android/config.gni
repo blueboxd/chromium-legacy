@@ -131,6 +131,9 @@ if (is_android || is_chromeos) {
   assert(defined(default_android_sdk_root),
          "SDK release " + android_sdk_release + " not recognized.")
 
+  # Where to write failed expectations for bots to read.
+  android_configuration_failure_dir = "$root_build_dir/failed_expectations"
+
   declare_args() {
     android_ndk_root = default_android_ndk_root
     android_ndk_version = default_android_ndk_version
@@ -199,11 +202,9 @@ if (is_android || is_chromeos) {
     android_sdk_tools_bundle_aapt2_dir =
         "//third_party/android_build_tools/aapt2"
 
-    # Checks that proguard flags have not changed (!is_java_debug only).
-    check_android_configuration = false
-
-    # Where to write failed expectations if check_android_configuration is true.
-    android_configuration_failure_dir = "$root_build_dir/failed_expectations"
+    # Causes expectation failures to break the build, otherwise, just warns on
+    # stderr and writes a failure file to $android_configuration_failure_dir:
+    fail_on_android_expectations = false
 
     # Enable the chrome build for devices without touchscreens.
     notouch_build = false
@@ -212,9 +213,6 @@ if (is_android || is_chromeos) {
     # configured to use it.
     enable_proguard_obfuscation = true
   }
-
-  assert(!(check_android_configuration && is_java_debug),
-         "check_android_configuration only works when proguard is enabled")
 
   # We need a second declare_args block to make sure we are using the overridden
   # value of the arguments set above.

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool_instance.h"

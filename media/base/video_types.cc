@@ -4,7 +4,9 @@
 
 #include "media/base/video_types.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 
 namespace media {

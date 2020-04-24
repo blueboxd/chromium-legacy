@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/certificates_handler.h"
 
-#include "base/logging.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"

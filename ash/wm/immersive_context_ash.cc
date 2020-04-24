@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/logging.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 

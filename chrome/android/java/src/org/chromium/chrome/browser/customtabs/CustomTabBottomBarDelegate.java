@@ -90,6 +90,11 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
         fullscreenManager.addListener(this);
 
         compositorContentInitializer.addCallback(this::addOverlayPanelManagerObserver);
+
+        mActivity.getWindowAndroid().getApplicationBottomInsetProvider().addObserver((inset) -> {
+            if (mBottomBarView == null) return;
+            hideBottomBar(inset > 0);
+        });
     }
 
     /**
@@ -346,15 +351,6 @@ public class CustomTabBottomBarDelegate implements FullscreenListener {
         // using getBrowserControlHiddenRatio(), http://crbug.com/928903.
         getBottomBarView().setTranslationY(mFullscreenManager.getBrowserControlHiddenRatio()
                 * bottomControlsHeight);
-    }
-
-    @Override
-    public void onUpdateViewportSize() {
-        if (mBottomBarView == null) return; // Check bottom bar view but don't inflate it.
-
-        // Hide the container of the bottom bar while there is another feature shrinking the
-        // viewport of the web content.
-        hideBottomBar(mActivity.getWindowAndroid().getApplicationBottomInsetProvider().get() > 0);
     }
 
     /**

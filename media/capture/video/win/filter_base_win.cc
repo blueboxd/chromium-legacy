@@ -4,7 +4,7 @@
 
 #include "media/capture/video/win/filter_base_win.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 #pragma comment(lib, "strmiids.lib")
 

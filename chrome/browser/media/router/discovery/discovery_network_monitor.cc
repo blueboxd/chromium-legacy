@@ -7,9 +7,9 @@
 #include <memory>
 #include <unordered_set>
 
+#include "base/check_op.h"
 #include "base/hash/sha1.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

@@ -7,7 +7,8 @@
 #include <utility>
 
 #include "base/android/jni_android.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "chrome/android/chrome_jni_headers/TrustedVaultClient_jni.h"
 #include "content/public/browser/browser_thread.h"
 

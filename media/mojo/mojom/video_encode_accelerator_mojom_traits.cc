@@ -4,7 +4,7 @@
 
 #include "media/mojo/mojom/video_encode_accelerator_mojom_traits.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"

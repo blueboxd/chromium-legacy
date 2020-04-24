@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

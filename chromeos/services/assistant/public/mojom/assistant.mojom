@@ -258,43 +258,6 @@ interface AssistantInteractionSubscriber {
   OnWaitStarted();
 };
 
-// Interface for assistant to call into browser to perform device actions.
-interface DeviceActions {
-  // Enables or disables WiFi.
-  SetWifiEnabled(bool enabled);
-
-  // Enables or disables Bluetooth.
-  SetBluetoothEnabled(bool enabled);
-
-  // Gets the current screen brightness level (0-1.0).
-  // The level is set to 0 in the event of an error.
-  GetScreenBrightnessLevel() => (bool success, double level);
-
-  // Sets the screen brightness level (0-1.0).  If |gradual| is true, the
-  // transition will be animated.
-  SetScreenBrightnessLevel(double level, bool gradual);
-
-  // Enables or disables Night Light.
-  SetNightLightEnabled(bool enabled);
-
-  // Enables or disables Switch Access.
-  SetSwitchAccessEnabled(bool enabled);
-
-  // Open the Android app if the app is available.
-  OpenAndroidApp(AndroidAppInfo app_info) => (bool app_opened);
-
-  // Verify the status of the Android apps.
-  VerifyAndroidApp(array<AndroidAppInfo> apps_info) => (array<AndroidAppInfo>
-                                                        apps_info);
-
-  // Launch Android intent. The intent is encoded as a URI string.
-  // See Intent.toUri().
-  LaunchAndroidIntent(string intent);
-
-  // Register App list event subscriber.
-  AddAppListEventSubscriber(pending_remote<AppListEventSubscriber> subscriber);
-};
-
 // Subscribes to App list events.
 interface AppListEventSubscriber {
   // Called when the android app list changed.

@@ -11,7 +11,10 @@
 
 #include "base/macros.h"
 #include "content/renderer/render_frame_impl.h"
+#include "content/shell/common/web_test/blink_test.mojom.h"
 #include "content/shell/test_runner/web_frame_test_client.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -19,23 +22,22 @@
 #include "ui/accessibility/ax_event.h"
 
 namespace content {
-class RenderViewImpl;
-}  // namespace content
-
-namespace content {
+class BlinkTestRunner;
+class WebViewTestProxy;
 class WebWidgetTestProxy;
 
 // WebFrameTestProxy is used during running web tests instead of a
 // RenderFrameImpl to inject test-only behaviour by overriding methods in the
 // base class.
-class WebFrameTestProxy : public content::RenderFrameImpl {
+class WebFrameTestProxy : public RenderFrameImpl,
+                          public mojom::BlinkTestControl {
  public:
-  template <typename... Args>
-  explicit WebFrameTestProxy(Args&&... args)
-      : RenderFrameImpl(std::forward<Args>(args)...) {}
+  explicit WebFrameTestProxy(RenderFrameImpl::CreateParams params);
   ~WebFrameTestProxy() override;
 
-  void Initialize(content::RenderViewImpl* render_view_for_frame);
+  // RenderFrameImpl overrides.
+  void Initialize() override;
+  void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
 
   // Reset state between tests.
   void Reset();
@@ -46,9 +48,6 @@ class WebFrameTestProxy : public content::RenderFrameImpl {
 
   // Returns the test-subclass of RenderWidget for the local root of this frame.
   WebWidgetTestProxy* GetLocalRootWebWidgetTestProxy();
-
-  // RenderFrameImpl overrides.
-  void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
 
   // WebLocalFrameClient implementation.
   blink::WebPlugin* CreatePlugin(const blink::WebPluginParams& params) override;
@@ -75,7 +74,30 @@ class WebFrameTestProxy : public content::RenderFrameImpl {
   void DidClearWindowObject() override;
 
  private:
-  std::unique_ptr<WebFrameTestClient> test_client_;
+  // mojom::BlinkTestControl implementation.
+  void CaptureDump(CaptureDumpCallback callback) override;
+  void CompositeWithRaster(CompositeWithRasterCallback callback) override;
+  void DumpFrameLayout(DumpFrameLayoutCallback callback) override;
+  void SetTestConfiguration(mojom::ShellTestConfigurationPtr config) override;
+  void ReplicateTestConfiguration(
+      mojom::ShellTestConfigurationPtr config) override;
+  void SetupRendererProcessForNonTestWindow() override;
+  void ResetRendererAfterWebTest() override;
+  void TestFinishedInSecondaryRenderer() override;
+  void LayoutDumpCompleted(const std::string& completed_layout_dump) override;
+  void ReplyBluetoothManualChooserEvents(
+      const std::vector<std::string>& events) override;
+
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<mojom::BlinkTestControl> receiver);
+
+  BlinkTestRunner* blink_test_runner();
+
+  WebViewTestProxy* const web_view_test_proxy_;
+  WebFrameTestClient test_client_;
+
+  mojo::AssociatedReceiver<mojom::BlinkTestControl>
+      blink_test_control_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxy);
 };

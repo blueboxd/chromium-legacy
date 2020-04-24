@@ -4,7 +4,7 @@
 
 #include "chrome/common/media_router/media_route_provider_helper.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_piece.h"
 
 constexpr const char kExtension[] = "EXTENSION";

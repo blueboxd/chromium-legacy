@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/android/modules/dev_ui/provider/dev_ui_module_provider.h"
 #include "chrome/browser/dev_ui/android/dev_ui_loader_error_page.h"
 #include "chrome/common/webui_url_constants.h"

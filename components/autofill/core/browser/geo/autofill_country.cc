@@ -11,6 +11,8 @@
 #include "base/strings/string_util.h"
 #include "components/autofill/core/browser/geo/country_data.h"
 #include "components/autofill/core/browser/geo/country_names.h"
+#include "components/autofill/core/common/autofill_internals/log_message.h"
+#include "components/autofill/core/common/logging/log_buffer.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -86,4 +88,21 @@ AutofillCountry::AutofillCountry(const std::string& country_code,
       postal_code_label_(postal_code_label),
       state_label_(state_label) {}
 
+// Prints a formatted log of a |AutofillCountry| to a |LogBuffer|.
+LogBuffer& operator<<(LogBuffer& buffer, const AutofillCountry& country) {
+  buffer << LogMessage::kImportAddressProfileFromFormAddressRequirements;
+  buffer << Tag{"div"} << Attrib{"class", "country_data"};
+  buffer << Tag{"table"};
+  buffer << Tr{} << "Country code:" << country.country_code();
+  buffer << Tr{} << "Country name:" << country.name();
+  buffer << Tr{} << "State required:" << country.requires_state();
+  buffer << Tr{} << "Zip required:" << country.requires_zip();
+  buffer << Tr{} << "City required:" << country.requires_city();
+  buffer << Tr{} << "State label:" << country.state_label();
+  buffer << Tr{} << "Postal code label:" << country.postal_code_label();
+  buffer << CTag{"table"};
+  buffer << CTag{"div"};
+  buffer << CTag{};
+  return buffer;
+}
 }  // namespace autofill

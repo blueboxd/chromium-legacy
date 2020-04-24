@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "media/base/overlay_info.h"

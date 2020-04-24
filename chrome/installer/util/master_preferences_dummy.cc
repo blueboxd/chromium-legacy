@@ -10,7 +10,7 @@
 
 #include "chrome/installer/util/master_preferences.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 
 namespace installer {

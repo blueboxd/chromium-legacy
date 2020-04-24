@@ -4,7 +4,7 @@
 
 #include "chrome/chrome_cleaner/test/test_registry_util.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {

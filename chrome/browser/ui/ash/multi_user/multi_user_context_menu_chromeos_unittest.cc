@@ -6,9 +6,9 @@
 
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/test/ash_test_helper.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"

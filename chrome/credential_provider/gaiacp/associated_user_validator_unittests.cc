@@ -475,7 +475,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   }
 
   bool should_user_locking_be_enabled =
-      CGaiaCredentialProvider::IsUsageScenarioSupported(cpus) && mdm_url_set;
+      CGaiaCredentialProvider::IsUsageScenarioSupported(cpus);
 
   EXPECT_EQ(should_user_locking_be_enabled,
             validator.IsUserAccessBlockingEnforced(cpus));

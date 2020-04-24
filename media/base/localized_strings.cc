@@ -4,7 +4,6 @@
 
 #include "media/base/localized_strings.h"
 
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 

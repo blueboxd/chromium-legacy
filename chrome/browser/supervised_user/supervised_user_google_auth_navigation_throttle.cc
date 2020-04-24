@@ -5,8 +5,8 @@
 #include "chrome/browser/supervised_user/supervised_user_google_auth_navigation_throttle.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"

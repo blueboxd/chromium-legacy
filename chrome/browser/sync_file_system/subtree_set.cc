@@ -4,7 +4,8 @@
 
 #include "chrome/browser/sync_file_system/subtree_set.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "storage/common/file_system/file_system_util.h"
 

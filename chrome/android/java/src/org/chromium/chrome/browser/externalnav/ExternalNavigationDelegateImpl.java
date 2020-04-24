@@ -29,7 +29,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -203,7 +202,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                 if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(intent);
             }
-            recordExternalNavigationDispatched(intent);
+            ExternalNavigationHandler.recordExternalNavigationDispatched(intent);
         } catch (RuntimeException e) {
             IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
         }
@@ -227,7 +226,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                     activityWasLaunched = false;
                 }
             }
-            if (activityWasLaunched) recordExternalNavigationDispatched(intent);
+            if (activityWasLaunched) {
+                ExternalNavigationHandler.recordExternalNavigationDispatched(intent);
+            }
             return activityWasLaunched;
         } catch (SecurityException e) {
             // https://crbug.com/808494: Handle the URL in Chrome if dispatching to another
@@ -239,14 +240,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             return false;
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
-        }
-    }
-
-    private void recordExternalNavigationDispatched(Intent intent) {
-        ArrayList<String> specializedHandlers = intent.getStringArrayListExtra(
-                IntentHandler.EXTRA_EXTERNAL_NAV_PACKAGES);
-        if (specializedHandlers != null && specializedHandlers.size() > 0) {
-            RecordUserAction.record("MobileExternalNavigationDispatched");
         }
     }
 
@@ -439,12 +432,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         if (context instanceof ChromeActivity) {
             ((ChromeActivity) context).getTabModelSelector().closeTab(mTab);
         }
-    }
-
-    @Override
-    public void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> infos) {
-        intent.putExtra(IntentHandler.EXTRA_EXTERNAL_NAV_PACKAGES,
-                getSpecializedHandlersWithFilter(infos, null));
     }
 
     @Override

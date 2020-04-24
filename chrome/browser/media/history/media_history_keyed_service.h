@@ -134,28 +134,48 @@ class MediaHistoryKeyedService : public KeyedService,
   // for waiting for database operations in tests.
   void PostTaskToDBForTest(base::OnceClosure callback);
 
-  // Returns Media Feeds. If |include_origin_watchtime_percentile_data| is true
-  // then we will return the feeds sorted by audio+video watchtime descending
-  // and we will also populate the |origin_audio_video_watchtime_percentile|
-  // field in |MediaFeedPtr|. If |limit| is specified then we will limit the
-  // number of results to this. If |audio_video_watchtime_min| is specified then
-  // this will require a minimum watchtime for feeds to be returned. If
-  // |fetched_items_min| is specified then we will require a minimum number
-  // of fetched items. If |fetched_items_min_should_be_safe| is true then
-  // the fetched items must have been confirmed by Safe Search to be safe.
+  // Returns Media Feeds.
   struct GetMediaFeedsRequest {
-    GetMediaFeedsRequest(
-        bool include_origin_watchtime_percentile_data,
-        base::Optional<unsigned> limit,
-        base::Optional<base::TimeDelta> audio_video_watchtime_min,
-        base::Optional<int> fetched_items_min,
+    enum class Type {
+      // Return all the fields for debugging.
+      kDebugAll,
+
+      // Returns the top feeds to be fetched. These will be sorted by the
+      // by audio+video watchtime descending and we will also populate the
+      // |origin_audio_video_watchtime_percentile| field in |MediaFeedPtr|.
+      kTopFeedsForFetch,
+
+      // Returns the top feeds to be displayed. These will be sorted by the
+      // by audio+video watchtime descending and we will also populate the
+      // |origin_audio_video_watchtime_percentile| field in |MediaFeedPtr|.
+      kTopFeedsForDisplay
+    };
+
+    static GetMediaFeedsRequest CreateTopFeedsForFetch(
+        unsigned limit,
+        base::TimeDelta audio_video_watchtime_min);
+
+    static GetMediaFeedsRequest CreateTopFeedsForDisplay(
+        unsigned limit,
+        base::TimeDelta audio_video_watchtime_min,
+        int fetched_items_min,
         bool fetched_items_min_should_be_safe);
+
     GetMediaFeedsRequest();
     GetMediaFeedsRequest(const GetMediaFeedsRequest& t);
 
-    bool include_origin_watchtime_percentile_data = false;
+    Type type = Type::kDebugAll;
+
+    // The maximum number of feeds to return. Only valid for |kTopFeedsForFetch|
+    // and |kTopFeedsForDisplay|.
     base::Optional<unsigned> limit;
+
+    // The minimum audio+video watchtime required on the origin to return the
+    // feed. Only valid for |kTopFeedsForFetch| and |kTopFeedsForDisplay|.
     base::Optional<base::TimeDelta> audio_video_watchtime_min;
+
+    // The minimum number of fetched items that are required and whether they
+    // should have passed safe search. Only valid for |kTopFeedsForDisplay|.
     base::Optional<int> fetched_items_min;
     bool fetched_items_min_should_be_safe = false;
   };
@@ -166,6 +186,13 @@ class MediaHistoryKeyedService : public KeyedService,
 
   // Updates the display time for the Media Feed with |feed_id| to now.
   void UpdateMediaFeedDisplayTime(const int64_t feed_id);
+
+  // Increment the media feed items shown counter by one.
+  void IncrementMediaFeedItemsShownCount(const std::set<int64_t> feed_item_ids);
+
+  // Marks a media feed item as clicked. This is when the user has opened the
+  // item in the UI.
+  void MarkMediaFeedItemAsClicked(const int64_t& feed_item_id);
 
  private:
   class StoreHolder;

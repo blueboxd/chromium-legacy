@@ -4,7 +4,7 @@
 
 #include "chrome/test/base/js_test_api.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 

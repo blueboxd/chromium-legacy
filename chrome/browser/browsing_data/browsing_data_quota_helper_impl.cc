@@ -9,7 +9,8 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"

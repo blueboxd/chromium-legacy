@@ -10,7 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/run_loop.h"
 #include "device/bluetooth/android/wrappers.h"
 #include "device/bluetooth/bluetooth_adapter_android.h"

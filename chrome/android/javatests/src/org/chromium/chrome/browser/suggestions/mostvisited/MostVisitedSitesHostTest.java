@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.tile.TileSectionType;
 import org.chromium.chrome.browser.suggestions.tile.TileSource;
@@ -57,10 +56,7 @@ public class MostVisitedSitesHostTest {
     public void setUp() {
         mTestSetupRule.startMainActivityOnBlankPage();
         MostVisitedSitesHost.setSkipRestoreFromDiskForTesting();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mMostVisitedSitesHost = new MostVisitedSitesHost(
-                    mTestSetupRule.getActivity(), Profile.getLastUsedRegularProfile());
-        });
+        mMostVisitedSitesHost = MostVisitedSitesHost.getInstance();
     }
 
     @Test
@@ -164,8 +160,10 @@ public class MostVisitedSitesHostTest {
 
         // If restoring from disk is not finished, all coming tasks should be set as the pending
         // task.
-        mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites1);
-        mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites2);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites1);
+            mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites2);
+        });
 
         // newTopSites1 should be skipped and newTopSites2 should be the pending task.
         assertEquals(newTopSites2.size(),
@@ -186,8 +184,10 @@ public class MostVisitedSitesHostTest {
         mMostVisitedSitesHost.setCurrentTaskForTesting(() -> {});
 
         // If current task is not null, all saving tasks should be set as pending task.
-        mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites1);
-        mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites2);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites1);
+            mMostVisitedSitesHost.saveMostVisitedSitesInfo(newTopSites2);
+        });
 
         // newTopSites1 should be skipped and newTopSites2 should be the pending task.
         assertEquals(newTopSites2.size(),
@@ -205,7 +205,9 @@ public class MostVisitedSitesHostTest {
         // Set and run current task.
         mMostVisitedSitesHost.setIsSyncedForTesting(true);
         mMostVisitedSitesHost.setCurrentTaskForTesting(null);
-        mMostVisitedSitesHost.saveMostVisitedSitesInfo(createFakeSiteSuggestions1());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mMostVisitedSitesHost.saveMostVisitedSitesInfo(createFakeSiteSuggestions1());
+        });
 
         // When current task is not finished, set pending task.
         assertTrue(mMostVisitedSitesHost.getCurrentFilesNeedToSaveCountForTesting() > 0);

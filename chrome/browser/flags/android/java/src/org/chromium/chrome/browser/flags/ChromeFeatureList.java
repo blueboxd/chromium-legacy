@@ -321,7 +321,6 @@ public abstract class ChromeFeatureList {
             "OmniboxUIExperimentHideSteadyStateUrlScheme";
     public static final String OMNIBOX_HIDE_TRIVIAL_SUBDOMAINS_IN_STEADY_STATE =
             "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains";
-    public static final String OMNIBOX_RICH_ENTITY_SUGGESTIONS = "OmniboxRichEntitySuggestions";
     public static final String OMNIBOX_SPARE_RENDERER = "OmniboxSpareRenderer";
     public static final String OMNIBOX_SEARCH_ENGINE_LOGO = "OmniboxSearchEngineLogo";
     public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";

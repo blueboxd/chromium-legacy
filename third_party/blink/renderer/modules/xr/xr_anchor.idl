@@ -8,7 +8,9 @@
     RuntimeEnabled=WebXRIncubations
 ]
 interface XRAnchor {
+    [RaisesException]
     readonly attribute XRSpace anchorSpace;
 
-    void detach();
+    [ImplementedAs=Delete]
+    void delete();
 };

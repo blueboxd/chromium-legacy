@@ -100,7 +100,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   AssistantStateProxy* GetAssistantStateProxyForTesting();
 
   // AssistantService overrides:
-  void Init(mojo::PendingRemote<mojom::DeviceActions> device_actions) override;
+  void Init() override;
   void BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) override;
   void BindSettingsManager(
       mojo::PendingReceiver<mojom::AssistantSettingsManager> receiver) override;
@@ -169,8 +169,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   bool ShouldEnableHotword();
 
   mojo::ReceiverSet<mojom::Assistant> assistant_receivers_;
-
-  mojo::Remote<mojom::DeviceActions> device_actions_;
 
   signin::IdentityManager* const identity_manager_;
   std::unique_ptr<ScopedAshSessionObserver> scoped_ash_session_observer_;

@@ -1586,6 +1586,18 @@ message RequiredClientCertificateForDeviceProto {
   optional string required_client_certificate_for_device = 1;
 }
 
+// Setting that controls whether ARC ADB sideloading is allowed for the device.
+message DeviceCrostiniArcAdbSideloadingAllowedProto {
+  enum AllowanceMode {
+    DISALLOW = 0;
+    DISALLOW_WITH_POWERWASH = 1;
+    ALLOW_FOR_AFFILIATED_USERS = 2;
+    // Next ID to use: 3
+  }
+
+  optional AllowanceMode mode = 1 [default = DISALLOW];
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61, 90;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1713,4 +1725,6 @@ message ChromeDeviceSettingsProto {
       device_login_screen_privacy_screen_enabled = 100;
   optional RequiredClientCertificateForDeviceProto
       required_client_certificate_for_device = 101;
+  optional DeviceCrostiniArcAdbSideloadingAllowedProto
+      device_crostini_arc_adb_sideloading_allowed = 102;
 }

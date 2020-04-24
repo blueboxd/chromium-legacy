@@ -158,7 +158,7 @@ public class SelectableListToolbar<E>
     public void destroy() {
         mIsDestroyed = true;
         if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
-        hideKeyboard();
+        if (mSearchEditText != null) hideKeyboard();
         if (mVrModeProvider != null) mVrModeProvider.unregisterVrModeObserver(this);
     }
 

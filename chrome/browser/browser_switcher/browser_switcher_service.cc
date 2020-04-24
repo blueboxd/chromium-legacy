@@ -239,6 +239,11 @@ void BrowserSwitcherService::Init() {
   StartDownload(fetch_delay());
 }
 
+void BrowserSwitcherService::OnAllRulesetsLoadedForTesting(
+    base::OnceCallback<void()> cb) {
+  all_rulesets_loaded_callback_for_testing_ = std::move(cb);
+}
+
 void BrowserSwitcherService::StartDownload(base::TimeDelta delay) {
   // This destroys the previous XmlDownloader, which cancels any scheduled
   // refresh operations.
@@ -319,6 +324,8 @@ void BrowserSwitcherService::LoadRulesFromPrefs() {
 
 void BrowserSwitcherService::OnAllRulesetsParsed() {
   callback_list_.Notify(this);
+  if (all_rulesets_loaded_callback_for_testing_)
+    std::move(all_rulesets_loaded_callback_for_testing_).Run();
 }
 
 std::unique_ptr<BrowserSwitcherService::CallbackSubscription>

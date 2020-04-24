@@ -8,7 +8,8 @@
 #include <limits>
 #include <tuple>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"

@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"

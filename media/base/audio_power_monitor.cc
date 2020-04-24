@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/numerics/ranges.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"

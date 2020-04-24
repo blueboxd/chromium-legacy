@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"

@@ -6,7 +6,7 @@
 
 #include <time.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/time/time_override.h"
 
 namespace chromeos {

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/vr/elements/ui_element_type.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 
 namespace vr {

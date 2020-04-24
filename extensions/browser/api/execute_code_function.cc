@@ -7,6 +7,8 @@
 
 #include "extensions/browser/api/execute_code_function.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -112,7 +114,7 @@ void ExecuteCodeFunction::DidLoadAndLocalizeFile(
 
   std::string error;
   if (!Execute(*data, &error))
-    Respond(Error(error));
+    Respond(Error(std::move(error)));
 
   // If Execute() succeeds, the function will respond in
   // OnExecuteCodeFinished().
@@ -197,17 +199,17 @@ ExtensionFunction::ResponseAction ExecuteCodeFunction::Run() {
 
   std::string error;
   if (!CanExecuteScriptOnPage(&error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   if (details_->code) {
     if (!Execute(*details_->code, &error))
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
     return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
   DCHECK(details_->file);
   if (!LoadFile(*details_->file, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   // LoadFile will respond asynchronously later.
   return RespondLater();

@@ -4667,14 +4667,15 @@ TEST_F(ExtensionServiceTest, PerformActionBasedOnOmahaAttributes) {
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   service()->PerformActionBasedOnOmahaAttributes(good_crx, attributes);
-  EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
   EXPECT_EQ(disable_reason::DISABLE_REMOTELY_FOR_MALWARE,
             prefs->GetDisableReasons(good_crx));
+  EXPECT_TRUE(prefs->IsExtensionBlacklisted(good_crx));
 
   attributes.SetKey("_malware", base::Value(false));
   service()->PerformActionBasedOnOmahaAttributes(good_crx, attributes);
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_EQ(0, prefs->GetDisableReasons(good_crx));
+  EXPECT_FALSE(prefs->IsExtensionBlacklisted(good_crx));
 }
 
 // Tests not re-enabling previously remotely disabled extension if it's not the
@@ -4685,16 +4686,20 @@ TEST_F(ExtensionServiceTest, NoEnableRemotelyDisabledExtension) {
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   service()->DisableExtension(good_crx,
                               disable_reason::DISABLE_REMOTELY_FOR_MALWARE |
                                   disable_reason::DISABLE_USER_ACTION);
   EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
+  service()->BlacklistExtensionForTest(good_crx);
+  EXPECT_TRUE(prefs->IsExtensionBlacklisted(good_crx));
 
   base::Value empty_attr(base::Value::Type::DICTIONARY);
   service()->PerformActionBasedOnOmahaAttributes(good_crx, empty_attr);
   EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
-  EXPECT_FALSE(ExtensionPrefs::Get(profile())->GetDisableReasons(good_crx) &
+  EXPECT_FALSE(prefs->GetDisableReasons(good_crx) &
                disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
+  EXPECT_FALSE(prefs->IsExtensionBlacklisted(good_crx));
 }
 
 TEST_F(ExtensionServiceTest, TerminateExtension) {

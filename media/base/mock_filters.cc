@@ -4,7 +4,7 @@
 
 #include "media/base/mock_filters.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 using ::testing::_;
 using ::testing::NiceMock;

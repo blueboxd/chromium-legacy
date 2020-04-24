@@ -4,7 +4,6 @@
 
 #include "printing/printed_document.h"
 
-#include "base/logging.h"
 #include "printing/printing_context_android.h"
 
 namespace printing {

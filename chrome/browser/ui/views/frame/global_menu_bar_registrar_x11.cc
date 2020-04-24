@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "chrome/browser/ui/views/frame/global_menu_bar_x11.h"
 #include "components/dbus/thread_linux/dbus_thread_linux.h"

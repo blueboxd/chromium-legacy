@@ -9,7 +9,7 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/tray_network_state_model.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace ash {
 

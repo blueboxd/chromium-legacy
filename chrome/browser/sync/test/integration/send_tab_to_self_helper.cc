@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/send_tab_to_self/send_tab_to_self_entry.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"

@@ -7,8 +7,9 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/check_op.h"
 #include "base/files/file.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_requestor_interface.h"
 
 VolumeReaderJavaScriptStream::VolumeReaderJavaScriptStream(

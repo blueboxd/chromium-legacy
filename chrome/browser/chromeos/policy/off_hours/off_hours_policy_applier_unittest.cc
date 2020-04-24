@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "chromeos/policy/weekly_time/weekly_time.h"
 #include "chromeos/policy/weekly_time/weekly_time_interval.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"

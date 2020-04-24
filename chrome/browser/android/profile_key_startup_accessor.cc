@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/profile_key_startup_accessor.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/no_destructor.h"
 
 ProfileKeyStartupAccessor::ProfileKeyStartupAccessor() : key_(nullptr) {}

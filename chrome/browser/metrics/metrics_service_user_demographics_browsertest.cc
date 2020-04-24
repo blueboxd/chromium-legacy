@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
@@ -94,15 +93,8 @@ class MetricsServiceUserDemographicsBrowserTest
 // Keep this test in sync with testUMADemographicsReportingWithFeatureEnabled
 // and testUMADemographicsReportingWithFeatureDisabled in
 // ios/chrome/browser/metrics/demographics_egtest.mm.
-#if defined(OS_ANDROID)
-#define MAYBE_AddSyncedUserBirthYearAndGenderToProtoData \
-  DISABLED_AddSyncedUserBirthYearAndGenderToProtoData
-#else
-#define MAYBE_AddSyncedUserBirthYearAndGenderToProtoData \
-  AddSyncedUserBirthYearAndGenderToProtoData
-#endif
 IN_PROC_BROWSER_TEST_P(MetricsServiceUserDemographicsBrowserTest,
-                       MAYBE_AddSyncedUserBirthYearAndGenderToProtoData) {
+                       AddSyncedUserBirthYearAndGenderToProtoData) {
   test::DemographicsTestParams param = GetParam();
 
   base::HistogramTester histogram;

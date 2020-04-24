@@ -4,7 +4,7 @@
 
 #include "printing/printed_document.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "printing/metafile_skia.h"
 #include "printing/page_number.h"
 #include "printing/printed_page_win.h"

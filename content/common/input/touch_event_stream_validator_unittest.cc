@@ -162,8 +162,8 @@ TEST(TouchEventStreamValidator, InvalidPointStates) {
     WebTouchEvent event(kTouchTypes[i], WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests());
     event.touches_length = 1;
-    for (size_t j = WebTouchPoint::State::kStateUndefined;
-         j <= WebTouchPoint::State::kStateCancelled; ++j) {
+    for (size_t j = static_cast<size_t>(WebTouchPoint::State::kStateUndefined);
+         j <= static_cast<size_t>(WebTouchPoint::State::kStateCancelled); ++j) {
       event.touches[0].state = static_cast<WebTouchPoint::State>(j);
       if (event.touches[0].state == kValidTouchPointStatesForType[i]) {
         EXPECT_TRUE(validator.Validate(event, &error_msg));

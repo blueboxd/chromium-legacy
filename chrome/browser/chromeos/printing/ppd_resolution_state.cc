@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/printing/ppd_resolution_state.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace chromeos {
 

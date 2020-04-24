@@ -15,7 +15,7 @@ These builders must pass before a CL may land.
 
 * [android-binary-size](https://ci.chromium.org/p/chromium/builders/try/android-binary-size) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-binary-size)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-binary-size))
 
-* [android-kitkat-arm-rel](https://ci.chromium.org/p/chromium/builders/try/android-kitkat-arm-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-kitkat-arm-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-kitkat-arm-rel))
+* [android-lollipop-arm-rel](https://ci.chromium.org/p/chromium/builders/try/android-lollipop-arm-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-lollipop-arm-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-lollipop-arm-rel))
 
 * [android-marshmallow-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-arm64-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-marshmallow-arm64-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-marshmallow-arm64-rel))
 

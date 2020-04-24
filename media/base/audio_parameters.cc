@@ -6,7 +6,6 @@
 
 #include <sstream>
 
-#include "base/logging.h"
 #include "media/base/limits.h"
 
 namespace media {

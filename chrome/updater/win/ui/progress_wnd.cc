@@ -4,8 +4,9 @@
 
 #include "chrome/updater/win/ui/progress_wnd.h"
 
+#include "base/check_op.h"
 #include "base/i18n/message_formatter.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

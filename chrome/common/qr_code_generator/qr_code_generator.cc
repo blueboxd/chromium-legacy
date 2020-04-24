@@ -6,7 +6,7 @@
 
 #include <string.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 static_assert(QRCodeGenerator::kNumSegments != 0 &&
                   QRCodeGenerator::kTotalBytes %

@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/registry_test_data.h"

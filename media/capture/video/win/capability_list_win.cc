@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <functional>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "media/capture/video_capture_types.h"
 
 namespace media {

@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"

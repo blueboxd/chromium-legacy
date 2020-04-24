@@ -4,7 +4,8 @@
 
 #include "media/capture/video/win/pin_base_win.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 
 namespace media {
 

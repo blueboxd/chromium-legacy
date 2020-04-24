@@ -6,7 +6,7 @@
 
 #include <tuple>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace keyboard_shortcut_viewer {
 

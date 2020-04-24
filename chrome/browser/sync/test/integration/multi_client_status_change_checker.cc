@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 
-#include "base/logging.h"
 
 MultiClientStatusChangeChecker::MultiClientStatusChangeChecker(
     std::vector<syncer::ProfileSyncService*> services)

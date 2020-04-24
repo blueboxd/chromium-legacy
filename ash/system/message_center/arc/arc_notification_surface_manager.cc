@@ -4,7 +4,7 @@
 
 #include "ash/system/message_center/arc/arc_notification_surface_manager.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace ash {
 

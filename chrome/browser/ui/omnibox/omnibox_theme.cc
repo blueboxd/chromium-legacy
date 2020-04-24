@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"

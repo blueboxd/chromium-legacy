@@ -6,9 +6,9 @@
 
 #include <stdint.h>
 
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"

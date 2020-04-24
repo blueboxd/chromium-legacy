@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/page_navigator.h"

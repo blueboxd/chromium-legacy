@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/smb_client/fileapi/smbfs_file_system_backend_delegate.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "chrome/browser/chromeos/smb_client/fileapi/smbfs_async_file_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/file_system/file_stream_reader.h"

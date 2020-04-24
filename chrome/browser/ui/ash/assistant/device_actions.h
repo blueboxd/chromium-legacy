@@ -5,25 +5,28 @@
 #ifndef CHROME_BROWSER_UI_ASH_ASSISTANT_DEVICE_ACTIONS_H_
 #define CHROME_BROWSER_UI_ASH_ASSISTANT_DEVICE_ACTIONS_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "ash/public/cpp/android_intent_helper.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/assistant/device_actions_delegate.h"
+#include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
 class DeviceActions : public ash::AndroidIntentHelper,
-                      public chromeos::assistant::mojom::DeviceActions,
+                      public chromeos::assistant::DeviceActions,
                       public ArcAppListPrefs::Observer {
  public:
   explicit DeviceActions(std::unique_ptr<DeviceActionsDelegate> delegate);
   ~DeviceActions() override;
 
-  mojo::PendingRemote<chromeos::assistant::mojom::DeviceActions> AddReceiver();
-
-  // mojom::DeviceActions overrides:
+  // chromeos::assistant::DeviceActions overrides:
   void SetWifiEnabled(bool enabled) override;
   void SetBluetoothEnabled(bool enabled) override;
   void GetScreenBrightnessLevel(
@@ -31,11 +34,11 @@ class DeviceActions : public ash::AndroidIntentHelper,
   void SetScreenBrightnessLevel(double level, bool gradual) override;
   void SetNightLightEnabled(bool enabled) override;
   void SetSwitchAccessEnabled(bool enabled) override;
-  void OpenAndroidApp(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-                      OpenAndroidAppCallback callback) override;
+  bool OpenAndroidApp(
+      chromeos::assistant::mojom::AndroidAppInfoPtr app_info) override;
   void VerifyAndroidApp(
-      std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> apps_info,
-      VerifyAndroidAppCallback callback) override;
+      std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr>* apps_info)
+      override;
   void LaunchAndroidIntent(const std::string& intent) override;
   void AddAppListEventSubscriber(
       mojo::PendingRemote<chromeos::assistant::mojom::AppListEventSubscriber>
@@ -56,7 +59,6 @@ class DeviceActions : public ash::AndroidIntentHelper,
 
   ScopedObserver<ArcAppListPrefs, ArcAppListPrefs::Observer>
       scoped_prefs_observer_{this};
-  mojo::ReceiverSet<chromeos::assistant::mojom::DeviceActions> receivers_;
   mojo::RemoteSet<chromeos::assistant::mojom::AppListEventSubscriber>
       app_list_subscribers_;
   DISALLOW_COPY_AND_ASSIGN(DeviceActions);

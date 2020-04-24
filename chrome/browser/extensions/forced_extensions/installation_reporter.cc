@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/extensions/forced_extensions/installation_reporter_factory.h"
 

@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace lock_screen_apps {
 

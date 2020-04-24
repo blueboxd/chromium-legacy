@@ -44,20 +44,25 @@ const CGFloat kHeaderHeight = 70;
       NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_CREDENTIAL_LIST_TITLE",
                         @"AutofFill Chrome Password");
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+
   self.navigationItem.rightBarButtonItem = [self navigationCancelButton];
-  self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
 
   self.searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
   self.searchController.searchResultsUpdater = self;
   self.searchController.obscuresBackgroundDuringPresentation = NO;
-  self.searchController.searchBar.backgroundColor = [UIColor clearColor];
+  self.searchController.searchBar.translucent = YES;
+  self.searchController.searchBar.barTintColor =
+      [UIColor colorNamed:kBackgroundColor];
+
   self.tableView.tableHeaderView = self.searchController.searchBar;
   self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
 
   self.navigationController.navigationBar.translucent = YES;
   self.navigationController.navigationBar.barTintColor =
       [UIColor colorNamed:kBackgroundColor];
+  self.navigationController.navigationBar.tintColor =
+      [UIColor colorNamed:kBlueColor];
   self.navigationController.navigationBar.shadowImage = [[UIImage alloc] init];
   [self.navigationController.navigationBar
       setBackgroundImage:[[UIImage alloc] init]
@@ -121,8 +126,10 @@ const CGFloat kHeaderHeight = 70;
     cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle
                                   reuseIdentifier:kCellIdentifier];
     cell.accessoryView = [self infoIconButton];
-    cell.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   }
+
+  cell.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  cell.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
   id<Credential> credential = [self credentialForIndexPath:indexPath];
   if (credential.favicon.length) {
@@ -135,6 +142,7 @@ const CGFloat kHeaderHeight = 70;
     cell.imageView.tintColor = [UIColor colorNamed:kPlaceholderImageTintColor];
   }
   cell.imageView.contentMode = UIViewContentModeScaleAspectFit;
+  cell.accessoryView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   cell.textLabel.text = credential.user;
   cell.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   cell.detailTextLabel.text = credential.serviceName;

@@ -31,9 +31,11 @@ static UIColor* kBackgroundColor =
 
 namespace {
 
+// To use these scopes in a debug build, your development account will need to
+// be whitelisted.
 const char kChromotingAuthScopeValues[] =
-    "https://www.googleapis.com/auth/chromoting "
-    "https://www.googleapis.com/auth/googletalk "
+    "https://www.googleapis.com/auth/chromoting.directory "
+    "https://www.googleapis.com/auth/tachyon "
     "https://www.googleapis.com/auth/userinfo.email";
 
 std::string GetAuthorizationCodeUri() {
@@ -42,8 +44,7 @@ std::string GetAuthorizationCodeUri() {
   return base::StringPrintf(
       "https://accounts.google.com/o/oauth2/auth"
       "?scope=%s"
-      "&redirect_uri=https://chromoting-oauth.talkgadget.google.com/"
-      "talkgadget/oauth/chrome-remote-desktop/dev"
+      "&redirect_uri=https://remotedesktop.google.com/_/oauthredirect"
       "&response_type=code"
       "&client_id=%s"
       "&access_type=offline"

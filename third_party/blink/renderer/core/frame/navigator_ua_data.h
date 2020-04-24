@@ -35,7 +35,7 @@ class NavigatorUAData : public ScriptWrappable, ExecutionContextClient {
   void SetUAFullVersion(const String& uaFullVersion);
 
   // IDL implementation
-  const HeapVector<Member<NavigatorUABrandVersion>>& uaList() const;
+  const HeapVector<Member<NavigatorUABrandVersion>>& brands() const;
   bool mobile() const;
   ScriptPromise getHighEntropyValues(ScriptState*, Vector<String>&) const;
 

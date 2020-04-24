@@ -4,7 +4,7 @@
 
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"

@@ -4,8 +4,8 @@
 
 #include "chrome/common/string_matching/tokenized_string_char_iterator.h"
 
+#include "base/check.h"
 #include "base/i18n/char_iterator.h"
-#include "base/logging.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 
 TokenizedStringCharIterator::State::State() : token_index(0u), char_index(0) {}

@@ -5,6 +5,7 @@
 #include "sandbox/linux/syscall_broker/broker_simple_message.h"
 
 #include <errno.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 

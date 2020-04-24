@@ -5648,6 +5648,12 @@
     ]
   },
 
+  "DeviceCrostiniArcAdbSideloadingAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceCrostiniArcAdbSideloadingAllowed": 2 },
+    "policy_pref_mapping_test": []
+  },
+
   "DeviceSamlLoginAuthenticationType": {},
 
   "DeviceScheduledUpdateCheck": {

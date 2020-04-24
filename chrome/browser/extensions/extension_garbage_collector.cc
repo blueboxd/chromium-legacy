@@ -11,10 +11,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/one_shot_event.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"

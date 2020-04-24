@@ -4,7 +4,7 @@
 
 #include "chrome/browser/vr/cmd_buffer_surface_provider.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"

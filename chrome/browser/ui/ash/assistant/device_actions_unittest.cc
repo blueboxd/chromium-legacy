@@ -7,6 +7,8 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -67,13 +69,7 @@ class DeviceActionsTest : public ChromeAshTestBase {
       apps_info.push_back(std::move(app_info_ptr));
     }
 
-    device_actions()->VerifyAndroidApp(
-        std::move(apps_info),
-        base::BindOnce(&DeviceActionsTest::OnVerifyAndroidAppResponse,
-                       base::Unretained(this)));
-  }
-
-  void OnVerifyAndroidAppResponse(std::vector<AndroidAppInfoPtr> apps_info) {
+    device_actions()->VerifyAndroidApp(&apps_info);
     apps_info_ = std::move(apps_info);
   }
 

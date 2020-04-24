@@ -781,7 +781,7 @@ ExtensionFunction::ResponseAction SetPreferenceFunction::Run() {
       transformer->ExtensionToBrowserPref(value, &error, &bad_message));
   if (!browser_pref_value) {
     EXTENSION_FUNCTION_VALIDATE(!bad_message);
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
   EXTENSION_FUNCTION_VALIDATE(browser_pref_value->type() == pref->GetType());
 

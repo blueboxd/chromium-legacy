@@ -8,8 +8,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/containers/flat_map.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"

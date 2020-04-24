@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher.h"
 
-#include "base/logging.h"
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)

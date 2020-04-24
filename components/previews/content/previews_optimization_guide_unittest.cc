@@ -14,7 +14,7 @@
 #include "base/containers/flat_set.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/optimization_guide/optimization_guide_decider.h"
+#include "components/optimization_guide/test_optimization_guide_decider.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -26,7 +26,7 @@
 namespace previews {
 
 class TestOptimizationGuideDecider
-    : public optimization_guide::OptimizationGuideDecider {
+    : public optimization_guide::TestOptimizationGuideDecider {
  public:
   TestOptimizationGuideDecider() = default;
   ~TestOptimizationGuideDecider() override = default;
@@ -92,13 +92,6 @@ class TestOptimizationGuideDecider
       *optimization_metadata = std::get<1>(response);
 
     return std::get<0>(response);
-  }
-
-  void CanApplyOptimizationAsync(
-      content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationType,
-      optimization_guide::OptimizationGuideDecisionCallback callback) override {
-    NOTREACHED();
   }
 
   void SetResponses(

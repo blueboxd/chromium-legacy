@@ -5,8 +5,9 @@
 #include "chrome/browser/offline_pages/offline_page_url_loader.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"

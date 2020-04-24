@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/files/file.h"
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"

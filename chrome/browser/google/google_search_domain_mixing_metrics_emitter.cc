@@ -5,7 +5,7 @@
 #include "chrome/browser/google/google_search_domain_mixing_metrics_emitter.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/history/core/browser/domain_mixing_metrics.h"

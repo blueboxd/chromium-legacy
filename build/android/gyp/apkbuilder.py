@@ -118,6 +118,11 @@ def _ParseArgs(args):
       '--native-libs-and-assets-expectation-failure-file',
       help='Write to this file if the expected list of native libraries and '
       'assets does not match the actual list.')
+  parser.add_argument(
+      '--fail-on-expectations',
+      action="store_true",
+      help='When passed fails the build on libraries and assets expectation '
+      'mismatches.')
   options = parser.parse_args(args)
   options.assets = build_utils.ParseGnList(options.assets)
   options.uncompressed_assets = build_utils.ParseGnList(
@@ -282,7 +287,7 @@ def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress,
 
 def _VerifyNativeLibsAndAssets(
     native_libs, assets, expectation_file_path,
-    unexpected_native_libs_and_assets_failure_file_path):
+    unexpected_native_libs_and_assets_failure_file_path, fail_on_mismatch):
   """Verifies the native libraries and assets are as expected.
 
   Check that the native libraries and assets being added are consistent with
@@ -315,6 +320,9 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README
       with open(unexpected_native_libs_and_assets_failure_file_path, 'w') as f:
         f.write(msg_header)
         f.write(msg)
+
+    if fail_on_mismatch:
+      sys.exit(1)
 
 
 def main(args):
@@ -466,7 +474,8 @@ def main(args):
       if options.expected_native_libs_and_assets:
         _VerifyNativeLibsAndAssets(
             added_libs, added_assets, options.expected_native_libs_and_assets,
-            options.native_libs_and_assets_expectation_failure_file)
+            options.native_libs_and_assets_expectation_failure_file,
+            options.fail_on_expectations)
 
       # Add a placeholder lib if the APK should be multi ABI but is missing libs
       # for one of the ABIs.

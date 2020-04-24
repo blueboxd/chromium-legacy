@@ -913,7 +913,20 @@ class BBJSONGenerator(object):
         isolate_name = test.get('test') or test.get('isolate_name') or key
         gn_entry = self.gn_isolate_map.get(isolate_name)
         if gn_entry:
-          test['test_target'] = gn_entry['label']
+          label = gn_entry['label']
+
+          if label.count(':') != 1:
+            raise BBGenErr(
+              'Malformed GN label "%s" in gn_isolate_map for key "%s",'
+              ' implicit names (like //f/b meaning //f/b:b) are disallowed.' %
+              (label, isolate_name))
+          if label.split(':')[1] != isolate_name:
+            raise BBGenErr(
+              'gn_isolate_map key name "%s" doesn\'t match GN target name in'
+              ' label "%s" see http://crbug.com/1071091 for details.' %
+              (isolate_name, label))
+
+          test['test_target'] = label
         else:  # pragma: no cover
           # Some tests do not have an entry gn_isolate_map.pyl, such as
           # telemetry tests.

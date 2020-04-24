@@ -107,16 +107,19 @@ void GPURenderPassEncoder::setScissorRect(uint32_t x,
   GetProcs().renderPassEncoderSetScissorRect(GetHandle(), x, y, width, height);
 }
 
-void GPURenderPassEncoder::setIndexBuffer(GPUBuffer* buffer, uint64_t offset) {
+void GPURenderPassEncoder::setIndexBuffer(GPUBuffer* buffer,
+                                          uint64_t offset,
+                                          uint64_t size) {
   GetProcs().renderPassEncoderSetIndexBuffer(GetHandle(), buffer->GetHandle(),
-                                             offset);
+                                             offset, size);
 }
 
 void GPURenderPassEncoder::setVertexBuffer(uint32_t slot,
                                            const GPUBuffer* buffer,
-                                           const uint64_t offset) {
-  GetProcs().renderPassEncoderSetVertexBuffer(GetHandle(), slot,
-                                              buffer->GetHandle(), offset);
+                                           const uint64_t offset,
+                                           const uint64_t size) {
+  GetProcs().renderPassEncoderSetVertexBuffer(
+      GetHandle(), slot, buffer->GetHandle(), offset, size);
 }
 
 void GPURenderPassEncoder::draw(uint32_t vertexCount,

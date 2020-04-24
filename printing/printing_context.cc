@@ -6,7 +6,8 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "printing/page_setup.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"

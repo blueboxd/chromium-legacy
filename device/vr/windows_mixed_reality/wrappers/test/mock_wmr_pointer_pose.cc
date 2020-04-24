@@ -4,7 +4,6 @@
 
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_pointer_pose.h"
 
-#include "base/logging.h"
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_pointer_source_pose.h"
 
 namespace device {

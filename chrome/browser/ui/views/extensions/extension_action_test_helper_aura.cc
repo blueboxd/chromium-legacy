@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"

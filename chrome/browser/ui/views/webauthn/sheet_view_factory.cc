@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_model.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_bio_enrollment_sheet_view.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_ble_pin_entry_sheet_view.h"

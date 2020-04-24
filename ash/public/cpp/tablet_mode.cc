@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/tablet_mode.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace ash {
 

@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/chrome_cleaner/http/http_agent.h"
 #include "chrome/chrome_cleaner/http/http_agent_factory.h"
 #include "chrome/chrome_cleaner/http/http_response.h"

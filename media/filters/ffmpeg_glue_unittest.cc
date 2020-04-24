@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "media/base/container_names.h"

@@ -7,9 +7,10 @@
 #include <memory>
 #include <string>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"

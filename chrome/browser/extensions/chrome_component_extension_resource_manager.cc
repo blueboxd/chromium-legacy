@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/values.h"

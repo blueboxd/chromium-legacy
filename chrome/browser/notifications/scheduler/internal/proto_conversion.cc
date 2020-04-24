@@ -7,7 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace notifications {

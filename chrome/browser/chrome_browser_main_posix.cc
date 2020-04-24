@@ -14,8 +14,9 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/app/shutdown_signal_handlers_posix.h"

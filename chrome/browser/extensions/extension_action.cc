@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "extensions/browser/extension_icon_image.h"

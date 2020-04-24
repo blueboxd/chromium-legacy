@@ -5,8 +5,8 @@
 #include "media/video/fake_video_encode_accelerator.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 
 namespace media {

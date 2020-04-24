@@ -4,7 +4,6 @@
 
 #include <set>
 
-#include "base/logging.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

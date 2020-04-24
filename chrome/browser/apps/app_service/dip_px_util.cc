@@ -4,7 +4,7 @@
 
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ui/base/layout.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

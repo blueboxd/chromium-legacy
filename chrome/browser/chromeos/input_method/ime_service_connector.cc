@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/ime/constants.h"
 #include "chromeos/strings/grit/chromeos_strings.h"

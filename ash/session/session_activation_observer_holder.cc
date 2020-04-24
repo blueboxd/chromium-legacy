@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/session/session_activation_observer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 
 namespace ash {

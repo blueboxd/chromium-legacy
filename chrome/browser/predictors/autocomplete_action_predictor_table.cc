@@ -7,8 +7,8 @@
 #include <cstddef>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/guid.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"

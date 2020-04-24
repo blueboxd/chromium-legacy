@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

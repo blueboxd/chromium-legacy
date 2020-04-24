@@ -410,7 +410,7 @@ const char kInfobarOverflowBadgeShownUserAction[] =
   InfoBarManagerImpl* manager = InfoBarManagerImpl::FromWebState(self.webState);
   for (size_t index = 0; index < manager->infobar_count(); ++index) {
     InfoBarIOS* infobar = static_cast<InfoBarIOS*>(manager->infobar_at(index));
-    if (infobar->InfobarUIDelegate().infobarType == type)
+    if (infobar->infobar_type() == type)
       return infobar;
   }
   return nullptr;

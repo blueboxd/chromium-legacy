@@ -4,7 +4,7 @@
 
 #include "device/fido/credential_management.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"

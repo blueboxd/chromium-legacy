@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_util.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"

@@ -11,7 +11,7 @@
 #include "ash/system/night_light/night_light_controller_impl.h"
 #include "ash/system/power/power_status.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"

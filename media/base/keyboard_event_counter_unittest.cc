@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"

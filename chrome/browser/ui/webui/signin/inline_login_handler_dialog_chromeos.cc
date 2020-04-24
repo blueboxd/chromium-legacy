@@ -9,8 +9,8 @@
 
 #include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
+#include "base/check_op.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"

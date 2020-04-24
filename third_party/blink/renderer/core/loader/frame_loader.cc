@@ -835,7 +835,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
 
   if (request.ClientRedirectReason() != ClientNavigationReason::kNone) {
     probe::FrameRequestedNavigation(frame_, frame_, url,
-                                    request.ClientRedirectReason());
+                                    request.ClientRedirectReason(),
+                                    request.GetNavigationPolicy());
   }
 
   const network::mojom::IPAddressSpace initiator_address_space =

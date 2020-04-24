@@ -5,7 +5,7 @@
 #include "chrome/common/channel_info.h"
 
 #include "base/android/build_info.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"

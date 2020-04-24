@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "device/udev_linux/udev0_loader.h"
 #include "device/udev_linux/udev1_loader.h"
 

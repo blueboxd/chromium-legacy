@@ -582,21 +582,22 @@ void BlinkTestRunner::CaptureDump(
 }
 
 void BlinkTestRunner::DidCommitNavigationInMainFrame() {
-  WebFrame* main_frame = web_view_test_proxy_->GetWebView()->MainFrame();
-  if (!waiting_for_reset_ || !main_frame->IsWebLocalFrame())
+  // This method is just meant to catch the about:blank navigation started in
+  // ResetRendererAfterWebTest().
+  if (!waiting_for_reset_navigation_to_about_blank_)
     return;
+
+  WebFrame* main_frame = web_view_test_proxy_->GetWebView()->MainFrame();
+  DCHECK(main_frame->IsWebLocalFrame());
+
+  // This would mean some other navigation was already happening when the test
+  // ended, the about:blank should still be coming.
   GURL url = main_frame->ToWebLocalFrame()->GetDocumentLoader()->GetUrl();
   if (!url.IsAboutBlank())
     return;
 
-  // Avoid a situation where ResetDone is called twice, because
-  // ResetDone should be called once if a secondary renderer exists.
-  if (!is_main_window_)
-    return;
-
-  waiting_for_reset_ = false;
-
-  GetBlinkTestClientRemote()->ResetDone();
+  waiting_for_reset_navigation_to_about_blank_ = false;
+  GetBlinkTestClientRemote()->ResetRendererAfterWebTestDone();
 }
 
 // Private methods  -----------------------------------------------------------
@@ -699,7 +700,7 @@ void BlinkTestRunner::OnSetTestConfiguration(
   test_runner->SetFocus(web_view_test_proxy_->GetWebView(), true);
 }
 
-void BlinkTestRunner::OnReset() {
+void BlinkTestRunner::OnResetRendererAfterWebTest() {
   // BlinkTestMsg_Reset should always be sent to the *current* view.
   DCHECK(web_view_test_proxy_->GetMainRenderFrame());
 
@@ -709,7 +710,7 @@ void BlinkTestRunner::OnReset() {
 
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.
-  waiting_for_reset_ = true;
+  waiting_for_reset_navigation_to_about_blank_ = true;
 
   blink::WebURLRequest request{GURL(url::kAboutBlankURL)};
   request.SetMode(network::mojom::RequestMode::kNavigate);

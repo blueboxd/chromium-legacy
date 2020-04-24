@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"

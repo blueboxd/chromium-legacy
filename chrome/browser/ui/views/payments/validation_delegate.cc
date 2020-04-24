@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/payments/validation_delegate.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace payments {
 

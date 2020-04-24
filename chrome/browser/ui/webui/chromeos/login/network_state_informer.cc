@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"

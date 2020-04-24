@@ -41,7 +41,10 @@ ChromeBrowserMainExtraPartsViewsLinux::ChromeBrowserMainExtraPartsViewsLinux() =
 
 ChromeBrowserMainExtraPartsViewsLinux::
     ~ChromeBrowserMainExtraPartsViewsLinux() {
-  display::Screen::GetScreen()->RemoveObserver(this);
+  // It's not expected that the screen is destroyed by this point, but it can happen during fuzz
+  // tests.
+  if (display::Screen::GetScreen())
+    display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {

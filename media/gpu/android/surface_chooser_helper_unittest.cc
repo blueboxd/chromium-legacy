@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/gpu/android/mock_android_video_surface_chooser.h"
 #include "media/gpu/android/mock_promotion_hint_aggregator.h"

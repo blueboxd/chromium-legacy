@@ -17,7 +17,6 @@
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "base/logging.h"
 
 namespace ash {
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/themes/theme_service_factory.h"
 
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_system_factory.h"

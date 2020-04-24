@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_container_type.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 
 namespace content {
 
@@ -19,7 +19,7 @@ struct CONTENT_EXPORT ServiceWorkerClientInfo {
       int process_id,
       int route_id,
       const base::RepeatingCallback<WebContents*(void)>& web_contents_getter,
-      blink::mojom::ServiceWorkerContainerType type);
+      blink::mojom::ServiceWorkerClientType type);
   ServiceWorkerClientInfo(const ServiceWorkerClientInfo& other);
   ~ServiceWorkerClientInfo();
 
@@ -34,7 +34,7 @@ struct CONTENT_EXPORT ServiceWorkerClientInfo {
   // occurred in.
   base::RepeatingCallback<WebContents*(void)> web_contents_getter;
   // The client type.
-  blink::mojom::ServiceWorkerContainerType type;
+  blink::mojom::ServiceWorkerClientType type;
 };
 
 }  // namespace content

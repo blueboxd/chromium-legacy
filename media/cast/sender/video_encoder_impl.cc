@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "media/base/video_frame.h"
 #include "media/cast/sender/fake_software_video_encoder.h"
 #include "media/cast/sender/vp8_encoder.h"

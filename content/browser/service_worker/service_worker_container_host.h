@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -107,7 +108,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // Used for starting a web worker (dedicated worker or shared worker). Returns
   // a container host for the worker.
   static base::WeakPtr<ServiceWorkerContainerHost> CreateForWebWorker(
-      blink::mojom::ServiceWorkerContainerType container_type,
+      blink::mojom::ServiceWorkerClientType client_type,
       int process_id,
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
           host_receiver,
@@ -116,7 +117,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   ServiceWorkerContainerHost(
-      blink::mojom::ServiceWorkerContainerType type,
+      base::Optional<blink::mojom::ServiceWorkerClientType> client_type,
       bool is_parent_frame_secure,
       int frame_tree_node_id,
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
@@ -557,7 +558,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
                                     const char* error_prefix,
                                     Args... args);
 
-  const blink::mojom::ServiceWorkerContainerType type_;
+  const base::Optional<blink::mojom::ServiceWorkerClientType> client_type_;
 
   // See comments for the getter functions.
   GURL url_;

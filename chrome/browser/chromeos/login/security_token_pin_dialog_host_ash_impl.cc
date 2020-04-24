@@ -10,7 +10,7 @@
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace chromeos {
 

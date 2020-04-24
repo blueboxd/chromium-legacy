@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sharing/sms/sms_remote_fetcher.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"

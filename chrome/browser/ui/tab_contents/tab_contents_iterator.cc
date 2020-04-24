@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"

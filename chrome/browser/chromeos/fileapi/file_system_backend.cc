@@ -9,8 +9,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"

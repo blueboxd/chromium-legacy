@@ -108,9 +108,6 @@ NOINLINE void DetermineMathMLAlgorithmAndRun(
   } else if (IsA<MathMLFractionElement>(element) &&
              IsValidMathMLFraction(params.node)) {
     CreateAlgorithmAndRun<NGMathFractionLayoutAlgorithm>(params, callback);
-  } else if (IsA<MathMLUnderOverElement>(element) &&
-             IsValidMathMLScript(params.node)) {
-    CreateAlgorithmAndRun<NGMathUnderOverLayoutAlgorithm>(params, callback);
   } else if (IsA<MathMLScriptsElement>(element) &&
              IsValidMathMLScript(params.node)) {
     // TODO(rbuis): take into account movablelimits.

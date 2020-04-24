@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button_delegate.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"

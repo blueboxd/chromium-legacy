@@ -40,6 +40,7 @@
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/navigation_controller_impl.h"
+#include "weblayer/browser/page_load_metrics_initialize.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/profile_impl.h"
@@ -231,6 +232,8 @@ TabImpl::TabImpl(ProfileImpl* profile,
   content_settings::TabSpecificContentSettings::CreateForWebContents(
       web_contents_.get(), std::make_unique<TabSpecificContentSettingsDelegate>(
                                web_contents_.get()));
+
+  InitializePageLoadMetricsForWebContents(web_contents_.get());
 
 #if defined(OS_ANDROID)
   javascript_dialogs::TabModalDialogManager::CreateForWebContents(

@@ -2470,7 +2470,6 @@ if (enable_java_templates) {
                              [
                                "aapt_locale_allowlist",
                                "app_as_shared_lib",
-                               "failed_manifest_expectation_file",
                                "manifest_package",
                                "max_sdk_version",
                                "no_xml_namespaces",
@@ -3556,8 +3555,6 @@ if (enable_java_templates) {
                                "data_deps",
                                "deps",
                                "enable_multidex",
-                               "failed_manifest_expectation_file",
-                               "failed_proguard_expectation_file",
                                "generate_buildconfig_java",
                                "generate_final_jni",
                                "input_jars_paths",
@@ -4650,7 +4647,6 @@ if (enable_java_templates) {
         dex(_sync_dex_target) {
           forward_variables_from(invoker,
                                  [
-                                   "failed_proguard_expectation_file",
                                    "proguard_jar_path",
                                    "min_sdk_version",
                                  ])

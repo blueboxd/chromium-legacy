@@ -29,6 +29,10 @@ bool IsBeforeThreadCreated() {
 void WillCreateThread() {
   g_thread_created = true;
 }
+
+void SetIsBeforeThreadCreatedForTest() {
+  g_thread_created = false;
+}
 #endif
 
 ThreadSpecific<Threading>* Threading::static_data_;

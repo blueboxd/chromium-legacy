@@ -7,7 +7,7 @@
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"

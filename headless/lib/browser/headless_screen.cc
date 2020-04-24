@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"

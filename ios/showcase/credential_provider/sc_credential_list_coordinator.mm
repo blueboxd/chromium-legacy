@@ -30,10 +30,12 @@
 @synthesize validationIdentifier = _validationIdentifier;
 
 - (instancetype)initWithServiceName:(NSString*)serviceName
+                  serviceIdentifier:(NSString*)serviceIdentifier
                                user:(NSString*)user {
   self = [super init];
   if (self) {
     _serviceName = serviceName;
+    _serviceIdentifier = serviceIdentifier;
     _user = user;
   }
   return self;
@@ -43,17 +45,22 @@
 
 namespace {
 NSArray<id<Credential>>* suggestedPasswords = @[
-  [[SCCredential alloc] initWithServiceName:@"www.domain.com"
+  [[SCCredential alloc] initWithServiceName:@"domain.com"
+                          serviceIdentifier:@"www.domain.com"
                                        user:@"johnsmith"],
-  [[SCCredential alloc] initWithServiceName:@"www.domain.com"
+  [[SCCredential alloc] initWithServiceName:@"domain.com"
+                          serviceIdentifier:@"www.domain.com"
                                        user:@"janesmythe"],
 ];
 NSArray<id<Credential>>* allPasswords = @[
-  [[SCCredential alloc] initWithServiceName:@"www.domain1.com"
+  [[SCCredential alloc] initWithServiceName:@"domain1.com"
+                          serviceIdentifier:@"www.domain1.com"
                                        user:@"jsmythe@fazebook.com"],
-  [[SCCredential alloc] initWithServiceName:@"www.domain2.com"
+  [[SCCredential alloc] initWithServiceName:@"domain2.com"
+                          serviceIdentifier:@"www.domain2.com"
                                        user:@"jasmith@twitcher.com"],
-  [[SCCredential alloc] initWithServiceName:@"www.domain3.com"
+  [[SCCredential alloc] initWithServiceName:@"domain3.com"
+                          serviceIdentifier:@"www.domain3.com"
                                        user:@"HughZername"],
 ];
 }

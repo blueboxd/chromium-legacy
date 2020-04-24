@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
@@ -108,16 +110,7 @@ void NotifyAndroidAppListRefreshed(
 DeviceActions::DeviceActions(std::unique_ptr<DeviceActionsDelegate> delegate)
     : delegate_(std::move(delegate)) {}
 
-DeviceActions::~DeviceActions() {
-  receivers_.Clear();
-}
-
-mojo::PendingRemote<chromeos::assistant::mojom::DeviceActions>
-DeviceActions::AddReceiver() {
-  mojo::PendingRemote<chromeos::assistant::mojom::DeviceActions> pending_remote;
-  receivers_.Add(this, pending_remote.InitWithNewPipeAndPassReceiver());
-  return pending_remote;
-}
+DeviceActions::~DeviceActions() = default;
 
 void DeviceActions::SetWifiEnabled(bool enabled) {
   NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
@@ -183,14 +176,11 @@ void DeviceActions::SetSwitchAccessEnabled(bool enabled) {
                                   enabled);
 }
 
-void DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info,
-                                   OpenAndroidAppCallback callback) {
+bool DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info) {
   app_info->status = delegate_->GetAndroidAppStatus(app_info->package_name);
 
-  if (app_info->status != AppStatus::AVAILABLE) {
-    std::move(callback).Run(false);
-    return;
-  }
+  if (app_info->status != AppStatus::AVAILABLE)
+    return false;
 
   auto* app = ARC_GET_INSTANCE_FOR_METHOD(
       arc::ArcServiceManager::Get()->arc_bridge_service()->app(), LaunchIntent);
@@ -202,15 +192,13 @@ void DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info,
                << app_info->package_name;
   }
 
-  std::move(callback).Run(!!app);
+  return app != nullptr;
 }
 
-void DeviceActions::VerifyAndroidApp(std::vector<AndroidAppInfoPtr> apps_info,
-                                     VerifyAndroidAppCallback callback) {
-  for (const auto& app_info : apps_info) {
+void DeviceActions::VerifyAndroidApp(
+    std::vector<AndroidAppInfoPtr>* apps_info) {
+  for (const auto& app_info : *apps_info)
     app_info->status = delegate_->GetAndroidAppStatus(app_info->package_name);
-  }
-  std::move(callback).Run(std::move(apps_info));
 }
 
 void DeviceActions::LaunchAndroidIntent(const std::string& intent) {

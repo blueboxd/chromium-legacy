@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 

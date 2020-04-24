@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/containers/span.h"
-#include "base/logging.h"
 #include "components/crash/core/common/crash_key.h"
 #include "pdf/pdf.h"
 

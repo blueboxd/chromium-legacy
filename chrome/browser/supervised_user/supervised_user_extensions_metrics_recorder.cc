@@ -4,7 +4,6 @@
 
 #include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
 
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 

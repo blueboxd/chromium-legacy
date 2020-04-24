@@ -854,6 +854,7 @@ void Page::UpdateAcceleratedCompositingSettings() {
 void Page::DidCommitLoad(LocalFrame* frame) {
   if (main_frame_ == frame) {
     GetConsoleMessageStorage().Clear();
+    GetInspectorIssueStorage().Clear();
     // TODO(loonybear): Most of this doesn't appear to take into account that
     // each SVGImage gets it's own Page instance.
     GetDeprecation().ClearSuppression();

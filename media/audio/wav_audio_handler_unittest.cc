@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "media/audio/test_data.h"

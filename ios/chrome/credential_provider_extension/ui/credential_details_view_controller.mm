@@ -54,6 +54,9 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  self.navigationController.navigationBar.translucent = NO;
+  self.navigationController.navigationBar.backgroundColor =
+      [UIColor colorNamed:kBackgroundColor];
   self.navigationItem.rightBarButtonItem = [self navigationCancelButton];
   self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
 
@@ -69,6 +72,7 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
 - (void)presentCredential:(id<Credential>)credential {
   self.credential = credential;
   self.clearPassword = nil;
+  self.title = credential.serviceName;
   [self.tableView reloadData];
 }
 
@@ -91,13 +95,15 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
   cell.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   cell.detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  cell.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  cell.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
   switch (indexPath.row) {
     case RowIdentifier::RowIdentifierURL:
       cell.accessoryView = nil;
       cell.textLabel.text =
           NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_URL", @"URL");
-      cell.detailTextLabel.text = self.credential.serviceName;
+      cell.detailTextLabel.text = self.credential.serviceIdentifier;
       break;
     case RowIdentifier::RowIdentifierUsername:
       cell.accessoryView = nil;
@@ -146,6 +152,13 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
                            @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_COPY", @"Copy")
             atBottomOf:cell.textLabel
                 action:@selector(copyPassword)];
+      } else {
+        [self
+            showTootip:NSLocalizedString(
+                           @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_SHOW_PASSWORD",
+                           @"Show Password")
+            atBottomOf:cell.textLabel
+                action:@selector(showPassword)];
       }
       break;
     default:
@@ -182,12 +195,18 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
                       @"Password was copied")];
 }
 
+// Initiate process to show password unobfuscated.
+- (void)showPassword {
+  [self passwordIconButtonTapped:nil event:nil];
+}
+
 // Creates a cancel button for the navigation item.
 - (UIBarButtonItem*)navigationCancelButton {
   UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self.delegate
                            action:@selector(navigationCancelButtonWasPressed:)];
+  cancelButton.tintColor = [UIColor colorNamed:kBlueColor];
   return cancelButton;
 }
 
@@ -205,6 +224,7 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
 
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
   button.frame = CGRectMake(0.0, 0.0, image.size.width, image.size.height);
+  button.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   [button setBackgroundImage:image forState:UIControlStateNormal];
   [button setTintColor:[UIColor colorNamed:kBlueColor]];
   [button addTarget:self

@@ -4,7 +4,8 @@
 
 #include "device/fido/win/fake_webauthn_api.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "device/fido/fido_parsing_utils.h"

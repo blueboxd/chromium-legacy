@@ -58,6 +58,7 @@ bool SyntheticSmoothScrollGesture::InitializeMoveGesture(
     move_params.input_type = GetInputSourceType(gesture_type);
     move_params.add_slop = true;
     move_params.granularity = params_.granularity;
+    move_params.key_modifiers = params_.key_modifiers;
     move_gesture_.reset(new SyntheticSmoothMoveGesture(move_params));
     return true;
   }

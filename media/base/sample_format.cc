@@ -4,7 +4,9 @@
 
 #include "media/base/sample_format.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/notreached.h"
 
 namespace media {
 

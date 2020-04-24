@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/sync/os_sync_model_type_controller.h"
 #include "chrome/browser/profiles/profile.h"

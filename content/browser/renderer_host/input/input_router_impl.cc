@@ -345,7 +345,7 @@ void InputRouterImpl::UnlockMouse() {
 void InputRouterImpl::SetMovementXYForTouchPoints(blink::WebTouchEvent* event) {
   for (size_t i = 0; i < event->touches_length; ++i) {
     blink::WebTouchPoint* touch_point = &event->touches[i];
-    if (touch_point->state == blink::WebTouchPoint::kStateMoved) {
+    if (touch_point->state == blink::WebTouchPoint::State::kStateMoved) {
       const gfx::Point& last_position = global_touch_position_[touch_point->id];
       touch_point->movement_x =
           touch_point->PositionInScreen().x() - last_position.x();
@@ -357,10 +357,11 @@ void InputRouterImpl::SetMovementXYForTouchPoints(blink::WebTouchEvent* event) {
     } else {
       touch_point->movement_x = 0;
       touch_point->movement_y = 0;
-      if (touch_point->state == blink::WebTouchPoint::kStateReleased ||
-          touch_point->state == blink::WebTouchPoint::kStateCancelled) {
+      if (touch_point->state == blink::WebTouchPoint::State::kStateReleased ||
+          touch_point->state == blink::WebTouchPoint::State::kStateCancelled) {
         global_touch_position_.erase(touch_point->id);
-      } else if (touch_point->state == blink::WebTouchPoint::kStatePressed) {
+      } else if (touch_point->state ==
+                 blink::WebTouchPoint::State::kStatePressed) {
         DCHECK(global_touch_position_.find(touch_point->id) ==
                global_touch_position_.end());
         global_touch_position_[touch_point->id] =

@@ -4,7 +4,6 @@
 
 #include "device/fido/mac/credential_metadata.h"
 
-#include "base/logging.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "device/fido/public_key_credential_user_entity.h"

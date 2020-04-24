@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace chrome_cleaner {
 

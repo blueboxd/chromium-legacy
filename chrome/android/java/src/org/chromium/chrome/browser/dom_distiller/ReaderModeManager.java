@@ -23,7 +23,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -288,10 +287,8 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
         RecordHistogram.recordBooleanHistogram("DomDistiller.ReaderShownForPageLoad", visible);
     }
 
-    /**
-     * Notify the manager that the panel has completely closed.
-     */
-    public void onClosed(Tab tab, @StateChangeReason int reason) {
+    /** A notification that the infobar was closed without being used. */
+    public void onClosed() {
         RecordHistogram.recordBooleanHistogram("DomDistiller.InfoBarUsage", false);
         mIsDismissed = true;
     }

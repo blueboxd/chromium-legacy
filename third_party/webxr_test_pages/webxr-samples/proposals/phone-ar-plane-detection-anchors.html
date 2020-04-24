@@ -344,7 +344,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // from growing too much.
         if (flowers.length > MAX_FLOWERS) {
           let oldFlower = flowers.shift();
-          oldFlower.anchor.detach();
+          oldFlower.anchor.delete();
           scene.removeNode(oldFlower);
         }
       }

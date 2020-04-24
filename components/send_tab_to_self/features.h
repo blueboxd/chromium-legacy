@@ -11,10 +11,6 @@ class PrefService;
 
 namespace send_tab_to_self {
 
-// If this feature is enabled, the tabs will be broadcasted instead of
-// targeted to a specific device. This only affects the receiving side.
-extern const base::Feature kSendTabToSelfBroadcast;
-
 // If this feature is enabled, the Sending... animation will show in the omnibox
 // instead of sending Desktop OS notifications for contextual menu entry points.
 extern const base::Feature kSendTabToSelfOmniboxSendingAnimation;

@@ -9,7 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/apps/platform_apps/api/sync_file_system/extension_sync_event_observer.h"

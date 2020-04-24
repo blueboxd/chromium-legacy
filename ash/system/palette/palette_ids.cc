@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/system/palette/palette_ids.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace ash {
 

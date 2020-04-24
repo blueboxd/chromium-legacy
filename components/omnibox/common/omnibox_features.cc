@@ -70,17 +70,6 @@ const base::Feature kOmniboxMaxURLMatches {
 #endif
 };
 
-// Feature used to enable entity suggestion images and enhanced presentation
-// showing more context and descriptive text about the entity.
-const base::Feature kOmniboxRichEntitySuggestions{
-    "OmniboxRichEntitySuggestions",
-#if defined(OS_IOS) || defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
 // Feature used to enable swapping the rows on answers.
 const base::Feature kOmniboxReverseAnswers{"OmniboxReverseAnswers",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

@@ -8,8 +8,9 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "components/resources/android/theme_resources.h"
 #include "weblayer/browser/java/jni/ResourceMapper_jni.h"
 

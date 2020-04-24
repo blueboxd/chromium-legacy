@@ -5,8 +5,9 @@
 #include "chrome/browser/ui/views/media_router/presentation_receiver_window_view.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"

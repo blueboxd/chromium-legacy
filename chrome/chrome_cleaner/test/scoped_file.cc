@@ -5,8 +5,8 @@
 #include "chrome/chrome_cleaner/test/scoped_file.h"
 
 #include "base/base_paths_win.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 
 // static

@@ -240,6 +240,10 @@ mojom("mojom_platform") {
     enabled_features = [ "renderer_pref_system_font_family_name" ]
   }
 
+  if (use_x11) {
+    enabled_features += [ "use_x11" ]
+  }
+
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
   export_header = "third_party/blink/public/common/common_export.h"

@@ -72,6 +72,12 @@ public class ExternalNavigationHandler {
     private static final String PDF_MIME = "application/pdf";
     private static final String PDF_SUFFIX = ".pdf";
 
+    /**
+     * Records package names of external applications in the system that could have handled this
+     * intent.
+     */
+    public static final String EXTRA_EXTERNAL_NAV_PACKAGES = "org.chromium.chrome.browser.eenp";
+
     @VisibleForTesting
     public static final String EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url";
 
@@ -690,7 +696,8 @@ public class ExternalNavigationHandler {
         // Ensure intents re-target potential caller activity when we run in CCT mode.
         targetIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         mDelegate.maybeSetWindowId(targetIntent);
-        mDelegate.maybeRecordAppHandlersInIntent(targetIntent, resolvingInfos);
+        targetIntent.putExtra(
+                EXTRA_EXTERNAL_NAV_PACKAGES, mDelegate.getSpecializedHandlers(resolvingInfos));
 
         if (params.getReferrerUrl() != null) {
             mDelegate.maybeSetPendingReferrer(targetIntent, params.getReferrerUrl());
@@ -1146,6 +1153,17 @@ public class ExternalNavigationHandler {
         String filename = intent.getData().getLastPathSegment();
         return (filename != null && filename.endsWith(PDF_SUFFIX))
                 || PDF_MIME.equals(intent.getType());
+    }
+
+    /**
+     * Records the dispatching of an external intent.
+     */
+    public static void recordExternalNavigationDispatched(Intent intent) {
+        ArrayList<String> specializedHandlers =
+                intent.getStringArrayListExtra(EXTRA_EXTERNAL_NAV_PACKAGES);
+        if (specializedHandlers != null && specializedHandlers.size() > 0) {
+            RecordUserAction.record("MobileExternalNavigationDispatched");
+        }
     }
 
     /**

@@ -9,9 +9,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"

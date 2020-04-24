@@ -10,7 +10,7 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/time/time.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive_minizip.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_io_javascript_stream.h"

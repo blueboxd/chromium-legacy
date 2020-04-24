@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/notifications/extension_notification_handler.h"
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_piece.h"

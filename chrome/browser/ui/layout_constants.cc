@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/layout_constants.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 
 #if defined(OS_MACOSX)

@@ -1022,7 +1022,7 @@ ExtensionFunction::ResponseAction DownloadsDownloadFunction::Run() {
   std::string error;
   if (Fault(!download_url.is_valid(), download_extension_errors::kInvalidURL,
             &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("downloads_api_run_async", R"(
@@ -1183,7 +1183,7 @@ ExtensionFunction::ResponseAction DownloadsSearchFunction::Run() {
   std::string error;
   RunDownloadQuery(params->query, manager, incognito_manager, &error, &results);
   if (!error.empty())
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
 
   std::unique_ptr<base::ListValue> json_results(new base::ListValue());
   for (DownloadManager::DownloadVector::const_iterator it = results.begin();
@@ -1216,7 +1216,7 @@ ExtensionFunction::ResponseAction DownloadsPauseFunction::Run() {
   if (InvalidId(download_item, &error) ||
       Fault(download_item->GetState() != DownloadItem::IN_PROGRESS,
             download_extension_errors::kNotInProgress, &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
   // If the item is already paused, this is a no-op and the operation will
   // silently succeed.
@@ -1239,7 +1239,7 @@ ExtensionFunction::ResponseAction DownloadsResumeFunction::Run() {
   if (InvalidId(download_item, &error) ||
       Fault(download_item->IsPaused() && !download_item->CanResume(),
             download_extension_errors::kNotResumable, &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
   // Note that if the item isn't paused, this will be a no-op, and the extension
   // call will seem successful.
@@ -1283,7 +1283,7 @@ ExtensionFunction::ResponseAction DownloadsEraseFunction::Run() {
   std::string error;
   RunDownloadQuery(params->query, manager, incognito_manager, &error, &results);
   if (!error.empty())
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   std::unique_ptr<base::ListValue> json_results(new base::ListValue());
   for (DownloadManager::DownloadVector::const_iterator it = results.begin();
        it != results.end(); ++it) {
@@ -1312,7 +1312,7 @@ ExtensionFunction::ResponseAction DownloadsRemoveFileFunction::Run() {
             download_extension_errors::kNotComplete, &error) ||
       Fault(download_item->GetFileExternallyRemoved(),
             download_extension_errors::kFileAlreadyDeleted, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   RecordApiFunctions(DOWNLOADS_FUNCTION_REMOVE_FILE);
   download_item->DeleteFile(
       base::BindOnce(&DownloadsRemoveFileFunction::Done, this));
@@ -1355,7 +1355,7 @@ void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
             download_extension_errors::kNotDangerous, &error) ||
       Fault(!web_contents, download_extension_errors::kInvisibleContext,
             &error)) {
-    Respond(Error(error));
+    Respond(Error(std::move(error)));
     return;
   }
   bool visible = platform_util::IsVisible(web_contents->GetNativeView());
@@ -1395,7 +1395,7 @@ void DownloadsAcceptDangerFunction::DangerPromptCallback(
   if (InvalidId(download_item, &error) ||
       Fault(download_item->GetState() != DownloadItem::IN_PROGRESS,
             download_extension_errors::kNotInProgress, &error)) {
-    Respond(Error(error));
+    Respond(Error(std::move(error)));
     return;
   }
   switch (action) {
@@ -1423,7 +1423,7 @@ ExtensionFunction::ResponseAction DownloadsShowFunction::Run() {
       browser_context(), include_incognito_information(), params->download_id);
   std::string error;
   if (InvalidId(download_item, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   download_item->ShowDownloadInShell();
   RecordApiFunctions(DOWNLOADS_FUNCTION_SHOW);
   return RespondNow(NoArguments());
@@ -1467,16 +1467,16 @@ ExtensionFunction::ResponseAction DownloadsOpenFunction::Run() {
       Fault(!extension()->permissions_data()->HasAPIPermission(
                 APIPermission::kDownloadsOpen),
             download_extension_errors::kOpenPermission, &error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
   Browser* browser = ChromeExtensionFunctionDetails(this).GetCurrentBrowser();
   if (Fault(!browser, download_extension_errors::kInvisibleContext, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (Fault(!web_contents, download_extension_errors::kInvisibleContext,
             &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   // Extensions with debugger permission could fake user gestures and should
   // not be trusted.
   if (GetSenderWebContents() &&
@@ -1505,14 +1505,14 @@ void DownloadsOpenFunction::OpenPromptDone(int download_id, bool accept) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string error;
   if (Fault(!accept, download_extension_errors::kOpenPermission, &error)) {
-    Respond(Error(error));
+    Respond(Error(std::move(error)));
     return;
   }
   DownloadItem* download_item = GetDownload(
       browser_context(), include_incognito_information(), download_id);
   if (Fault(!download_item, download_extension_errors::kFileAlreadyDeleted,
             &error)) {
-    Respond(Error(error));
+    Respond(Error(std::move(error)));
     return;
   }
   download_item->OpenDownload();
@@ -1603,7 +1603,7 @@ ExtensionFunction::ResponseAction DownloadsGetFileIconFunction::Run() {
   if (InvalidId(download_item, &error) ||
       Fault(download_item->GetTargetFilePath().empty(),
             download_extension_errors::kEmptyFile, &error))
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   // In-progress downloads return the intermediate filename for GetFullPath()
   // which doesn't have the final extension. Therefore a good file icon can't be
   // found, so use GetTargetFilePath() instead.
@@ -1626,7 +1626,7 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string error;
   if (Fault(url.empty(), download_extension_errors::kIconNotFound, &error)) {
-    Respond(Error(error));
+    Respond(Error(std::move(error)));
     return;
   }
   RecordApiFunctions(DOWNLOADS_FUNCTION_GET_FILE_ICON);

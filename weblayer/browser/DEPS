@@ -24,6 +24,7 @@ include_rules = [
   "+components/metrics",
   "+components/navigation_interception",
   "+components/network_time",
+  "+components/page_load_metrics/browser",
   "+components/permissions",
   "+components/pref_registry",
   "+components/prefs",

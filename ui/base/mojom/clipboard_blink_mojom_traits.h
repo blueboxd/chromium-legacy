@@ -25,12 +25,10 @@ struct EnumTraits<blink::mojom::ClipboardBuffer, ui::ClipboardBuffer> {
       case blink::mojom::ClipboardBuffer::kStandard:
         *out = ui::ClipboardBuffer::kCopyPaste;
         return true;
-      case blink::mojom::ClipboardBuffer::kSelection:
 #if defined(USE_X11)
+      case blink::mojom::ClipboardBuffer::kSelection:
         *out = ui::ClipboardBuffer::kSelection;
         return true;
-#else
-        return false;
 #endif
     }
     return false;

@@ -5,7 +5,6 @@
 #include "base/optional.h"
 #include "media/gpu/chromeos/fourcc.h"
 
-#include "base/logging.h"
 #include "media/gpu/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

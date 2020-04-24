@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/logging.h"
 #include "base/optional.h"
 
 namespace chrome_cleaner {

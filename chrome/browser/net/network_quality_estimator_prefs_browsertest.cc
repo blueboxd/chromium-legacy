@@ -5,10 +5,10 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"

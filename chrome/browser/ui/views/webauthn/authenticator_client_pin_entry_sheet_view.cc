@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
 
 AuthenticatorClientPinEntrySheetView::AuthenticatorClientPinEntrySheetView(
     std::unique_ptr<AuthenticatorClientPinEntrySheetModel> sheet_model)

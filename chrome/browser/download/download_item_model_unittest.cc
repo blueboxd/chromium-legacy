@@ -9,8 +9,8 @@
 
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"

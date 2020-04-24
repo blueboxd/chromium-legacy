@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "media/base/limits.h"

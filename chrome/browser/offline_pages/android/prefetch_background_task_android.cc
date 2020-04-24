@@ -5,7 +5,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/time/time.h"
 #include "chrome/android/chrome_jni_headers/PrefetchBackgroundTask_jni.h"
 #include "chrome/browser/android/profile_key_util.h"

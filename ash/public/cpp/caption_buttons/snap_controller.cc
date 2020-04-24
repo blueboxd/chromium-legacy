@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/caption_buttons/snap_controller.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace ash {
 

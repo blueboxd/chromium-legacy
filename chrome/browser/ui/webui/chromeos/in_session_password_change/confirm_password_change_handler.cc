@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/saml/in_session_password_change_manager.h"

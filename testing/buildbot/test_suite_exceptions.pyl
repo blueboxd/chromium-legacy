@@ -33,7 +33,6 @@
   'android_webview_unittests': {
     'remove_from': [
       # On chromium.android, these do not need to run prior to M.
-      'android-kitkat-arm-rel',
       'android-lollipop-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
@@ -619,7 +618,6 @@
     'remove_from': [
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # https://crbug.com/1018780
-      'android-kitkat-arm-rel', # https://crbug.com/1060245
       'android-lollipop-arm-rel', # https://crbug.com/1060245
     ],
     'modifications': {
@@ -840,11 +838,6 @@
         ],
         'swarming': {
           'shards': 18,
-        },
-      },
-      'android-kitkat-arm-rel': {
-        'swarming': {
-          'shards': 15,
         },
       },
       'android-lollipop-arm-rel': {
@@ -1400,11 +1393,6 @@
         },
       },
     },
-    'remove_from': [
-      # Don't run on trybots, which don't use proguard.
-      # https://crbug.com/1029936.
-      'android-kitkat-arm-rel',
-    ],
   },
   'monochrome_public_test_ar_apk': {
     'modifications': {
@@ -1667,7 +1655,6 @@
     'remove_from': [
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-rel',
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
@@ -1703,7 +1690,6 @@
     'remove_from': [
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-rel',
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
@@ -1718,7 +1704,6 @@
     'remove_from': [
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-rel',
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
@@ -1748,7 +1733,6 @@
     'remove_from': [
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-rel',
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
@@ -1774,7 +1758,6 @@
   'network_service_webview_instrumentation_test_apk': {
     # Only run these on the phone testers for now due to capacity.
     'remove_from': [
-      'android-kitkat-arm-rel',
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
@@ -1862,7 +1845,6 @@
       'android-asan',
       'android-code-coverage',
       'android-code-coverage-native',
-      'android-kitkat-arm-rel',
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-marshmallow-x86-fyi-rel',
@@ -2124,20 +2106,6 @@
           'shards': 20,
         },
         'experiment_percentage': 100,
-      },
-      'android-kitkat-arm-rel': {
-        'args': [
-          '--browser=android-chromium',
-          '--device=android',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'temp_band': '<30',
-            },
-          ],
-          'shards': 15,
-        },
       },
       'linux-chromium-tests-staging-tests': {
         'args': [
@@ -2455,7 +2423,6 @@
   'webview_instrumentation_test_apk': {
     'remove_from': [
       # This test frequently fails on Android, https://crbug.com/824959
-      'android-kitkat-arm-rel',
       'android-lollipop-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',

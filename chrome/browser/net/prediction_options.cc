@@ -4,7 +4,7 @@
 
 #include "chrome/browser/net/prediction_options.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"

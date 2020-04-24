@@ -7,8 +7,9 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"

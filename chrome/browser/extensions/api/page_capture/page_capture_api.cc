@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -124,7 +125,7 @@ ExtensionFunction::ResponseAction PageCaptureSaveAsMHTMLFunction::Run() {
 
   std::string error;
   if (!CanCaptureCurrentPage(&error)) {
-    return RespondNow(Error(error));
+    return RespondNow(Error(std::move(error)));
   }
   base::ThreadPool::PostTask(
       FROM_HERE, kCreateTemporaryFileTaskTraits,

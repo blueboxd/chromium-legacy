@@ -8,7 +8,7 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/common/string_matching/term_break_iterator.h"
 
 using base::i18n::BreakIterator;

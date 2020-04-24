@@ -13,7 +13,8 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/work_area_insets.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
 namespace ash {

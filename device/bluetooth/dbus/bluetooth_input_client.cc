@@ -7,7 +7,7 @@
 #include <map>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "dbus/bus.h"

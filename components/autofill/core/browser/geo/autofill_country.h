@@ -14,6 +14,8 @@
 
 namespace autofill {
 
+class LogBuffer;
+
 // Stores data associated with a country. Strings are localized to the app
 // locale.
 class AutofillCountry {
@@ -70,6 +72,8 @@ class AutofillCountry {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillCountry);
 };
+
+LogBuffer& operator<<(LogBuffer& buffer, const AutofillCountry& country);
 
 }  // namespace autofill
 

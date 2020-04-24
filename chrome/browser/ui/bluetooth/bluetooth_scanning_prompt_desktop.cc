@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/bluetooth/bluetooth_scanning_prompt_desktop.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_scanning_prompt_controller.h"
 
 BluetoothScanningPromptDesktop::BluetoothScanningPromptDesktop(

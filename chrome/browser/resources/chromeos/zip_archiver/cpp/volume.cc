@@ -8,7 +8,7 @@
 #include <sstream>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/char_coding.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_message_sender_interface.h"

@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/window_state_type.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace ash {
 

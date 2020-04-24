@@ -6,9 +6,10 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"

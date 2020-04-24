@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
 
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 
 namespace {
 

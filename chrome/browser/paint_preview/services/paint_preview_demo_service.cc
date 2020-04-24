@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -103,7 +102,7 @@ void PaintPreviewDemoService::CaptureTabInternal(
   }
 
   PaintPreviewBaseService::CapturePaintPreview(
-      web_contents, file_path.value(), gfx::Rect(),
+      web_contents, file_path.value(), gfx::Rect(), /*max_per_capture_size=*/0,
       base::BindOnce(&PaintPreviewDemoService::OnCaptured,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback), key));
 }

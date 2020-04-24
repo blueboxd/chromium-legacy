@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"

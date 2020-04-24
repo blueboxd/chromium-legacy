@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"

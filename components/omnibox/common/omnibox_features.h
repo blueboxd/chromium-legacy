@@ -18,7 +18,6 @@ extern const base::Feature kHideSteadyStateUrlTrivialSubdomains;
 extern const base::Feature kHideSteadyStateUrlPathQueryAndRef;
 extern const base::Feature kOmniboxLocalEntitySuggestions;
 extern const base::Feature kOmniboxMaxURLMatches;
-extern const base::Feature kOmniboxRichEntitySuggestions;
 extern const base::Feature kOmniboxReverseAnswers;
 extern const base::Feature kOmniboxShortBookmarkSuggestions;
 extern const base::Feature kOmniboxTailSuggestions;

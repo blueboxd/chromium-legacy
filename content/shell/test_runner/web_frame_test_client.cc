@@ -32,6 +32,7 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_event.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -137,18 +139,23 @@ const char* WebNavigationTypeToString(blink::WebNavigationType type) {
 WebFrameTestClient::WebFrameTestClient(WebViewTestProxy* web_view_test_proxy,
                                        WebFrameTestProxy* web_frame_test_proxy)
     : web_view_test_proxy_(web_view_test_proxy),
-      web_frame_test_proxy_(web_frame_test_proxy) {
-  DCHECK(web_frame_test_proxy_);
-  DCHECK(web_view_test_proxy_);
-}
+      web_frame_test_proxy_(web_frame_test_proxy) {}
 
 WebFrameTestClient::~WebFrameTestClient() = default;
 
+void WebFrameTestClient::Initialize() {
+  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
+  TestRunner* test_runner = interfaces->GetTestRunner();
+  blink::WebLocalFrame* frame = web_frame_test_proxy_->GetWebFrame();
+
+  spell_check_ = std::make_unique<SpellCheckClient>(frame);
+  frame->SetTextCheckClient(spell_check_.get());
+
+  frame->SetContentSettingsClient(test_runner->GetWebContentSettings());
+}
+
 void WebFrameTestClient::Reset() {
-  // If this frame failed to navigate then it won't have set up the
-  // SpellCheckClient in DidClearWindowObject().
-  if (spell_check_)
-    spell_check_->Reset();
+  spell_check_->Reset();
 }
 
 // static
@@ -523,9 +530,6 @@ void WebFrameTestClient::DidClearWindowObject() {
   WebWidgetTestProxy* web_widget_test_proxy =
       web_frame_test_proxy_->GetLocalRootWebWidgetTestProxy();
   blink::WebLocalFrame* frame = web_frame_test_proxy_->GetWebFrame();
-
-  spell_check_ = std::make_unique<SpellCheckClient>(frame);
-  frame->SetTextCheckClient(spell_check_.get());
 
   // These calls will install the various JS bindings for web tests into the
   // frame before JS has a chance to run.

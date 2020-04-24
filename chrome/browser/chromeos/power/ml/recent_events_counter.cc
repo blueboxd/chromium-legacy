@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace chromeos {
 namespace power {

@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/observer_list.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/command_updater_delegate.h"

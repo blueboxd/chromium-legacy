@@ -6,12 +6,12 @@
 
 #include <set>
 
+#include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"

@@ -130,12 +130,26 @@ bool IsUsernameAmendable(const WebInputElement& username_element,
           username_element.Value().IsEmpty());
 }
 
+// Log `message` if `logger` is not null.
+void LogMessage(Logger* logger, Logger::StringID message) {
+  if (logger)
+    logger->LogMessage(message);
+}
+
+// Log `message` and `value` if `logger` is not null.
+void LogBoolean(Logger* logger, Logger::StringID message, bool value) {
+  if (logger)
+    logger->LogBoolean(message, value);
+}
+
 // Log a message including the name, method and action of |form|.
-void LogHTMLForm(SavePasswordProgressLogger* logger,
-                 SavePasswordProgressLogger::StringID message_id,
+void LogHTMLForm(Logger* logger,
+                 Logger::StringID message_id,
                  const WebFormElement& form) {
-  logger->LogHTMLForm(message_id, form.GetName().Utf8(),
-                      GURL(form.Action().Utf8()));
+  if (logger) {
+    logger->LogHTMLForm(message_id, form.GetName().Utf8(),
+                        GURL(form.Action().Utf8()));
+  }
 }
 
 // Returns true if there are any suggestions to be derived from |fill_data|.
@@ -172,8 +186,7 @@ void FindMatchesByUsername(const PasswordFormFillData& fill_data,
                        exact_username_match)) {
     *username = fill_data.username_field.value;
     *password = fill_data.password_field.value;
-    if (logger)
-      logger->LogMessage(Logger::STRING_USERNAMES_MATCH);
+    LogMessage(logger, Logger::STRING_USERNAMES_MATCH);
   } else {
     // Scan additional logins for a match.
     for (const auto& it : fill_data.additional_logins) {
@@ -191,10 +204,8 @@ void FindMatchesByUsername(const PasswordFormFillData& fill_data,
         break;
       }
     }
-    if (logger) {
-      logger->LogBoolean(Logger::STRING_MATCH_IN_ADDITIONAL,
-                         !(username->empty() && password->empty()));
-    }
+    LogBoolean(logger, Logger::STRING_MATCH_IN_ADDITIONAL,
+               !(username->empty() && password->empty()));
   }
 }
 
@@ -1021,15 +1032,13 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
                    GURL(origin.ToString().Utf8()));
   }
   if (!FrameCanAccessPasswordManager()) {
-    if (logger)
-      logger->LogMessage(Logger::STRING_SECURITY_ORIGIN_FAILURE);
+    LogMessage(logger.get(), Logger::STRING_SECURITY_ORIGIN_FAILURE);
     return;
   }
 
   // Checks whether the webpage is a redirect page or an empty page.
   if (form_util::IsWebpageEmpty(frame)) {
-    if (logger)
-      logger->LogMessage(Logger::STRING_WEBPAGE_EMPTY);
+    LogMessage(logger.get(), Logger::STRING_WEBPAGE_EMPTY);
     return;
   }
 
@@ -1044,10 +1053,8 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   for (const WebFormElement& form : forms) {
     if (only_visible) {
       bool is_form_visible = form_util::AreFormContentsVisible(form);
-      if (logger) {
-        LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE, form);
-        logger->LogBoolean(Logger::STRING_FORM_IS_VISIBLE, is_form_visible);
-      }
+      LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE, form);
+      LogBoolean(logger.get(), Logger::STRING_FORM_IS_VISIBLE, is_form_visible);
 
       // If requested, ignore non-rendered forms, e.g., those styled with
       // display:none.
@@ -1090,10 +1097,8 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
             frame->GetDocument().All(), nullptr);
     add_unowned_inputs =
         form_util::IsSomeControlElementVisible(control_elements);
-    if (logger) {
-      logger->LogBoolean(Logger::STRING_UNOWNED_INPUTS_VISIBLE,
-                         add_unowned_inputs);
-    }
+    LogBoolean(logger.get(), Logger::STRING_UNOWNED_INPUTS_VISIBLE,
+               add_unowned_inputs);
   }
 
   if (add_unowned_inputs) {
@@ -1173,49 +1178,6 @@ void PasswordAutofillAgent::OnFrameDetached() {
   CleanupOnDocumentShutdown();
 }
 
-void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
-  std::unique_ptr<RendererSavePasswordProgressLogger> logger;
-  if (logging_state_active_) {
-    logger.reset(new RendererSavePasswordProgressLogger(
-        GetPasswordManagerDriver().get()));
-    logger->LogMessage(Logger::STRING_WILL_SUBMIT_FORM_METHOD);
-    LogHTMLForm(logger.get(), Logger::STRING_HTML_FORM_FOR_SUBMIT, form);
-  }
-
-  std::unique_ptr<FormData> submitted_form_data = GetFormDataFromWebForm(form);
-
-  // If there is a provisionally saved password, copy over the previous
-  // password value so we get the user's typed password, not the value that
-  // may have been transformed for submit.
-  // TODO(gcasto): Do we need to have this action equality check? Is it trying
-  // to prevent accidentally copying over passwords from a different form?
-  if (submitted_form_data) {
-    if (logger) {
-      logger->LogFormData(Logger::STRING_CREATED_PASSWORD_FORM,
-                          *submitted_form_data);
-    }
-    submitted_form_data->submission_event =
-        SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
-
-    FillNonTypedOrFilledPropertiesMasks(&submitted_form_data->fields,
-                                        *field_data_manager_);
-
-    if (FrameCanAccessPasswordManager()) {
-      // Some observers depend on sending this information now instead of when
-      // the frame starts loading. If there are redirects that cause a new
-      // RenderView to be instantiated (such as redirects to the WebStore)
-      // we will never get to finish the load.
-      GetPasswordManagerDriver()->PasswordFormSubmitted(*submitted_form_data);
-    } else {
-      if (logger)
-        logger->LogMessage(Logger::STRING_SECURITY_ORIGIN_FAILURE);
-    }
-    browser_has_form_to_process_ = false;
-  } else if (logger) {
-    logger->LogMessage(Logger::STRING_FORM_IS_NOT_PASSWORD);
-  }
-}
-
 void PasswordAutofillAgent::OnDestruct() {
   receiver_.reset();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
@@ -1232,8 +1194,7 @@ void PasswordAutofillAgent::ReadyToCommitNavigation(
 
   WebLocalFrame* navigated_frame = render_frame()->GetWebFrame();
   if (navigated_frame->Parent()) {
-    if (logger)
-      logger->LogMessage(Logger::STRING_FRAME_NOT_MAIN_FRAME);
+    LogMessage(logger.get(), Logger::STRING_FRAME_NOT_MAIN_FRAME);
   } else {
     // This is a new navigation, so require a new user gesture before filling in
     // passwords.
@@ -1530,26 +1491,22 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     WebInputElement password_element,
     const PasswordFormFillData& fill_data,
     RendererSavePasswordProgressLogger* logger) {
-  if (logger)
-    logger->LogMessage(Logger::STRING_FILL_USERNAME_AND_PASSWORD_METHOD);
+  LogMessage(logger, Logger::STRING_FILL_USERNAME_AND_PASSWORD_METHOD);
 
   bool is_single_username_fill = password_element.IsNull();
   WebInputElement main_element =
       is_single_username_fill ? username_element : password_element;
 
   if (IsInCrossOriginIframe(main_element)) {
-    if (logger)
-      logger->LogMessage(Logger::STRING_FAILED_TO_FILL_INTO_IFRAME);
+    LogMessage(logger, Logger::STRING_FAILED_TO_FILL_INTO_IFRAME);
     LogFirstFillingResult(fill_data, FillingResult::kBlockedByFrameHierarchy);
     return false;
   }
 
   // Don't fill username if password can't be set.
   if (!IsElementEditable(main_element)) {
-    if (logger) {
-      logger->LogMessage(
-          Logger::STRING_FAILED_TO_FILL_NO_AUTOCOMPLETEABLE_ELEMENT);
-    }
+    LogMessage(logger,
+               Logger::STRING_FAILED_TO_FILL_NO_AUTOCOMPLETEABLE_ELEMENT);
     LogFirstFillingResult(fill_data,
                           FillingResult::kPasswordElementIsNotAutocompleteable);
     return false;
@@ -1609,16 +1566,14 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
         !prefilled_placeholder_username) {
       LogPrefilledUsernameFillOutcome(
           PrefilledUsernameFillOutcome::kPrefilledUsernameNotOverridden);
-      if (logger)
-        logger->LogMessage(Logger::STRING_FAILED_TO_FILL_PREFILLED_USERNAME);
+
+      LogMessage(logger, Logger::STRING_FAILED_TO_FILL_PREFILLED_USERNAME);
       LogFirstFillingResult(
           fill_data, FillingResult::kUsernamePrefilledWithIncompatibleValue);
       return false;
     }
-    if (logger) {
-      logger->LogMessage(
-          Logger::STRING_FAILED_TO_FILL_FOUND_NO_PASSWORD_FOR_USERNAME);
-    }
+    LogMessage(logger,
+               Logger::STRING_FAILED_TO_FILL_FOUND_NO_PASSWORD_FOR_USERNAME);
     LogFirstFillingResult(fill_data,
                           FillingResult::kFoundNoPasswordForUsername);
     return false;
@@ -1690,7 +1645,31 @@ void PasswordAutofillAgent::OnProvisionallySaveForm(
 }
 
 void PasswordAutofillAgent::OnFormSubmitted(const WebFormElement& form) {
-  OnWillSubmitForm(form);
+  std::unique_ptr<RendererSavePasswordProgressLogger> logger;
+  if (logging_state_active_) {
+    logger.reset(new RendererSavePasswordProgressLogger(
+        GetPasswordManagerDriver().get()));
+    LogHTMLForm(logger.get(), Logger::STRING_HTML_FORM_FOR_SUBMIT, form);
+  }
+
+  if (!FrameCanAccessPasswordManager()) {
+    LogMessage(logger.get(), Logger::STRING_SECURITY_ORIGIN_FAILURE);
+    return;
+  }
+
+  std::unique_ptr<FormData> submitted_form_data = GetFormDataFromWebForm(form);
+
+  if (!submitted_form_data)
+    return;
+
+  submitted_form_data->submission_event =
+      SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+
+  FillNonTypedOrFilledPropertiesMasks(&submitted_form_data->fields,
+                                      *field_data_manager_);
+
+  GetPasswordManagerDriver()->PasswordFormSubmitted(*submitted_form_data);
+  browser_has_form_to_process_ = false;
 }
 
 void PasswordAutofillAgent::OnInferredFormSubmission(SubmissionSource source) {

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"

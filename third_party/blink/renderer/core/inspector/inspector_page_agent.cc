@@ -116,6 +116,25 @@ String ClientNavigationReasonToProtocol(ClientNavigationReason reason) {
   return ReasonEnum::Reload;
 }
 
+String NavigationPolicyToProtocol(NavigationPolicy policy) {
+  namespace DispositionEnum = protocol::Page::ClientNavigationDispositionEnum;
+  switch (policy) {
+    case kNavigationPolicyDownload:
+      return DispositionEnum::Download;
+    case kNavigationPolicyCurrentTab:
+      return DispositionEnum::CurrentTab;
+    case kNavigationPolicyNewBackgroundTab:
+      return DispositionEnum::NewTab;
+    case kNavigationPolicyNewForegroundTab:
+      return DispositionEnum::NewTab;
+    case kNavigationPolicyNewWindow:
+      return DispositionEnum::NewWindow;
+    case kNavigationPolicyNewPopup:
+      return DispositionEnum::NewWindow;
+  }
+  return DispositionEnum::CurrentTab;
+}
+
 Resource* CachedResource(LocalFrame* frame,
                          const KURL& url,
                          InspectorResourceContentLoader* loader) {
@@ -944,13 +963,14 @@ void InspectorPageAgent::FrameStoppedLoading(LocalFrame* frame) {
   GetFrontend()->flush();
 }
 
-void InspectorPageAgent::FrameRequestedNavigation(
-    Frame* target_frame,
-    const KURL& url,
-    ClientNavigationReason reason) {
+void InspectorPageAgent::FrameRequestedNavigation(Frame* target_frame,
+                                                  const KURL& url,
+                                                  ClientNavigationReason reason,
+                                                  NavigationPolicy policy) {
   GetFrontend()->frameRequestedNavigation(
       IdentifiersFactory::FrameId(target_frame),
-      ClientNavigationReasonToProtocol(reason), url.GetString());
+      ClientNavigationReasonToProtocol(reason), url.GetString(),
+      NavigationPolicyToProtocol(policy));
   GetFrontend()->flush();
 }
 

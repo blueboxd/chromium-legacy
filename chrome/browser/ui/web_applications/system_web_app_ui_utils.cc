@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"

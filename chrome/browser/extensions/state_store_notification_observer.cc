@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/state_store_notification_observer.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/state_store.h"

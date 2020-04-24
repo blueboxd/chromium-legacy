@@ -5,8 +5,9 @@
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/preferences.h"

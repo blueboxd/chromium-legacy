@@ -10,6 +10,7 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/content_settings/renderer/content_settings_agent_impl.h"
 #include "components/error_page/common/error.h"
+#include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "weblayer/common/features.h"
@@ -91,6 +92,8 @@ void ContentRendererClientImpl::RenderFrameCreated(
       std::make_unique<content_settings::ContentSettingsAgentImpl::Delegate>());
   if (weblayer_observer_)
     agent->SetContentSettingRules(weblayer_observer_->content_setting_rules());
+
+  new page_load_metrics::MetricsRenderFrameObserver(render_frame);
 
 #if defined(OS_ANDROID)
   // |SpellCheckProvider| manages its own lifetime (and destroys itself when the

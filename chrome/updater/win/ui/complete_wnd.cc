@@ -4,7 +4,7 @@
 
 #include "chrome/updater/win/ui/complete_wnd.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_util.h"
 #include "chrome/updater/win/ui/constants.h"
 #include "chrome/updater/win/ui/util.h"

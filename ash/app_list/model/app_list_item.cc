@@ -5,7 +5,6 @@
 #include "ash/app_list/model/app_list_item.h"
 
 #include "ash/app_list/model/app_list_item_observer.h"
-#include "base/logging.h"
 
 namespace ash {
 

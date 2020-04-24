@@ -6,7 +6,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/notifications/fullscreen_notification_blocker.h"

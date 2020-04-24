@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
@@ -2613,7 +2613,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // Create a 200x200 iframe at 100,100.
   EXPECT_TRUE(ExecJs(web_contents,
                      "createIframeAtRect(\"test\", 100, 100, 200, 200);"));
-  waiter->Wait();
 
   NavigateIframeToURL(
       web_contents, "test",
@@ -2621,12 +2620,28 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
           "b.com",
           "/page_load_metrics/blank_with_positioned_iframe_writer.html"));
 
+  // Wait for the main frame intersection after we have navigated the frame
+  // to a cross-origin url.
+  waiter->Wait();
+
+  // Change the size of the frame to 150, 150. This tests the cross origin
+  // code path as the previous wait can flakily pass due to receiving the
+  // correct intersection before the frame transitions to cross-origin without
+  // checking that the final computation is consistent.
+  waiter->AddMainFrameDocumentIntersectionExpectation(
+      gfx::Rect(100, 100, 150, 150));
+  EXPECT_TRUE(ExecJs(web_contents,
+                     "let frame = document.getElementById('test'); "
+                     "frame.width = 150; "
+                     "frame.height = 150; "));
+  waiter->Wait();
+
   // Creates the grandchild iframe within the child frame at 10, 10 with
   // dimensions 300x300. This frame is clipped by 110 pixels in the bottom and
   // right. This translates to an intersection of 110, 110, 190, 190 with the
   // main frame.
   waiter->AddMainFrameDocumentIntersectionExpectation(
-      gfx::Rect(110, 110, 190, 190));
+      gfx::Rect(110, 110, 140, 140));
   content::RenderFrameHost* child_frame =
       content::ChildFrameAt(web_contents->GetMainFrame(), 0);
   EXPECT_TRUE(
@@ -2655,13 +2670,16 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // Create a 200x200 iframe at 100,100.
   EXPECT_TRUE(ExecJs(web_contents,
                      "createIframeAtRect(\"test\", 100, 100, 200, 200);"));
-  waiter->Wait();
 
   NavigateIframeToURL(
       web_contents, "test",
       embedded_test_server()->GetURL(
           "b.com",
           "/page_load_metrics/blank_with_positioned_iframe_writer.html"));
+
+  // Wait for the main frame intersection after we have navigated the frame
+  // to a cross-origin url.
+  waiter->Wait();
 
   // Creates the grandchild iframe within the child frame outside the parent
   // frame's viewport.
@@ -2695,13 +2713,16 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   // Create a 200x200 iframe at 100,100.
   EXPECT_TRUE(ExecJs(web_contents,
                      "createIframeAtRect(\"test\", 100, 100, 200, 200);"));
-  waiter->Wait();
 
   NavigateIframeToURL(
       web_contents, "test",
       embedded_test_server()->GetURL(
           "b.com",
           "/page_load_metrics/blank_with_positioned_iframe_writer.html"));
+
+  // Wait for the main frame intersection after we have navigated the frame
+  // to a cross-origin url.
+  waiter->Wait();
 
   // Creates the grandchild iframe within the child frame outside the parent
   // frame's viewport.

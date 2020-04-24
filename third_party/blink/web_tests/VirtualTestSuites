@@ -307,6 +307,21 @@
              "--disable-features=CompositorThreadedScrollbarScrolling"]
   },
   {
+    "prefix": "compositor-threaded-percent-based-scrolling",
+    "bases": ["fast/scrolling/scrollbars"],
+    "args": ["--enable-features=PercentBasedScrolling",
+             "--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text"]
+  },
+  {
+    "prefix": "compositor-threaded-percent-based-scrolling-dsf-2",
+    "bases": ["fast/scrolling/scrollbars/dsf-ready"],
+    "args": ["--enable-features=PercentBasedScrolling",
+             "--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text",
+             "--force-device-scale-factor=2"]
+  },
+  {
     "prefix": "smooth_compositor_threaded_scrollbar_scrolling",
     "bases": ["fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html"],
     "args": ["--enable-features=CompositorThreadedScrollbarScrolling",

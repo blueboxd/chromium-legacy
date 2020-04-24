@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/router/media_sinks_observer.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/media_router.h"
 

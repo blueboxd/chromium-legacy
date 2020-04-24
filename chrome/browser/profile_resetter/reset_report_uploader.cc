@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/profile_resetter/profile_reset_report.pb.h"
 #include "chrome/browser/profile_resetter/reset_report_uploader.h"
 #include "content/public/browser/browser_context.h"

@@ -4,8 +4,8 @@
 
 #include "chrome/chrome_cleaner/test/test_task_scheduler.h"
 
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {

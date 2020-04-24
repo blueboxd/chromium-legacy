@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_impl.h"
 

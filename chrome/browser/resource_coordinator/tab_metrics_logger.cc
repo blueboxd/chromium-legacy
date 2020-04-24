@@ -7,7 +7,8 @@
 #include <algorithm>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"

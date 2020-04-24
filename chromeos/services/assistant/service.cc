@@ -31,6 +31,7 @@
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/service_context.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
@@ -175,9 +176,7 @@ class Service::Context : public ServiceContext {
     return CrasAudioHandler::Get();
   }
 
-  mojom::DeviceActions* device_actions() override {
-    return parent_->device_actions_.get();
-  }
+  DeviceActions* device_actions() override { return DeviceActions::Get(); }
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner() override {
     return parent_->main_task_runner_;
@@ -247,9 +246,8 @@ AssistantStateProxy* Service::GetAssistantStateProxyForTesting() {
   return &assistant_state_;
 }
 
-void Service::Init(mojo::PendingRemote<mojom::DeviceActions> device_actions) {
+void Service::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  device_actions_.Bind(std::move(device_actions));
 
   // Bind to AssistantStateController.
   mojo::PendingRemote<ash::mojom::AssistantStateController> remote_controller;

@@ -42,10 +42,6 @@
 #include "services/viz/privileged/mojom/viz_main.mojom.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
-#include "services/viz/privileged/mojom/gl/info_collection_gpu_service.mojom.h"
-#endif
-
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
 #include "content/browser/gpu/viz_devtools_connector.h"
 #endif
@@ -109,11 +105,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void RunService(mojo::GenericPendingReceiver receiver);
 
   CONTENT_EXPORT viz::mojom::GpuService* gpu_service();
-
-#if defined(OS_WIN)
-  CONTENT_EXPORT viz::mojom::InfoCollectionGpuService*
-  info_collection_gpu_service();
-#endif
 
   CONTENT_EXPORT int GetIDForTesting() const;
 

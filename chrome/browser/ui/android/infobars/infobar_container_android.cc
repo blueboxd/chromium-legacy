@@ -5,8 +5,9 @@
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 
 #include "base/android/jni_android.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "chrome/android/chrome_jni_headers/InfoBarContainer_jni.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"

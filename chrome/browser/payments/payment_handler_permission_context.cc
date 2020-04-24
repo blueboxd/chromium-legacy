@@ -4,7 +4,7 @@
 
 #include "chrome/browser/payments/payment_handler_permission_context.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request_id.h"
 #include "content/public/browser/web_contents.h"

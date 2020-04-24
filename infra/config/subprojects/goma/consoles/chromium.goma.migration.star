@@ -458,11 +458,6 @@ luci.console_view(
             short_name = 'inc',
         ),
         luci.console_view_entry(
-            builder = 'ci/android-kitkat-arm-rel',
-            category = 'week3b|android',
-            short_name = 'kkat',
-        ),
-        luci.console_view_entry(
             builder = 'ci/android-mojo-webview-rel',
             category = 'week3b|android',
             short_name = 'mojo',

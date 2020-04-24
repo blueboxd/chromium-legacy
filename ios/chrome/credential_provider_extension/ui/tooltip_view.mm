@@ -79,8 +79,8 @@ static TooltipView* _active;
   anchor = [_keyWindow convertPoint:anchor fromView:view];
 
   self.frame = CGRectMake(0.0, 0.0, width, kTooltipTailHeight + height);
-  self.center =
-      CGPointMake(anchor.x, anchor.y + kTooltipTailHeight + height / 2.0);
+  self.center = CGPointMake(MAX(width / 2, anchor.x),
+                            anchor.y + kTooltipTailHeight + height / 2.0);
   self.translatesAutoresizingMaskIntoConstraints = NO;
 
   CGRect tooltipRect = CGRectMake(0.0, kTooltipTailHeight, width, height);
@@ -98,6 +98,8 @@ static TooltipView* _active;
   [path closePath];
 
   self.backgroundLayer.path = path.CGPath;
+  self.backgroundLayer.fillColor =
+      [UIColor colorNamed:kTextPrimaryColor].CGColor;
 
   [self addSubview:label];
   [_keyWindow addSubview:self];
@@ -129,6 +131,18 @@ static TooltipView* _active;
 }
 
 #pragma mark - Private
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (@available(iOS 13, *)) {
+    if ([self.traitCollection
+            hasDifferentColorAppearanceComparedToTraitCollection:
+                previousTraitCollection]) {
+      self.backgroundLayer.fillColor =
+          [UIColor colorNamed:kTextPrimaryColor].CGColor;
+    }
+  }
+}
 
 - (void)checkTap:(UITapGestureRecognizer*)sender {
   if (sender.state == UIGestureRecognizerStateEnded) {

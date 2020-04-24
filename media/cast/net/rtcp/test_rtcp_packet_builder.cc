@@ -4,7 +4,7 @@
 
 #include "media/cast/net/rtcp/test_rtcp_packet_builder.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "media/cast/net/rtcp/rtcp_utility.h"
 
 namespace media {

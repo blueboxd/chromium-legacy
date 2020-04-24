@@ -8,7 +8,7 @@
 
 #include "media/base/audio_block_fifo.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/trace_event/trace_event.h"
 
 namespace media {

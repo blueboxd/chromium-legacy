@@ -4289,6 +4289,7 @@ test("net_unittests") {
     "http/http_vary_data_unittest.cc",
     "http/mock_allow_http_auth_preferences.cc",
     "http/mock_allow_http_auth_preferences.h",
+    "http/structured_headers_generated_unittest.cc",
     "http/structured_headers_unittest.cc",
     "http/transport_security_persister_unittest.cc",
     "http/transport_security_state_unittest.cc",

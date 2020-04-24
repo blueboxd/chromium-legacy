@@ -34,6 +34,7 @@
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
+#include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-shared.h"
 #include "chromeos/services/assistant/service_context.h"
@@ -828,11 +829,26 @@ void AssistantManagerServiceImpl::OnVerifyAndroidApp(
     app_info_ptr->package_name = app_info.package_name;
     apps_info_list.push_back(std::move(app_info_ptr));
   }
-  device_actions()->VerifyAndroidApp(
-      std::move(apps_info_list),
-      base::BindOnce(
-          &AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse,
-          weak_factory_.GetWeakPtr(), interaction));
+  device_actions()->VerifyAndroidApp(&apps_info_list);
+
+  std::vector<action::AndroidAppInfo> action_apps_info;
+  for (const auto& app_info : apps_info_list) {
+    action_apps_info.push_back({app_info->package_name, app_info->version,
+                                app_info->localized_app_name, app_info->intent,
+                                GetActionAppStatus(app_info->status)});
+  }
+  std::string interaction_proto = CreateVerifyProviderResponseInteraction(
+      interaction.interaction_id, action_apps_info);
+
+  assistant_client::VoicelessOptions options;
+  options.obfuscated_gaia_id = interaction.user_id;
+  // Set the request to be user initiated so that a new conversation will be
+  // created to handle the client OPs in the response of this request.
+  options.is_user_initiated = true;
+
+  assistant_manager_internal_->SendVoicelessInteraction(
+      interaction_proto, /*description=*/"verify_provider_response", options,
+      [](auto) {});
 }
 
 void AssistantManagerServiceImpl::OnOpenMediaAndroidIntent(
@@ -1116,29 +1132,6 @@ void AssistantManagerServiceImpl::HandleOpenAndroidAppResponse(
 
   assistant_manager_internal_->SendVoicelessInteraction(
       interaction_proto, /*description=*/"open_provider_response", options,
-      [](auto) {});
-}
-
-void AssistantManagerServiceImpl::HandleVerifyAndroidAppResponse(
-    const action::InteractionInfo& interaction,
-    std::vector<mojom::AndroidAppInfoPtr> apps_info) {
-  std::vector<action::AndroidAppInfo> action_apps_info;
-  for (const auto& app_info : apps_info) {
-    action_apps_info.push_back({app_info->package_name, app_info->version,
-                                app_info->localized_app_name, app_info->intent,
-                                GetActionAppStatus(app_info->status)});
-  }
-  std::string interaction_proto = CreateVerifyProviderResponseInteraction(
-      interaction.interaction_id, action_apps_info);
-
-  assistant_client::VoicelessOptions options;
-  options.obfuscated_gaia_id = interaction.user_id;
-  // Set the request to be user initiated so that a new conversation will be
-  // created to handle the client OPs in the response of this request.
-  options.is_user_initiated = true;
-
-  assistant_manager_internal_->SendVoicelessInteraction(
-      interaction_proto, /*description=*/"verify_provider_response", options,
       [](auto) {});
 }
 
@@ -1500,7 +1493,7 @@ ash::AssistantStateBase* AssistantManagerServiceImpl::assistant_state() {
   return context_->assistant_state();
 }
 
-mojom::DeviceActions* AssistantManagerServiceImpl::device_actions() {
+DeviceActions* AssistantManagerServiceImpl::device_actions() {
   return context_->device_actions();
 }
 

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "device/fido/fido_constants.h"
 
 namespace device {

@@ -4,7 +4,8 @@
 
 #include "media/capture/video/chromeos/gpu_memory_buffer_tracker.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "media/capture/video/chromeos/pixel_format_utils.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
 #include "ui/gfx/geometry/size.h"

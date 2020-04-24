@@ -6,7 +6,7 @@
 
 #include <set>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/policy/core/common/cloud/resource_cache.h"

@@ -24,7 +24,7 @@
 
 namespace paint_preview {
 
-// Client responsible for making requests to the mojom::PaintPreviewService. A
+// Client responsible for making requests to the mojom::PaintPreviewRecorder. A
 // client coordinates between multiple frames and handles capture and
 // aggreagation of data from both the main frame and subframes.
 //
@@ -56,6 +56,14 @@ class PaintPreviewClient
 
     // Whether the capture is for the main frame or an OOP subframe.
     bool is_main_frame;
+
+    // The maximum capture size allowed per SkPicture captured. A size of 0 is
+    // unlimited.
+    // TODO(crbug/1071446): Ideally, this would cap the total size rather than
+    // being a per SkPicture limit. However, that is non-trivial due to the
+    // async ordering of captures from different frames making it hard to keep
+    // track of available headroom at the time of each capture triggering.
+    size_t max_per_capture_size;
   };
 
   ~PaintPreviewClient() override;

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/task_manager/providers/per_profile_worker_task_tracker.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/task_manager/providers/worker_task.h"
 #include "chrome/browser/task_manager/providers/worker_task_provider.h"
 #include "content/public/browser/render_process_host.h"

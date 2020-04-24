@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_handler_registry.h"

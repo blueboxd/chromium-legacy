@@ -1380,12 +1380,6 @@ const char kOmniboxRemoveSuggestionsFromClipboardName[] =
 const char kOmniboxRemoveSuggestionsFromClipboardDescription[] =
     "Allow users to remove suggestions from clipboard.";
 
-const char kOmniboxRichEntitySuggestionsName[] =
-    "Omnibox rich entity suggestions";
-const char kOmniboxRichEntitySuggestionsDescription[] =
-    "Display entity suggestions using images and an enhanced layout; showing "
-    "more context and descriptive text about the entity.";
-
 const char kOmniboxSearchEngineLogoName[] = "Omnibox search engine logo";
 const char kOmniboxSearchEngineLogoDescription[] =
     "Display the current default search engine's logo in the omnibox";
@@ -1722,11 +1716,6 @@ const char kScrollableTabStripName[] = "Scrollable TabStrip";
 const char kScrollableTabStripDescription[] =
     "Allows users to access tabs by scrolling when they no longer fit in the "
     "tabstrip.";
-
-const char kSendTabToSelfBroadcastName[] = "Send tab to self broadcast";
-const char kSendTabToSelfBroadcastDescription[] =
-    "Allows users to broadcast the tab they send to all of their devices "
-    "instead of targetting only one device.";
 
 const char kSendTabToSelfOmniboxSendingAnimationName[] =
     "Send tab to self omnibox sending animation";

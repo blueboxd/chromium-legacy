@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/time/tick_clock.h"
 #include "media/base/timestamp_constants.h"
 

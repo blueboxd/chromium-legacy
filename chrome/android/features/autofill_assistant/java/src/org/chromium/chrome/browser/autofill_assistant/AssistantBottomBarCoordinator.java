@@ -18,7 +18,6 @@ import android.widget.ScrollView;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.supplier.ObservableSupplierImpl;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
@@ -33,11 +32,9 @@ import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCo
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 
@@ -57,7 +54,6 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     @Nullable
     private WebContents mWebContents;
     private ApplicationViewportInsetSupplier mWindowApplicationInsetSupplier;
-    private final AccessibilityUtil.Observer mAccessibilityObserver;
 
     // Child coordinators.
     private final AssistantHeaderCoordinator mHeaderCoordinator;
@@ -80,12 +76,6 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
 
     @AssistantViewportMode
     private int mViewportMode = AssistantViewportMode.NO_RESIZE;
-
-    // Stores the viewport mode for cases where talkback is enabled. During that time, the viewport
-    // is forced to RESIZE_VISUAL_VIEWPORT. If talkback gets disabled, the last mode stored in this
-    // field will be applied.
-    @AssistantViewportMode
-    private int mTargetViewportMode = AssistantViewportMode.NO_RESIZE;
 
     AssistantBottomBarCoordinator(Activity activity, AssistantModel model,
             BottomSheetController controller,
@@ -210,10 +200,6 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
                 }
             } else if (AssistantModel.WEB_CONTENTS == propertyKey) {
                 mWebContents = model.get(AssistantModel.WEB_CONTENTS);
-            } else if (AssistantModel.TALKBACK_SHEET_SIZE_FRACTION == propertyKey) {
-                mRootViewContainer.setTalkbackViewSizeFraction(
-                        model.get(AssistantModel.TALKBACK_SHEET_SIZE_FRACTION));
-                updateVisualViewportHeight();
             }
         });
 
@@ -229,13 +215,6 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
                     mScrollableContent.setClipChildren(canScroll);
                     mRootViewContainer.setClipChildren(canScroll);
                 });
-
-        mAccessibilityObserver = (talkbackEnabled) -> {
-            setViewportMode(talkbackEnabled ? AssistantViewportMode.RESIZE_VISUAL_VIEWPORT
-                                            : mTargetViewportMode);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, mRootViewContainer::requestLayout);
-        };
-        AccessibilityUtil.addObserver(mAccessibilityObserver);
     }
 
     AssistantActionsCarouselCoordinator getActionsCarouselCoordinator() {
@@ -296,7 +275,6 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     public void destroy() {
         resetVisualViewportHeight();
         mWindowApplicationInsetSupplier.removeSupplier(mInsetSupplier);
-        AccessibilityUtil.removeObserver(mAccessibilityObserver);
 
         mInfoBoxCoordinator.destroy();
         mInfoBoxCoordinator = null;
@@ -319,14 +297,8 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
 
     void setViewportMode(@AssistantViewportMode int mode) {
         if (mode == mViewportMode) return;
-        if (AccessibilityUtil.isAccessibilityEnabled()
-                && mode != AssistantViewportMode.RESIZE_VISUAL_VIEWPORT) {
-            mTargetViewportMode = mode;
-            return;
-        }
 
         mViewportMode = mode;
-        mTargetViewportMode = mode;
         updateVisualViewportHeight();
     }
 
@@ -418,5 +390,14 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         }
 
         mInsetSupplier.set(resizing);
+    }
+
+    /** @return The peeking height of the bottom sheet if our content is showing, otherwise 0. */
+    private int getHeight() {
+        if (mBottomSheetController.getCurrentSheetContent() == mContent) {
+            return mPeekHeightCoordinator.getPeekHeight();
+        }
+
+        return 0;
     }
 }

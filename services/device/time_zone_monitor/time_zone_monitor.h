@@ -79,6 +79,9 @@ class TimeZoneMonitor : public device::mojom::TimeZoneMonitor {
  private:
   base::ThreadChecker thread_checker_;
 
+  // Last timezone used to notify clients.
+  std::unique_ptr<icu::TimeZone> timezone_;
+
   // device::mojom::device::mojom::TimeZoneMonitor:
   void AddClient(mojo::PendingRemote<device::mojom::TimeZoneMonitorClient>
                      client) override;

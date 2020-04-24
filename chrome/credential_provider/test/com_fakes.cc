@@ -6,7 +6,7 @@
 
 #include <sddl.h>  // For ConvertSidToStringSid()
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_other_user.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"

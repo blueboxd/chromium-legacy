@@ -95,17 +95,9 @@ public class TabBrowserControlsConstraintsHelper implements UserData {
                 tab.removeObserver(this);
             }
 
-            @Override
-            public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
-                if (!navigationHandle.isInMainFrame()) return;
-
-                // At this point, we might have switched renderer processes, so push the existing
-                // constraints to the new renderer (has the potential to be slightly spammy, but
-                // the renderer has logic to suppress duplicate calls).
-
-                @BrowserControlsState
+            private void updateAfterRendererProcessSwitch(Tab tab, boolean hasCommitted) {
                 int constraints = getConstraints();
-                if (constraints == BrowserControlsState.SHOWN && navigationHandle.hasCommitted()
+                if (constraints == BrowserControlsState.SHOWN && hasCommitted
                         && TabBrowserControlsOffsetHelper.get(tab).topControlsOffset() == 0) {
                     // If the browser controls were already fully visible on the previous page, then
                     // avoid an animation to keep the controls from jumping around.
@@ -113,6 +105,21 @@ public class TabBrowserControlsConstraintsHelper implements UserData {
                 } else {
                     updateEnabledState();
                 }
+            }
+
+            @Override
+            public void onDidFinishNavigation(Tab tab, NavigationHandle navigationHandle) {
+                if (!navigationHandle.isInMainFrame()) return;
+
+                // At this point, we might have switched renderer processes, so push the existing
+                // constraints to the new renderer (has the potential to be slightly spammy, but
+                // the renderer has logic to suppress duplicate calls).
+                updateAfterRendererProcessSwitch(tab, navigationHandle.hasCommitted());
+            }
+
+            @Override
+            public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+                updateAfterRendererProcessSwitch(tab, true);
             }
         });
         if (mTab.isInitialized() && !TabImpl.isDetached(mTab)) updateVisibilityDelegate();

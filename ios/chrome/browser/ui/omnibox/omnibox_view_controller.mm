@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -340,8 +341,12 @@ const CGFloat kClearButtonSize = 28.0f;
           ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
                            UIPointerShape* proposedShape) {
         CGRect rect = button.frame;
+        UITargetedPreview* preview =
+            [[UITargetedPreview alloc] initWithView:button];
+        UIPointerLiftEffect* effect =
+            [UIPointerLiftEffect effectWithPreview:preview];
         return [UIPointerStyle
-            styleWithEffect:proposedEffect
+            styleWithEffect:effect
                       shape:[UIPointerShape
                                 shapeWithRoundedRect:rect
                                         cornerRadius:rect.size.width / 2]];

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"

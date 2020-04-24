@@ -75,8 +75,11 @@ interface BlinkTestControl {
   // is sent only to a renderer that hosts parts of the main test window.
   SetTestConfiguration(ShellTestConfiguration config);
 
-  // Tells the renderer to reset all test runners.
-  Reset();
+  // Tells the renderer to navigate to about:blank and reset all state
+  // in preparation for the next test. This happens before leak detection
+  // in order for the test harness to drop anything that tests passed in
+  // and which could cause a leak otherwise.
+  ResetRendererAfterWebTest();
 
   // Tells the main window that a secondary renderer in a different process
   // asked to finish the test.
@@ -100,8 +103,9 @@ interface BlinkTestClient {
   // LayoutDumpCompleted of BlinkTestControl interface.
   InitiateLayoutDump();
 
-  // Notify the browser process the reset was done.
-  ResetDone();
+  // An ACK to notify the browser process that ResetRendererAfterWebTest() has
+  // completed.
+  ResetRendererAfterWebTestDone();
 
   // Add a message to stderr (not saved to expected output files, for debugging
   // only).

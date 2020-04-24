@@ -642,7 +642,7 @@ void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
     }
 
     manager->UpdateDxDiagNodeRequestStatus(true);
-    host->info_collection_gpu_service()->RequestDxDiagNodeInfo(
+    host->gpu_service()->RequestCompleteGpuInfo(
         base::BindOnce([](const gpu::DxDiagNode& dx_diagnostics) {
           GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
           manager->UpdateDxDiagNode(dx_diagnostics);
@@ -699,8 +699,8 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
         }
 
         manager->UpdateDx12VulkanRequestStatus(true);
-        host->info_collection_gpu_service()
-            ->GetGpuSupportedRuntimeVersionAndDevicePerfInfo(base::BindOnce(
+        host->gpu_service()->GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
+            base::BindOnce(
                 [](const gpu::Dx12VulkanVersionInfo& dx12_vulkan_info,
                    const gpu::DevicePerfInfo& device_perf_info) {
                   GpuDataManagerImpl* manager =

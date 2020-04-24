@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/utility/utility_thread.h"
 #include "ui/base/ime/init/input_method_initializer.h"

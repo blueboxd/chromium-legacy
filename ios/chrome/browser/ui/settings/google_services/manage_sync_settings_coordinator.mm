@@ -157,6 +157,14 @@
                                            animated:YES];
 }
 
+- (void)openTrustedVaultReauth {
+  id<ApplicationCommands> applicationCommands =
+      static_cast<id<ApplicationCommands>>(
+          self.browser->GetCommandDispatcher());
+  [applicationCommands
+      showTrustedVaultReauthenticationFromViewController:self.viewController];
+}
+
 - (void)openWebAppActivityDialog {
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(

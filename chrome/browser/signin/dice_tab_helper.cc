@@ -4,7 +4,7 @@
 
 #include "chrome/browser/signin/dice_tab_helper.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/signin_util.h"

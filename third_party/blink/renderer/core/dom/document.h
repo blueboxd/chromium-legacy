@@ -404,12 +404,6 @@ class CORE_EXPORT Document : public ContainerNode,
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
       const String& message = g_empty_string) const;
   bool IsFeatureEnabled(
-      mojom::blink::FeaturePolicyFeature,
-      PolicyValue threshold_value,
-      ReportOptions report_on_failure = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const;
-  bool IsFeatureEnabled(
       mojom::blink::DocumentPolicyFeature,
       ReportOptions report_option = ReportOptions::kDoNotReport,
       const String& message = g_empty_string,

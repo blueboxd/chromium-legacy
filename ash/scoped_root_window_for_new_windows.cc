@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_state.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace ash {
 

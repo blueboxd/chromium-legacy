@@ -46,8 +46,11 @@ class GPURenderBundleEncoder : public DawnObject<WGPURenderBundleEncoder>,
   void insertDebugMarker(String markerLabel);
   void setPipeline(GPURenderPipeline* pipeline);
 
-  void setIndexBuffer(GPUBuffer* buffer, uint64_t offset);
-  void setVertexBuffer(uint32_t slot, const GPUBuffer* buffer, uint64_t offset);
+  void setIndexBuffer(GPUBuffer* buffer, uint64_t offset, uint64_t size);
+  void setVertexBuffer(uint32_t slot,
+                       const GPUBuffer* buffer,
+                       uint64_t offset,
+                       uint64_t size);
   void draw(uint32_t vertexCount,
             uint32_t instanceCount,
             uint32_t firstVertex,

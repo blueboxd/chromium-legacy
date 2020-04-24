@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"

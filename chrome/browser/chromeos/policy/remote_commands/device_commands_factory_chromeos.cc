@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/remote_commands/device_commands_factory_chromeos.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/remote_commands/crd_host_delegate.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_fetch_status_job.h"

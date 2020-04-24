@@ -6,9 +6,10 @@
 #include <tuple>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/pepper/chrome_renderer_pepper_host_factory.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/renderer/pepper/pepper_flash_drm_renderer_host.h"
 #include "chrome/renderer/pepper/pepper_flash_font_file_host.h"
 #include "chrome/renderer/pepper/pepper_flash_fullscreen_host.h"

@@ -8,8 +8,9 @@
 #include <string>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/files/file.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_stream.h"

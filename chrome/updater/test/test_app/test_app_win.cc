@@ -4,7 +4,7 @@
 
 #include "chrome/updater/test/test_app/test_app.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace updater {
 

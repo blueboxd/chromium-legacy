@@ -91,6 +91,11 @@ def _ParseArgs(args):
       help='Write to this file if expected manifest contents do not match '
       'final manifest contents.')
   input_opts.add_argument(
+      '--fail-on-expectations',
+      action="store_true",
+      help='When passed fails the build on AndroidManifest expectation '
+      'mismatches.')
+  input_opts.add_argument(
       '--r-java-root-package-name',
       default='base',
       help='Short package name for this target\'s root R java file (ex. '
@@ -482,7 +487,7 @@ def _FixManifest(options, temp_dir):
 
 
 def _VerifyManifest(actual_manifest, expected_manifest, normalized_manifest,
-                    unexpected_manifest_failure_file):
+                    unexpected_manifest_failure_file, fail_on_mismatch):
   with build_utils.AtomicOutput(normalized_manifest) as normalized_output:
     normalized_output.write(manifest_utils.NormalizeManifest(actual_manifest))
   msg = diff_utils.DiffFileContents(expected_manifest, normalized_manifest)
@@ -500,6 +505,8 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README
     with open(unexpected_manifest_failure_file, 'w') as f:
       f.write(msg_header)
       f.write(msg)
+  if fail_on_mismatch:
+    sys.exit(1)
 
 
 def _CreateKeepPredicate(resource_exclusion_regex,
@@ -923,7 +930,8 @@ def _PackageApk(options, build):
   if options.android_manifest_expected:
     _VerifyManifest(fixed_manifest, options.android_manifest_expected,
                     options.android_manifest_normalized,
-                    options.android_manifest_expectations_failure_file)
+                    options.android_manifest_expectations_failure_file,
+                    options.fail_on_expectations)
 
   link_command += [
       '--manifest', fixed_manifest, '--rename-manifest-package',

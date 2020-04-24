@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace chromeos {
 

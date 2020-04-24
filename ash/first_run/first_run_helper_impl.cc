@@ -18,7 +18,6 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "base/logging.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 

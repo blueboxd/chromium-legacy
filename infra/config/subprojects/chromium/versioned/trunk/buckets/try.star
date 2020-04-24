@@ -54,7 +54,7 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
-    name = 'android-kitkat-arm-rel',
+    name = 'android-lollipop-arm-rel',
     goma_jobs = goma.jobs.J150,
     tryjob = try_.job(),
 )

@@ -18,6 +18,8 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/embedder_support/switches.h"
+#include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/permissions/quota_permission_context_impl.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
@@ -260,6 +262,14 @@ ContentBrowserClientImpl::GetServiceManifestOverlay(base::StringPiece name) {
   return base::nullopt;
 }
 
+void ContentBrowserClientImpl::LogWebFeatureForCurrentPage(
+    content::RenderFrameHost* render_frame_host,
+    blink::mojom::WebFeature feature) {
+  page_load_metrics::mojom::PageLoadFeatures new_features({feature}, {}, {});
+  page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
+      render_frame_host, new_features);
+}
+
 std::string ContentBrowserClientImpl::GetProduct() {
   return version_info::GetProductNameAndVersionForUserAgent();
 }
@@ -465,8 +475,18 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
     content::NavigationHandle* handle) {
   std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
 
-  // This throttle *must* be first as it's responsible for calling to
-  // NavigationController for certain events.
+  if (handle->IsInMainFrame()) {
+    // MetricsNavigationThrottle requires that it runs before
+    // NavigationThrottles that may delay or cancel navigations, so only
+    // NavigationThrottles that don't delay or cancel navigations (e.g.
+    // throttles that are only observing callbacks without affecting navigation
+    // behavior) should be added before MetricsNavigationThrottle.
+    throttles.push_back(
+        page_load_metrics::MetricsNavigationThrottle::Create(handle));
+  }
+
+  // The next highest priority throttle *must* be this as it's responsible for
+  // calling to NavigationController for certain events.
   TabImpl* tab = TabImpl::FromWebContents(handle->GetWebContents());
   if (tab) {
     auto throttle =

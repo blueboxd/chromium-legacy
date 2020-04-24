@@ -590,6 +590,7 @@ void MediaNotificationViewImpl::UpdateForegroundColor() {
       GetMediaNotificationBackground()->GetBackgroundColor(*this);
   const SkColor foreground =
       GetMediaNotificationBackground()->GetForegroundColor(*this);
+  const SkColor separator_color = SkColorSetA(foreground, 0x1F);
 
   title_label_->SetEnabledColor(foreground);
   artist_label_->SetEnabledColor(foreground);
@@ -604,7 +605,7 @@ void MediaNotificationViewImpl::UpdateForegroundColor() {
   header_row_->SetBackgroundColor(background);
 
   pip_button_separator_view_->children().front()->SetBackground(
-      views::CreateSolidBackground(foreground));
+      views::CreateSolidBackground(separator_color));
 
   // Update play/pause button images.
   views::SetImageFromVectorIconWithColor(

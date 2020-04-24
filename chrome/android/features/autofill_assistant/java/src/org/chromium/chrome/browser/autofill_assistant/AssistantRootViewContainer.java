@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 
 /**
  * A special linear layout that limits its maximum size to always stay below the Chrome navigation
@@ -24,18 +23,13 @@ public class AssistantRootViewContainer
     private final ChromeActivity mActivity;
     private final ChromeFullscreenManager mFullscreenManager;
     private Rect mVisibleViewportRect = new Rect();
-    private float mTalkbackSheetSizeFraction;
 
     public AssistantRootViewContainer(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         assert context instanceof ChromeActivity;
         mActivity = (ChromeActivity) context;
         mFullscreenManager = mActivity.getFullscreenManager();
-        mFullscreenManager.addListener(this);
-    }
-
-    public void setTalkbackViewSizeFraction(float fraction) {
-        mTalkbackSheetSizeFraction = fraction;
+        mActivity.getFullscreenManager().addListener(this);
     }
 
     @Override
@@ -62,20 +56,13 @@ public class AssistantRootViewContainer
     @Override
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(mVisibleViewportRect);
-        int availableHeight = mVisibleViewportRect.height() - mFullscreenManager.getContentOffset()
-                - mFullscreenManager.getBottomControlsHeight()
-                - mFullscreenManager.getBottomControlOffset();
-
-        int targetHeight;
-        int mode;
-        if (AccessibilityUtil.isAccessibilityEnabled()) {
-            // TODO(b/143944870): Make this more stable with landscape mode.
-            targetHeight = (int) (availableHeight * mTalkbackSheetSizeFraction);
-            mode = MeasureSpec.EXACTLY;
-        } else {
-            targetHeight = Math.min(MeasureSpec.getSize(heightMeasureSpec), availableHeight);
-            mode = MeasureSpec.AT_MOST;
-        }
-        super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(targetHeight, mode));
+        super.onMeasure(widthMeasureSpec,
+                MeasureSpec.makeMeasureSpec(
+                        Math.min(MeasureSpec.getSize(heightMeasureSpec),
+                                mVisibleViewportRect.height()
+                                        - mFullscreenManager.getContentOffset()
+                                        - mFullscreenManager.getBottomControlsHeight()
+                                        - mFullscreenManager.getBottomControlOffset()),
+                        MeasureSpec.AT_MOST));
     }
 }

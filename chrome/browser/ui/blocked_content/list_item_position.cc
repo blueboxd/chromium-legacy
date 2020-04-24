@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 
 ListItemPosition GetListItemPositionFromDistance(size_t distance,
                                                  size_t total_size) {

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"

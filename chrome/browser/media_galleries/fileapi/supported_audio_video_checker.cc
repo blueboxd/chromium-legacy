@@ -11,9 +11,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"

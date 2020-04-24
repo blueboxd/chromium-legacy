@@ -217,7 +217,7 @@ class BlinkTestRunner {
   void OnSetupRendererProcessForNonTestWindow();
   void CaptureDump(mojom::BlinkTestControl::CaptureDumpCallback callback);
   void DidCommitNavigationInMainFrame();
-  void OnReset();
+  void OnResetRendererAfterWebTest();
   void OnTestFinishedInSecondaryRenderer();
   void OnLayoutDumpCompleted(std::string completed_layout_dump);
   void OnReplyBluetoothManualChooserEvents(
@@ -258,7 +258,7 @@ class BlinkTestRunner {
       get_bluetooth_events_callbacks_;
 
   bool is_main_window_ = false;
-  bool waiting_for_reset_ = false;
+  bool waiting_for_reset_navigation_to_about_blank_ = false;
 
   std::unique_ptr<AppBannerService> app_banner_service_;
 

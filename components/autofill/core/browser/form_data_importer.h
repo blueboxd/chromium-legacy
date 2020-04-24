@@ -63,7 +63,8 @@ class FormDataImporter {
   // Checks suitability of |profile| for adding to the user's set of profiles.
   static bool IsValidLearnableProfile(const AutofillProfile& profile,
                                       const std::string& finch_country_code,
-                                      const std::string& app_locale);
+                                      const std::string& app_locale,
+                                      LogBuffer* import_log_buffer);
 
   LocalCardMigrationManager* local_card_migration_manager() {
     return local_card_migration_manager_.get();
@@ -111,7 +112,8 @@ class FormDataImporter {
   // Helper method for ImportAddressProfiles which only considers the fields for
   // a specified |section|.
   bool ImportAddressProfileForSection(const FormStructure& form,
-                                      const std::string& section);
+                                      const std::string& section,
+                                      LogBuffer* import_log_buffer);
 
   // Go through the |form| fields and attempt to extract a new credit card in
   // |imported_credit_card|, or update an existing card.

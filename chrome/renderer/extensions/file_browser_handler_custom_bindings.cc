@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/build_config.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/blink/public/platform/web_string.h"

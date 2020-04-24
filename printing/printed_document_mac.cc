@@ -7,7 +7,7 @@
 #import <ApplicationServices/ApplicationServices.h>
 #import <CoreFoundation/CoreFoundation.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "printing/metafile.h"
 #include "printing/printing_context.h"
 

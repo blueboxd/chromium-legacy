@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmarks_policy_handler.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
@@ -40,6 +41,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { policy::key::kPasswordManagerEnabled,
     password_manager::prefs::kCredentialsEnableService,
     base::Value::Type::BOOLEAN },
+  { policy::key::kDefaultPopupsSetting,
+    prefs::kManagedDefaultPopupsSetting,
+    base::Value::Type::INTEGER },
+  { policy::key::kPopupsAllowedForUrls,
+    prefs::kManagedPopupsAllowedForUrls,
+    base::Value::Type::LIST },
+  { policy::key::kPopupsBlockedForUrls,
+    prefs::kManagedPopupsBlockedForUrls,
+    base::Value::Type::LIST },
   { policy::key::kSavingBrowserHistoryDisabled,
     prefs::kSavingBrowserHistoryDisabled,
     base::Value::Type::BOOLEAN },

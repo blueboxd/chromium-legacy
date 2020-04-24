@@ -579,10 +579,8 @@ TEST_F(SendTabToSelfBridgeTest, AddDuplicateEntries) {
   EXPECT_EQ(3ul, bridge()->GetAllGuids().size());
 }
 
-TEST_F(SendTabToSelfBridgeTest,
-       NotifyRemoteSendTabToSelfEntryAdded_BroadcastDisabled) {
+TEST_F(SendTabToSelfBridgeTest, NotifyRemoteSendTabToSelfEntryAdded) {
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(kSendTabToSelfBroadcast);
 
   const std::string kRemoteGuid = "RemoteDevice";
   InitializeBridge();
@@ -605,38 +603,6 @@ TEST_F(SendTabToSelfBridgeTest,
 
   // There should only be one entry sent to the observers.
   EXPECT_CALL(*mock_observer(), EntriesAddedRemotely(SizeIs(1)));
-  bridge()->MergeSyncData(std::move(metadata_change_list),
-                          std::move(remote_input));
-
-  EXPECT_EQ(2ul, bridge()->GetAllGuids().size());
-}
-
-TEST_F(SendTabToSelfBridgeTest,
-       NotifyRemoteSendTabToSelfEntryAdded_BroadcastEnabled) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kSendTabToSelfBroadcast);
-
-  InitializeBridge();
-  SetLocalDeviceCacheGuid("Device1");
-
-  // Add on entry targeting this device and another targeting another device.
-  syncer::EntityChangeList remote_input;
-  SendTabToSelfEntry entry1("guid1", GURL("http://www.example.com/"), "title",
-                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
-                            "Device1");
-  SendTabToSelfEntry entry2("guid2", GURL("http://www.example.com/"), "title",
-                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
-                            "Device2");
-  remote_input.push_back(
-      syncer::EntityChange::CreateAdd("guid1", MakeEntityData(entry1)));
-  remote_input.push_back(
-      syncer::EntityChange::CreateAdd("guid2", MakeEntityData(entry2)));
-
-  auto metadata_change_list =
-      std::make_unique<syncer::InMemoryMetadataChangeList>();
-
-  // The 2 entries should be sent to the observers.
-  EXPECT_CALL(*mock_observer(), EntriesAddedRemotely(SizeIs(2)));
   bridge()->MergeSyncData(std::move(metadata_change_list),
                           std::move(remote_input));
 
@@ -821,7 +787,6 @@ TEST_F(SendTabToSelfBridgeTest,
 
 TEST_F(SendTabToSelfBridgeTest, NotifyRemoteSendTabToSelfEntryOpened) {
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(kSendTabToSelfBroadcast);
 
   InitializeBridge();
   SetLocalDeviceCacheGuid("Device1");

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_per_page_strings_provider.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 

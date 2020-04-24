@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 #include "base/version.h"
 #include "base/win/scoped_handle.h"

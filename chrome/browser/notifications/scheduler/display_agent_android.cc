@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/android/chrome_jni_headers/DisplayAgent_jni.h"
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"

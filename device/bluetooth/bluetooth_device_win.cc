@@ -8,8 +8,9 @@
 #include <unordered_map>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"

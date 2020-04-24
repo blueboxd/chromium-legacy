@@ -144,6 +144,15 @@ class TestGpuService : public mojom::GpuService {
   void GetPeakMemoryUsage(uint32_t sequence_num,
                           GetPeakMemoryUsageCallback callback) override {}
 
+#if defined(OS_WIN)
+  void RequestCompleteGpuInfo(
+      RequestCompleteGpuInfoCallback callback) override {}
+
+  void GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
+      GetGpuSupportedRuntimeVersionAndDevicePerfInfoCallback callback)
+      override {}
+#endif
+
   void RequestHDRStatus(RequestHDRStatusCallback callback) override {}
 
   void LoadedShader(int32_t client_id,

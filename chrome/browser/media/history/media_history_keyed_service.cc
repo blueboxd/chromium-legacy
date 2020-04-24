@@ -329,18 +329,31 @@ void MediaHistoryKeyedService::PostTaskToDBForTest(base::OnceClosure callback) {
       FROM_HERE, base::DoNothing(), std::move(callback));
 }
 
-MediaHistoryKeyedService::GetMediaFeedsRequest::GetMediaFeedsRequest(
-    bool include_origin_watchtime_percentile_data,
-    base::Optional<unsigned> limit,
-    base::Optional<base::TimeDelta> audio_video_watchtime_min,
-    base::Optional<int> fetched_items_min,
-    bool fetched_items_min_should_be_safe)
-    : include_origin_watchtime_percentile_data(
-          include_origin_watchtime_percentile_data),
-      limit(limit),
-      audio_video_watchtime_min(audio_video_watchtime_min),
-      fetched_items_min(fetched_items_min),
-      fetched_items_min_should_be_safe(fetched_items_min_should_be_safe) {}
+MediaHistoryKeyedService::GetMediaFeedsRequest
+MediaHistoryKeyedService::GetMediaFeedsRequest::CreateTopFeedsForFetch(
+    unsigned limit,
+    base::TimeDelta audio_video_watchtime_min) {
+  GetMediaFeedsRequest request;
+  request.type = Type::kTopFeedsForFetch;
+  request.limit = limit;
+  request.audio_video_watchtime_min = audio_video_watchtime_min;
+  return request;
+}
+
+MediaHistoryKeyedService::GetMediaFeedsRequest
+MediaHistoryKeyedService::GetMediaFeedsRequest::CreateTopFeedsForDisplay(
+    unsigned limit,
+    base::TimeDelta audio_video_watchtime_min,
+    int fetched_items_min,
+    bool fetched_items_min_should_be_safe) {
+  GetMediaFeedsRequest request;
+  request.type = Type::kTopFeedsForDisplay;
+  request.limit = limit;
+  request.audio_video_watchtime_min = audio_video_watchtime_min;
+  request.fetched_items_min = fetched_items_min;
+  request.fetched_items_min_should_be_safe = fetched_items_min_should_be_safe;
+  return request;
+}
 
 MediaHistoryKeyedService::GetMediaFeedsRequest::GetMediaFeedsRequest() =
     default;
@@ -366,6 +379,26 @@ void MediaHistoryKeyedService::UpdateMediaFeedDisplayTime(
         FROM_HERE,
         base::BindOnce(&MediaHistoryStore::UpdateMediaFeedDisplayTime, store,
                        feed_id));
+  }
+}
+
+void MediaHistoryKeyedService::IncrementMediaFeedItemsShownCount(
+    const std::set<int64_t> feed_item_ids) {
+  if (auto* store = store_->GetForWrite()) {
+    store->db_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MediaHistoryStore::IncrementMediaFeedItemsShownCount,
+                       base::RetainedRef(store), feed_item_ids));
+  }
+}
+
+void MediaHistoryKeyedService::MarkMediaFeedItemAsClicked(
+    const int64_t& feed_item_id) {
+  if (auto* store = store_->GetForWrite()) {
+    store->db_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MediaHistoryStore::MarkMediaFeedItemAsClicked,
+                       base::RetainedRef(store), feed_item_id));
   }
 }
 

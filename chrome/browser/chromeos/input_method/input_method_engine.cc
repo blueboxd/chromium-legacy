@@ -8,8 +8,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

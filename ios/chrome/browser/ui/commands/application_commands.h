@@ -78,6 +78,10 @@
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController;
 
+// Presents the Trusted Vault reauth dialog.
+- (void)showTrustedVaultReauthenticationFromViewController:
+    (UIViewController*)baseViewController;
+
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearch;
 

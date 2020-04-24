@@ -6,7 +6,6 @@
 
 #include <ostream>
 
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/media_router/media_source.h"
 

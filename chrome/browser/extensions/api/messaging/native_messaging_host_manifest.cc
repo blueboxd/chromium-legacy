@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
+#include "base/check.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"

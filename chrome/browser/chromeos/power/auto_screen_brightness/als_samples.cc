@@ -6,7 +6,7 @@
 
 #include <numeric>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace chromeos {
 namespace power {

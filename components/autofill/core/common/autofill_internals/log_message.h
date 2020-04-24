@@ -30,9 +30,20 @@ class LogBuffer;
   T(AbortParsingFormHasNoTextfield,                                            \
     "Abort parsing form: Form has no text field.")                             \
   T(FunnelMetrics, "Funnel Metrics")                                           \
-  T(KeyMetrics, "Key Metrics")
-
+  T(KeyMetrics, "Key Metrics")                                                 \
+  T(ImportAddressProfileFromForm,                                              \
+    "FormDataImporter::ImportAddressProfiles for form:  ")                     \
+  T(ImportAddressProfileFromFormFailed,                                        \
+    "Address profile can not be imported from the form: ")                     \
+  T(ImportAddressProfileFromFormNumberOfImports,                               \
+    "Number of imported address profiles: ")                                   \
+  T(ImportAddressProfileFromFormSection, "ImportAddressProfileForSection: ")   \
+  T(ImportAddressProfileFromFormCountrySource,                                 \
+    "Source of country for address requirements: ")                            \
+  T(ImportAddressProfileFromFormAddressRequirements,                           \
+    "Requirements for the address import: ")
 // Log messages for chrome://autofill-internals.
+
 #define AUTOFILL_TEMPLATE(NAME, MESSAGE) k##NAME,
 enum class LogMessage {
   AUTOFILL_LOG_MESSAGE_TEMPLATES(AUTOFILL_TEMPLATE) kLastMessage

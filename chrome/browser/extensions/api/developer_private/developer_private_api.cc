@@ -907,7 +907,7 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
     if (!UserCanModifyExtensionConfiguration(extension,
                                              browser_context(),
                                              &error)) {
-      return RespondNow(Error(error));
+      return RespondNow(Error(std::move(error)));
     }
     util::SetAllowFileAccess(
         extension->id(), browser_context(), *update.file_access);

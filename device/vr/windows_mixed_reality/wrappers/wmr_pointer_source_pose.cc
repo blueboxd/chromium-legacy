@@ -8,7 +8,7 @@
 
 #include <wrl.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace WFN = ABI::Windows::Foundation::Numerics;
 using ABI::Windows::UI::Input::Spatial::ISpatialPointerInteractionSourcePose;

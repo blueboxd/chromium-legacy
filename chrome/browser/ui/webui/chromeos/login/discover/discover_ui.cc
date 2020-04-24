@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_ui.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"

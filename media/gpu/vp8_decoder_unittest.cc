@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/vp8_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"

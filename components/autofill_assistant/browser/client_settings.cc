@@ -89,9 +89,6 @@ void ClientSettings::UpdateFromProto(const ClientSettingsProto& proto) {
   } else {
     integration_test_settings.reset();
   }
-  if (proto.has_talkback_sheet_size_fraction()) {
-    talkback_sheet_size_fraction = proto.talkback_sheet_size_fraction();
-  }
 }
 
 }  // namespace autofill_assistant

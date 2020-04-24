@@ -7,7 +7,7 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_histogram_enums.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace ash {
 

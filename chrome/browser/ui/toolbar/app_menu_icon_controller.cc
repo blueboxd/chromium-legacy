@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/defaults.h"

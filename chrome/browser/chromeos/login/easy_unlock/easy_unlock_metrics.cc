@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace chromeos {

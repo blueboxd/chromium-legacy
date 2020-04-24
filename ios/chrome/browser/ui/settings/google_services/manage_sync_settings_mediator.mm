@@ -471,7 +471,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case EncryptionItemType:
       if (self.syncSetupService->GetSyncServiceState() ==
           SyncSetupService::kSyncServiceNeedsTrustedVaultKey) {
-        // TODO(crbug.com/1019685): Open key retrieval dialog.
+        [self.commandHandler openTrustedVaultReauth];
         break;
       }
       [self.commandHandler openPassphraseDialog];

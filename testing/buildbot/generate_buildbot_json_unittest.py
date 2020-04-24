@@ -2221,6 +2221,24 @@ GN_ISOLATE_MAP="""\
 }
 """
 
+GN_ISOLATE_MAP_KEY_LABEL_MISMATCH="""\
+{
+  'foo_test': {
+    'label': '//chrome/test:foo_test_tmp',
+    'type': 'windowed_test_launcher',
+  }
+}
+"""
+
+GN_ISOLATE_MAP_USING_IMPLICIT_NAME="""\
+{
+  'foo_test': {
+    'label': '//chrome/foo_test',
+    'type': 'windowed_test_launcher',
+  }
+}
+"""
+
 NO_BUCKET_WATERFALL = """\
 [
   {
@@ -2535,6 +2553,28 @@ class UnitTest(unittest.TestCase):
     fbb.files['chromium.test.json'] = VARIATION_GTEST_OUTPUT
     fbb.files['chromium.ci.json'] = VARIATION_GTEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_gn_isolate_map_with_label_mismatch(self):
+    fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
+                    FOO_TEST_SUITE,
+                    LUCI_MILO_CFG,
+                    gn_isolate_map=GN_ISOLATE_MAP_KEY_LABEL_MISMATCH)
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+                                 'key name.*foo_test.*label.*'
+                                 'foo_test_tmp.*'):
+      fbb.check_input_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_gn_isolate_map_using_implicit_gn_name(self):
+    fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
+                    FOO_TEST_SUITE,
+                    LUCI_MILO_CFG,
+                    gn_isolate_map=GN_ISOLATE_MAP_USING_IMPLICIT_NAME)
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+                                 'Malformed.*//chrome/foo_test.*for key.*'
+                                 'foo_test.*'):
+      fbb.check_input_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
   def test_noop_exception_does_nothing(self):

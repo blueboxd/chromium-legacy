@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/registry_test_data.h"
 #include "chrome/installer/util/work_item.h"

@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/new_window_delegate.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace ash {
 namespace {

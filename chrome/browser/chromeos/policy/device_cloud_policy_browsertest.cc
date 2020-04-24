@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/dir_reader_posix.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/run_loop.h"

@@ -372,7 +372,9 @@ NTPUserDataLogger::~NTPUserDataLogger() {}
 // static
 NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
     content::WebContents* content) {
-  DCHECK(search::IsInstantNTP(content));
+  DCHECK(search::IsInstantNTP(content) ||
+         content->GetMainFrame()->GetSiteInstance()->GetSiteURL() ==
+             GURL(chrome::kChromeUINewTabPageURL));
 
   // Calling CreateForWebContents when an instance is already attached has no
   // effect, so we can do this.

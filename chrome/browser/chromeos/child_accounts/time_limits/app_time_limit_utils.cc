@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
 
@@ -21,7 +22,7 @@ bool ContributesToWebTimeLimit(const AppId& app_id, AppState state) {
     return false;
 
   return app_id.app_type() == apps::mojom::AppType::kWeb ||
-         app_id == GetChromeAppId();
+         app_id.app_type() == apps::mojom::AppType::kExtension;
 }
 
 }  // namespace app_time

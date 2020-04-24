@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace chromeos {
 namespace file_system_provider {

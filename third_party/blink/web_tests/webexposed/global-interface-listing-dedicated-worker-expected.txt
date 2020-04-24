@@ -882,8 +882,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method setHeaderValue
 [Worker] interface NavigatorUAData
 [Worker]     attribute @@toStringTag
+[Worker]     getter brands
 [Worker]     getter mobile
-[Worker]     getter uaList
 [Worker]     method constructor
 [Worker]     method getHighEntropyValues
 [Worker] interface NetworkInformation : EventTarget

@@ -8,8 +8,9 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chrome/android/chrome_jni_headers/ResourceMapper_jni.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/grit/theme_resources.h"

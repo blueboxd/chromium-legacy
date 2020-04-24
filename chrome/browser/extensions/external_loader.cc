@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/external_loader.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "content/public/browser/browser_thread.h"

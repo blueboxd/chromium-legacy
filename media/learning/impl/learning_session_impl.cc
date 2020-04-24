@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "media/learning/impl/distribution_reporter.h"
 #include "media/learning/impl/learning_task_controller_impl.h"
 

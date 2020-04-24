@@ -4,7 +4,7 @@
 
 #include "chrome/browser/gpu/chrome_browser_main_extra_parts_gpu.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "components/viz/common/features.h"
 #include "content/public/browser/gpu_data_manager.h"

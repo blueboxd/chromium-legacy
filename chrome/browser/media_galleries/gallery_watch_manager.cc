@@ -9,7 +9,7 @@
 #include <tuple>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"

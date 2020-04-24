@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/assistant/assistant_web_view_factory.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace ash {
 

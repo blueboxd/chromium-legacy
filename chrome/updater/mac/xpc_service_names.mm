@@ -40,6 +40,12 @@ base::scoped_nsobject<NSString> GetGoogleUpdateServiceLaunchDLabel() {
       base::mac::CFToNSCast(CopyGoogleUpdateServiceLaunchDName()));
 }
 
+base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName(NSString* name) {
+  return base::scoped_nsobject<NSString>(
+      [name stringByAppendingFormat:@".%lu", [name hash]],
+      base::scoped_policy::RETAIN);
+}
+
 base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName() {
   base::scoped_nsobject<NSString> name(
       base::mac::CFToNSCast(CopyGoogleUpdateServiceLaunchDName()));

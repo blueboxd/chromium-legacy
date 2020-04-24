@@ -7,7 +7,8 @@
 #include <algorithm>
 
 #include "ash/assistant/ui/logo_view/shape/shape.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "chromeos/assistant/internal/logo_view/logo_model/dot.h"
 #include "chromeos/assistant/internal/logo_view/logo_view_constants.h"
 #include "ui/compositor/compositor.h"

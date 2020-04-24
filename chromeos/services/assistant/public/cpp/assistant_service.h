@@ -23,10 +23,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantService {
 
   static AssistantService* Get();
 
-  // Initiates assistant and provides interfaces for assistant to call into the
-  // browser.
-  virtual void Init(
-      mojo::PendingRemote<mojom::DeviceActions> device_actions) = 0;
+  // Initiates assistant service.
+  virtual void Init() = 0;
 
   // Binds the main assistant backend interface.
   virtual void BindAssistant(

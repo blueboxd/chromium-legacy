@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <queue>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace {
 using Match = SequenceMatcher::Match;

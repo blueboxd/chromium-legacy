@@ -387,11 +387,6 @@ const char kSendTabToSelfDescription[] =
     "Allows users to receive tabs that were pushed from another of their "
     "synced devices, in order to easily transition tabs between devices.";
 
-const char kSendTabToSelfBroadcastName[] = "Send tab to self broadcast";
-const char kSendTabToSelfBroadcastDescription[] =
-    "Allows users to broadcast the tab they send to all of their devices "
-    "instead of targetting only one device.";
-
 const char kSendUmaOverAnyNetwork[] =
     "Send UMA data over any network available.";
 const char kSendUmaOverAnyNetworkDescription[] =

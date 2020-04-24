@@ -80,7 +80,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
-#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
@@ -115,16 +114,6 @@
 #endif
 namespace settings {
 namespace {
-
-#if defined(OS_CHROMEOS)
-// Generates a Google Help URL which includes a "board type" parameter. Some
-// help pages need to be adjusted depending on the type of CrOS device that is
-// accessing the page.
-base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
-  return base::ASCIIToUTF16(original_url +
-                            "&b=" + base::SysInfo::GetLsbReleaseBoard());
-}
-#endif
 
 void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -1267,11 +1256,7 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       "doNotTrackDialogMessage",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_ENABLE_DO_NOT_TRACK_DIALOG_TEXT,
-#if defined(OS_CHROMEOS)
-          GetHelpUrlWithBoard(chrome::kDoNotTrackLearnMoreURL)));
-#else
           base::ASCIIToUTF16(chrome::kDoNotTrackLearnMoreURL)));
-#endif
   html_source->AddString(
       "exceptionsLearnMoreURL",
       base::ASCIIToUTF16(chrome::kContentSettingsExceptionsLearnMoreURL));

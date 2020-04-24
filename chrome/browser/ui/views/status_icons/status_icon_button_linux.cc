@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chrome/browser/shell_integration_linux.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"

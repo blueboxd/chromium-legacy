@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"

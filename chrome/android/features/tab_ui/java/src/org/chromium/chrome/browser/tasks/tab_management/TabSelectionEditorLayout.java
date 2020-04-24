@@ -122,6 +122,8 @@ class TabSelectionEditorLayout extends SelectableListLayout<Integer> {
      * Destroy any members that needs clean up.
      */
     public void destroy() {
+        super.onDestroyed();
+
         if (mParentView != null && mParentLayoutListener != null) {
             mParentView.getViewTreeObserver().removeOnGlobalLayoutListener(mParentLayoutListener);
         }

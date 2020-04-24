@@ -10,7 +10,7 @@
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/events/devices/stylus_state.h"
 
 namespace ash {

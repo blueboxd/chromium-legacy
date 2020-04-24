@@ -1831,10 +1831,6 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public void maybeRecordAppHandlersInIntent(Intent intent, List<ResolveInfo> info) {
-        }
-
-        @Override
         public void maybeSetPendingReferrer(Intent intent, String referrerUrl) {
             // This is used in a test to check that ExternalNavigationHandler correctly passes
             // this data to the delegate when the referrer URL is non-null.

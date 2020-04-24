@@ -7,8 +7,18 @@
  * with the secure DNS setting to configure custom servers. It is based on
  * `home-url-input`.
  */
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+
+import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl} from './privacy_page_browser_proxy.m.js';
+
 Polymer({
   is: 'secure-dns-input',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /*
@@ -30,12 +40,12 @@ Polymer({
     errorText_: String,
   },
 
-  /** @private {?settings.PrivacyPageBrowserProxy} */
+  /** @private {?PrivacyPageBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created: function() {
-    this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
+    this.browserProxy_ = PrivacyPageBrowserProxyImpl.getInstance();
   },
 
   /**

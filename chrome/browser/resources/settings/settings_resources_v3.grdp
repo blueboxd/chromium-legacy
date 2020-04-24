@@ -446,25 +446,25 @@
            use_base_dir="false"
            preprocess="true"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_COLLAPSE_RADIO_BUTTON_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/collapse_radio_button.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_COLLAPSE_RADIO_BUTTON_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/collapse_radio_button.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_COOKIES_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/cookies_page.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_COOKIES_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/cookies_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_DO_NOT_TRACK_TOGGLE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/do_not_track_toggle.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_DO_NOT_TRACK_TOGGLE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/do_not_track_toggle.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_PRIVACY_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/privacy_page.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_PRIVACY_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/privacy_page.js"
            use_base_dir="false"
            preprocess="true"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_PASSWORDS_LEAK_DETECTION_TOGGLE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/passwords_leak_detection_toggle.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_PASSWORDS_LEAK_DETECTION_TOGGLE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/passwords_leak_detection_toggle.js"
            use_base_dir="false"
            preprocess="true"
            compress="false" type="BINDATA" />
@@ -478,53 +478,51 @@
            use_base_dir="false"
            preprocess="true"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_SAFE_BROWSING_BROWSER_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/safe_browsing_browser_proxy.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SAFE_BROWSING_BROWSER_PROXY_JS"
+           file="privacy_page/safe_browsing_browser_proxy.js"
+           compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURE_DNS_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/secure_dns.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURE_DNS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/secure_dns.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURE_DNS_INPUT_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/secure_dns_input.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURE_DNS_INPUT_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/secure_dns_input.m.js"
-           use_base_dir="false"
-           compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_page.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_page.js"
            use_base_dir="false"
            preprocess="true"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_DISABLE_SAFEBROWSING_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/disable_safebrowsing_dialog.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_DISABLE_SAFEBROWSING_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/disable_safebrowsing_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_BIO_ENROLL_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_bio_enroll_dialog.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_BIO_ENROLL_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_bio_enroll_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_BROWSER_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_browser_proxy.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_BROWSER_PROXY_JS"
+           file="privacy_page/security_keys_browser_proxy.js"
+           compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_credential_management_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_credential_management_dialog.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_PIN_FIELD_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_pin_field.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_PIN_FIELD_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_pin_field.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_RESET_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_reset_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_RESET_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_reset_dialog.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_SET_PIN_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_set_pin_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_SET_PIN_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_set_pin_dialog.m.js"
-           use_base_dir="false"
-           compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_SUBPAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_subpage.m.js"
+  <include name="IDR_SETTINGS_PRIVACY_PAGE_SECURITY_KEYS_SUBPAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/privacy_page/security_keys_subpage.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_RESET_PAGE_RESET_PAGE_JS"

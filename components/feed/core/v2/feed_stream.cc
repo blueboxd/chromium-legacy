@@ -20,6 +20,7 @@
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/metrics_reporter.h"
+#include "components/feed/core/v2/prefs.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/core/v2/scheduling.h"
 #include "components/feed/core/v2/stream_model.h"
@@ -30,6 +31,19 @@
 #include "components/prefs/pref_service.h"
 
 namespace feed {
+namespace {
+
+void PopulateDebugStreamData(const LoadStreamTask::Result& load_result,
+                             PrefService* profile_prefs) {
+  DebugStreamData debug_data = ::feed::prefs::GetDebugStreamData(profile_prefs);
+  std::stringstream ss;
+  ss << "Code: " << load_result.final_status;
+  debug_data.load_stream_status = ss.str();
+  debug_data.fetch_info = load_result.network_response_info;
+  ::feed::prefs::SetDebugStreamData(debug_data, profile_prefs);
+}
+
+}  // namespace
 
 std::unique_ptr<StreamModelUpdateRequest>
 FeedStream::WireResponseTranslator::TranslateWireResponse(
@@ -104,6 +118,7 @@ void FeedStream::TriggerStreamLoad() {
 }
 
 void FeedStream::InitialStreamLoadComplete(LoadStreamTask::Result result) {
+  PopulateDebugStreamData(result, profile_prefs_);
   metrics_reporter_->OnLoadStream(result.load_from_store_status,
                                   result.final_status);
 
@@ -188,6 +203,24 @@ bool FeedStream::RejectEphemeralChange(EphemeralChangeId id) {
   if (!model_)
     return false;
   return model_->RejectEphemeralChange(id);
+}
+
+DebugStreamData FeedStream::GetDebugStreamData() {
+  return ::feed::prefs::GetDebugStreamData(profile_prefs_);
+}
+
+void FeedStream::ForceRefreshForDebugging() {
+  // TODO(harringtond): Add a way to force refresh.
+}
+
+std::string FeedStream::DumpStateForDebugging() {
+  std::stringstream ss;
+  if (model_) {
+    ss << "model loaded, " << model_->GetContentList().size() << " contents\n";
+  }
+  ss << "user class: "
+     << user_classifier_->GetUserClassDescriptionForDebugging() << '\n';
+  return ss.str();
 }
 
 UserClass FeedStream::GetUserClass() {

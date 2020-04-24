@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 static_library("arc") {
@@ -423,5 +424,14 @@ source_set("unit_tests") {
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//url:url",
+  ]
+}
+
+fuzzer_test("arc_property_util_expand_property_contents_fuzzer") {
+  sources = [ "session/arc_property_util_expand_property_contents_fuzzer.cc" ]
+  deps = [
+    ":arc",
+    ":arc_test_support",
+    "//base",
   ]
 }

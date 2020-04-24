@@ -7,9 +7,23 @@
  * setting and changing security key PINs.
  */
 
-cr.define('settings', function() {
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import '../settings_shared_css.m.js';
+import {SecurityKeysPINBrowserProxy, SecurityKeysPINBrowserProxyImpl} from './security_keys_browser_proxy.js';
+
   /** @enum {string} */
-  /* #export */ const SetPINDialogPage = {
+  export const SetPINDialogPage = {
     INITIAL: 'initial',
     NO_PIN_SUPPORT: 'noPINSupport',
     REINSERT: 'reinsert',
@@ -21,6 +35,8 @@ cr.define('settings', function() {
 
   Polymer({
     is: 'settings-security-keys-set-pin-dialog',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [I18nBehavior],
 
@@ -129,7 +145,7 @@ cr.define('settings', function() {
 
       /**
        * The id of an element on the page that is currently shown.
-       * @private {!settings.SetPINDialogPage}
+       * @private {!SetPINDialogPage}
        */
       shown_: {
         type: String,
@@ -150,18 +166,18 @@ cr.define('settings', function() {
       title_: String,
     },
 
-    /** @private {?settings.SecurityKeysPINBrowserProxy} */
+    /** @private {?SecurityKeysPINBrowserProxy} */
     browserProxy_: null,
 
     /** @override */
     attached() {
       this.title_ = this.i18n('securityKeysSetPINInitialTitle');
       this.browserProxy_ =
-          settings.SecurityKeysPINBrowserProxyImpl.getInstance();
+          SecurityKeysPINBrowserProxyImpl.getInstance();
       this.$.dialog.showModal();
 
-      Polymer.RenderStatus.afterNextRender(this, function() {
-        Polymer.IronA11yAnnouncer.requestAvailability();
+      afterNextRender(this, function() {
+        IronA11yAnnouncer.requestAvailability();
       });
 
       this.browserProxy_.startSetPIN().then(([success, errorCode]) => {
@@ -477,8 +493,3 @@ cr.define('settings', function() {
     },
   });
 
-  // #cr_define_end
-  return {
-    SetPINDialogPage: SetPINDialogPage,
-  };
-});

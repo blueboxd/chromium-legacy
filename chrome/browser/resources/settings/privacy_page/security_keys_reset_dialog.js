@@ -7,9 +7,19 @@
  * triggering factory resets of security keys.
  */
 
-cr.define('settings', function() {
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import '../settings_shared_css.m.js';
+import {SecurityKeysResetBrowserProxy, SecurityKeysResetBrowserProxyImpl} from './security_keys_browser_proxy.js';
+
   /** @enum {string} */
-  /* #export */ const ResetDialogPage = {
+  export const ResetDialogPage = {
     INITIAL: 'initial',
     NO_RESET: 'noReset',
     RESET_FAILED: 'resetFailed',
@@ -21,6 +31,8 @@ cr.define('settings', function() {
 
   Polymer({
     is: 'settings-security-keys-reset-dialog',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [I18nBehavior],
 
@@ -42,7 +54,7 @@ cr.define('settings', function() {
 
       /**
        * The id of an element on the page that is currently shown.
-       * @private {!settings.ResetDialogPage}
+       * @private {!ResetDialogPage}
        */
       shown_: {
         type: String,
@@ -55,14 +67,14 @@ cr.define('settings', function() {
       title_: String,
     },
 
-    /** @private {?settings.SecurityKeysResetBrowserProxy} */
+    /** @private {?SecurityKeysResetBrowserProxy} */
     browserProxy_: null,
 
     /** @override */
     attached() {
       this.title_ = this.i18n('securityKeysResetTitle');
       this.browserProxy_ =
-          settings.SecurityKeysResetBrowserProxyImpl.getInstance();
+          SecurityKeysResetBrowserProxyImpl.getInstance();
       this.$.dialog.showModal();
 
       this.browserProxy_.reset().then(code => {
@@ -153,8 +165,3 @@ cr.define('settings', function() {
     },
   });
 
-  // #cr_define_end
-  return {
-    ResetDialogPage: ResetDialogPage,
-  };
-});

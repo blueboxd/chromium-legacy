@@ -8,7 +8,31 @@
  * settings.
  */
 
-(function() {
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import '../controls/settings_toggle_button.m.js';
+import '../icons.m.js';
+import '../prefs/prefs.m.js';
+import '../settings_shared_css.m.js';
+import '../site_settings/site_list.m.js';
+import './collapse_radio_button.js';
+import './do_not_track_toggle.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.m.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {routes} from '../route.m.js';
+import {Router} from '../router.m.js';
+import {ContentSetting, ContentSettingsTypes, CookieControlsMode, SiteSettingSource} from '../site_settings/constants.m.js';
+import {ContentSettingProvider, CookieControlsManagedState, DefaultContentSetting, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.m.js';
+
 /**
  * Enumeration of all cookies radio controls.
  * @enum {string}
@@ -34,6 +58,8 @@ const NetworkPredictionOptions = {
 
 Polymer({
   is: 'settings-cookies-page',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [PrefsBehavior, WebUIListenerBehavior],
 
@@ -98,15 +124,15 @@ Polymer({
     /** @private */
     contentSetting_: {
       type: Object,
-      value: settings.ContentSetting,
+      value: ContentSetting,
     },
 
     /**
-     * @private {!settings.ContentSettingsTypes}
+     * @private {!ContentSettingsTypes}
      */
     cookiesContentSettingType_: {
       type: String,
-      value: settings.ContentSettingsTypes.COOKIES,
+      value: ContentSettingsTypes.COOKIES,
     },
 
     /**
@@ -144,25 +170,24 @@ Polymer({
         'prefs.profile.block_third_party_cookies)',
   ],
 
-  /** @type {?settings.SiteSettingsPrefsBrowserProxy} */
+  /** @type {?SiteSettingsPrefsBrowserProxy} */
   browserProxy_: null,
 
-  /** @type {?settings.MetricsBrowserProxy} */
+  /** @type {?MetricsBrowserProxy} */
   metricsBrowserProxy_: null,
 
   /** @override */
   created() {
     // Used during property initialisation so must be set in created.
-    this.browserProxy_ =
-        settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+    this.browserProxy_ = SiteSettingsPrefsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
   ready() {
-    this.metricsBrowserProxy_ = settings.MetricsBrowserProxyImpl.getInstance();
+    this.metricsBrowserProxy_ = MetricsBrowserProxyImpl.getInstance();
 
     this.addWebUIListener('contentSettingCategoryChanged', category => {
-      if (category === settings.ContentSettingsTypes.COOKIES) {
+      if (category === ContentSettingsTypes.COOKIES) {
         this.updateCookiesControls_();
       }
     });
@@ -175,16 +200,15 @@ Polymer({
    */
   focusConfigChanged_(newConfig, oldConfig) {
     assert(!oldConfig);
-    assert(settings.routes.SITE_SETTINGS_SITE_DATA);
-    this.focusConfig.set(settings.routes.SITE_SETTINGS_SITE_DATA.path, () => {
-      cr.ui.focusWithoutInk(assert(this.$$('#site-data-trigger')));
+    assert(routes.SITE_SETTINGS_SITE_DATA);
+    this.focusConfig.set(routes.SITE_SETTINGS_SITE_DATA.path, () => {
+      focusWithoutInk(assert(this.$$('#site-data-trigger')));
     });
   },
 
   /** @private */
   onSiteDataClick_() {
-    settings.Router.getInstance().navigateTo(
-        settings.routes.SITE_SETTINGS_SITE_DATA);
+    Router.getInstance().navigateTo(routes.SITE_SETTINGS_SITE_DATA);
   },
 
   /**
@@ -197,32 +221,32 @@ Polymer({
     const blockThirdParty = this.getPref('profile.block_third_party_cookies');
     const contentSetting =
         await this.browserProxy_.getDefaultValueForContentType(
-            settings.ContentSettingsTypes.COOKIES);
+            ContentSettingsTypes.COOKIES);
 
     // Set control state.
-    if (contentSetting.setting === settings.ContentSetting.BLOCK) {
+    if (contentSetting.setting === ContentSetting.BLOCK) {
       this.cookiesControlRadioSelected_ = CookiesControl.BLOCK_ALL;
     } else if (blockThirdParty.value) {
       this.cookiesControlRadioSelected_ =
           this.cookiesControlEnum_.BLOCK_THIRD_PARTY;
-    } else if (this.improvedCookieControlsEnabled_ &&
-        controlMode.value === settings.CookieControlsMode.INCOGNITO_ONLY) {
+    } else if (
+        this.improvedCookieControlsEnabled_ &&
+        controlMode.value === CookieControlsMode.INCOGNITO_ONLY) {
       this.cookiesControlRadioSelected_ =
           this.cookiesControlEnum_.BLOCK_THIRD_PARTY_INCOGNITO;
     } else {
       this.cookiesControlRadioSelected_ = CookiesControl.ALLOW_ALL;
     }
-    this.clearOnExitDisabled_ =
-        contentSetting.setting === settings.ContentSetting.BLOCK;
+    this.clearOnExitDisabled_ = contentSetting.setting === ContentSetting.BLOCK;
 
     // Update virtual preference for the clear on exit toggle.
     // TODO(crbug.com/1063265): Create toggle that can directly accept state.
     this.clearOnExitPref_ = {
       key: '',
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: contentSetting.setting === settings.ContentSetting.BLOCK ?
+      value: contentSetting.setting === ContentSetting.BLOCK ?
           false :
-          contentSetting.setting === settings.ContentSetting.SESSION_ONLY,
+          contentSetting.setting === ContentSetting.SESSION_ONLY,
       controlledBy: this.getControlledBy_(contentSetting),
       enforcement: this.getEnforced_(contentSetting),
     };
@@ -231,7 +255,7 @@ Polymer({
     // Display of managed state for individual entries will be handled by each
     // site-list-entry.
     this.exceptionListsReadOnly_ =
-        contentSetting.source === settings.SiteSettingSource.POLICY;
+        contentSetting.source === SiteSettingSource.POLICY;
 
     // Retrieve and update remaining controls managed state.
     this.cookieControlsManagedState_ =
@@ -275,27 +299,27 @@ Polymer({
   },
 
   /**
-   * @return {!settings.ContentSetting}
+   * @return {!ContentSetting}
    * @private
    */
   computeClearOnExitSetting_() {
-    return this.$.clearOnExit.checked ? settings.ContentSetting.SESSION_ONLY :
-                                        settings.ContentSetting.ALLOW;
+    return this.$.clearOnExit.checked ? ContentSetting.SESSION_ONLY :
+                                        ContentSetting.ALLOW;
   },
 
   /**
    * Set required preferences base on control mode and content setting.
-   * @param {!settings.CookieControlsMode} controlsMode
-   * @param {!settings.ContentSetting} contentSetting
+   * @param {!CookieControlsMode} controlsMode
+   * @param {!ContentSetting} contentSetting
    * @private
    */
   setAllPrefs_(controlsMode, contentSetting) {
     this.setPrefValue('profile.cookie_controls_mode', controlsMode);
     this.setPrefValue(
         'profile.block_third_party_cookies',
-        controlsMode == settings.CookieControlsMode.ENABLED);
+        controlsMode == CookieControlsMode.ENABLED);
     this.browserProxy_.setDefaultValueForContentType(
-        settings.ContentSettingsTypes.COOKIES, contentSetting);
+        ContentSettingsTypes.COOKIES, contentSetting);
   },
 
   /**
@@ -307,28 +331,23 @@ Polymer({
   onCookiesControlRadioChange_(event) {
     if (event.detail.value === CookiesControl.ALLOW_ALL) {
       this.setAllPrefs_(
-          settings.CookieControlsMode.DISABLED,
-          this.computeClearOnExitSetting_());
+          CookieControlsMode.DISABLED, this.computeClearOnExitSetting_());
     } else if (
         event.detail.value === CookiesControl.BLOCK_THIRD_PARTY_INCOGNITO) {
       this.setAllPrefs_(
-          settings.CookieControlsMode.INCOGNITO_ONLY,
-          this.computeClearOnExitSetting_());
+          CookieControlsMode.INCOGNITO_ONLY, this.computeClearOnExitSetting_());
     } else if (event.detail.value === CookiesControl.BLOCK_THIRD_PARTY) {
       this.setAllPrefs_(
-          settings.CookieControlsMode.ENABLED,
-          this.computeClearOnExitSetting_());
+          CookieControlsMode.ENABLED, this.computeClearOnExitSetting_());
     } else {  // CookiesControl.BLOCK_ALL
-      this.setAllPrefs_(
-          settings.CookieControlsMode.ENABLED, settings.ContentSetting.BLOCK);
+      this.setAllPrefs_(CookieControlsMode.ENABLED, ContentSetting.BLOCK);
     }
   },
 
   /** @private */
   onClearOnExitChange_() {
     this.browserProxy_.setDefaultValueForContentType(
-        settings.ContentSettingsTypes.COOKIES,
-        this.computeClearOnExitSetting_());
+        ContentSettingsTypes.COOKIES, this.computeClearOnExitSetting_());
   },
 
   /**
@@ -339,7 +358,6 @@ Polymer({
    */
   onNetworkPredictionChange_() {
     this.metricsBrowserProxy_.recordSettingsPageHistogram(
-        settings.PrivacyElementInteractions.NETWORK_PREDICTION);
+        PrivacyElementInteractions.NETWORK_PREDICTION);
   },
 });
-})();

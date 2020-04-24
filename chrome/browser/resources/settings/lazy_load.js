@@ -9,9 +9,9 @@ import './autofill_page/passwords_section.js';
 import './autofill_page/payments_section.js';
 import './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
 import './search_engines_page/search_engines_page.js';
-import './privacy_page/cookies_page.m.js';
-import './privacy_page/security_keys_subpage.m.js';
-import './privacy_page/security_page.m.js';
+import './privacy_page/cookies_page.js';
+import './privacy_page/security_keys_subpage.js';
+import './privacy_page/security_page.js';
 import './site_settings/all_sites.m.js';
 import './site_settings/site_data_details_subpage.m.js';
 import './site_settings_page/site_settings_page.m.js';
@@ -73,12 +73,12 @@ export {kMenuCloseDelay} from './languages_page/languages_page.m.js';
 export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.m.js';
 export {ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from './people_page/manage_profile_browser_proxy.m.js';
 // </if>
-export {SafeBrowsingBrowserProxyImpl} from './privacy_page/safe_browsing_browser_proxy.m.js';
-export {BioEnrollDialogPage} from './privacy_page/security_keys_bio_enroll_dialog.m.js';
-export {Ctap2Status, SampleStatus, SecurityKeysBioEnrollProxyImpl, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysPINBrowserProxyImpl, SecurityKeysResetBrowserProxyImpl} from './privacy_page/security_keys_browser_proxy.m.js';
-export {CredentialManagementDialogPage} from './privacy_page/security_keys_credential_management_dialog.m.js';
-export {ResetDialogPage} from './privacy_page/security_keys_reset_dialog.m.js';
-export {SetPINDialogPage} from './privacy_page/security_keys_set_pin_dialog.m.js';
+export {SafeBrowsingBrowserProxyImpl} from './privacy_page/safe_browsing_browser_proxy.js';
+export {BioEnrollDialogPage} from './privacy_page/security_keys_bio_enroll_dialog.js';
+export {Ctap2Status, SampleStatus, SecurityKeysBioEnrollProxyImpl, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysPINBrowserProxyImpl, SecurityKeysResetBrowserProxyImpl} from './privacy_page/security_keys_browser_proxy.js';
+export {CredentialManagementDialogPage} from './privacy_page/security_keys_credential_management_dialog.js';
+export {ResetDialogPage} from './privacy_page/security_keys_reset_dialog.js';
+export {SetPINDialogPage} from './privacy_page/security_keys_set_pin_dialog.js';
 // <if expr="chromeos">
 export {AndroidInfoBrowserProxyImpl} from './site_settings/android_info_browser_proxy.m.js';
 // </if>

@@ -3,16 +3,15 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-cr.define('settings', function() {
   /**
    * Ctap2Status contains a subset of CTAP2 status codes. See
    * device::CtapDeviceResponseCode for the full list.
    * @enum {number}
    */
-  /* #export */ const Ctap2Status = {
+  export const Ctap2Status = {
     OK: 0x0,
     ERR_INVALID_OPTION: 0x2C,
     ERR_KEEPALIVE_CANCEL: 0x2D,
@@ -38,7 +37,7 @@ cr.define('settings', function() {
    *            userDisplayName: string}}
    * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
    */
-  /* #export */ let Credential;
+  export let Credential;
 
   /**
    * SampleStatus is the result for reading an individual sample ("touch")
@@ -46,7 +45,7 @@ cr.define('settings', function() {
    * lastEnrollSampleStatus enum defined in the CTAP spec.
    * @enum {number}
    */
-  /* #export */ const SampleStatus = {
+  export const SampleStatus = {
     OK: 0x0,
   };
 
@@ -54,20 +53,20 @@ cr.define('settings', function() {
    * SampleResponse indicates the result of an individual sample (sensor touch)
    * for an enrollment suboperation.
    *
-   * @typedef {{status: settings.SampleStatus,
+   * @typedef {{status: SampleStatus,
    *            remaining: number}}
    * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
    */
-  /* #export */ let SampleResponse;
+  export let SampleResponse;
 
   /**
    * EnrollmentResponse is the final response to an enrollment suboperation,
    *
-   * @typedef {{code: settings.Ctap2Status,
-   *            enrollment: ?settings.Enrollment}}
+   * @typedef {{code: Ctap2Status,
+   *            enrollment: ?Enrollment}}
    * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
    */
-  /* #export */ let EnrollmentResponse;
+  export let EnrollmentResponse;
 
   /**
    * Enrollment represents a valid fingerprint template stored on a security
@@ -77,10 +76,10 @@ cr.define('settings', function() {
    *            id: string}}
    * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
    */
-  /* #export */ let Enrollment;
+  export let Enrollment;
 
   /** @interface */
-  /* #export */ class SecurityKeysPINBrowserProxy {
+  export class SecurityKeysPINBrowserProxy {
     /**
      * Starts a PIN set/change operation by flashing all security keys. Resolves
      * with a pair of numbers. The first is one if the process has immediately
@@ -107,7 +106,7 @@ cr.define('settings', function() {
   }
 
   /** @interface */
-  /* #export */ class SecurityKeysCredentialBrowserProxy {
+  export class SecurityKeysCredentialBrowserProxy {
     /**
      * Starts a credential management operation.
      *
@@ -134,7 +133,7 @@ cr.define('settings', function() {
      * Enumerates credentials on the authenticator. A correct PIN must have
      * previously been supplied via providePIN() before this
      * method may be called.
-     * @return {!Promise<!Array<!settings.Credential>>}
+     * @return {!Promise<!Array<!Credential>>}
      */
     enumerateCredentials() {}
 
@@ -151,7 +150,7 @@ cr.define('settings', function() {
   }
 
   /** @interface */
-  /* #export */ class SecurityKeysResetBrowserProxy {
+  export class SecurityKeysResetBrowserProxy {
     /**
      * Starts a reset operation by flashing all security keys and sending a
      * reset command to the one that the user activates. Resolves with a CTAP
@@ -171,7 +170,7 @@ cr.define('settings', function() {
   }
 
   /** @interface */
-  /* #export */ class SecurityKeysBioEnrollProxy {
+  export class SecurityKeysBioEnrollProxy {
     /**
      * Starts a biometric enrollment operation.
      *
@@ -200,7 +199,7 @@ cr.define('settings', function() {
      * previously been supplied via bioEnrollProvidePIN() before this method may
      * be called.
      *
-     * @return {!Promise<!Array<!settings.Enrollment>>}
+     * @return {!Promise<!Array<!Enrollment>>}
      */
     enumerateEnrollments() {}
 
@@ -215,7 +214,7 @@ cr.define('settings', function() {
      * out waiting for a touch, or has successfully processed a touch. Any
      * errors will fire the 'security-keys-bio-enrollment-error' WebListener.
      *
-     * @return {!Promise<!settings.EnrollmentResponse>} resolves when the
+     * @return {!Promise<!EnrollmentResponse>} resolves when the
      *     enrollment operation is finished successfully.
      */
     startEnrolling() {}
@@ -231,7 +230,7 @@ cr.define('settings', function() {
      * Deletes the enrollment with the given ID.
      *
      * @param {string} id
-     * @return {!Promise<!Array<!settings.Enrollment>>} The remaining
+     * @return {!Promise<!Array<!Enrollment>>} The remaining
      *     enrollments.
      */
     deleteEnrollment(id) {}
@@ -241,7 +240,7 @@ cr.define('settings', function() {
      *
      * @param {string} id
      * @param {string} name
-     * @return {!Promise<!Array<!settings.Enrollment>>} The updated list of
+     * @return {!Promise<!Array<!Enrollment>>} The updated list of
      *     enrollments.
      */
     renameEnrollment(id, name) {}
@@ -250,16 +249,16 @@ cr.define('settings', function() {
     close() {}
   }
 
-  /** @implements {settings.SecurityKeysPINBrowserProxy} */
-  /* #export */ class SecurityKeysPINBrowserProxyImpl {
+  /** @implements {SecurityKeysPINBrowserProxy} */
+  export class SecurityKeysPINBrowserProxyImpl {
     /** @override */
     startSetPIN() {
-      return cr.sendWithPromise('securityKeyStartSetPIN');
+      return sendWithPromise('securityKeyStartSetPIN');
     }
 
     /** @override */
     setPIN(oldPIN, newPIN) {
-      return cr.sendWithPromise('securityKeySetPIN', oldPIN, newPIN);
+      return sendWithPromise('securityKeySetPIN', oldPIN, newPIN);
     }
 
     /** @override */
@@ -268,26 +267,26 @@ cr.define('settings', function() {
     }
   }
 
-  /** @implements {settings.SecurityKeysCredentialBrowserProxy} */
-  /* #export */ class SecurityKeysCredentialBrowserProxyImpl {
+  /** @implements {SecurityKeysCredentialBrowserProxy} */
+  export class SecurityKeysCredentialBrowserProxyImpl {
     /** @override */
     startCredentialManagement() {
-      return cr.sendWithPromise('securityKeyCredentialManagementStart');
+      return sendWithPromise('securityKeyCredentialManagementStart');
     }
 
     /** @override */
     providePIN(pin) {
-      return cr.sendWithPromise('securityKeyCredentialManagementPIN', pin);
+      return sendWithPromise('securityKeyCredentialManagementPIN', pin);
     }
 
     /** @override */
     enumerateCredentials() {
-      return cr.sendWithPromise('securityKeyCredentialManagementEnumerate');
+      return sendWithPromise('securityKeyCredentialManagementEnumerate');
     }
 
     /** @override */
     deleteCredentials(ids) {
-      return cr.sendWithPromise('securityKeyCredentialManagementDelete', ids);
+      return sendWithPromise('securityKeyCredentialManagementDelete', ids);
     }
 
     /** @override */
@@ -296,16 +295,16 @@ cr.define('settings', function() {
     }
   }
 
-  /** @implements {settings.SecurityKeysResetBrowserProxy} */
-  /* #export */ class SecurityKeysResetBrowserProxyImpl {
+  /** @implements {SecurityKeysResetBrowserProxy} */
+  export class SecurityKeysResetBrowserProxyImpl {
     /** @override */
     reset() {
-      return cr.sendWithPromise('securityKeyReset');
+      return sendWithPromise('securityKeyReset');
     }
 
     /** @override */
     completeReset() {
-      return cr.sendWithPromise('securityKeyCompleteReset');
+      return sendWithPromise('securityKeyCompleteReset');
     }
 
     /** @override */
@@ -314,26 +313,26 @@ cr.define('settings', function() {
     }
   }
 
-  /** @implements {settings.SecurityKeysBioEnrollProxy} */
-  /* #export */ class SecurityKeysBioEnrollProxyImpl {
+  /** @implements {SecurityKeysBioEnrollProxy} */
+  export class SecurityKeysBioEnrollProxyImpl {
     /** @override */
     startBioEnroll() {
-      return cr.sendWithPromise('securityKeyBioEnrollStart');
+      return sendWithPromise('securityKeyBioEnrollStart');
     }
 
     /** @override */
     providePIN(pin) {
-      return cr.sendWithPromise('securityKeyBioEnrollProvidePIN', pin);
+      return sendWithPromise('securityKeyBioEnrollProvidePIN', pin);
     }
 
     /** @override */
     enumerateEnrollments() {
-      return cr.sendWithPromise('securityKeyBioEnrollEnumerate');
+      return sendWithPromise('securityKeyBioEnrollEnumerate');
     }
 
     /** @override */
     startEnrolling() {
-      return cr.sendWithPromise('securityKeyBioEnrollStartEnrolling');
+      return sendWithPromise('securityKeyBioEnrollStartEnrolling');
     }
 
     /** @override */
@@ -343,12 +342,12 @@ cr.define('settings', function() {
 
     /** @override */
     deleteEnrollment(id) {
-      return cr.sendWithPromise('securityKeyBioEnrollDelete', id);
+      return sendWithPromise('securityKeyBioEnrollDelete', id);
     }
 
     /** @override */
     renameEnrollment(id, name) {
-      return cr.sendWithPromise('securityKeyBioEnrollRename', id, name);
+      return sendWithPromise('securityKeyBioEnrollRename', id, name);
     }
 
     /** @override */
@@ -359,26 +358,8 @@ cr.define('settings', function() {
 
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
-  cr.addSingletonGetter(SecurityKeysPINBrowserProxyImpl);
-  cr.addSingletonGetter(SecurityKeysCredentialBrowserProxyImpl);
-  cr.addSingletonGetter(SecurityKeysResetBrowserProxyImpl);
-  cr.addSingletonGetter(SecurityKeysBioEnrollProxyImpl);
+  addSingletonGetter(SecurityKeysPINBrowserProxyImpl);
+  addSingletonGetter(SecurityKeysCredentialBrowserProxyImpl);
+  addSingletonGetter(SecurityKeysResetBrowserProxyImpl);
+  addSingletonGetter(SecurityKeysBioEnrollProxyImpl);
 
-  // #cr_define_end
-  return {
-    Credential,
-    Ctap2Status,
-    Enrollment,
-    EnrollmentResponse,
-    SampleStatus,
-    SampleResponse,
-    SecurityKeysBioEnrollProxy,
-    SecurityKeysBioEnrollProxyImpl,
-    SecurityKeysCredentialBrowserProxy,
-    SecurityKeysCredentialBrowserProxyImpl,
-    SecurityKeysPINBrowserProxy,
-    SecurityKeysPINBrowserProxyImpl,
-    SecurityKeysResetBrowserProxy,
-    SecurityKeysResetBrowserProxyImpl,
-  };
-});

@@ -7,7 +7,15 @@
  * a security key PIN.
  */
 
-cr.define('settings', function() {
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import '../settings_shared_css.m.js';
+
   /**
    * A function that submits a PIN to a security key. It returns a Promise which
    * resolves with null if the PIN was correct, or with the number of retries
@@ -19,6 +27,8 @@ cr.define('settings', function() {
 
   Polymer({
     is: 'settings-security-keys-pin-field',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [
       I18nBehavior,
@@ -43,8 +53,8 @@ cr.define('settings', function() {
 
     /** @override */
     attached() {
-      Polymer.RenderStatus.afterNextRender(this, function() {
-        Polymer.IronA11yAnnouncer.requestAvailability();
+      afterNextRender(this, function() {
+        IronA11yAnnouncer.requestAvailability();
       });
     },
 
@@ -70,7 +80,7 @@ cr.define('settings', function() {
     /**
      * Attempts submission of the PIN by invoking |submitFunc|. Updates the UI
      * to show an error if the PIN was incorrect.
-     * @param {!settings.PINFieldSubmitFunc} submitFunc
+     * @param {!PINFieldSubmitFunc} submitFunc
      * @return {!Promise} resolves if the PIN was correct, else rejects
      */
     trySubmit(submitFunc) {
@@ -202,8 +212,3 @@ cr.define('settings', function() {
     },
   });
 
-  // #cr_define_end
-  return {
-    PINFieldSubmitFunc: PINFieldSubmitFunc,
-  };
-});

@@ -14,8 +14,27 @@
  * by PrivacyPageBrowserProxy and describe the new host resolver configuration.
  */
 
+import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
+import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import '../controls/settings_toggle_button.m.js';
+import '../prefs/prefs.m.js';
+import '../settings_shared_css.m.js';
+import './secure_dns_input.js';
+
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+
+import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl, ResolverOption, SecureDnsMode, SecureDnsSetting, SecureDnsUiManagementMode} from './privacy_page_browser_proxy.m.js';
+
 Polymer({
   is: 'settings-secure-dns',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [WebUIListenerBehavior, PrefsBehavior],
 
@@ -31,11 +50,11 @@ Polymer({
     /**
      * Mirroring the secure DNS mode enum so that it can be used from HTML
      * bindings.
-     * @private {!settings.SecureDnsMode}
+     * @private {!SecureDnsMode}
      */
     secureDnsModeEnum_: {
       type: Object,
-      value: settings.SecureDnsMode,
+      value: SecureDnsMode,
     },
 
     /**
@@ -68,16 +87,16 @@ Polymer({
     /**
      * Represents the selected radio button. Should always have a value of
      * 'automatic' or 'secure'.
-     * @private {!settings.SecureDnsMode}
+     * @private {!SecureDnsMode}
      */
     secureDnsRadio_: {
       type: String,
-      value: settings.SecureDnsMode.AUTOMATIC,
+      value: SecureDnsMode.AUTOMATIC,
     },
 
     /**
      * List of secure DNS resolvers to display in dropdown menu.
-     * @private {!Array<!settings.ResolverOption>}
+     * @private {!Array<!ResolverOption>}
      */
     resolverOptions_: Array,
 
@@ -102,12 +121,12 @@ Polymer({
     secureDnsInputValue_: String,
   },
 
-  /** @private {?settings.PrivacyPageBrowserProxy} */
+  /** @private {?PrivacyPageBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created: function() {
-    this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
+    this.browserProxy_ = PrivacyPageBrowserProxyImpl.getInstance();
   },
 
   /** @override */
@@ -132,25 +151,25 @@ Polymer({
   /**
    * Update the UI representation to match the underlying host resolver
    * configuration.
-   * @param {!settings.SecureDnsSetting} setting
+   * @param {!SecureDnsSetting} setting
    * @private
    */
   onSecureDnsPrefsChanged_: function(setting) {
     switch (setting.mode) {
-      case settings.SecureDnsMode.SECURE:
+      case SecureDnsMode.SECURE:
         this.set('secureDnsToggle_.value', true);
-        this.secureDnsRadio_ = settings.SecureDnsMode.SECURE;
+        this.secureDnsRadio_ = SecureDnsMode.SECURE;
         // Only update the selected dropdown item if the user is in secure
         // mode. Otherwise, we may be losing a selection that hasn't been
         // pushed yet to prefs.
         this.updateTemplatesRepresentation_(setting.templates);
         this.updatePrivacyPolicyLine_();
         break;
-      case settings.SecureDnsMode.AUTOMATIC:
+      case SecureDnsMode.AUTOMATIC:
         this.set('secureDnsToggle_.value', true);
-        this.secureDnsRadio_ = settings.SecureDnsMode.AUTOMATIC;
+        this.secureDnsRadio_ = SecureDnsMode.AUTOMATIC;
         break;
-      case settings.SecureDnsMode.OFF:
+      case SecureDnsMode.OFF:
         this.set('secureDnsToggle_.value', false);
         break;
       default:
@@ -169,24 +188,23 @@ Polymer({
   onToggleChanged_: function() {
     this.showRadioGroup_ =
         /** @type {boolean} */ (this.secureDnsToggle_.value);
-    if (this.secureDnsRadio_ === settings.SecureDnsMode.SECURE &&
+    if (this.secureDnsRadio_ === SecureDnsMode.SECURE &&
         this.$.secureResolverSelect.value === 'custom') {
       this.$.secureDnsInput.focus();
     }
     this.updateDnsPrefs_(
-        this.secureDnsToggle_.value ? this.secureDnsRadio_ :
-                                      settings.SecureDnsMode.OFF);
+        this.secureDnsToggle_.value ? this.secureDnsRadio_ : SecureDnsMode.OFF);
   },
 
   /**
    * Updates the underlying secure DNS prefs based on the newly selected radio
    * button. This should only be called from the HTML. Focuses the custom text
    * field if the custom option has been selected.
-   * @param {!CustomEvent<{value: !settings.SecureDnsMode}>} event
+   * @param {!CustomEvent<{value: !SecureDnsMode}>} event
    * @private
    */
   onRadioSelectionChanged_: function(event) {
-    if (event.detail.value === settings.SecureDnsMode.SECURE &&
+    if (event.detail.value === SecureDnsMode.SECURE &&
         this.$.secureResolverSelect.value === 'custom') {
       this.$.secureDnsInput.focus();
     }
@@ -198,13 +216,13 @@ Polymer({
    * provided mode and templates (if the latter is specified). The templates
    * param should only be specified when the underlying prefs are being updated
    * after a custom entry has been validated.
-   * @param {!settings.SecureDnsMode} mode
+   * @param {!SecureDnsMode} mode
    * @param {string=} templates
    * @private
    */
   updateDnsPrefs_: function(mode, templates = '') {
     switch (mode) {
-      case settings.SecureDnsMode.SECURE:
+      case SecureDnsMode.SECURE:
         // If going to secure mode, set the templates pref first to prevent the
         // stub resolver config from being momentarily invalid. If the user has
         // selected the custom dropdown option, only update the underlying
@@ -223,8 +241,8 @@ Polymer({
         }
         this.setPrefValue('dns_over_https.mode', mode);
         break;
-      case settings.SecureDnsMode.AUTOMATIC:
-      case settings.SecureDnsMode.OFF:
+      case SecureDnsMode.AUTOMATIC:
+      case SecureDnsMode.OFF:
         // If going to automatic or off mode, set the mode pref first to avoid
         // clearing the dropdown selection when the templates pref is cleared.
         this.setPrefValue('dns_over_https.mode', mode);
@@ -253,8 +271,8 @@ Polymer({
    */
   onDropdownSelectionChanged_: function() {
     // If we're already in secure mode, update the prefs.
-    if (this.secureDnsRadio_ === settings.SecureDnsMode.SECURE) {
-      this.updateDnsPrefs_(settings.SecureDnsMode.SECURE);
+    if (this.secureDnsRadio_ === SecureDnsMode.SECURE) {
+      this.updateDnsPrefs_(SecureDnsMode.SECURE);
     }
     this.updatePrivacyPolicyLine_();
 
@@ -270,7 +288,7 @@ Polymer({
   /**
    * Updates the setting to communicate the type of management, if any. The
    * setting is always collapsed if there is any management.
-   * @param {!settings.SecureDnsUiManagementMode} managementMode
+   * @param {!SecureDnsUiManagementMode} managementMode
    * @private
    */
   updateManagementView_: function(managementMode) {
@@ -291,16 +309,16 @@ Polymer({
       // If the secure DNS mode was forcefully overridden by Chrome, provide an
       // explanation in the setting subtitle.
       switch (managementMode) {
-        case settings.SecureDnsUiManagementMode.NO_OVERRIDE:
+        case SecureDnsUiManagementMode.NO_OVERRIDE:
           this.secureDnsDescription_ =
               loadTimeData.getString('secureDnsDescription');
           break;
-        case settings.SecureDnsUiManagementMode.DISABLED_MANAGED:
+        case SecureDnsUiManagementMode.DISABLED_MANAGED:
           pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
           this.secureDnsDescription_ =
               loadTimeData.getString('secureDnsDisabledForManagedEnvironment');
           break;
-        case settings.SecureDnsUiManagementMode.DISABLED_PARENTAL_CONTROLS:
+        case SecureDnsUiManagementMode.DISABLED_PARENTAL_CONTROLS:
           pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
           this.secureDnsDescription_ =
               loadTimeData.getString('secureDnsDisabledForParentalControl');
@@ -390,8 +408,8 @@ Polymer({
   onSecureDnsInputEvaluated_: function(event) {
     if (event.detail.isValid) {
       this.updateDnsPrefs_(this.secureDnsRadio_, event.detail.text);
-    } else if (this.secureDnsRadio_ === settings.SecureDnsMode.SECURE) {
-      this.secureDnsRadio_ = settings.SecureDnsMode.AUTOMATIC;
+    } else if (this.secureDnsRadio_ === SecureDnsMode.SECURE) {
+      this.secureDnsRadio_ = SecureDnsMode.AUTOMATIC;
     }
   },
 });

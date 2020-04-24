@@ -8,9 +8,28 @@
  * security key.
  */
 
-cr.define('settings', function() {
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import '../settings_shared_css.m.js';
+import '../site_favicon.m.js';
+import {SecurityKeysBioEnrollProxy, SecurityKeysBioEnrollProxyImpl, Ctap2Status, SampleStatus, Enrollment, EnrollmentResponse, SampleResponse, } from './security_keys_browser_proxy.js';
+import './security_keys_pin_field.js';
+
   /** @enum {string} */
-  /* #export */ const BioEnrollDialogPage = {
+  export const BioEnrollDialogPage = {
     INITIAL: 'initial',
     PIN_PROMPT: 'pinPrompt',
     ENROLLMENTS: 'enrollments',
@@ -21,6 +40,8 @@ cr.define('settings', function() {
 
   Polymer({
     is: 'settings-security-keys-bio-enroll-dialog',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [
       I18nBehavior,
@@ -45,7 +66,7 @@ cr.define('settings', function() {
 
       /**
        * The ID of the element currently shown in the dialog.
-       * @private {!settings.BioEnrollDialogPage}
+       * @private {!BioEnrollDialogPage}
        */
       dialogPage_: {
         type: String,
@@ -58,7 +79,7 @@ cr.define('settings', function() {
 
       /**
        * The list of enrollments displayed.
-       * @private {!Array<!settings.Enrollment>}
+       * @private {!Array<!Enrollment>}
        */
       enrollments_: Array,
 
@@ -69,7 +90,7 @@ cr.define('settings', function() {
       recentEnrollmentName_: String,
     },
 
-    /** @private {?settings.SecurityKeysBioEnrollProxy} */
+    /** @private {?SecurityKeysBioEnrollProxy} */
     browserProxy_: null,
 
     /** @private {number} */
@@ -80,8 +101,8 @@ cr.define('settings', function() {
 
     /** @override */
     attached() {
-      Polymer.RenderStatus.afterNextRender(this, function() {
-        Polymer.IronA11yAnnouncer.requestAvailability();
+      afterNextRender(this, function() {
+        IronA11yAnnouncer.requestAvailability();
       });
 
       this.$.dialog.showModal();
@@ -91,7 +112,7 @@ cr.define('settings', function() {
           'security-keys-bio-enroll-status',
           this.onEnrollmentSample_.bind(this));
       this.browserProxy_ =
-          settings.SecurityKeysBioEnrollProxyImpl.getInstance();
+          SecurityKeysBioEnrollProxyImpl.getInstance();
       this.browserProxy_.startBioEnroll().then(() => {
         this.dialogPage_ = BioEnrollDialogPage.PIN_PROMPT;
       });
@@ -128,7 +149,7 @@ cr.define('settings', function() {
 
     /**
      * @private
-     * @param {!Array<!settings.Enrollment>} enrollments
+     * @param {!Array<!Enrollment>} enrollments
      */
     onEnrollments_(enrollments) {
       this.enrollments_ = enrollments;
@@ -203,10 +224,10 @@ cr.define('settings', function() {
 
     /**
      * @private
-     * @param {!settings.SampleResponse} response
+     * @param {!SampleResponse} response
      */
     onEnrollmentSample_(response) {
-      if (response.status != settings.SampleStatus.OK) {
+      if (response.status != SampleStatus.OK) {
         this.progressArcLabel_ =
             this.i18n('securityKeysBioEnrollmentTryAgainLabel');
         this.fire('iron-announce', {text: this.progressArcLabel_});
@@ -232,14 +253,14 @@ cr.define('settings', function() {
 
     /**
      * @private
-     * @param {!settings.EnrollmentResponse} response
+     * @param {!EnrollmentResponse} response
      */
     onEnrollmentComplete_(response) {
-      if (response.code == settings.Ctap2Status.ERR_KEEPALIVE_CANCEL) {
+      if (response.code == Ctap2Status.ERR_KEEPALIVE_CANCEL) {
         this.showEnrollmentsPage_();
         return;
       }
-      if (response.code != settings.Ctap2Status.OK) {
+      if (response.code != Ctap2Status.OK) {
         this.onError_(
             this.i18n('securityKeysBioEnrollmentEnrollingFailedLabel'));
         return;
@@ -361,7 +382,7 @@ cr.define('settings', function() {
 
     /**
      * @private
-     * @param {!settings.BioEnrollDialogPage} dialogPage
+     * @param {!BioEnrollDialogPage} dialogPage
      * @return {string} The title string for the current dialog page.
      */
     dialogTitle_(dialogPage) {
@@ -385,8 +406,3 @@ cr.define('settings', function() {
     },
   });
 
-  // #cr_define_end
-  return {
-    BioEnrollDialogPage: BioEnrollDialogPage,
-  };
-});

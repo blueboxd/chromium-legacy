@@ -7,9 +7,26 @@
  * dialog for viewing and erasing credentials stored on a security key.
  */
 
-cr.define('settings', function() {
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import '../settings_shared_css.m.js';
+import '../site_favicon.m.js';
+import {SecurityKeysCredentialBrowserProxy, SecurityKeysCredentialBrowserProxyImpl, Credential} from './security_keys_browser_proxy.js';
+import './security_keys_pin_field.js';
+
   /** @enum {string} */
-  /* #export */ const CredentialManagementDialogPage = {
+  export const CredentialManagementDialogPage = {
     INITIAL: 'initial',
     PIN_PROMPT: 'pinPrompt',
     CREDENTIALS: 'credentials',
@@ -19,6 +36,8 @@ cr.define('settings', function() {
   Polymer({
     is: 'settings-security-keys-credential-management-dialog',
 
+    _template: html`{__html_template__}`,
+
     behaviors: [
       I18nBehavior,
       WebUIListenerBehavior,
@@ -27,7 +46,7 @@ cr.define('settings', function() {
     properties: {
       /**
        * The ID of the element currently shown in the dialog.
-       * @private {!settings.CredentialManagementDialogPage}
+       * @private {!CredentialManagementDialogPage}
        */
       dialogPage_: {
         type: String,
@@ -37,7 +56,7 @@ cr.define('settings', function() {
 
       /**
        * The list of credentials displayed in the dialog.
-       * @private {!Array<!settings.Credential>}
+       * @private {!Array<!Credential>}
        */
       credentials_: Array,
 
@@ -66,7 +85,7 @@ cr.define('settings', function() {
       deleteInProgress_: Boolean,
     },
 
-    /** @private {?settings.SecurityKeysCredentialBrowserProxy} */
+    /** @private {?SecurityKeysCredentialBrowserProxy} */
     browserProxy_: null,
 
     /** @private {?Set<string>} */
@@ -80,7 +99,7 @@ cr.define('settings', function() {
           this.onError_.bind(this));
       this.checkedCredentialIds_ = new Set();
       this.browserProxy_ =
-          settings.SecurityKeysCredentialBrowserProxyImpl.getInstance();
+          SecurityKeysCredentialBrowserProxyImpl.getInstance();
       this.browserProxy_.startCredentialManagement().then(() => {
         this.dialogPage_ = CredentialManagementDialogPage.PIN_PROMPT;
       });
@@ -116,7 +135,7 @@ cr.define('settings', function() {
 
     /**
      * @private
-     * @param {!Array<!settings.Credential>} credentials
+     * @param {!Array<!Credential>} credentials
      */
     onCredentials_(credentials) {
       if (!credentials.length) {
@@ -185,7 +204,7 @@ cr.define('settings', function() {
     /**
      * Stringifies the user entity of a Credential for display in the dialog.
      * @private
-     * @param {!settings.Credential} credential
+     * @param {!Credential} credential
      * @return {string}
      */
     formatUser_(credential) {
@@ -261,8 +280,3 @@ cr.define('settings', function() {
     },
   });
 
-  // #cr_define_end
-  return {
-    CredentialManagementDialogPage: CredentialManagementDialogPage,
-  };
-});

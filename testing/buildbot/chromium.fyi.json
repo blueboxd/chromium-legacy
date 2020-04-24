@@ -12074,6 +12074,11 @@
       }
     ]
   },
+  "chromeos-eve-lacros-rel": {
+    "additional_compile_targets": [
+      "chrome"
+    ]
+  },
   "chromeos-kevin-rel-hw-tests": {
     "additional_compile_targets": [
       "chromiumos_preflight"

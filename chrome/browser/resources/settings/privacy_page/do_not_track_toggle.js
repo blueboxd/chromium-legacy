@@ -2,8 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import '../settings_shared_css.m.js';
+import '../controls/settings_toggle_button.m.js';
+
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.m.js';
+
 Polymer({
   is: 'settings-do-not-track-toggle',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
@@ -35,8 +47,8 @@ Polymer({
    * @private
    */
   onToggleChange_(event) {
-    settings.MetricsBrowserProxyImpl.getInstance().recordSettingsPageHistogram(
-        settings.PrivacyElementInteractions.DO_NOT_TRACK);
+    MetricsBrowserProxyImpl.getInstance().recordSettingsPageHistogram(
+        PrivacyElementInteractions.DO_NOT_TRACK);
     const target = /** @type {!SettingsToggleButtonElement} */ (event.target);
     if (!target.checked) {
       // Always allow disabling the pref.
@@ -55,7 +67,7 @@ Polymer({
 
   /** @private */
   onDialogClosed_() {
-    cr.ui.focusWithoutInk(this.$.toggle);
+    focusWithoutInk(this.$.toggle);
   },
 
   /**

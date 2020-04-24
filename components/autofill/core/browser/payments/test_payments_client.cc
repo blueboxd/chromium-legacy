@@ -166,7 +166,6 @@ std::unique_ptr<base::Value> TestPaymentsClient::LegalMessage() {
                                          "     } ]"
                                          "  } ]"
                                          "}"));
-    return std::unique_ptr<base::Value>(base::JSONReader::ReadDeprecated("{}"));
   } else {
     return std::unique_ptr<base::Value>(base::JSONReader::ReadDeprecated(
         "{"

@@ -6,8 +6,23 @@
  * @fileoverview 'security-keys-subpage' is a settings subpage
  * containing operations on security keys.
  */
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import '../settings_shared_css.m.js';
+import './security_keys_credential_management_dialog.js';
+import './security_keys_bio_enroll_dialog.js';
+import './security_keys_set_pin_dialog.js';
+import './security_keys_reset_dialog.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+
 Polymer({
   is: 'security-keys-subpage',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /** @private */
@@ -49,7 +64,7 @@ Polymer({
   /** @private */
   onSetPINDialogClosed_() {
     this.showSetPINDialog_ = false;
-    cr.ui.focusWithoutInk(this.$.setPINButton);
+    focusWithoutInk(this.$.setPINButton);
   },
 
   /** @private */
@@ -60,7 +75,7 @@ Polymer({
   /** @private */
   onCredentialManagementDialogClosed_() {
     this.showCredentialManagementDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$$('#credentialManagementButton')));
+    focusWithoutInk(assert(this.$$('#credentialManagementButton')));
   },
 
   /** @private */
@@ -71,7 +86,7 @@ Polymer({
   /** @private */
   onResetDialogClosed_() {
     this.showResetDialog_ = false;
-    cr.ui.focusWithoutInk(this.$.resetButton);
+    focusWithoutInk(this.$.resetButton);
   },
 
   /** @private */
@@ -82,6 +97,6 @@ Polymer({
   /** @private */
   onBioEnrollDialogClosed_() {
     this.showBioEnrollDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$$('#bioEnrollButton')));
+    focusWithoutInk(assert(this.$$('#bioEnrollButton')));
   },
 });

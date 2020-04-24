@@ -191,7 +191,7 @@ TEST_F(FeedNetworkTest, SendQueryRequestEmpty) {
 
   ASSERT_TRUE(receiver.GetResult());
   const QueryRequestResult& result = *receiver.GetResult();
-  EXPECT_EQ(0, result.status_code);
+  EXPECT_EQ(0, result.response_info.status_code);
   EXPECT_FALSE(result.response_body);
 }
 
@@ -222,7 +222,7 @@ TEST_F(FeedNetworkTest, SendQueryRequestInvalidResponse) {
 
   ASSERT_TRUE(receiver.GetResult());
   const QueryRequestResult& result = *receiver.GetResult();
-  EXPECT_EQ(net::HTTP_OK, result.status_code);
+  EXPECT_EQ(net::HTTP_OK, result.response_info.status_code);
   EXPECT_FALSE(result.response_body);
 }
 
@@ -233,7 +233,11 @@ TEST_F(FeedNetworkTest, SendQueryRequestReceivesResponse) {
 
   ASSERT_TRUE(receiver.GetResult());
   const QueryRequestResult& result = *receiver.GetResult();
-  EXPECT_EQ(net::HTTP_OK, result.status_code);
+  EXPECT_EQ(net::HTTP_OK, result.response_info.status_code);
+  EXPECT_EQ(
+      "https://www.google.com/httpservice/retry/TrellisClankService/FeedQuery",
+      result.response_info.base_request_url);
+  EXPECT_NE(base::Time(), result.response_info.fetch_time);
   EXPECT_EQ(GetTestFeedResponse().response_version(),
             result.response_body->response_version());
 }
@@ -245,7 +249,7 @@ TEST_F(FeedNetworkTest, SendQueryRequestIgnoresBodyForNon200Response) {
 
   ASSERT_TRUE(receiver.GetResult());
   const QueryRequestResult& result = *receiver.GetResult();
-  EXPECT_EQ(net::HTTP_FORBIDDEN, result.status_code);
+  EXPECT_EQ(net::HTTP_FORBIDDEN, result.response_info.status_code);
   EXPECT_FALSE(result.response_body);
   histogram().ExpectBucketCount(
       "ContentSuggestions.Feed.Network.ResponseStatus.FeedQuery",
@@ -269,7 +273,7 @@ TEST_F(FeedNetworkTest, RequestTimeout) {
 
   ASSERT_TRUE(receiver.GetResult());
   const QueryRequestResult& result = *receiver.GetResult();
-  EXPECT_EQ(net::ERR_TIMED_OUT, result.status_code);
+  EXPECT_EQ(net::ERR_TIMED_OUT, result.response_info.status_code);
   histogram_tester.ExpectTimeBucketCount(
       "ContentSuggestions.Feed.Network.Duration", TimeDelta::FromSeconds(30),
       1);
@@ -368,7 +372,7 @@ TEST_F(FeedNetworkTest, TestDurationHistogram) {
 }
 
 // Verify that the kHostOverrideHost pref overrides the feed host
-// and updates the Bless nonce if one sent in the response.
+// and returns the Bless nonce if one sent in the response.
 TEST_F(FeedNetworkTest, TestHostOverrideWithAuthHeader) {
   CallbackReceiver<QueryRequestResult> receiver;
   profile_prefs().SetString(feed::prefs::kHostOverrideHost,
@@ -381,9 +385,9 @@ TEST_F(FeedNetworkTest, TestHostOverrideWithAuthHeader) {
           "nonce=\"1234123412341234\"\n\n"));
   RespondToQueryRequest(GetTestFeedResponse(), net::HTTP_FORBIDDEN);
 
-  EXPECT_TRUE(receiver.GetResult());
+  ASSERT_TRUE(receiver.GetResult());
   EXPECT_EQ("1234123412341234",
-            profile_prefs().GetString(feed::prefs::kHostOverrideBlessNonce));
+            receiver.GetResult()->response_info.bless_nonce);
 }
 
 TEST_F(FeedNetworkTest, SendActionRequest) {
@@ -393,7 +397,7 @@ TEST_F(FeedNetworkTest, SendActionRequest) {
 
   ASSERT_TRUE(receiver.GetResult());
   const ActionRequestResult& result = *receiver.GetResult();
-  EXPECT_EQ(net::HTTP_OK, result.status_code);
+  EXPECT_EQ(net::HTTP_OK, result.response_info.status_code);
   EXPECT_TRUE(result.response_body);
   histogram().ExpectBucketCount(
       "ContentSuggestions.Feed.Network.ResponseStatus.UploadActions", 200, 1);

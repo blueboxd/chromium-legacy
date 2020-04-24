@@ -12,7 +12,7 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '../appearance_page/appearance_page.js';
-import '../privacy_page/privacy_page.m.js';
+import '../privacy_page/privacy_page.js';
 import '../safety_check_page/safety_check_page.js';
 import '../autofill_page/autofill_page.js';
 import '../controls/settings_idle_load.m.js';

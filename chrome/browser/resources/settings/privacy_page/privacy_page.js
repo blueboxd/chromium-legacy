@@ -7,7 +7,39 @@
  * 'settings-privacy-page' is the settings page containing privacy and
  * security settings.
  */
-cr.define('settings', function() {
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import './do_not_track_toggle.js';
+import './secure_dns.js';
+import './passwords_leak_detection_toggle.js';
+import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl} from './privacy_page_browser_proxy.m.js';
+import '../controls/settings_toggle_button.m.js';
+import {HatsBrowserProxyImpl} from '../hats_browser_proxy.m.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import {PrivacyElementInteractions, MetricsBrowserProxy, MetricsBrowserProxyImpl} from '../metrics_browser_proxy.m.js';
+import {SyncBrowserProxyImpl, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
+import '../prefs/prefs.m.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {routes} from '../route.m.js';
+import {RouteObserverBehavior, Router} from '../router.m.js';
+import {PrivacyPageVisibility} from '../page_visibility.m.js';
+import '../settings_page/settings_animated_pages.m.js';
+import '../settings_page/settings_subpage.m.js';
+import {SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.m.js';
+import '../settings_shared_css.m.js';
+import {ContentSettingsTypes, CookieControlsMode, ChooserType} from '../site_settings/constants.m.js';
+
   /**
    * @typedef {{
    *   enabled: boolean,
@@ -30,9 +62,11 @@ cr.define('settings', function() {
   Polymer({
     is: 'settings-privacy-page',
 
+    _template: html`{__html_template__}`,
+
     behaviors: [
       PrefsBehavior,
-      settings.RouteObserverBehavior,
+      RouteObserverBehavior,
       I18nBehavior,
       WebUIListenerBehavior,
     ],
@@ -48,7 +82,7 @@ cr.define('settings', function() {
 
       /**
        * The current sync status, supplied by SyncBrowserProxy.
-       * @type {?settings.SyncStatus}
+       * @type {?SyncStatus}
        */
       syncStatus: Object,
 
@@ -141,11 +175,11 @@ cr.define('settings', function() {
         }
       },
 
-      /** @private {settings.BlockAutoplayStatus} */
+      /** @private {BlockAutoplayStatus} */
       blockAutoplayStatus_: {
         type: Object,
         value() {
-          return /** @type {settings.BlockAutoplayStatus} */ ({});
+          return /** @type {BlockAutoplayStatus} */ ({});
         }
       },
 
@@ -219,46 +253,46 @@ cr.define('settings', function() {
           const map = new Map();
 
           if (this.privacySettingsRedesignEnabled_) {
-            if (settings.routes.SECURITY) {
-              map.set(settings.routes.SECURITY.path, '#securityLinkRow');
+            if (routes.SECURITY) {
+              map.set(routes.SECURITY.path, '#securityLinkRow');
             }
 
-            if (settings.routes.COOKIES) {
+            if (routes.COOKIES) {
               map.set(
-                  `${settings.routes.COOKIES.path}_${
-                      settings.routes.PRIVACY.path}`,
+                  `${routes.COOKIES.path}_${
+                      routes.PRIVACY.path}`,
                   '#cookiesLinkRow');
               map.set(
-                  `${settings.routes.COOKIES.path}_${
-                      settings.routes.BASIC.path}`,
+                  `${routes.COOKIES.path}_${
+                      routes.BASIC.path}`,
                   '#cookiesLinkRow');
             }
 
-            if (settings.routes.SITE_SETTINGS) {
+            if (routes.SITE_SETTINGS) {
               map.set(
-                  settings.routes.SITE_SETTINGS.path, '#permissionsLinkRow');
+                  routes.SITE_SETTINGS.path, '#permissionsLinkRow');
             }
           } else {
             // <if expr="use_nss_certs">
-            if (settings.routes.CERTIFICATES) {
-              map.set(settings.routes.CERTIFICATES.path, '#manageCertificates');
+            if (routes.CERTIFICATES) {
+              map.set(routes.CERTIFICATES.path, '#manageCertificates');
             }
             // </if>
-            if (settings.routes.SITE_SETTINGS) {
+            if (routes.SITE_SETTINGS) {
               map.set(
-                  settings.routes.SITE_SETTINGS.path,
+                  routes.SITE_SETTINGS.path,
                   '#site-settings-subpage-trigger');
             }
 
-            if (settings.routes.SITE_SETTINGS_SITE_DATA) {
+            if (routes.SITE_SETTINGS_SITE_DATA) {
               map.set(
-                  settings.routes.SITE_SETTINGS_SITE_DATA.path,
+                  routes.SITE_SETTINGS_SITE_DATA.path,
                   '#site-data-trigger');
             }
 
-            if (settings.routes.SECURITY_KEYS) {
+            if (routes.SECURITY_KEYS) {
               map.set(
-                  settings.routes.SECURITY_KEYS.path,
+                  routes.SECURITY_KEYS.path,
                   '#security-keys-subpage-trigger');
             }
           }
@@ -278,20 +312,20 @@ cr.define('settings', function() {
       'onSafeBrowsingReportingPrefChange_(prefs.safebrowsing.*)',
     ],
 
-    /** @private {?settings.PrivacyPageBrowserProxy} */
+    /** @private {?PrivacyPageBrowserProxy} */
     browserProxy_: null,
 
-    /** @private {?settings.MetricsBrowserProxy} */
+    /** @private {?MetricsBrowserProxy} */
     metricsBrowserProxy_: null,
 
     /** @override */
     ready() {
-      this.ContentSettingsTypes = settings.ContentSettingsTypes;
-      this.ChooserType = settings.ChooserType;
+      this.ContentSettingsTypes = ContentSettingsTypes;
+      this.ChooserType = ChooserType;
 
-      this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
+      this.browserProxy_ = PrivacyPageBrowserProxyImpl.getInstance();
       this.metricsBrowserProxy_ =
-          settings.MetricsBrowserProxyImpl.getInstance();
+          MetricsBrowserProxyImpl.getInstance();
 
       this.onBlockAutoplayStatusChanged_({
         pref: /** @type {chrome.settingsPrivate.PrefObject} */ ({value: false}),
@@ -302,12 +336,12 @@ cr.define('settings', function() {
           'onBlockAutoplayStatusChanged',
           this.onBlockAutoplayStatusChanged_.bind(this));
 
-      settings.SyncBrowserProxyImpl.getInstance().getSyncStatus().then(
+      SyncBrowserProxyImpl.getInstance().getSyncStatus().then(
           this.handleSyncStatus_.bind(this));
       this.addWebUIListener(
           'sync-status-changed', this.handleSyncStatus_.bind(this));
 
-      settings.SiteSettingsPrefsBrowserProxyImpl.getInstance()
+      SiteSettingsPrefsBrowserProxyImpl.getInstance()
           .getCookieSettingDescription()
           .then(description => this.cookieSettingDescription_ = description);
       this.addWebUIListener(
@@ -358,7 +392,7 @@ cr.define('settings', function() {
     /** @private */
     onSafeBrowsingReportingToggleChange_() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.PrivacyElementInteractions.IMPROVE_SECURITY);
+          PrivacyElementInteractions.IMPROVE_SECURITY);
       this.setPrefValue(
           'safebrowsing.scout_reporting_enabled',
           this.$$('#safeBrowsingReportingToggle').checked);
@@ -384,7 +418,7 @@ cr.define('settings', function() {
 
     /**
      * Handler for when the sync state is pushed from the browser.
-     * @param {?settings.SyncStatus} syncStatus
+     * @param {?SyncStatus} syncStatus
      * @private
      */
     handleSyncStatus_(syncStatus) {
@@ -394,14 +428,14 @@ cr.define('settings', function() {
     /** @protected */
     currentRouteChanged() {
       this.showClearBrowsingDataDialog_ =
-          settings.Router.getInstance().getCurrentRoute() ==
-          settings.routes.CLEAR_BROWSER_DATA;
+          Router.getInstance().getCurrentRoute() ==
+          routes.CLEAR_BROWSER_DATA;
     },
 
 
     /**
      * Called when the block autoplay status changes.
-     * @param {settings.BlockAutoplayStatus} autoplayStatus
+     * @param {BlockAutoplayStatus} autoplayStatus
      * @private
      */
     onBlockAutoplayStatusChanged_(autoplayStatus) {
@@ -428,8 +462,8 @@ cr.define('settings', function() {
       this.setPrefValue('profile.block_third_party_cookies', target.checked);
       this.setPrefValue(
           'profile.cookie_controls_mode',
-          target.checked ? settings.CookieControlsMode.ENABLED :
-                           settings.CookieControlsMode.DISABLED);
+          target.checked ? CookieControlsMode.ENABLED :
+                           CookieControlsMode.DISABLED);
     },
 
     /**
@@ -440,15 +474,15 @@ cr.define('settings', function() {
      */
     onCanMakePaymentChange_() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.PrivacyElementInteractions.PAYMENT_METHOD);
+          PrivacyElementInteractions.PAYMENT_METHOD);
     },
 
     /** @private */
     onManageCertificatesTap_() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.PrivacyElementInteractions.MANAGE_CERTIFICATES);
+          PrivacyElementInteractions.MANAGE_CERTIFICATES);
       // <if expr="use_nss_certs">
-      settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
+      Router.getInstance().navigateTo(routes.CERTIFICATES);
       // </if>
       // <if expr="is_win or is_macosx">
       this.browserProxy_.showManageSSLCertificates();
@@ -463,7 +497,7 @@ cr.define('settings', function() {
      */
     onNetworkPredictionChange_() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.PrivacyElementInteractions.NETWORK_PREDICTION);
+          PrivacyElementInteractions.NETWORK_PREDICTION);
     },
 
     /**
@@ -480,60 +514,60 @@ cr.define('settings', function() {
 
     /** @private */
     onSiteDataTap_() {
-      settings.Router.getInstance().navigateTo(
-          settings.routes.SITE_SETTINGS_SITE_DATA);
+      Router.getInstance().navigateTo(
+          routes.SITE_SETTINGS_SITE_DATA);
     },
 
     /** @private */
     onSiteSettingsTap_() {
-      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+      Router.getInstance().navigateTo(routes.SITE_SETTINGS);
     },
 
     /** @private */
     onSafeBrowsingToggleChange_: function() {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
-          settings.PrivacyElementInteractions.SAFE_BROWSING);
+          PrivacyElementInteractions.SAFE_BROWSING);
     },
 
     /** @private */
     onClearBrowsingDataTap_() {
       this.tryShowHatsSurvey_();
 
-      settings.Router.getInstance().navigateTo(
-          settings.routes.CLEAR_BROWSER_DATA);
+      Router.getInstance().navigateTo(
+          routes.CLEAR_BROWSER_DATA);
     },
 
     /** @private */
     onCookiesClick_() {
       this.tryShowHatsSurvey_();
 
-      settings.Router.getInstance().navigateTo(settings.routes.COOKIES);
+      Router.getInstance().navigateTo(routes.COOKIES);
     },
 
     /** @private */
     onDialogClosed_() {
-      settings.Router.getInstance().navigateTo(
-          assert(settings.routes.CLEAR_BROWSER_DATA.parent));
-      cr.ui.focusWithoutInk(assert(this.$$('#clearBrowsingData')));
+      Router.getInstance().navigateTo(
+          assert(routes.CLEAR_BROWSER_DATA.parent));
+      focusWithoutInk(assert(this.$$('#clearBrowsingData')));
     },
 
     /** @private */
     onPermissionsPageClick_() {
       this.tryShowHatsSurvey_();
 
-      settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
+      Router.getInstance().navigateTo(routes.SITE_SETTINGS);
     },
 
     /** @private */
     onSecurityKeysTap_() {
-      settings.Router.getInstance().navigateTo(settings.routes.SECURITY_KEYS);
+      Router.getInstance().navigateTo(routes.SECURITY_KEYS);
     },
 
     /** @private */
     onSecurityPageClick_() {
       this.tryShowHatsSurvey_();
 
-      settings.Router.getInstance().navigateTo(settings.routes.SECURITY);
+      Router.getInstance().navigateTo(routes.SECURITY);
     },
 
     /** @private */
@@ -551,10 +585,7 @@ cr.define('settings', function() {
 
     /** @private */
     tryShowHatsSurvey_() {
-      settings.HatsBrowserProxyImpl.getInstance().tryShowSurvey();
+      HatsBrowserProxyImpl.getInstance().tryShowSurvey();
     },
   });
 
-  // #cr_define_end
-  return {BlockAutoplayStatus};
-});

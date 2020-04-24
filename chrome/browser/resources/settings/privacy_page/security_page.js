@@ -2,7 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import './collapse_radio_button.js';
+import './disable_safebrowsing_dialog.js';
+import './passwords_leak_detection_toggle.js';
+import './secure_dns.js';
+import '../controls/settings_toggle_button.m.js';
+import '../icons.m.js';
+import '../prefs/prefs.m.js';
+import '../settings_shared_css.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.m.js';
+import {SyncStatus} from '../people_page/sync_browser_proxy.m.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {routes} from '../route.m.js';
+import {Router} from '../router.m.js';
+
+import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl} from './privacy_page_browser_proxy.m.js';
+import {SafeBrowsingBrowserProxy, SafeBrowsingBrowserProxyImpl, SafeBrowsingRadioManagedState} from './safe_browsing_browser_proxy.js';
+
 /**
  * Enumeration of all safe browsing modes.
  * @enum {string}
@@ -16,12 +42,14 @@ const SafeBrowsing = {
 Polymer({
   is: 'settings-security-page',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
     PrefsBehavior,
   ],
 
   properties: {
-    /** @type {settings.SyncStatus} */
+    /** @type {SyncStatus} */
     syncStatus: Object,
 
     /**
@@ -68,7 +96,7 @@ Polymer({
       },
     },
 
-    /** @private {!settings.SafeBrowsingRadioManagedState} */
+    /** @private {!SafeBrowsingRadioManagedState} */
     safeBrowsingRadioManagedState_: Object,
 
     /** @private */
@@ -102,17 +130,16 @@ Polymer({
   focusConfigChanged_(newConfig, oldConfig) {
     assert(!oldConfig);
     // <if expr="use_nss_certs">
-    if (settings.routes.CERTIFICATES) {
-      this.focusConfig.set(settings.routes.CERTIFICATES.path, () => {
-        cr.ui.focusWithoutInk(assert(this.$$('#manageCertificates')));
+    if (routes.CERTIFICATES) {
+      this.focusConfig.set(routes.CERTIFICATES.path, () => {
+        focusWithoutInk(assert(this.$$('#manageCertificates')));
       });
     }
     // </if>
 
-    if (settings.routes.SECURITY_KEYS) {
-      this.focusConfig.set(settings.routes.SECURITY_KEYS.path, () => {
-        cr.ui.focusWithoutInk(
-            assert(this.$$('#security-keys-subpage-trigger')));
+    if (routes.SECURITY_KEYS) {
+      this.focusConfig.set(routes.SECURITY_KEYS.path, () => {
+        focusWithoutInk(assert(this.$$('#security-keys-subpage-trigger')));
       });
     }
   },
@@ -132,17 +159,17 @@ Polymer({
                                                          SafeBrowsing.STANDARD;
   },
 
-  /** @private {settings.PrivacyPageBrowserProxy} */
+  /** @private {PrivacyPageBrowserProxy} */
   browserProxy_: null,
 
-  /** @private {settings.MetricsBrowserProxy} */
+  /** @private {MetricsBrowserProxy} */
   metricsBrowserProxy_: null,
 
   /** @override */
   ready() {
-    this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
+    this.browserProxy_ = PrivacyPageBrowserProxyImpl.getInstance();
 
-    this.metricsBrowserProxy_ = settings.MetricsBrowserProxyImpl.getInstance();
+    this.metricsBrowserProxy_ = MetricsBrowserProxyImpl.getInstance();
   },
 
   /**
@@ -176,20 +203,20 @@ Polymer({
   async onSafeBrowsingPrefChange_() {
     // Retrieve and update safe browsing radio managed state.
     this.safeBrowsingRadioManagedState_ =
-        await settings.SafeBrowsingBrowserProxyImpl.getInstance()
+        await SafeBrowsingBrowserProxyImpl.getInstance()
             .getSafeBrowsingRadioManagedState();
   },
 
   /** @private */
   onManageCertificatesClick_() {
     // <if expr="use_nss_certs">
-    settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
+    Router.getInstance().navigateTo(routes.CERTIFICATES);
     // </if>
     // <if expr="is_win or is_macosx">
     this.browserProxy_.showManageSSLCertificates();
     // </if>
     this.metricsBrowserProxy_.recordSettingsPageHistogram(
-        settings.PrivacyElementInteractions.MANAGE_CERTIFICATES);
+        PrivacyElementInteractions.MANAGE_CERTIFICATES);
   },
 
   /** @private */
@@ -199,7 +226,7 @@ Polymer({
 
   /** @private */
   onSecurityKeysClick_() {
-    settings.Router.getInstance().navigateTo(settings.routes.SECURITY_KEYS);
+    Router.getInstance().navigateTo(routes.SECURITY_KEYS);
   },
 
   /**
@@ -223,7 +250,6 @@ Polymer({
 
     // Set focus back to the no protection button regardless of user interaction
     // with the dialog, as it was the entry point to the dialog.
-    cr.ui.focusWithoutInk(assert(this.$.safeBrowsingDisabled));
+    focusWithoutInk(assert(this.$.safeBrowsingDisabled));
   },
 });
-})();

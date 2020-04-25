@@ -39,7 +39,8 @@ bool AreGetAssertionRequestMapKeysCorrect(
 
 // static
 base::Optional<CtapGetAssertionRequest> CtapGetAssertionRequest::Parse(
-    const cbor::Value::MapValue& request_map) {
+    const cbor::Value::MapValue& request_map,
+    const ParseOpts& opts) {
   if (!AreGetAssertionRequestMapKeysCorrect(request_map))
     return base::nullopt;
 
@@ -92,16 +93,24 @@ base::Optional<CtapGetAssertionRequest> CtapGetAssertionRequest::Parse(
 
     const cbor::Value::MapValue& extensions = extensions_it->second.GetMap();
 
-    const auto android_client_data_ext_it =
-        extensions.find(cbor::Value(device::kExtensionAndroidClientData));
-    if (android_client_data_ext_it != extensions.end()) {
-      base::Optional<AndroidClientDataExtensionInput> android_client_data_ext =
-          AndroidClientDataExtensionInput::Parse(
-              android_client_data_ext_it->second);
-      if (!android_client_data_ext) {
+    if (opts.reject_all_extensions && !extensions.empty()) {
+      return base::nullopt;
+    }
+
+    for (const auto& extension : extensions) {
+      if (!extension.first.is_string()) {
         return base::nullopt;
       }
-      request.android_client_data_ext = std::move(*android_client_data_ext);
+
+      if (extension.first.GetString() == kExtensionAndroidClientData) {
+        base::Optional<AndroidClientDataExtensionInput>
+            android_client_data_ext =
+                AndroidClientDataExtensionInput::Parse(extension.second);
+        if (!android_client_data_ext) {
+          return base::nullopt;
+        }
+        request.android_client_data_ext = std::move(*android_client_data_ext);
+      }
     }
   }
 

@@ -3293,6 +3293,100 @@ TEST_F(AuthenticatorImplTest, NoUnexpectedAuthenticatorExtensions) {
             AuthenticatorStatus::NOT_ALLOWED_ERROR);
 }
 
+TEST_F(AuthenticatorImplTest, NoUnexpectedClientExtensions) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  device::VirtualCtap2Device::Config config;
+  config.reject_all_extensions = true;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  // Check that no unexpected client extensions are sent to the authenticator.
+  TestMakeCredentialCallback create_callback;
+  authenticator->MakeCredential(GetTestPublicKeyCredentialCreationOptions(),
+                                create_callback.callback());
+  base::RunLoop().RunUntilIdle();
+  create_callback.WaitForCallback();
+  EXPECT_EQ(create_callback.status(), AuthenticatorStatus::SUCCESS);
+
+  // No extensions should be sent when getting an assertion either.
+  PublicKeyCredentialRequestOptionsPtr assertion_options =
+      GetTestPublicKeyCredentialRequestOptions();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      assertion_options->allow_credentials.back().id(), kTestRelyingPartyId));
+  TestGetAssertionCallback assertion_callback;
+  authenticator->GetAssertion(std::move(assertion_options),
+                              assertion_callback.callback());
+  base::RunLoop().RunUntilIdle();
+  assertion_callback.WaitForCallback();
+  EXPECT_EQ(assertion_callback.status(), AuthenticatorStatus::SUCCESS);
+}
+
+TEST_F(AuthenticatorImplTest, AndroidClientDataExtension) {
+  EnableFeature(device::kWebAuthPhoneSupport);
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  device::VirtualCtap2Device::Config config;
+  config.support_android_client_data_extension = true;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  TestMakeCredentialCallback create_callback;
+  authenticator->MakeCredential(GetTestPublicKeyCredentialCreationOptions(),
+                                create_callback.callback());
+  base::RunLoop().RunUntilIdle();
+  create_callback.WaitForCallback();
+  EXPECT_EQ(create_callback.status(), AuthenticatorStatus::SUCCESS);
+
+  PublicKeyCredentialRequestOptionsPtr assertion_options =
+      GetTestPublicKeyCredentialRequestOptions();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      assertion_options->allow_credentials.back().id(), kTestRelyingPartyId));
+  TestGetAssertionCallback assertion_callback;
+  authenticator->GetAssertion(std::move(assertion_options),
+                              assertion_callback.callback());
+  base::RunLoop().RunUntilIdle();
+  assertion_callback.WaitForCallback();
+  EXPECT_EQ(assertion_callback.status(), AuthenticatorStatus::SUCCESS);
+}
+
+TEST_F(AuthenticatorImplTest, UnsolicitedAndroidClientDataExtensionReponse) {
+  EnableFeature(device::kWebAuthPhoneSupport);
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  device::VirtualCtap2Device::Config config;
+  config.send_unsolicited_android_client_data_extension = true;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  // An unsolicited androidClientData extension response results in an error.
+  TestMakeCredentialCallback create_callback;
+  authenticator->MakeCredential(GetTestPublicKeyCredentialCreationOptions(),
+                                create_callback.callback());
+  base::RunLoop().RunUntilIdle();
+  create_callback.WaitForCallback();
+  EXPECT_EQ(create_callback.status(), AuthenticatorStatus::NOT_ALLOWED_ERROR);
+
+  // The same goes for getAssertion.
+  PublicKeyCredentialRequestOptionsPtr assertion_options =
+      GetTestPublicKeyCredentialRequestOptions();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      assertion_options->allow_credentials.back().id(), kTestRelyingPartyId));
+  TestGetAssertionCallback assertion_callback;
+  authenticator->GetAssertion(std::move(assertion_options),
+                              assertion_callback.callback());
+  base::RunLoop().RunUntilIdle();
+  assertion_callback.WaitForCallback();
+  EXPECT_EQ(assertion_callback.status(),
+            AuthenticatorStatus::NOT_ALLOWED_ERROR);
+}
+
 // Tests that on an authenticator that supports batching, exclude lists that fit
 // into a single batch are sent without probing.
 TEST_F(AuthenticatorImplTest, ExcludeListBatching) {

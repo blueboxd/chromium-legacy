@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -35,6 +36,12 @@ class SyncConsentScreen : public BaseScreen,
  public:
   enum ConsentGiven { CONSENT_NOT_GIVEN, CONSENT_GIVEN };
 
+  enum class Result { NEXT, NOT_APPLICABLE };
+
+  static std::string GetResultString(Result result);
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
+
   class SyncConsentScreenTestDelegate {
    public:
     SyncConsentScreenTestDelegate() = default;
@@ -61,8 +68,11 @@ class SyncConsentScreen : public BaseScreen,
   static void MaybeLaunchSyncConsentSettings(Profile* profile);
 
   SyncConsentScreen(SyncConsentScreenView* view,
-                    const base::RepeatingClosure& exit_callback);
+                    const ScreenExitCallback& exit_callback);
   ~SyncConsentScreen() override;
+
+  // Inits |user_|, its |profile_| and |behavior_| before using the screen.
+  void Init();
 
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
@@ -81,6 +91,9 @@ class SyncConsentScreen : public BaseScreen,
                            bool enable_os_sync,
                            bool review_browser_sync);
 
+  static std::unique_ptr<base::AutoReset<bool>> ForceBrandedBuildForTesting(
+      bool value);
+
   // Sets internal condition "Sync disabled by policy" for tests.
   void SetProfileSyncDisabledByPolicyForTesting(bool value);
 
@@ -92,8 +105,17 @@ class SyncConsentScreen : public BaseScreen,
       SyncConsentScreen::SyncConsentScreenTestDelegate* delegate);
   SyncConsentScreenTestDelegate* GetDelegateForTesting() const;
 
+  void set_exit_callback_for_testing(const ScreenExitCallback& exit_callback) {
+    exit_callback_ = exit_callback;
+  }
+
+  const ScreenExitCallback& get_exit_callback_for_testing() {
+    return exit_callback_;
+  }
+
  private:
   // BaseScreen:
+  bool MaybeSkip() override;
   void ShowImpl() override;
   void HideImpl() override;
 
@@ -119,7 +141,7 @@ class SyncConsentScreen : public BaseScreen,
   SyncScreenBehavior behavior_ = UNKNOWN;
 
   SyncConsentScreenView* const view_;
-  base::RepeatingClosure exit_callback_;
+  ScreenExitCallback exit_callback_;
 
   // Manages sync service observer lifetime.
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
@@ -128,6 +150,7 @@ class SyncConsentScreen : public BaseScreen,
   // Primary user ind his Profile (if screen is shown).
   const user_manager::User* user_ = nullptr;
   Profile* profile_ = nullptr;
+  bool is_initialized_ = false;
 
   base::Optional<bool> test_sync_disabled_by_policy_;
   base::Optional<bool> test_sync_engine_initialized_;

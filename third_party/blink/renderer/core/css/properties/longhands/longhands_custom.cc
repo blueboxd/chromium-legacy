@@ -7412,6 +7412,21 @@ const CSSValue* WebkitRubyPosition::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetRubyPosition());
 }
 
+const CSSValue* RubyPosition::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  switch (style.GetRubyPosition()) {
+    case blink::RubyPosition::kBefore:
+      return CSSIdentifierValue::Create(CSSValueID::kOver);
+    case blink::RubyPosition::kAfter:
+      return CSSIdentifierValue::Create(CSSValueID::kUnder);
+  }
+  NOTREACHED();
+  return CSSIdentifierValue::Create(CSSValueID::kOver);
+}
+
 const CSSValue* WebkitTapHighlightColor::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,

@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/packaged_license_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
+#include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -228,9 +229,8 @@ class WizardController {
   void OnDemoPreferencesScreenExit(DemoPreferencesScreen::Result result);
   void OnDemoSetupScreenExit(DemoSetupScreen::Result result);
   void OnTermsOfServiceScreenExit(TermsOfServiceScreen::Result result);
-  void OnSyncConsentScreenExit();
-  void OnSyncConsentFinished();
   void OnFingerprintSetupScreenExit(FingerprintSetupScreen::Result result);
+  void OnSyncConsentScreenExit(SyncConsentScreen::Result result);
   void OnDiscoverScreenExit();
   void OnArcTermsOfServiceScreenExit(ArcTermsOfServiceScreen::Result result);
   void OnArcTermsOfServiceAccepted();

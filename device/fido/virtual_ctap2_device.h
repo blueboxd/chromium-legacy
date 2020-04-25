@@ -117,6 +117,20 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // add_extra_extension causes an unsolicited extension to be added in the
     // authenticator extensions output.
     bool add_extra_extension = false;
+
+    // reject_all_extensions causes the authenticator to return a CTAP error if
+    // a makeCredential or getAssertion request carries any extension.
+    bool reject_all_extensions = false;
+
+    // Support a non-standard CTAP extension that lets the platform supply an
+    // unhashed client data for the authenticator to assemble and hash instead
+    // of using the regular, already hashed value.
+    bool support_android_client_data_extension = false;
+
+    // Support a non-standard CTAP extension that lets the platform supply an
+    // unhashed client data for the authenticator to assemble and hash instead
+    // of using the regular, already hashed value.
+    bool send_unsolicited_android_client_data_extension = false;
   };
 
   VirtualCtap2Device();

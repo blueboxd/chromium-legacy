@@ -280,6 +280,9 @@ class StyleBuilderConverter {
                                              const CSSValue& value);
 
   static AtomicString ConvertPage(StyleResolverState&, const CSSValue&);
+
+  static RubyPosition ConvertRubyPosition(StyleResolverState& state,
+                                          const CSSValue& value);
 };
 
 template <typename T>

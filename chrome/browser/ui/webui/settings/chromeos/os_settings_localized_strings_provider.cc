@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
-#include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/apps_strings_provider.h"
@@ -32,6 +30,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/crostini_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/date_time_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/files_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/languages_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_strings_provider.h"
@@ -39,6 +38,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/people_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/personalization_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/printing_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/privacy_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search_strings_provider.h"
@@ -97,14 +97,6 @@ std::vector<local_search_service::Data> ConceptVectorToDataVector(
   }
 
   return data_list;
-}
-
-// Generates a Google Help URL which includes a "board type" parameter. Some
-// help pages need to be adjusted depending on the type of CrOS device that is
-// accessing the page.
-base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
-  return base::ASCIIToUTF16(original_url +
-                            "&b=" + base::SysInfo::GetLsbReleaseBoard());
 }
 
 bool IsDeviceManaged() {
@@ -383,8 +375,6 @@ void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
                          l10n_util::GetStringFUTF16(
                              IDS_SETTINGS_BROWSER_SETTINGS_BANNER,
                              base::ASCIIToUTF16(chrome::kChromeUISettingsURL)));
-  html_source->AddBoolean("isActiveDirectoryUser",
-                          user && user->IsActiveDirectoryUser());
   html_source->AddBoolean(
       "isSecondaryUser",
       user && user->GetAccountId() != primary_user->GetAccountId());
@@ -397,194 +387,6 @@ void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
     html_source->AddString("ownerEmail",
                            user_manager->GetOwnerAccountId().GetUserEmail());
   }
-}
-
-void AddFilesStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"disconnectGoogleDriveAccount", IDS_SETTINGS_DISCONNECT_GOOGLE_DRIVE},
-      {"filesPageTitle", IDS_OS_SETTINGS_FILES},
-      {"smbSharesTitle", IDS_SETTINGS_DOWNLOADS_SMB_SHARES},
-      {"smbSharesLearnMoreLabel",
-       IDS_SETTINGS_DOWNLOADS_SMB_SHARES_LEARN_MORE_LABEL},
-      {"addSmbShare", IDS_SETTINGS_DOWNLOADS_SMB_SHARES_ADD_SHARE},
-      {"smbShareAddedSuccessfulMessage",
-       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_SUCCESS_MESSAGE},
-      {"smbShareAddedErrorMessage",
-       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_ERROR_MESSAGE},
-      {"smbShareAddedAuthFailedMessage",
-       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_AUTH_FAILED_MESSAGE},
-      {"smbShareAddedNotFoundMessage",
-       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_NOT_FOUND_MESSAGE},
-      {"smbShareAddedUnsupportedDeviceMessage",
-       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_UNSUPPORTED_DEVICE_MESSAGE},
-      {"smbShareAddedMountExistsMessage",
-       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_EXISTS_MESSAGE},
-      {"smbShareAddedTooManyMountsMessage",
-       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_TOO_MANY_MOUNTS_MESSAGE},
-      {"smbShareAddedInvalidURLMessage",
-       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_URL_MESSAGE},
-      {"smbShareAddedInvalidSSOURLMessage",
-       IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_SSO_URL_MESSAGE},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-
-  chromeos::smb_dialog::AddLocalizedStrings(html_source);
-
-  html_source->AddString("smbSharesLearnMoreURL",
-                         GetHelpUrlWithBoard(chrome::kSmbSharesLearnMoreURL));
-}
-
-void AddPrintingStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"printingPageTitle", IDS_SETTINGS_PRINTING},
-      {"cupsPrintersTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTERS},
-      {"cupsPrintersLearnMoreLabel",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_LEARN_MORE_LABEL},
-      {"addCupsPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER},
-      {"editPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT},
-      {"removePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE},
-      {"setupPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON},
-      {"setupPrinterAria",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON_ARIA},
-      {"savePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON},
-      {"savePrinterAria", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON_ARIA},
-      {"searchLabel", IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL},
-      {"noSearchResults", IDS_SEARCH_NO_RESULTS},
-      {"printerDetailsTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_TITLE},
-      {"printerName", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_NAME},
-      {"printerModel", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_MODEL},
-      {"printerQueue", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_QUEUE},
-      {"savedPrintersTitle", IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_TITLE},
-      {"savedPrintersCountMany",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_MANY},
-      {"savedPrintersCountOne",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_ONE},
-      {"savedPrintersCountNone",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_SAVED_PRINTERS_COUNT_NONE},
-      {"showMorePrinters", IDS_SETTINGS_PRINTING_CUPS_SHOW_MORE},
-      {"addPrintersNearbyTitle",
-       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_NEARBY_TITLE},
-      {"addPrintersManuallyTitle",
-       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_MANUALLY_TITLE},
-      {"manufacturerAndModelDialogTitle",
-       IDS_SETTINGS_PRINTING_CUPS_SELECT_MANUFACTURER_AND_MODEL_TITLE},
-      {"nearbyPrintersListTitle",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS},
-      {"nearbyPrintersCountMany",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS_COUNT_MANY},
-      {"nearbyPrintersCountOne",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTER_COUNT_ONE},
-      {"nearbyPrintersCountNone",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTER_COUNT_NONE},
-      {"nearbyPrintersListDescription",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_DETECTED_OR_NEW_PRINTER},
-      {"manufacturerAndModelAdditionalInformation",
-       IDS_SETTINGS_PRINTING_CUPS_MANUFACTURER_MODEL_ADDITIONAL_INFORMATION},
-      {"addPrinterButtonText",
-       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_ADD},
-      {"printerDetailsAdvanced", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED},
-      {"printerDetailsA11yLabel",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ACCESSIBILITY_LABEL},
-      {"printerAddress", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_ADDRESS},
-      {"printerProtocol", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_PROTOCOL},
-      {"printerURI", IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADVANCED_URI},
-      {"manuallyAddPrinterButtonText",
-       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_MANUAL_ADD},
-      {"discoverPrintersButtonText",
-       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTER_BUTTON_DISCOVER_PRINTERS},
-      {"printerProtocolIpp", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPP},
-      {"printerProtocolIpps", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPPS},
-      {"printerProtocolHttp", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_HTTP},
-      {"printerProtocolHttps",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_HTTPS},
-      {"printerProtocolAppSocket",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_APP_SOCKET},
-      {"printerProtocolLpd", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_LPD},
-      {"printerProtocolUsb", IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_USB},
-      {"printerProtocolIppUsb",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_PROTOCOL_IPPUSB},
-      {"printerConfiguringMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONFIGURING_MESSAGE},
-      {"printerManufacturer", IDS_SETTINGS_PRINTING_CUPS_PRINTER_MANUFACTURER},
-      {"selectDriver", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SELECT_DRIVER},
-      {"selectDriverButtonText",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER},
-      {"selectDriverButtonAriaLabel",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER_ARIA_LABEL},
-      {"selectDriverErrorMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_INVALID_DRIVER},
-      {"printerAddedSuccessfulMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE},
-      {"printerEditedSuccessfulMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_EDITED_PRINTER_DONE_MESSAGE},
-      {"printerUnavailableMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_UNAVAILABLE_MESSAGE},
-      {"noPrinterNearbyMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY},
-      {"searchingNearbyPrinters",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_SEARCHING_NEARBY_PRINTER},
-      {"printerAddedFailedMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_ERROR_MESSAGE},
-      {"printerAddedFatalErrorMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_FATAL_ERROR_MESSAGE},
-      {"printerAddedUnreachableMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PRINTER_UNREACHABLE_MESSAGE},
-      {"printerAddedPpdTooLargeMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_TOO_LARGE_MESSAGE},
-      {"printerAddedInvalidPpdMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_INVALID_PPD_MESSAGE},
-      {"printerAddedPpdNotFoundMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_NOT_FOUND},
-      {"printerAddedPpdUnretrievableMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_PPD_UNRETRIEVABLE},
-      {"printerAddedNativePrintersNotAllowedMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_NATIVE_PRINTERS_NOT_ALLOWED_MESSAGE},
-      {"editPrinterInvalidPrinterUpdate",
-       IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_INVALID_PRINTER_UPDATE},
-      {"requireNetworkMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_REQUIRE_INTERNET_MESSAGE},
-      {"checkNetworkMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_CHECK_CONNECTION_MESSAGE},
-      {"noInternetConnection",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_INTERNET_CONNECTION},
-      {"checkNetworkAndTryAgain",
-       IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONNECT_TO_NETWORK_SUBTEXT},
-      {"editPrinterDialogTitle",
-       IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_DIALOG_TITLE},
-      {"editPrinterButtonText", IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_BUTTON},
-      {"currentPpdMessage",
-       IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_CURRENT_PPD_MESSAGE},
-      {"printerEulaNotice", IDS_SETTINGS_PRINTING_CUPS_EULA_NOTICE},
-      {"ippPrinterUnreachable", IDS_SETTINGS_PRINTING_CUPS_IPP_URI_UNREACHABLE},
-      {"generalPrinterDialogError",
-       IDS_SETTINGS_PRINTING_CUPS_DIALOG_GENERAL_ERROR},
-      {"printServerButtonText", IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER},
-      {"addPrintServerTitle",
-       IDS_SETTINGS_PRINTING_CUPS_ADD_PRINT_SERVER_TITLE},
-      {"printServerAddress", IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_ADDRESS},
-      {"printServerFoundZeroPrinters",
-       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ZERO_PRINTERS},
-      {"printServerFoundOnePrinter",
-       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_ONE_PRINTER},
-      {"printServerFoundManyPrinters",
-       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_FOUND_MANY_PRINTERS},
-      {"printServerInvalidUrlAddress",
-       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_INVALID_URL_ADDRESS},
-      {"printServerConnectionError",
-       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_CONNECTION_ERROR},
-      {"printServerConfigurationErrorMessage",
-       IDS_SETTINGS_PRINTING_CUPS_PRINT_SERVER_REACHABLE_BUT_CANNOT_ADD},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-
-  html_source->AddString("printingCUPSPrintLearnMoreUrl",
-                         GetHelpUrlWithBoard(chrome::kCupsPrintLearnMoreURL));
-  html_source->AddString(
-      "printingCUPSPrintPpdLearnMoreUrl",
-      GetHelpUrlWithBoard(chrome::kCupsPrintPPDLearnMoreURL));
-  html_source->AddBoolean(
-      "consumerPrintServerUiEnabled",
-      base::FeatureList::IsEnabled(::features::kPrintServerUi));
 }
 
 void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
@@ -765,6 +567,10 @@ OsSettingsLocalizedStringsProvider::OsSettingsLocalizedStringsProvider(
       std::make_unique<PrivacyStringsProvider>(profile, /*delegate=*/this));
   per_page_providers_.push_back(
       std::make_unique<LanguagesStringsProvider>(profile, /*delegate=*/this));
+  per_page_providers_.push_back(
+      std::make_unique<FilesStringsProvider>(profile, /*delegate=*/this));
+  per_page_providers_.push_back(
+      std::make_unique<PrintingStringsProvider>(profile, /*delegate=*/this));
 }
 
 OsSettingsLocalizedStringsProvider::~OsSettingsLocalizedStringsProvider() =
@@ -782,8 +588,6 @@ void OsSettingsLocalizedStringsProvider::AddOsLocalizedStrings(
   AddA11yStrings(html_source);
   AddChromeOSUserStrings(html_source, profile);
   AddCommonStrings(html_source, profile);
-  AddFilesStrings(html_source);
-  AddPrintingStrings(html_source);
   AddResetStrings(html_source);
   AddSearchInSettingsStrings(html_source);
 

@@ -514,7 +514,7 @@ void MakeCredentialRequestHandler::HandleResponse(
   }
 
   if (response->android_client_data_ext() &&
-      (options_.android_client_data_ext || !authenticator->Options() ||
+      (!options_.android_client_data_ext || !authenticator->Options() ||
        !authenticator->Options()->supports_android_client_data_ext ||
        !IsValidAndroidClientDataJSON(
            *options_.android_client_data_ext,

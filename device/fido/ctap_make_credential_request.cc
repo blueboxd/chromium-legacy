@@ -40,7 +40,8 @@ bool AreMakeCredentialRequestMapKeysCorrect(
 
 // static
 base::Optional<CtapMakeCredentialRequest> CtapMakeCredentialRequest::Parse(
-    const cbor::Value::MapValue& request_map) {
+    const cbor::Value::MapValue& request_map,
+    const ParseOpts& opts) {
   if (!AreMakeCredentialRequestMapKeysCorrect(request_map))
     return base::nullopt;
 
@@ -113,46 +114,49 @@ base::Optional<CtapMakeCredentialRequest> CtapMakeCredentialRequest::Parse(
     }
 
     const cbor::Value::MapValue& extensions = extensions_it->second.GetMap();
-    const auto hmac_secret_it =
-        extensions.find(cbor::Value(kExtensionHmacSecret));
-    if (hmac_secret_it != extensions.end()) {
-      if (!hmac_secret_it->second.is_bool()) {
-        return base::nullopt;
-      }
-      request.hmac_secret = hmac_secret_it->second.GetBool();
+
+    if (opts.reject_all_extensions && !extensions.empty()) {
+      return base::nullopt;
     }
 
-    const auto cred_protect_it =
-        extensions.find(cbor::Value(device::kExtensionCredProtect));
-    if (cred_protect_it != extensions.end()) {
-      if (!cred_protect_it->second.is_unsigned()) {
+    for (const auto& extension : extensions) {
+      if (!extension.first.is_string()) {
         return base::nullopt;
       }
-      switch (cred_protect_it->second.GetUnsigned()) {
-        case 1:
-          request.cred_protect = device::CredProtect::kUVOptional;
-          break;
-        case 2:
-          request.cred_protect = device::CredProtect::kUVOrCredIDRequired;
-          break;
-        case 3:
-          request.cred_protect = device::CredProtect::kUVRequired;
-          break;
-        default:
+
+      const std::string& extension_name = extension.first.GetString();
+
+      if (extension_name == kExtensionCredProtect) {
+        if (!extension.second.is_unsigned()) {
           return base::nullopt;
+        }
+        switch (extension.second.GetUnsigned()) {
+          case 1:
+            request.cred_protect = device::CredProtect::kUVOptional;
+            break;
+          case 2:
+            request.cred_protect = device::CredProtect::kUVOrCredIDRequired;
+            break;
+          case 3:
+            request.cred_protect = device::CredProtect::kUVRequired;
+            break;
+          default:
+            return base::nullopt;
+        }
+      } else if (extension_name == kExtensionHmacSecret) {
+        if (!extension.second.is_bool()) {
+          return base::nullopt;
+        }
+        request.hmac_secret = extension.second.GetBool();
+      } else if (extension_name == kExtensionAndroidClientData) {
+        base::Optional<AndroidClientDataExtensionInput>
+            android_client_data_ext =
+                AndroidClientDataExtensionInput::Parse(extension.second);
+        if (!android_client_data_ext) {
+          return base::nullopt;
+        }
+        request.android_client_data_ext = std::move(*android_client_data_ext);
       }
-    }
-
-    const auto android_client_data_ext_it =
-        extensions.find(cbor::Value(device::kExtensionAndroidClientData));
-    if (android_client_data_ext_it != extensions.end()) {
-      base::Optional<AndroidClientDataExtensionInput> android_client_data_ext =
-          AndroidClientDataExtensionInput::Parse(
-              android_client_data_ext_it->second);
-      if (!android_client_data_ext) {
-        return base::nullopt;
-      }
-      request.android_client_data_ext = std::move(*android_client_data_ext);
     }
   }
 

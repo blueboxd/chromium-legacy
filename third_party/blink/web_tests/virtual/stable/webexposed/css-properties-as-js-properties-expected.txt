@@ -275,6 +275,7 @@ removeProperty
 resize
 right
 rowGap
+rubyPosition
 rx
 ry
 scrollBehavior

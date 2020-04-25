@@ -680,10 +680,7 @@ void WizardController::ShowSyncConsentScreen() {
   // region. Currently used on the MarketingOptInScreen.
   StartNetworkTimezoneResolve();
 
-  if (is_branded_build_)
-    SetCurrentScreen(GetScreen(SyncConsentScreenView::kScreenId));
-  else
-    OnSyncConsentFinished();
+  SetCurrentScreen(GetScreen(SyncConsentScreenView::kScreenId));
 }
 
 void WizardController::ShowFingerprintSetupScreen() {
@@ -1095,12 +1092,10 @@ void WizardController::OnTermsOfServiceScreenExit(
   }
 }
 
-void WizardController::OnSyncConsentScreenExit() {
-  OnScreenExit(SyncConsentScreenView::kScreenId, kDefaultExitReason);
-  OnSyncConsentFinished();
-}
-
-void WizardController::OnSyncConsentFinished() {
+void WizardController::OnSyncConsentScreenExit(
+    SyncConsentScreen::Result result) {
+  OnScreenExit(SyncConsentScreenView::kScreenId,
+               SyncConsentScreen::GetResultString(result));
   ShowFingerprintSetupScreen();
 }
 

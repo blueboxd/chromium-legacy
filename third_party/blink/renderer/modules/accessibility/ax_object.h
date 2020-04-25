@@ -1159,6 +1159,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool HasInternalsAttribute(Element&, const QualifiedName&) const;
   const AtomicString& GetInternalsAttribute(Element&,
                                             const QualifiedName&) const;
+  // Returns base:nullopt if node is not in any display locked subtree,
+  // otherwise returns best information available on node visibility.
+  base::Optional<bool> HiddenByDisplayLocking(const Node&) const;
   bool IsHiddenViaStyle() const;
 
   // This returns true if the element associated with this AXObject is has

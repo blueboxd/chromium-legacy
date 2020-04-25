@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, GaiaDialogOpen) {
 // Verifies that guest button and add user button are hidden on post-login
 // screens, after a user session is started.
 IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, PostLoginScreen) {
-  auto override = WizardController::ForceBrandedBuildForTesting();
+  auto autoreset = SyncConsentScreen::ForceBrandedBuildForTesting(true);
   EXPECT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
   test::OobeGaiaPageWaiter().WaitUntilReady();
   LoginDisplayHost::default_host()

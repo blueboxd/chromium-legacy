@@ -308,6 +308,7 @@ resize
 right
 rotate
 rowGap
+rubyPosition
 rx
 ry
 scale

@@ -1806,13 +1806,34 @@ String AXObject::RecursiveTextAlternative(const AXObject& ax_obj,
                                 name_from, nullptr, nullptr);
 }
 
+base::Optional<bool> AXObject::HiddenByDisplayLocking(const Node& node) const {
+  // subtree-visibility: hidden subtrees are always hidden.
+  if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
+          node, DisplayLockActivationReason::kAccessibility)) {
+    return true;
+  }
+  // TODO(crbug.com/1072447):
+  // subtree-visibility: auto with dirty layout tree info are assumed to be
+  // visible. In order to get correct visibility value, the caller must
+  // make sure to update style and layout tree for this node.
+  if (node.GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
+          node, true /* ignore_adjacent_style */)) {
+    DCHECK(DisplayLockUtilities::NearestLockedExclusiveAncestor(node));
+    return false;
+  }
+  return base::nullopt;
+}
+
 bool AXObject::IsHiddenViaStyle() const {
   if (GetLayoutObject())
     return GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible;
-  if (Element* element = DynamicTo<Element>(GetNode())) {
-    // TODO(crbug.com/1072447): For subtree-visibility, we should have made sure
-    // that the computed style is updated inside subtrees which are invisible to
-    // rendering, but should have been visible for accessibility.
+
+  Node* node = GetNode();
+  if (!node)
+    return false;
+  if (auto hidden_result = HiddenByDisplayLocking(*node))
+    return hidden_result.value();
+  if (Element* element = DynamicTo<Element>(node)) {
     const ComputedStyle* style = element->GetComputedStyle();
     return !style || style->IsEnsuredInDisplayNone() ||
            style->Visibility() != EVisibility::kVisible;
@@ -1841,19 +1862,8 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
   if (Node* node = GetNode()) {
     auto* element = DynamicTo<Element>(node);
     if (element && node->isConnected()) {
-      // subtree-visibility: hidden subtrees are always hidden.
-      if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
-              *element, DisplayLockActivationReason::kAccessibility)) {
-        return true;
-      }
-      // subtree-visibility: auto with dirty layout tree info are assumed to be
-      // visible. In order to get correct visibility value, the caller must
-      // make sure to update style and layout tree for this node.
-      if (document->NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
-              *element, true /* ignore_adjacent_style */)) {
-        DCHECK(DisplayLockUtilities::NearestLockedExclusiveAncestor(*element));
-        return false;
-      }
+      if (auto hidden_result = HiddenByDisplayLocking(*element))
+        return hidden_result.value();
       const ComputedStyle* style = element->EnsureComputedStyle();
       if (!style)
         return false;

@@ -921,6 +921,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kVisual;
     case CSSPropertyID::kWebkitRubyPosition:
       return value_id == CSSValueID::kBefore || value_id == CSSValueID::kAfter;
+    case CSSPropertyID::kRubyPosition:
+      return value_id == CSSValueID::kOver || value_id == CSSValueID::kUnder;
     case CSSPropertyID::kWebkitTextCombine:
       return value_id == CSSValueID::kNone ||
              value_id == CSSValueID::kHorizontal;
@@ -1034,6 +1036,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kOverscrollBehaviorBlock:
     case CSSPropertyID::kOverscrollBehaviorX:
     case CSSPropertyID::kOverscrollBehaviorY:
+    case CSSPropertyID::kRubyPosition:
     case CSSPropertyID::kShapeRendering:
     case CSSPropertyID::kSpeak:
     case CSSPropertyID::kStrokeLinecap:

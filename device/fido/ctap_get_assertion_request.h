@@ -34,12 +34,23 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
  public:
   using ClientDataHash = std::array<uint8_t, kClientDataHashLength>;
 
+  // ParseOpts are optional parameters passed to Parse().
+  struct ParseOpts {
+    // reject_all_extensions makes parsing fail if any extensions are present.
+    bool reject_all_extensions = false;
+  };
+
   // Decodes a CTAP2 authenticatorGetAssertion request message. The request's
   // |client_data_json| will be empty and |client_data_hash| will be set.
   //
   // A |uv| bit of 0 is mapped to UserVerificationRequirement::kDiscouraged.
   static base::Optional<CtapGetAssertionRequest> Parse(
-      const cbor::Value::MapValue& request_map);
+      const cbor::Value::MapValue& request_map) {
+    return Parse(request_map, ParseOpts());
+  }
+  static base::Optional<CtapGetAssertionRequest> Parse(
+      const cbor::Value::MapValue& request_map,
+      const ParseOpts& opts);
 
   CtapGetAssertionRequest(std::string rp_id, std::string client_data_json);
   CtapGetAssertionRequest(const CtapGetAssertionRequest& that);

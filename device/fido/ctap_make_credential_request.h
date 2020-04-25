@@ -35,10 +35,21 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
  public:
   using ClientDataHash = std::array<uint8_t, kClientDataHashLength>;
 
+  // ParseOpts are optional parameters passed to Parse().
+  struct ParseOpts {
+    // reject_all_extensions makes parsing fail if any extensions are present.
+    bool reject_all_extensions = false;
+  };
+
   // Decodes a CTAP2 authenticatorMakeCredential request message. The request's
   // |client_data_json| will be empty and |client_data_hash| will be set.
   static base::Optional<CtapMakeCredentialRequest> Parse(
-      const cbor::Value::MapValue& request_map);
+      const cbor::Value::MapValue& request_map) {
+    return Parse(request_map, ParseOpts());
+  }
+  static base::Optional<CtapMakeCredentialRequest> Parse(
+      const cbor::Value::MapValue& request_map,
+      const ParseOpts& opts);
 
   CtapMakeCredentialRequest(
       std::string client_data_json,

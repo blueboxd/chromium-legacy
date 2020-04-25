@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 314 tests; 301 PASS, 13 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 318 tests; 305 PASS, 13 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS isolation (type: discrete) has testInterpolation function
 PASS isolation uses discrete animation when animating between "auto" and "isolate" with linear easing
@@ -146,6 +146,10 @@ PASS resize (type: discrete) has testInterpolation function
 PASS resize uses discrete animation when animating between "both" and "horizontal" with linear easing
 PASS resize uses discrete animation when animating between "both" and "horizontal" with effect easing
 PASS resize uses discrete animation when animating between "both" and "horizontal" with keyframe easing
+PASS ruby-position (type: discrete) has testInterpolation function
+PASS ruby-position uses discrete animation when animating between "under" and "over" with linear easing
+PASS ruby-position uses discrete animation when animating between "under" and "over" with effect easing
+PASS ruby-position uses discrete animation when animating between "under" and "over" with keyframe easing
 PASS scroll-behavior (type: discrete) has testInterpolation function
 PASS scroll-behavior uses discrete animation when animating between "auto" and "smooth" with linear easing
 PASS scroll-behavior uses discrete animation when animating between "auto" and "smooth" with effect easing

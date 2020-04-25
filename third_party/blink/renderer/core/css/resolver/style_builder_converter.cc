@@ -1877,4 +1877,18 @@ AtomicString StyleBuilderConverter::ConvertPage(StyleResolverState& state,
   return AtomicString();
 }
 
+RubyPosition StyleBuilderConverter::ConvertRubyPosition(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    CSSValueID value_id = identifier_value->GetValueID();
+    if (value_id == CSSValueID::kOver)
+      return RubyPosition::kBefore;
+    if (value_id == CSSValueID::kUnder)
+      return RubyPosition::kAfter;
+  }
+  NOTREACHED();
+  return RubyPosition::kBefore;
+}
+
 }  // namespace blink

@@ -666,8 +666,10 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebFrameOwnerProperties& frame_owner_properties,
       blink::FrameOwnerElementType frame_owner_element_type) override;
   std::pair<blink::WebRemoteFrame*, base::UnguessableToken> CreatePortal(
-      mojo::ScopedInterfaceEndpointHandle portal_endpoint,
-      mojo::ScopedInterfaceEndpointHandle client_endpoint,
+      blink::CrossVariantMojoAssociatedReceiver<
+          blink::mojom::PortalInterfaceBase> portal_endpoint,
+      blink::CrossVariantMojoAssociatedRemote<
+          blink::mojom::PortalClientInterfaceBase> client_endpoint,
       const blink::WebElement& portal_element) override;
   blink::WebRemoteFrame* AdoptPortal(
       const base::UnguessableToken& portal_token,

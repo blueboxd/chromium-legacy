@@ -2047,6 +2047,8 @@ jumbo_static_library("ui") {
       "webui/settings/chromeos/internet_strings_provider.h",
       "webui/settings/chromeos/kerberos_accounts_handler.cc",
       "webui/settings/chromeos/kerberos_accounts_handler.h",
+      "webui/settings/chromeos/languages_strings_provider.cc",
+      "webui/settings/chromeos/languages_strings_provider.h",
       "webui/settings/chromeos/multidevice_handler.cc",
       "webui/settings/chromeos/multidevice_handler.h",
       "webui/settings/chromeos/multidevice_strings_provider.cc",

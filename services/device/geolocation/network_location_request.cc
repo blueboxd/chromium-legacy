@@ -386,22 +386,22 @@ bool ParseServerResponse(const std::string& response_body,
   DVLOG(1) << "ParseServerResponse() : Parsing response " << response_body;
 
   // Parse the response, ignoring comments.
-  std::string error_msg;
-  std::unique_ptr<base::Value> response_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          response_body, base::JSON_PARSE_RFC, NULL, &error_msg);
-  if (response_value == NULL) {
-    LOG(WARNING) << "ParseServerResponse() : JSONReader failed : " << error_msg;
+  auto response_result =
+      base::JSONReader::ReadAndReturnValueWithError(response_body);
+  if (!response_result.value) {
+    LOG(WARNING) << "ParseServerResponse() : JSONReader failed : "
+                 << response_result.error_message;
     return false;
   }
+  base::Value response_value = std::move(*response_result.value);
 
-  if (!response_value->is_dict()) {
+  if (!response_value.is_dict()) {
     VLOG(1) << "ParseServerResponse() : Unexpected response type "
-            << response_value->type();
+            << response_value.type();
     return false;
   }
   const base::DictionaryValue* response_object =
-      static_cast<base::DictionaryValue*>(response_value.get());
+      static_cast<base::DictionaryValue*>(&response_value);
 
   // Get the location
   const base::Value* location_value = NULL;

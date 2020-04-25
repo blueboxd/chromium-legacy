@@ -440,6 +440,8 @@ _CONFIG = [
 
             # Accessibility base types and the non-Blink enums they
             # depend on.
+            'ui::AXEvent',
+            'ui::AXEventIntent',
             'ui::AXNodeData',
             'ax::mojom::BoolAttribute',
             'ax::mojom::HasPopup',

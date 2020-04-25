@@ -3652,7 +3652,7 @@ void RenderFrameImpl::UpdateSubresourceLoaderFactories(
 void RenderFrameImpl::BindDevToolsAgent(
     mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
     mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver) {
-  frame_->BindDevToolsAgent(host.PassHandle(), receiver.PassHandle());
+  frame_->BindDevToolsAgent(std::move(host), std::move(receiver));
 }
 
 // blink::WebLocalFrameClient implementation
@@ -3951,20 +3951,18 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 
 std::pair<blink::WebRemoteFrame*, base::UnguessableToken>
 RenderFrameImpl::CreatePortal(
-    mojo::ScopedInterfaceEndpointHandle portal_endpoint,
-    mojo::ScopedInterfaceEndpointHandle client_endpoint,
+    blink::CrossVariantMojoAssociatedReceiver<blink::mojom::PortalInterfaceBase>
+        portal_endpoint,
+    blink::CrossVariantMojoAssociatedRemote<
+        blink::mojom::PortalClientInterfaceBase> client_endpoint,
     const blink::WebElement& portal_element) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   FrameReplicationState initial_replicated_state;
   base::UnguessableToken portal_token;
   base::UnguessableToken devtools_frame_token;
   GetFrameHost()->CreatePortal(
-      mojo::PendingAssociatedReceiver<blink::mojom::Portal>(
-          std::move(portal_endpoint)),
-      mojo::PendingAssociatedRemote<blink::mojom::PortalClient>(
-          std::move(client_endpoint), blink::mojom::PortalClient::Version_),
-      &proxy_routing_id, &initial_replicated_state, &portal_token,
-      &devtools_frame_token);
+      std::move(portal_endpoint), std::move(client_endpoint), &proxy_routing_id,
+      &initial_replicated_state, &portal_token, &devtools_frame_token);
   RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyForPortal(
       this, proxy_routing_id, devtools_frame_token, portal_element);
   proxy->SetReplicatedState(initial_replicated_state);

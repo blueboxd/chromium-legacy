@@ -193,24 +193,24 @@ bool ParseServerResponse(const GURL& server_url,
              "Parsing response '" << response_body << "'";
 
   // Parse the response, ignoring comments.
-  std::string error_msg;
-  std::unique_ptr<base::Value> response_value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          response_body, base::JSON_PARSE_RFC, NULL, &error_msg);
-  if (response_value == NULL) {
-    PrintGeolocationError(
-        server_url, "JSONReader failed: " + error_msg, position);
+  auto response_result =
+      base::JSONReader::ReadAndReturnValueWithError(response_body);
+  if (!response_result.value) {
+    PrintGeolocationError(server_url,
+                          "JSONReader failed: " + response_result.error_message,
+                          position);
     RecordUmaEvent(SIMPLE_GEOLOCATION_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;
   }
+  base::Value response_value = std::move(*response_result.value);
 
   base::DictionaryValue* response_object = NULL;
-  if (!response_value->GetAsDictionary(&response_object)) {
+  if (!response_value.GetAsDictionary(&response_object)) {
     PrintGeolocationError(
         server_url,
         "Unexpected response type : " +
             base::StringPrintf(
-                "%u", static_cast<unsigned int>(response_value->type())),
+                "%u", static_cast<unsigned int>(response_value.type())),
         position);
     RecordUmaEvent(SIMPLE_GEOLOCATION_REQUEST_EVENT_RESPONSE_MALFORMED);
     return false;

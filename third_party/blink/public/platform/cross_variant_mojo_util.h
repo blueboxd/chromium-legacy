@@ -79,6 +79,8 @@ class CrossVariantMojoReceiver {
   CrossVariantMojoReceiver(mojo::PendingReceiver<VariantInterface> receiver)
       : pipe_(receiver.PassPipe()) {}
 
+  CrossVariantMojoReceiver(const mojo::NullReceiver&) {}
+
  private:
   friend struct mojo::PendingReceiverConverter<CrossVariantMojoReceiver>;
 
@@ -104,6 +106,8 @@ class CrossVariantMojoRemote {
                 std::is_same<CrossVariantBase, Interface>::value>* = nullptr>
   CrossVariantMojoRemote(mojo::PendingRemote<VariantInterface> remote)
       : version_(remote.version()), pipe_(remote.PassPipe()) {}
+
+  CrossVariantMojoRemote(const mojo::NullRemote&) {}
 
  private:
   friend struct mojo::PendingRemoteConverter<CrossVariantMojoRemote>;
@@ -141,6 +145,8 @@ class CrossVariantMojoAssociatedReceiver {
       mojo::PendingAssociatedReceiver<VariantInterface> receiver)
       : handle_(receiver.PassHandle()) {}
 
+  CrossVariantMojoAssociatedReceiver(const mojo::NullAssociatedReceiver&) {}
+
  private:
   friend struct mojo::PendingAssociatedReceiverConverter<
       CrossVariantMojoAssociatedReceiver>;
@@ -171,6 +177,8 @@ class CrossVariantMojoAssociatedRemote {
   CrossVariantMojoAssociatedRemote(
       mojo::PendingAssociatedRemote<VariantInterface> remote)
       : version_(remote.version()), handle_(remote.PassHandle()) {}
+
+  CrossVariantMojoAssociatedRemote(const mojo::NullAssociatedRemote&) {}
 
  private:
   friend struct mojo::PendingAssociatedRemoteConverter<

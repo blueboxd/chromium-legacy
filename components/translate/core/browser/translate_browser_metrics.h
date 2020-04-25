@@ -87,6 +87,9 @@ void ReportInitiationStatus(InitiationStatusType type);
 // Called when Chrome opens the URL so that the user sends an error feedback.
 void ReportLanguageDetectionError();
 
+// Called when language detection details are complete.
+void ReportLanguageDetectionContentLength(size_t length);
+
 void ReportLocalesOnDisabledByPrefs(const std::string& locale);
 
 // Called when Chrome Translate server sends the language list which includes

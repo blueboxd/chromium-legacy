@@ -39,6 +39,7 @@
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
+#include "third_party/blink/renderer/core/accessibility/blink_ax_event_intent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
@@ -269,11 +270,18 @@ class MODULES_EXPORT AXObjectCacheImpl
   void SetAutofillState(AXID id, WebAXAutofillState state);
 
  protected:
-  void PostPlatformNotification(AXObject* obj,
-                                ax::mojom::blink::Event event_type,
-                                ax::mojom::blink::EventFrom event_from =
-                                    ax::mojom::blink::EventFrom::kNone);
+  void PostPlatformNotification(
+      AXObject* obj,
+      ax::mojom::blink::Event event_type,
+      ax::mojom::blink::EventFrom event_from =
+          ax::mojom::blink::EventFrom::kNone,
+      const BlinkAXEventIntentsSet& event_intents = BlinkAXEventIntentsSet());
   void LabelChangedWithCleanLayout(Element*);
+
+  // Returns a reference to the set of currently active event intents.
+  BlinkAXEventIntentsSet& ActiveEventIntents() override {
+    return active_event_intents_;
+  }
 
   AXObject* CreateFromRenderer(LayoutObject*);
   AXObject* CreateFromNode(Node*);
@@ -283,11 +291,15 @@ class MODULES_EXPORT AXObjectCacheImpl
   struct AXEventParams final : public GarbageCollected<AXEventParams> {
     AXEventParams(AXObject* target,
                   ax::mojom::blink::Event event_type,
-                  ax::mojom::blink::EventFrom event_from)
-        : target(target), event_type(event_type), event_from(event_from) {}
+                  ax::mojom::blink::EventFrom event_from,
+                  const BlinkAXEventIntentsSet& intents)
+        : target(target), event_type(event_type), event_from(event_from) {
+      std::copy(intents.begin(), intents.end(), event_intents.begin());
+    }
     Member<AXObject> target;
     ax::mojom::blink::Event event_type;
     ax::mojom::blink::EventFrom event_from;
+    BlinkAXEventIntentsSet event_intents;
 
     void Trace(Visitor* visitor) { visitor->Trace(target); }
   };
@@ -396,7 +408,8 @@ class MODULES_EXPORT AXObjectCacheImpl
                                        ax::mojom::blink::EventFrom event_from);
   void FireAXEventImmediately(AXObject* obj,
                               ax::mojom::blink::Event event_type,
-                              ax::mojom::blink::EventFrom event_from);
+                              ax::mojom::blink::EventFrom event_from,
+                              const BlinkAXEventIntentsSet& event_intents);
 
   // Whether the user has granted permission for the user to install event
   // listeners for accessibility events using the AOM.
@@ -416,6 +429,9 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // Maps ids to their object's autofill state.
   HashMap<AXID, WebAXAutofillState> autofill_state_map_;
+
+  // A set of currently active event intents.
+  BlinkAXEventIntentsSet active_event_intents_;
 
   DISALLOW_COPY_AND_ASSIGN(AXObjectCacheImpl);
 };

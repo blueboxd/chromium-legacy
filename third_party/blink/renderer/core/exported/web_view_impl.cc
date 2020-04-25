@@ -231,11 +231,13 @@ class EmptyEventListener final : public NativeEventListener {
 
 // WebView ----------------------------------------------------------------
 
-WebView* WebView::Create(WebViewClient* client,
-                         bool is_hidden,
-                         bool compositing_enabled,
-                         WebView* opener,
-                         mojo::ScopedInterfaceEndpointHandle page_handle) {
+WebView* WebView::Create(
+    WebViewClient* client,
+    bool is_hidden,
+    bool compositing_enabled,
+    WebView* opener,
+    CrossVariantMojoAssociatedReceiver<mojom::PageBroadcastInterfaceBase>
+        page_handle) {
   return WebViewImpl::Create(client, is_hidden, compositing_enabled,
                              static_cast<WebViewImpl*>(opener),
                              std::move(page_handle));
@@ -246,7 +248,7 @@ WebViewImpl* WebViewImpl::Create(
     bool is_hidden,
     bool compositing_enabled,
     WebViewImpl* opener,
-    mojo::ScopedInterfaceEndpointHandle page_handle) {
+    mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle) {
   // Take a self-reference for WebViewImpl that is released by calling Close(),
   // then return a raw pointer to the caller.
   auto web_view = base::AdoptRef(new WebViewImpl(
@@ -271,20 +273,19 @@ void WebViewImpl::SetPrerendererClient(
                                  *AsView().page, prerenderer_client));
 }
 
-WebViewImpl::WebViewImpl(WebViewClient* client,
-                         bool is_hidden,
-                         bool does_composite,
-                         WebViewImpl* opener,
-                         mojo::ScopedInterfaceEndpointHandle page_handle)
+WebViewImpl::WebViewImpl(
+    WebViewClient* client,
+    bool is_hidden,
+    bool does_composite,
+    WebViewImpl* opener,
+    mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle)
     : as_view_(client),
       chrome_client_(MakeGarbageCollected<ChromeClientImpl>(this)),
       minimum_zoom_level_(PageZoomFactorToZoomLevel(kMinimumPageZoomFactor)),
       maximum_zoom_level_(PageZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
       does_composite_(does_composite),
       fullscreen_controller_(std::make_unique<FullscreenController>(this)),
-      receiver_(this,
-                mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast>(
-                    std::move(page_handle))) {
+      receiver_(this, std::move(page_handle)) {
   if (!AsView().client) {
     DCHECK(!does_composite_);
   }

@@ -32,6 +32,7 @@
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
+#include "components/translate/core/browser/translate_browser_metrics.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -342,6 +343,9 @@ void ChromeTranslateClient::WebContentsDestroyed() {
 
 void ChromeTranslateClient::OnLanguageDetermined(
     const translate::LanguageDetectionDetails& details) {
+  translate::TranslateBrowserMetrics::ReportLanguageDetectionContentLength(
+      details.contents.size());
+
   // TODO(268984): Remove translate notifications and have the clients be
   // ContentTranslateDriver::Observer directly instead.
   content::NotificationService::current()->Notify(

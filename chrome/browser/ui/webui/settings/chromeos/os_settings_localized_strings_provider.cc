@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/date_time_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/languages_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/people_strings_provider.h"
@@ -367,67 +368,6 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
                           base::FeatureList::IsEnabled(media::kLiveCaption));
 
   ::settings::AddCaptionSubpageStrings(html_source);
-}
-
-void AddSmartInputsStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"smartInputsTitle", IDS_SETTINGS_SMART_INPUTS_TITLE},
-      {"personalInfoSuggestionTitle",
-       IDS_SETTINGS_SMART_INPUTS_PERSONAL_INFO_TITLE},
-      {"personalInfoSuggestionDescription",
-       IDS_SETTINGS_SMART_INPUTS_PERSONAL_INFO_DESCRIPTION},
-      {"showPersonalInfoSuggestion",
-       IDS_SETTINGS_SMART_INPUTS_SHOW_PERSONAL_INFO},
-      {"managePersonalInfo", IDS_SETTINGS_SMART_INPUTS_MANAGE_PERSONAL_INFO},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-
-  // Assistive personal info is allowed when the feature flag is enabled and the
-  // user is not in guest mode.
-  html_source->AddBoolean(
-      "allowAssistivePersonalInfo",
-      base::FeatureList::IsEnabled(::chromeos::features::kAssistPersonalInfo) &&
-          !features::IsGuestModeActive());
-}
-
-void AddLanguagesStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"orderLanguagesInstructions",
-       IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_ORDERING_INSTRUCTIONS},
-      {"osLanguagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE},
-      {"osLanguagesListTitle", IDS_OS_SETTINGS_LANGUAGES_LIST_TITLE},
-      {"inputMethodsListTitle",
-       IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE},
-      {"inputMethodEnabled", IDS_SETTINGS_LANGUAGES_INPUT_METHOD_ENABLED},
-      {"inputMethodsExpandA11yLabel",
-       IDS_SETTINGS_LANGUAGES_INPUT_METHODS_EXPAND_ACCESSIBILITY_LABEL},
-      {"inputMethodsManagedbyPolicy",
-       IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGED_BY_POLICY},
-      {"manageInputMethods", IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE},
-      {"manageInputMethodsPageTitle",
-       IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE},
-      {"showImeMenu", IDS_SETTINGS_LANGUAGES_SHOW_IME_MENU},
-      {"displayLanguageRestart",
-       IDS_SETTINGS_LANGUAGES_RESTART_TO_DISPLAY_LANGUAGE},
-      {"moveDown", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_DOWN},
-      {"displayInThisLanguage",
-       IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE},
-      {"searchLanguages", IDS_SETTINGS_LANGUAGE_SEARCH},
-      {"addLanguagesDialogTitle",
-       IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE},
-      {"moveToTop", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_TO_TOP},
-      {"isDisplayedInThisLanguage",
-       IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE},
-      {"removeLanguage", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_REMOVE},
-      {"addLanguages", IDS_SETTINGS_LANGUAGES_LANGUAGES_ADD},
-      {"moveUp", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_UP},
-  };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-  AddSmartInputsStrings(html_source);
-
-  html_source->AddString(
-      "languagesLearnMoreURL",
-      base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl));
 }
 
 void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
@@ -823,6 +763,8 @@ OsSettingsLocalizedStringsProvider::OsSettingsLocalizedStringsProvider(
       std::make_unique<DateTimeStringsProvider>(profile, /*delegate=*/this));
   per_page_providers_.push_back(
       std::make_unique<PrivacyStringsProvider>(profile, /*delegate=*/this));
+  per_page_providers_.push_back(
+      std::make_unique<LanguagesStringsProvider>(profile, /*delegate=*/this));
 }
 
 OsSettingsLocalizedStringsProvider::~OsSettingsLocalizedStringsProvider() =
@@ -841,7 +783,6 @@ void OsSettingsLocalizedStringsProvider::AddOsLocalizedStrings(
   AddChromeOSUserStrings(html_source, profile);
   AddCommonStrings(html_source, profile);
   AddFilesStrings(html_source);
-  AddLanguagesStrings(html_source);
   AddPrintingStrings(html_source);
   AddResetStrings(html_source);
   AddSearchInSettingsStrings(html_source);

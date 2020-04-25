@@ -22,9 +22,11 @@ import android.text.style.ParagraphStyle;
 import android.text.style.UpdateAppearance;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -52,6 +54,25 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     private final ClipboardManager mClipboardManager;
 
     private long mNativeClipboard;
+
+    private ImageFileProvider mImageFileProvider;
+
+    /**
+     * Interface to be implemented for sharing image through FileProvider.
+     */
+    public interface ImageFileProvider {
+        /**
+         * Saves the given set of image bytes and provides that URI to a callback for
+         * sharing the image.
+         *
+         * @param context The context used to trigger the action.
+         * @param imageData The image data to be shared in |fileExtension| format.
+         * @param fileExtension File extension which |imageData| encoded to.
+         * @param callback A provided callback function which will act on the generated URI.
+         */
+        void storeImageAndGenerateUri(final Context context, final byte[] imageData,
+                String fileExtension, Callback<Uri> callback);
+    }
 
     /**
      * Get the singleton Clipboard instance (creating it if needed).
@@ -246,6 +267,24 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     }
 
     /**
+     * Setting the clipboard's current primary clip to an image.
+     * @param imageData The image data to be shared in |extension| format.
+     * @param extension Image file extension which |imageData| encoded to.
+     */
+    @CalledByNative
+    @VisibleForTesting
+    public void setImage(final byte[] imageData, final String extension) {
+        if (mImageFileProvider == null) {
+            // Since |mImageFileProvider| is set on very early on during process init, and if
+            // setImage is called before the file provider is set, we can just drop it on the floor.
+            return;
+        }
+
+        mImageFileProvider.storeImageAndGenerateUri(
+                mContext, imageData, extension, (Uri uri) -> { setImageUri(uri); });
+    }
+
+    /**
      * Clears the Clipboard Primary clip.
      *
      */
@@ -271,6 +310,14 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     @CalledByNative
     private void setNativePtr(long nativeClipboard) {
         mNativeClipboard = nativeClipboard;
+    }
+
+    /**
+     * Set {@link ImageFileProvider} for sharing image.
+     * @param imageFileProvider The implementation of {@link ImageFileProvider}.
+     */
+    public void setImageFileProvider(ImageFileProvider imageFileProvider) {
+        mImageFileProvider = imageFileProvider;
     }
 
     /**

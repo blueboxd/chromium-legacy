@@ -75,6 +75,7 @@ import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareImageFileUtils;
+import org.chromium.chrome.browser.share.clipboard.ClipboardImageFileProvider;
 import org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardShareActivity;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
@@ -94,6 +95,7 @@ import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.SelectFileDialog;
 
 import java.io.File;
@@ -218,6 +220,7 @@ public class ProcessInitializationHandler {
         ProfileManagerUtils.removeSessionCookiesForAllProfiles();
         AppBannerManager.setAppDetailsDelegate(AppHooks.get().createAppDetailsDelegate());
         ChromeLifetimeController.initialize();
+        Clipboard.getInstance().setImageFileProvider(new ClipboardImageFileProvider());
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.NEW_PHOTO_PICKER)) {
             UiUtils.setPhotoPickerDelegate(new UiUtils.PhotoPickerDelegate() {

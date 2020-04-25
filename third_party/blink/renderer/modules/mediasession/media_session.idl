@@ -37,5 +37,5 @@ callback MediaSessionActionHandler = void ([RuntimeEnabled=MediaSessionSeeking] 
                                     MediaSessionActionHandler? handler);
 
     [Measure, RaisesException, RuntimeEnabled=MediaSessionPosition]
-        void setPositionState(MediaPositionState? state);
+    void setPositionState(optional MediaPositionState state = {});
 };

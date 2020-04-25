@@ -44,6 +44,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -510,10 +511,9 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   // initialization code between WebView and WebLocalFrame creation.
   frame_test_helpers::TestWebViewClient web_view_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;
-  WebViewImpl* web_view = static_cast<WebViewImpl*>(
-      WebView::Create(&web_view_client, false,
-                      /*compositing_enabled=*/true, nullptr,
-                      mojo::ScopedInterfaceEndpointHandle()));
+  WebViewImpl* web_view = static_cast<WebViewImpl*>(WebView::Create(
+      &web_view_client, false,
+      /*compositing_enabled=*/true, nullptr, mojo::NullAssociatedReceiver()));
 
   EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
   // WebView does not have a frame yet, but we should still be able to set the
@@ -2755,10 +2755,9 @@ TEST_F(WebViewTest, ClientTapHandling) {
 TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   // Note: this test doesn't use WebViewHelper since WebViewHelper creates an
   // internal WebViewClient on demand if the supplied WebViewClient is null.
-  WebViewImpl* web_view = static_cast<WebViewImpl*>(
-      WebView::Create(nullptr, false,
-                      /*compositing_enabled=*/false, nullptr,
-                      mojo::ScopedInterfaceEndpointHandle()));
+  WebViewImpl* web_view = static_cast<WebViewImpl*>(WebView::Create(
+      nullptr, false,
+      /*compositing_enabled=*/false, nullptr, mojo::NullAssociatedReceiver()));
   frame_test_helpers::TestWebFrameClient web_frame_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(

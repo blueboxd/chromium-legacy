@@ -20616,6 +20616,7 @@ Called by update_document_policy_enum.py.-->
   <int value="0" label="None"/>
   <int value="1" label="Persistent"/>
   <int value="2" label="Event Page"/>
+  <int value="3" label="Service worker"/>
 </enum>
 
 <enum name="ExtensionBubbleAction">

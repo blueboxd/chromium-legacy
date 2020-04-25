@@ -6,6 +6,7 @@ typemaps = [
   "//ui/accessibility/mojom/ax_action_data.typemap",
   "//ui/accessibility/mojom/ax_assistant_structure.typemap",
   "//ui/accessibility/mojom/ax_event.typemap",
+  "//ui/accessibility/mojom/ax_event_intent.typemap",
   "//ui/accessibility/mojom/ax_node_data.typemap",
   "//ui/accessibility/mojom/ax_relative_bounds.typemap",
   "//ui/accessibility/mojom/ax_tree_data.typemap",

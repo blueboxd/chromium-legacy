@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
@@ -26,7 +27,7 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/ui_base_jni_headers/Clipboard_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/image/image.h"
 
 // TODO:(andrewhayden) Support additional formats in Android: Bitmap, URI, HTML,
 // HTML+text now that Android's clipboard system supports them, then nuke the
@@ -45,10 +46,13 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using base::android::ToJavaByteArray;
 
 namespace ui {
 
 namespace {
+
+constexpr char kPngExtension[] = ".png";
 
 using ReadImageCallback = ClipboardAndroid::ReadImageCallback;
 
@@ -223,6 +227,15 @@ void ClipboardMap::CommitToAndroidClipboard() {
         env, map_[ClipboardFormatType::GetPlainTextType().GetName()]);
     DCHECK(str.obj());
     Java_Clipboard_setText(env, clipboard_manager_, str);
+  } else if (base::Contains(map_,
+                            ClipboardFormatType::GetBitmapType().GetName())) {
+    ScopedJavaLocalRef<jbyteArray> image_data = ToJavaByteArray(
+        env, map_[ClipboardFormatType::GetBitmapType().GetName()]);
+    ScopedJavaLocalRef<jstring> image_extension =
+        ConvertUTF8ToJavaString(env, kPngExtension);
+    DCHECK(image_data.obj());
+    Java_Clipboard_setImage(env, clipboard_manager_, image_data,
+                            image_extension);
   } else {
     Java_Clipboard_clear(env, clipboard_manager_);
     // TODO(huangdarwin): Implement raw clipboard support for arbitrary formats.
@@ -547,14 +560,13 @@ void ClipboardAndroid::WriteWebSmartPaste() {
                   std::string());
 }
 
-// Note: we implement this to pass all unit tests but it is currently unclear
-// how some code would consume this.
-void ClipboardAndroid::WriteBitmap(const SkBitmap& bitmap) {
-  gfx::Size size(bitmap.width(), bitmap.height());
+// Encoding SkBitmap to PNG data. Then, |g_map| can commit the PNG data to
+// Android system clipboard without encode/decode.
+void ClipboardAndroid::WriteBitmap(const SkBitmap& sk_bitmap) {
+  scoped_refptr<base::RefCountedMemory> image_memory =
+      gfx::Image::CreateFrom1xBitmap(sk_bitmap).As1xPNGBytes();
+  std::string packed(image_memory->front_as<char>(), image_memory->size());
 
-  std::string packed(reinterpret_cast<const char*>(&size), sizeof(size));
-  packed += std::string(static_cast<const char*>(bitmap.getPixels()),
-                        bitmap.computeByteSize());
   g_map.Get().Set(ClipboardFormatType::GetBitmapType().GetName(), packed);
 }
 

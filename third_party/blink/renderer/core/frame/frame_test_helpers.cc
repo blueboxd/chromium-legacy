@@ -40,6 +40,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/render_frame_metadata_observer.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
@@ -517,11 +518,10 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
                                       class WebView* opener) {
   test_web_view_client_ =
       CreateDefaultClientIfNeeded(web_view_client, owned_test_web_view_client_);
-  web_view_ = static_cast<WebViewImpl*>(
-      WebView::Create(test_web_view_client_,
-                      /*is_hidden=*/false,
-                      /*compositing_enabled=*/true, opener,
-                      mojo::ScopedInterfaceEndpointHandle()));
+  web_view_ = static_cast<WebViewImpl*>(WebView::Create(
+      test_web_view_client_,
+      /*is_hidden=*/false,
+      /*compositing_enabled=*/true, opener, mojo::NullAssociatedReceiver()));
   // This property must be set at initialization time, it is not supported to be
   // changed afterward, and does nothing.
   web_view_->GetSettings()->SetViewportEnabled(viewport_enabled_);

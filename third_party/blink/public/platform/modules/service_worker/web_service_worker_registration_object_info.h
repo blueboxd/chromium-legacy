@@ -21,9 +21,6 @@ namespace blink {
 // inside Blink.
 //  - content.mojom.ServiceWorker
 //  - content.mojom.ServiceWorkerContainer
-//
-// As we're on the border line between non-Blink and Blink variants, we need
-// to use mojo::ScopedInterfaceEndpointHandle to pass Mojo types.
 struct WebServiceWorkerRegistrationObjectInfo {
   WebServiceWorkerRegistrationObjectInfo(
       int64_t registration_id,

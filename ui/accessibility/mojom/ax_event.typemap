@@ -9,7 +9,5 @@ sources = [
   "ax_event_mojom_traits.cc",
   "ax_event_mojom_traits.h",
 ]
-public_deps = [
-  "//ui/accessibility",
-]
+public_deps = [ "//ui/accessibility" ]
 type_mappings = [ "ax.mojom.AXEvent=::ui::AXEvent" ]

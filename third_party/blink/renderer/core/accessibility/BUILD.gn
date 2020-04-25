@@ -14,13 +14,21 @@ blink_core_sources("accessibility") {
     "ax_object_cache.h",
     "ax_object_cache_base.h",
     "axid.h",
+    "blink_ax_event_intent.cc",
+    "blink_ax_event_intent.h",
+    "scoped_blink_ax_event_intent.cc",
+    "scoped_blink_ax_event_intent.h",
   ]
 
   deps = [ "//ui/accessibility:ax_base" ]
 }
 
 blink_core_tests("unit_tests") {
-  sources = [ "apply_dark_mode_test.cc" ]
+  sources = [
+    "apply_dark_mode_test.cc",
+    "blink_ax_event_intent_test.cc",
+    "scoped_blink_ax_event_intent_test.cc",
+  ]
 
   deps = [ "//ui/accessibility:ax_base" ]
 }

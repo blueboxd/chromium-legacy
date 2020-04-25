@@ -37,7 +37,6 @@
 #include "base/i18n/rtl.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
@@ -48,8 +47,10 @@
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-shared.h"
+#include "third_party/blink/public/mojom/portal/portal.mojom-shared.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
@@ -206,8 +207,10 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Request the creation of a new portal.
   virtual std::pair<WebRemoteFrame*, base::UnguessableToken> CreatePortal(
-      mojo::ScopedInterfaceEndpointHandle portal_endpoint,
-      mojo::ScopedInterfaceEndpointHandle client_endpoint,
+      CrossVariantMojoAssociatedReceiver<mojom::PortalInterfaceBase>
+          portal_endpoint,
+      CrossVariantMojoAssociatedRemote<mojom::PortalClientInterfaceBase>
+          client_endpoint,
       const WebElement& portal_element) {
     return std::pair<WebRemoteFrame*, base::UnguessableToken>(
         nullptr, base::UnguessableToken());

@@ -447,7 +447,7 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
     image_complete_ = true;
     if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
       LazyImageHelper::StopMonitoring(GetElement());
-      lazy_image_load_state_ = LazyImageLoadState::kFullImage;
+      lazy_image_load_state_ = LazyImageLoadState::kNone;
     }
   } else {
     image_complete_ = false;

@@ -9,6 +9,7 @@ mojom("mojom") {
     "ax_action_data.mojom",
     "ax_assistant_structure.mojom",
     "ax_event.mojom",
+    "ax_event_intent.mojom",
     "ax_node_data.mojom",
     "ax_relative_bounds.mojom",
     "ax_tree_data.mojom",

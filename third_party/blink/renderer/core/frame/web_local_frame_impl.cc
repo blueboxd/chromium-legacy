@@ -1881,7 +1881,7 @@ std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
   WebRemoteFrame* portal_frame;
   base::UnguessableToken portal_token;
   std::tie(portal_frame, portal_token) = client_->CreatePortal(
-      portal_receiver.PassHandle(), portal_client.PassHandle(), portal);
+      std::move(portal_receiver), std::move(portal_client), portal);
   return {To<WebRemoteFrameImpl>(portal_frame)->GetFrame(), portal_token};
 }
 
@@ -2544,17 +2544,16 @@ WebDevToolsAgentImpl* WebLocalFrameImpl::DevToolsAgentImpl() {
 }
 
 void WebLocalFrameImpl::BindDevToolsAgent(
-    mojo::ScopedInterfaceEndpointHandle devtools_agent_host_remote,
-    mojo::ScopedInterfaceEndpointHandle devtools_agent_receiver) {
+    CrossVariantMojoAssociatedRemote<
+        mojom::blink::DevToolsAgentHostInterfaceBase>
+        devtools_agent_host_remote,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::DevToolsAgentInterfaceBase>
+        devtools_agent_receiver) {
   WebDevToolsAgentImpl* agent = DevToolsAgentImpl();
   if (!agent)
     return;
-  agent->BindReceiver(
-      mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost>(
-          std::move(devtools_agent_host_remote),
-          mojom::blink::DevToolsAgentHost::Version_),
-      mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent>(
-          std::move(devtools_agent_receiver)));
+  agent->BindReceiver(std::move(devtools_agent_host_remote),
+                      std::move(devtools_agent_receiver));
 }
 
 void WebLocalFrameImpl::SetLifecycleState(mojom::FrameLifecycleState state) {

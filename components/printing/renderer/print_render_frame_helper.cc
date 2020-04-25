@@ -36,6 +36,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/escape.h"
 #include "printing/buildflags/buildflags.h"
@@ -670,7 +671,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   blink::WebView* web_view = blink::WebView::Create(
       /*client=*/nullptr,
       /*is_hidden=*/false, /*compositing_enabled=*/false, /*opener=*/nullptr,
-      mojo::ScopedInterfaceEndpointHandle());
+      mojo::NullAssociatedReceiver());
   web_view->GetSettings()->SetJavaScriptEnabled(true);
 
   class HeaderAndFooterClient final : public blink::WebLocalFrameClient {
@@ -943,7 +944,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
       /*client=*/this,
       /*is_hidden=*/false,
       /*compositing_enabled=*/false,
-      /*opener=*/nullptr, mojo::ScopedInterfaceEndpointHandle());
+      /*opener=*/nullptr, mojo::NullAssociatedReceiver());
   content::RenderView::ApplyWebPreferences(prefs, web_view);
   blink::WebLocalFrame* main_frame =
       blink::WebLocalFrame::CreateMainFrame(web_view, this, nullptr, nullptr);

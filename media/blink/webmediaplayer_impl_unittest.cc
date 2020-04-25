@@ -49,6 +49,7 @@
 #include "media/mojo/services/watch_time_recorder.h"
 #include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/default_renderer_factory.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -318,12 +319,11 @@ class WebMediaPlayerImplTest
  public:
   WebMediaPlayerImplTest()
       : media_thread_("MediaThreadForTest"),
-        web_view_(
-            blink::WebView::Create(/*client=*/nullptr,
-                                   /*is_hidden=*/false,
-                                   /*compositing_enabled=*/false,
-                                   nullptr,
-                                   mojo::ScopedInterfaceEndpointHandle())),
+        web_view_(blink::WebView::Create(/*client=*/nullptr,
+                                         /*is_hidden=*/false,
+                                         /*compositing_enabled=*/false,
+                                         nullptr,
+                                         mojo::NullAssociatedReceiver())),
         web_local_frame_(
             blink::WebLocalFrame::CreateMainFrame(web_view_,
                                                   &web_frame_client_,

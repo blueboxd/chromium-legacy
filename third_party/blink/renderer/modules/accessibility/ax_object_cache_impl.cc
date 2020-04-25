@@ -1083,13 +1083,14 @@ void AXObjectCacheImpl::PostNotifications(Document& document) {
 
     ax::mojom::blink::Event event_type = params->event_type;
     ax::mojom::blink::EventFrom event_from = params->event_from;
+    const BlinkAXEventIntentsSet& event_intents = params->event_intents;
     if (obj->GetDocument() != &document) {
-      notifications_to_post_.push_back(
-          MakeGarbageCollected<AXEventParams>(obj, event_type, event_from));
+      notifications_to_post_.push_back(MakeGarbageCollected<AXEventParams>(
+          obj, event_type, event_from, event_intents));
       continue;
     }
 
-    FireAXEventImmediately(obj, event_type, event_from);
+    FireAXEventImmediately(obj, event_type, event_from, event_intents);
   }
 }
 
@@ -1119,12 +1120,13 @@ void AXObjectCacheImpl::PostNotification(AXObject* object,
   // immediately rather than deferring them.
   if (object->GetDocument()->Lifecycle().GetState() ==
       DocumentLifecycle::kInAccessibility) {
-    FireAXEventImmediately(object, event_type, ComputeEventFrom());
+    FireAXEventImmediately(object, event_type, ComputeEventFrom(),
+                           ActiveEventIntents());
     return;
   }
 
   notifications_to_post_.push_back(MakeGarbageCollected<AXEventParams>(
-      object, event_type, ComputeEventFrom()));
+      object, event_type, ComputeEventFrom(), ActiveEventIntents()));
 
   // These events are fired during DocumentLifecycle::kInAccessibility,
   // ensure there is a visual update scheduled.
@@ -1169,7 +1171,8 @@ void AXObjectCacheImpl::FireTreeUpdatedEventImmediately(
 void AXObjectCacheImpl::FireAXEventImmediately(
     AXObject* obj,
     ax::mojom::blink::Event event_type,
-    ax::mojom::blink::EventFrom event_from) {
+    ax::mojom::blink::EventFrom event_from,
+    const BlinkAXEventIntentsSet& event_intents) {
   DCHECK_EQ(obj->GetDocument()->Lifecycle().GetState(),
             DocumentLifecycle::kInAccessibility);
 
@@ -1186,7 +1189,7 @@ void AXObjectCacheImpl::FireAXEventImmediately(
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(*obj->GetDocument());
 #endif  // DCHECK_IS_ON()
 
-  PostPlatformNotification(obj, event_type, event_from);
+  PostPlatformNotification(obj, event_type, event_from, event_intents);
 
   if (event_type == ax::mojom::blink::Event::kChildrenChanged &&
       obj->CachedParentObject()) {
@@ -1723,7 +1726,8 @@ bool IsNodeAriaVisible(Node* node) {
 void AXObjectCacheImpl::PostPlatformNotification(
     AXObject* obj,
     ax::mojom::blink::Event event_type,
-    ax::mojom::blink::EventFrom event_from) {
+    ax::mojom::blink::EventFrom event_from,
+    const BlinkAXEventIntentsSet& event_intents) {
   if (!document_ || !document_->View() ||
       !document_->View()->GetFrame().GetPage()) {
     return;
@@ -1736,7 +1740,11 @@ void AXObjectCacheImpl::PostPlatformNotification(
     event.id = obj->AXObjectID();
     event.event_type = event_type;
     event.event_from = event_from;
-    event.action_request_id = -1;
+    event.event_intents.resize(event_intents.size());
+    // We need to filter out the counts from every intent.
+    std::transform(event_intents.begin(), event_intents.end(),
+                   event.event_intents.begin(),
+                   [](const auto& intent) { return intent.key.intent(); });
 
     web_frame->Client()->PostAccessibilityEvent(event);
   }

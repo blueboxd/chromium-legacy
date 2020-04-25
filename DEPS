@@ -175,11 +175,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '6b1aabd4d10ae291e9f447b5a69487816fa9ebe5',
+  'skia_revision': '6a5a91e1643ae6f692feb8fc67d6b8319cbdb63f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '8368d4a5916ecd46acaecb3cf079c15b03367aad',
+  'v8_revision': '0d2d6cca94bc6a2a9eae8dd00de88d923e5b6188',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '76b3969cd89a17f976c1de80eb3fcde3826e0ecc',
+  'devtools_frontend_revision': '423b86696dceab84c5eb0d3b823effa13b19a111',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -521,7 +521,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'a9512e0dba1faa4ef632c06208b78cc9ae51e644',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'bcd0c79ef44191363f1ebdeef86f7b2b7500af66',
       'condition': 'checkout_ios',
   },
 
@@ -1314,7 +1314,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'ac65d4531798ffc9bf807d1f7c09efb0eec70480',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '209319c1bf57098455547c5779659614e62f3f05',
 
   'src/third_party/r8': {
       'packages': [
@@ -1519,7 +1519,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a98e9a6ff531d0419669ccd6105df469270353ba',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@00d1f9a24d08482bef80590afbb63a17139731a7',
     'condition': 'checkout_src_internal',
   },
 

@@ -20,6 +20,7 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
@@ -392,8 +393,10 @@ class WebLocalFrame : public WebFrame {
   // Debugging -----------------------------------------------------------
 
   virtual void BindDevToolsAgent(
-      mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
-      mojo::ScopedInterfaceEndpointHandle devtools_agent_request) = 0;
+      CrossVariantMojoAssociatedRemote<mojom::DevToolsAgentHostInterfaceBase>
+          devtools_agent_host_remote,
+      CrossVariantMojoAssociatedReceiver<mojom::DevToolsAgentInterfaceBase>
+          devtools_agent_receiver) = 0;
 
   // Editing -------------------------------------------------------------
   virtual void UnmarkText() = 0;

@@ -104,11 +104,12 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                       public PageWidgetEventHandler,
                                       public mojom::blink::PageBroadcast {
  public:
-  static WebViewImpl* Create(WebViewClient*,
-                             bool is_hidden,
-                             bool compositing_enabled,
-                             WebViewImpl* opener,
-                             mojo::ScopedInterfaceEndpointHandle page_handle);
+  static WebViewImpl* Create(
+      WebViewClient*,
+      bool is_hidden,
+      bool compositing_enabled,
+      WebViewImpl* opener,
+      mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle);
 
   // All calls to Create() should be balanced with a call to Close(). This
   // synchronously destroys the WebViewImpl.
@@ -502,11 +503,12 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void UpdateBaseBackgroundColor();
 
-  WebViewImpl(WebViewClient*,
-              bool is_hidden,
-              bool does_composite,
-              WebViewImpl* opener,
-              mojo::ScopedInterfaceEndpointHandle page_handle);
+  WebViewImpl(
+      WebViewClient*,
+      bool is_hidden,
+      bool does_composite,
+      WebViewImpl* opener,
+      mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle);
   ~WebViewImpl() override;
 
   HitTestResult HitTestResultForRootFramePos(const PhysicalOffset&);

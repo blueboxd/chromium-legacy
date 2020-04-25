@@ -65,11 +65,12 @@ enum ManifestReloadReason {
   NUM_MANIFEST_RELOAD_REASONS
 };
 
-// Used in histogram Extension.BackgroundPageType.
+// Used in histogram Extensions.BackgroundPageType.
 enum BackgroundPageType {
   NO_BACKGROUND_PAGE = 0,
   BACKGROUND_PAGE_PERSISTENT,
   EVENT_PAGE,
+  SERVICE_WORKER,
 
   // New enum values must go above here.
   NUM_BACKGROUND_PAGE_TYPES
@@ -127,6 +128,8 @@ BackgroundPageType GetBackgroundPageType(const Extension* extension) {
     return NO_BACKGROUND_PAGE;
   if (BackgroundInfo::HasPersistentBackgroundPage(extension))
     return BACKGROUND_PAGE_PERSISTENT;
+  if (BackgroundInfo::IsServiceWorkerBased(extension))
+    return SERVICE_WORKER;
   return EVENT_PAGE;
 }
 

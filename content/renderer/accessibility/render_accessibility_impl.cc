@@ -40,7 +40,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
-#include "ui/accessibility/ax_event.h"
+#include "ui/accessibility/ax_event_intent.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 
@@ -320,9 +320,10 @@ void RenderAccessibilityImpl::HitTest(
   tree_source_.SerializeNode(ax_object, &data);
   if (data.child_routing_id == MSG_ROUTING_NONE) {
     // Otherwise, send an event on the node that was hit.
-    HandleAXEvent(
-        ui::AXEvent(ax_object.AxID(), action_data.hit_test_event_to_fire,
-                    ax::mojom::EventFrom::kAction, action_data.request_id));
+    const std::vector<ui::AXEventIntent> intents;
+    HandleAXEvent(ui::AXEvent(
+        ax_object.AxID(), action_data.hit_test_event_to_fire,
+        ax::mojom::EventFrom::kAction, intents, action_data.request_id));
 
     // The mojo message still needs a reply.
     std::move(callback).Run(/*child_frame_hit_test_info=*/nullptr);

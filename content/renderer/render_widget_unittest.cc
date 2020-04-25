@@ -36,6 +36,7 @@
 #include "content/renderer/render_widget_screen_metrics_emulator.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "ipc/ipc_test_sink.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -265,7 +266,7 @@ class RenderWidgetUnittest : public testing::Test {
     web_view_ = blink::WebView::Create(/*client=*/&web_view_client_,
                                        /*is_hidden=*/false,
                                        /*compositing_enabled=*/true, nullptr,
-                                       mojo::ScopedInterfaceEndpointHandle());
+                                       mojo::NullAssociatedReceiver());
     widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_);
     web_local_frame_ = blink::WebLocalFrame::CreateMainFrame(
         web_view_, &web_frame_client_, nullptr, nullptr);

@@ -261,11 +261,11 @@ void WebViewPlugin::DidFailLoading(const WebURLError& error) {
 WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
                                             const WebPreferences& preferences)
     : plugin_(plugin) {
-  web_view_ = WebView::Create(/*client=*/this,
-                              /*is_hidden=*/false,
-                              /*compositing_enabled=*/false,
-                              /*opener=*/nullptr,
-                              mojo::ScopedInterfaceEndpointHandle());
+  web_view_ =
+      WebView::Create(/*client=*/this,
+                      /*is_hidden=*/false,
+                      /*compositing_enabled=*/false,
+                      /*opener=*/nullptr, mojo::NullAssociatedReceiver());
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);

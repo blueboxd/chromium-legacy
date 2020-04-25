@@ -380,6 +380,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationSuccess) {
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
+  base::HistogramTester histograms;
+
   // Open a new tab with a page in French.
   AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
                 ui::PAGE_TRANSITION_TYPED);
@@ -400,6 +402,10 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationSuccess) {
 
   EXPECT_FALSE(chrome_translate_client->GetLanguageState().translation_error());
   EXPECT_EQ(TranslateErrors::NONE, GetPageTranslatedResult());
+
+  histograms.ExpectTotalCount("Translate.LanguageDetection.ContentLength", 1);
+  histograms.ExpectBucketCount("Translate.LanguageDetection.ContentLength", 148,
+                               1);
 }
 
 // Test that the translation was successful in an about:blank page.
@@ -1145,6 +1151,53 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
             chrome_translate_client->GetLanguageState().current_language());
 }
 
+// Test that iframes not translated.
+IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
+                       TranslateIframeNotTranslated) {
+  SetTranslateScript(kTestValidScript);
+
+  ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
+
+  // There is a possible race condition, when the language is not yet detected,
+  // so we check for that and wait if necessary.
+  if (chrome_translate_client->GetLanguageState().original_language().empty())
+    WaitUntilLanguageDetermined();
+
+  EXPECT_EQ("und",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  base::HistogramTester histograms;
+
+  // Open a new tab with a page in French.
+  AddTabAtIndex(
+      0, GURL(embedded_test_server()->GetURL("/translate/fr_iframe_test.html")),
+      ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
+  chrome_translate_client = GetChromeTranslateClient();
+  if (chrome_translate_client->GetLanguageState().original_language() == "und")
+    WaitUntilLanguageDetermined();
+
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Translate the page through TranslateManager.
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
+  manager->TranslatePage(
+      chrome_translate_client->GetLanguageState().original_language(), "en",
+      true);
+
+  WaitUntilPageTranslated();
+
+  EXPECT_FALSE(chrome_translate_client->GetLanguageState().translation_error());
+  EXPECT_EQ(TranslateErrors::NONE, GetPageTranslatedResult());
+
+  histograms.ExpectTotalCount("Translate.TranslateFrameCount", 0);
+  histograms.ExpectTotalCount("Translate.LanguageDetection.ContentLength", 1);
+  // Only 54 characters of main frame used for language detection.
+  histograms.ExpectBucketCount("Translate.LanguageDetection.ContentLength", 54,
+                               1);
+}
+
 class TranslateManagerWithSubFrameSupportBrowserTest
     : public TranslateManagerBrowserTest {
  protected:
@@ -1218,6 +1271,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 // Test that the translation was successful.
 IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
                        PageTranslationSuccess) {
+  base::HistogramTester histograms;
   SetTranslateScript(kTestValidScript);
 
   // Open a new tab with a page in French.
@@ -1240,6 +1294,9 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 
   EXPECT_FALSE(chrome_translate_client->GetLanguageState().translation_error());
   EXPECT_EQ(TranslateErrors::NONE, GetPageTranslatedResult());
+  histograms.ExpectTotalCount("Translate.LanguageDetection.ContentLength", 1);
+  histograms.ExpectBucketCount("Translate.LanguageDetection.ContentLength", 148,
+                               1);
 }
 
 // Test that the translation was successful in an about:blank page.
@@ -1863,6 +1920,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 // Test that iframes can be translated.
 IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
                        TranslateIframe) {
+  base::HistogramTester histograms;
   SetTranslateScript(kTestValidScript);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
@@ -1878,8 +1936,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
-  base::HistogramTester histograms;
-
   // Translate the page through TranslateManager.
   TranslateManager* manager = chrome_translate_client->GetTranslateManager();
   manager->TranslatePage(
@@ -1891,10 +1947,15 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
   EXPECT_FALSE(chrome_translate_client->GetLanguageState().translation_error());
   EXPECT_EQ(TranslateErrors::NONE, GetPageTranslatedResult());
 
+  // 3 frames are translated.
   histograms.ExpectBucketCount("Translate.TranslateFrameCount", 3, 1);
   histograms.ExpectBucketCount("Translate.TranslateSubframe.SuccessPercentage",
                                100, 1);
   histograms.ExpectTotalCount("Translate.TranslateSubframe.ErrorType", 0);
+  histograms.ExpectTotalCount("Translate.LanguageDetection.ContentLength", 1);
+  // More than the 54 characters of main frame are used for language detection.
+  histograms.ExpectBucketCount("Translate.LanguageDetection.ContentLength", 550,
+                               1);
 }
 
 }  // namespace translate

@@ -181,9 +181,12 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool Confirm(const WebString& message) override;
   WebString Prompt(const WebString& message,
                    const WebString& default_value) override;
-  void BindDevToolsAgent(
-      mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
-      mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
+  void BindDevToolsAgent(CrossVariantMojoAssociatedRemote<
+                             mojom::blink::DevToolsAgentHostInterfaceBase>
+                             devtools_agent_host_remote,
+                         CrossVariantMojoAssociatedReceiver<
+                             mojom::blink::DevToolsAgentInterfaceBase>
+                             devtools_agent_receiver) override;
   void UnmarkText() override;
   bool HasMarkedText() const override;
   WebRange MarkedRange() const override;

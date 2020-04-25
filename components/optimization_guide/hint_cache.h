@@ -133,6 +133,9 @@ class HintCache {
   // Override |clock_| for testing.
   void SetClockForTesting(const base::Clock* clock);
 
+  // Add hint to the URL-keyed cache. For testing only.
+  void AddHintForTesting(const GURL& gurl, std::unique_ptr<proto::Hint> hint);
+
  private:
   using HostKeyedHintCache =
       base::HashingMRUCache<OptimizationGuideStore::EntryKey,

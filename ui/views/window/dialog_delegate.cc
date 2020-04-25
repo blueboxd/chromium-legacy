@@ -136,7 +136,7 @@ base::string16 DialogDelegate::GetDialogButtonLabel(
 }
 
 bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
-  return true;
+  return params_.enabled_buttons & button;
 }
 
 bool DialogDelegate::Cancel() {
@@ -330,6 +330,13 @@ void DialogDelegate::SetDefaultButton(int button) {
 
 void DialogDelegate::SetButtons(int buttons) {
   params_.buttons = buttons;
+}
+
+void DialogDelegate::SetButtonEnabled(ui::DialogButton button, bool enabled) {
+  if (enabled)
+    params_.enabled_buttons |= button;
+  else
+    params_.enabled_buttons &= ~button;
 }
 
 void DialogDelegate::SetButtonLabel(ui::DialogButton button,

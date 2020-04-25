@@ -1,13 +1,3 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-
-<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="constants.html">
-<link rel="import" href="site_list.html">
-<link rel="import" href="site_settings_behavior.html">
-<link rel="import" href="site_settings_prefs_browser_proxy.html">
-
-<dom-module id="category-setting-exceptions">
-  <template>
     <site-list
         category="[[category]]"
         category-subtype="[[ContentSetting.BLOCK]]"
@@ -31,6 +21,3 @@
         search-filter="[[searchFilter]]"
         hidden$="[[!showAllowSiteList_]]">
     </site-list>
-  </template>
-  <script src="category_setting_exceptions.js"></script>
-</dom-module>

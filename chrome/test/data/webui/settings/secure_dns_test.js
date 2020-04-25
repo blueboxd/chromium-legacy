@@ -13,6 +13,7 @@ import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_p
 import {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from 'chrome://settings/settings.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 suite('SettingsSecureDnsInput', function() {
@@ -191,7 +192,7 @@ suite('SettingsSecureDns', function() {
   });
 
   test('SecureDnsOff', function() {
-    cr.webUIListenerCallback('secure-dns-setting-changed', {
+    webUIListenerCallback('secure-dns-setting-changed', {
       mode: SecureDnsMode.OFF,
       templates: [],
       managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,
@@ -205,7 +206,7 @@ suite('SettingsSecureDns', function() {
   });
 
   test('SecureDnsAutomatic', function() {
-    cr.webUIListenerCallback('secure-dns-setting-changed', {
+    webUIListenerCallback('secure-dns-setting-changed', {
       mode: SecureDnsMode.AUTOMATIC,
       templates: [],
       managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,
@@ -219,7 +220,7 @@ suite('SettingsSecureDns', function() {
   });
 
   test('SecureDnsSecure', function() {
-    cr.webUIListenerCallback('secure-dns-setting-changed', {
+    webUIListenerCallback('secure-dns-setting-changed', {
       mode: SecureDnsMode.SECURE,
       templates: [],
       managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,
@@ -232,7 +233,7 @@ suite('SettingsSecureDns', function() {
   });
 
   test('SecureDnsManagedEnvironment', function() {
-    cr.webUIListenerCallback('secure-dns-setting-changed', {
+    webUIListenerCallback('secure-dns-setting-changed', {
       mode: SecureDnsMode.OFF,
       templates: [],
       managementMode: SecureDnsUiManagementMode.DISABLED_MANAGED,
@@ -249,7 +250,7 @@ suite('SettingsSecureDns', function() {
   });
 
   test('SecureDnsParentalControl', function() {
-    cr.webUIListenerCallback('secure-dns-setting-changed', {
+    webUIListenerCallback('secure-dns-setting-changed', {
       mode: SecureDnsMode.OFF,
       templates: [],
       managementMode:
@@ -272,7 +273,7 @@ suite('SettingsSecureDns', function() {
     testElement.prefs.dns_over_https.mode.controlledBy =
         chrome.settingsPrivate.ControlledBy.DEVICE_POLICY;
 
-    cr.webUIListenerCallback('secure-dns-setting-changed', {
+    webUIListenerCallback('secure-dns-setting-changed', {
       mode: SecureDnsMode.AUTOMATIC,
       templates: [],
       managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,

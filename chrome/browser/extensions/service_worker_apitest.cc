@@ -2448,7 +2448,6 @@ class ServiceWorkerCheckBindingsTest
 // Load an extension in each allowed channel and check that the expected
 // bindings are available.
 IN_PROC_BROWSER_TEST_P(ServiceWorkerCheckBindingsTest, BindingsAvailability) {
-  scoped_refptr<const Extension> extension;
   static constexpr char kManifest[] =
       R"({
            "name": "Service Worker-based background script",
@@ -2475,18 +2474,30 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCheckBindingsTest, BindingsAvailability) {
            chrome.test.sendMessage('FAILURE');
          })";
 
-  if (GetParam() <= version_info::Channel::CANARY) {
-    TestExtensionDir test_dir;
-    test_dir.WriteManifest(kManifest);
-    test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kScript);
-    const base::FilePath path = test_dir.UnpackedPath();
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kScript);
+  const base::FilePath path = test_dir.UnpackedPath();
 
-    // Wait for the extension to load and the script to finish.
-    ExtensionTestMessageListener result_listener("SUCCESS", false);
-    result_listener.set_failure_message("FAILURE");
+  // Wait for the extension to load and the script to finish.
+  ExtensionTestMessageListener result_listener("SUCCESS", false);
+  result_listener.set_failure_message("FAILURE");
 
-    extension = LoadExtension(test_dir.UnpackedPath());
-    ASSERT_TRUE(extension.get());
+  // The extension will only load properly if Service Worker-based extensions
+  // are supported in the channel being tested.
+  bool expect_failure =
+      GetParam() > extension_misc::kMinChannelForServiceWorkerBasedExtension;
+  int flags = kFlagEnableFileAccess;
+  if (expect_failure)
+    flags |= kFlagIgnoreManifestWarnings;
+
+  scoped_refptr<const Extension> extension =
+      LoadExtensionWithFlags(test_dir.UnpackedPath(), flags);
+  ASSERT_TRUE(extension.get());
+
+  if (expect_failure) {
+    EXPECT_FALSE(BackgroundInfo::IsServiceWorkerBased(extension.get()));
+  } else {
     EXPECT_TRUE(BackgroundInfo::IsServiceWorkerBased(extension.get()));
     EXPECT_TRUE(result_listener.WaitUntilSatisfied());
   }
@@ -2495,6 +2506,9 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCheckBindingsTest, BindingsAvailability) {
 INSTANTIATE_TEST_SUITE_P(Unknown,
                          ServiceWorkerCheckBindingsTest,
                          ::testing::Values(version_info::Channel::UNKNOWN,
-                                           version_info::Channel::CANARY));
+                                           version_info::Channel::CANARY,
+                                           version_info::Channel::DEV,
+                                           version_info::Channel::BETA,
+                                           version_info::Channel::STABLE));
 
 }  // namespace extensions

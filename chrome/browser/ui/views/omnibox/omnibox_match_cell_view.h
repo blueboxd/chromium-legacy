@@ -17,8 +17,10 @@ class OmniboxTextView;
 
 class OmniboxMatchCellView : public views::View {
  public:
-  // The right-hand margin used for rows.
+  // Constants used in layout. Exposed so other views can coordinate margins.
+  static constexpr int kMarginLeft = 4;
   static constexpr int kMarginRight = 8;
+  static constexpr int kImageBoundsWidth = 40;
 
   explicit OmniboxMatchCellView(OmniboxResultView* result_view);
   ~OmniboxMatchCellView() override;

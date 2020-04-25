@@ -193,9 +193,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_FIRSTRUN_NEW_OPT_IN_LABEL" desc="User metrics opt-in label [Length: 80em] [iOS only]">
         Help make Chromium better by sending usage statistics and crash reports to Google.
       </message>
-      <message name="IDS_IOS_FIRSTRUN_TERMS_TITLE" desc="Title for the Terms of Service page shown to user on First Run. [Length: 30em]">
-        Chromium Terms of Service
-      </message>
       <message name="IDS_IOS_FIRSTRUN_WELCOME_TO_CHROME" desc="Title on the Welcome to Chromium screen presented to the user on First Run. [iOS only]">
         Welcome to Chromium
       </message>

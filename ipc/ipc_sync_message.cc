@@ -7,8 +7,7 @@
 #include <stdint.h>
 
 #include "base/atomic_sequence_num.h"
-#include "base/check.h"
-#include "base/notreached.h"
+#include "base/logging.h"
 #include "build/build_config.h"
 
 namespace {

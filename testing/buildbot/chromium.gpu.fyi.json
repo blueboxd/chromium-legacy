@@ -156,7 +156,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gles_passthrough_tests"
       }
     ]
   },
@@ -374,7 +375,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -404,7 +406,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -437,7 +440,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -470,7 +474,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -501,7 +506,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -533,7 +539,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -751,7 +758,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -781,7 +789,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -814,7 +823,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -847,7 +857,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -878,7 +889,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -910,7 +922,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -1085,7 +1098,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -1117,7 +1131,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests"
       },
       {
         "args": [
@@ -1147,7 +1162,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -1178,7 +1194,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       }
     ]
   },
@@ -1367,7 +1384,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -1401,7 +1419,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests"
       },
       {
         "args": [
@@ -1433,7 +1452,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -1466,7 +1486,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       }
     ]
   },
@@ -1770,7 +1791,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -1803,7 +1825,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests"
       },
       {
         "args": [
@@ -1834,7 +1857,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -1865,7 +1889,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -1897,7 +1922,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       },
       {
         "args": [
@@ -1928,7 +1954,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests"
       }
     ]
   },
@@ -2173,7 +2200,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -2237,7 +2265,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -2270,7 +2299,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests"
       },
       {
         "args": [
@@ -2301,7 +2331,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -2332,7 +2363,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -2364,7 +2396,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       },
       {
         "args": [
@@ -2395,7 +2428,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests"
       }
     ]
   },
@@ -3672,7 +3706,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -3704,7 +3739,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -3736,7 +3772,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -3768,7 +3805,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -3804,7 +3842,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -3845,7 +3884,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -3886,7 +3926,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -3919,7 +3960,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -3951,7 +3993,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -3985,7 +4028,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       }
     ]
   },
@@ -4196,7 +4240,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -4228,7 +4273,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -4260,7 +4306,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -4292,7 +4339,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -4328,7 +4376,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -4369,7 +4418,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -4410,7 +4460,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -4443,7 +4494,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -4475,7 +4527,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -4509,7 +4562,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       }
     ]
   },
@@ -4644,7 +4698,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/android_webview_pixel_skia_gold_test"
       },
       {
         "args": [
@@ -4705,7 +4760,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -4736,7 +4792,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -4767,7 +4824,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -4798,7 +4856,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -4833,7 +4892,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -4873,7 +4933,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -4913,7 +4974,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -4972,7 +5034,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -5003,7 +5066,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -5036,7 +5100,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gles_passthrough_tests"
       },
       {
         "args": [
@@ -5069,7 +5134,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -5280,7 +5346,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -5312,7 +5379,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -5344,7 +5412,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -5376,7 +5445,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -5412,7 +5482,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -5453,7 +5524,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -5494,7 +5566,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -5527,7 +5600,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -5559,7 +5633,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -5593,7 +5668,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       }
     ]
   },
@@ -5883,7 +5959,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -5915,7 +5992,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -5947,7 +6025,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -5979,7 +6058,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -6015,7 +6095,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -6056,7 +6137,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -6097,7 +6179,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -6130,7 +6213,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -6162,7 +6246,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -6196,7 +6281,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       }
     ]
   },
@@ -6438,7 +6524,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -6470,7 +6557,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -6502,7 +6590,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -6534,7 +6623,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -6570,7 +6660,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -6611,7 +6702,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -6652,7 +6744,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -6685,7 +6778,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -6717,7 +6811,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -6751,7 +6846,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       }
     ]
   },
@@ -6796,7 +6892,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -6829,7 +6926,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -6864,7 +6962,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gles_passthrough_tests"
       },
       {
         "args": [
@@ -6899,7 +6998,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       }
     ]
   },
@@ -6943,7 +7043,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/egl_pixel_skia_gold_test"
       }
     ]
   },
@@ -7039,7 +7140,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/vulkan_pixel_skia_gold_test"
       }
     ]
   },
@@ -7385,7 +7487,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -7415,7 +7518,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -7445,7 +7549,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -7475,7 +7580,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -7509,7 +7615,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -7548,7 +7655,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -7587,7 +7695,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -7618,7 +7727,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -7648,7 +7758,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -7679,7 +7790,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -7711,7 +7823,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -7746,7 +7859,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/noop_sleep_tests"
       }
     ]
   },
@@ -7781,7 +7895,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/noop_sleep_tests"
       }
     ]
   },
@@ -8149,7 +8264,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -8180,7 +8296,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -8211,7 +8328,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -8242,7 +8360,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -8277,7 +8396,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -8317,7 +8437,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -8357,7 +8478,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -8389,7 +8511,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -8420,7 +8543,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -8454,7 +8578,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -8486,7 +8611,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -8519,7 +8645,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -8725,7 +8852,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -8755,7 +8883,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -8785,7 +8914,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -8815,7 +8945,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -8849,7 +8980,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -8888,7 +9020,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -8927,7 +9060,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -8958,7 +9092,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -8988,7 +9123,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -9021,7 +9157,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -9054,7 +9191,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -9085,7 +9223,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -9117,7 +9256,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -9331,7 +9471,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -9362,7 +9503,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -9393,7 +9535,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -9424,7 +9567,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -9459,7 +9603,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -9499,7 +9644,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -9539,7 +9685,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -9571,7 +9718,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -9602,7 +9750,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -9636,7 +9785,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -9670,7 +9820,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -9702,7 +9853,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -9735,7 +9887,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -9969,7 +10122,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -9999,7 +10153,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -10029,7 +10184,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -10059,7 +10215,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -10093,7 +10250,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -10132,7 +10290,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -10171,7 +10330,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -10202,7 +10362,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -10232,7 +10393,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -10265,7 +10427,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -10298,7 +10461,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -10329,7 +10493,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -10361,7 +10526,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -10512,7 +10678,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -10542,7 +10709,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -10572,7 +10740,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -10602,7 +10771,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -10641,7 +10811,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -10672,7 +10843,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -10752,7 +10924,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/skia_renderer_pixel_skia_gold_test"
       },
       {
         "args": [
@@ -10835,7 +11008,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/vulkan_pixel_skia_gold_test"
       }
     ]
   },
@@ -10935,7 +11109,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -10965,7 +11140,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -10995,7 +11171,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -11025,7 +11202,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -11064,7 +11242,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -11095,7 +11274,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -11175,7 +11355,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/skia_renderer_pixel_skia_gold_test"
       },
       {
         "args": [
@@ -11258,7 +11439,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/vulkan_pixel_skia_gold_test"
       }
     ]
   },
@@ -11814,7 +11996,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -11843,7 +12026,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -11872,7 +12056,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -11901,7 +12086,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -11934,7 +12120,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -11972,7 +12159,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -12010,7 +12198,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -12040,7 +12229,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -12069,7 +12259,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -12100,7 +12291,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       }
     ]
   },
@@ -12134,7 +12326,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/noop_sleep_tests"
       }
     ]
   },
@@ -12170,7 +12363,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/noop_sleep_tests"
       }
     ]
   },
@@ -12206,7 +12400,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/noop_sleep_tests"
       }
     ]
   },
@@ -12506,7 +12701,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -12541,7 +12737,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -12576,7 +12773,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -12611,7 +12809,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -12655,7 +12854,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -12699,7 +12899,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -12735,7 +12936,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -12770,7 +12972,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -12808,7 +13011,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -12847,7 +13051,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -12883,7 +13088,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -12921,7 +13127,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -13160,7 +13367,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -13189,7 +13397,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -13218,7 +13427,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -13247,7 +13457,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -13280,7 +13491,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -13318,7 +13530,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -13356,7 +13569,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -13410,7 +13624,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -13439,7 +13654,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -13471,7 +13687,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -13503,7 +13720,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -13533,7 +13751,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -13564,7 +13783,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -13795,7 +14015,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -13826,7 +14047,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -13857,7 +14079,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -13888,7 +14111,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -13923,7 +14147,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -13963,7 +14188,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -14003,7 +14229,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -14035,7 +14262,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -14066,7 +14294,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -14099,7 +14328,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       }
     ]
   },
@@ -14330,7 +14560,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -14361,7 +14592,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -14392,7 +14624,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -14423,7 +14656,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -14458,7 +14692,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -14498,7 +14733,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -14538,7 +14774,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -14570,7 +14807,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -14601,7 +14839,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       }
     ]
   },
@@ -14860,7 +15099,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -14891,7 +15131,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -14922,7 +15163,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -14953,7 +15195,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -14988,7 +15231,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -15028,7 +15272,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -15068,7 +15313,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -15126,7 +15372,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -15157,7 +15404,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -15191,7 +15439,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -15225,7 +15474,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -15257,7 +15507,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -15290,7 +15541,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -15549,7 +15801,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -15580,7 +15833,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -15611,7 +15865,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -15642,7 +15897,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -15677,7 +15933,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -15717,7 +15974,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -15757,7 +16015,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -15789,7 +16048,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -15820,7 +16080,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -15854,7 +16115,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -15886,7 +16148,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -15919,7 +16182,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -16302,7 +16566,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -16333,7 +16598,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -16364,7 +16630,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -16395,7 +16662,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -16430,7 +16698,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -16470,7 +16739,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -16510,7 +16780,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -16542,7 +16813,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -16573,7 +16845,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -16607,7 +16880,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -16639,7 +16913,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -16672,7 +16947,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_validating_tests"
       }
     ]
   },
@@ -16810,7 +17086,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -16840,7 +17117,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -16873,7 +17151,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -16904,7 +17183,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       }
     ]
   },
@@ -17069,7 +17349,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "isolate_name": "test_buildbucket_api_gpu_use_cases",
@@ -17120,7 +17401,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -17153,7 +17435,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -17184,7 +17467,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       }
     ]
   },
@@ -17333,7 +17617,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -17362,7 +17647,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -17394,7 +17680,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -17424,7 +17711,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       }
     ]
   },
@@ -17585,7 +17873,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -17616,7 +17905,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -17650,7 +17940,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_validating_tests"
       },
       {
         "args": [
@@ -17682,7 +17973,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       }
     ]
   },
@@ -17843,7 +18135,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -17874,7 +18167,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       }
     ]
   },
@@ -18155,7 +18449,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -18185,7 +18480,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/power_measurement_test"
       },
       {
         "args": [
@@ -18215,7 +18511,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -18248,7 +18545,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests"
       },
       {
         "args": [
@@ -18279,7 +18577,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -18310,7 +18609,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -18342,7 +18642,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       },
       {
         "args": [
@@ -18373,7 +18674,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests"
       }
     ]
   },
@@ -18745,6 +19047,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -18824,6 +19127,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -18866,6 +19170,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -18906,6 +19211,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -18946,6 +19252,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -18987,6 +19294,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -19027,6 +19335,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -19069,7 +19378,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/noop_sleep_tests"
       }
     ]
   },
@@ -19103,7 +19413,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/noop_sleep_tests"
       }
     ]
   },
@@ -19446,7 +19757,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -19476,7 +19788,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -19506,7 +19819,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -19536,7 +19850,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -19570,7 +19885,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -19609,7 +19925,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -19648,7 +19965,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -19679,7 +19997,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -19709,7 +20028,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -19740,7 +20060,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -19771,7 +20092,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -19803,7 +20125,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       },
       {
         "args": [
@@ -19834,7 +20157,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests"
       }
     ]
   },
@@ -20248,7 +20572,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -20279,7 +20604,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -20310,7 +20636,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -20341,7 +20668,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -20376,7 +20704,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -20416,7 +20745,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -20456,7 +20786,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -20487,7 +20818,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/power_measurement_test"
       },
       {
         "args": [
@@ -20546,7 +20878,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -20577,7 +20910,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -20611,7 +20945,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -20645,7 +20980,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests"
       },
       {
         "args": [
@@ -20677,7 +21013,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -20709,7 +21046,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -20742,7 +21080,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       },
       {
         "args": [
@@ -20774,7 +21113,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests"
       }
     ]
   },
@@ -20809,7 +21149,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/noop_sleep_tests"
       }
     ]
   },
@@ -21115,7 +21456,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -21146,7 +21488,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -21177,7 +21520,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -21208,7 +21552,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -21243,7 +21588,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -21283,7 +21629,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -21323,7 +21670,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -21355,7 +21703,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -21386,7 +21735,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -21420,7 +21770,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests"
       },
       {
         "args": [
@@ -21452,7 +21803,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -21485,7 +21837,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       },
       {
         "args": [
@@ -21517,7 +21870,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests"
       }
     ]
   },
@@ -21915,7 +22269,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -21945,7 +22300,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -21975,7 +22331,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -22005,7 +22362,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -22039,7 +22397,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -22078,7 +22437,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -22117,7 +22477,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -22147,7 +22508,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/power_measurement_test"
       },
       {
         "args": [
@@ -22204,7 +22566,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -22234,7 +22597,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -22267,7 +22631,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -22300,7 +22665,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests"
       },
       {
         "args": [
@@ -22331,7 +22697,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -22362,7 +22729,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -22394,7 +22762,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       },
       {
         "args": [
@@ -22425,7 +22794,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests"
       }
     ]
   },
@@ -22839,7 +23209,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -22870,7 +23241,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -22901,7 +23273,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -22932,7 +23305,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -22967,7 +23341,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -23007,7 +23382,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -23047,7 +23423,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -23078,7 +23455,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/power_measurement_test"
       },
       {
         "args": [
@@ -23137,7 +23515,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -23168,7 +23547,8 @@
           "expiration": 14400,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -23202,7 +23582,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -23236,7 +23617,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests"
       },
       {
         "args": [
@@ -23268,7 +23650,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -23300,7 +23683,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -23333,7 +23717,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       },
       {
         "args": [
@@ -23365,7 +23750,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests"
       }
     ]
   },
@@ -23750,7 +24136,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -23781,7 +24168,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -23812,7 +24200,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -23843,7 +24232,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -23878,7 +24268,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -23918,7 +24309,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -23958,7 +24350,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -23990,7 +24383,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -24021,7 +24415,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -24055,7 +24450,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -24089,7 +24485,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests"
       },
       {
         "args": [
@@ -24121,7 +24518,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -24153,7 +24551,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests"
       },
       {
         "args": [
@@ -24186,7 +24585,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       },
       {
         "args": [
@@ -24218,7 +24618,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests"
       }
     ]
   },
@@ -24752,6 +25153,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24791,6 +25193,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24830,6 +25233,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24869,6 +25273,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24912,6 +25317,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -24960,6 +25366,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25048,6 +25455,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25123,6 +25531,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25162,6 +25571,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25204,6 +25614,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25246,6 +25657,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25286,6 +25698,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25326,6 +25739,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25367,6 +25781,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25407,6 +25822,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -25555,7 +25971,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gl_renderer_context_lost_tests"
       },
       {
         "args": [
@@ -25585,7 +26002,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gl_renderer_depth_capture_tests"
       },
       {
         "args": [
@@ -25615,7 +26033,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gl_renderer_gpu_process_launch_tests"
       },
       {
         "args": [
@@ -25645,7 +26064,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gl_renderer_hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -25684,7 +26104,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gl_renderer_maps_pixel_tests"
       },
       {
         "args": [
@@ -25723,7 +26144,8 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gl_renderer_pixel_skia_gold_tests"
       },
       {
         "args": [
@@ -25754,7 +26176,8 @@
           ],
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gl_renderer_screenshot_sync_tests"
       },
       {
         "args": [
@@ -26905,6 +27328,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -26944,6 +27368,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -26983,6 +27408,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27022,6 +27448,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27065,6 +27492,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27113,6 +27541,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27201,6 +27630,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27275,6 +27705,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27314,6 +27745,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27356,6 +27788,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_gl_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27398,6 +27831,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27438,6 +27872,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27478,6 +27913,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27519,6 +27955,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27559,6 +27996,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -27685,7 +28123,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -27718,7 +28157,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       },
       {
         "args": [
@@ -27750,7 +28190,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests"
       }
     ]
   },
@@ -28058,7 +28499,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -28089,7 +28531,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -28120,7 +28563,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -28151,7 +28595,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -28186,7 +28631,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -28226,7 +28672,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -28266,7 +28713,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -28298,7 +28746,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -28329,7 +28778,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -28361,7 +28811,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -28394,7 +28845,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       }
     ]
   },
@@ -28730,7 +29182,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests"
       },
       {
         "args": [
@@ -28761,7 +29214,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests"
       },
       {
         "args": [
@@ -28792,7 +29246,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests"
       },
       {
         "args": [
@@ -28823,7 +29278,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -28858,7 +29314,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests"
       },
       {
         "args": [
@@ -28898,7 +29355,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test"
       },
       {
         "args": [
@@ -28938,7 +29396,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test"
       },
       {
         "args": [
@@ -28970,7 +29429,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests"
       },
       {
         "args": [
@@ -29001,7 +29461,8 @@
           "expiration": 21600,
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test"
       },
       {
         "args": [
@@ -29035,7 +29496,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests"
       },
       {
         "args": [
@@ -29067,7 +29529,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests"
       },
       {
         "args": [
@@ -29100,7 +29563,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       },
       {
         "args": [
@@ -29132,7 +29596,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests"
       }
     ]
   },
@@ -29577,6 +30042,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29617,6 +30083,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29657,6 +30124,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29697,6 +30165,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29741,6 +30210,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29790,6 +30260,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29839,6 +30310,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29880,6 +30352,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29920,6 +30393,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -29963,6 +30437,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30004,6 +30479,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30045,6 +30521,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30087,6 +30564,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30128,6 +30606,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30641,6 +31120,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/context_lost_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30681,6 +31161,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/depth_capture_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30721,6 +31202,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30761,6 +31243,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30805,6 +31288,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/info_collection_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30854,6 +31338,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/maps_pixel_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30903,6 +31388,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30944,6 +31430,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -30984,6 +31471,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/trace_test",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -31027,6 +31515,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl2_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -31068,6 +31557,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_d3d9_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -31109,6 +31599,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_gl_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -31151,6 +31642,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
@@ -31192,6 +31684,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_vulkan_passthrough_tests",
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",

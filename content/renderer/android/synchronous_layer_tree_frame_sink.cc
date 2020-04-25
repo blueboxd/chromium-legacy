@@ -137,7 +137,9 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
 };
 
 base::TimeDelta SynchronousLayerTreeFrameSink::StubDisplayClient::
-    GetPreferredFrameIntervalForFrameSinkId(const viz::FrameSinkId& id) {
+    GetPreferredFrameIntervalForFrameSinkId(
+        const viz::FrameSinkId& id,
+        viz::mojom::CompositorFrameSinkType* type) {
   return viz::BeginFrameArgs::MinInterval();
 }
 

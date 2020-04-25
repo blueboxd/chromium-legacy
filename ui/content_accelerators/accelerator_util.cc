@@ -24,7 +24,7 @@ ui::Accelerator GetAcceleratorFromNativeWebKeyboardEvent(
   }
 #endif
   Accelerator::KeyState key_state =
-      event.GetType() == blink::WebInputEvent::kKeyUp
+      event.GetType() == blink::WebInputEvent::Type::kKeyUp
           ? Accelerator::KeyState::RELEASED
           : Accelerator::KeyState::PRESSED;
   ui::KeyboardCode keyboard_code =

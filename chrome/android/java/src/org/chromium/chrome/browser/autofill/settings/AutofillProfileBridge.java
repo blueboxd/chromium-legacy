@@ -15,6 +15,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
@@ -246,7 +247,8 @@ public class AutofillProfileBridge {
             WebContents webContents, Class<? extends Fragment> fragment) {
         WeakReference<Activity> currentActivity =
                 webContents.getTopLevelNativeWindow().getActivity();
-        SettingsLauncher.getInstance().launchSettingsPage(currentActivity.get(), fragment);
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(currentActivity.get(), fragment);
     }
 
     @NativeMethods

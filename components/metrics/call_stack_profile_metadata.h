@@ -28,7 +28,7 @@ class CallStackProfileMetadata {
 
   // Records the metadata for the next sample.
   void RecordMetadata(
-      base::ProfileBuilder::MetadataProvider* metadata_provider);
+      base::MetadataRecorder::MetadataProvider* metadata_provider);
 
   // Creates MetadataItems for the currently active metadata, adding new name
   // hashes to |metadata_name_hashes| if necessary. The same
@@ -42,7 +42,7 @@ class CallStackProfileMetadata {
   // |stack_samples|. Overwrites any existing metadata item with the same key
   // and value that are already applied to the samples.
   void ApplyMetadata(
-      const base::ProfileBuilder::MetadataItem& item,
+      const base::MetadataRecorder::Item& item,
       google::protobuf::RepeatedPtrField<
           CallStackProfile::StackSample>::iterator begin,
       google::protobuf::RepeatedPtrField<
@@ -72,8 +72,8 @@ class CallStackProfileMetadata {
   };
   using MetadataMap = std::map<MetadataKey, int64_t, MetadataKeyCompare>;
 
-  // Creates the metdata map from the array of items.
-  MetadataMap CreateMetadataMap(base::ProfileBuilder::MetadataItemArray items,
+  // Creates the metadata map from the array of items.
+  MetadataMap CreateMetadataMap(base::MetadataRecorder::ItemArray items,
                                 size_t item_count);
 
   // Returns all metadata items with new values in the current sample.
@@ -91,7 +91,7 @@ class CallStackProfileMetadata {
       google::protobuf::RepeatedField<uint64_t>* metadata_name_hashes);
 
   // The data provided for the next sample.
-  base::ProfileBuilder::MetadataItemArray metadata_items_;
+  base::MetadataRecorder::ItemArray metadata_items_;
   size_t metadata_item_count_ = 0;
 
   // The data provided for the previous sample.

@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -355,8 +356,9 @@ public class SyncAndServicesSettingsTest {
         Context context = InstrumentationRegistry.getTargetContext();
         String fragmentName = SyncAndServicesSettings.class.getName();
         final Bundle arguments = SyncAndServicesSettings.createArguments(true);
-        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
-                context, fragmentName, arguments);
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        Intent intent =
+                settingsLauncher.createSettingsActivityIntent(context, fragmentName, arguments);
         Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
         Assert.assertTrue(activity instanceof SettingsActivity);
         ApplicationTestUtils.finishActivity(activity);

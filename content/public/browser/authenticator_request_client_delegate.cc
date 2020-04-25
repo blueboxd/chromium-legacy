@@ -42,8 +42,7 @@ void AuthenticatorRequestClientDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
     base::RepeatingClosure start_over_callback,
     device::FidoRequestHandlerBase::RequestCallback request_callback,
-    base::RepeatingClosure bluetooth_adapter_power_on_callback,
-    device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback) {}
+    base::RepeatingClosure bluetooth_adapter_power_on_callback) {}
 
 bool AuthenticatorRequestClientDelegate::ShouldPermitIndividualAttestation(
     const std::string& relying_party_id) {
@@ -156,15 +155,6 @@ void AuthenticatorRequestClientDelegate::FidoAuthenticatorAdded(
 
 void AuthenticatorRequestClientDelegate::FidoAuthenticatorRemoved(
     base::StringPiece device_id) {}
-
-void AuthenticatorRequestClientDelegate::FidoAuthenticatorIdChanged(
-    base::StringPiece old_authenticator_id,
-    std::string new_authenticator_id) {}
-
-void AuthenticatorRequestClientDelegate::FidoAuthenticatorPairingModeChanged(
-    base::StringPiece authenticator_id,
-    bool is_in_pairing_mode,
-    base::string16 display_name) {}
 
 bool AuthenticatorRequestClientDelegate::SupportsPIN() const {
   return false;

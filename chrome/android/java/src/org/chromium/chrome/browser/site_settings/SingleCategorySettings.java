@@ -52,6 +52,7 @@ import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.ui.widget.Toast;
 
@@ -190,7 +191,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             return;
         }
 
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(false);
+        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(
+                getSiteSettingsClient().getBrowserContextHandle(), false);
         fetcher.fetchPreferencesForCategory(mCategory, new ResultsPopulator());
     }
 
@@ -199,6 +201,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
      * @param website The website to check.
      */
     private boolean isOnBlockList(WebsitePreference website) {
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsClient().getBrowserContextHandle();
         for (@SiteSettingsCategory.Type int i = 0; i < SiteSettingsCategory.Type.NUM_ENTRIES; i++) {
             if (!mCategory.showSites(i)) continue;
             for (@ContentSettingException.Type int j = 0;
@@ -213,7 +217,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 if (PermissionInfo.getContentSettingsType(j)
                         == SiteSettingsCategory.contentSettingsType(i)) {
                     return j != PermissionInfo.Type.MIDI
-                            && ContentSettingValues.BLOCK == website.site().getPermission(j);
+                            && ContentSettingValues.BLOCK
+                            == website.site().getPermission(browserContextHandle, j);
                 }
             }
         }
@@ -299,12 +304,15 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Read which category we should be showing.
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsClient().getBrowserContextHandle();
         if (getArguments() != null) {
             mCategory = SiteSettingsCategory.createFromPreferenceKey(
-                    getArguments().getString(EXTRA_CATEGORY, ""));
+                    browserContextHandle, getArguments().getString(EXTRA_CATEGORY, ""));
         }
         if (mCategory == null) {
-            mCategory = SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.ALL_SITES);
+            mCategory = SiteSettingsCategory.createFromType(
+                    browserContextHandle, SiteSettingsCategory.Type.ALL_SITES);
         }
 
         int contentType = mCategory.getContentSettingsType();
@@ -355,12 +363,13 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         numLeft[0] = mWebsites.size();
         for (int i = 0; i < mWebsites.size(); i++) {
             WebsitePreference preference = mWebsites.get(i);
-            preference.site().clearAllStoredData(new StoredDataClearedCallback() {
-                @Override
-                public void onStoredDataCleared() {
-                    if (--numLeft[0] <= 0) getInfoForOrigins();
-                }
-            });
+            preference.site().clearAllStoredData(getSiteSettingsClient().getBrowserContextHandle(),
+                    new StoredDataClearedCallback() {
+                        @Override
+                        public void onStoredDataCleared() {
+                            if (--numLeft[0] <= 0) getInfoForOrigins();
+                        }
+                    });
         }
     }
 
@@ -502,6 +511,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     // OnPreferenceChangeListener:
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsClient().getBrowserContextHandle();
         if (BINARY_TOGGLE_KEY.equals(preference.getKey())) {
             assert !mCategory.isManaged();
 
@@ -513,7 +524,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                     continue;
                 }
 
-                WebsitePreferenceBridge.setCategoryEnabled(
+                WebsitePreferenceBridge.setCategoryEnabled(browserContextHandle,
                         SiteSettingsCategory.contentSettingsType(type), (boolean) newValue);
 
                 if (type == SiteSettingsCategory.Type.COOKIES) {
@@ -528,7 +539,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         } else if (TRI_STATE_TOGGLE_KEY.equals(preference.getKey())) {
             @ContentSettingValues
             int setting = (int) newValue;
-            WebsitePreferenceBridge.setContentSetting(mCategory.getContentSettingsType(), setting);
+            WebsitePreferenceBridge.setContentSetting(
+                    browserContextHandle, mCategory.getContentSettingsType(), setting);
             getInfoForOrigins();
         } else if (FOUR_STATE_COOKIE_TOGGLE_KEY.equals(preference.getKey())) {
             setCookieSettingsPreference((CookieSettingsState) newValue);
@@ -575,7 +587,9 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 return;
         }
 
-        WebsitePreferenceBridge.setCategoryEnabled(ContentSettingsType.COOKIES, allowCookies);
+        WebsitePreferenceBridge.setCategoryEnabled(
+                getSiteSettingsClient().getBrowserContextHandle(), ContentSettingsType.COOKIES,
+                allowCookies);
         getPrefs().setCookieControlsMode(mode);
         getPrefs().setBlockThirdPartyCookies(mode == CookieControlsMode.ON);
     }
@@ -588,17 +602,21 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     }
 
     private String getAddExceptionDialogMessage() {
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsClient().getBrowserContextHandle();
         int resource = 0;
         if (mCategory.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)) {
             resource = R.string.website_settings_add_site_description_automatic_downloads;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)) {
             resource = R.string.website_settings_add_site_description_background_sync;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.JAVASCRIPT)) {
-            resource = WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.JAVASCRIPT)
+            resource = WebsitePreferenceBridge.isCategoryEnabled(
+                               browserContextHandle, ContentSettingsType.JAVASCRIPT)
                     ? R.string.website_settings_add_site_description_javascript_block
                     : R.string.website_settings_add_site_description_javascript_allow;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
-            resource = WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.SOUND)
+            resource = WebsitePreferenceBridge.isCategoryEnabled(
+                               browserContextHandle, ContentSettingsType.SOUND)
                     ? R.string.website_settings_add_site_description_sound_block
                     : R.string.website_settings_add_site_description_sound_allow;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
@@ -607,7 +625,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                         ? R.string.website_settings_add_site_description_cookies_block
                         : R.string.website_settings_add_site_description_cookies_allow;
             } else {
-                resource = WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES)
+                resource = WebsitePreferenceBridge.isCategoryEnabled(
+                                   browserContextHandle, ContentSettingsType.COOKIES)
                         ? R.string.website_settings_add_site_description_cookies_block
                         : R.string.website_settings_add_site_description_cookies_allow;
             }
@@ -645,18 +664,20 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     // AddExceptionPreference.SiteAddedCallback:
     @Override
     public void onAddSite(String primaryPattern, String secondaryPattern) {
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsClient().getBrowserContextHandle();
         int setting;
         if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES) && mRequiresFourStateSetting) {
             setting = cookieSettingsExceptionShouldBlock() ? ContentSettingValues.BLOCK
                                                            : ContentSettingValues.ALLOW;
         } else {
-            setting =
-                    (WebsitePreferenceBridge.isCategoryEnabled(mCategory.getContentSettingsType()))
+            setting = (WebsitePreferenceBridge.isCategoryEnabled(
+                              browserContextHandle, mCategory.getContentSettingsType()))
                     ? ContentSettingValues.BLOCK
                     : ContentSettingValues.ALLOW;
         }
 
-        WebsitePreferenceBridge.setContentSettingForPattern(
+        WebsitePreferenceBridge.setContentSettingForPattern(browserContextHandle,
                 mCategory.getContentSettingsType(), primaryPattern, secondaryPattern, setting);
 
         String hostname = primaryPattern.equals(SITE_WILDCARD) ? secondaryPattern : primaryPattern;
@@ -689,6 +710,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
 
         configureGlobalToggles();
 
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsClient().getBrowserContextHandle();
         boolean exception = false;
         if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
             exception = true;
@@ -698,11 +721,11 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.BACKGROUND_SYNC)
                 && !WebsitePreferenceBridge.isCategoryEnabled(
-                        ContentSettingsType.BACKGROUND_SYNC)) {
+                        browserContextHandle, ContentSettingsType.BACKGROUND_SYNC)) {
             exception = true;
         } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)
                 && !WebsitePreferenceBridge.isCategoryEnabled(
-                        ContentSettingsType.AUTOMATIC_DOWNLOADS)) {
+                        browserContextHandle, ContentSettingsType.AUTOMATIC_DOWNLOADS)) {
             exception = true;
         }
         if (exception) {
@@ -1038,8 +1061,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         fourStateCookieToggle.setOnPreferenceChangeListener(this);
         FourStateCookieSettingsPreference.Params params =
                 new FourStateCookieSettingsPreference.Params();
-        params.allowCookies =
-                WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES);
+        params.allowCookies = WebsitePreferenceBridge.isCategoryEnabled(
+                getSiteSettingsClient().getBrowserContextHandle(), ContentSettingsType.COOKIES);
         params.blockThirdPartyCookies = getPrefs().getBlockThirdPartyCookies();
         params.cookieControlsMode = getPrefs().getCookieControlsMode();
         params.cookiesContentSettingEnforced = mCategory.isManaged();
@@ -1051,7 +1074,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             TriStateSiteSettingsPreference triStateToggle, int contentType) {
         triStateToggle.setOnPreferenceChangeListener(this);
         @ContentSettingValues
-        int setting = WebsitePreferenceBridge.getContentSetting(contentType);
+        int setting = WebsitePreferenceBridge.getContentSetting(
+                getSiteSettingsClient().getBrowserContextHandle(), contentType);
         int[] descriptionIds =
                 ContentSettingsResources.getTriStateSettingDescriptionIDs(contentType);
         triStateToggle.initialize(setting, descriptionIds);
@@ -1062,8 +1086,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         binaryToggle.setTitle(ContentSettingsResources.getTitle(contentType));
 
         // Set summary on or off.
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsClient().getBrowserContextHandle();
         if (mCategory.showSites(SiteSettingsCategory.Type.DEVICE_LOCATION)
-                && WebsitePreferenceBridge.isLocationAllowedByPolicy()) {
+                && WebsitePreferenceBridge.isLocationAllowedByPolicy(browserContextHandle)) {
             binaryToggle.setSummaryOn(ContentSettingsResources.getGeolocationAllowedSummary());
         } else {
             binaryToggle.setSummaryOn(ContentSettingsResources.getEnabledSummary(contentType));
@@ -1075,9 +1101,11 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
 
         // Set the checked value.
         if (mCategory.showSites(SiteSettingsCategory.Type.DEVICE_LOCATION)) {
-            binaryToggle.setChecked(WebsitePreferenceBridge.isAllowLocationEnabled());
+            binaryToggle.setChecked(
+                    WebsitePreferenceBridge.isAllowLocationEnabled(browserContextHandle));
         } else {
-            binaryToggle.setChecked(WebsitePreferenceBridge.isCategoryEnabled(contentType));
+            binaryToggle.setChecked(
+                    WebsitePreferenceBridge.isCategoryEnabled(browserContextHandle, contentType));
         }
     }
 
@@ -1086,8 +1114,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         THIRD_PARTY_COOKIES_TOGGLE_KEY);
         thirdPartyCookiesPref.setChecked(getPrefs().getBlockThirdPartyCookies());
-        thirdPartyCookiesPref.setEnabled(
-                WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES));
+        thirdPartyCookiesPref.setEnabled(WebsitePreferenceBridge.isCategoryEnabled(
+                getSiteSettingsClient().getBrowserContextHandle(), ContentSettingsType.COOKIES));
         thirdPartyCookiesPref.setManagedPreferenceDelegate(new ForwardingManagedPreferenceDelegate(
                 getSiteSettingsClient().getManagedPreferenceDelegate()) {
             @Override
@@ -1098,8 +1126,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     }
 
     private void updateNotificationsSecondaryControls() {
-        Boolean categoryEnabled =
-                WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.NOTIFICATIONS);
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsClient().getBrowserContextHandle();
+        Boolean categoryEnabled = WebsitePreferenceBridge.isCategoryEnabled(
+                browserContextHandle, ContentSettingsType.NOTIFICATIONS);
 
         // The notifications vibrate checkbox.
         ChromeBaseCheckBoxPreference vibrate_pref =

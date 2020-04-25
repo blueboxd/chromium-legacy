@@ -104,6 +104,11 @@ void CompositorFrameSinkImpl::DidDeleteSharedBitmap(const SharedBitmapId& id) {
   support_->DidDeleteSharedBitmap(id);
 }
 
+void CompositorFrameSinkImpl::InitializeCompositorFrameSinkType(
+    mojom::CompositorFrameSinkType type) {
+  support_->InitializeCompositorFrameSinkType(type);
+}
+
 void CompositorFrameSinkImpl::OnClientConnectionLost() {
   // The client that owns this CompositorFrameSink is either shutting down or
   // has done something invalid and the connection to the client was terminated.

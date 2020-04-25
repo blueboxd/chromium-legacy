@@ -11,6 +11,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.site_settings.SingleWebsiteSettings;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -44,8 +45,9 @@ public class SiteSettingsHelper {
      * Shows the site settings activity for a given url.
      */
     public static void showSiteSettings(Context context, String fullUrl) {
-        Intent preferencesIntent = SettingsLauncher.getInstance().createIntentForSettingsPage(
-                context, SingleWebsiteSettings.class.getName(),
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        Intent preferencesIntent = settingsLauncher.createSettingsActivityIntent(context,
+                SingleWebsiteSettings.class.getName(),
                 SingleWebsiteSettings.createFragmentArgsForSite(fullUrl));
         // Disabling StrictMode to avoid violations (https://crbug.com/819410).
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {

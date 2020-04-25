@@ -546,7 +546,7 @@ TEST_F(L10nUtilTest, IsValidLocaleSyntax) {
   EXPECT_TRUE(l10n_util::IsValidLocaleSyntax("en_IE_u_cu_IEP"));
   EXPECT_TRUE(l10n_util::IsValidLocaleSyntax("en_IE@currency=IEP"));
   EXPECT_TRUE(l10n_util::IsValidLocaleSyntax("fr@x=y"));
-  EXPECT_TRUE(l10n_util::IsValidLocaleSyntax("zn_CN@foo=bar"));
+  EXPECT_TRUE(l10n_util::IsValidLocaleSyntax("zh_CN@foo=bar"));
   EXPECT_TRUE(l10n_util::IsValidLocaleSyntax(
       "fr@collation=phonebook;calendar=islamic-civil"));
   EXPECT_TRUE(l10n_util::IsValidLocaleSyntax(

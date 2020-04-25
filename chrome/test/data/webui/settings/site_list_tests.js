@@ -11,6 +11,7 @@ import {CrSettingsPrefs,Router} from 'chrome://settings/settings.js';
 import {eventToPromise,waitBeforeNextRender} from 'chrome://test/test_util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /**
@@ -460,7 +461,7 @@ suite('SiteList', function() {
 
           browserProxy.resetResolver('getExceptionList');
           // Simulate a change in the underlying model.
-          cr.webUIListenerCallback(
+          webUIListenerCallback(
               'contentSettingSitePermissionChanged',
               ContentSettingsTypes.GEOLOCATION);
           return browserProxy.whenCalled('getExceptionList');

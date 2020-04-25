@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler_factory.h"
 
-#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy.h"
-#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy_factory.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
@@ -31,8 +30,7 @@ SearchHandlerFactory::SearchHandlerFactory()
     : BrowserContextKeyedServiceFactory(
           "SearchHandler",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(
-      local_search_service::LocalSearchServiceProxyFactory::GetInstance());
+  DependsOn(local_search_service::LocalSearchServiceFactory::GetInstance());
   DependsOn(OsSettingsLocalizedStringsProviderFactory::GetInstance());
 }
 
@@ -43,9 +41,8 @@ KeyedService* SearchHandlerFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   return new SearchHandler(
       OsSettingsLocalizedStringsProviderFactory::GetForProfile(profile),
-      local_search_service::LocalSearchServiceProxyFactory::GetForProfile(
-          Profile::FromBrowserContext(profile))
-          ->GetLocalSearchService());
+      local_search_service::LocalSearchServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(profile)));
 }
 
 bool SearchHandlerFactory::ServiceIsNULLWhileTesting() const {

@@ -94,11 +94,18 @@ inline void AdjustForFragmentation(const NGBlockBreakToken* break_token,
 // set to the offset from the parent block formatting context, or, if the parent
 // formatting context starts in a previous fragmentainer; the offset from the
 // current fragmentainer block-start.
-void SetupFragmentation(const NGConstraintSpace& parent_space,
-                        const NGLayoutInputNode& child,
-                        LayoutUnit fragmentainer_offset_delta,
-                        NGConstraintSpaceBuilder*,
-                        bool is_new_fc);
+void SetupSpaceBuilderForFragmentation(const NGConstraintSpace& parent_space,
+                                       const NGLayoutInputNode& child,
+                                       LayoutUnit fragmentainer_offset_delta,
+                                       NGConstraintSpaceBuilder*,
+                                       bool is_new_fc);
+
+// Set up a node's fragment builder for block fragmentation. To be done at the
+// beginning of layout.
+void SetupFragmentBuilderForFragmentation(
+    const NGConstraintSpace&,
+    const NGBlockBreakToken* previous_break_token,
+    NGBoxFragmentBuilder*);
 
 // Write fragmentation information to the fragment builder after layout.
 void FinishFragmentation(const NGConstraintSpace&,

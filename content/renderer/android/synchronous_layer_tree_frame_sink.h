@@ -191,7 +191,8 @@ class SynchronousLayerTreeFrameSink
     void SetWideColorEnabled(bool enabled) override {}
     void SetPreferredFrameInterval(base::TimeDelta interval) override {}
     base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-        const viz::FrameSinkId& id) override;
+        const viz::FrameSinkId& id,
+        viz::mojom::CompositorFrameSinkType* type) override;
   };
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface

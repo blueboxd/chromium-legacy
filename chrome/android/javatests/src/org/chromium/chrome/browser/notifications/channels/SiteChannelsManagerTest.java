@@ -29,6 +29,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.notifications.NotificationChannelStatus;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.PermissionInfo;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
@@ -195,7 +196,10 @@ public class SiteChannelsManagerTest {
         PermissionInfo info = new PermissionInfo(
                 PermissionInfo.Type.NOTIFICATION, "https://example-incognito.com", null, true);
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> info.setContentSetting(ContentSettingValues.BLOCK));
+                ()
+                        -> info.setContentSetting(
+                                Profile.getLastUsedRegularProfile().getOffTheRecordProfile(),
+                                ContentSettingValues.BLOCK));
         assertThat(Arrays.asList(mSiteChannelsManager.getSiteChannels()), hasSize(0));
     }
 

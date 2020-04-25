@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
 import org.chromium.chrome.browser.site_settings.SingleWebsiteSettings;
 import org.chromium.chrome.browser.site_settings.SiteSettingsCategory;
@@ -284,8 +285,8 @@ public class NotificationPlatformBridge {
         Class<? extends PreferenceFragmentCompat> fragment = launchSingleWebsitePreferences
                 ? SingleWebsiteSettings.class
                 : SingleCategorySettings.class;
-        SettingsLauncher.getInstance().launchSettingsPage(
-                applicationContext, fragment, fragmentArguments);
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(applicationContext, fragment, fragmentArguments);
     }
 
     /**
@@ -641,7 +642,8 @@ public class NotificationPlatformBridge {
         // TODO(knollr): Generalize the NotificationPlatformBridge sufficiently to not need
         // to care about the individual notification types.
         // Set up a pending intent for going to the settings screen for |origin|.
-        Intent settingsIntent = SettingsLauncher.getInstance().createIntentForSettingsPage(context,
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        Intent settingsIntent = settingsLauncher.createSettingsActivityIntent(context,
                 SingleWebsiteSettings.class.getName(),
                 SingleWebsiteSettings.createFragmentArgsForSite(origin));
         settingsIntent.setData(makeIntentData(notificationId, origin, -1 /* actionIndex */));

@@ -13,6 +13,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.site_settings.SiteSettingsCategory.Type;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.content_settings.ContentSettingValues;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.common.ContentSwitches;
 
@@ -104,6 +105,8 @@ public class SiteSettings
 
         // Initialize the summary and icon for all preferences that have an
         // associated content settings entry.
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsClient().getBrowserContextHandle();
         for (@Type int prefCategory : websitePrefs) {
             Preference p = findPreference(prefCategory);
             int contentType = SiteSettingsCategory.contentSettingsType(prefCategory);
@@ -115,11 +118,14 @@ public class SiteSettings
             int setting = ContentSettingValues.DEFAULT;
 
             if (prefCategory == Type.DEVICE_LOCATION) {
-                checked = WebsitePreferenceBridge.areAllLocationSettingsEnabled();
+                checked =
+                        WebsitePreferenceBridge.areAllLocationSettingsEnabled(browserContextHandle);
             } else if (requiresTriStateSetting) {
-                setting = WebsitePreferenceBridge.getContentSetting(contentType);
+                setting = WebsitePreferenceBridge.getContentSetting(
+                        browserContextHandle, contentType);
             } else {
-                checked = WebsitePreferenceBridge.isCategoryEnabled(contentType);
+                checked = WebsitePreferenceBridge.isCategoryEnabled(
+                        browserContextHandle, contentType);
             }
 
             p.setTitle(ContentSettingsResources.getTitle(contentType));
@@ -128,7 +134,9 @@ public class SiteSettings
             if ((Type.CAMERA == prefCategory || Type.MICROPHONE == prefCategory
                         || Type.NOTIFICATIONS == prefCategory
                         || Type.AUGMENTED_REALITY == prefCategory)
-                    && SiteSettingsCategory.createFromType(prefCategory)
+                    && SiteSettingsCategory
+                               .createFromType(getSiteSettingsClient().getBrowserContextHandle(),
+                                       prefCategory)
                                .showPermissionBlockedMessage(getActivity())) {
                 // Show 'disabled' message when permission is not granted in Android.
                 p.setSummary(ContentSettingsResources.getCategorySummary(contentType, false));
@@ -138,7 +146,7 @@ public class SiteSettings
                                .getBlockThirdPartyCookies()) {
                 p.setSummary(ContentSettingsResources.getCookieAllowedExceptThirdPartySummary());
             } else if (Type.DEVICE_LOCATION == prefCategory && checked
-                    && WebsitePreferenceBridge.isLocationAllowedByPolicy()) {
+                    && WebsitePreferenceBridge.isLocationAllowedByPolicy(browserContextHandle)) {
                 p.setSummary(ContentSettingsResources.getGeolocationAllowedSummary());
             } else if (Type.CLIPBOARD == prefCategory && !checked) {
                 p.setSummary(ContentSettingsResources.getClipboardBlockedListSummary());

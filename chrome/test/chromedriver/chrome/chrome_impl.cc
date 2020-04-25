@@ -336,7 +336,8 @@ Status ChromeImpl::SetWindowBounds(
     std::unique_ptr<base::Value> result;
     status = web_view->EvaluateScript(
         std::string(),
-        "({width: screen.availWidth, height: screen.availHeight})", &result);
+        "({width: screen.availWidth, height: screen.availHeight})", false,
+        &result);
     if (status.IsError())
       return Status(kUnknownError, "JavaScript code failed", status);
     const base::Value* width =

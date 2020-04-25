@@ -464,9 +464,10 @@ const char kNtpActivateHideShortcutsFieldTrial[] =
 // on other platforms.
 const char kWebAuthnLastTransportUsedPrefName[] =
     "webauthn.last_transport_used";
+#endif  // defined(OS_ANDROID)
+// Deprecated 4/2020
 const char kWebAuthnBlePairedMacAddressesPrefName[] =
     "webauthn.ble.paired_mac_addresses";
-#endif  // defined(OS_ANDROID)
 
 // Deprecated 7/2019
 const char kLastKnownGoogleURL[] = "browser.last_known_google_url";
@@ -583,8 +584,8 @@ void RegisterProfilePrefsForMigration(
 #if defined(OS_ANDROID)
   registry->RegisterStringPref(kWebAuthnLastTransportUsedPrefName,
                                std::string());
-  registry->RegisterListPref(kWebAuthnBlePairedMacAddressesPrefName);
 #endif  // defined(OS_ANDROID)
+  registry->RegisterListPref(kWebAuthnBlePairedMacAddressesPrefName);
 
   registry->RegisterStringPref(kLastKnownGoogleURL, std::string());
   registry->RegisterStringPref(kLastPromptedGoogleURL, std::string());
@@ -1184,8 +1185,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if defined(OS_ANDROID)
   // Added 7/2019.
   profile_prefs->ClearPref(kWebAuthnLastTransportUsedPrefName);
-  profile_prefs->ClearPref(kWebAuthnBlePairedMacAddressesPrefName);
 #endif  // defined(OS_ANDROID)
+  // Added 4/2020.
+  profile_prefs->ClearPref(kWebAuthnBlePairedMacAddressesPrefName);
 
   // Added 7/2019.
 #if defined(USE_X11)

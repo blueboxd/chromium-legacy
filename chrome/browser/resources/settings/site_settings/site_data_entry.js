@@ -7,6 +7,20 @@
  * 'site-data-entry' handles showing the local storage summary for a site.
  */
 
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../settings_shared_css.m.js';
+import '../site_favicon.m.js';
+
+import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl} from './local_data_browser_proxy.js';
+
 /**
  * @typedef {{
  *   site: string,
@@ -14,13 +28,16 @@
  *   localData: string,
  * }}
  */
-/* #export */ let CookieDataSummaryItem;
+export let CookieDataSummaryItem;
+
 
 Polymer({
   is: 'site-data-entry',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
-    cr.ui.FocusRowBehavior,
+    FocusRowBehavior,
     I18nBehavior,
   ],
 
@@ -29,12 +46,12 @@ Polymer({
     model: Object,
   },
 
-  /** @private {settings.LocalDataBrowserProxy} */
+  /** @private {LocalDataBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   ready() {
-    this.browserProxy_ = settings.LocalDataBrowserProxyImpl.getInstance();
+    this.browserProxy_ = LocalDataBrowserProxyImpl.getInstance();
   },
 
   /**

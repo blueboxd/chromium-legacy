@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -166,7 +167,8 @@ public class CookieControlsBridgeTest {
             PrefServiceBridge.getInstance().setInteger(
                     Pref.COOKIE_CONTROLS_MODE, CookieControlsMode.ON);
             // Block all cookies
-            WebsitePreferenceBridge.setCategoryEnabled(ContentSettingsType.COOKIES, false);
+            WebsitePreferenceBridge.setCategoryEnabled(
+                    Profile.getLastUsedRegularProfile(), ContentSettingsType.COOKIES, false);
         });
         int currentCallCount = mCallbackHelper.getCallCount();
 

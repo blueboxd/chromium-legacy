@@ -427,6 +427,11 @@ class TabStrip : public views::AccessiblePaneView,
   // currently set in ideal_bounds.
   void AnimateToIdealBounds();
 
+  // Teleports the tabs to their ideal bounds.
+  // NOTE: this does *not* invoke UpdateIdealBounds, it uses the bounds
+  // currently set in ideal_bounds.
+  void SnapToIdealBounds();
+
   void ExitTabClosingMode();
 
   // Returns whether the close button should be highlighted after a remove.
@@ -445,9 +450,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Invoked from Layout if the size changes or layout is really needed.
   void CompleteAnimationAndLayout();
-
-  // Invoked to re-layout the tabs as animations progress.
-  void LayoutToCurrentBounds();
 
   // Sets the visibility state of all tabs based on ShouldTabBeVisible().
   void SetTabVisibility();

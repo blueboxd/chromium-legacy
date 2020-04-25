@@ -532,7 +532,6 @@ void DisplayLockContext::Unlock() {
   MarkForLayoutIfNeeded();
   MarkAncestorsForPrePaintIfNeeded();
   MarkPaintLayerNeedsRepaint();
-  MarkForCompositingUpdatesIfNeeded();
 }
 
 void DisplayLockContext::AddToWhitespaceReattachSet(Element& element) {
@@ -695,6 +694,11 @@ bool DisplayLockContext::MarkForCompositingUpdatesIfNeeded() {
     if (needs_compositing_requirements_update_)
       layout_box->Layer()->SetNeedsCompositingRequirementsUpdate();
     needs_compositing_requirements_update_ = false;
+
+    if (needs_compositing_dependent_flag_update_)
+      layout_box->Layer()->SetNeedsCompositingInputsUpdate();
+    needs_compositing_dependent_flag_update_ = false;
+
     return true;
   }
   return false;

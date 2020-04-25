@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.modules.cablev2_authenticator.CableAuthenticatorModuleProvider;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
@@ -411,7 +412,8 @@ public class PasswordSettings
             // intent extras specifying the object.
             Bundle fragmentAgs = new Bundle(preference.getExtras());
             fragmentAgs.putBoolean(PasswordSettings.EXTRA_FOUND_VIA_SEARCH, mSearchQuery != null);
-            SettingsLauncher.getInstance().launchSettingsPage(
+            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            settingsLauncher.launchSettingsActivity(
                     getActivity(), PasswordEntryViewer.class, fragmentAgs);
         }
         return true;
@@ -498,7 +500,8 @@ public class PasswordSettings
             mSecurityKey.setKey(PREF_KEY_SECURITY_KEY_LINK);
             mSecurityKey.setTitle(R.string.phone_as_security_key_text);
             mSecurityKey.setOnPreferenceClickListener(preference -> {
-                SettingsLauncher.getInstance().launchSettingsPage(
+                SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+                settingsLauncher.launchSettingsActivity(
                         getActivity(), CableAuthenticatorModuleProvider.class, null);
                 return true;
             });

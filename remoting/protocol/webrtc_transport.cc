@@ -570,6 +570,7 @@ void WebrtcTransport::Close(ErrorCode error) {
 }
 
 void WebrtcTransport::ApplySessionOptions(const SessionOptions& options) {
+  transport_context_->set_session_options(options);
   base::Optional<std::string> video_codec = options.Get("Video-Codec");
   if (video_codec) {
     preferred_video_codec_ = *video_codec;

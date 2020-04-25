@@ -1279,8 +1279,8 @@ def main(argv):
       # extract during lint).
       if c['res_sources_path']:
         with open(c['res_sources_path']) as f:
-          resource_files = f.readlines()
-        resource_dirs = resource_utils.ExtractResourceDirsFromFileList(
+          resource_files = f.read().splitlines()
+        resource_dirs = resource_utils.DeduceResourceDirsFromFileList(
             resource_files)
         owned_resource_dirs.update(resource_dirs)
         all_inputs.append(c['res_sources_path'])

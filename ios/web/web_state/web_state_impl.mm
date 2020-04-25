@@ -39,6 +39,7 @@
 #import "ios/web/security/web_interstitial_impl.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/global_web_state_event_tracker.h"
+#import "ios/web/web_state/policy_decision_state_tracker.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
@@ -471,13 +472,28 @@ WebStatePolicyDecider::PolicyDecision WebStateImpl::ShouldAllowRequest(
   return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
-bool WebStateImpl::ShouldAllowResponse(NSURLResponse* response,
-                                       bool for_main_frame) {
+void WebStateImpl::ShouldAllowResponse(
+    NSURLResponse* response,
+    bool for_main_frame,
+    base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback) {
+  auto response_state_tracker =
+      std::make_unique<PolicyDecisionStateTracker>(std::move(callback));
+  PolicyDecisionStateTracker* response_state_tracker_ptr =
+      response_state_tracker.get();
+  auto policy_decider_callback = base::BindRepeating(
+      &PolicyDecisionStateTracker::OnSinglePolicyDecisionReceived,
+      base::Owned(std::move(response_state_tracker)));
+  int num_decisions_requested = 0;
   for (auto& policy_decider : policy_deciders_) {
-    if (!policy_decider.ShouldAllowResponse(response, for_main_frame))
-      return false;
+    policy_decider.ShouldAllowResponse(response, for_main_frame,
+                                       policy_decider_callback);
+    num_decisions_requested++;
+    if (response_state_tracker_ptr->DeterminedFinalResult())
+      break;
   }
-  return true;
+
+  response_state_tracker_ptr->FinishedRequestingDecisions(
+      num_decisions_requested);
 }
 
 bool WebStateImpl::ShouldPreviewLink(const GURL& link_url) {

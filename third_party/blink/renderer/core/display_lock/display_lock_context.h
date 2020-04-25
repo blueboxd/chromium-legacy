@@ -184,6 +184,9 @@ class CORE_EXPORT DisplayLockContext final
   void NotifyCompositingRequirementsUpdateWasBlocked() {
     needs_compositing_requirements_update_ = true;
   }
+  void NotifyCompositingDescendantDependentFlagUpdateWasBlocked() {
+    needs_compositing_dependent_flag_update_ = true;
+  }
 
   // Notify this element will be disconnected.
   void NotifyWillDisconnect();
@@ -345,6 +348,7 @@ class CORE_EXPORT DisplayLockContext final
   bool needs_prepaint_subtree_walk_ = false;
   bool needs_graphics_layer_collection_ = false;
   bool needs_compositing_requirements_update_ = false;
+  bool needs_compositing_dependent_flag_update_ = false;
 
   // Will be true if child traversal was blocked on a previous layout run on the
   // locked element. We need to keep track of this to ensure that on the next

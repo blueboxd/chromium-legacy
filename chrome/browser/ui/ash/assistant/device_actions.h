@@ -36,9 +36,8 @@ class DeviceActions : public ash::AndroidIntentHelper,
   void SetSwitchAccessEnabled(bool enabled) override;
   bool OpenAndroidApp(
       chromeos::assistant::mojom::AndroidAppInfoPtr app_info) override;
-  void VerifyAndroidApp(
-      std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr>* apps_info)
-      override;
+  chromeos::assistant::mojom::AppStatus GetAndroidAppStatus(
+      const chromeos::assistant::mojom::AndroidAppInfo& app_info) override;
   void LaunchAndroidIntent(const std::string& intent) override;
   void AddAppListEventSubscriber(
       mojo::PendingRemote<chromeos::assistant::mojom::AppListEventSubscriber>

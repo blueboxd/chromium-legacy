@@ -117,7 +117,8 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
   void SetWideColorEnabled(bool enabled) override {}
   void SetPreferredFrameInterval(base::TimeDelta interval) override {}
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const viz::FrameSinkId& id) override;
+      const viz::FrameSinkId& id,
+      viz::mojom::CompositorFrameSinkType* type) override;
 
   const std::set<viz::SharedBitmapId>& owned_bitmaps() const {
     return owned_bitmaps_;

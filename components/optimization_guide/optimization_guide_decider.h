@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 #include "components/optimization_guide/optimization_metadata.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -15,6 +16,8 @@
 namespace content {
 class NavigationHandle;
 }  // namespace content
+
+class GURL;
 
 namespace optimization_guide {
 

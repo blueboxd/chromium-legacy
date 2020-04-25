@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
 #include "third_party/blink/renderer/modules/webaudio/deferred_task_handler.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_completion_event.h"
@@ -51,17 +52,17 @@ OfflineAudioContext* OfflineAudioContext::Create(
     float sample_rate,
     ExceptionState& exception_state) {
   // FIXME: add support for workers.
-  auto* document = Document::DynamicFrom(context);
-  if (!document) {
+  auto* window = DynamicTo<LocalDOMWindow>(context);
+  if (!window) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Workers are not supported.");
     return nullptr;
   }
 
-  if (document->IsDetached()) {
+  if (context->IsContextDestroyed()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        "Cannot create OfflineAudioContext on a detached document.");
+        "Cannot create OfflineAudioContext on a detached context.");
     return nullptr;
   }
 
@@ -98,9 +99,9 @@ OfflineAudioContext* OfflineAudioContext::Create(
   }
 
   OfflineAudioContext* audio_context =
-      MakeGarbageCollected<OfflineAudioContext>(document, number_of_channels,
-                                                number_of_frames, sample_rate,
-                                                exception_state);
+      MakeGarbageCollected<OfflineAudioContext>(
+          window->document(), number_of_channels, number_of_frames, sample_rate,
+          exception_state);
   audio_context->UpdateStateIfNeeded();
 
 #if DEBUG_AUDIONODE_REFERENCES

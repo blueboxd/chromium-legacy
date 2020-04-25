@@ -7,8 +7,39 @@
  * 'site-list' shows a list of Allowed and Blocked sites for a given
  * category.
  */
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+import '../settings_shared_css.m.js';
+import './add_site_dialog.js';
+import './edit_exception_dialog.js';
+import './site_list_entry.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+
+// <if expr="chromeos">
+import {AndroidInfoBrowserProxyImpl, AndroidSmsInfo} from './android_info_browser_proxy.js';
+// </if>
+import {ContentSetting, ContentSettingsTypes, INVALID_CATEGORY_SUBTYPE} from './constants.js';
+import {SiteSettingsBehavior} from './site_settings_behavior.js';
+import {RawSiteException, SiteException, SiteSettingsPrefsBrowserProxyImpl} from './site_settings_prefs_browser_proxy.js';
+
+
 Polymer({
   is: 'site-list',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [
     SiteSettingsBehavior,
@@ -59,7 +90,7 @@ Polymer({
      */
     categorySubtype: {
       type: String,
-      value: settings.INVALID_CATEGORY_SUBTYPE,
+      value: INVALID_CATEGORY_SUBTYPE,
     },
 
     /** @private */
@@ -128,7 +159,7 @@ Polymer({
   /**
    * Android messages info object containing messages feature state and
    * exception origin.
-   * @private {?settings.AndroidSmsInfo}
+   * @private {?AndroidSmsInfo}
    */
   androidSmsInfo_: null,
   // </if>
@@ -180,7 +211,7 @@ Polymer({
 
     // The SESSION_ONLY list won't have any incognito exceptions. (Minor
     // optimization, not required).
-    if (this.categorySubtype == settings.ContentSetting.SESSION_ONLY) {
+    if (this.categorySubtype == ContentSetting.SESSION_ONLY) {
       return;
     }
 
@@ -201,8 +232,7 @@ Polymer({
     // The observer for All Sites fires before the attached/ready event, so
     // initialize this here.
     if (this.browserProxy_ === undefined) {
-      this.browserProxy_ =
-          settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+      this.browserProxy_ = SiteSettingsPrefsBrowserProxyImpl.getInstance();
     }
 
     this.setUpActionMenu_();
@@ -216,9 +246,8 @@ Polymer({
     // </if>
 
     // The Session permissions are only for cookies.
-    if (this.categorySubtype == settings.ContentSetting.SESSION_ONLY) {
-      this.$.category.hidden =
-          this.category != settings.ContentSettingsTypes.COOKIES;
+    if (this.categorySubtype == ContentSetting.SESSION_ONLY) {
+      this.$.category.hidden = this.category != ContentSettingsTypes.COOKIES;
     }
   },
 
@@ -240,9 +269,8 @@ Polymer({
   computeShowAddSiteButton_() {
     return !(
         this.readOnlyList ||
-        (this.category ==
-             settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE &&
-         this.categorySubtype == settings.ContentSetting.ALLOW));
+        (this.category == ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE &&
+         this.categorySubtype == ContentSetting.ALLOW));
   },
 
   /**
@@ -265,7 +293,7 @@ Polymer({
   /** @private */
   onAddSiteDialogClosed_() {
     this.showAddSiteDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.$.addSite));
+    focusWithoutInk(assert(this.$.addSite));
   },
 
   /**
@@ -306,12 +334,11 @@ Polymer({
   updateAndroidSmsInfo_() {
     // |androidSmsInfo_| is only relevant for NOTIFICATIONS category. Don't
     // bother fetching it for other categories.
-    if (this.category === settings.ContentSettingsTypes.NOTIFICATIONS &&
+    if (this.category === ContentSettingsTypes.NOTIFICATIONS &&
         loadTimeData.valueExists('multideviceAllowedByPolicy') &&
         loadTimeData.getBoolean('multideviceAllowedByPolicy') &&
         !this.androidSmsInfo_) {
-      const androidInfoBrowserProxy =
-          settings.AndroidInfoBrowserProxyImpl.getInstance();
+      const androidInfoBrowserProxy = AndroidInfoBrowserProxyImpl.getInstance();
       return androidInfoBrowserProxy.getAndroidSmsInfo().then((info) => {
         this.androidSmsInfo_ = info;
       });
@@ -356,12 +383,11 @@ Polymer({
    * @private
    */
   processExceptions_(exceptionList) {
-    let sites =
-        exceptionList
-            .filter(
-                site => site.setting != settings.ContentSetting.DEFAULT &&
-                    site.setting == this.categorySubtype)
-            .map(site => this.expandSiteException(site));
+    let sites = exceptionList
+                    .filter(
+                        site => site.setting != ContentSetting.DEFAULT &&
+                            site.setting == this.categorySubtype)
+                    .map(site => this.expandSiteException(site));
 
     // <if expr="chromeos">
     sites = this.processExceptionsForAndroidSmsInfo_(sites);
@@ -374,13 +400,11 @@ Polymer({
    * @private
    */
   setUpActionMenu_() {
-    this.showAllowAction_ =
-        this.categorySubtype != settings.ContentSetting.ALLOW;
-    this.showBlockAction_ =
-        this.categorySubtype != settings.ContentSetting.BLOCK;
+    this.showAllowAction_ = this.categorySubtype != ContentSetting.ALLOW;
+    this.showBlockAction_ = this.categorySubtype != ContentSetting.BLOCK;
     this.showSessionOnlyAction_ =
-        this.categorySubtype != settings.ContentSetting.SESSION_ONLY &&
-        this.category == settings.ContentSettingsTypes.COOKIES;
+        this.categorySubtype != ContentSetting.SESSION_ONLY &&
+        this.category == ContentSettingsTypes.COOKIES;
   },
 
   /**
@@ -400,7 +424,7 @@ Polymer({
   },
 
   /**
-   * @param {!settings.ContentSetting} contentSetting
+   * @param {!ContentSetting} contentSetting
    * @private
    */
   setContentSettingForActionMenuSite_(contentSetting) {
@@ -412,20 +436,19 @@ Polymer({
 
   /** @private */
   onAllowTap_() {
-    this.setContentSettingForActionMenuSite_(settings.ContentSetting.ALLOW);
+    this.setContentSettingForActionMenuSite_(ContentSetting.ALLOW);
     this.closeActionMenu_();
   },
 
   /** @private */
   onBlockTap_() {
-    this.setContentSettingForActionMenuSite_(settings.ContentSetting.BLOCK);
+    this.setContentSettingForActionMenuSite_(ContentSetting.BLOCK);
     this.closeActionMenu_();
   },
 
   /** @private */
   onSessionOnlyTap_() {
-    this.setContentSettingForActionMenuSite_(
-        settings.ContentSetting.SESSION_ONLY);
+    this.setContentSettingForActionMenuSite_(ContentSetting.SESSION_ONLY);
     this.closeActionMenu_();
   },
 

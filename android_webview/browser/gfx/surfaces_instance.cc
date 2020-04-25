@@ -272,8 +272,9 @@ void SurfacesInstance::ReclaimResources(
 void SurfacesInstance::OnBeginFramePausedChanged(bool paused) {}
 
 base::TimeDelta SurfacesInstance::GetPreferredFrameIntervalForFrameSinkId(
-    const viz::FrameSinkId& id) {
-  return frame_sink_manager_->GetPreferredFrameIntervalForFrameSinkId(id);
+    const viz::FrameSinkId& id,
+    viz::mojom::CompositorFrameSinkType* type) {
+  return frame_sink_manager_->GetPreferredFrameIntervalForFrameSinkId(id, type);
 }
 
 bool SurfacesInstance::BackdropFiltersPreventMerge(

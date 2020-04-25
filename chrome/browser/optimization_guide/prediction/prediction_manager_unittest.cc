@@ -537,6 +537,13 @@ class PredictionManagerTest
   DISALLOW_COPY_AND_ASSIGN(PredictionManagerTest);
 };
 
+// No support for Mac, Windows or ChromeOS.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
+#else
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
+#endif
+
 TEST_F(PredictionManagerTest,
        OptimizationTargetProvidedAtInitializationIsRegistered) {
   CreatePredictionManager(
@@ -591,16 +598,9 @@ TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {
       0);
 }
 
-// TODO(https://crbug.com/1034433) Flaky on Mac10.12 and Windows.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_NoPredictionModelForRegisteredOptimizationTarget \
-  DISABLED_NoPredictionModelForRegisteredOptimizationTarget
-#else
-#define MAYBE_NoPredictionModelForRegisteredOptimizationTarget \
-  NoPredictionModelForRegisteredOptimizationTarget
-#endif
 TEST_F(PredictionManagerTest,
-       MAYBE_NoPredictionModelForRegisteredOptimizationTarget) {
+       DISABLE_ON_WIN_MAC_CHROMEOS(
+           NoPredictionModelForRegisteredOptimizationTarget)) {
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -1051,18 +1051,14 @@ TEST_F(PredictionManagerTest,
           GetStringNameForOptimizationTarget(
               optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD),
       PredictionManagerModelStatus::kStoreAvailableModelNotLoaded, 1);
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelVersion.PainfulPageLoad", 0);
 }
 
-// TODO(https://crbug.com/1034433) Flaky on Mac10.12 and Windows.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_ShouldTargetNavigationStoreUnavailableModelUnknown \
-  DISABLED_ShouldTargetNavigationStoreUnavailableModelUnknown
-#else
-#define MAYBE_ShouldTargetNavigationStoreUnavailableModelUnknown \
-  ShouldTargetNavigationStoreUnavailableModelUnknown
-#endif
 TEST_F(PredictionManagerTest,
-       MAYBE_ShouldTargetNavigationStoreUnavailableModelUnknown) {
+       DISABLE_ON_WIN_MAC_CHROMEOS(
+           ShouldTargetNavigationStoreUnavailableModelUnknown)) {
   base::HistogramTester histogram_tester;
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
@@ -1122,16 +1118,9 @@ TEST_F(PredictionManagerTest, UpdateModelForUnregisteredTarget) {
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 0);
 }
 
-// TODO(https://crbug.com/1034433) Flaky on Mac10.12 and Windows.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_UpdateModelWithUnsupportedOptimizationTarget \
-  DISABLED_UpdateModelWithUnsupportedOptimizationTarget
-#else
-#define MAYBE_UpdateModelWithUnsupportedOptimizationTarget \
-  UpdateModelWithUnsupportedOptimizationTarget
-#endif
-TEST_F(PredictionManagerTest,
-       MAYBE_UpdateModelWithUnsupportedOptimizationTarget) {
+TEST_F(
+    PredictionManagerTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(UpdateModelWithUnsupportedOptimizationTarget)) {
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           GURL("https://foo.com"));
@@ -1589,6 +1578,7 @@ TEST_F(PredictionManagerTest, PreviousSessionStatisticsUsed) {
 
 TEST_F(PredictionManagerTest,
        StoreInitializedAfterOptimizationTargetRegistered) {
+  base::HistogramTester histogram_tester;
   CreatePredictionManager({});
   // Ensure that the fetch does not cause any models or features to load.
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -1606,10 +1596,13 @@ TEST_F(PredictionManagerTest,
   EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForHost("foo.com"));
 
   EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelVersion.PainfulPageLoad", 1, 1);
 }
 
 TEST_F(PredictionManagerTest,
        StoreInitializedBeforeOptimizationTargetRegistered) {
+  base::HistogramTester histogram_tester;
   CreatePredictionManager({});
   // Ensure that the fetch does not cause any models or features to load.
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -1629,6 +1622,8 @@ TEST_F(PredictionManagerTest,
   EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForHost("foo.com"));
 
   EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelVersion.PainfulPageLoad", 1, 1);
 }
 
 TEST_F(PredictionManagerTest, ModelFetcherTimerRetryDelay) {

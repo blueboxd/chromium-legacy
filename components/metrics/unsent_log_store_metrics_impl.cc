@@ -22,8 +22,6 @@ void UnsentLogStoreMetricsImpl::RecordCompressionRatio(
 }
 
 void UnsentLogStoreMetricsImpl::RecordDroppedLogSize(size_t size) {
-  UMA_HISTOGRAM_COUNTS_1M("UMA.Large Accumulated Log Not Persisted",
-                          static_cast<int>(size));
 }
 
 void UnsentLogStoreMetricsImpl::RecordDroppedLogsNum(int dropped_logs_num) {

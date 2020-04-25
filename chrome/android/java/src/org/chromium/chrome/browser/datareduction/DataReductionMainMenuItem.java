@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.third_party.android.datausagechart.ChartDataUsageView;
@@ -84,7 +85,8 @@ public class DataReductionMainMenuItem extends FrameLayout implements View.OnCli
         RecordUserAction.record("MobileMenuDataSaverOpened");
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putBoolean(DataReductionPreferenceFragment.FROM_MAIN_MENU, true);
-        SettingsLauncher.getInstance().launchSettingsPage(
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(
                 getContext(), DataReductionPreferenceFragment.class, fragmentArgs);
 
         // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or

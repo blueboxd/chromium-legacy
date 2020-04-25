@@ -1,0 +1,66 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_ACTIVE_SCRIPT_WRAPPABLE_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_ACTIVE_SCRIPT_WRAPPABLE_MANAGER_H_
+
+#include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+
+namespace blink {
+
+class LivenessBroker;
+
+// ActiveScriptWrappableManager (ASWM) is integrated into the garbage collector
+// and keeps ActiveScriptWrappable alive as long as they have
+// HasPendingActivity() returning true and are attached to a live
+// ExecutionContext.
+//
+// ASWM integrates with the GC through prologue and weakness callbacks which are
+// not allowed to allocate.
+class PLATFORM_EXPORT ActiveScriptWrappableManager final
+    : public GarbageCollected<ActiveScriptWrappableManager> {
+ public:
+  // Adds an ActiveScriptWrappable to the set that is managed by
+  // ActiveScriptWrappableManager.
+  void Add(ActiveScriptWrappableBase* wrappable) {
+    // The following calls may allocate and trigger GC. |wrappable| is kept
+    // alive as it is a parameter to this function.
+    //
+    // Shrink capacity here to avoid allocation in
+    // RecomputeActiveScriptWrappables and
+    // CleanupInactiveAndClearActiveScriptWrappables.
+    active_script_wrappables_.ShrinkToReasonableCapacity();
+    active_script_wrappables_.push_back(std::make_pair(wrappable, nullptr));
+  }
+
+  // Recomputes the current set of active ScriptWrappable objects that should be
+  // kept alive by the manager because there's some activity pending.
+  //
+  // Called during GC prologue. Not allowed to allocate.
+  void RecomputeActiveScriptWrappables();
+
+  // Iterate the current set of active ScriptWrappable objects.
+  //
+  // Does not allocate.
+  void IterateActiveScriptWrappables(Visitor*);
+
+  void Trace(Visitor* visitor);
+
+ private:
+  // Called during weakness processing. Not allowed to allocate. The next Add()
+  // call ensures reasonable capacities.
+  //
+  // Does not allocate.
+  void CleanupInactiveAndClearActiveScriptWrappables(
+      const LivenessBroker& info);
+
+  HeapVector<std::pair<UntracedMember<const ActiveScriptWrappableBase>,
+                       Member<const ActiveScriptWrappableBase>>>
+      active_script_wrappables_;
+};
+
+}  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_ACTIVE_SCRIPT_WRAPPABLE_MANAGER_H_

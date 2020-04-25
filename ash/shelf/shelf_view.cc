@@ -19,6 +19,8 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/hotseat_widget.h"
+#include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_application_menu_model.h"
@@ -1684,22 +1686,11 @@ void ShelfView::AnnounceSwapEvent(const ShelfItem& first_item,
 }
 
 gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
-  gfx::Size preferred_size;
-  const int last_button_index = view_model_->view_size() - 1;
-  gfx::Rect last_button_bounds =
-      view_model_->view_at(last_button_index)->bounds();
-
-  if (shelf_->IsHorizontalAlignment()) {
-    preferred_size = gfx::Size(last_button_bounds.right(),
-                               ShelfConfig::Get()->hotseat_size());
-  } else {
-    preferred_size = gfx::Size(ShelfConfig::Get()->hotseat_size(),
-                               last_button_bounds.bottom());
-  }
-  gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
-  ConvertPointToScreen(this, &origin);
-
-  return gfx::Rect(origin, preferred_size);
+  const ScrollableShelfView* scrollable_shelf_view =
+      shelf_->hotseat_widget()->scrollable_shelf_view();
+  gfx::Rect bounds = scrollable_shelf_view->visible_space();
+  views::View::ConvertRectToScreen(scrollable_shelf_view, &bounds);
+  return bounds;
 }
 
 int ShelfView::CancelDrag(int modified_index) {

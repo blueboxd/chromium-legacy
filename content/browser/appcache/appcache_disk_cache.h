@@ -92,13 +92,10 @@ class CONTENT_EXPORT AppCacheDiskCache {
     is_waiting_to_initialize_ = is_waiting_to_initialize;
   }
 
-  const char* uma_name() { return uma_name_; }
-
   disk_cache::Backend* disk_cache() { return disk_cache_.get(); }
 
  protected:
-  // |uma_name| must remain valid for the life of the object.
-  explicit AppCacheDiskCache(const char* uma_name, bool use_simple_cache);
+  explicit AppCacheDiskCache(bool use_simple_cache);
 
  private:
   class CreateBackendCallbackShim;
@@ -160,7 +157,6 @@ class CONTENT_EXPORT AppCacheDiskCache {
   std::vector<PendingCall> pending_calls_;
   std::set<AppCacheDiskCacheEntry*> open_entries_;
   std::unique_ptr<disk_cache::Backend> disk_cache_;
-  const char* const uma_name_;
 
   base::WeakPtrFactory<AppCacheDiskCache> weak_factory_{this};
 };

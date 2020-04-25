@@ -16,9 +16,9 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {routes} from '../route.m.js';
 import {Route, RouteObserverBehavior, Router} from '../router.m.js';
-import {AllSitesAction, ContentSetting, SiteSettingSource} from '../site_settings/constants.m.js';
-import {SiteSettingsBehavior} from '../site_settings/site_settings_behavior.m.js';
-import {RawSiteException, RecentSitePermissions} from '../site_settings/site_settings_prefs_browser_proxy.m.js';
+import {AllSitesAction, ContentSetting, SiteSettingSource} from '../site_settings/constants.js';
+import {SiteSettingsBehavior} from '../site_settings/site_settings_behavior.js';
+import {RawSiteException, RecentSitePermissions} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
 Polymer({
   is: 'settings-recent-site-permissions',

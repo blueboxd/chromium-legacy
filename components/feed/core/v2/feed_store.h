@@ -58,6 +58,8 @@ class FeedStore {
       std::unique_ptr<StreamModelUpdateRequest> update_request,
       base::OnceCallback<void(bool)> callback);
 
+  void ClearStreamData(base::OnceCallback<void(bool)> callback);
+
   void WriteOperations(int32_t sequence_number,
                        std::vector<feedstore::DataOperation> operations);
 
@@ -99,6 +101,11 @@ class FeedStore {
  private:
   void OnDatabaseInitialized(leveldb_proto::Enums::InitStatus status);
   bool IsInitialized() const;
+  // Overwrites all stream data with |updates|.
+  void UpdateFullStreamData(
+      std::unique_ptr<std::vector<std::pair<std::string, feedstore::Record>>>
+          updates,
+      base::OnceCallback<void(bool)> callback);
 
   void Write(std::vector<feedstore::Record> records,
              base::OnceCallback<void(bool)> callback);

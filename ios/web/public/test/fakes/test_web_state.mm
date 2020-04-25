@@ -18,6 +18,7 @@
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
+#import "ios/web/web_state/policy_decision_state_tracker.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -355,13 +356,28 @@ WebStatePolicyDecider::PolicyDecision TestWebState::ShouldAllowRequest(
   return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
-bool TestWebState::ShouldAllowResponse(NSURLResponse* response,
-                                       bool for_main_frame) {
+void TestWebState::ShouldAllowResponse(
+    NSURLResponse* response,
+    bool for_main_frame,
+    base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback) {
+  auto response_state_tracker =
+      std::make_unique<PolicyDecisionStateTracker>(std::move(callback));
+  PolicyDecisionStateTracker* response_state_tracker_ptr =
+      response_state_tracker.get();
+  auto policy_decider_callback = base::BindRepeating(
+      &PolicyDecisionStateTracker::OnSinglePolicyDecisionReceived,
+      base::Owned(std::move(response_state_tracker)));
+  int num_decisions_requested = 0;
   for (auto& policy_decider : policy_deciders_) {
-    if (!policy_decider.ShouldAllowResponse(response, for_main_frame))
-      return false;
+    policy_decider.ShouldAllowResponse(response, for_main_frame,
+                                       policy_decider_callback);
+    num_decisions_requested++;
+    if (response_state_tracker_ptr->DeterminedFinalResult())
+      break;
   }
-  return true;
+
+  response_state_tracker_ptr->FinishedRequestingDecisions(
+      num_decisions_requested);
 }
 
 base::string16 TestWebState::GetLastExecutedJavascript() const {

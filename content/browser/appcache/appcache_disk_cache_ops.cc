@@ -18,7 +18,6 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "storage/common/storage_histograms.h"
 
 namespace content {
 
@@ -265,8 +264,6 @@ void AppCacheResponseReader::OnIOComplete(int result) {
       read_position_ += result;
     }
   }
-  if (result > 0 && disk_cache_)
-    storage::RecordBytesRead(disk_cache_->uma_name(), result);
   InvokeUserCompletionCallback(result);
   // Note: |this| may have been deleted by the completion callback.
 }
@@ -363,8 +360,6 @@ void AppCacheResponseWriter::OnIOComplete(int result) {
     else
       info_size_ = result;
   }
-  if (result > 0 && disk_cache_)
-    storage::RecordBytesWritten(disk_cache_->uma_name(), result);
   InvokeUserCompletionCallback(result);
   // Note: |this| may have been deleted by the completion callback.
 }
@@ -489,8 +484,6 @@ void AppCacheResponseMetadataWriter::OnOpenEntryComplete() {
 
 void AppCacheResponseMetadataWriter::OnIOComplete(int result) {
   DCHECK(result < 0 || write_amount_ == result);
-  if (result > 0 && disk_cache_)
-    storage::RecordBytesWritten(disk_cache_->uma_name(), result);
   InvokeUserCompletionCallback(result);
   // Note: |this| may have been deleted by the completion callback.
 }

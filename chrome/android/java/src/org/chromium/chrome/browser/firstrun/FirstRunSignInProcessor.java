@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
@@ -107,12 +108,13 @@ public final class FirstRunSignInProcessor {
      * Opens sign in settings as requested in the FRE sign-in dialog.
      */
     private static void openSignInSettings(Activity activity) {
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
-            SettingsLauncher.getInstance().launchSettingsPage(
+            settingsLauncher.launchSettingsActivity(
                     activity, ManageSyncSettings.class, ManageSyncSettings.createArguments(true));
         } else {
-            SettingsLauncher.getInstance().launchSettingsPage(activity,
-                    SyncAndServicesSettings.class, SyncAndServicesSettings.createArguments(true));
+            settingsLauncher.launchSettingsActivity(activity, SyncAndServicesSettings.class,
+                    SyncAndServicesSettings.createArguments(true));
         }
     }
 

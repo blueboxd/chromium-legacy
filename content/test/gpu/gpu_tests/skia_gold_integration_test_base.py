@@ -419,6 +419,11 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                                '--work-dir', self._skia_gold_temp_dir]
                                + extra_auth_args,
             stderr=subprocess.STDOUT)
+      algorithm_args = page.matching_algorithm.GetCmdline()
+      if algorithm_args:
+        logging.info(
+            'Using non-exact matching algorithm %s for %s',
+            page.matching_algorithm.Name(), image_name)
       cmd = ([goldctl_bin, 'imgtest', 'add', '--passfail',
               '--test-name', image_name,
               '--instance', SKIA_GOLD_INSTANCE,
@@ -426,7 +431,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
               '--png-file', png_temp_file,
               '--work-dir', self._skia_gold_temp_dir,
               '--failure-file', failure_file] +
-              build_id_args + extra_imgtest_args)
+              build_id_args + extra_imgtest_args + algorithm_args)
       subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except CalledProcessError as e:
       # We don't want to bother printing out triage links for local runs.

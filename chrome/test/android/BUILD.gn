@@ -253,5 +253,6 @@ android_library("chrome_java_test_support") {
     "//third_party/ub-uiautomator:ub_uiautomator_java",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
+    "//url:gurl_java",
   ]
 }

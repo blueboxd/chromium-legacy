@@ -14,6 +14,7 @@
 #import "skia/ext/skia_utils_mac.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/color/mac/scoped_current_nsappearance.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -167,16 +168,6 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
       should_only_use_dark_colors_)
     return NativeTheme::GetSystemColor(color_id, color_scheme);
 
-  // Empirically, currentAppearance is incorrect when switching
-  // appearances. It's unclear exactly why right now, so work
-  // around it for the time being by resynchronizing.
-  if (@available(macOS 10.14, *)) {
-    NSAppearance* effective_appearance = [NSApp effectiveAppearance];
-    if (![effective_appearance isEqual:[NSAppearance currentAppearance]]) {
-      [NSAppearance setCurrentAppearance:effective_appearance];
-    }
-  }
-
   if (UsesHighContrastColors()) {
     switch (color_id) {
       case kColorId_SelectedMenuItemForegroundColor:
@@ -189,6 +180,21 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
         break;
     }
   }
+
+  base::Optional<SkColor> os_color = GetOSColor(color_id, color_scheme);
+  if (os_color.has_value())
+    return os_color.value();
+
+  return ApplySystemControlTint(
+      NativeTheme::GetSystemColor(color_id, color_scheme));
+}
+
+base::Optional<SkColor> NativeThemeMac::GetOSColor(
+    ColorId color_id,
+    ColorScheme color_scheme) const {
+  ScopedCurrentNSAppearance scoped_nsappearance(color_scheme ==
+                                                ColorScheme::kDark);
+
   // Even with --secondary-ui-md, menus use the platform colors and styling, and
   // Mac has a couple of specific color overrides, documented below.
   switch (color_id) {
@@ -231,11 +237,8 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
           NSColor.controlAlternatingRowBackgroundColors[1]);
 
     default:
-      break;
+      return base::nullopt;
   }
-
-  return ApplySystemControlTint(
-      NativeTheme::GetSystemColor(color_id, color_scheme));
 }
 
 void NativeThemeMac::PaintMenuPopupBackground(

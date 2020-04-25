@@ -2362,7 +2362,10 @@ uint32_t PDFiumEngine::GetCharUnicode(int page_index, int char_index) {
 base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo>
 PDFiumEngine::GetTextRunInfo(int page_index, int start_char_index) {
   DCHECK(PageIndexInBounds(page_index));
-  return pages_[page_index]->GetTextRunInfo(start_char_index);
+  auto info = pages_[page_index]->GetTextRunInfo(start_char_index);
+  if (!client_->IsPrintPreview() && start_char_index >= 0)
+    pages_[page_index]->LogOverlappingAnnotations();
+  return info;
 }
 
 std::vector<PDFEngine::AccessibilityLinkInfo> PDFiumEngine::GetLinkInfo(

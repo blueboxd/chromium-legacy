@@ -165,8 +165,6 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
     data->profiler_group_ = nullptr;
   }
 
-  data->active_script_wrappables_.Clear();
-
   // Detach V8's garbage collector.
   // Need to finalize an already running garbage collection as otherwise
   // callbacks are missing and state gets out of sync.
@@ -389,16 +387,6 @@ void V8PerIsolateData::SetProfilerGroup(
 
 V8PerIsolateData::GarbageCollectedData* V8PerIsolateData::ProfilerGroup() {
   return profiler_group_;
-}
-
-void V8PerIsolateData::AddActiveScriptWrappable(
-    ActiveScriptWrappableBase* wrappable) {
-  if (!active_script_wrappables_) {
-    active_script_wrappables_ =
-        MakeGarbageCollected<ActiveScriptWrappableSet>();
-  }
-
-  active_script_wrappables_->insert(wrappable);
 }
 
 }  // namespace blink

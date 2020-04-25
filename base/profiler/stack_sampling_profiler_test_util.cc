@@ -35,7 +35,8 @@ class TestProfileBuilder : public ProfileBuilder {
 
   // ProfileBuilder:
   ModuleCache* GetModuleCache() override { return module_cache_; }
-  void RecordMetadata(MetadataProvider* metadata_provider) override {}
+  void RecordMetadata(
+      MetadataRecorder::MetadataProvider* metadata_provider) override {}
 
   void OnSampleCompleted(std::vector<Frame> sample,
                          TimeTicks sample_timestamp) override {

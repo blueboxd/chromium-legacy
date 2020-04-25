@@ -725,13 +725,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
   EXPECT_TRUE(process_map->Contains(popup_process->GetID()));
 }
 
-// http://crbug.com/118502
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_ReloadAppAfterCrash DISABLED_ReloadAppAfterCrash
-#else
-#define MAYBE_ReloadAppAfterCrash ReloadAppAfterCrash
-#endif
-IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {
   extensions::ProcessMap* process_map =
       extensions::ProcessMap::Get(browser()->profile());
 

@@ -106,10 +106,6 @@ void SubprocessMetricsProvider::MergeHistogramDeltas() {
     MergeHistogramDeltasFromAllocator(iter.GetCurrentKey(),
                                       iter.GetCurrentValue());
   }
-
-  UMA_HISTOGRAM_COUNTS_100(
-      "UMA.SubprocessMetricsProvider.SubprocessCount",
-      allocators_by_id_.size());
 }
 
 void SubprocessMetricsProvider::BrowserChildProcessHostConnected(

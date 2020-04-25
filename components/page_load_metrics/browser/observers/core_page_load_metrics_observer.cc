@@ -700,8 +700,8 @@ void CorePageLoadMetricsObserver::OnUserInput(
   click_tracker_.OnUserInput(event);
 
   if (!received_non_scroll_input_after_first_paint_) {
-    if (event.GetType() == blink::WebInputEvent::kGestureTap ||
-        event.GetType() == blink::WebInputEvent::kMouseUp) {
+    if (event.GetType() == blink::WebInputEvent::Type::kGestureTap ||
+        event.GetType() == blink::WebInputEvent::Type::kMouseUp) {
       received_non_scroll_input_after_first_paint_ = true;
       if (now.is_null())
         now = base::TimeTicks::Now();
@@ -711,7 +711,7 @@ void CorePageLoadMetricsObserver::OnUserInput(
     }
   }
   if (!received_scroll_input_after_first_paint_ &&
-      event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+      event.GetType() == blink::WebInputEvent::Type::kGestureScrollBegin) {
     received_scroll_input_after_first_paint_ = true;
     if (now.is_null())
       now = base::TimeTicks::Now();

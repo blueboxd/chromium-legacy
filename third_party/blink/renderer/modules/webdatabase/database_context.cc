@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_manager.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_task.h"
@@ -175,7 +176,7 @@ void DatabaseContext::StopDatabases() {
 }
 
 bool DatabaseContext::AllowDatabaseAccess() const {
-  return Document::From(GetExecutionContext())->IsActive();
+  return To<LocalDOMWindow>(GetExecutionContext())->document()->IsActive();
 }
 
 const SecurityOrigin* DatabaseContext::GetSecurityOrigin() const {

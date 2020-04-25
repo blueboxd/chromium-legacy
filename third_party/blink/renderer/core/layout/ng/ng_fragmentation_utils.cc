@@ -163,11 +163,11 @@ NGBreakAppeal CalculateBreakAppealInside(const NGConstraintSpace& space,
   return appeal;
 }
 
-void SetupFragmentation(const NGConstraintSpace& parent_space,
-                        const NGLayoutInputNode& child,
-                        LayoutUnit fragmentainer_offset_delta,
-                        NGConstraintSpaceBuilder* builder,
-                        bool is_new_fc) {
+void SetupSpaceBuilderForFragmentation(const NGConstraintSpace& parent_space,
+                                       const NGLayoutInputNode& child,
+                                       LayoutUnit fragmentainer_offset_delta,
+                                       NGConstraintSpaceBuilder* builder,
+                                       bool is_new_fc) {
   DCHECK(parent_space.HasBlockFragmentation());
 
   // If the child is truly unbreakable, it won't participate in block
@@ -187,6 +187,28 @@ void SetupFragmentation(const NGConstraintSpace& parent_space,
     builder->SetIsInColumnBfc();
 }
 
+void SetupFragmentBuilderForFragmentation(
+    const NGConstraintSpace& space,
+    const NGBlockBreakToken* previous_break_token,
+    NGBoxFragmentBuilder* builder) {
+  builder->SetHasBlockFragmentation();
+
+  // The whereabouts of our container's so far best breakpoint is none of our
+  // business, but we store its appeal, so that we don't look for breakpoints
+  // with lower appeal than that.
+  builder->SetBreakAppeal(space.EarlyBreakAppeal());
+
+  if (space.IsInitialColumnBalancingPass())
+    builder->SetIsInitialColumnBalancingPass();
+
+  unsigned sequence_number = 0;
+  if (previous_break_token && !previous_break_token->IsBreakBefore()) {
+    sequence_number = previous_break_token->SequenceNumber() + 1;
+    builder->SetIsFirstForNode(false);
+  }
+  builder->SetSequenceNumber(sequence_number);
+}
+
 void FinishFragmentation(const NGConstraintSpace& space,
                          const NGBlockBreakToken* previous_break_token,
                          LayoutUnit block_size,
@@ -194,13 +216,8 @@ void FinishFragmentation(const NGConstraintSpace& space,
                          LayoutUnit space_left,
                          NGBoxFragmentBuilder* builder) {
   LayoutUnit previously_consumed_block_size;
-  unsigned sequence_number = 0;
-  if (previous_break_token && !previous_break_token->IsBreakBefore()) {
+  if (previous_break_token && !previous_break_token->IsBreakBefore())
     previously_consumed_block_size = previous_break_token->ConsumedBlockSize();
-    sequence_number = previous_break_token->SequenceNumber() + 1;
-    builder->SetIsFirstForNode(false);
-  }
-  builder->SetSequenceNumber(sequence_number);
 
   if (builder->DidBreak()) {
     // One of our children broke. Even if we fit within the remaining space, we

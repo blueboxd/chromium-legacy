@@ -250,14 +250,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, MAYBE_OffscreenTabEvilTests) {
   ASSERT_FALSE(profile()->HasOffTheRecordProfile());
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_GetUserMediaTest DISABLED_GetUserMediaTest
-#else
-#define MAYBE_GetUserMediaTest GetUserMediaTest
-#endif
 // Tests that getUserMedia() is NOT a way to start tab capture.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, GetUserMediaTest) {
   ExtensionTestMessageListener listener("ready", true);
 
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "get_user_media_test.html"))
@@ -281,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// http://crbug.com/177163, http://crbug.com/427730
+// http://crbug.com/427730
 // Make sure tabCapture.capture only works if the tab has been granted
 // permission via an extension icon click or the extension is whitelisted.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_ActiveTabPermission) {
@@ -355,7 +349,6 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_FullscreenEvents) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Times out on Win dbg bots: https://crbug.com/177163
 // Flaky on MSan bots: https://crbug.com/294431
 // But really, just flaky everywhere. http://crbug.com/294431#c33
 // Make sure tabCapture API can be granted for Chrome:// pages.
@@ -383,42 +376,24 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_GrantForChromePages) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_CaptureInSplitIncognitoMode DISABLED_CaptureInSplitIncognitoMode
-#else
-#define MAYBE_CaptureInSplitIncognitoMode CaptureInSplitIncognitoMode
-#endif
 // Tests that a tab in incognito mode can be captured.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, CaptureInSplitIncognitoMode) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "start_tab_capture.html",
                                   kFlagEnableIncognito, kFlagUseIncognito))
       << message_;
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_Constraints DISABLED_Constraints
-#else
-#define MAYBE_Constraints Constraints
-#endif
 // Tests that valid constraints allow tab capture to start, while invalid ones
 // do not.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, Constraints) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "constraints.html"))
       << message_;
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_TabIndicator DISABLED_TabIndicator
-#else
-#define MAYBE_TabIndicator TabIndicator
-#endif
 // Tests that the tab indicator (in the tab strip) is shown during tab capture.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, TabIndicator) {
   content::WebContents* const contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_THAT(chrome::GetTabAlertStatesForContents(contents),

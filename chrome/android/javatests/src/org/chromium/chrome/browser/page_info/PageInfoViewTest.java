@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -93,9 +94,9 @@ public class PageInfoViewTest {
 
     private void addSomePermissions(String url) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            WebsitePreferenceBridge.setContentSettingForPattern(
+            WebsitePreferenceBridge.setContentSettingForPattern(Profile.getLastUsedRegularProfile(),
                     ContentSettingsType.GEOLOCATION, url, "*", ContentSettingValues.ALLOW);
-            WebsitePreferenceBridge.setContentSettingForPattern(
+            WebsitePreferenceBridge.setContentSettingForPattern(Profile.getLastUsedRegularProfile(),
                     ContentSettingsType.NOTIFICATIONS, url, "*", ContentSettingValues.ALLOW);
         });
     }

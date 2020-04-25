@@ -21,6 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareClickResult;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -107,7 +108,8 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
         chromeSettingsButton.setVisibility(View.VISIBLE);
         chromeSettingsButton.setOnClickListener(view -> {
             RecordUserAction.record("SharingHubAndroid.SendTabToSelf.ChromeSettingsClicked");
-            SettingsLauncher.getInstance().launchSettingsPage(ContextUtils.getApplicationContext());
+            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            settingsLauncher.launchSettingsActivity(ContextUtils.getApplicationContext());
         });
     }
 

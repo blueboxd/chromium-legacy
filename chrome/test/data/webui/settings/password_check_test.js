@@ -14,6 +14,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.js';
 import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
   const PasswordCheckState = chrome.passwordsPrivate.PasswordCheckState;
@@ -204,7 +205,7 @@ import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_man
               /*state=*/ PasswordCheckState.QUOTA_LIMIT);
 
       const section = createCheckPasswordSection();
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'sync-prefs-changed', getSyncAllPrefs());
       simulateSyncStatus({signedIn: true});
 
@@ -223,7 +224,7 @@ import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_man
               PasswordCheckState.QUOTA_LIMIT);
 
       const section = createCheckPasswordSection();
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'sync-prefs-changed', getSyncAllPrefs());
       simulateSyncStatus({signedIn: false});
 
@@ -244,7 +245,7 @@ import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_man
       const section = createCheckPasswordSection();
       const syncPrefs = getSyncAllPrefs();
       syncPrefs.encryptAllData = true;
-      cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      webUIListenerCallback('sync-prefs-changed', syncPrefs);
       simulateSyncStatus({signedIn: true});
 
       await passwordManager.whenCalled('getPasswordCheckStatus');
@@ -282,14 +283,14 @@ import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_man
           makePasswordCheckStatus(
               /*state=*/ PasswordCheckState.SIGNED_OUT);
       const section = createCheckPasswordSection();
-      cr.webUIListenerCallback('stored-accounts-updated', []);
+      webUIListenerCallback('stored-accounts-updated', []);
       if (isChromeOS) {
         simulateSyncStatus({signedIn: false});
       }
       await passwordManager.whenCalled('getPasswordCheckStatus');
       flush();
       expectFalse(isElementVisible(section.$.controlPasswordCheckButton));
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'stored-accounts-updated', [{email: 'foo@bar.com'}]);
       if (isChromeOS) {
         simulateSyncStatus({signedIn: true, hasError: false});
@@ -352,7 +353,7 @@ import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_man
 
       const section = createCheckPasswordSection();
       assertFalse(isElementVisible(section.$.noCompromisedCredentials));
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'sync-prefs-changed', getSyncAllPrefs());
       simulateSyncStatus({signedIn: true});
 

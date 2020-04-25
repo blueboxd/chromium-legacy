@@ -62,7 +62,8 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         setDivider(null);
         int contentSettingsType = getArguments().getInt(EXTRA_CATEGORY);
-        mCategory = SiteSettingsCategory.createFromContentSettingsType(contentSettingsType);
+        mCategory = SiteSettingsCategory.createFromContentSettingsType(
+                getSiteSettingsClient().getBrowserContextHandle(), contentSettingsType);
         mObjectInfos =
                 (ArrayList<ChosenObjectInfo>) getArguments().getSerializable(EXTRA_OBJECT_INFOS);
         checkObjectConsistency();
@@ -155,7 +156,7 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
             if (info.isManaged()) {
                 hasManagedObject = true;
             } else {
-                info.revoke();
+                info.revoke(getSiteSettingsClient().getBrowserContextHandle());
             }
         }
 
@@ -214,7 +215,8 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
      * resetList() is called to refresh the view when the data is ready.
      */
     private void getInfo() {
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
+        WebsitePermissionsFetcher fetcher =
+                new WebsitePermissionsFetcher(getSiteSettingsClient().getBrowserContextHandle());
         fetcher.fetchPreferencesForCategory(mCategory, new ResultsPopulator());
     }
 
@@ -277,7 +279,7 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
             preference.setFragment(SingleWebsiteSettings.class.getCanonicalName());
             preference.setImageView(R.drawable.ic_delete_white_24dp,
                     R.string.website_settings_revoke_device_permission, (View view) -> {
-                        info.revoke();
+                        info.revoke(getSiteSettingsClient().getBrowserContextHandle());
                         getInfo();
                     });
 

@@ -722,7 +722,9 @@ void V8EmbedderGraphBuilder::VisitPendingActivities() {
           new EmbedderRootNode("Pending activities"))));
   EnsureRootState(root);
   ParentScope parent(this, root);
-  ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate_, this);
+  V8PerIsolateData::From(isolate_)
+      ->GetActiveScriptWrappableManager()
+      ->IterateActiveScriptWrappables(this);
 }
 
 void V8EmbedderGraphBuilder::VisitBlinkRoots() {

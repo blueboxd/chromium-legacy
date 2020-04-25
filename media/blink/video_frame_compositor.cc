@@ -58,7 +58,7 @@ void VideoFrameCompositor::SetIsSurfaceVisible(bool is_visible) {
 
 void VideoFrameCompositor::InitializeSubmitter() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  submitter_->Initialize(this);
+  submitter_->Initialize(this, /* is_media_stream = */ false);
 }
 
 VideoFrameCompositor::~VideoFrameCompositor() {

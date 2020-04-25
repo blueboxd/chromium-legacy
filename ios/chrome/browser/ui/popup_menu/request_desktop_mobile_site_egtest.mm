@@ -138,6 +138,46 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
   [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
 }
 
+// Tests that requesting desktop site of a page works and the requested user
+// agent is kept when restoring the session.
+- (void)testRequestDesktopSiteKeptSessionRestoration {
+  std::unique_ptr<web::DataResponseProvider> provider(
+      new UserAgentResponseProvider());
+  web::test::SetUpHttpServer(std::move(provider));
+
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
+  // Verify initial reception of the mobile site.
+  [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+
+  // Request and verify reception of the desktop site.
+  [ChromeEarlGreyUI openToolsMenu];
+  [RequestDesktopButton() performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel
+                                        timeout:kWaitForUserAgentChangeTimeout];
+
+  // Close all tabs and undo, trigerring a restoration.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      performAction:grey_tap()];
+
+  // Verify that desktop user agent propagates.
+  if (@available(iOS 13, *)) {
+    [ChromeEarlGreyUI openToolsMenu];
+    [RequestMobileButton() assertWithMatcher:grey_notNil()];
+    [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
+  } else {
+    [ChromeEarlGreyUI openToolsMenu];
+    [RequestDesktopButton() assertWithMatcher:grey_notNil()];
+    [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+  }
+}
+
 // Tests that requesting desktop site of a page works and desktop user agent
 // does not propagate to next the new tab.
 - (void)testRequestDesktopSiteDoesNotPropagateToNewTab {

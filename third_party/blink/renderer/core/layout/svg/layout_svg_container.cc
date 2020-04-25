@@ -49,7 +49,11 @@ void LayoutSVGContainer::UpdateLayout() {
   LayoutAnalyzer::Scope analyzer(*this);
 
   // Update the local transform in subclasses.
-  SVGTransformChange transform_change = CalculateLocalTransform();
+  // At this point our bounding box may be incorrect, so any box relative
+  // transforms will be incorrect. Since descendants only require the scaling
+  // components to be correct, this should be fine. We update the transform
+  // again, if needed, after computing the bounding box below.
+  SVGTransformChange transform_change = CalculateLocalTransform(false);
   did_screen_scale_factor_change_ =
       transform_change == SVGTransformChange::kFull ||
       SVGLayoutSupport::ScreenScaleFactorChanged(Parent());
@@ -71,6 +75,7 @@ void LayoutSVGContainer::UpdateLayout() {
   if (needs_boundaries_update_ ||
       transform_change != SVGTransformChange::kNone) {
     UpdateCachedBoundaries();
+    CalculateLocalTransform(needs_boundaries_update_);
     needs_boundaries_update_ = false;
 
     // If our bounds changed, notify the parents.
@@ -212,7 +217,8 @@ bool LayoutSVGContainer::NodeAtPoint(HitTestResult& result,
   return false;
 }
 
-SVGTransformChange LayoutSVGContainer::CalculateLocalTransform() {
+SVGTransformChange LayoutSVGContainer::CalculateLocalTransform(
+    bool bounds_changed) {
   return SVGTransformChange::kNone;
 }
 

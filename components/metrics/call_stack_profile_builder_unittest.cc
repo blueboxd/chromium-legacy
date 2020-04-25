@@ -543,7 +543,7 @@ TEST(CallStackProfileBuilderTest, ApplyMetadataRetrospectively_Basic) {
   profile_builder->ApplyMetadataRetrospectively(
       profile_start_time + sample_time_delta,
       profile_start_time + sample_time_delta * 2,
-      CallStackProfileBuilder::MetadataItem(3, 30, 300));
+      base::MetadataRecorder::Item(3, 30, 300));
 
   profile_builder->OnProfileCompleted(3 * sample_time_delta, sample_time_delta);
 
@@ -607,7 +607,7 @@ TEST(CallStackProfileBuilderTest,
   profile_builder->ApplyMetadataRetrospectively(
       profile_start_time - base::TimeDelta::FromMicroseconds(1),
       profile_start_time + sample_time_delta,
-      CallStackProfileBuilder::MetadataItem(3, 30, 300));
+      base::MetadataRecorder::Item(3, 30, 300));
 
   profile_builder->OnProfileCompleted(3 * sample_time_delta, sample_time_delta);
 

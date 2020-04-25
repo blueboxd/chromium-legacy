@@ -17,8 +17,10 @@ int GetMessageIdForTransportOnTransportSelectionSheet(
     AuthenticatorTransport transport) {
   switch (transport) {
     case AuthenticatorTransport::kBluetoothLowEnergy:
-      return IDS_WEBAUTHN_TRANSPORT_BLE;
+      NOTREACHED();
+      return 0;
     case AuthenticatorTransport::kNearFieldCommunication:
+      NOTREACHED();
       return IDS_WEBAUTHN_TRANSPORT_NFC;
     case AuthenticatorTransport::kUsbHumanInterfaceDevice:
       return IDS_WEBAUTHN_TRANSPORT_USB;
@@ -35,8 +37,10 @@ int GetMessageIdForTransportOnOtherTransportsPopup(
     AuthenticatorTransport transport) {
   switch (transport) {
     case AuthenticatorTransport::kBluetoothLowEnergy:
-      return IDS_WEBAUTHN_TRANSPORT_POPUP_BLE;
+      NOTREACHED();
+      return 0;
     case AuthenticatorTransport::kNearFieldCommunication:
+      NOTREACHED();
       return IDS_WEBAUTHN_TRANSPORT_POPUP_NFC;
     case AuthenticatorTransport::kUsbHumanInterfaceDevice:
       return IDS_WEBAUTHN_TRANSPORT_POPUP_USB;
@@ -66,8 +70,10 @@ const gfx::VectorIcon* GetTransportVectorIcon(
     AuthenticatorTransport transport) {
   switch (transport) {
     case AuthenticatorTransport::kBluetoothLowEnergy:
-      return &vector_icons::kBluetoothIcon;
+      NOTREACHED();
+      return &kFingerprintIcon;
     case AuthenticatorTransport::kNearFieldCommunication:
+      NOTREACHED();
       return &kNfcIcon;
     case AuthenticatorTransport::kUsbHumanInterfaceDevice:
       return &vector_icons::kUsbIcon;

@@ -8,6 +8,20 @@
 
 namespace base {
 
+const size_t MetadataRecorder::MAX_METADATA_COUNT;
+
+MetadataRecorder::Item::Item(uint64_t name_hash,
+                             Optional<int64_t> key,
+                             int64_t value)
+    : name_hash(name_hash), key(key), value(value) {}
+
+MetadataRecorder::Item::Item() : name_hash(0), value(0) {}
+
+MetadataRecorder::Item::Item(const Item& other) = default;
+
+MetadataRecorder::Item& MetadataRecorder::Item::Item::operator=(
+    const Item& other) = default;
+
 MetadataRecorder::ItemInternal::ItemInternal() = default;
 
 MetadataRecorder::ItemInternal::~ItemInternal() = default;
@@ -90,30 +104,29 @@ void MetadataRecorder::Remove(uint64_t name_hash, Optional<int64_t> key) {
   }
 }
 
-MetadataRecorder::ScopedGetItems::ScopedGetItems(
+MetadataRecorder::MetadataProvider::MetadataProvider(
     MetadataRecorder* metadata_recorder)
     : metadata_recorder_(metadata_recorder),
       auto_lock_(&metadata_recorder->read_lock_) {}
 
-MetadataRecorder::ScopedGetItems::~ScopedGetItems() {}
+MetadataRecorder::MetadataProvider::~MetadataProvider() = default;
 
 // This function is marked as NO_THREAD_SAFETY_ANALYSIS because the analyzer
 // doesn't understand that the lock is acquired in the constructor initializer
 // list and can therefore be safely released here.
-size_t MetadataRecorder::ScopedGetItems::GetItems(
-    ProfileBuilder::MetadataItemArray* const items) NO_THREAD_SAFETY_ANALYSIS {
+size_t MetadataRecorder::MetadataProvider::GetItems(ItemArray* items)
+    NO_THREAD_SAFETY_ANALYSIS {
   size_t item_count = metadata_recorder_->GetItems(items);
   auto_lock_.Release();
   return item_count;
 }
 
-std::unique_ptr<ProfileBuilder::MetadataProvider>
+std::unique_ptr<MetadataRecorder::MetadataProvider>
 MetadataRecorder::CreateMetadataProvider() {
-  return std::make_unique<MetadataRecorder::ScopedGetItems>(this);
+  return std::make_unique<MetadataRecorder::MetadataProvider>(this);
 }
 
-size_t MetadataRecorder::GetItems(
-    ProfileBuilder::MetadataItemArray* const items) const {
+size_t MetadataRecorder::GetItems(ItemArray* const items) const {
   read_lock_.AssertAcquired();
 
   // If a writer adds a new item after this load, it will be ignored.  We do
@@ -134,7 +147,7 @@ size_t MetadataRecorder::GetItems(
     // Because we wait until |is_active| is set to consider an item active and
     // that field is always set last, we ignore half-created items.
     if (item.is_active.load(std::memory_order_acquire)) {
-      (*items)[write_index++] = ProfileBuilder::MetadataItem{
+      (*items)[write_index++] = Item{
           item.name_hash, item.key, item.value.load(std::memory_order_relaxed)};
     }
   }
@@ -143,8 +156,7 @@ size_t MetadataRecorder::GetItems(
 }
 
 size_t MetadataRecorder::TryReclaimInactiveSlots(size_t item_slots_used) {
-  const size_t remaining_slots =
-      ProfileBuilder::MAX_METADATA_COUNT - item_slots_used;
+  const size_t remaining_slots = MAX_METADATA_COUNT - item_slots_used;
 
   if (inactive_item_count_ == 0 || inactive_item_count_ < remaining_slots) {
     // This reclaiming threshold has a few nice properties:

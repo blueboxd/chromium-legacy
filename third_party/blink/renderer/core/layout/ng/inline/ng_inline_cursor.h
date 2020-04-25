@@ -182,8 +182,8 @@ class CORE_EXPORT NGInlineCursor {
   explicit NGInlineCursor(const NGFragmentItems& fragment_items,
                           ItemsSpan items);
   explicit NGInlineCursor(const NGPaintFragment& root_paint_fragment);
+  explicit NGInlineCursor(const NGInlineBackwardCursor& backward_cursor);
   NGInlineCursor(const NGInlineCursor& other) = default;
-  NGInlineCursor(const NGInlineBackwardCursor& backward_cursor);
 
   // Creates an |NGInlineCursor| without the root. Even when callers don't know
   // the root of the inline formatting context, this cursor can |MoveTo()|
@@ -463,7 +463,7 @@ class CORE_EXPORT NGInlineBackwardCursor {
  public:
   // |cursor| should be the first child of root or descendants, e.g. the first
   // item in |NGInlineCursor::items_|.
-  NGInlineBackwardCursor(const NGInlineCursor& cursor);
+  explicit NGInlineBackwardCursor(const NGInlineCursor& cursor);
 
   const NGInlineCursorPosition& Current() const { return current_; }
   operator bool() const { return Current(); }

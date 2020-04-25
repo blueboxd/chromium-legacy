@@ -30,7 +30,9 @@ namespace blink {
 
 LayoutSVGTransformableContainer::LayoutSVGTransformableContainer(
     SVGGraphicsElement* node)
-    : LayoutSVGContainer(node), needs_transform_update_(true) {}
+    : LayoutSVGContainer(node),
+      needs_transform_update_(true),
+      transform_uses_reference_box_(false) {}
 
 static bool HasValidPredecessor(const Node* node) {
   DCHECK(node);
@@ -85,7 +87,8 @@ bool LayoutSVGTransformableContainer::IsUseElement() const {
   return false;
 }
 
-SVGTransformChange LayoutSVGTransformableContainer::CalculateLocalTransform() {
+SVGTransformChange LayoutSVGTransformableContainer::CalculateLocalTransform(
+    bool bounds_changed) {
   SVGElement* element = GetElement();
   DCHECK(element);
 
@@ -105,6 +108,11 @@ SVGTransformChange LayoutSVGTransformableContainer::CalculateLocalTransform() {
     additional_translation_ = translation;
   }
 
+  if (!needs_transform_update_ && transform_uses_reference_box_) {
+    if (CheckForImplicitTransformChange(bounds_changed))
+      SetNeedsTransformUpdate();
+  }
+
   if (!needs_transform_update_)
     return SVGTransformChange::kNone;
 
@@ -115,6 +123,14 @@ SVGTransformChange LayoutSVGTransformableContainer::CalculateLocalTransform() {
                              additional_translation_.Height());
   needs_transform_update_ = false;
   return change_detector.ComputeChange(local_transform_);
+}
+
+void LayoutSVGTransformableContainer::StyleDidChange(
+    StyleDifference diff,
+    const ComputedStyle* old_style) {
+  transform_uses_reference_box_ =
+      TransformHelper::DependsOnReferenceBox(StyleRef());
+  LayoutSVGContainer::StyleDidChange(diff, old_style);
 }
 
 }  // namespace blink

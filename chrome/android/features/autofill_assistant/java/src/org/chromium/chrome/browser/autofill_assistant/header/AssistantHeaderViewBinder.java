@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipViewHolder;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
@@ -143,7 +144,8 @@ class AssistantHeaderViewBinder
         view.mProfileIconMenu.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.settings) {
-                SettingsLauncher.getInstance().launchSettingsPage(
+                SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+                settingsLauncher.launchSettingsActivity(
                         view.mHeader.getContext(), SyncAndServicesSettings.class);
                 return true;
             } else if (itemId == R.id.send_feedback) {

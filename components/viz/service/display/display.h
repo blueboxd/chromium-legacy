@@ -163,7 +163,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   // FrameRateDecider::Client implementation
   void SetPreferredFrameInterval(base::TimeDelta interval) override;
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const FrameSinkId& id) override;
+      const FrameSinkId& id,
+      mojom::CompositorFrameSinkType* type) override;
 
   bool has_scheduler() const { return !!scheduler_; }
   DirectRenderer* renderer_for_testing() const { return renderer_.get(); }

@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
@@ -260,6 +261,16 @@ void OptimizationGuideKeyedService::CanApplyOptimizationAsync(
 
   hints_manager_->CanApplyOptimizationAsync(
       navigation_handle->GetURL(), optimization_type, std::move(callback));
+}
+
+void OptimizationGuideKeyedService::AddHintForTesting(
+    const GURL& url,
+    optimization_guide::proto::OptimizationType optimization_type,
+    const base::Optional<optimization_guide::OptimizationMetadata>& metadata) {
+  if (!hints_manager_)
+    return;
+
+  hints_manager_->AddHintForTesting(url, optimization_type, metadata);
 }
 
 void OptimizationGuideKeyedService::ClearData() {

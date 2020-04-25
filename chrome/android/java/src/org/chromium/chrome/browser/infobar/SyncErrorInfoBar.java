@@ -20,6 +20,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
@@ -93,7 +94,8 @@ public class SyncErrorInfoBar
         ProfileSyncService.get().removeSyncStateChangedListener(this);
         recordHistogram(mType, SyncErrorInfoBarAction.OPEN_SETTINGS_CLICKED);
 
-        SettingsLauncher.getInstance().launchSettingsPage(getApplicationContext(),
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(getApplicationContext(),
                 SyncAndServicesSettings.class, SyncAndServicesSettings.createArguments(false));
     }
 

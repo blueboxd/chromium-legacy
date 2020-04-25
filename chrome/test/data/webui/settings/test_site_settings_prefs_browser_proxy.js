@@ -7,6 +7,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {ContentSetting,SiteSettingSource} from 'chrome://settings/lazy_load.js';
 import {createSiteGroup,createSiteSettingsPrefs, getContentSettingsTypeFromChooserType} from 'chrome://test/settings/test_util.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /**
@@ -93,7 +94,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
    */
   setIncognito(hasIncognito) {
     this.hasIncognito_ = hasIncognito;
-    cr.webUIListenerCallback('onIncognitoStatusChanged', hasIncognito);
+    webUIListenerCallback('onIncognitoStatusChanged', hasIncognito);
   }
 
   /**
@@ -105,12 +106,12 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
     // Notify all listeners that their data may be out of date.
     for (const type in prefs.defaults) {
-      cr.webUIListenerCallback('contentSettingCategoryChanged', type);
+      webUIListenerCallback('contentSettingCategoryChanged', type);
     }
     for (const type in this.prefs_.exceptions) {
       const exceptionList = this.prefs_.exceptions[type];
       for (let i = 0; i < exceptionList.length; ++i) {
-        cr.webUIListenerCallback(
+        webUIListenerCallback(
             'contentSettingSitePermissionChanged', type,
             exceptionList[i].origin, '');
       }
@@ -118,7 +119,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     for (const type in this.prefs_.chooserExceptions) {
       const chooserExceptionList = this.prefs_.chooserExceptions[type];
       for (let i = 0; i < chooserExceptionList.length; ++i) {
-        cr.webUIListenerCallback(
+        webUIListenerCallback(
             'contentSettingChooserPermissionChanged', type);
       }
     }
@@ -142,7 +143,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     newPrefs.push(newException);
     this.prefs_.exceptions[category] = newPrefs;
 
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'contentSettingSitePermissionChanged', category, newException.origin);
   }
 
@@ -433,7 +434,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   fetchZoomLevels() {
-    cr.webUIListenerCallback('onZoomLevelsChanged', this.zoomList_);
+    webUIListenerCallback('onZoomLevelsChanged', this.zoomList_);
     this.methodCalled('fetchZoomLevels');
   }
 
@@ -444,16 +445,16 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   observeProtocolHandlers() {
-    cr.webUIListenerCallback('setHandlersEnabled', true);
-    cr.webUIListenerCallback('setProtocolHandlers', this.protocolHandlers_);
-    cr.webUIListenerCallback(
+    webUIListenerCallback('setHandlersEnabled', true);
+    webUIListenerCallback('setProtocolHandlers', this.protocolHandlers_);
+    webUIListenerCallback(
         'setIgnoredProtocolHandlers', this.ignoredProtocols_);
     this.methodCalled('observeProtocolHandlers');
   }
 
   /** @override */
   observeProtocolHandlersEnabledState() {
-    cr.webUIListenerCallback('setHandlersEnabled', true);
+    webUIListenerCallback('setHandlersEnabled', true);
     this.methodCalled('observeProtocolHandlersEnabledState');
   }
 

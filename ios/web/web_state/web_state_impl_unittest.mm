@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
+#include "base/test/gmock_callback_support.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_context_impl.h"
@@ -26,6 +27,7 @@
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
+#import "ios/web/public/test/fakes/async_web_state_policy_decider.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -57,6 +59,7 @@ using testing::Assign;
 using testing::AtMost;
 using testing::DoAll;
 using testing::Return;
+using base::test::RunOnceCallback;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
 
@@ -120,8 +123,12 @@ class MockWebStatePolicyDecider : public WebStatePolicyDecider {
                WebStatePolicyDecider::PolicyDecision(
                    NSURLRequest* request,
                    const WebStatePolicyDecider::RequestInfo& request_info));
-  MOCK_METHOD2(ShouldAllowResponse,
-               bool(NSURLResponse* response, bool for_main_frame));
+  MOCK_METHOD3(
+      ShouldAllowResponse,
+      void(NSURLResponse* response,
+           bool for_main_frame,
+           base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)>
+               callback));
   MOCK_METHOD0(WebStateDestroyed, void());
 };
 
@@ -677,27 +684,37 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
   }
 
   // Test that ShouldAllowResponse() is called.
-  EXPECT_CALL(decider, ShouldAllowResponse(response, true))
+  EXPECT_CALL(decider, ShouldAllowResponse(response, true, _))
       .Times(1)
-      .WillOnce(Return(true));
-  EXPECT_CALL(decider2, ShouldAllowResponse(response, true))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(decider2, ShouldAllowResponse(response, true, _))
       .Times(1)
-      .WillOnce(Return(true));
-  EXPECT_TRUE(web_state_->ShouldAllowResponse(response, true));
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
 
-  // Test that ShouldAllowResponse() is stopping on negative answer. Only one
-  // of the deciders should be called.
+  policy_decision = WebStatePolicyDecider::PolicyDecision::Cancel();
+  auto callback = base::Bind(
+      [](WebStatePolicyDecider::PolicyDecision* policy_decision,
+         WebStatePolicyDecider::PolicyDecision result) {
+        *policy_decision = result;
+      },
+      base::Unretained(&policy_decision));
+  web_state_->ShouldAllowResponse(response, true, callback);
+  EXPECT_TRUE(policy_decision.ShouldAllowNavigation());
+  EXPECT_FALSE(policy_decision.ShouldCancelNavigation());
+
+  // Test that ShouldAllowResponse() is stopping on negative answer. Only the
+  // first decider should be called.
   {
-    bool decider_called = false;
-    bool decider2_called = false;
-    EXPECT_CALL(decider, ShouldAllowResponse(response, false))
-        .Times(AtMost(1))
-        .WillOnce(DoAll(Assign(&decider_called, true), Return(false)));
-    EXPECT_CALL(decider2, ShouldAllowResponse(response, false))
-        .Times(AtMost(1))
-        .WillOnce(DoAll(Assign(&decider2_called, true), Return(false)));
-    EXPECT_FALSE(web_state_->ShouldAllowResponse(response, false));
-    EXPECT_FALSE(decider_called && decider2_called);
+    EXPECT_CALL(decider, ShouldAllowResponse(response, false, _))
+        .Times(1)
+        .WillOnce(RunOnceCallback<2>(
+            WebStatePolicyDecider::PolicyDecision::Cancel()));
+
+    web_state_->ShouldAllowResponse(response, false, std::move(callback));
+    EXPECT_FALSE(policy_decision.ShouldAllowNavigation());
+    EXPECT_TRUE(policy_decision.ShouldCancelNavigation());
   }
 
   // Test that WebStateDestroyed() is called.
@@ -705,6 +722,88 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
   EXPECT_CALL(decider2, WebStateDestroyed()).Times(1);
   web_state_.reset();
   EXPECT_EQ(nullptr, decider.web_state());
+}
+
+// Verifies that asynchronous decisions for
+// WebStatePolicyDecider::ShouldAllowResponse are correctly handled by
+// WebStateImpl::ShouldAllowResponse.
+TEST_F(WebStateImplTest, AsyncShouldAllowResponseTest) {
+  MockWebStatePolicyDecider sync_decider(web_state_.get());
+  AsyncWebStatePolicyDecider async_decider1(web_state_.get());
+  AsyncWebStatePolicyDecider async_decider2(web_state_.get());
+
+  NSURL* url = [NSURL URLWithString:@"http://example.com"];
+  NSURLResponse* response = [[NSURLResponse alloc] initWithURL:url
+                                                      MIMEType:@"text/html"
+                                         expectedContentLength:0
+                                              textEncodingName:nil];
+
+  __block WebStatePolicyDecider::PolicyDecision policy_decision =
+      WebStatePolicyDecider::PolicyDecision::Allow();
+  __block bool callback_called = false;
+
+  base::RepeatingCallback<void(WebStatePolicyDecider::PolicyDecision)>
+      callback = base::Bind(^(WebStatePolicyDecider::PolicyDecision result) {
+        policy_decision = result;
+        callback_called = true;
+      });
+
+  // Case 1: All deciders allow the navigation.
+  EXPECT_CALL(sync_decider, ShouldAllowResponse(response, true, _))
+      .Times(1)
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
+  web_state_->ShouldAllowResponse(response, /*for_main_frame=*/true, callback);
+  EXPECT_FALSE(callback_called);
+  async_decider1.InvokeCallback(WebStatePolicyDecider::PolicyDecision::Allow());
+  EXPECT_FALSE(callback_called);
+  async_decider2.InvokeCallback(WebStatePolicyDecider::PolicyDecision::Allow());
+  EXPECT_TRUE(callback_called);
+  EXPECT_TRUE(policy_decision.ShouldAllowNavigation());
+
+  // Case 2: One decider allows the navigation, one decider wants to show an
+  // error, and another decider wants to cancel the navigation. In this case,
+  // the navigation should be cancelled, with no error shown.
+  EXPECT_CALL(sync_decider, ShouldAllowResponse(response, true, _))
+      .Times(1)
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
+  callback_called = false;
+  web_state_->ShouldAllowResponse(response, /*for_main_frame=*/true, callback);
+  EXPECT_FALSE(callback_called);
+  NSError* error1 = [NSError errorWithDomain:@"ErrorDomain"
+                                        code:1
+                                    userInfo:nil];
+  async_decider2.InvokeCallback(
+      WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(error1));
+  EXPECT_FALSE(callback_called);
+  async_decider1.InvokeCallback(
+      WebStatePolicyDecider::PolicyDecision::Cancel());
+  EXPECT_TRUE(callback_called);
+  EXPECT_TRUE(policy_decision.ShouldCancelNavigation());
+  EXPECT_FALSE(policy_decision.ShouldDisplayError());
+
+  // Case 3: Two deciders want to show an error. In this case, the error to be
+  // shown should be from the decider that responded first.
+  EXPECT_CALL(sync_decider, ShouldAllowResponse(response, true, _))
+      .Times(1)
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
+  callback_called = false;
+  web_state_->ShouldAllowResponse(response, /*for_main_frame=*/true, callback);
+  EXPECT_FALSE(callback_called);
+  NSError* error2 = [NSError errorWithDomain:@"ErrorDomain"
+                                        code:2
+                                    userInfo:nil];
+  async_decider1.InvokeCallback(
+      WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(error2));
+  EXPECT_FALSE(callback_called);
+  async_decider2.InvokeCallback(
+      WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(error1));
+  EXPECT_TRUE(callback_called);
+  EXPECT_TRUE(policy_decision.ShouldCancelNavigation());
+  EXPECT_TRUE(policy_decision.ShouldDisplayError());
+  EXPECT_EQ(policy_decision.GetDisplayError().code, error2.code);
 }
 
 // Tests that script command callbacks are called correctly.

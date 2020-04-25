@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
@@ -17,9 +18,8 @@ namespace blink {
 
 TEST(AudioNodeInputTest, InputDestroyedBeforeOutput) {
   auto page = std::make_unique<DummyPageHolder>();
-  OfflineAudioContext* context =
-      OfflineAudioContext::Create(page->GetDocument().ToExecutionContext(), 2,
-                                  1, 48000, ASSERT_NO_EXCEPTION);
+  OfflineAudioContext* context = OfflineAudioContext::Create(
+      page->GetFrame().DomWindow(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
   DelayNode* node1 = context->createDelay(ASSERT_NO_EXCEPTION);
   auto& handler1 = node1->Handler();
   DelayNode* node2 = context->createDelay(ASSERT_NO_EXCEPTION);
@@ -42,9 +42,8 @@ TEST(AudioNodeInputTest, InputDestroyedBeforeOutput) {
 
 TEST(AudioNodeInputTest, OutputDestroyedBeforeInput) {
   auto page = std::make_unique<DummyPageHolder>();
-  OfflineAudioContext* context =
-      OfflineAudioContext::Create(page->GetDocument().ToExecutionContext(), 2,
-                                  1, 48000, ASSERT_NO_EXCEPTION);
+  OfflineAudioContext* context = OfflineAudioContext::Create(
+      page->GetFrame().DomWindow(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
   DelayNode* node1 = context->createDelay(ASSERT_NO_EXCEPTION);
   auto& handler1 = node1->Handler();
   DelayNode* node2 = context->createDelay(ASSERT_NO_EXCEPTION);

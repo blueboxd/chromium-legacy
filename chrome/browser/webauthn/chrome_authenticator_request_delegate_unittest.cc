@@ -38,45 +38,6 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, TestTransportPrefType) {
   EXPECT_EQ(device::FidoTransportProtocol::kInternal, transport);
 }
 
-TEST_F(ChromeAuthenticatorRequestDelegateTest,
-       TestPairedDeviceAddressPreference) {
-  static constexpr char kTestPairedDeviceAddress[] = "paired_device_address";
-  static constexpr char kTestPairedDeviceAddress2[] = "paired_device_address2";
-
-  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
-
-  auto* const address_list = delegate.GetPreviouslyPairedFidoBleDeviceIds();
-  ASSERT_TRUE(address_list);
-  EXPECT_TRUE(address_list->empty());
-
-  delegate.AddFidoBleDeviceToPairedList(kTestPairedDeviceAddress);
-  const auto* updated_address_list =
-      delegate.GetPreviouslyPairedFidoBleDeviceIds();
-  ASSERT_TRUE(updated_address_list);
-  ASSERT_EQ(1u, updated_address_list->GetSize());
-
-  const auto& address_value = updated_address_list->GetList()[0];
-  ASSERT_TRUE(address_value.is_string());
-  EXPECT_EQ(kTestPairedDeviceAddress, address_value.GetString());
-
-  delegate.AddFidoBleDeviceToPairedList(kTestPairedDeviceAddress);
-  const auto* address_list_with_duplicate_address_added =
-      delegate.GetPreviouslyPairedFidoBleDeviceIds();
-  ASSERT_TRUE(address_list_with_duplicate_address_added);
-  EXPECT_EQ(1u, address_list_with_duplicate_address_added->GetSize());
-
-  delegate.AddFidoBleDeviceToPairedList(kTestPairedDeviceAddress2);
-  const auto* address_list_with_two_addresses =
-      delegate.GetPreviouslyPairedFidoBleDeviceIds();
-  ASSERT_TRUE(address_list_with_two_addresses);
-
-  ASSERT_EQ(2u, address_list_with_two_addresses->GetSize());
-  const auto& second_address_value =
-      address_list_with_two_addresses->GetList()[1];
-  ASSERT_TRUE(second_address_value.is_string());
-  EXPECT_EQ(kTestPairedDeviceAddress2, second_address_value.GetString());
-}
-
 #if defined(OS_MACOSX)
 API_AVAILABLE(macos(10.12.2))
 std::string TouchIdMetadataSecret(

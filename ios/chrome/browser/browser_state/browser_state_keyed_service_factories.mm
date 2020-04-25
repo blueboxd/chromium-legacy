@@ -36,6 +36,8 @@
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/policy/policy_features.h"
+#include "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
@@ -128,4 +130,8 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   TranslateAcceptLanguagesFactory::GetInstance();
   UnifiedConsentServiceFactory::GetInstance();
   UrlLanguageHistogramFactory::GetInstance();
+
+  if (IsURLBlocklistEnabled()) {
+    PolicyBlocklistServiceFactory::GetInstance();
+  }
 }

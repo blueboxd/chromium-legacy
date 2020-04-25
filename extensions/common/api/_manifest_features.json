@@ -56,7 +56,7 @@
     "min_manifest_version": 2
   },
   "background.service_worker": {
-    "channel": "canary",
+    "channel": "dev",
     "extension_types": ["extension"],
     "min_manifest_version": 2
   },

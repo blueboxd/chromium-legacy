@@ -37,9 +37,6 @@ class OtherTransportsMenuModel
   void PopulateWithTransportsExceptFor(
       AuthenticatorTransport current_transport);
 
-  // Appends the item representing using BLE with a not-yet-paired security key.
-  void AppendItemForAnotherBluetoothKey();
-
 #if defined(OS_WIN)
   void AppendItemForNativeWinApi();
 #endif

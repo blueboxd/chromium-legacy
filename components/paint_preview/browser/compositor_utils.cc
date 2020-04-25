@@ -41,6 +41,7 @@ CreateCompositorCollection() {
 
 void CreateCompositorCollectionPending(
     mojo::PendingReceiver<mojom::PaintPreviewCompositorCollection> collection) {
+  // TODO(crbug/1074323): Investigate using a different SandboxType.
   content::ServiceProcessHost::Launch<mojom::PaintPreviewCompositorCollection>(
       std::move(collection),
       content::ServiceProcessHost::Options()

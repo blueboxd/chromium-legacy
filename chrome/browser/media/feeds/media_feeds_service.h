@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 
+#include "chrome/browser/media/feeds/media_feeds_fetcher.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -55,6 +56,13 @@ class MediaFeedsService : public KeyedService {
   // Stores a callback to be called once we have completed all inflight checks.
   void SetSafeSearchCompletionCallbackForTest(base::OnceClosure callback);
 
+  // Fetches a media feed with the given ID and URL and then store it in the
+  // feeds table in media history. Runs the given callback after storing. The
+  // fetch will be skipped if another fetch is currently ongoing.
+  void FetchMediaFeed(int64_t feed_id,
+                      const GURL& url,
+                      base::OnceClosure callback);
+
  private:
   friend class MediaFeedsServiceTest;
 
@@ -71,6 +79,16 @@ class MediaFeedsService : public KeyedService {
   void MaybeCallCompletionCallback();
 
   bool IsSafeSearchCheckingEnabled() const;
+
+  void OnFetchResponse(int64_t feed_id,
+                       base::OnceClosure callback,
+                       const schema_org::improved::mojom::EntityPtr& response,
+                       MediaFeedsFetcher::Status status);
+
+  media_history::MediaHistoryKeyedService* GetMediaHistoryService();
+
+  // Used to fetch media feeds. Null if no fetch is ongoing.
+  std::map<int64_t, std::unique_ptr<MediaFeedsFetcher>> fetchers_;
 
   struct InflightSafeSearchCheck {
     explicit InflightSafeSearchCheck(const std::set<GURL>& urls);

@@ -1722,6 +1722,15 @@ TEST_F(FrameSequenceTrackerTest, TerminationAfterThreeSubmissions2) {
   EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
 }
 
+TEST_F(FrameSequenceTrackerTest, TerminationAfterThreeSubmissions3) {
+  GenerateSequence(
+      "b(1)s(1)e(1,0)P(1)b(2)s(2)e(2,0)P(2)b(3)s(3)e(3,0)P(3)b(4)");
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+  EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
+  GenerateSequence("s(4)");
+  EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
+}
+
 TEST_F(FrameSequenceTrackerTest, OffScreenMainDamage1) {
   const char sequence[] =
       "b(1)B(0,1)n(1)e(1,0)b(2)E(1)B(1,2)n(2)e(2,1)b(3)E(2)B(2,3)n(3)e(3,2)";

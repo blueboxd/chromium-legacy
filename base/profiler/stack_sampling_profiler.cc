@@ -525,7 +525,7 @@ void StackSamplingProfiler::SamplingThread::ApplyMetadataToPastSamplesTask(
     Optional<int64_t> key,
     int64_t value) {
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
-  ProfileBuilder::MetadataItem item(name_hash, key, value);
+  MetadataRecorder::Item item(name_hash, key, value);
   for (auto& id_collection_pair : active_collections_) {
     id_collection_pair.second->profile_builder->ApplyMetadataRetrospectively(
         period_start, period_end, item);

@@ -4,6 +4,7 @@
 
 import {CloudPrintInterface, CloudPrintInterfaceImpl, Destination, DuplexMode, NativeLayer, PluginProxy} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
 import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
@@ -110,8 +111,7 @@ suite(print_preview_app_test.suiteName, function() {
     // Send preset values of duplex LONG_EDGE and 2 copies.
     const copies = 2;
     const duplex = DuplexMode.LONG_EDGE;
-    window.cr.webUIListenerCallback(
-        'print-preset-options', true, copies, duplex);
+    webUIListenerCallback('print-preset-options', true, copies, duplex);
     assertEquals(copies, page.getSettingValue('copies'));
     assertTrue(page.getSettingValue('duplex'));
     assertFalse(page.getSetting('duplex').setFromUi);

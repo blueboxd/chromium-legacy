@@ -695,7 +695,12 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
 
   const std::vector<CreditCard*>& credit_cards =
       credit_card_access_manager_->GetCreditCards();
+
   if (profiles.empty() && credit_cards.empty())
+    return false;
+
+  if (form_structure->field_count() * (profiles.size() + credit_cards.size()) >=
+      kMaxTypeMatchingCalls)
     return false;
 
   // Copy the profile and credit card data, so that it can be accessed on a

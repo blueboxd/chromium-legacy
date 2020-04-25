@@ -228,8 +228,8 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
 
 Status NavigationTracker::DetermineUnknownLoadingState() {
   std::unique_ptr<base::Value> result;
-  Status status = web_view_->EvaluateScript(current_frame_id_,
-                                            "document.readyState", &result);
+  Status status = web_view_->EvaluateScript(
+      current_frame_id_, "document.readyState", false, &result);
   if (loading_state_ == kNotLoading) {
     // While calling EvaluateScript, some events may have arrived to indicate
     // that the page has finished loading. These events can be generated after

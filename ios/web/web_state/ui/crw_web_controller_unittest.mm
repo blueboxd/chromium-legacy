@@ -1013,9 +1013,11 @@ TEST_F(CRWWebControllerPolicyDeciderTest, ClosedWebStateInShouldAllowRequest) {
       test_fixture->DestroyWebState();
       return PolicyDecision::Allow();
     }
-    bool ShouldAllowResponse(NSURLResponse* response,
-                             bool for_main_frame) override {
-      return true;
+    void ShouldAllowResponse(
+        NSURLResponse* response,
+        bool for_main_frame,
+        base::OnceCallback<void(PolicyDecision)> callback) override {
+      std::move(callback).Run(PolicyDecision::Allow());
     }
     void WebStateDestroyed() override {}
   };

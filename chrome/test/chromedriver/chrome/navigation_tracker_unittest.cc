@@ -100,6 +100,7 @@ class EvaluateScriptWebView : public StubWebView {
 
   Status EvaluateScript(const std::string& frame,
                         const std::string& function,
+                        const bool awaitPromise,
                         std::unique_ptr<base::Value>* result) override {
     base::Value value(result_);
     result->reset(value.DeepCopy());

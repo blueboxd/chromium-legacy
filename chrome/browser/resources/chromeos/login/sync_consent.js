@@ -76,10 +76,7 @@ Polymer({
    * Reacts to changes in loadTimeData.
    */
   updateLocalizedContent() {
-    if (loadTimeData.getBoolean('splitSyncConsent')) {
-      // SplitSyncConsent version.
-      this.showScreen_('osSyncConsentDialog');
-    } else if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+    if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
       // SplitSettingsSync version.
       this.showScreen_('splitSettingsSyncConsentDialog');
     } else {
@@ -90,16 +87,13 @@ Polymer({
   },
 
   /**
-   * This is 'on-tap' event handler for 'AcceptAndContinue' button.
+   * Continue button click handler for pre-SplitSettingsSync.
    * @private
    */
   onSettingsSaveAndContinue_(e) {
     assert(e.path);
-    assert(!loadTimeData.getBoolean('splitSyncConsent'));
-    let checked = this.splitSettingsSyncEnabled_ ?
-        this.$.reviewBrowserSyncOptionsBox.checked :
-        this.$.reviewSettingsBox.checked;
-    if (checked) {
+    assert(!loadTimeData.getBoolean('splitSettingsSyncEnabled'));
+    if (this.$.reviewSettingsBox.checked) {
       chrome.send('login.SyncConsentScreen.continueAndReview', [
         this.getConsentDescription_(), this.getConsentConfirmation_(e.path)
       ]);
@@ -111,16 +105,18 @@ Polymer({
   },
 
   /**
+   * Continue button handler for SplitSettingsSync.
    * @param {!Event} event
    * @private
    */
-  onOsSyncAcceptAndContinue_(event) {
-    assert(loadTimeData.getBoolean('splitSyncConsent'));
+  onSettingsAcceptAndContinue_(event) {
+    assert(loadTimeData.getBoolean('splitSettingsSyncEnabled'));
     assert(event.path);
-    let enableOsSync = !!this.$.enableOsSyncToggle.checked;
-    chrome.send('login.SyncConsentScreen.osSyncAcceptAndContinue', [
+    const enableOsSync = !!this.$.osSyncToggle.checked;
+    const reviewBrowserSync = !!this.$.reviewBrowserSyncOptionsBox.checked;
+    chrome.send('login.SyncConsentScreen.acceptAndContinue', [
       this.getConsentDescription_(), this.getConsentConfirmation_(event.path),
-      enableOsSync
+      enableOsSync, reviewBrowserSync
     ]);
   },
 

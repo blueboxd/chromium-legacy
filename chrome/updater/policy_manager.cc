@@ -19,102 +19,103 @@ class DefaultPolicyManager : public PolicyManagerInterface {
   DefaultPolicyManager& operator=(const DefaultPolicyManager&) = delete;
   ~DefaultPolicyManager() override;
 
-  std::string source() override;
+  std::string source() const override;
 
-  bool IsManaged() override;
+  bool IsManaged() const override;
 
-  bool GetLastCheckPeriodMinutes(int* minutes) override;
+  bool GetLastCheckPeriodMinutes(int* minutes) const override;
   bool GetUpdatesSuppressedTimes(int* start_hour,
                                  int* start_min,
-                                 int* duration_min) override;
+                                 int* duration_min) const override;
   bool GetDownloadPreferenceGroupPolicy(
-      std::string* download_preference) override;
-  bool GetPackageCacheSizeLimitMBytes(int* cache_size_limit) override;
-  bool GetPackageCacheExpirationTimeDays(int* cache_life_limit) override;
+      std::string* download_preference) const override;
+  bool GetPackageCacheSizeLimitMBytes(int* cache_size_limit) const override;
+  bool GetPackageCacheExpirationTimeDays(int* cache_life_limit) const override;
 
   bool GetEffectivePolicyForAppInstalls(const std::string& app_id,
-                                        int* install_policy) override;
+                                        int* install_policy) const override;
   bool GetEffectivePolicyForAppUpdates(const std::string& app_id,
-                                       int* update_policy) override;
-  bool GetTargetVersionPrefix(const std::string& app_id,
-                              std::string* target_version_prefix) override;
+                                       int* update_policy) const override;
+  bool GetTargetVersionPrefix(
+      const std::string& app_id,
+      std::string* target_version_prefix) const override;
   bool IsRollbackToTargetVersionAllowed(const std::string& app_id,
-                                        bool* rollback_allowed) override;
-  bool GetProxyMode(std::string* proxy_mode) override;
-  bool GetProxyPacUrl(std::string* proxy_pac_url) override;
-  bool GetProxyServer(std::string* proxy_server) override;
+                                        bool* rollback_allowed) const override;
+  bool GetProxyMode(std::string* proxy_mode) const override;
+  bool GetProxyPacUrl(std::string* proxy_pac_url) const override;
+  bool GetProxyServer(std::string* proxy_server) const override;
 };
 
 DefaultPolicyManager::DefaultPolicyManager() = default;
 
 DefaultPolicyManager::~DefaultPolicyManager() = default;
 
-bool DefaultPolicyManager::IsManaged() {
+bool DefaultPolicyManager::IsManaged() const {
   return false;
 }
 
-std::string DefaultPolicyManager::source() {
+std::string DefaultPolicyManager::source() const {
   return std::string("default");
 }
 
-bool DefaultPolicyManager::GetLastCheckPeriodMinutes(int* minutes) {
+bool DefaultPolicyManager::GetLastCheckPeriodMinutes(int* minutes) const {
   return false;
 }
 
 bool DefaultPolicyManager::GetUpdatesSuppressedTimes(int* start_hour,
                                                      int* start_min,
-                                                     int* duration_min) {
+                                                     int* duration_min) const {
   return false;
 }
 
 bool DefaultPolicyManager::GetDownloadPreferenceGroupPolicy(
-    std::string* download_preference) {
+    std::string* download_preference) const {
   return false;
 }
 
 bool DefaultPolicyManager::GetPackageCacheSizeLimitMBytes(
-    int* cache_size_limit) {
+    int* cache_size_limit) const {
   return false;
 }
 
 bool DefaultPolicyManager::GetPackageCacheExpirationTimeDays(
-    int* cache_life_limit) {
+    int* cache_life_limit) const {
   return false;
 }
 
 bool DefaultPolicyManager::GetEffectivePolicyForAppInstalls(
     const std::string& app_id,
-    int* install_policy) {
+    int* install_policy) const {
   return false;
 }
 
 bool DefaultPolicyManager::GetEffectivePolicyForAppUpdates(
     const std::string& app_id,
-    int* update_policy) {
+    int* update_policy) const {
   return false;
 }
 
 bool DefaultPolicyManager::GetTargetVersionPrefix(
     const std::string& app_id,
-    std::string* target_version_prefix) {
+    std::string* target_version_prefix) const {
   return false;
 }
 
 bool DefaultPolicyManager::IsRollbackToTargetVersionAllowed(
     const std::string& app_id,
-    bool* rollback_allowed) {
+    bool* rollback_allowed) const {
   return false;
 }
 
-bool DefaultPolicyManager::GetProxyMode(std::string* proxy_mode) {
+bool DefaultPolicyManager::GetProxyMode(std::string* proxy_mode) const {
   return false;
 }
 
-bool DefaultPolicyManager::GetProxyPacUrl(std::string* proxy_pac_url) {
+bool DefaultPolicyManager::GetProxyPacUrl(std::string* proxy_pac_url) const {
   return false;
 }
 
-bool DefaultPolicyManager::GetProxyServer(std::string* proxy_server) {
+bool DefaultPolicyManager::GetProxyServer(std::string* proxy_server) const {
   return false;
 }
 

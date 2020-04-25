@@ -563,15 +563,17 @@ struct MakeGarbageCollectedTrait {
 // collected type.
 template <typename T, typename... Args>
 T* MakeGarbageCollected(Args&&... args) {
-  return MakeGarbageCollectedTrait<T>::Call(std::forward<Args>(args)...);
+  T* object = MakeGarbageCollectedTrait<T>::Call(std::forward<Args>(args)...);
+  return object;
 }
 
 // Constructs an instance of T, which is a garbage collected type. This special
 // version takes size which enables constructing inline objects.
 template <typename T, typename... Args>
 T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
-  return MakeGarbageCollectedTrait<T>::Call(additional_bytes,
-                                            std::forward<Args>(args)...);
+  T* object = MakeGarbageCollectedTrait<T>::Call(additional_bytes,
+                                                 std::forward<Args>(args)...);
+  return object;
 }
 
 // Assigning class types to their arenas.

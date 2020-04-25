@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -189,6 +190,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
 
   if (should_paint_background) {
     PaintRootElementGroup(paint_info, pixel_snapped_background_rect,
+                          root_element_background_painting_state,
                           *background_client, painted_separate_backdrop,
                           painted_separate_effect);
   }
@@ -227,6 +229,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
 void ViewPainter::PaintRootElementGroup(
     const PaintInfo& paint_info,
     const IntRect& pixel_snapped_background_rect,
+    const PropertyTreeState& background_paint_state,
     const DisplayItemClient& background_client,
     bool painted_separate_backdrop,
     bool painted_separate_effect) {
@@ -269,28 +272,26 @@ void ViewPainter::PaintRootElementGroup(
   // Compute the enclosing rect of the view, in root element space.
   //
   // For background colors we can simply paint the document rect in the default
-  // space.  However for background image, the root element transform applies.
-  // The strategy is to apply root element transform on the context and issue
-  // draw commands in the local space, therefore we need to apply inverse
-  // transform on the document rect to get to the root element space.
-  // Local / scroll positioned background images will be painted into scrolling
-  // contents layer with root layer scrolling. Therefore we need to switch both
-  // the pixel_snapped_background_rect and context to documentElement visual
-  // space.
+  // space. However, for background image, the root element paint offset and
+  // transforms apply. The strategy is to issue draw commands in the root
+  // element's local space, which requires mapping the document background rect.
   bool background_renderable = true;
   bool root_element_has_transform = false;
   IntRect paint_rect = pixel_snapped_background_rect;
   if (!root_object || !root_object->IsBox()) {
     background_renderable = false;
   } else {
+    // TODO(pdr): There are additional reasons for a transform node, such as
+    // will-change: transform. This check should be updated to include these, or
+    // possibly check if the |paint_rect| mapping below had an effect.
     root_element_has_transform = root_object->StyleRef().HasTransform();
-    TransformationMatrix transform;
-    root_object->GetTransformFromContainer(root_object->View(),
-                                           PhysicalOffset(), transform);
-    if (!transform.IsInvertible())
+    const auto& view_contents_state =
+        layout_view_.FirstFragment().ContentsProperties();
+    GeometryMapper::SourceToDestinationRect(view_contents_state.Transform(),
+                                            background_paint_state.Transform(),
+                                            paint_rect);
+    if (paint_rect.IsEmpty())
       background_renderable = false;
-    else
-      paint_rect = transform.Inverse().MapRect(pixel_snapped_background_rect);
   }
 
   bool should_clear_canvas =
@@ -371,14 +372,9 @@ void ViewPainter::PaintRootElementGroup(
   BoxModelObjectPainter box_model_painter(layout_view_);
   for (const auto* fill_layer : base::Reversed(reversed_paint_list)) {
     DCHECK(fill_layer->Clip() == EFillBox::kBorder);
-
-    PhysicalRect painting_rect(paint_rect);
-    if (!BackgroundImageGeometry::ShouldUseFixedAttachment(*fill_layer))
-      painting_rect.Move(root_object->FirstFragment().PaintOffset());
-
     box_model_painter.PaintFillLayer(paint_info, Color(), *fill_layer,
-                                     painting_rect, kBackgroundBleedNone,
-                                     geometry);
+                                     PhysicalRect(paint_rect),
+                                     kBackgroundBleedNone, geometry);
   }
 
   if (should_draw_background_in_separate_buffer && !painted_separate_effect)

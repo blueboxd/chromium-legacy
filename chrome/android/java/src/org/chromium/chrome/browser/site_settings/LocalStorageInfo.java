@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.site_settings;
 
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge.StorageInfoClearedCallback;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 
 import java.io.Serializable;
 
@@ -26,10 +27,12 @@ public class LocalStorageInfo implements Serializable {
         return mOrigin;
     }
 
-    public void clear(StorageInfoClearedCallback callback) {
+    public void clear(
+            BrowserContextHandle browserContextHandle, StorageInfoClearedCallback callback) {
         // TODO(dullweber): Cookies should call a callback when cleared as well.
-        WebsitePreferenceBridgeJni.get().clearCookieData(mOrigin);
-        WebsitePreferenceBridgeJni.get().clearLocalStorageData(mOrigin, callback);
+        WebsitePreferenceBridgeJni.get().clearCookieData(browserContextHandle, mOrigin);
+        WebsitePreferenceBridgeJni.get().clearLocalStorageData(
+                browserContextHandle, mOrigin, callback);
     }
 
     public long getSize() {

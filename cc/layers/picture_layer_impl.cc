@@ -799,8 +799,6 @@ LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason()
     return LCDTextDisallowedReason::kContentsNotOpaque;
   }
 
-  if (GetEffectTree().Node(effect_tree_index())->screen_space_opacity != 1.f)
-    return LCDTextDisallowedReason::kLayerOpacity;
   if (!GetTransformTree()
            .Node(transform_tree_index())
            ->node_and_ancestors_have_only_integer_translation)

@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.download.settings.DownloadSettings;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
@@ -42,6 +43,7 @@ public class DownloadManagerCoordinatorFactoryHelper {
     }
 
     private static void settingsLaunchHelper(Context context) {
-        SettingsLauncher.getInstance().launchSettingsPage(context, DownloadSettings.class);
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(context, DownloadSettings.class);
     }
 }

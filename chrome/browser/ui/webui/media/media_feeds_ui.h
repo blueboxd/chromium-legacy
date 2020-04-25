@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_MEDIA_FEEDS_UI_H_
 
 #include "chrome/browser/media/feeds/media_feeds_fetcher.h"
+#include "chrome/browser/media/feeds/media_feeds_service.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -39,14 +40,10 @@ class MediaFeedsUI : public ui::MojoWebUIController,
 
  private:
   media_history::MediaHistoryKeyedService* GetMediaHistoryService();
-  void OnFetchResponse(int64_t feed_id,
-                       FetchMediaFeedCallback callback,
-                       const schema_org::improved::mojom::EntityPtr& response,
-                       media_feeds::MediaFeedsFetcher::Status status);
+
+  media_feeds::MediaFeedsService* GetMediaFeedsService();
 
   mojo::ReceiverSet<media_feeds::mojom::MediaFeedsStore> receiver_;
-  // Used to fetch media feeds. Null if no fetch is ongoing.
-  std::unique_ptr<media_feeds::MediaFeedsFetcher> fetcher_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 };

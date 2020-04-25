@@ -8,6 +8,7 @@ import {eventToPromise} from 'chrome://test/test_util.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {SecurityKeysResetBrowserProxyImpl, SecurityKeysPINBrowserProxyImpl, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysBioEnrollProxyImpl, ResetDialogPage, SetPINDialogPage, CredentialManagementDialogPage, BioEnrollDialogPage, SampleStatus, Ctap2Status} from 'chrome://settings/lazy_load.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /**
@@ -601,7 +602,7 @@ suite('SecurityKeysCredentialManagement', function() {
     startResolver.resolve();
 
     const errorString = 'foo bar baz';
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'security-keys-credential-management-finished', errorString);
     assertShown(allDivs, dialog, 'error');
     assertTrue(dialog.$.error.textContent.trim().includes(errorString));
@@ -726,7 +727,7 @@ suite('SecurityKeysBioEnrollment', function() {
     resolver.resolve();
 
     const errorString = 'foo bar baz';
-    cr.webUIListenerCallback('security-keys-bio-enroll-error', errorString);
+    webUIListenerCallback('security-keys-bio-enroll-error', errorString);
     assertShown(allDivs, dialog, 'error');
     assertTrue(dialog.$.error.textContent.trim().includes(errorString));
   });
@@ -838,7 +839,7 @@ suite('SecurityKeysBioEnrollment', function() {
     await uiReady;
 
     assertShown(allDivs, dialog, 'enroll');
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'security-keys-bio-enroll-status',
         {status: SampleStatus.OK, remaining: 1});
     flush();

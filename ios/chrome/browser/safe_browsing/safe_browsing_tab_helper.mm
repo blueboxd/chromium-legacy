@@ -22,28 +22,16 @@
 
 #pragma mark - SafeBrowsingTabHelper
 
-SafeBrowsingTabHelper::SafeBrowsingTabHelper(web::WebState* web_state) {
+SafeBrowsingTabHelper::SafeBrowsingTabHelper(web::WebState* web_state)
+    : url_checker_client_(std::make_unique<UrlCheckerClient>()),
+      policy_decider_(web_state, url_checker_client_.get()) {
   DCHECK(
       base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingAvailableOnIOS));
-
-  // Unit tests that use a TestingApplicationContext don't have a
-  // SafeBrowsingService.
-  // TODO(crbug.com/1060300): Create a FakeSafeBrowsingService and use it in
-  // TestingApplicationContext, so that a special case for tests isn't needed
-  // here.
-  if (!GetApplicationContext()->GetSafeBrowsingService())
-    return;
-
-  url_checker_client_ = std::make_unique<UrlCheckerClient>();
-  policy_decider_ =
-      std::make_unique<PolicyDecider>(web_state, url_checker_client_.get());
 }
 
 SafeBrowsingTabHelper::~SafeBrowsingTabHelper() {
-  if (url_checker_client_) {
-    base::DeleteSoon(FROM_HERE, {web::WebThread::IO},
-                     url_checker_client_.release());
-  }
+  base::DeleteSoon(FROM_HERE, {web::WebThread::IO},
+                   url_checker_client_.release());
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(SafeBrowsingTabHelper)
@@ -107,9 +95,6 @@ web::WebStatePolicyDecider::PolicyDecision
 SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
     NSURLRequest* request,
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
-  if (!url_checker_client_)
-    return web::WebStatePolicyDecider::PolicyDecision::Allow();
-
   SafeBrowsingService* safe_browsing_service =
       GetApplicationContext()->GetSafeBrowsingService();
 

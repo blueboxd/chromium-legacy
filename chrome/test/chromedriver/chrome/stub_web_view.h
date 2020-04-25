@@ -38,6 +38,7 @@ class StubWebView : public WebView {
   Status TraverseHistory(int delta, const Timeout* timeout) override;
   Status EvaluateScript(const std::string& frame,
                         const std::string& function,
+                        const bool awaitPromise,
                         std::unique_ptr<base::Value>* result) override;
   Status CallFunction(const std::string& frame,
                       const std::string& function,

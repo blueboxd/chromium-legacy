@@ -450,6 +450,7 @@ TEST_P(TabStripTest, VisibilityInOverflow) {
   int invisible_tab_index = 0;
   for (; invisible_tab_index < 100; ++invisible_tab_index) {
     controller_->AddTab(invisible_tab_index, false);
+    CompleteAnimationAndLayout();
     if (!tab_strip_->tab_at(invisible_tab_index)->GetVisible())
       break;
   }

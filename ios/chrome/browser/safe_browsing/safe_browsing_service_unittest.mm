@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "ios/chrome/browser/safe_browsing/safe_browsing_service_impl.h"
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -117,7 +117,7 @@ class SafeBrowsingServiceTest : public PlatformTest {
     safe_browsing::V4GetHashProtocolManager::RegisterFactory(
         base::WrapUnique(v4_get_hash_factory_));
 
-    safe_browsing_service_ = base::MakeRefCounted<SafeBrowsingService>();
+    safe_browsing_service_ = base::MakeRefCounted<SafeBrowsingServiceImpl>();
 
     CHECK(temp_dir_.CreateUniqueTempDir());
     safe_browsing_service_->Initialize(&local_state_, temp_dir_.GetPath());

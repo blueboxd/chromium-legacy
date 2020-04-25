@@ -140,9 +140,18 @@ class WebStateImpl : public WebState,
   WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
       NSURLRequest* request,
       const WebStatePolicyDecider::RequestInfo& request_info);
-  // Returns whether the navigation corresponding to |response| should be
-  // allowed to continue by asking its policy deciders. Defaults to true.
-  bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame);
+  // Decides whether the navigation corresponding to |response| should be
+  // allowed to continue by asking its policy deciders, and calls |callback|
+  // with the decision. Defaults to PolicyDecision::Allow(). If at least one
+  // policy decider's decision is PolicyDecision::Cancel(), the final result is
+  // PolicyDecision::Cancel(). Otherwise, if at least one policy decider's
+  // decision is PolicyDecision::CancelAndDisplayError(), the final result is
+  // PolicyDecision::CancelAndDisplayError(), with the error corresponding to
+  // the first PolicyDecision::CancelAndDisplayError() result that was received.
+  void ShouldAllowResponse(
+      NSURLResponse* response,
+      bool for_main_frame,
+      base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback);
 
   // Determines whether the given link with |link_url| should show a preview on
   // force touch.

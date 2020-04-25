@@ -21,6 +21,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.SearchGeolocationDisclosureTabHelper;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.PermissionInfo;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -52,7 +53,9 @@ public class SearchGeolocationDisclosureInfoBarTest {
         PermissionInfo locationSettings = new PermissionInfo(
                 PermissionInfo.Type.GEOLOCATION, mTestServer.getURL(SEARCH_PAGE), null, false);
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> locationSettings.setContentSetting(ContentSettingValues.ALLOW));
+                ()
+                        -> locationSettings.setContentSetting(
+                                Profile.getLastUsedRegularProfile(), ContentSettingValues.ALLOW));
     }
 
     @After

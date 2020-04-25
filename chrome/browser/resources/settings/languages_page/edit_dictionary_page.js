@@ -7,6 +7,23 @@
  * the "dictionary" of custom words used for spell check.
  */
 
+import {Polymer, html, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import '../prefs/prefs.m.js';
+import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+import {routes} from '../route.m.js';
+import '../settings_shared_css.m.js';
+import '../settings_vars_css.m.js';
+import {LanguagesBrowserProxyImpl} from './languages_browser_proxy.m.js';
+
 // Max valid word size defined in
 // https://cs.chromium.org/chromium/src/components/spellcheck/common/spellcheck_common.h?l=28
 const MAX_CUSTOM_DICTIONARY_WORD_BYTES = 99;
@@ -14,7 +31,9 @@ const MAX_CUSTOM_DICTIONARY_WORD_BYTES = 99;
 Polymer({
   is: 'settings-edit-dictionary-page',
 
-  behaviors: [settings.GlobalScrollTargetBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [GlobalScrollTargetBehavior],
 
   properties: {
     /** @private {string} */
@@ -29,7 +48,7 @@ Polymer({
      */
     subpageRoute: {
       type: Object,
-      value: settings.routes.EDIT_DICTIONARY,
+      value: routes.EDIT_DICTIONARY,
     },
 
     /** @private {!Array<string>} */
@@ -53,8 +72,7 @@ Polymer({
   /** @override */
   ready() {
     this.languageSettingsPrivate_ =
-        settings.LanguagesBrowserProxyImpl.getInstance()
-            .getLanguageSettingsPrivate();
+        LanguagesBrowserProxyImpl.getInstance().getLanguageSettingsPrivate();
 
     this.languageSettingsPrivate_.getSpellcheckWords(words => {
       this.hasWords_ = words.length > 0;
@@ -182,7 +200,7 @@ Polymer({
     // this workaround to update the list at the same time the template
     // wrapping the list is expanded.
     if (wasEmpty && this.words_.length > 0) {
-      Polymer.dom.flush();
+      flush();
       this.$$('#list').notifyResize();
     }
   },

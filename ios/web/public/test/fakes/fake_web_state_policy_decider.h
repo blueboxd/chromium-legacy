@@ -28,9 +28,11 @@ class FakeWebStatePolicyDecider : public WebStatePolicyDecider {
   WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
       NSURLRequest* request,
       const RequestInfo& request_info) override;
-  // Always returns true to allow |response|.
-  bool ShouldAllowResponse(NSURLResponse* response,
-                           bool for_main_frame) override;
+  // Always calls |callback| with PolicyDecision::Allow().
+  void ShouldAllowResponse(
+      NSURLResponse* response,
+      bool for_main_frame,
+      base::OnceCallback<void(PolicyDecision)> callback) override;
   void WebStateDestroyed() override {}
 
  private:

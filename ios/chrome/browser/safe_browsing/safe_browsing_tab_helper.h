@@ -101,7 +101,7 @@ class SafeBrowsingTabHelper
   explicit SafeBrowsingTabHelper(web::WebState* web_state);
 
   std::unique_ptr<UrlCheckerClient> url_checker_client_;
-  std::unique_ptr<PolicyDecider> policy_decider_;
+  PolicyDecider policy_decider_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
 };

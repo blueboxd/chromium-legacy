@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 
 import java.io.Serializable;
 import java.lang.annotation.Retention;
@@ -96,8 +97,9 @@ public class ContentSettingException implements Serializable {
     /**
      * Sets the content setting value for this exception.
      */
-    public void setContentSetting(@ContentSettingValues @Nullable Integer value) {
-        WebsitePreferenceBridge.setContentSettingForPattern(
+    public void setContentSetting(BrowserContextHandle browserContextHandle,
+            @ContentSettingValues @Nullable Integer value) {
+        WebsitePreferenceBridge.setContentSettingForPattern(browserContextHandle,
                 mContentSettingType, mPrimaryPattern, mSecondaryPattern, value);
     }
 

@@ -61,6 +61,8 @@ import java.util.List;
 @JNINamespace("ui")
 public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidObserver {
     private static final String TAG = "WindowAndroid";
+    private static final ImmutableWeakReference<Activity> NULL_ACTIVITY_WEAK_REF =
+            new ImmutableWeakReference<>(null);
 
     // Arbitrary error margin to account for cases where the display's refresh rate might not
     // exactly match the target rate.
@@ -106,7 +108,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     private boolean mWindowisWideColorGamut;
 
     // We use a weak reference here to prevent this from leaking in WebView.
-    private WeakReference<Context> mContextRef;
+    private final ImmutableWeakReference<Context> mContextRef;
 
     // Ideally, this would be a SparseArray<String>, but there's no easy way to store a
     // SparseArray<String> in a bundle during saveInstanceState(). So we use a HashMap and suppress
@@ -205,7 +207,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     protected WindowAndroid(Context context, DisplayAndroid display) {
         // context does not have the same lifetime guarantees as an application context so we can't
         // hold a strong reference to it.
-        mContextRef = new WeakReference<>(context);
+        mContextRef = new ImmutableWeakReference<>(context);
         mIntentErrors = new HashMap<>();
         mDisplayAndroid = display;
         mDisplayAndroid.addObserver(this);
@@ -470,9 +472,10 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      * @return A reference to owning Activity.  The returned WeakReference will never be null, but
      *         the contained Activity can be null (either if it has been garbage collected or if
      *         this is in the context of a WebView that was not created using an Activity).
+     *         The returned WeakReference is immutable and calling clear will throw an exception.
      */
     public WeakReference<Activity> getActivity() {
-        return new WeakReference<>(null);
+        return NULL_ACTIVITY_WEAK_REF;
     }
 
     /**
@@ -794,10 +797,10 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      * Getter for the current context (not necessarily the application context).
      * Make no assumptions regarding what type of Context is returned here, it could be for example
      * an Activity or a Context created specifically to target an external display.
+     * The returned WeakReference is immutable and calling clear will throw an exception.
      */
     public WeakReference<Context> getContext() {
-        // Return a new WeakReference to prevent clients from releasing our internal WeakReference.
-        return new WeakReference<>(mContextRef.get());
+        return mContextRef;
     }
 
     /**

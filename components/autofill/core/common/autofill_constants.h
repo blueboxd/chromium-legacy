@@ -22,6 +22,14 @@ size_t MinRequiredFieldsForHeuristics();
 size_t MinRequiredFieldsForQuery();
 size_t MinRequiredFieldsForUpload();
 
+// The maximum number of allowed calls to CreditCard::GetMatchingTypes() and
+// AutofillProfile::GetMatchingTypeAndValidities().
+// If #fields * (#profiles + #credit-cards) exceeds this number, type matching
+// and voting is omitted.
+// The rationale is that for a form with |kMaxParseableFields| = 200 fields,
+// this still allows for 25 profiles plus credit cars.
+const size_t kMaxTypeMatchingCalls = 5000;
+
 // The minimum number of fields in a form that contains only password fields to
 // upload the form to and request predictions from the Autofill servers.
 const size_t kRequiredFieldsForFormsWithOnlyPasswordFields = 2;

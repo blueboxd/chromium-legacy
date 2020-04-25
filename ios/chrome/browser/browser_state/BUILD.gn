@@ -111,6 +111,7 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/policy",
+    "//ios/chrome/browser/policy_url_blocking",
     "//ios/chrome/browser/prefs",
     "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/reading_list",

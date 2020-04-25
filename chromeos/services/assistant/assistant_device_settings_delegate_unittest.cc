@@ -59,10 +59,9 @@ class ScopedDeviceActionsMock : public ScopedDeviceActions {
   MOCK_METHOD(bool,
               OpenAndroidApp,
               (chromeos::assistant::mojom::AndroidAppInfoPtr app_info));
-  MOCK_METHOD(void,
-              VerifyAndroidApp,
-              (std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr> *
-               apps_info));
+  MOCK_METHOD(chromeos::assistant::mojom::AppStatus,
+              GetAndroidAppStatus,
+              (const chromeos::assistant::mojom::AndroidAppInfo& app_info));
   MOCK_METHOD(void, LaunchAndroidIntent, (const std::string& intent));
   MOCK_METHOD(
       void,

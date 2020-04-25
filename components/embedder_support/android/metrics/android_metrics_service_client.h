@@ -174,10 +174,6 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   // sensitive, see https://crbug.com/969803.
   virtual int GetPackageNameLimitRatePerMille() = 0;
 
-  // Whether or not MetricsService::OnApplicationNotIdle should be called for
-  // notifications.
-  virtual bool ShouldWakeMetricsService() = 0;
-
   // Called by CreateMetricsService, allows the embedder to register additional
   // MetricsProviders. Does nothing by default.
   virtual void RegisterAdditionalMetricsProviders(MetricsService* service);

@@ -11,6 +11,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/surfaces/surface_observer.h"
 #include "components/viz/service/viz_service_export.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
 class SurfaceManager;
@@ -29,7 +30,8 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
 
     // Queries the frame interval desired for a particular frame sink id.
     virtual base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-        const FrameSinkId& id) = 0;
+        const FrameSinkId& id,
+        mojom::CompositorFrameSinkType* type = nullptr) = 0;
   };
 
   // If provided in SetPreferredFrameInterval, this indicates that we don't have

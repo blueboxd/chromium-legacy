@@ -41,6 +41,8 @@
 #import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
+#import "ios/chrome/browser/policy/policy_features.h"
+#import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_tab_helper.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_tab_helper.h"
@@ -120,6 +122,10 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   if (base::FeatureList::IsEnabled(
           safe_browsing::kSafeBrowsingAvailableOnIOS)) {
     SafeBrowsingTabHelper::CreateForWebState(web_state);
+  }
+
+  if (IsURLBlocklistEnabled()) {
+    PolicyUrlBlockingTabHelper::CreateForWebState(web_state);
   }
 
   ImageFetchTabHelper::CreateForWebState(web_state);

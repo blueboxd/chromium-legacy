@@ -14,8 +14,8 @@ import '../icons.m.js';
 import {loadTimeData} from '../i18n_setup.m.js';
 import {Route, Router} from '../router.m.js';
 import '../settings_shared_css.m.js';
-import {ContentSetting, ContentSettingsTypes} from '../site_settings/constants.m.js';
-import {SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.m.js';
+import {ContentSetting, ContentSettingsTypes} from '../site_settings/constants.js';
+import {SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
   /**
    * @typedef{{

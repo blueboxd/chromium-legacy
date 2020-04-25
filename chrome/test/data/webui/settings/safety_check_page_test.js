@@ -11,6 +11,7 @@ import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_bro
 import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
 import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
 import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 suite('SafetyCheckUiTests', function() {
@@ -52,7 +53,7 @@ suite('SafetyCheckUiTests', function() {
     const event = {};
     event.newState = state;
     event.displayString = null;
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         SafetyCheckCallbackConstants.PARENT_CHANGED, event);
   }
 
@@ -60,7 +61,7 @@ suite('SafetyCheckUiTests', function() {
     const event = {};
     event.newState = state;
     event.displayString = null;
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         SafetyCheckCallbackConstants.UPDATES_CHANGED, event);
   }
 
@@ -69,7 +70,7 @@ suite('SafetyCheckUiTests', function() {
     event.newState = state;
     event.displayString = null;
     event.passwordsButtonString = null;
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         SafetyCheckCallbackConstants.PASSWORDS_CHANGED, event);
   }
 
@@ -77,7 +78,7 @@ suite('SafetyCheckUiTests', function() {
     const event = {};
     event.newState = state;
     event.displayString = null;
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         SafetyCheckCallbackConstants.SAFE_BROWSING_CHANGED, event);
   }
 
@@ -85,7 +86,7 @@ suite('SafetyCheckUiTests', function() {
     const event = {};
     event.newState = state;
     event.displayString = null;
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         SafetyCheckCallbackConstants.EXTENSIONS_CHANGED, event);
   }
 

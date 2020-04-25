@@ -17,8 +17,6 @@ component("common") {
     "file_system/file_system_types.h",
     "file_system/file_system_util.cc",
     "file_system/file_system_util.h",
-    "storage_histograms.cc",
-    "storage_histograms.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

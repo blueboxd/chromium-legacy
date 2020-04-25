@@ -32,7 +32,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/string_util.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "net/base/mac/url_conversions.h"

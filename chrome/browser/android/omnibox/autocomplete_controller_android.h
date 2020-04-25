@@ -74,7 +74,7 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
                         const base::android::JavaParamRef<jobject>& obj,
                         jint selected_index,
                         jint hash_code);
-  base::android::ScopedJavaLocalRef<jstring>
+  base::android::ScopedJavaLocalRef<jobject>
   UpdateMatchDestinationURLWithQueryFormulationTime(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

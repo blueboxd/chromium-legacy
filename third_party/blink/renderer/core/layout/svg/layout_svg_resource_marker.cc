@@ -138,7 +138,8 @@ void LayoutSVGResourceMarker::SetNeedsTransformUpdate() {
   needs_transform_update_ = true;
 }
 
-SVGTransformChange LayoutSVGResourceMarker::CalculateLocalTransform() {
+SVGTransformChange LayoutSVGResourceMarker::CalculateLocalTransform(
+    bool bounds_changed) {
   if (!needs_transform_update_)
     return SVGTransformChange::kNone;
 

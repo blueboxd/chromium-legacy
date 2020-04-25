@@ -27,6 +27,7 @@ import androidx.preference.Preference;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.subresource_filter.SubresourceFilterFeatureList;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -75,6 +76,8 @@ public class SiteSettingsCategory {
         int NUM_ENTRIES = 21;
     }
 
+    private final BrowserContextHandle mBrowserContextHandle;
+
     // The id of this category.
     private @Type int mCategory;
 
@@ -88,7 +91,9 @@ public class SiteSettingsCategory {
      * @param androidPermission A string containing the id of a toggle-able permission in Android
      *        that this category represents (or blank, if Android does not expose that permission).
      */
-    protected SiteSettingsCategory(@Type int category, String androidPermission) {
+    protected SiteSettingsCategory(BrowserContextHandle browserContextHandle, @Type int category,
+            String androidPermission) {
+        mBrowserContextHandle = browserContextHandle;
         mCategory = category;
         mAndroidPermission = androidPermission;
     }
@@ -96,10 +101,11 @@ public class SiteSettingsCategory {
     /**
      * Construct a SiteSettingsCategory from a type.
      */
-    public static SiteSettingsCategory createFromType(@Type int type) {
-        if (type == Type.DEVICE_LOCATION) return new LocationCategory();
-        if (type == Type.NFC) return new NfcCategory();
-        if (type == Type.NOTIFICATIONS) return new NotificationCategory();
+    public static SiteSettingsCategory createFromType(
+            BrowserContextHandle browserContextHandle, @Type int type) {
+        if (type == Type.DEVICE_LOCATION) return new LocationCategory(browserContextHandle);
+        if (type == Type.NFC) return new NfcCategory(browserContextHandle);
+        if (type == Type.NOTIFICATIONS) return new NotificationCategory(browserContextHandle);
 
         final String permission;
         if (type == Type.CAMERA) {
@@ -111,23 +117,29 @@ public class SiteSettingsCategory {
         } else {
             permission = "";
         }
-        return new SiteSettingsCategory(type, permission);
+        return new SiteSettingsCategory(browserContextHandle, type, permission);
     }
 
     public static SiteSettingsCategory createFromContentSettingsType(
+            BrowserContextHandle browserContextHandle,
             @ContentSettingsType int contentSettingsType) {
         assert contentSettingsType != -1;
         assert Type.ALL_SITES == 0;
         for (@Type int i = Type.ALL_SITES; i < Type.NUM_ENTRIES; i++) {
-            if (contentSettingsType(i) == contentSettingsType) return createFromType(i);
+            if (contentSettingsType(i) == contentSettingsType) {
+                return createFromType(browserContextHandle, i);
+            }
         }
         return null;
     }
 
-    public static SiteSettingsCategory createFromPreferenceKey(String preferenceKey) {
+    public static SiteSettingsCategory createFromPreferenceKey(
+            BrowserContextHandle browserContextHandle, String preferenceKey) {
         assert Type.ALL_SITES == 0;
         for (@Type int i = Type.ALL_SITES; i < Type.NUM_ENTRIES; i++) {
-            if (preferenceKey(i).equals(preferenceKey)) return createFromType(i);
+            if (preferenceKey(i).equals(preferenceKey)) {
+                return createFromType(browserContextHandle, i);
+            }
         }
         return null;
     }
@@ -284,21 +296,23 @@ public class SiteSettingsCategory {
      */
     public boolean isManaged() {
         if (showSites(Type.AUTOMATIC_DOWNLOADS)) {
-            return WebsitePreferenceBridge.isAutomaticDownloadsManaged();
+            return WebsitePreferenceBridge.isAutomaticDownloadsManaged(getBrowserContextHandle());
         } else if (showSites(Type.BACKGROUND_SYNC)) {
-            return WebsitePreferenceBridge.isBackgroundSyncManaged();
+            return WebsitePreferenceBridge.isBackgroundSyncManaged(getBrowserContextHandle());
         } else if (showSites(Type.COOKIES)) {
-            return !WebsitePreferenceBridge.isAcceptCookiesUserModifiable();
+            return !WebsitePreferenceBridge.isAcceptCookiesUserModifiable(
+                    getBrowserContextHandle());
         } else if (showSites(Type.DEVICE_LOCATION)) {
-            return !WebsitePreferenceBridge.isAllowLocationUserModifiable();
+            return !WebsitePreferenceBridge.isAllowLocationUserModifiable(
+                    getBrowserContextHandle());
         } else if (showSites(Type.JAVASCRIPT)) {
-            return WebsitePreferenceBridge.javaScriptManaged();
+            return WebsitePreferenceBridge.javaScriptManaged(getBrowserContextHandle());
         } else if (showSites(Type.CAMERA)) {
-            return !WebsitePreferenceBridge.isCameraUserModifiable();
+            return !WebsitePreferenceBridge.isCameraUserModifiable(getBrowserContextHandle());
         } else if (showSites(Type.MICROPHONE)) {
-            return !WebsitePreferenceBridge.isMicUserModifiable();
+            return !WebsitePreferenceBridge.isMicUserModifiable(getBrowserContextHandle());
         } else if (showSites(Type.POPUPS)) {
-            return WebsitePreferenceBridge.isPopupsManaged();
+            return WebsitePreferenceBridge.isPopupsManaged(getBrowserContextHandle());
         }
         return false;
     }
@@ -309,13 +323,15 @@ public class SiteSettingsCategory {
      */
     public boolean isManagedByCustodian() {
         if (showSites(Type.COOKIES)) {
-            return WebsitePreferenceBridge.isAcceptCookiesManagedByCustodian();
+            return WebsitePreferenceBridge.isAcceptCookiesManagedByCustodian(
+                    getBrowserContextHandle());
         } else if (showSites(Type.DEVICE_LOCATION)) {
-            return WebsitePreferenceBridge.isAllowLocationManagedByCustodian();
+            return WebsitePreferenceBridge.isAllowLocationManagedByCustodian(
+                    getBrowserContextHandle());
         } else if (showSites(Type.CAMERA)) {
-            return WebsitePreferenceBridge.isCameraManagedByCustodian();
+            return WebsitePreferenceBridge.isCameraManagedByCustodian(getBrowserContextHandle());
         } else if (showSites(Type.MICROPHONE)) {
-            return WebsitePreferenceBridge.isMicManagedByCustodian();
+            return WebsitePreferenceBridge.isMicManagedByCustodian(getBrowserContextHandle());
         }
         return false;
     }
@@ -387,6 +403,13 @@ public class SiteSettingsCategory {
                 ApiCompatibilityUtils.getColor(activity.getResources(), R.color.pref_accent_color);
         icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
         return icon;
+    }
+
+    /**
+     * Returns the BrowserContextHandle we're showing the Site Settings UI for.
+     */
+    protected BrowserContextHandle getBrowserContextHandle() {
+        return mBrowserContextHandle;
     }
 
     /**

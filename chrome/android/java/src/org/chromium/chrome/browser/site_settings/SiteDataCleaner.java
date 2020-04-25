@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.site_settings;
 
 import org.chromium.components.content_settings.ContentSettingValues;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 
 /**
  * Encapsulates clearing the data of {@link Website}s.
@@ -15,25 +16,27 @@ public class SiteDataCleaner {
      * Clears the data of the specified site.
      * @param finishCallback is called when finished.
      */
-    public void clearData(Website site, Runnable finishCallback) {
+    public void clearData(
+            BrowserContextHandle browserContextHandle, Website site, Runnable finishCallback) {
         String origin = site.getAddress().getOrigin();
-        WebsitePreferenceBridgeJni.get().clearCookieData(origin);
-        WebsitePreferenceBridgeJni.get().clearBannerData(origin);
-        WebsitePreferenceBridgeJni.get().clearMediaLicenses(origin);
+        WebsitePreferenceBridgeJni.get().clearCookieData(browserContextHandle, origin);
+        WebsitePreferenceBridgeJni.get().clearBannerData(browserContextHandle, origin);
+        WebsitePreferenceBridgeJni.get().clearMediaLicenses(browserContextHandle, origin);
 
         // Clear the permissions.
         for (@ContentSettingException.Type int type = 0;
                 type < ContentSettingException.Type.NUM_ENTRIES; type++) {
-            site.setContentSettingPermission(type, ContentSettingValues.DEFAULT);
+            site.setContentSettingPermission(
+                    browserContextHandle, type, ContentSettingValues.DEFAULT);
         }
         for (@PermissionInfo.Type int type = 0; type < PermissionInfo.Type.NUM_ENTRIES; type++) {
-            site.setPermission(type, ContentSettingValues.DEFAULT);
+            site.setPermission(browserContextHandle, type, ContentSettingValues.DEFAULT);
         }
 
         for (ChosenObjectInfo info : site.getChosenObjectInfo()) {
-            info.revoke();
+            info.revoke(browserContextHandle);
         }
 
-        site.clearAllStoredData(finishCallback::run);
+        site.clearAllStoredData(browserContextHandle, finishCallback::run);
     }
 }

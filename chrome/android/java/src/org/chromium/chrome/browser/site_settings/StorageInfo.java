@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.site_settings;
 
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge.StorageInfoClearedCallback;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 
 import java.io.Serializable;
 
@@ -26,8 +27,10 @@ public class StorageInfo implements Serializable {
         return mHost;
     }
 
-    public void clear(StorageInfoClearedCallback callback) {
-        WebsitePreferenceBridgeJni.get().clearStorageData(mHost, mType, callback);
+    public void clear(
+            BrowserContextHandle browserContextHandle, StorageInfoClearedCallback callback) {
+        WebsitePreferenceBridgeJni.get().clearStorageData(
+                browserContextHandle, mHost, mType, callback);
     }
 
     public long getSize() {

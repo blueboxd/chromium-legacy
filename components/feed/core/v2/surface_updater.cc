@@ -71,19 +71,30 @@ feedui::StreamUpdate MakeStreamUpdate(
       << "logic bug: requested both top and bottom spinners.";
   feedui::StreamUpdate stream_update;
   // Add content from the model, if it's loaded.
+  bool has_content = false;
   if (model) {
     for (ContentRevision content_revision : model->GetContentList()) {
       const bool is_updated = already_sent_content.count(content_revision) == 0;
       AddSliceUpdate(*model, content_revision, is_updated, &stream_update);
+      has_content = true;
     }
     for (const std::string& name : updated_shared_state_ids) {
       AddSharedState(*model, name, &stream_update);
     }
   }
-  if (state.zero_state_type != feedui::ZeroStateSlice::UNKNOWN) {
+
+  feedui::ZeroStateSlice::Type zero_state_type = state.zero_state_type;
+  // If there are no cards, and we aren't loading, force a zero-state.
+  // This happens when a model is loaded, but it has no content.
+  if (!state.loading_initial && !has_content &&
+      state.zero_state_type == feedui::ZeroStateSlice::UNKNOWN) {
+    zero_state_type = feedui::ZeroStateSlice::NO_CARDS_AVAILABLE;
+  }
+
+  if (zero_state_type != feedui::ZeroStateSlice::UNKNOWN) {
     feedui::Slice* slice = stream_update.add_updated_slices()->mutable_slice();
-    slice->mutable_zero_state_slice()->set_type(state.zero_state_type);
-    slice->set_slice_id(GetZeroStateSliceId(state.zero_state_type));
+    slice->mutable_zero_state_slice()->set_type(zero_state_type);
+    slice->set_slice_id(GetZeroStateSliceId(zero_state_type));
   } else {
     // Add the initial-load spinner if applicable.
     if (state.loading_initial) {

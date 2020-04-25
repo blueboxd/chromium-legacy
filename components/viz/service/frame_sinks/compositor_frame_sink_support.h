@@ -108,6 +108,10 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // This allows the FrameSinkManagerImpl to pass a BeginFrameSource to use.
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source);
 
+  base::TimeDelta GetPreferredFrameInterval(
+      mojom::CompositorFrameSinkType* type) const;
+  void InitializeCompositorFrameSinkType(mojom::CompositorFrameSinkType type);
+
   // SurfaceClient implementation.
   void OnSurfaceActivated(Surface* surface) override;
   void OnSurfaceDestroyed(Surface* surface) override;
@@ -339,6 +343,10 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   // The set of surfaces owned by this frame sink that have pending frame.
   base::flat_set<Surface*> pending_surfaces_;
+
+  base::TimeDelta preferred_frame_interval_ = BeginFrameArgs::MinInterval();
+  mojom::CompositorFrameSinkType frame_sink_type_ =
+      mojom::CompositorFrameSinkType::kUnspecified;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_{this};
 

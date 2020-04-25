@@ -676,7 +676,8 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests"
       }
     ]
   },

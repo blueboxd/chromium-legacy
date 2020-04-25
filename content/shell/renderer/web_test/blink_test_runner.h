@@ -218,7 +218,7 @@ class BlinkTestRunner {
   void CaptureDump(mojom::BlinkTestControl::CaptureDumpCallback callback);
   void DidCommitNavigationInMainFrame();
   void OnResetRendererAfterWebTest();
-  void OnTestFinishedInSecondaryRenderer();
+  void OnFinishTestInMainWindow();
   void OnLayoutDumpCompleted(std::string completed_layout_dump);
   void OnReplyBluetoothManualChooserEvents(
       const std::vector<std::string>& events);

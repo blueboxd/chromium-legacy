@@ -24,8 +24,9 @@ struct FakeShouldAllowRequestInfo {
   WebStatePolicyDecider::RequestInfo request_info;
 };
 
-// Arguments passed to |shouldAllowResponse:forMainFrame:|.
-struct FakeShouldAllowResponseInfo {
+// Arguments passed to
+// |decidePolicyForNavigationResponse:forMainFrame:completionHandler:|.
+struct FakeDecidePolicyForNavigationResponseInfo {
   NSURLResponse* response = nil;
   BOOL for_main_frame = NO;
 };
@@ -37,9 +38,10 @@ struct FakeShouldAllowResponseInfo {
 // Arguments passed to |shouldAllowRequest:requestInfo:|.
 @property(nonatomic, readonly)
     web::FakeShouldAllowRequestInfo* shouldAllowRequestInfo;
-// Arguments passed to |shouldAllowResponse:forMainFrame:|.
-@property(nonatomic, readonly)
-    web::FakeShouldAllowResponseInfo* shouldAllowResponseInfo;
+// Arguments passed to
+// |decidePolicyForNavigationResponse:forMainFrame:completionHandler:|.
+@property(nonatomic, readonly) web::FakeDecidePolicyForNavigationResponseInfo*
+    decidePolicyForNavigationResponseInfo;
 
 @end
 

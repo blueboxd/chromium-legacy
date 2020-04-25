@@ -264,8 +264,8 @@ const char* OmniboxMatchCellView::GetClassName() const {
 gfx::Insets OmniboxMatchCellView::GetInsets() const {
   const bool single_line = layout_style_ == LayoutStyle::ONE_LINE_SUGGESTION;
   const int vertical_margin = single_line ? 8 : 4;
-  return gfx::Insets(vertical_margin, 4, vertical_margin,
-                     OmniboxMatchCellView::kMarginRight);
+  return gfx::Insets(vertical_margin, OmniboxMatchCellView::kMarginLeft,
+                     vertical_margin, OmniboxMatchCellView::kMarginRight);
 }
 
 void OmniboxMatchCellView::Layout() {
@@ -278,7 +278,8 @@ void OmniboxMatchCellView::Layout() {
   const int row_height = child_area.height();
   views::ImageView* const image_view =
       (two_line && is_rich_suggestion_) ? answer_image_view_ : icon_view_;
-  image_view->SetBounds(x, y, 40, row_height);
+  image_view->SetBounds(x, y, OmniboxMatchCellView::kImageBoundsWidth,
+                        row_height);
 
   const int text_indent = GetTextIndent() + tail_suggest_common_prefix_width_;
   x += text_indent;

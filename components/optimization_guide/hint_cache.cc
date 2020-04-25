@@ -302,4 +302,14 @@ void HintCache::SetClockForTesting(const base::Clock* clock) {
   clock_ = clock;
 }
 
+void HintCache::AddHintForTesting(const GURL& url,
+                                  std::unique_ptr<proto::Hint> hint) {
+  if (IsValidURLForURLKeyedHint(url)) {
+    url_keyed_hint_cache_.Put(
+        url.spec(),
+        std::make_unique<MemoryHint>(
+            base::Time::Now() + base::TimeDelta::FromDays(7), std::move(hint)));
+  }
+}
+
 }  // namespace optimization_guide

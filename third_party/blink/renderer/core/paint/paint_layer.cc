@@ -262,6 +262,11 @@ PaintLayerCompositor* PaintLayer::Compositor() const {
 }
 
 void PaintLayer::ContentChanged(ContentChangeType change_type) {
+  // Content changes in CAP are reflected in changes to what is painted, nothing
+  // to do here.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   // updateLayerCompositingState will query compositingReasons for accelerated
   // overflow scrolling.  This is tripped by
   // web_tests/compositing/content-changed-chicken-egg.html
@@ -641,8 +646,18 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     bool can_contain_abs =
         GetLayoutObject().CanContainAbsolutePositionObjects();
 
-    for (PaintLayer* child = FirstChild(); child;
-         child = child->NextSibling()) {
+    auto* first_child = [this]() -> PaintLayer* {
+      if (GetLayoutObject().PrePaintBlockedByDisplayLock(
+              DisplayLockLifecycleTarget::kChildren)) {
+        GetLayoutObject()
+            .GetDisplayLockContext()
+            ->NotifyCompositingDescendantDependentFlagUpdateWasBlocked();
+        return nullptr;
+      }
+      return FirstChild();
+    }();
+
+    for (PaintLayer* child = first_child; child; child = child->NextSibling()) {
       const ComputedStyle& child_style = child->GetLayoutObject().StyleRef();
 
       child->UpdateDescendantDependentFlags();

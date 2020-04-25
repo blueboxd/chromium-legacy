@@ -157,6 +157,8 @@ extern const char kProxyModePacScript[];
 extern const char kProxyModeFixedServers[];
 extern const char kProxyModeSystem[];
 
+extern const char kDownloadPreferenceCacheable[];
+
 constexpr int kPolicyDisabled = 0;
 constexpr int kPolicyEnabled = 1;
 constexpr int kPolicyEnabledMachineOnly = 4;

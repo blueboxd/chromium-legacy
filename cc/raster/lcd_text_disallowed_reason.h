@@ -18,7 +18,6 @@ enum class LCDTextDisallowedReason : uint8_t {
   kSetting,
   kBackgroundColorNotOpaque,
   kContentsNotOpaque,
-  kLayerOpacity,
   kNonIntegralTranslation,
   kNonIntegralXOffset,
   kNonIntegralYOffset,

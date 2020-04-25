@@ -369,9 +369,11 @@ Status WebViewImpl::TraverseHistory(int delta, const Timeout* timeout) {
 Status WebViewImpl::TraverseHistoryWithJavaScript(int delta) {
   std::unique_ptr<base::Value> value;
   if (delta == -1)
-    return EvaluateScript(std::string(), "window.history.back();", &value);
+    return EvaluateScript(std::string(), "window.history.back();", false,
+                          &value);
   else if (delta == 1)
-    return EvaluateScript(std::string(), "window.history.forward();", &value);
+    return EvaluateScript(std::string(), "window.history.forward();", false,
+                          &value);
   else
     return Status(kUnknownError, "expected delta to be 1 or -1");
 }
@@ -380,6 +382,7 @@ Status WebViewImpl::EvaluateScriptWithTimeout(
     const std::string& frame,
     const std::string& expression,
     const base::TimeDelta& timeout,
+    const bool awaitPromise,
     std::unique_ptr<base::Value>* result) {
   WebViewImpl* target = GetTargetForFrame(this, frame);
   if (target != nullptr && target != this) {
@@ -387,22 +390,23 @@ Status WebViewImpl::EvaluateScriptWithTimeout(
       return Status(kTargetDetached);
     WebViewImplHolder target_holder(target);
     return target->EvaluateScriptWithTimeout(frame, expression, timeout,
-                                             result);
+                                             awaitPromise, result);
   }
 
   int context_id;
   Status status = GetContextIdForFrame(this, frame, &context_id);
   if (status.IsError())
     return status;
-  return internal::EvaluateScriptAndGetValue(client_.get(), context_id,
-                                             expression, timeout, result);
+  return internal::EvaluateScriptAndGetValue(
+      client_.get(), context_id, expression, timeout, awaitPromise, result);
 }
 
 Status WebViewImpl::EvaluateScript(const std::string& frame,
                                    const std::string& expression,
+                                   const bool awaitPromise,
                                    std::unique_ptr<base::Value>* result) {
   return EvaluateScriptWithTimeout(frame, expression, base::TimeDelta::Max(),
-                                   result);
+                                   awaitPromise, result);
 }
 
 Status WebViewImpl::CallFunctionWithTimeout(
@@ -423,7 +427,7 @@ Status WebViewImpl::CallFunctionWithTimeout(
       w3c.c_str());
   std::unique_ptr<base::Value> temp_result;
   Status status =
-      EvaluateScriptWithTimeout(frame, expression, timeout, &temp_result);
+      EvaluateScriptWithTimeout(frame, expression, timeout, true, &temp_result);
   if (status.IsError())
       return status;
   return internal::ParseCallFunctionResult(*temp_result, result);
@@ -1241,13 +1245,14 @@ Status EvaluateScript(DevToolsClient* client,
                       const std::string& expression,
                       EvaluateScriptReturnType return_type,
                       const base::TimeDelta& timeout,
+                      const bool awaitPromise,
                       std::unique_ptr<base::DictionaryValue>* result) {
   base::DictionaryValue params;
   params.SetString("expression", expression);
   if (context_id)
     params.SetInteger("contextId", context_id);
   params.SetBoolean("returnByValue", return_type == ReturnByValue);
-  params.SetBoolean("awaitPromise", true);
+  params.SetBoolean("awaitPromise", awaitPromise);
   std::unique_ptr<base::DictionaryValue> cmd_result;
 
   Timeout local_timeout(timeout);
@@ -1274,11 +1279,12 @@ Status EvaluateScriptAndGetObject(DevToolsClient* client,
                                   int context_id,
                                   const std::string& expression,
                                   const base::TimeDelta& timeout,
+                                  const bool awaitPromise,
                                   bool* got_object,
                                   std::string* object_id) {
   std::unique_ptr<base::DictionaryValue> result;
   Status status = EvaluateScript(client, context_id, expression, ReturnByObject,
-                                 timeout, &result);
+                                 timeout, awaitPromise, &result);
   if (status.IsError())
     return status;
   if (!result->HasKey("objectId")) {
@@ -1295,10 +1301,11 @@ Status EvaluateScriptAndGetValue(DevToolsClient* client,
                                  int context_id,
                                  const std::string& expression,
                                  const base::TimeDelta& timeout,
+                                 const bool awaitPromise,
                                  std::unique_ptr<base::Value>* result) {
   std::unique_ptr<base::DictionaryValue> temp_result;
   Status status = EvaluateScript(client, context_id, expression, ReturnByValue,
-                                 timeout, &temp_result);
+                                 timeout, awaitPromise, &temp_result);
   if (status.IsError())
     return status;
 
@@ -1362,7 +1369,7 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
   bool got_object;
   std::string element_id;
   Status status = internal::EvaluateScriptAndGetObject(
-      client, context_id, expression, base::TimeDelta::Max(), &got_object,
+      client, context_id, expression, base::TimeDelta::Max(), true, &got_object,
       &element_id);
   if (status.IsError())
     return status;

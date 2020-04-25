@@ -16,6 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.metrics.AwMetricsServiceClient;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils;
@@ -128,6 +129,25 @@ public class AwPageLoadMetricsTest {
                 () -> (1 + firstInputDelay4
                         == RecordHistogram.getHistogramTotalCountForTesting(
                                 "PageLoad.InteractiveTiming.FirstInputDelay4")));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testPageLoadMetricsProvider() throws Throwable {
+        final String data = "<html><head></head><body><input type='text' id='text1'></body></html>";
+        final String url = mWebServer.setResponse(MAIN_FRAME_FILE, data, null);
+        int foregroundDuration = RecordHistogram.getHistogramTotalCountForTesting(
+                "PageLoad.PageTiming.ForegroundDuration");
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { AwMetricsServiceClient.setConsentSetting(mRule.getActivity(), true); });
+        loadUrlSync(url);
+        // Remove the WebView from the container, to simulate app going to background.
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mRule.getActivity().removeAllViews(); });
+        AwActivityTestRule.pollInstrumentationThread(
+                () -> (1 + foregroundDuration
+                        == RecordHistogram.getHistogramTotalCountForTesting(
+                                "PageLoad.PageTiming.ForegroundDuration")));
     }
 
     private String executeJavaScriptAndWaitForResult(String code) throws Throwable {

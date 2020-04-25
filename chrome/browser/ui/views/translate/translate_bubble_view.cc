@@ -269,6 +269,8 @@ void TranslateBubbleView::Init() {
       views::BoxLayout::Orientation::kVertical));
 
   should_always_translate_ = model_->ShouldAlwaysTranslate();
+  should_never_translate_language_ = model_->ShouldNeverTranslateLanguage();
+  should_never_translate_site_ = model_->ShouldNeverTranslateSite();
   // Create different view based on user selection in
   // kUseButtonTranslateBubbleUI.
   if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB) {
@@ -510,7 +512,7 @@ void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
                                   ui::MENU_SOURCE_MOUSE);
 }
 
-// Create the munu items for the dropdown options menu under TAB UI.
+// Create the menu items for the dropdown options menu under TAB UI.
 void TranslateBubbleView::ShowOptionsMenuTab(views::Button* source) {
   // Recreate the menu model as translated languages can change while the menu
   // is not showing, which invalidates these text strings.
@@ -534,16 +536,16 @@ void TranslateBubbleView::ShowOptionsMenuTab(views::Button* source) {
   }
 
   if (!original_language.empty()) {
-    tab_options_menu_model_->AddItem(
+    tab_options_menu_model_->AddCheckItem(
         OptionsMenuItem::NEVER_TRANSLATE_LANGUAGE,
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
                                    original_language));
   }
 
   if (model_->CanBlacklistSite()) {
-    tab_options_menu_model_->AddItemWithStringId(
+    tab_options_menu_model_->AddCheckItem(
         OptionsMenuItem::NEVER_TRANSLATE_SITE,
-        IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE);
+        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE));
   }
 
   tab_options_menu_model_->AddItem(
@@ -563,8 +565,17 @@ void TranslateBubbleView::ShowOptionsMenuTab(views::Button* source) {
 }
 
 bool TranslateBubbleView::IsCommandIdChecked(int command_id) const {
-  DCHECK_EQ(OptionsMenuItem::ALWAYS_TRANSLATE_LANGUAGE, command_id);
-  return should_always_translate_;
+  switch (command_id) {
+    case OptionsMenuItem::NEVER_TRANSLATE_LANGUAGE:
+      return should_never_translate_language_;
+    case OptionsMenuItem::NEVER_TRANSLATE_SITE:
+      return should_never_translate_site_;
+    case OptionsMenuItem::ALWAYS_TRANSLATE_LANGUAGE:
+      return should_always_translate_;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 bool TranslateBubbleView::IsCommandIdEnabled(int command_id) const {
@@ -576,42 +587,59 @@ void TranslateBubbleView::ExecuteCommand(int command_id, int event_flags) {
     case OptionsMenuItem::ALWAYS_TRANSLATE_LANGUAGE:
       should_always_translate_ = !should_always_translate_;
       model_->SetAlwaysTranslate(should_always_translate_);
-
-      if (should_always_translate_ &&
-          ((model_->GetViewState() ==
-            TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE) ||
-           (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB &&
-            TabUiIsEquivalentState(model_->GetViewState())))) {
-        model_->Translate();
-        SwitchView(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
+      if (should_always_translate_) {
+        should_never_translate_language_ = false;
+        model_->SetNeverTranslateLanguage(should_never_translate_language_);
+        if (((model_->GetViewState() ==
+              TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE) ||
+             (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB &&
+              TabUiIsEquivalentState(model_->GetViewState())))) {
+          model_->Translate();
+          SwitchView(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
+        }
       }
       break;
 
     case OptionsMenuItem::NEVER_TRANSLATE_LANGUAGE:
-      translate::ReportUiAction(
-          translate::NEVER_TRANSLATE_LANGUAGE_MENU_CLICKED);
-      model_->SetNeverTranslateLanguage(true);
-      model_->DeclineTranslation();
-      GetWidget()->Close();
+      should_never_translate_language_ = !should_never_translate_language_;
+      if (should_never_translate_language_) {
+        should_always_translate_ = false;
+        model_->SetAlwaysTranslate(should_always_translate_);
+        translate::ReportUiAction(
+            translate::NEVER_TRANSLATE_LANGUAGE_MENU_CLICKED);
+        model_->SetNeverTranslateLanguage(true);
+        RevertOrDeclineTranslation();
+      } else {
+        model_->SetNeverTranslateLanguage(false);
+      }
       break;
+
     case OptionsMenuItem::NEVER_TRANSLATE_SITE:
-      translate::ReportUiAction(translate::NEVER_TRANSLATE_SITE_MENU_CLICKED);
-      model_->SetNeverTranslateSite(true);
-      model_->DeclineTranslation();
-      GetWidget()->Close();
+      should_never_translate_site_ = !should_never_translate_site_;
+      if (should_never_translate_site_) {
+        translate::ReportUiAction(translate::NEVER_TRANSLATE_SITE_MENU_CLICKED);
+        model_->SetNeverTranslateSite(true);
+        RevertOrDeclineTranslation();
+      } else {
+        model_->SetNeverTranslateSite(false);
+      }
       break;
+
     case OptionsMenuItem::MORE_OPTIONS:
       translate::ReportUiAction(translate::ADVANCED_MENU_CLICKED);
       SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
       break;
+
     case OptionsMenuItem::CHANGE_TARGET_LANGUAGE:
       translate::ReportUiAction(translate::ADVANCED_MENU_CLICKED);
       SwitchView(TranslateBubbleModel::VIEW_STATE_TARGET_LANGUAGE);
       break;
+
     case OptionsMenuItem::CHANGE_SOURCE_LANGUAGE:
       translate::ReportUiAction(translate::ADVANCED_MENU_CLICKED);
       SwitchView(TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE);
       break;
+
     default:
       NOTREACHED();
   }
@@ -684,6 +712,8 @@ views::View* TranslateBubbleView::GetCurrentView() const {
 }
 
 void TranslateBubbleView::Translate() {
+  // TODO(crbug/1074171): Shouldn't need the line below after cleaning up the
+  // old UI.
   model_->SetAlwaysTranslate(should_always_translate_);
   model_->Translate();
   translate::ReportUiAction(translate::TRANSLATE_BUTTON_CLICKED);
@@ -1488,27 +1518,21 @@ std::unique_ptr<views::ImageView> TranslateBubbleView::CreateTranslateIcon() {
 
 std::unique_ptr<views::Button> TranslateBubbleView::CreateOptionsMenuButton() {
   // Three dots options menu button
-  const SkColor option_icon_color = gfx::kChromeIconGrey;
-  const gfx::VectorIcon* option_icon_id = &kBrowserToolsIcon;
-  std::unique_ptr<views::MenuButton> tab_translate_options_button =
-      std::make_unique<views::MenuButton>(
-          base::string16(base::ASCIIToUTF16("")), this);
-  tab_translate_options_button->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(*option_icon_id, 16, option_icon_color));
-  tab_translate_options_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
-  tab_translate_options_button->SetInkDropMode(views::Button::InkDropMode::ON);
+  auto tab_translate_options_button =
+      views::CreateVectorImageButtonWithNativeTheme(this, kBrowserToolsIcon);
   InstallCircleHighlightPathGenerator(tab_translate_options_button.get());
-  tab_translate_options_button->SetID(BUTTON_ID_OPTIONS_MENU_TAB);
   tab_translate_options_button->SetFocusForPlatform();
   tab_translate_options_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
   tab_translate_options_button->set_request_focus_on_press(true);
+  tab_translate_options_button->SetVisible(true);
+  tab_translate_options_button->SetID(BUTTON_ID_OPTIONS_MENU_TAB);
   return tab_translate_options_button;
 }
 
 std::unique_ptr<views::Button> TranslateBubbleView::CreateCloseButton() {
   auto close_button = views::BubbleFrameView::CreateCloseButton(this);
+  close_button->SetVisible(true);
   close_button->SetID(BUTTON_ID_CLOSE);
   return close_button;
 }
@@ -1640,4 +1664,13 @@ void TranslateBubbleView::UpdateInsets(TranslateBubbleModel::ViewState state) {
   } else {
     translate_bubble_view_->set_margins(kDialogStateMargins);
   }
+}
+
+void TranslateBubbleView::RevertOrDeclineTranslation() {
+  if (model_->IsPageTranslatedInCurrentLanguages()) {
+    model_->RevertTranslation();
+  } else {
+    model_->DeclineTranslation();
+  }
+  GetWidget()->Close();
 }

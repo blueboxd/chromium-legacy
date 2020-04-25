@@ -7,8 +7,26 @@
  * 'chooser-exception-list' shows a list of chooser exceptions for a given
  * chooser type.
  */
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+import '../settings_shared_css.m.js';
+import './chooser_exception_list_entry.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+
+import {ChooserType, ContentSettingsTypes} from './constants.js';
+import {SiteSettingsBehavior} from './site_settings_behavior.js';
+import {ChooserException, RawChooserException} from './site_settings_prefs_browser_proxy.js';
+
 Polymer({
   is: 'chooser-exception-list',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [
     I18nBehavior,
@@ -33,12 +51,12 @@ Polymer({
      * The string ID of the chooser type that this element is displaying data
      * for.
      * See site_settings/constants.js for possible values.
-     * @type {!settings.ChooserType}
+     * @type {!ChooserType}
      */
     chooserType: {
       observer: 'chooserTypeChanged_',
       type: String,
-      value: settings.ChooserType.NONE,
+      value: ChooserType.NONE,
     },
 
     /** @private */
@@ -67,9 +85,9 @@ Polymer({
   /**
    * Called when a chooser exception changes permission and updates the element
    * if |category| is equal to the settings category of this element.
-   * @param {settings.ContentSettingsTypes} category The content settings type
+   * @param {ContentSettingsTypes} category The content settings type
    *     that represents this permission category.
-   * @param {settings.ChooserType} chooserType The content settings type that
+   * @param {ChooserType} chooserType The content settings type that
    *     represents the chooser data for this permission.
    * @private
    */
@@ -95,22 +113,22 @@ Polymer({
    * @private
    */
   chooserTypeChanged_() {
-    if (this.chooserType == settings.ChooserType.NONE) {
+    if (this.chooserType == ChooserType.NONE) {
       return;
     }
 
     // Set the message to display when the exception list is empty.
     switch (this.chooserType) {
-      case settings.ChooserType.USB_DEVICES:
+      case ChooserType.USB_DEVICES:
         this.emptyListMessage_ = this.i18n('noUsbDevicesFound');
         break;
-      case settings.ChooserType.SERIAL_PORTS:
+      case ChooserType.SERIAL_PORTS:
         this.emptyListMessage_ = this.i18n('noSerialPortsFound');
         break;
-      case settings.ChooserType.HID_DEVICES:
+      case ChooserType.HID_DEVICES:
         this.emptyListMessage_ = this.i18n('noHidDevicesFound');
         break;
-      case settings.ChooserType.BLUETOOTH_DEVICES:
+      case ChooserType.BLUETOOTH_DEVICES:
         this.emptyListMessage_ = this.i18n('noBluetoothDevicesFound');
         break;
       default:
@@ -172,8 +190,7 @@ Polymer({
    */
   processExceptions_(exceptionList) {
     const exceptions = exceptionList.map(exception => {
-      const sites = exception.sites.map(
-          site => this.expandSiteException(site));
+      const sites = exception.sites.map(site => this.expandSiteException(site));
       return Object.assign(exception, {sites});
     });
 

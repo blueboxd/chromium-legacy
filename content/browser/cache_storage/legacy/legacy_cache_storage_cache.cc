@@ -58,7 +58,6 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/padding_key.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "storage/common/storage_histograms.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -74,8 +73,6 @@ using ResponseHeaderMap = base::flat_map<std::string, std::string>;
 
 const size_t kMaxQueryCacheResultBytes =
     1024 * 1024 * 10;  // 10MB query cache limit
-
-const char kRecordBytesLabel[] = "DiskCache.CacheStorage";
 
 // If the way that a cache's padding is calculated changes increment this
 // version.
@@ -291,9 +288,6 @@ void ReadMetadataDidReadMetadata(disk_cache::Entry* entry,
     std::move(callback).Run(nullptr);
     return;
   }
-
-  if (rv > 0)
-    storage::RecordBytesRead(kRecordBytesLabel, rv);
 
   std::unique_ptr<proto::CacheMetadata> metadata(new proto::CacheMetadata());
 
@@ -1521,9 +1515,6 @@ void LegacyCacheStorageCache::WriteSideDataDidWrite(
     return;
   }
 
-  if (rv > 0)
-    storage::RecordBytesWritten(kRecordBytesLabel, rv);
-
   if (ShouldPadResourceSize(response.get())) {
     cache_padding_ -= CalculateResponsePaddingInternal(
         response.get(), cache_padding_key_.get(), side_data_size_before_write);
@@ -1776,8 +1767,6 @@ void LegacyCacheStorageCache::PutDidWriteHeaders(
     return;
   }
 
-  if (rv > 0)
-    storage::RecordBytesWritten(kRecordBytesLabel, rv);
   if (ShouldPadResourceSize(*put_context->response)) {
     cache_padding_ += CalculateResponsePadding(*put_context->response,
                                                cache_padding_key_.get(),

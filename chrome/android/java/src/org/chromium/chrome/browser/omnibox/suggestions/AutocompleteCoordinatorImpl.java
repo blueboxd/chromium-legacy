@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
+import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,7 +70,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
         PropertyModel listModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);
         ModelList listItems = new ModelList();
         mMediator = new AutocompleteMediator(context, delegate, urlBarEditingTextProvider,
-                new AutocompleteController(), listModel);
+                new AutocompleteController(), listModel, new Handler());
         mMediator.initDefaultProcessors();
 
         listModel.set(SuggestionListProperties.EMBEDDER, listEmbedder);

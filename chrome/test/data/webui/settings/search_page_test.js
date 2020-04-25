@@ -7,6 +7,7 @@ import 'chrome://settings/settings.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {SearchEnginesBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {TestSearchEnginesBrowserProxy, createSampleSearchEngine} from 'chrome://test/settings/test_search_engines_browser_proxy.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
   function generateSearchEngineInfo() {
@@ -76,7 +77,7 @@ import {TestSearchEnginesBrowserProxy, createSampleSearchEngine} from 'chrome://
             searchEnginesInfo.defaults[2].default = true;
 
             browserProxy.resetResolver('setDefaultSearchEngine');
-            cr.webUIListenerCallback(
+            webUIListenerCallback(
                 'search-engines-changed', searchEnginesInfo);
             flush();
             assertEquals(2, selectElement.selectedIndex);

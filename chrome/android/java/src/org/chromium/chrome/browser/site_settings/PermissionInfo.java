@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 
 import java.io.Serializable;
 import java.lang.annotation.Retention;
@@ -78,41 +79,42 @@ public class PermissionInfo implements Serializable {
     /**
      * Returns the ContentSetting value for this origin.
      */
-    public @ContentSettingValues @Nullable Integer getContentSetting() {
+    public @ContentSettingValues @Nullable Integer getContentSetting(
+            BrowserContextHandle browserContextHandle) {
         switch (mType) {
             case Type.AUGMENTED_REALITY:
                 return WebsitePreferenceBridgeJni.get().getArSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe());
             case Type.CAMERA:
                 return WebsitePreferenceBridgeJni.get().getCameraSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe());
             case Type.CLIPBOARD:
                 return WebsitePreferenceBridgeJni.get().getClipboardSettingForOrigin(
-                        mOrigin, mIsIncognito);
+                        browserContextHandle, mOrigin);
             case Type.GEOLOCATION:
                 return WebsitePreferenceBridgeJni.get().getGeolocationSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe());
             case Type.MICROPHONE:
                 return WebsitePreferenceBridgeJni.get().getMicrophoneSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe());
             case Type.MIDI:
                 return WebsitePreferenceBridgeJni.get().getMidiSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe());
             case Type.NFC:
                 return WebsitePreferenceBridgeJni.get().getNfcSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe());
             case Type.NOTIFICATION:
                 return WebsitePreferenceBridgeJni.get().getNotificationSettingForOrigin(
-                        mOrigin, mIsIncognito);
+                        browserContextHandle, mOrigin);
             case Type.PROTECTED_MEDIA_IDENTIFIER:
                 return WebsitePreferenceBridgeJni.get().getProtectedMediaIdentifierSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe());
             case Type.SENSORS:
                 return WebsitePreferenceBridgeJni.get().getSensorsSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe());
             case Type.VIRTUAL_REALITY:
                 return WebsitePreferenceBridgeJni.get().getVrSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe());
             default:
                 assert false;
                 return null;
@@ -122,51 +124,52 @@ public class PermissionInfo implements Serializable {
     /**
      * Sets the native ContentSetting value for this origin.
      */
-    public void setContentSetting(@ContentSettingValues int value) {
+    public void setContentSetting(
+            BrowserContextHandle browserContextHandle, @ContentSettingValues int value) {
         switch (mType) {
             case Type.AUGMENTED_REALITY:
                 WebsitePreferenceBridgeJni.get().setArSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), value, mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe(), value);
                 break;
             case Type.CAMERA:
                 WebsitePreferenceBridgeJni.get().setCameraSettingForOrigin(
-                        mOrigin, value, mIsIncognito);
+                        browserContextHandle, mOrigin, value);
                 break;
             case Type.CLIPBOARD:
                 WebsitePreferenceBridgeJni.get().setClipboardSettingForOrigin(
-                        mOrigin, value, mIsIncognito);
+                        browserContextHandle, mOrigin, value);
                 break;
             case Type.GEOLOCATION:
                 WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), value, mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe(), value);
                 break;
             case Type.MICROPHONE:
                 WebsitePreferenceBridgeJni.get().setMicrophoneSettingForOrigin(
-                        mOrigin, value, mIsIncognito);
+                        browserContextHandle, mOrigin, value);
                 break;
             case Type.MIDI:
                 WebsitePreferenceBridgeJni.get().setMidiSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), value, mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe(), value);
                 break;
             case Type.NFC:
                 WebsitePreferenceBridgeJni.get().setNfcSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), value, mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe(), value);
                 break;
             case Type.NOTIFICATION:
                 WebsitePreferenceBridgeJni.get().setNotificationSettingForOrigin(
-                        mOrigin, value, mIsIncognito);
+                        browserContextHandle, mOrigin, value);
                 break;
             case Type.PROTECTED_MEDIA_IDENTIFIER:
                 WebsitePreferenceBridgeJni.get().setProtectedMediaIdentifierSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), value, mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe(), value);
                 break;
             case Type.SENSORS:
                 WebsitePreferenceBridgeJni.get().setSensorsSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), value, mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe(), value);
                 break;
             case Type.VIRTUAL_REALITY:
                 WebsitePreferenceBridgeJni.get().setVrSettingForOrigin(
-                        mOrigin, getEmbedderSafe(), value, mIsIncognito);
+                        browserContextHandle, mOrigin, getEmbedderSafe(), value);
                 break;
             default:
                 assert false;

@@ -70,9 +70,7 @@ class ChromeAuthenticatorRequestDelegate
       base::OnceClosure cancel_callback,
       base::RepeatingClosure start_over_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
-      base::RepeatingClosure bluetooth_adapter_power_on_callback,
-      device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback)
-      override;
+      base::RepeatingClosure bluetooth_adapter_power_on_callback) override;
   bool ShouldPermitIndividualAttestation(
       const std::string& relying_party_id) override;
   void ShouldReturnAttestation(
@@ -104,12 +102,6 @@ class ChromeAuthenticatorRequestDelegate
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(base::StringPiece authenticator_id) override;
-  void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
-                                  std::string new_authenticator_id) override;
-  void FidoAuthenticatorPairingModeChanged(
-      base::StringPiece authenticator_id,
-      bool is_in_pairing_mode,
-      base::string16 display_name) override;
   void BluetoothAdapterPowerChanged(bool is_powered_on) override;
   bool SupportsPIN() const override;
   void CollectPIN(
@@ -142,9 +134,7 @@ class ChromeAuthenticatorRequestDelegate
   }
   content::BrowserContext* browser_context() const;
 
-  void AddFidoBleDeviceToPairedList(std::string ble_authenticator_id);
   base::Optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
-  const base::ListValue* GetPreviouslyPairedFidoBleDeviceIds() const;
   void StoreNewCablePairingInPrefs(
       std::unique_ptr<device::CableDiscoveryData> discovery_data);
 

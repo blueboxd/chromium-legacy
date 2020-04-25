@@ -7,11 +7,43 @@
  * 'site-details' show the details (permissions and usage) for a given origin
  * under Site Settings.
  */
+import 'chrome://resources/js/action_link.js';
+import 'chrome://resources/cr_elements/action_link_css.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../icons.m.js';
+import '../settings_shared_css.m.js';
+import './all_sites_icons.js';
+import './clear_storage_dialog_css.js';
+import './site_details_permission.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {routes} from '../route.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+
+import {ContentSetting, ContentSettingsTypes} from './constants.js';
+import {SiteSettingsBehavior} from './site_settings_behavior.js';
+import {WebsiteUsageBrowserProxy, WebsiteUsageBrowserProxyImpl} from './website_usage_browser_proxy.js';
+
 Polymer({
   is: 'site-details',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
-    I18nBehavior, SiteSettingsBehavior, settings.RouteObserverBehavior,
+    I18nBehavior, SiteSettingsBehavior, RouteObserverBehavior,
     WebUIListenerBehavior
   ],
 
@@ -102,13 +134,12 @@ Polymer({
   /** @private {string} */
   fetchingForHost_: '',
 
-  /** @private {?settings.WebsiteUsageBrowserProxy} */
+  /** @private {?WebsiteUsageBrowserProxy} */
   websiteUsageProxy_: null,
 
   /** @override */
   attached() {
-    this.websiteUsageProxy_ =
-        settings.WebsiteUsageBrowserProxyImpl.getInstance();
+    this.websiteUsageProxy_ = WebsiteUsageBrowserProxyImpl.getInstance();
     this.addWebUIListener('usage-total-changed', (host, data, cookies) => {
       this.onUsageTotalChanged_(host, data, cookies);
     });
@@ -128,26 +159,26 @@ Polymer({
 
   /** @override */
   ready() {
-    this.ContentSettingsTypes = settings.ContentSettingsTypes;
+    this.ContentSettingsTypes = ContentSettingsTypes;
   },
 
   /**
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} route
+   * RouteObserverBehavior
+   * @param {!Route} route
    * @protected
    */
   currentRouteChanged(route) {
-    if (route != settings.routes.SITE_SETTINGS_SITE_DETAILS) {
+    if (route != routes.SITE_SETTINGS_SITE_DETAILS) {
       return;
     }
-    const site = settings.Router.getInstance().getQueryParameters().get('site');
+    const site = Router.getInstance().getQueryParameters().get('site');
     if (!site) {
       return;
     }
     this.origin_ = site;
     this.browserProxy.isOriginValid(this.origin_).then((valid) => {
       if (!valid) {
-        settings.Router.getInstance().navigateToPreviousRoute();
+        Router.getInstance().navigateToPreviousRoute();
       } else {
         this.fetchingForHost_ = this.toUrl(this.origin_).hostname;
         this.storedData_ = '';
@@ -159,7 +190,7 @@ Polymer({
 
   /**
    * Called when a site within a category has been changed.
-   * @param {!settings.ContentSettingsTypes} category The category that
+   * @param {!ContentSettingsTypes} category The category that
    *     changed.
    * @param {string} origin The origin of the site that changed.
    * @param {string} embeddingOrigin The embedding origin of the site that
@@ -198,21 +229,21 @@ Polymer({
 
   // <if expr="chromeos">
   prefEnableDrmChanged_() {
-    this.updatePermissions_([settings.ContentSettingsTypes.PROTECTED_CONTENT]);
+    this.updatePermissions_([ContentSettingsTypes.PROTECTED_CONTENT]);
   },
   // </if>
 
   /**
    * Retrieves the permissions listed in |categoryList| from the backend for
    * |this.origin_|.
-   * @param {!Array<!settings.ContentSettingsTypes>} categoryList The list
+   * @param {!Array<!ContentSettingsTypes>} categoryList The list
    *     of categories to update permissions for.
    * @private
    */
   updatePermissions_(categoryList) {
     const permissionsMap =
         /**
-         * @type {!Object<!settings.ContentSettingsTypes,
+         * @type {!Object<!ContentSettingsTypes,
          *         !SiteDetailsPermissionElement>}
          */
         (Array.prototype.reduce.call(
@@ -278,9 +309,8 @@ Polymer({
    */
   onResetSettings_(e) {
     this.browserProxy.setOriginPermissions(
-        this.origin_, this.getCategoryList(), settings.ContentSetting.DEFAULT);
-    if (this.getCategoryList().includes(
-            settings.ContentSettingsTypes.PLUGINS)) {
+        this.origin_, this.getCategoryList(), ContentSetting.DEFAULT);
+    if (this.getCategoryList().includes(ContentSettingsTypes.PLUGINS)) {
       this.browserProxy.clearFlashPref(this.origin_);
     }
 
@@ -323,11 +353,11 @@ Polymer({
 
   /** @private */
   onResetSettingsDialogClosed_() {
-    cr.ui.focusWithoutInk(assert(this.$$('#resetSettingsButton')));
+    focusWithoutInk(assert(this.$$('#resetSettingsButton')));
   },
 
   /** @private */
   onClearStorageDialogClosed_() {
-    cr.ui.focusWithoutInk(assert(this.$$('#clearStorage')));
+    focusWithoutInk(assert(this.$$('#clearStorage')));
   },
 });

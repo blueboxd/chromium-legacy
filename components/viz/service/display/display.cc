@@ -983,8 +983,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         ++quad;
         continue;
       }
-      // Also skip quad if the DrawQuad size is smaller than the
-      // kMinimumDrawOcclusionSize; or the DrawQuad is inside a 3d object.
+      // Also skip quad if the DrawQuad is inside a 3d object.
       if (quad->shared_quad_state->sorting_context_id != 0) {
         ++quad;
         continue;
@@ -999,6 +998,8 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
       // TODO(yiyix): Find a rect interior to each transformed quad.
       if (last_sqs != quad->shared_quad_state) {
         if (last_sqs->opacity == 1 && last_sqs->are_contents_opaque &&
+            (last_sqs->blend_mode == SkBlendMode::kSrcOver ||
+             last_sqs->blend_mode == SkBlendMode::kSrc) &&
             last_sqs->quad_to_target_transform.Preserves2dAxisAlignment()) {
           gfx::Rect sqs_rect_in_target =
               cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
@@ -1147,8 +1148,9 @@ void Display::SetPreferredFrameInterval(base::TimeDelta interval) {
 }
 
 base::TimeDelta Display::GetPreferredFrameIntervalForFrameSinkId(
-    const FrameSinkId& id) {
-  return client_->GetPreferredFrameIntervalForFrameSinkId(id);
+    const FrameSinkId& id,
+    mojom::CompositorFrameSinkType* type) {
+  return client_->GetPreferredFrameIntervalForFrameSinkId(id, type);
 }
 
 void Display::SetSupportedFrameIntervals(

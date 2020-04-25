@@ -222,7 +222,7 @@ void WebMediaPlayerMSCompositorTraits::Destruct(
 
 void WebMediaPlayerMSCompositor::InitializeSubmitter() {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
-  submitter_->Initialize(this);
+  submitter_->Initialize(this, /* is_media_stream = */ true);
 }
 
 void WebMediaPlayerMSCompositor::SetIsSurfaceVisible(bool state) {

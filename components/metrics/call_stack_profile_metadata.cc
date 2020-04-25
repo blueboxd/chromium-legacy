@@ -107,7 +107,7 @@ CallStackProfileMetadata::~CallStackProfileMetadata() = default;
 // suspended so must not take any locks, including indirectly through use of
 // heap allocation, LOG, CHECK, or DCHECK.
 void CallStackProfileMetadata::RecordMetadata(
-    base::ProfileBuilder::MetadataProvider* metadata_provider) {
+    base::MetadataRecorder::MetadataProvider* metadata_provider) {
   metadata_item_count_ = metadata_provider->GetItems(&metadata_items_);
 }
 
@@ -152,7 +152,7 @@ CallStackProfileMetadata::CreateSampleMetadata(
 }
 
 void CallStackProfileMetadata::ApplyMetadata(
-    const base::ProfileBuilder::MetadataItem& item,
+    const base::MetadataRecorder::Item& item,
     google::protobuf::RepeatedPtrField<CallStackProfile::StackSample>::iterator
         begin,
     google::protobuf::RepeatedPtrField<CallStackProfile::StackSample>::iterator
@@ -251,7 +251,7 @@ operator=(const MetadataKey& other) = default;
 
 CallStackProfileMetadata::MetadataMap
 CallStackProfileMetadata::CreateMetadataMap(
-    base::ProfileBuilder::MetadataItemArray items,
+    base::MetadataRecorder::ItemArray items,
     size_t item_count) {
   MetadataMap item_map;
   for (size_t i = 0; i < item_count; ++i)

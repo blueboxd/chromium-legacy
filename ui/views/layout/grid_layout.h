@@ -129,7 +129,7 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   // Returns the column set for the specified id, or NULL if one doesn't exist.
   ColumnSet* GetColumnSet(int id);
 
-  // Adds a padding row. Padding rows typically don't have any views, and
+  // Adds a padding row. Padding rows typically don't have any views,
   // but are used to provide vertical white space between views.
   // Size specifies the height of the row.
   void AddPaddingRow(float vertical_resize, int size);

@@ -24,6 +24,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.settings.MainSettings;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
@@ -89,7 +90,8 @@ public class PasswordViewingTypeTest {
      */
     private static SettingsActivity startMainSettings(
             Instrumentation instrumentation, final Context mContext) {
-        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        Intent intent = settingsLauncher.createSettingsActivityIntent(
                 mContext, MainSettings.class.getName());
         Activity activity = instrumentation.startActivitySync(intent);
         return (SettingsActivity) activity;

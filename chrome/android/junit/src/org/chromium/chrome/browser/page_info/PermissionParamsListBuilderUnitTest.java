@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -35,6 +35,7 @@ import org.robolectric.shadows.ShadowNotificationManager;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.chrome.test.util.browser.Features;
@@ -42,6 +43,7 @@ import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
 import org.chromium.ui.base.AndroidPermissionDelegate;
@@ -68,12 +70,16 @@ public class PermissionParamsListBuilderUnitTest {
     @Mock
     WebsitePreferenceBridge.Natives mWebsitePreferenceBridgeMock;
 
+    @Mock
+    Profile mProfileMock;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        PermissionParamsListBuilder.setProfileForTesting(mProfileMock);
         mocker.mock(WebsitePreferenceBridgeJni.TEST_HOOKS, mWebsitePreferenceBridgeMock);
         when(mWebsitePreferenceBridgeMock.isPermissionControlledByDSE(
-                     anyInt(), anyString(), anyBoolean()))
+                     any(BrowserContextHandle.class), anyInt(), anyString()))
                 .thenReturn(false);
         FakePermissionDelegate.clearBlockedPermissions();
         AndroidPermissionDelegate permissionDelegate = new FakePermissionDelegate();

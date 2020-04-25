@@ -73,10 +73,11 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   // base::ProfileBuilder:
   base::ModuleCache* GetModuleCache() override;
   void RecordMetadata(
-      base::ProfileBuilder::MetadataProvider* metadata_provider) override;
-  void ApplyMetadataRetrospectively(base::TimeTicks period_start,
-                                    base::TimeTicks period_end,
-                                    const MetadataItem& item) override;
+      base::MetadataRecorder::MetadataProvider* metadata_provider) override;
+  void ApplyMetadataRetrospectively(
+      base::TimeTicks period_start,
+      base::TimeTicks period_end,
+      const base::MetadataRecorder::Item& item) override;
   void OnSampleCompleted(std::vector<base::Frame> frames,
                          base::TimeTicks sample_timestamp) override;
   void OnProfileCompleted(base::TimeDelta profile_duration,

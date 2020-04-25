@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 
 import java.util.Set;
 
@@ -63,6 +64,11 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
             mChromeNotificationSettingsClient = new ChromeNotificationSettingsClient();
         }
         return mChromeNotificationSettingsClient;
+    }
+
+    @Override
+    public BrowserContextHandle getBrowserContextHandle() {
+        return Profile.getLastUsedRegularProfile();
     }
 
     @Override

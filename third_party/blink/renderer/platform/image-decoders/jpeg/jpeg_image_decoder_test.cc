@@ -145,7 +145,7 @@ void ReadYUV(size_t max_decoded_bytes,
 // Tests failure on a too big image.
 TEST(JPEGImageDecoderTest, tooBig) {
   std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(100);
-  EXPECT_FALSE(decoder->SetSize(10000, 10000));
+  EXPECT_FALSE(decoder->SetSize(10000u, 10000u));
   EXPECT_TRUE(decoder->Failed());
 }
 

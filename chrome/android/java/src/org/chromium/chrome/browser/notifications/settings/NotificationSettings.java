@@ -14,6 +14,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchPrefs;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.ContentSettingsResources;
 import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
 import org.chromium.chrome.browser.site_settings.SiteSettingsCategory;
@@ -80,6 +81,7 @@ public class NotificationSettings extends PreferenceFragmentCompat {
 
         mFromWebsitesPref.setSummary(ContentSettingsResources.getCategorySummary(
                 ContentSettingsType.NOTIFICATIONS,
-                WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.NOTIFICATIONS)));
+                WebsitePreferenceBridge.isCategoryEnabled(
+                        Profile.getLastUsedRegularProfile(), ContentSettingsType.NOTIFICATIONS)));
     }
 }

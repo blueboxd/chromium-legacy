@@ -9,6 +9,7 @@ import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_pro
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {setupRouterWithSyncRoutes, getSyncAllPrefs} from 'chrome://test/settings/sync_test_util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {waitBeforeNextRender} from 'chrome://test/test_util.m.js';
 // clang-format on
 
@@ -32,7 +33,7 @@ import {waitBeforeNextRender} from 'chrome://test/test_util.m.js';
       document.body.appendChild(syncControls);
 
       // Start with Sync All.
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'sync-prefs-changed', getSyncAllPrefs());
       flush();
     });
@@ -64,7 +65,7 @@ import {waitBeforeNextRender} from 'chrome://test/test_util.m.js';
         expected.syncAllDataTypes = false;
         assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
 
-        cr.webUIListenerCallback('sync-prefs-changed', expected);
+        webUIListenerCallback('sync-prefs-changed', expected);
 
         // Assert that all the individual datatype controls are enabled.
         for (const control of datatypeControls) {
@@ -202,7 +203,7 @@ import {waitBeforeNextRender} from 'chrome://test/test_util.m.js';
       document.body.appendChild(syncControls);
 
       // Start with Sync All.
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'sync-prefs-changed', getSyncAllPrefs());
       flush();
 
@@ -225,7 +226,7 @@ import {waitBeforeNextRender} from 'chrome://test/test_util.m.js';
       expected.syncAllDataTypes = false;
       assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
 
-      cr.webUIListenerCallback('sync-prefs-changed', expected);
+      webUIListenerCallback('sync-prefs-changed', expected);
 
       // Assert that all the individual datatype controls are enabled.
       for (const control of datatypeControls) {

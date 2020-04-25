@@ -4,9 +4,14 @@
 
 #include "chrome/browser/media/feeds/media_feeds_service.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/media/feeds/media_feeds_converter.h"
+#include "chrome/browser/media/feeds/media_feeds_fetcher.h"
 #include "chrome/browser/media/feeds/media_feeds_service_factory.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -85,6 +90,37 @@ void MediaFeedsService::SetSafeSearchURLCheckerForTest(
 void MediaFeedsService::SetSafeSearchCompletionCallbackForTest(
     base::OnceClosure callback) {
   safe_search_completion_callback_ = std::move(callback);
+}
+
+void MediaFeedsService::FetchMediaFeed(int64_t feed_id,
+                                       const GURL& url,
+                                       base::OnceClosure callback) {
+  // Skip the fetch if there is already an ongoing fetch for this feed.
+  if (fetchers_.find(feed_id) != fetchers_.end()) {
+    std::move(callback).Run();
+    return;
+  }
+
+  fetchers_.emplace(std::make_pair(
+      feed_id, std::make_unique<MediaFeedsFetcher>(
+                   content::BrowserContext::GetDefaultStoragePartition(profile_)
+                       ->GetURLLoaderFactoryForBrowserProcess())));
+
+  fetchers_.find(feed_id)->second->FetchFeed(
+      url,
+      // Use of unretained is safe because the callback is owned
+      // by fetcher_, which will not outlive this.
+      base::BindOnce(&MediaFeedsService::OnFetchResponse,
+                     base::Unretained(this), feed_id, std::move(callback)));
+}
+
+media_history::MediaHistoryKeyedService*
+MediaFeedsService::GetMediaHistoryService() {
+  DCHECK(profile_);
+  media_history::MediaHistoryKeyedService* service =
+      media_history::MediaHistoryKeyedServiceFactory::GetForProfile(profile_);
+  DCHECK(service);
+  return service;
 }
 
 bool MediaFeedsService::AddInflightSafeSearchCheck(const int64_t id,
@@ -218,5 +254,28 @@ MediaFeedsService::InflightSafeSearchCheck::InflightSafeSearchCheck(
 
 MediaFeedsService::InflightSafeSearchCheck::~InflightSafeSearchCheck() =
     default;
+
+void MediaFeedsService::OnFetchResponse(
+    int64_t feed_id,
+    base::OnceClosure callback,
+    const schema_org::improved::mojom::EntityPtr& response,
+    MediaFeedsFetcher::Status status) {
+  std::vector<media_session::MediaImage> logos;
+  std::string display_name;
+  auto feed_items = GetMediaFeeds(response, &logos, &display_name);
+
+  if (!feed_items.has_value()) {
+    std::move(callback).Run();
+    fetchers_.erase(feed_id);
+    return;
+  }
+
+  // TODO(crbug.com/1074486): Set the fetch result and was_fetched_from_cache.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      feed_id, std::move(feed_items.value()), mojom::FetchResult::kSuccess,
+      false, std::move(logos), display_name, std::move(callback));
+
+  fetchers_.erase(feed_id);
+}
 
 }  // namespace media_feeds

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('settings', function() {
   /**
    * All possible contentSettingsTypes that we currently support configuring in
    * the UI. Both top-level categories and content settings that represent
@@ -11,7 +10,7 @@ cr.define('settings', function() {
    * in chrome/browser/ui/webui/site_settings_helper.cc
    * @enum {string}
    */
-  /* #export */ const ContentSettingsTypes = {
+  export const ContentSettingsTypes = {
     COOKIES: 'cookies',
     IMAGES: 'images',
     JAVASCRIPT: 'javascript',
@@ -50,7 +49,7 @@ cr.define('settings', function() {
    * components/content_settings/core/common/content_settings.h
    * @enum {string}
    */
-  /* #export */ const ContentSetting = {
+  export const ContentSetting = {
     DEFAULT: 'default',
     ALLOW: 'allow',
     BLOCK: 'block',
@@ -65,7 +64,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/site_settings_helper.cc
    * @enum {string}
    */
-  /* #export */ const ChooserType = {
+  export const ChooserType = {
     NONE: '',
     USB_DEVICES: 'usb-devices-data',
     SERIAL_PORTS: 'serial-ports-data',
@@ -79,7 +78,7 @@ cr.define('settings', function() {
    * components/content_settings/core/browser/cookie_settings.h
    * @enum {number}
    */
-  /* #export */ const CookieControlsMode = {
+  export const CookieControlsMode = {
     DISABLED: 0,
     ENABLED: 1,
     INCOGNITO_ONLY: 2,
@@ -91,7 +90,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/site_settings_helper.h
    * @enum {string}
    */
-  /* #export */ const SiteSettingSource = {
+  export const SiteSettingSource = {
     ADS_FILTER_BLACKLIST: 'ads-filter-blacklist',
     DEFAULT: 'default',
     // This source is for the Protected Media Identifier / Protected Content
@@ -115,7 +114,7 @@ cr.define('settings', function() {
    * An invalid subtype value.
    * @type {string}
    */
-  /* #export */ const INVALID_CATEGORY_SUBTYPE = '';
+  export const INVALID_CATEGORY_SUBTYPE = '';
 
   /**
    * Contains the record action types logged before M82.
@@ -123,7 +122,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/site_settings_handler.cc
    * @enum {number}
    */
-  /* #export */ const AllSitesAction = {
+  export const AllSitesAction = {
     LOAD_PAGE: 0,
     RESET_PERMISSIONS: 1,
     CLEAR_DATA: 2,
@@ -137,7 +136,7 @@ cr.define('settings', function() {
    * chrome/browser/ui/webui/settings/site_settings_handler.cc
    * @enum {number}
    */
-  /* #export */ const AllSitesAction2 = {
+  export const AllSitesAction2 = {
     LOAD_PAGE: 0,
     RESET_SITE_GROUP_PERMISSIONS: 1,
     RESET_ORIGIN_PERMISSIONS: 2,
@@ -151,7 +150,7 @@ cr.define('settings', function() {
    * Contains the possible sort methods.
    * @enum {string}
    */
-  /* #export */ const SortMethod = {
+  export const SortMethod = {
     NAME: 'name',
     MOST_VISITED: 'most-visited',
     STORAGE: 'data-stored',
@@ -162,7 +161,7 @@ cr.define('settings', function() {
    * used for logging userActions.
    * @enum {string}
    */
-  /* #export */ const ALL_SITES_DIALOG = {
+  export const ALL_SITES_DIALOG = {
     CLEAR_DATA: 'ClearData',
     RESET_PERMISSIONS: 'ResetPermissions',
   };
@@ -172,21 +171,5 @@ cr.define('settings', function() {
    * match for SiteExceptions.
    * @type {string}
    */
-  /* #export */ const SITE_EXCEPTION_WILDCARD = '*';
+  export const SITE_EXCEPTION_WILDCARD = '*';
 
-  // #cr_define_end
-  return {
-    ALL_SITES,
-    ALL_SITES_DIALOG,
-    AllSitesAction,
-    AllSitesAction2,
-    ChooserType,
-    ContentSetting,
-    ContentSettingsTypes,
-    CookieControlsMode,
-    INVALID_CATEGORY_SUBTYPE,
-    SITE_EXCEPTION_WILDCARD,
-    SiteSettingSource,
-    SortMethod,
-  };
-});

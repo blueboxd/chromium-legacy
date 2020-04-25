@@ -570,12 +570,22 @@ void MediaHistoryStore::DeleteAllURLData(const std::set<GURL>& urls) {
       session_table_.get(),
   };
 
+  std::set<url::Origin> origins_with_deletions;
   for (auto& url : urls) {
+    origins_with_deletions.insert(url::Origin::Create(url));
+
     for (auto* table : tables) {
       if (!table->DeleteURL(url)) {
         DB()->RollbackTransaction();
         return;
       }
+    }
+  }
+
+  for (auto& origin : origins_with_deletions) {
+    if (!origin_table_->RecalculateAggregateAudioVideoWatchTime(origin)) {
+      DB()->RollbackTransaction();
+      return;
     }
   }
 

@@ -13,6 +13,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge.StorageInfoClearedCallback;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -145,16 +146,22 @@ public class Website implements Serializable {
      * @return permission value for permission of specified type.
      *         (Camera, Clipboard, etc.).
      */
-    public @ContentSettingValues @Nullable Integer getPermission(@PermissionInfo.Type int type) {
-        return getPermissionInfo(type) != null ? getPermissionInfo(type).getContentSetting() : null;
+    public @ContentSettingValues @Nullable Integer getPermission(
+            BrowserContextHandle browserContextHandle, @PermissionInfo.Type int type) {
+        return getPermissionInfo(type) != null
+                ? getPermissionInfo(type).getContentSetting(browserContextHandle)
+                : null;
     }
 
     /**
      * Set permission value for permission of specified type
      * (Camera, Clipboard, etc.).
      */
-    public void setPermission(@PermissionInfo.Type int type, @ContentSettingValues int value) {
-        if (getPermissionInfo(type) != null) getPermissionInfo(type).setContentSetting(value);
+    public void setPermission(BrowserContextHandle browserContextHandle,
+            @PermissionInfo.Type int type, @ContentSettingValues int value) {
+        if (getPermissionInfo(type) != null) {
+            getPermissionInfo(type).setContentSetting(browserContextHandle, value);
+        }
     }
 
     /**
@@ -186,7 +193,7 @@ public class Website implements Serializable {
     /**
      * Sets the permission.
      */
-    public void setContentSettingPermission(
+    public void setContentSettingPermission(BrowserContextHandle browserContextHandle,
             @ContentSettingException.Type int type, @ContentSettingValues int value) {
         if (type == ContentSettingException.Type.ADS) {
             // It is possible to set the permission without having an existing exception,
@@ -214,7 +221,7 @@ public class Website implements Serializable {
             // above because this will trigger the actual change on the PrefServiceBridge.
         }
         if (mContentSettingException[type] != null) {
-            mContentSettingException[type].setContentSetting(value);
+            mContentSettingException[type].setContentSetting(browserContextHandle, value);
         }
     }
 
@@ -234,7 +241,8 @@ public class Website implements Serializable {
         return new ArrayList<StorageInfo>(mStorageInfo);
     }
 
-    public void clearAllStoredData(final StoredDataClearedCallback callback) {
+    public void clearAllStoredData(
+            BrowserContextHandle browserContextHandle, final StoredDataClearedCallback callback) {
         // Wait for callbacks from each mStorageInfo and another callback from
         // mLocalStorageInfo.
         mStorageInfoCallbacksLeft = mStorageInfo.size() + 1;
@@ -242,12 +250,12 @@ public class Website implements Serializable {
             if (--mStorageInfoCallbacksLeft == 0) callback.onStoredDataCleared();
         };
         if (mLocalStorageInfo != null) {
-            mLocalStorageInfo.clear(clearedCallback);
+            mLocalStorageInfo.clear(browserContextHandle, clearedCallback);
             mLocalStorageInfo = null;
         } else {
             clearedCallback.onStorageInfoCleared();
         }
-        for (StorageInfo info : mStorageInfo) info.clear(clearedCallback);
+        for (StorageInfo info : mStorageInfo) info.clear(browserContextHandle, clearedCallback);
         mStorageInfo.clear();
     }
 

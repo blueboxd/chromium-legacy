@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_swap_chain.h"
 
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_swap_chain_descriptor.h"
-#include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
@@ -14,16 +12,17 @@
 namespace blink {
 
 GPUSwapChain::GPUSwapChain(GPUCanvasContext* context,
-                           const GPUSwapChainDescriptor* descriptor,
+                           GPUDevice* device,
+                           WGPUTextureUsage usage,
+                           WGPUTextureFormat format,
                            SkFilterQuality filter_quality)
-    : DawnObjectBase(descriptor->device()->GetDawnControlClient()),
-      device_(descriptor->device()),
+    : DawnObjectBase(device->GetDawnControlClient()),
+      device_(device),
       context_(context),
-      usage_(AsDawnEnum<WGPUTextureUsage>(descriptor->usage())) {
+      usage_(usage) {
   // TODO: Use label from GPUObjectDescriptorBase.
   swap_buffers_ = base::AdoptRef(new WebGPUSwapBufferProvider(
-      this, GetDawnControlClient(), device_->GetClientID(), usage_,
-      AsDawnEnum<WGPUTextureFormat>(descriptor->format())));
+      this, GetDawnControlClient(), device_->GetClientID(), usage_, format));
   swap_buffers_->SetFilterQuality(filter_quality);
 }
 

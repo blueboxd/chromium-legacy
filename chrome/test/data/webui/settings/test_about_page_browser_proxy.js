@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-import {isMac} from 'chrome://resources/js/cr.m.js';
+import {isMac, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {UpdateStatus} from 'chrome://settings/settings.js';
 
 /** @implements {AboutPageBrowserProxy} */
@@ -32,7 +32,7 @@ export class TestAboutPageBrowserProxy extends TestBrowserProxy {
   }
 
   sendStatusNoInternet() {
-    cr.webUIListenerCallback('update-status-changed', {
+    webUIListenerCallback('update-status-changed', {
       progress: 0,
       status: UpdateStatus.FAILED,
       message: 'offline',
@@ -47,7 +47,7 @@ export class TestAboutPageBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   refreshUpdateStatus() {
-    cr.webUIListenerCallback('update-status-changed', {
+    webUIListenerCallback('update-status-changed', {
       progress: 1,
       status: this.updateStatus_,
     });

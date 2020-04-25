@@ -1594,7 +1594,8 @@ GPU_TELEMETRY_TEST_OUTPUT = """\
             }
           ],
           "idempotent": false
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/foo_tests"
       }
     ]
   }
@@ -1635,7 +1636,8 @@ NVIDIA_GPU_TELEMETRY_TEST_OUTPUT = """\
             }
           ],
           "idempotent": false
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/foo_tests"
       }
     ]
   }
@@ -1676,7 +1678,8 @@ INTEL_GPU_TELEMETRY_TEST_OUTPUT = """\
             }
           ],
           "idempotent": false
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/foo_tests"
       }
     ]
   }
@@ -1717,7 +1720,8 @@ INTEL_UHD_GPU_TELEMETRY_TEST_OUTPUT = """\
             }
           ],
           "idempotent": false
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/foo_tests"
       }
     ]
   }
@@ -1939,7 +1943,8 @@ GPU_DIMENSIONS_WATERFALL_OUTPUT = """\
           "expiration": 120,
           "idempotent": false,
           "value": "test"
-        }
+        },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/foo_test"
       }
     ]
   }
@@ -2221,6 +2226,14 @@ GN_ISOLATE_MAP="""\
 }
 """
 
+GPU_TELEMETRY_GN_ISOLATE_MAP="""\
+{
+  'telemetry_gpu_integration_test': {
+    'label': '//chrome/test:telemetry_gpu_integration_test',
+    'type': 'script',
+      }
+}
+"""
 GN_ISOLATE_MAP_KEY_LABEL_MISMATCH="""\
 {
   'foo_test': {
@@ -2736,7 +2749,8 @@ class UnitTest(unittest.TestCase):
     fbb = FakeBBGen(FOO_GPU_TELEMETRY_TEST_WATERFALL,
                     COMPOSITION_SUITE_WITH_NAME_NOT_ENDING_IN_TEST,
                     LUCI_MILO_CFG,
-                    exceptions=NO_BAR_TEST_EXCEPTIONS)
+                    exceptions=NO_BAR_TEST_EXCEPTIONS,
+                    gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP)
     fbb.files['chromium.test.json'] = GPU_TELEMETRY_TEST_OUTPUT
     fbb.files['chromium.ci.json'] = GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2746,7 +2760,8 @@ class UnitTest(unittest.TestCase):
     fbb = FakeBBGen(NVIDIA_GPU_TELEMETRY_TEST_WATERFALL,
                     COMPOSITION_SUITE_WITH_GPU_ARGS,
                     LUCI_MILO_CFG,
-                    exceptions=NO_BAR_TEST_EXCEPTIONS)
+                    exceptions=NO_BAR_TEST_EXCEPTIONS,
+                    gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP)
     fbb.files['chromium.test.json'] = NVIDIA_GPU_TELEMETRY_TEST_OUTPUT
     fbb.files['chromium.ci.json'] = NVIDIA_GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2756,7 +2771,8 @@ class UnitTest(unittest.TestCase):
     fbb = FakeBBGen(INTEL_GPU_TELEMETRY_TEST_WATERFALL,
                     COMPOSITION_SUITE_WITH_GPU_ARGS,
                     LUCI_MILO_CFG,
-                    exceptions=NO_BAR_TEST_EXCEPTIONS)
+                    exceptions=NO_BAR_TEST_EXCEPTIONS,
+                    gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP)
     fbb.files['chromium.test.json'] = INTEL_GPU_TELEMETRY_TEST_OUTPUT
     fbb.files['chromium.ci.json'] = INTEL_GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -2766,7 +2782,8 @@ class UnitTest(unittest.TestCase):
     fbb = FakeBBGen(INTEL_UHD_GPU_TELEMETRY_TEST_WATERFALL,
                     COMPOSITION_SUITE_WITH_GPU_ARGS,
                     LUCI_MILO_CFG,
-                    exceptions=NO_BAR_TEST_EXCEPTIONS)
+                    exceptions=NO_BAR_TEST_EXCEPTIONS,
+                    gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP)
     fbb.files['chromium.test.json'] = INTEL_UHD_GPU_TELEMETRY_TEST_OUTPUT
     fbb.files['chromium.ci.json'] = INTEL_UHD_GPU_TELEMETRY_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -3734,7 +3751,8 @@ class MixinTests(unittest.TestCase):
     fbb = FakeBBGen(FOO_GPU_TELEMETRY_TEST_DIMENSIONS_WATERFALL,
                     FOO_TEST_SUITE_WITH_MIXIN,
                     LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS)
+                    mixins=SWARMING_MIXINS,
+                    gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP)
     fbb.files['chromium.test.json'] = GPU_DIMENSIONS_WATERFALL_OUTPUT
     fbb.files['chromium.ci.json'] = GPU_DIMENSIONS_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)

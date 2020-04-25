@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.sync.ModelType;
@@ -60,7 +61,8 @@ public class PasswordManagerLauncher {
             }
         }
 
-        SettingsLauncher.getInstance().launchSettingsPage(activity, PasswordSettings.class);
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(activity, PasswordSettings.class);
     }
 
     @CalledByNative

@@ -809,7 +809,8 @@ bool GetLiveDetails(const EntityPtr& broadcastEvent,
 
 bool GetMediaFeedItem(const EntityPtr& item,
                       mojom::MediaFeedItem* converted_item,
-                      base::flat_set<std::string>* item_ids) {
+                      base::flat_set<std::string>* item_ids,
+                      bool is_embedded_item) {
   auto convert_property = base::BindRepeating(
       &ConvertProperty<mojom::MediaFeedItem>, item.get(), converted_item);
 
@@ -913,7 +914,7 @@ bool GetMediaFeedItem(const EntityPtr& item,
 
   bool has_embedded_action =
       item->type == schema_org::entity::kTVSeries && converted_item->action;
-  if (!has_embedded_action) {
+  if (!has_embedded_action && !is_embedded_item) {
     auto action_status = GetActionStatus(item.get());
     converted_item->action_status =
         action_status.value_or(mojom::MediaFeedItemActionStatus::kUnknown);
@@ -949,14 +950,31 @@ void GetDataFeedItems(
         continue;
 
       if (!GetMediaFeedItem(embedded_item->values->entity_values[0],
-                            converted_item.get(), &item_ids)) {
+                            converted_item.get(), &item_ids,
+                            /*is_embedded_item=*/true)) {
         continue;
       }
 
       if (!GetLiveDetails(item, converted_item.get()))
         continue;
+
+      bool has_embedded_action =
+          item->type == schema_org::entity::kTVSeries && converted_item->action;
+      if (!has_embedded_action) {
+        auto action_status = GetActionStatus(item.get());
+        converted_item->action_status =
+            action_status.value_or(mojom::MediaFeedItemActionStatus::kUnknown);
+        auto* action =
+            GetProperty(item.get(), schema_org::property::kPotentialAction);
+        if (!action ||
+            !GetAction<mojom::MediaFeedItem>(converted_item->action_status,
+                                             *action, converted_item.get())) {
+          continue;
+        }
+      }
     } else {
-      if (!GetMediaFeedItem(item, converted_item.get(), &item_ids))
+      if (!GetMediaFeedItem(item, converted_item.get(), &item_ids,
+                            /*is_embedded_item=*/false))
         continue;
     }
 
@@ -969,7 +987,7 @@ base::Optional<std::vector<mojom::MediaFeedItemPtr>> GetMediaFeeds(
     const EntityPtr& entity,
     std::vector<media_session::MediaImage>* logos,
     std::string* display_name) {
-  if (entity->type != schema_org::entity::kCompleteDataFeed)
+  if (!entity || entity->type != schema_org::entity::kCompleteDataFeed)
     return base::nullopt;
 
   DCHECK(logos && display_name);

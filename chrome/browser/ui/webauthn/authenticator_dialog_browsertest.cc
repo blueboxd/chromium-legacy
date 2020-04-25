@@ -42,7 +42,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     model->set_cable_transport_info(/*cable_extension_provided=*/true,
                                     /*have_paired_phones=*/false,
                                     device::CableDiscoveryData::NewQRKey());
-    model->StartFlow(std::move(transport_availability), base::nullopt, nullptr);
+    model->StartFlow(std::move(transport_availability), base::nullopt);
 
     // The dialog should immediately close as soon as it is displayed.
     if (name == "transports") {
@@ -68,29 +68,6 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "ble_power_on_manual") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBlePowerOnManual);
-    } else if (name == "ble_pairing_begin") {
-      model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kBlePairingBegin);
-    } else if (name == "ble_enter_pairing_mode") {
-      model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kBleEnterPairingMode);
-    } else if (name == "ble_device_selection") {
-      model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kBleDeviceSelection);
-    } else if (name == "ble_pin_entry") {
-      model->SetSelectedAuthenticatorForTesting(AuthenticatorReference(
-          "test_authenticator_id" /* authenticator_id */,
-          base::string16() /* authenticator_display_name */,
-          AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */,
-          false /* is_paired */, true /* requires_ble_pairing_pin */));
-      model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kBlePinEntry);
-    } else if (name == "ble_verifying") {
-      model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kBleVerifying);
-    } else if (name == "ble_activate") {
-      model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kBleActivate);
     } else if (name == "touchid_incognito") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kTouchIdIncognitoSpeedBump);
@@ -227,31 +204,6 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_power_on_manual) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_pairing_begin) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
-                       InvokeUi_ble_enter_pairing_mode) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_device_selection) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_pin_entry) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_verifying) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_activate) {
   ShowAndVerifyUi();
 }
 

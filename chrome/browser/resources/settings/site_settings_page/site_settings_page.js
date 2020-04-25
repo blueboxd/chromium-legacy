@@ -19,7 +19,7 @@ import {loadTimeData} from '../i18n_setup.m.js';
 import {routes} from '../route.m.js';
 import {Route, Router} from '../router.m.js';
 import '../settings_shared_css.m.js';
-import {ContentSettingsTypes} from '../site_settings/constants.m.js';
+import {ContentSettingsTypes} from '../site_settings/constants.js';
 import './recent_site_permissions.js';
 import {CategoryListItem} from './site_settings_list.js';
 

@@ -4,6 +4,7 @@
 
 #import "ios/web/public/navigation/web_state_policy_decider_bridge.h"
 
+#include "base/bind_helpers.h"
 #import "ios/web/public/test/fakes/crw_fake_web_state_policy_decider.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/platform_test.h"
@@ -51,21 +52,25 @@ TEST_F(WebStatePolicyDeciderBridgeTest, ShouldAllowRequest) {
       should_allow_request_info->request_info.transition_type));
 }
 
-// Tests |shouldAllowResponse:forMainFrame:| forwarding.
-TEST_F(WebStatePolicyDeciderBridgeTest, ShouldAllowResponse) {
-  ASSERT_FALSE([decider_ shouldAllowResponseInfo]);
+// Tests |decidePolicyForNavigationResponse:forMainFrame:completionHandler:|
+// forwarding.
+TEST_F(WebStatePolicyDeciderBridgeTest, DecidePolicyForNavigationResponse) {
+  ASSERT_FALSE([decider_ decidePolicyForNavigationResponseInfo]);
   NSURL* url = [NSURL URLWithString:@"http://test.url"];
   NSURLResponse* response = [[NSURLResponse alloc] initWithURL:url
                                                       MIMEType:@"text/html"
                                          expectedContentLength:0
                                               textEncodingName:nil];
   bool for_main_frame = true;
-  decider_bridge_.ShouldAllowResponse(response, for_main_frame);
-  FakeShouldAllowResponseInfo* should_allow_response_info =
-      [decider_ shouldAllowResponseInfo];
-  ASSERT_TRUE(should_allow_response_info);
-  EXPECT_EQ(response, should_allow_response_info->response);
-  EXPECT_EQ(for_main_frame, should_allow_response_info->for_main_frame);
+  decider_bridge_.ShouldAllowResponse(response, for_main_frame,
+                                      base::DoNothing());
+  FakeDecidePolicyForNavigationResponseInfo*
+      decide_policy_for_navigation_response_info =
+          [decider_ decidePolicyForNavigationResponseInfo];
+  ASSERT_TRUE(decide_policy_for_navigation_response_info);
+  EXPECT_EQ(response, decide_policy_for_navigation_response_info->response);
+  EXPECT_EQ(for_main_frame,
+            decide_policy_for_navigation_response_info->for_main_frame);
 }
 
 }  // namespace web

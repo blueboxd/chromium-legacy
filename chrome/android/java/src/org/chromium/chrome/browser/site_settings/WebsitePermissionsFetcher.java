@@ -13,6 +13,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.common.ContentSwitches;
 
@@ -27,6 +28,7 @@ import java.util.Map;
  * that the user has set for them.
  */
 public class WebsitePermissionsFetcher {
+    private BrowserContextHandle mBrowserContextHandle;
     private WebsitePreferenceBridge mWebsitePreferenceBridge;
 
     /**
@@ -66,14 +68,16 @@ public class WebsitePermissionsFetcher {
 
     private final boolean mFetchSiteImportantInfo;
 
-    public WebsitePermissionsFetcher() {
-        this(false);
+    public WebsitePermissionsFetcher(BrowserContextHandle browserContextHandle) {
+        this(browserContextHandle, false);
     }
 
     /**
      * @param fetchSiteImportantInfo if the fetcher should query whether each site is 'important'.
      */
-    public WebsitePermissionsFetcher(boolean fetchSiteImportantInfo) {
+    public WebsitePermissionsFetcher(
+            BrowserContextHandle browserContextHandle, boolean fetchSiteImportantInfo) {
+        mBrowserContextHandle = browserContextHandle;
         mFetchSiteImportantInfo = fetchSiteImportantInfo;
         mWebsitePreferenceBridge = new WebsitePreferenceBridge();
     }
@@ -281,7 +285,8 @@ public class WebsitePermissionsFetcher {
                         + contentSettingsType;
 
         for (ContentSettingException exception :
-                mWebsitePreferenceBridge.getContentSettingsExceptions(contentSettingsType)) {
+                mWebsitePreferenceBridge.getContentSettingsExceptions(
+                        mBrowserContextHandle, contentSettingsType)) {
             String address = exception.getPrimaryPattern();
             String embedder = exception.getSecondaryPattern();
             // If both patterns are the wildcard, dont display this rule.
@@ -335,7 +340,8 @@ public class WebsitePermissionsFetcher {
 
         @Override
         public void run() {
-            for (PermissionInfo info : mWebsitePreferenceBridge.getPermissionInfo(mType)) {
+            for (PermissionInfo info :
+                    mWebsitePreferenceBridge.getPermissionInfo(mBrowserContextHandle, mType)) {
                 String origin = info.getOrigin();
                 if (origin == null) continue;
                 String embedder = mType == PermissionInfo.Type.SENSORS ? null : info.getEmbedder();
@@ -355,8 +361,8 @@ public class WebsitePermissionsFetcher {
         public void run() {
             if (mChooserDataType == -1) return;
 
-            for (ChosenObjectInfo info :
-                    mWebsitePreferenceBridge.getChosenObjectInfo(mChooserDataType)) {
+            for (ChosenObjectInfo info : mWebsitePreferenceBridge.getChosenObjectInfo(
+                         mBrowserContextHandle, mChooserDataType)) {
                 String origin = info.getOrigin();
                 if (origin == null) continue;
                 findOrCreateSite(origin, info.getEmbedder()).addChosenObjectInfo(info);
@@ -380,40 +386,43 @@ public class WebsitePermissionsFetcher {
     private class LocalStorageInfoFetcher extends Task {
         @Override
         public void runAsync(final TaskQueue queue) {
-            mWebsitePreferenceBridge.fetchLocalStorageInfo(new Callback<HashMap>() {
-                @Override
-                public void onResult(HashMap result) {
-                    for (Object o : result.entrySet()) {
-                        @SuppressWarnings("unchecked")
-                        Map.Entry<String, LocalStorageInfo> entry =
-                                (Map.Entry<String, LocalStorageInfo>) o;
-                        String address = entry.getKey();
-                        if (address == null) continue;
-                        findOrCreateSite(address, null).setLocalStorageInfo(entry.getValue());
-                    }
-                    queue.next();
-                }
-            }, mFetchSiteImportantInfo);
+            mWebsitePreferenceBridge.fetchLocalStorageInfo(
+                    mBrowserContextHandle, new Callback<HashMap>() {
+                        @Override
+                        public void onResult(HashMap result) {
+                            for (Object o : result.entrySet()) {
+                                @SuppressWarnings("unchecked")
+                                Map.Entry<String, LocalStorageInfo> entry =
+                                        (Map.Entry<String, LocalStorageInfo>) o;
+                                String address = entry.getKey();
+                                if (address == null) continue;
+                                findOrCreateSite(address, null)
+                                        .setLocalStorageInfo(entry.getValue());
+                            }
+                            queue.next();
+                        }
+                    }, mFetchSiteImportantInfo);
         }
     }
 
     private class WebStorageInfoFetcher extends Task {
         @Override
         public void runAsync(final TaskQueue queue) {
-            mWebsitePreferenceBridge.fetchStorageInfo(new Callback<ArrayList>() {
-                @Override
-                public void onResult(ArrayList result) {
-                    @SuppressWarnings("unchecked")
-                    ArrayList<StorageInfo> infoArray = result;
+            mWebsitePreferenceBridge.fetchStorageInfo(
+                    mBrowserContextHandle, new Callback<ArrayList>() {
+                        @Override
+                        public void onResult(ArrayList result) {
+                            @SuppressWarnings("unchecked")
+                            ArrayList<StorageInfo> infoArray = result;
 
-                    for (StorageInfo info : infoArray) {
-                        String address = info.getHost();
-                        if (address == null) continue;
-                        findOrCreateSite(address, null).addStorageInfo(info);
-                    }
-                    queue.next();
-                }
-            });
+                            for (StorageInfo info : infoArray) {
+                                String address = info.getHost();
+                                if (address == null) continue;
+                                findOrCreateSite(address, null).addStorageInfo(info);
+                            }
+                            queue.next();
+                        }
+                    });
         }
     }
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {BrowserProxy, Command, CommandManager, IncognitoAvailability} from 'chrome://bookmarks/bookmarks.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {TestBookmarksBrowserProxy} from 'chrome://test/bookmarks/test_browser_proxy.js';
 import {TestStore} from 'chrome://test/bookmarks/test_store.js';
 import {createFolder, createItem, getAllFoldersOpenState, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
@@ -47,7 +48,7 @@ suite('Bookmarks policies', function() {
     assertFalse(
         commandManager.canExecute(Command.OPEN_INCOGNITO, new Set(['11'])));
 
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'incognito-availability-changed', IncognitoAvailability.ENABLED);
     assertEquals(
         IncognitoAvailability.ENABLED, store.data.prefs.incognitoAvailability);
@@ -64,7 +65,7 @@ suite('Bookmarks policies', function() {
     assertFalse(store.data.prefs.canEdit);
     assertFalse(commandManager.canExecute(Command.DELETE, new Set(['11'])));
 
-    cr.webUIListenerCallback('can-edit-bookmarks-changed', true);
+    webUIListenerCallback('can-edit-bookmarks-changed', true);
     assertTrue(store.data.prefs.canEdit);
     assertTrue(commandManager.canExecute(Command.DELETE, new Set(['11'])));
   });

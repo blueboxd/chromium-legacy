@@ -8,11 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 

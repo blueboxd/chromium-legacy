@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
@@ -198,8 +199,9 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      * @return the intent for opening the settings
      */
     private Intent createSettingsIntent() {
-        return SettingsLauncher.getInstance().createIntentForSettingsPage(
-                ContextUtils.getApplicationContext(), SyncAndServicesSettings.class.getName(),
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        return settingsLauncher.createSettingsActivityIntent(ContextUtils.getApplicationContext(),
+                SyncAndServicesSettings.class.getName(),
                 SyncAndServicesSettings.createArguments(false));
     }
 

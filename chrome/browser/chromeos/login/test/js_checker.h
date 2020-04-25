@@ -40,9 +40,9 @@ class JSChecker {
   void ExecuteAsync(const std::string& expression);
 
   // Evaluates |expression| and returns its result.
-  bool GetBool(const std::string& expression);
-  int GetInt(const std::string& expression);
-  std::string GetString(const std::string& expression);
+  WARN_UNUSED_RESULT bool GetBool(const std::string& expression);
+  WARN_UNUSED_RESULT int GetInt(const std::string& expression);
+  WARN_UNUSED_RESULT std::string GetString(const std::string& expression);
 
   // Checks truthfulness of the given |expression|.
   void ExpectTrue(const std::string& expression);

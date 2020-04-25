@@ -59,6 +59,11 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
     // Prefer to use this field (via SetButtonLabel) rather than override
     // GetDialogButtonLabel - see https://crbug.com/1011446
     base::string16 button_labels[ui::DIALOG_BUTTON_LAST + 1];
+
+    // A bitmask of buttons (from ui::DialogButton) that are enabled in this
+    // dialog. It's legal for a button to be marked enabled that isn't present
+    // in |buttons| (see above).
+    int enabled_buttons = ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
   };
 
   DialogDelegate();
@@ -181,6 +186,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   void SetDefaultButton(int button);
   void SetButtons(int buttons);
   void SetButtonLabel(ui::DialogButton button, base::string16 label);
+  void SetButtonEnabled(ui::DialogButton button, bool enabled);
   void SetAcceptCallback(base::OnceClosure callback);
   void SetCancelCallback(base::OnceClosure callback);
   void SetCloseCallback(base::OnceClosure callback);

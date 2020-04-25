@@ -16,7 +16,7 @@ import '../controls/settings_toggle_button.m.js';
 import '../icons.m.js';
 import '../prefs/prefs.m.js';
 import '../settings_shared_css.m.js';
-import '../site_settings/site_list.m.js';
+import '../site_settings/site_list.js';
 import './collapse_radio_button.js';
 import './do_not_track_toggle.js';
 
@@ -30,8 +30,8 @@ import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
 import {routes} from '../route.m.js';
 import {Router} from '../router.m.js';
-import {ContentSetting, ContentSettingsTypes, CookieControlsMode, SiteSettingSource} from '../site_settings/constants.m.js';
-import {ContentSettingProvider, CookieControlsManagedState, DefaultContentSetting, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.m.js';
+import {ContentSetting, ContentSettingsTypes, CookieControlsMode, SiteSettingSource} from '../site_settings/constants.js';
+import {ContentSettingProvider, CookieControlsManagedState, DefaultContentSetting, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
 /**
  * Enumeration of all cookies radio controls.

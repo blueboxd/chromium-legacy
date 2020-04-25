@@ -609,7 +609,7 @@ SharedImageBackingFactoryIOSurface::~SharedImageBackingFactoryIOSurface() =
 std::unique_ptr<SharedImageBacking>
 SharedImageBackingFactoryIOSurface::CreateSharedImage(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::ResourceFormat requested_format,
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -619,21 +619,32 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
   DCHECK(!is_thread_safe);
   // Check the format is supported and for simplicity always require it to be
   // supported for GL.
-  if (use_gl_ && !format_supported_by_gl_[format]) {
-    LOG(ERROR) << "viz::ResourceFormat " << format
+  if (use_gl_ && !format_supported_by_gl_[requested_format]) {
+    LOG(ERROR) << "viz::ResourceFormat " << requested_format
                << " not supported by IOSurfaces";
     return nullptr;
   }
 
   // Calculate SharedImage size in bytes.
   size_t estimated_size;
-  if (!viz::ResourceSizes::MaybeSizeInBytes(size, format, &estimated_size)) {
+  if (!viz::ResourceSizes::MaybeSizeInBytes(size, requested_format,
+                                            &estimated_size)) {
     LOG(ERROR) << "Failed to calculate SharedImage size";
     return nullptr;
   }
 
+  // Note: OpenGL textures bound to IOSurfaces won't work on macOS unless the
+  // internal format is BGRA. So if RGBA8 is passed into CreateIOSurface(), the
+  // resulting IOSurface is actually BGRA8 (see PixelFormat() in
+  // ui/gfx/mac/io_surface.cc).
+  // Explicitly override it here to avoid confusion.
+  viz::ResourceFormat actual_format = requested_format;
+  if (requested_format == viz::RGBA_8888) {
+    actual_format = viz::BGRA_8888;
+  }
+
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
-      gfx::CreateIOSurface(size, viz::BufferFormat(format), false));
+      gfx::CreateIOSurface(size, viz::BufferFormat(actual_format), false));
   if (!io_surface) {
     LOG(ERROR) << "Failed to allocate IOSurface.";
     return nullptr;
@@ -641,18 +652,15 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
 
   gfx::IOSurfaceSetColorSpace(io_surface, color_space);
 
-  // OpenGL textures bound to IOSurfaces won't work on macOS unless the internal
-  // format is BGRA, so force a BGRA internal format for viz::RGBA_8888.
   base::Optional<WGPUTextureFormat> wgpu_format =
-      format == viz::RGBA_8888 ? WGPUTextureFormat_BGRA8Unorm
-                               : viz::ToWGPUFormat(format);
+      viz::ToWGPUFormat(actual_format);
   if (wgpu_format.value() == WGPUTextureFormat_Undefined) {
     wgpu_format = base::nullopt;
   }
 
   return std::make_unique<SharedImageBackingIOSurface>(
-      mailbox, format, size, color_space, usage, std::move(io_surface),
-      wgpu_format, estimated_size);
+      mailbox, requested_format, size, color_space, usage,
+      std::move(io_surface), wgpu_format, estimated_size);
 }
 
 std::unique_ptr<SharedImageBacking>

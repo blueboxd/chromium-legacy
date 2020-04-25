@@ -37,7 +37,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryIOSurface
   // SharedImageBackingFactory implementation.
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
-      viz::ResourceFormat format,
+      viz::ResourceFormat requested_format,
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,

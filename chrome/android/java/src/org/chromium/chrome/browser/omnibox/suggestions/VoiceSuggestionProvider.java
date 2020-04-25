@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -116,13 +117,13 @@ class VoiceSuggestionProvider {
             List<OmniboxSuggestion> suggestions, VoiceResult result, float confidenceThreshold) {
         if (doesVoiceResultHaveMatch(suggestions, result)) return;
         if (result.getConfidence() < confidenceThreshold && result.getConfidence() > 0) return;
-        String voiceUrl =
+        GURL voiceUrl =
                 TemplateUrlServiceFactory.get().getUrlForVoiceSearchQuery(result.getMatch());
         List<MatchClassification> classifications = new ArrayList<>();
         classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
         suggestions.add(new OmniboxSuggestion(OmniboxSuggestionType.VOICE_SUGGEST, true, 0, 1,
                 result.getMatch(), classifications, null, classifications, null, null, voiceUrl,
-                null, null, false, false, null, null, OmniboxSuggestion.INVALID_GROUP));
+                GURL.emptyGURL(), null, false, false, null, null, OmniboxSuggestion.INVALID_GROUP));
     }
 
     private boolean doesVoiceResultHaveMatch(

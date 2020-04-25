@@ -71,7 +71,8 @@ void WebTestDownloadManagerDelegate::CheckDownloadAllowed(
   }
 
   test_controller->printer()->AddMessageRaw("Download started\n");
-  test_controller->OnTestFinishedInSecondaryRenderer();
+  static_cast<mojom::BlinkTestClient*>(test_controller)
+      ->TestFinishedInSecondaryRenderer();
   std::move(check_download_allowed_cb).Run(false);
 }
 

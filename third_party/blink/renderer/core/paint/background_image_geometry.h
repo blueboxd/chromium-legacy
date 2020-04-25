@@ -31,7 +31,7 @@ class BackgroundImageGeometry {
 
  public:
   // Constructor for LayoutView where the coordinate space is different.
-  BackgroundImageGeometry(const LayoutView&, bool root_elemnet_has_transform);
+  BackgroundImageGeometry(const LayoutView&, bool root_element_has_transform);
 
   // Constructor for table cells where background_object may be the row or
   // column the background image is attached to.
@@ -95,9 +95,9 @@ class BackgroundImageGeometry {
   const ComputedStyle& ImageStyle() const;
   InterpolationQuality ImageInterpolationQuality() const;
 
+ private:
   static bool ShouldUseFixedAttachment(const FillLayer&);
 
- private:
   void SetSpaceSize(const LayoutSize& repeat_spacing) {
     repeat_spacing_ = repeat_spacing;
   }

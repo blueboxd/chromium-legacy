@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -20,7 +21,9 @@ class TestWebState;
 class WebStatePolicyDecider {
  public:
   // Specifies a navigation decision. Used as a return value by
-  // WebStatePolicyDecider::ShouldAllowRequest().
+  // WebStatePolicyDecider::ShouldAllowRequest(), and used by
+  // WebStatePolicyDecider::ShouldAllowResponse() when sending its decision to
+  // its callback.
   struct PolicyDecision {
     // A policy decision which allows the navigation.
     static PolicyDecision Allow();
@@ -95,23 +98,32 @@ class WebStatePolicyDecider {
   virtual ~WebStatePolicyDecider();
 
   // Asks the decider whether the navigation corresponding to |request| should
-  // be allowed to continue. Defaults to true if not overriden.
+  // be allowed to continue. The first policy decider returning a PolicyDecision
+  // where ShouldCancelNavigation() is true will be the PolicyDecision used for
+  // the navigation. This means that a policy decider may not be called and have
+  // its expected decision performed for a given navigation. As such, the
+  // highest priority policy deciders should be added first to ensure those
+  // decisions are prioritized.
   // Called before WebStateObserver::DidStartNavigation.
+  // Defaults to PolicyDecision::Allow() if not overridden.
   // Never called in the following cases:
   //  - same-document back-forward and state change navigations
   virtual PolicyDecision ShouldAllowRequest(NSURLRequest* request,
                                             const RequestInfo& request_info);
 
   // Asks the decider whether the navigation corresponding to |response| should
-  // be allowed to continue. Defaults to true if not overriden.
-  // |for_main_frame| indicates whether the frame being navigated is the main
-  // frame. Called before WebStateObserver::DidFinishNavigation.
+  // be allowed to continue. Defaults to PolicyDecision::Allow() if not
+  // overridden. |for_main_frame| indicates whether the frame being navigated is
+  // the main frame. Called before WebStateObserver::DidFinishNavigation. Calls
+  // |callback| with the decision.
   // Never called in the following cases:
   //  - same-document navigations (unless ititiated via LoadURLWithParams)
   //  - going back after form submission navigation
   //  - user-initiated POST navigation on iOS 10
-  virtual bool ShouldAllowResponse(NSURLResponse* response,
-                                   bool for_main_frame);
+  virtual void ShouldAllowResponse(
+      NSURLResponse* response,
+      bool for_main_frame,
+      base::OnceCallback<void(PolicyDecision)> callback);
 
   // Notifies the policy decider that the web state is being destroyed.
   // Gives subclasses a chance to cleanup.

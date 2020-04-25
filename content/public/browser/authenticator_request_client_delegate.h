@@ -99,8 +99,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
       base::OnceClosure cancel_callback,
       base::RepeatingClosure start_over_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
-      base::RepeatingClosure bluetooth_adapter_power_on_callback,
-      device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback);
+      base::RepeatingClosure bluetooth_adapter_power_on_callback);
 
   // Returns true if the given relying party ID is permitted to receive
   // individual attestation certificates. This:
@@ -242,12 +241,6 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
-  void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
-                                  std::string new_authenticator_id) override;
-  void FidoAuthenticatorPairingModeChanged(
-      base::StringPiece authenticator_id,
-      bool is_in_pairing_mode,
-      base::string16 display_name) override;
   bool SupportsPIN() const override;
   void CollectPIN(
       base::Optional<int> attempts,

@@ -54,7 +54,8 @@ public class ChromeImageViewPreferenceTest {
 
     @Before
     public void setUp() {
-        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        Intent intent = settingsLauncher.createSettingsActivityIntent(
                 InstrumentationRegistry.getInstrumentation().getContext(),
                 DummySettingsForTest.class.getName());
         mRule.launchActivity(intent);

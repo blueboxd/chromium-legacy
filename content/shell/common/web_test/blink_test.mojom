@@ -83,7 +83,7 @@ interface BlinkTestControl {
 
   // Tells the main window that a secondary renderer in a different process
   // asked to finish the test.
-  TestFinishedInSecondaryRenderer();
+  FinishTestInMainWindow();
 
   // Notifies BlinkTestRunner that the layout dump has completed (and that it
   // can proceed with finishing up the test).
@@ -102,6 +102,13 @@ interface BlinkTestClient {
   // BlinkTestControl.DumpFrameLayout calls and ends with sending of
   // LayoutDumpCompleted of BlinkTestControl interface.
   InitiateLayoutDump();
+
+  // Initialize to dump the main window's navigation history to text, and/or
+  // capture a pixel dump of the main window's content.
+  InitiateCaptureDump(bool capture_navigation_history, bool capture_pixels);
+
+  // Sent by secondary test window to notify the test has finished.
+  TestFinishedInSecondaryRenderer();
 
   // An ACK to notify the browser process that ResetRendererAfterWebTest() has
   // completed.
@@ -150,4 +157,20 @@ interface BlinkTestClient {
   // Mark the orientation changed in the browser process for the layout tests
   // that request fullscreen on screen orientation change.
   SetScreenOrientationChanged();
+
+  // Sets the cookie policy to:
+  // - allow all cookies when |block| is false
+  // - block only third-party cookies when |block| is true
+  BlockThirdPartyCookies(bool block);
+
+  // Returns the absolute path to a directory this test can write data in. This
+  // returns the path to a fresh empty directory for each test that calls this
+  // method, but repeatedly calling this from the same test will return the same
+  // directory.
+  [Sync]
+  GetWritableDirectory() => (mojo_base.mojom.FilePath path);
+
+  // For the duration of the current test this causes all file choosers to
+  // return the passed in |path|.
+  SetFilePathForMockFileDialog(mojo_base.mojom.FilePath path);
 };

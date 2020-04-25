@@ -485,7 +485,6 @@ jumbo_component("base") {
     "profiler/module_cache.cc",
     "profiler/module_cache.h",
     "profiler/native_unwinder.h",
-    "profiler/profile_builder.cc",
     "profiler/profile_builder.h",
     "profiler/register_context.h",
     "profiler/sample_metadata.cc",

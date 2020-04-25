@@ -20,6 +20,7 @@ source_set("fakes") {
     "//ios/web/public/session",
     "//ios/web/public/test:util",
     "//ios/web/test:test_constants",
+    "//ios/web/web_state:policy_decision_state_tracker",
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
     "//ios/web/webui:webui",
     "//net",
@@ -31,6 +32,8 @@ source_set("fakes") {
   public_deps = [ "//ios/web/public" ]
 
   sources = [
+    "async_web_state_policy_decider.h",
+    "async_web_state_policy_decider.mm",
     "crw_fake_find_in_page_manager_delegate.h",
     "crw_fake_find_in_page_manager_delegate.mm",
     "crw_fake_web_state_policy_decider.h",

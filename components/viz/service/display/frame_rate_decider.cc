@@ -110,9 +110,14 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
   if (using_synthetic_bfs_) {
     int num_of_frame_sinks_with_fixed_interval = 0;
     for (const auto& frame_sink_id : frame_sinks_drawn_in_previous_frame_) {
-      if (client_->GetPreferredFrameIntervalForFrameSinkId(frame_sink_id) !=
-          BeginFrameArgs::MinInterval())
+      auto type = mojom::CompositorFrameSinkType::kUnspecified;
+      auto interval = client_->GetPreferredFrameIntervalForFrameSinkId(
+          frame_sink_id, &type);
+
+      if (type == mojom::CompositorFrameSinkType::kMediaStream &&
+          interval != BeginFrameArgs::MinInterval()) {
         num_of_frame_sinks_with_fixed_interval++;
+      }
     }
 
     if (num_of_frame_sinks_with_fixed_interval < 2) {

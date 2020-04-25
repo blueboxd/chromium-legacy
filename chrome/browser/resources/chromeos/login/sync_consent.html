@@ -82,47 +82,48 @@
       <h1 slot="title" consent-description>
         [[i18nDynamic(locale, 'syncConsentScreenTitle')]]
       </h1>
-      <div slot="footer" class="layout vertical">
+      <div slot="footer" class="layout vertical flex">
 
-        <!-- "Sync settings" -->
-        <div class="overview-list-item layout horizontal">
+        <!-- "Chrome OS settings sync" -->
+        <div class="overview-list-item layout horizontal center">
           <img class="overview-list-item-icon" src="images/settings_gear.svg"
               width="24" height="24">
           <div class="flex layout vertical center-justified">
             <div role="heading" aria-level="2" class="overview-list-item-title"
-              consent-description>
+              id="osSyncName" consent-description>
                 [[i18nDynamic(locale, 'syncConsentScreenOsSyncName')]]
             </div>
             <div class="overview-list-item-description" consent-description>
               [[i18nDynamic(locale, 'syncConsentScreenOsSyncDescription')]]
             </div>
           </div>
+          <cr-toggle id="osSyncToggle" checked aria-labelledby="osSyncName">
+          </cr-toggle>
         </div>
 
-        <div class="flex"></div>
-
-        <!-- "Chrome sync" -->
-        <div class="overview-list-item layout horizontal">
+        <!-- "Chrome browser sync" -->
+        <div class="overview-list-item layout horizontal center">
           <img class="overview-list-item-icon" src="images/browser_sync.svg"
               width="24" height="24">
           <div class="flex layout vertical center-justified">
             <div role="heading" aria-level="2" class="overview-list-item-title"
-              consent-description>
+              consent-description id="browserSyncName">
                 [[i18nDynamic(locale, 'syncConsentScreenChromeSyncName')]]
             </div>
             <div class="overview-list-item-description" consent-description>
               [[i18nDynamic(locale, 'syncConsentScreenChromeSyncDescription')]]
             </div>
+            <!-- TODO(jamescook): Remove this after adding a toggle to control
+                 browser sync. -->
             <cr-checkbox id="reviewBrowserSyncOptionsBox" consent-description>
               [[i18nDynamic(locale, 'syncConsentReviewBrowserSyncOptions')]]
             </cr-checkbox>
           </div>
+          <!-- TODO(jamescook): Add cr-toggle to control browser sync. -->
         </div>
 
-        <div class="flex"></div>
-
         <!-- Personalize Google services -->
-        <div class="overview-list-item layout horizontal">
+        <div class="overview-list-item layout horizontal center">
           <hd-iron-icon class="overview-list-item-icon"
               icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
           </hd-iron-icon>
@@ -140,46 +141,11 @@
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button on-tap="onSettingsSaveAndContinue_"
+        <oobe-text-button id="settingsAcceptAndContinueButton"
+            on-tap="onSettingsAcceptAndContinue_"
             class="focus-on-show" inverse>
           <div slot="text" consent-description consent-confirmation>
             [[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]
-          </div>
-        </oobe-text-button>
-      </div>
-    </oobe-dialog>
-
-    <!-- Dialog used with the SplitSyncConsent feature. -->
-    <oobe-dialog id="osSyncConsentDialog" role="dialog" has-buttons
-        aria-label$="[[i18nDynamic(locale, 'osSyncConsentTitle')]]"
-        hidden>
-      <hd-iron-icon slot="oobe-icon"
-          icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
-      </hd-iron-icon>
-      <h1 slot="title" consent-description>
-        [[i18nDynamic(locale, 'osSyncConsentTitle')]]
-      </h1>
-      <div slot="footer" class="layout vertical">
-        <div id="osSyncConsentFooter" class="flex layout horizontal center">
-          <div class="flex layout vertical center-justified">
-            <div role="heading" aria-level="2"  id="osSyncConsentToggleName"
-                consent-description>
-              [[i18nDynamic(locale, 'osSyncConsentToggleName')]]
-            </div>
-            <div id="osSyncConsentToggleDescription" consent-description>
-              [[i18nDynamic(locale, 'osSyncConsentToggleDescription')]]
-            </div>
-          </div>
-          <cr-toggle id="enableOsSyncToggle" checked
-              aria-labelledby="osSyncConsentToggleName">
-          </cr-toggle>
-        </div>
-      </div>
-      <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="osSyncAcceptAndContinueButton"
-            on-click="onOsSyncAcceptAndContinue_" class="focus-on-show" inverse>
-          <div slot="text" consent-description consent-confirmation>
-            [[i18nDynamic(locale, 'osSyncConsentContinue')]]
           </div>
         </oobe-text-button>
       </div>

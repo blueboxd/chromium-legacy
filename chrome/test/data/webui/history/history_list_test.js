@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
+import {isMac, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
 import {createHistoryEntry, createHistoryInfo, polymerSelectAll, shiftClick, waitForEvent} from 'chrome://test/history/test_util.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://test/test_util.m.js';
-import {isMac} from 'chrome://resources/js/cr.m.js';
-import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
 window.history_list_test = {};
 history_list_test.suiteName = 'HistoryListTest';
@@ -802,7 +802,7 @@ suite(history_list_test.suiteName, function() {
         return finishSetup(TEST_HISTORY_RESULTS)
             .then(function() {
               testService.resetResolver('queryHistory');
-              cr.webUIListenerCallback('history-deleted');
+              webUIListenerCallback('history-deleted');
             })
             .then(flushTasks)
             .then(function() {
@@ -817,7 +817,7 @@ suite(history_list_test.suiteName, function() {
               items[3].$.checkbox.click();
 
               testService.resetResolver('queryHistory');
-              cr.webUIListenerCallback('history-deleted');
+              webUIListenerCallback('history-deleted');
               flushTasks();
               assertEquals(0, testService.getCallCount('queryHistory'));
             });

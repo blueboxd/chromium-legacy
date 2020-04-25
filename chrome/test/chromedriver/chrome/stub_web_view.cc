@@ -73,6 +73,7 @@ Status StubWebView::TraverseHistory(int delta, const Timeout* timeout) {
 
 Status StubWebView::EvaluateScript(const std::string& frame,
                                    const std::string& function,
+                                   const bool awaitPromise,
                                    std::unique_ptr<base::Value>* result) {
   return Status(kOk);
 }

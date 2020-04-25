@@ -23,16 +23,19 @@ FakeShouldAllowRequestInfo::~FakeShouldAllowRequestInfo() = default;
 @implementation CRWFakeWebStatePolicyDecider {
   // Arguments passed to |shouldAllowRequest:requestInfo:|.
   std::unique_ptr<web::FakeShouldAllowRequestInfo> _shouldAllowRequestInfo;
-  // Arguments passed to |shouldAllowResponse:forMainFrame:|.
-  std::unique_ptr<web::FakeShouldAllowResponseInfo> _shouldAllowResponseInfo;
+  // Arguments passed to
+  // |decidePolicyForNavigationResponse:forMainFrame:completionHandler:|.
+  std::unique_ptr<web::FakeDecidePolicyForNavigationResponseInfo>
+      _decidePolicyForNavigationResponseInfo;
 }
 
 - (web::FakeShouldAllowRequestInfo*)shouldAllowRequestInfo {
   return _shouldAllowRequestInfo.get();
 }
 
-- (web::FakeShouldAllowResponseInfo*)shouldAllowResponseInfo {
-  return _shouldAllowResponseInfo.get();
+- (web::FakeDecidePolicyForNavigationResponseInfo*)
+    decidePolicyForNavigationResponseInfo {
+  return _decidePolicyForNavigationResponseInfo.get();
 }
 
 #pragma mark CRWWebStatePolicyDecider methods -
@@ -47,13 +50,17 @@ FakeShouldAllowRequestInfo::~FakeShouldAllowRequestInfo() = default;
   return web::WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
-- (BOOL)shouldAllowResponse:(NSURLResponse*)response
-               forMainFrame:(BOOL)forMainFrame {
-  _shouldAllowResponseInfo =
-      std::make_unique<web::FakeShouldAllowResponseInfo>();
-  _shouldAllowResponseInfo->response = response;
-  _shouldAllowResponseInfo->for_main_frame = forMainFrame;
-  return YES;
+- (void)
+    decidePolicyForNavigationResponse:(NSURLResponse*)response
+                         forMainFrame:(BOOL)forMainFrame
+                    completionHandler:
+                        (void (^)(web::WebStatePolicyDecider::PolicyDecision))
+                            completionHandler {
+  _decidePolicyForNavigationResponseInfo =
+      std::make_unique<web::FakeDecidePolicyForNavigationResponseInfo>();
+  _decidePolicyForNavigationResponseInfo->response = response;
+  _decidePolicyForNavigationResponseInfo->for_main_frame = forMainFrame;
+  completionHandler(web::WebStatePolicyDecider::PolicyDecision::Allow());
 }
 
 @end

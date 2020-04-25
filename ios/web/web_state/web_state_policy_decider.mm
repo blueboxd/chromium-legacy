@@ -70,9 +70,11 @@ WebStatePolicyDecider::PolicyDecision WebStatePolicyDecider::ShouldAllowRequest(
   return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
-bool WebStatePolicyDecider::ShouldAllowResponse(NSURLResponse* response,
-                                                bool for_main_frame) {
-  return true;
+void WebStatePolicyDecider::ShouldAllowResponse(
+    NSURLResponse* response,
+    bool for_main_frame,
+    base::OnceCallback<void(PolicyDecision)> callback) {
+  std::move(callback).Run(PolicyDecision::Allow());
 }
 
 void WebStatePolicyDecider::ResetWebState() {

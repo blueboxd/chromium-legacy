@@ -8,8 +8,8 @@
  */
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
-// #import {CookieDetails} from './cookie_info.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {CookieDetails} from './cookie_info.js';
 // clang-format on
 
 /**
@@ -19,7 +19,7 @@
  *   children: !Array<CookieDetails>,
  * }}
  */
-/* #export */ let CookieList;
+export let CookieList;
 
 /**
  * @typedef {{
@@ -47,9 +47,8 @@ let LocalDataList;
  */
 let EtldPlus1CookieNumber;
 
-cr.define('settings', function() {
   /** @interface */
-  /* #export */ class LocalDataBrowserProxy {
+  export class LocalDataBrowserProxy {
     /**
      * @param {string} filter Search filter (use "" for none).
      * @return {!Promise<!LocalDataList>}
@@ -113,17 +112,17 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.LocalDataBrowserProxy}
+   * @implements {LocalDataBrowserProxy}
    */
-  /* #export */ class LocalDataBrowserProxyImpl {
+  export class LocalDataBrowserProxyImpl {
     /** @override */
     getDisplayList(filter) {
-      return cr.sendWithPromise('localData.getDisplayList', filter);
+      return sendWithPromise('localData.getDisplayList', filter);
     }
 
     /** @override */
     removeAll() {
-      return cr.sendWithPromise('localData.removeAll');
+      return sendWithPromise('localData.removeAll');
     }
 
     /** @override */
@@ -138,17 +137,17 @@ cr.define('settings', function() {
 
     /** @override */
     getCookieDetails(site) {
-      return cr.sendWithPromise('localData.getCookieDetails', site);
+      return sendWithPromise('localData.getCookieDetails', site);
     }
 
     /** @override */
     getNumCookiesString(numCookies) {
-      return cr.sendWithPromise('localData.getNumCookiesString', numCookies);
+      return sendWithPromise('localData.getNumCookiesString', numCookies);
     }
 
     /** @override */
     reloadCookies() {
-      return cr.sendWithPromise('localData.reload');
+      return sendWithPromise('localData.reload');
     }
 
     /** @override */
@@ -158,17 +157,11 @@ cr.define('settings', function() {
 
     /** @override */
     removeAllThirdPartyCookies() {
-      return cr.sendWithPromise('localData.removeThirdPartyCookies');
+      return sendWithPromise('localData.removeThirdPartyCookies');
     }
   }
 
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
-  cr.addSingletonGetter(LocalDataBrowserProxyImpl);
+  addSingletonGetter(LocalDataBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    LocalDataBrowserProxy: LocalDataBrowserProxy,
-    LocalDataBrowserProxyImpl: LocalDataBrowserProxyImpl,
-  };
-});

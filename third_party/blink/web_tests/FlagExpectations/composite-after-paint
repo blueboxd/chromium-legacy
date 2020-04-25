@@ -102,5 +102,3 @@ crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html 
 
 compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
 http/tests/images/image-decode-in-frame.html [ Pass Failure ]
-
-crbug.com/1072824 compositing/text-on-scaled-surface.html [ Failure ]

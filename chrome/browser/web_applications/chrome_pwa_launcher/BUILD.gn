@@ -21,6 +21,7 @@ executable("chrome_pwa_launcher") {
     ":chrome_pwa_launcher_version",
     ":util",
     "//base",
+    "//build:branding_buildflags",
     "//chrome/common:non_code_constants",
     "//chrome/install_static:install_static_util",
     "//components/version_info:generate_version_info",

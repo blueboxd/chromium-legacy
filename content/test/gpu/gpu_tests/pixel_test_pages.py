@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from gpu_tests import skia_gold_matching_algorithms as algo
+
 _FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS = [
   {
     'comment': 'top left video, yellow',
@@ -41,7 +43,7 @@ class PixelTestPage(object):
                expected_colors=None, gpu_process_disabled=False,
                optional_action=None, restart_browser_after_test=False,
                other_args=None, grace_period_end=None,
-               expected_per_process_crashes=None):
+               expected_per_process_crashes=None, matching_algorithm=None):
     super(PixelTestPage, self).__init__()
     self.url = url
     self.name = name
@@ -83,6 +85,11 @@ class PixelTestPage(object):
     # part of the test. Should be a map of process type (str) to expected number
     # of crashes (int).
     self.expected_per_process_crashes = expected_per_process_crashes or {}
+    # This should be a child of
+    # skia_gold_matching_algorithms.SkiaGoldMatchingAlgorithm. This specifies
+    # which matching algorithm Skia Gold should use for the test.
+    self.matching_algorithm = (
+        matching_algorithm or algo.ExactMatchingAlgorithm())
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
     return PixelTestPage(
@@ -201,7 +208,12 @@ class PixelTestPages(object):
       PixelTestPage(
         'pixel_css3d.html',
         base_name + '_CSS3DBlueBox',
-        test_rect=[0, 0, 300, 300]),
+        test_rect=[0, 0, 300, 300],
+        matching_algorithm=algo.SobelMatchingAlgorithm(
+          max_different_pixels=0,
+          pixel_delta_threshold=0,
+          edge_threshold=100,
+        )),
 
       PixelTestPage(
         'pixel_webgl_aa_alpha.html',

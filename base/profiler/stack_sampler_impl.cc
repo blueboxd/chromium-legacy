@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/profiler/metadata_recorder.h"
 #include "base/profiler/profile_builder.h"
 #include "base/profiler/sample_metadata.h"
 #include "base/profiler/stack_buffer.h"
@@ -39,8 +40,8 @@ class StackCopierDelegate : public StackCopier::Delegate {
         native_unwinder_(native_unwinder),
         aux_unwinder_(aux_unwinder),
         profile_builder_(profile_builder),
-        metadata_provider_(
-            GetSampleMetadataRecorder()->CreateMetadataProvider()) {}
+        metadata_provider_(std::make_unique<MetadataRecorder::MetadataProvider>(
+            GetSampleMetadataRecorder())) {}
 
   StackCopierDelegate(const StackCopierDelegate&) = delete;
   StackCopierDelegate& operator=(const StackCopierDelegate&) = delete;
@@ -79,7 +80,7 @@ class StackCopierDelegate : public StackCopier::Delegate {
   Unwinder* const native_unwinder_;
   Unwinder* const aux_unwinder_;
   ProfileBuilder* const profile_builder_;
-  std::unique_ptr<ProfileBuilder::MetadataProvider> metadata_provider_;
+  std::unique_ptr<MetadataRecorder::MetadataProvider> metadata_provider_;
 };
 
 }  // namespace

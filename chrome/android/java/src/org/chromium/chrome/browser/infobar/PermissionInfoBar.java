@@ -9,6 +9,7 @@ import android.os.Bundle;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
 import org.chromium.chrome.browser.site_settings.SiteSettingsCategory;
 import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
@@ -132,7 +133,8 @@ public class PermissionInfoBar
         Bundle fragmentArguments = new Bundle();
         fragmentArguments.putString(SingleCategorySettings.EXTRA_CATEGORY,
                 SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.NOTIFICATIONS));
-        SettingsLauncher.getInstance().launchSettingsPage(
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(
                 getContext(), SingleCategorySettings.class, fragmentArguments);
     }
 

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1412 tests; 1378 PASS, 34 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1412 tests; 1377 PASS, 35 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -1036,7 +1036,7 @@ FAIL Navigator interface: attribute oscpu assert_true: The prototype object must
 PASS Navigator interface: attribute language
 PASS Navigator interface: attribute languages
 PASS Navigator interface: attribute onLine
-PASS Navigator interface: operation registerProtocolHandler(DOMString, USVString, DOMString)
+FAIL Navigator interface: operation registerProtocolHandler(DOMString, USVString) assert_equals: property has wrong .length expected 2 but got 3
 PASS Navigator interface: operation unregisterProtocolHandler(DOMString, USVString)
 PASS Navigator interface: attribute cookieEnabled
 PASS Navigator interface: attribute plugins
@@ -1059,8 +1059,8 @@ FAIL Navigator interface: window.navigator must inherit property "oscpu" with th
 PASS Navigator interface: window.navigator must inherit property "language" with the proper type
 PASS Navigator interface: window.navigator must inherit property "languages" with the proper type
 PASS Navigator interface: window.navigator must inherit property "onLine" with the proper type
-PASS Navigator interface: window.navigator must inherit property "registerProtocolHandler(DOMString, USVString, DOMString)" with the proper type
-PASS Navigator interface: calling registerProtocolHandler(DOMString, USVString, DOMString) on window.navigator with too few arguments must throw TypeError
+PASS Navigator interface: window.navigator must inherit property "registerProtocolHandler(DOMString, USVString)" with the proper type
+PASS Navigator interface: calling registerProtocolHandler(DOMString, USVString) on window.navigator with too few arguments must throw TypeError
 PASS Navigator interface: window.navigator must inherit property "unregisterProtocolHandler(DOMString, USVString)" with the proper type
 PASS Navigator interface: calling unregisterProtocolHandler(DOMString, USVString) on window.navigator with too few arguments must throw TypeError
 PASS Navigator interface: window.navigator must inherit property "cookieEnabled" with the proper type

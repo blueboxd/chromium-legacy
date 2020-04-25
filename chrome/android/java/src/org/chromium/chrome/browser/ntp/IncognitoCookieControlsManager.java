@@ -12,6 +12,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.site_settings.CookieControlsServiceBridge;
 import org.chromium.chrome.browser.site_settings.CookieControlsServiceBridge.CookieControlsServiceObserver;
 import org.chromium.chrome.browser.site_settings.SingleCategorySettings;
@@ -131,7 +132,8 @@ public class IncognitoCookieControlsManager
             Bundle fragmentArguments = new Bundle();
             fragmentArguments.putString(SingleCategorySettings.EXTRA_CATEGORY,
                     SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.COOKIES));
-            SettingsLauncher.getInstance().launchSettingsPage(
+            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            settingsLauncher.launchSettingsActivity(
                     v.getContext(), SingleCategorySettings.class, fragmentArguments);
         }
     }

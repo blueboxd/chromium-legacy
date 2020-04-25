@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -630,6 +631,8 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   ThreadState::Current()->AttachToIsolate(
       isolate, V8GCController::TraceDOMWrappers,
       EmbedderGraphBuilder::BuildEmbedderGraphCallback);
+  V8PerIsolateData::From(isolate)->SetActiveScriptWrappableManager(
+      MakeGarbageCollected<ActiveScriptWrappableManager>());
 
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
   isolate->SetUseCounterCallback(&UseCounterCallback);

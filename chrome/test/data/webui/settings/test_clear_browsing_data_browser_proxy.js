@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 
 /** @implements {ClearBrowsingDataBrowserProxy} */
 export class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
@@ -33,7 +34,7 @@ export class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
   clearBrowsingData(dataTypes, timePeriod, installedApps) {
     this.methodCalled(
         'clearBrowsingData', [dataTypes, timePeriod, installedApps]);
-    cr.webUIListenerCallback('browsing-data-removing', true);
+    webUIListenerCallback('browsing-data-removing', true);
     return this.clearBrowsingDataPromise_ !== null ?
         this.clearBrowsingDataPromise_ :
         Promise.resolve();

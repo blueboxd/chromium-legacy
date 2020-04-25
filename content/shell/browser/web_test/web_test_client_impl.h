@@ -50,7 +50,6 @@ class WebTestClientImpl : public mojom::WebTestClient {
 
  private:
   // WebTestClient implementation.
-  void TestFinishedInSecondaryRenderer() override;
   void SimulateWebNotificationClick(
       const std::string& title,
       int32_t action_index,
@@ -58,7 +57,6 @@ class WebTestClientImpl : public mojom::WebTestClient {
   void SimulateWebNotificationClose(const std::string& title,
                                     bool by_user) override;
   void SimulateWebContentIndexDelete(const std::string& id) override;
-  void BlockThirdPartyCookies(bool block) override;
   void ResetPermissions() override;
   void SetPermission(const std::string& name,
                      blink::mojom::PermissionStatus status,
@@ -69,13 +67,9 @@ class WebTestClientImpl : public mojom::WebTestClient {
   void DeleteAllCookies() override;
   void ClearAllDatabases() override;
   void SetDatabaseQuota(int32_t quota) override;
-  void InitiateCaptureDump(bool capture_navigation_history,
-                           bool capture_pixels) override;
-  void GetWritableDirectory(GetWritableDirectoryCallback callback) override;
   void RegisterIsolatedFileSystem(
       const std::vector<base::FilePath>& absolute_filenames,
       RegisterIsolatedFileSystemCallback callback) override;
-  void SetFilePathForMockFileDialog(const base::FilePath& path) override;
   void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
                                    base::OnceClosure callback) override;
   void ClearTrustTokenState(base::OnceClosure callback) override;

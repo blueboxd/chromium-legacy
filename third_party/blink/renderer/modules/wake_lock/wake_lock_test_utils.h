@@ -17,13 +17,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
 class DOMException;
-class Document;
 class WakeLockSentinel;
 
 // Mock WakeLock implementation that tracks whether it's bound or acquired, and
@@ -143,7 +143,7 @@ class MockPermissionService final : public mojom::blink::PermissionService {
 //   MockWakeLockService mock_service;
 //   WakeLockTestingContext context(&mock_service);
 //   mojo::Remote<mojom::blink::WakeLockService> service;
-//   context.GetDocument()->GetBrowserInterfaceBroker().GetInterface(
+//   context.DomWindow()->GetBrowserInterfaceBroker().GetInterface(
 //       service.BindNewPipeAndPassReceiver());
 //   service->GetWakeLock(...);  // Will call mock_service.GetWakeLock().
 // }
@@ -154,7 +154,7 @@ class WakeLockTestingContext final {
   WakeLockTestingContext(MockWakeLockService* mock_wake_lock_service);
   ~WakeLockTestingContext();
 
-  Document* GetDocument();
+  LocalDOMWindow* DomWindow();
   LocalFrame* Frame();
   ScriptState* GetScriptState();
   MockPermissionService& GetPermissionService();

@@ -922,7 +922,7 @@ Status ExecuteElementScreenshot(Session* session,
       "  height: document.documentElement.clientHeight,"
       "  width: document.documentElement.clientWidth,"
       "  device_pixel_ratio: window.devicePixelRatio})",
-      &browser_info);
+      false, &browser_info);
   if (status.IsError())
     return status;
 

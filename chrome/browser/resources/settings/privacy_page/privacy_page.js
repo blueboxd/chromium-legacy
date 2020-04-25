@@ -36,9 +36,9 @@ import {RouteObserverBehavior, Router} from '../router.m.js';
 import {PrivacyPageVisibility} from '../page_visibility.m.js';
 import '../settings_page/settings_animated_pages.m.js';
 import '../settings_page/settings_subpage.m.js';
-import {SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.m.js';
+import {SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.js';
 import '../settings_shared_css.m.js';
-import {ContentSettingsTypes, CookieControlsMode, ChooserType} from '../site_settings/constants.m.js';
+import {ContentSettingsTypes, CookieControlsMode, ChooserType} from '../site_settings/constants.js';
 
   /**
    * @typedef {{

@@ -22,9 +22,6 @@ interface WebTestControl {
 
 // Web test messages sent from the renderer process to the browser.
 interface WebTestClient {
-  // Sent by secondary test window to notify the test has finished.
-  TestFinishedInSecondaryRenderer();
-
   // Simulates a click on the notification.
   //   - |title|: the title of the notification.
   //   - |action_index|: indicates which action was clicked.
@@ -40,11 +37,6 @@ interface WebTestClient {
 
   // Simulates a user deleting a content index entry.
   SimulateWebContentIndexDelete(string id);
-
-  // Sets the cookie policy to:
-  // - allow all cookies when |block| is false
-  // - block only third-party cookies when |block| is true
-  BlockThirdPartyCookies(bool block);
 
   // Reset all permissions of WebTestPermissionManager.
   ResetPermissions();
@@ -72,26 +64,12 @@ interface WebTestClient {
   // QuotaManager to refresh settings immediately.
   SetDatabaseQuota(int32 quota);
 
-  // Returns the absolute path to a directory this test can write data in. This
-  // returns the path to a fresh empty directory for each test that calls this
-  // method, but repeatedly calling this from the same test will return the same
-  // directory.
-  [Sync]
-  GetWritableDirectory() => (mojo_base.mojom.FilePath path);
-
   // Registers a new isolated filesystem with the given files, and returns the
   // new filesystem id.
   [Sync]
   RegisterIsolatedFileSystem(
       array<mojo_base.mojom.FilePath> absolute_filenames)
           => (string filesystem_id);
-
-  // For the duration of the current test this causes all file choosers to
-  // return the passed in |path|.
-  SetFilePathForMockFileDialog(mojo_base.mojom.FilePath path);
-
-  // Initialize to dump the main frame with a navigation history or pixels.
-  InitiateCaptureDump(bool capture_navigation_history, bool capture_pixels);
 
   // Sets the network service-global Trust Tokens key commitments.
   // |raw_commitments| should be JSON-encoded according to the format expected

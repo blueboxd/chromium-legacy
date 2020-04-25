@@ -267,7 +267,13 @@ void FeedStore::OverwriteStream(
   std::unique_ptr<std::vector<std::pair<std::string, feedstore::Record>>>
       updates = MakeUpdatesForStreamModelUpdateRequest(
           /*structure_set_sequence_number=*/0, std::move(update_request));
+  UpdateFullStreamData(std::move(updates), std::move(callback));
+}
 
+void FeedStore::UpdateFullStreamData(
+    std::unique_ptr<std::vector<std::pair<std::string, feedstore::Record>>>
+        updates,
+    base::OnceCallback<void(bool)> callback) {
   // Set up a filter to delete all stream-related data.
   // But we need to exclude keys being written right now.
   std::vector<std::string> key_vector(updates->size());
@@ -297,6 +303,13 @@ void FeedStore::SaveStreamUpdate(
       std::make_unique<leveldb_proto::KeyVector>(),
       base::BindOnce(&FeedStore::OnSaveStreamEntriesUpdated, GetWeakPtr(),
                      std::move(callback)));
+}
+
+void FeedStore::ClearStreamData(base::OnceCallback<void(bool)> callback) {
+  UpdateFullStreamData(
+      std::make_unique<
+          std::vector<std::pair<std::string, feedstore::Record>>>(),
+      std::move(callback));
 }
 
 void FeedStore::OnSaveStreamEntriesUpdated(

@@ -30,28 +30,55 @@
 
 namespace blink {
 
+bool RemoteFontFaceSource::NeedsInterventionToAlignWithLCPGoal() const {
+  DCHECK_EQ(display_, kFontDisplayAuto);
+  if (!base::FeatureList::IsEnabled(
+          features::kAlignFontDisplayAutoTimeoutWithLCPGoal)) {
+    return false;
+  }
+  if (!GetDocument() ||
+      !FontFaceSetDocument::From(*GetDocument())->HasReachedLCPLimit()) {
+    return false;
+  }
+  // If a 'font-display: auto' font hasn't finished loading by the LCP limit, it
+  // should enter the swap or failure period immediately, so that it doesn't
+  // become a source of bad LCP. The only exception is when the font is
+  // immediately available from the memory cache, in which case it can be used
+  // right away without any latency.
+  return !IsLoaded() ||
+         (!FinishedFromMemoryCache() && !finished_before_lcp_limit_);
+}
+
+RemoteFontFaceSource::DisplayPeriod
+RemoteFontFaceSource::ComputeFontDisplayAutoPeriod() const {
+  DCHECK_EQ(display_, kFontDisplayAuto);
+  if (NeedsInterventionToAlignWithLCPGoal()) {
+    using Mode = features::AlignFontDisplayAutoTimeoutWithLCPGoalMode;
+    Mode mode =
+        features::kAlignFontDisplayAutoTimeoutWithLCPGoalModeParam.Get();
+    if (mode == Mode::kToFailurePeriod)
+      return kFailurePeriod;
+    DCHECK_EQ(Mode::kToSwapPeriod, mode);
+    return kSwapPeriod;
+  }
+
+  if (is_intervention_triggered_)
+    return kSwapPeriod;
+
+  switch (phase_) {
+    case kNoLimitExceeded:
+    case kShortLimitExceeded:
+      return kBlockPeriod;
+    case kLongLimitExceeded:
+      return kSwapPeriod;
+  }
+}
+
 RemoteFontFaceSource::DisplayPeriod RemoteFontFaceSource::ComputePeriod()
     const {
   switch (display_) {
     case kFontDisplayAuto:
-      if (base::FeatureList::IsEnabled(
-              features::kAlignFontDisplayAutoTimeoutWithLCPGoal)) {
-        // If a 'display: auto' font hasn't finished loading by the LCP limit,
-        // it should enter the failure period immediately, so that it doesn't
-        // become a source of bad LCP. The only exception is when the font is
-        // immediately available from the memory cache, in which case it can be
-        // used right away without any latency.
-        if (GetDocument() &&
-            FontFaceSetDocument::From(*GetDocument())->HasReachedLCPLimit()) {
-          if (!IsLoaded() ||
-              (!FinishedFromMemoryCache() && !finished_before_lcp_limit_)) {
-            return kFailurePeriod;
-          }
-        }
-      }
-      if (is_intervention_triggered_)
-        return kSwapPeriod;
-      FALLTHROUGH;
+      return ComputeFontDisplayAutoPeriod();
     case kFontDisplayBlock:
       switch (phase_) {
         case kNoLimitExceeded:

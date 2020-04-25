@@ -3660,11 +3660,11 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   UpdateActiveTreeDrawProperties();
   CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation);
 
-  // Case 7: Translucent.
+  // Case 7: Translucent: LCD-text is allowed.
   SetTransform(child_, gfx::Transform());
   SetOpacity(child_, 0.5f);
   UpdateActiveTreeDrawProperties();
-  CheckCanUseLCDText(LCDTextDisallowedReason::kLayerOpacity);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
 
   // Case 8: Sanity check: restore transform and opacity.
   SetTransform(child_, gfx::Transform());
@@ -3705,12 +3705,14 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {
   CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
 
   // Add opacity animation.
-  SetOpacity(child_, 0.9f);
-  AddOpacityTransitionToElementWithAnimation(child_->element_id(), timeline(),
-                                             10.0, 0.9f, 0.1f, false);
+  gfx::Transform non_integral_translation;
+  non_integral_translation.Translate(1.5, 2.5);
+  SetTransform(child_, non_integral_translation);
+  AddAnimatedTransformToElementWithAnimation(child_->element_id(), timeline(),
+                                             10.0, 12, 34);
   UpdateActiveTreeDrawProperties();
   // Text LCD should be adjusted while animation is active.
-  CheckCanUseLCDText(LCDTextDisallowedReason::kLayerOpacity);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation);
 }
 
 TEST_P(LCDTextTest, CanUseLCDTextWithAnimationContentsOpaque) {

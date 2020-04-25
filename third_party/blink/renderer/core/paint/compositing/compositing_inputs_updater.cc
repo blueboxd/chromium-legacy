@@ -175,13 +175,14 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
           DisplayLockLifecycleTarget::kChildren);
 
   bool should_recurse = (layer->ChildNeedsCompositingInputsUpdate() ||
-                         update_type == kForceUpdate) &&
-                        !recursion_blocked_by_display_lock;
+                         update_type == kForceUpdate);
 
   layer->SetDescendantHasDirectOrScrollingCompositingReason(false);
   bool descendant_has_direct_compositing_reason = false;
-  for (PaintLayer* child = layer->FirstChild(); child;
-       child = child->NextSibling()) {
+
+  auto* first_child =
+      recursion_blocked_by_display_lock ? nullptr : layer->FirstChild();
+  for (PaintLayer* child = first_child; child; child = child->NextSibling()) {
     if (should_recurse)
       UpdateSelfAndDescendantsRecursively(child, update_type, info);
     descendant_has_direct_compositing_reason |=

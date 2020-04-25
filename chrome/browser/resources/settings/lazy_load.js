@@ -12,18 +12,18 @@ import './search_engines_page/search_engines_page.js';
 import './privacy_page/cookies_page.js';
 import './privacy_page/security_keys_subpage.js';
 import './privacy_page/security_page.js';
-import './site_settings/all_sites.m.js';
-import './site_settings/site_data_details_subpage.m.js';
+import './site_settings/all_sites.js';
+import './site_settings/site_data_details_subpage.js';
 import './site_settings_page/site_settings_page.js';
-import './site_settings/category_default_setting.m.js';
-import './site_settings/category_setting_exceptions.m.js';
-import './site_settings/chooser_exception_list.m.js';
-import './site_settings/media_picker.m.js';
-import './site_settings/pdf_documents.m.js';
-import './site_settings/protocol_handlers.m.js';
-import './site_settings/site_data.m.js';
-import './site_settings/site_details.m.js';
-import './site_settings/zoom_levels.m.js';
+import './site_settings/category_default_setting.js';
+import './site_settings/category_setting_exceptions.js';
+import './site_settings/chooser_exception_list.js';
+import './site_settings/media_picker.js';
+import './site_settings/pdf_documents.js';
+import './site_settings/protocol_handlers.js';
+import './site_settings/site_data.js';
+import './site_settings/site_details.js';
+import './site_settings/zoom_levels.js';
 // <if expr="not chromeos">
 import './people_page/import_data_dialog.m.js';
 import './people_page/manage_profile.m.js';
@@ -38,7 +38,7 @@ import 'chrome://resources/cr_components/certificate_manager/certificate_manager
 // Sections
 import './a11y_page/a11y_page.js';
 import './downloads_page/downloads_page.js';
-import './languages_page/languages_page.m.js';
+import './languages_page/languages_page.js';
 import './printing_page/printing_page.js';
 import './reset_page/reset_page.js';
 // <if expr="not chromeos">
@@ -46,7 +46,7 @@ import './system_page/system_page.js';
 // </if>
 
 // <if expr="not is_macosx">
-import './languages_page/edit_dictionary_page.m.js';
+import './languages_page/edit_dictionary_page.js';
 // </if>
 
 export {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
@@ -68,7 +68,7 @@ export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_prox
 export {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_page/incompatible_applications_browser_proxy.js';
 // </if>
 export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
-export {kMenuCloseDelay} from './languages_page/languages_page.m.js';
+export {kMenuCloseDelay} from './languages_page/languages_page.js';
 // <if expr="not chromeos">
 export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.m.js';
 export {ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from './people_page/manage_profile_browser_proxy.m.js';
@@ -80,14 +80,14 @@ export {CredentialManagementDialogPage} from './privacy_page/security_keys_crede
 export {ResetDialogPage} from './privacy_page/security_keys_reset_dialog.js';
 export {SetPINDialogPage} from './privacy_page/security_keys_set_pin_dialog.js';
 // <if expr="chromeos">
-export {AndroidInfoBrowserProxyImpl} from './site_settings/android_info_browser_proxy.m.js';
+export {AndroidInfoBrowserProxyImpl} from './site_settings/android_info_browser_proxy.js';
 // </if>
-export {ChooserType, ContentSetting, ContentSettingsTypes, CookieControlsMode, SITE_EXCEPTION_WILDCARD, SiteSettingSource, SortMethod} from './site_settings/constants.m.js';
-export {cookieInfo} from './site_settings/cookie_info.m.js';
-export {LocalDataBrowserProxyImpl} from './site_settings/local_data_browser_proxy.m.js';
-export {kControlledByLookup} from './site_settings/site_settings_behavior.m.js';
-export {ContentSettingProvider, SiteSettingsPrefsBrowserProxyImpl} from './site_settings/site_settings_prefs_browser_proxy.m.js';
-export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.m.js';
+export {ChooserType, ContentSetting, ContentSettingsTypes, CookieControlsMode, SITE_EXCEPTION_WILDCARD, SiteSettingSource, SortMethod} from './site_settings/constants.js';
+export {cookieInfo} from './site_settings/cookie_info.js';
+export {LocalDataBrowserProxyImpl} from './site_settings/local_data_browser_proxy.js';
+export {kControlledByLookup} from './site_settings/site_settings_behavior.js';
+export {ContentSettingProvider, SiteSettingsPrefsBrowserProxyImpl} from './site_settings/site_settings_prefs_browser_proxy.js';
+export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.js';
 export {defaultSettingLabel} from './site_settings_page/site_settings_list.js';
 // <if expr="not chromeos">
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.js';

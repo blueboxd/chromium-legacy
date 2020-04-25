@@ -378,6 +378,14 @@ void PersistChallengeResponseKeys(const UserContext& user_context) {
           user_context.GetChallengeResponseKeys()));
 }
 
+// Returns true if the user is new, or if the user was already present on the
+// device and the profile was re-created. This can happen e.g. in ext4 migration
+// in wipe mode.
+bool IsNewProfile(Profile* profile) {
+  return user_manager::UserManager::Get()->IsCurrentUserNew() ||
+         profile->IsNewProfile();
+}
+
 }  // namespace
 
 UserSessionManagerDelegate::~UserSessionManagerDelegate() {}
@@ -1235,8 +1243,7 @@ void UserSessionManager::InitProfilePreferences(
   // Set initial prefs if the user is new, or if the user was already present on
   // the device and the profile was re-created. This can happen e.g. in ext4
   // migration in wipe mode.
-  const bool is_new_profile =
-      user_manager->IsCurrentUserNew() || profile->IsNewProfile();
+  const bool is_new_profile = IsNewProfile(profile);
   if (is_new_profile) {
     SetFirstLoginPrefs(profile, user_context.GetPublicSessionLocale(),
                        user_context.GetPublicSessionInputMethod());
@@ -1409,7 +1416,10 @@ void UserSessionManager::InitProfilePreferences(
 void UserSessionManager::UserProfileInitialized(Profile* profile,
                                                 bool is_incognito_profile,
                                                 const AccountId& account_id) {
-  os_sync_util::MigrateOsSyncPreferences(profile->GetPrefs());
+  // Only migrate sync prefs for existing users because new users are given
+  // the choice to turn on OS sync in OOBE.
+  if (!IsNewProfile(profile))
+    os_sync_util::MigrateOsSyncPreferences(profile->GetPrefs());
 
   // http://crbug/866790: After Supervised Users are deprecated, remove this.
   if (ash::features::IsSupervisedUserDeprecationNoticeEnabled()) {

@@ -38,8 +38,10 @@ import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.site_settings.Website.StoredDataClearedCallback;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 
@@ -188,9 +190,10 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
 
     /** This refreshes the storage numbers by fetching all site permissions. */
     private void refreshStorageNumbers() {
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
+        Profile profile = Profile.getLastUsedRegularProfile();
+        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(profile);
         fetcher.fetchPreferencesForCategory(
-                SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.USE_STORAGE),
+                SiteSettingsCategory.createFromType(profile, SiteSettingsCategory.Type.USE_STORAGE),
                 new SizeCalculator());
     }
 
@@ -238,7 +241,8 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
                     getString(R.string.website_settings_storage));
             RecordHistogram.recordEnumeratedHistogram(
                     "Android.ManageSpace.ActionTaken", OPTION_MANAGE_STORAGE, OPTION_MAX);
-            SettingsLauncher.getInstance().launchSettingsPage(
+            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            settingsLauncher.launchSettingsActivity(
                     this, SingleCategorySettings.class, initialArguments);
         } else if (view == mClearAllDataButton) {
             final ActivityManager activityManager =
@@ -307,10 +311,11 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
          * asynchronously, and at the end we update the UI with the new storage numbers.
          */
         public void clearData() {
+            Profile profile = Profile.getLastUsedRegularProfile();
             mClearStartTime = SystemClock.elapsedRealtime();
-            WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(true);
-            fetcher.fetchPreferencesForCategory(
-                    SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.USE_STORAGE),
+            WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(profile, true);
+            fetcher.fetchPreferencesForCategory(SiteSettingsCategory.createFromType(profile,
+                                                        SiteSettingsCategory.Type.USE_STORAGE),
                     this);
         }
 
@@ -331,7 +336,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
                 if (site.getLocalStorageInfo() == null
                         || !site.getLocalStorageInfo().isDomainImportant()) {
                     mNumSitesClearing++;
-                    site.clearAllStoredData(this);
+                    site.clearAllStoredData(Profile.getLastUsedRegularProfile(), this);
                 } else {
                     siteStorageLeft += site.getTotalUsage();
                 }

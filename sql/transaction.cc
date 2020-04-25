@@ -4,7 +4,7 @@
 
 #include "sql/transaction.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "sql/database.h"
 
 namespace sql {

@@ -9,7 +9,6 @@
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
@@ -29,6 +28,7 @@ class String;
 namespace blink {
 
 class ExceptionState;
+class LocalDOMWindow;
 class ScriptState;
 class WakeLockManager;
 
@@ -39,7 +39,7 @@ class MODULES_EXPORT WakeLock final : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit WakeLock(Document&);
+  explicit WakeLock(LocalDOMWindow&);
   explicit WakeLock(DedicatedWorkerGlobalScope&);
 
   ScriptPromise request(ScriptState*,

@@ -114,6 +114,38 @@ bool MediaHistoryOriginTable::IncrementAggregateAudioVideoWatchTime(
   return true;
 }
 
+bool MediaHistoryOriginTable::RecalculateAggregateAudioVideoWatchTime(
+    const url::Origin& origin) {
+  DCHECK_LT(0, DB()->transaction_nesting());
+  if (!CanAccessDatabase())
+    return false;
+
+  base::Optional<int64_t> origin_id;
+  {
+    // Get the ID for the origin.
+    sql::Statement statement(DB()->GetCachedStatement(
+        SQL_FROM_HERE, "SELECT id FROM origin WHERE origin = ?"));
+    statement.BindString(0, GetOriginForStorage(origin));
+
+    while (statement.Step()) {
+      origin_id = statement.ColumnInt64(0);
+    }
+  }
+
+  if (!origin_id.has_value())
+    return true;
+
+  // Update the cached aggregate watchtime in the origin table.
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE origin SET aggregate_watchtime_audio_video_s = ("
+      " SELECT SUM(watch_time_s) FROM playback WHERE origin_id = ? AND "
+      " has_video = 1 AND has_audio = 1) WHERE id = ?"));
+  statement.BindInt64(0, *origin_id);
+  statement.BindInt64(1, *origin_id);
+  return statement.Run();
+}
+
 bool MediaHistoryOriginTable::Delete(const url::Origin& origin) {
   if (!CanAccessDatabase())
     return false;

@@ -34,7 +34,7 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   MOCK_METHOD0(StartRendering, void());
   MOCK_METHOD0(StopRendering, void());
   MOCK_CONST_METHOD0(IsDrivingFrameUpdates, bool(void));
-  MOCK_METHOD1(Initialize, void(cc::VideoFrameProvider*));
+  MOCK_METHOD2(Initialize, void(cc::VideoFrameProvider*, bool));
   MOCK_METHOD1(SetRotation, void(media::VideoRotation));
   MOCK_METHOD1(SetIsSurfaceVisible, void(bool));
   MOCK_METHOD1(SetIsPageVisible, void(bool));
@@ -69,7 +69,7 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
           base::ThreadTaskRunnerHandle::Get(), nullptr);
       compositor_->SetVideoFrameProviderClient(client_.get());
     } else {
-      EXPECT_CALL(*submitter_, Initialize(_));
+      EXPECT_CALL(*submitter_, Initialize(_, _));
       compositor_ = std::make_unique<VideoFrameCompositor>(
           base::ThreadTaskRunnerHandle::Get(), std::move(client_));
       base::RunLoop().RunUntilIdle();

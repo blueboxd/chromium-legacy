@@ -212,10 +212,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   const CompositorFrameSinkSupport* GetFrameSinkForId(
       const FrameSinkId& frame_sink_id) const;
 
-  void SetPreferredFrameIntervalForFrameSinkId(const FrameSinkId& id,
-                                               base::TimeDelta interval);
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const FrameSinkId& id) const;
+      const FrameSinkId& id,
+      mojom::CompositorFrameSinkType* type) const;
 
   // This cancels pending output requests owned by the frame sinks associated
   // with the specified BeginFrameSource.
@@ -240,8 +239,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     // Indicates whether the client wishes to receive FirstSurfaceActivation
     // notification.
     bool report_activation;
-
-    base::TimeDelta preferred_frame_interval = BeginFrameArgs::MinInterval();
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FrameSinkData);

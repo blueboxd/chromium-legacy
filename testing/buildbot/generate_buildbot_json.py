@@ -795,6 +795,13 @@ class BBJSONGenerator(object):
       return None
     result['isolate_name'] = test_config.get(
       'isolate_name', 'telemetry_gpu_integration_test')
+
+    # Populate test_target.
+    gn_entry = (
+        self.gn_isolate_map.get(result['isolate_name']) or
+        self.gn_isolate_map.get('telemetry_gpu_integration_test'))
+    result['test_target'] = '%s/%s' % (gn_entry['label'], step_name)
+
     args = result.get('args', [])
     test_to_run = result.pop('telemetry_test_name', test_name)
 

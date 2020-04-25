@@ -33,7 +33,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using testing::Contains;
-using testing::UnorderedElementsAre;
 
 namespace chromeos {
 namespace {
@@ -172,12 +171,14 @@ class SyncConsentTest : public OobeBaseTest {
     if (features::IsSplitSettingsSyncEnabled()) {
       test::OobeJS().ExpectVisiblePath(
           {"sync-consent-impl", "splitSettingsSyncConsentDialog"});
+      test::OobeJS().TapOnPath(
+          {"sync-consent-impl", "settingsAcceptAndContinueButton"});
     } else {
       test::OobeJS().ExpectVisiblePath(
           {"sync-consent-impl", "syncConsentOverviewDialog"});
+      test::OobeJS().TapOnPath(
+          {"sync-consent-impl", "settingsSaveAndContinueButton"});
     }
-    test::OobeJS().TapOnPath(
-        {"sync-consent-impl", "settingsSaveAndContinueButton"});
     consent_recorded_waiter.Wait();
     screen->SetDelegateForTesting(nullptr);  // cleanup
 
@@ -220,10 +221,10 @@ IN_PROC_BROWSER_TEST_F(SyncConsentTest, SyncConsentRecorder) {
   if (features::IsSplitSettingsSyncEnabled()) {
     expected_consent_strings = {
         "You're signed in!",
-        "Settings sync",
+        "Chrome OS settings sync",
         "Your apps, settings, and other customizations will sync across all "
         "Chrome OS devices signed in with your Google Account.",
-        "Chrome sync",
+        "Chrome browser sync",
         "Your bookmarks, history, passwords, and other settings will be synced "
         "to your Google Account so you can use them on all your devices.",
         "Review browser sync options following setup",
@@ -318,15 +319,15 @@ INSTANTIATE_TEST_SUITE_P(All,
                          SyncConsentPolicyDisabledTest,
                          testing::Bool());
 
-// Tests of the consent dialog with the SplitSyncConsent flag enabled.
-class SyncConsentSplitSyncConsentTest : public SyncConsentTest {
+// Additional tests of the consent dialog that are only applicable when the
+// SplitSettingsSync flag enabled.
+class SyncConsentSplitSettingsSyncTest : public SyncConsentTest {
  public:
-  SyncConsentSplitSyncConsentTest() {
-    sync_feature_list_.InitWithFeatures({chromeos::features::kSplitSettingsSync,
-                                         chromeos::features::kSplitSyncConsent},
-                                        {});
+  SyncConsentSplitSettingsSyncTest() {
+    sync_feature_list_.InitAndEnableFeature(
+        chromeos::features::kSplitSettingsSync);
   }
-  ~SyncConsentSplitSyncConsentTest() override = default;
+  ~SyncConsentSplitSettingsSyncTest() override = default;
 
  private:
   base::test::ScopedFeatureList sync_feature_list_;
@@ -338,7 +339,7 @@ class SyncConsentSplitSyncConsentTest : public SyncConsentTest {
 #else
 #define MAYBE_DefaultFlow DefaultFlow
 #endif
-IN_PROC_BROWSER_TEST_F(SyncConsentSplitSyncConsentTest, MAYBE_DefaultFlow) {
+IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
   LoginToSyncConsentScreen();
 
   // OS sync is disabled by default.
@@ -356,32 +357,37 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSyncConsentTest, MAYBE_DefaultFlow) {
 
   // Dialog is visible.
   test::OobeJS().ExpectVisiblePath(
-      {"sync-consent-impl", "osSyncConsentDialog"});
+      {"sync-consent-impl", "splitSettingsSyncConsentDialog"});
 
   // Click the continue button and wait for the JS to C++ callback.
   test::OobeJS().ClickOnPath(
-      {"sync-consent-impl", "osSyncAcceptAndContinueButton"});
+      {"sync-consent-impl", "settingsAcceptAndContinueButton"});
   consent_recorded_waiter.Wait();
   screen->SetDelegateForTesting(nullptr);
 
   // Consent was recorded for the confirmation button.
   EXPECT_EQ(SyncConsentScreen::CONSENT_GIVEN,
             consent_recorded_waiter.consent_given_);
-  EXPECT_EQ("Continue", consent_recorded_waiter.consent_confirmation_string_);
-  EXPECT_EQ(IDS_LOGIN_OS_SYNC_CONSENT_CONTINUE,
+  EXPECT_EQ("Accept and continue",
+            consent_recorded_waiter.consent_confirmation_string_);
+  EXPECT_EQ(IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
             consent_recorded_waiter.consent_confirmation_id_);
 
   // Consent was recorded for all descriptions, including the confirmation
   // button label.
+  std::vector<int> expected_ids = {
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_NAME,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_DESCRIPTION,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_BROWSER_SYNC_OPTIONS,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_NAME,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
+  };
   EXPECT_THAT(consent_recorded_waiter.consent_description_ids_,
-              UnorderedElementsAre(IDS_LOGIN_OS_SYNC_CONSENT_TITLE,
-                                   IDS_LOGIN_OS_SYNC_CONSENT_TOGGLE_NAME,
-                                   IDS_LOGIN_OS_SYNC_CONSENT_TOGGLE_DESCRIPTION,
-                                   IDS_LOGIN_OS_SYNC_CONSENT_CONTINUE));
-
-  // Verify device-name substitution happened. Tests use "Chrome device".
-  EXPECT_THAT(consent_recorded_waiter.consent_description_strings_,
-              Contains("Sync my Chrome device"));
+              testing::UnorderedElementsAreArray(expected_ids));
 
   // Toggle button is on-by-default, so OS sync should be on.
   EXPECT_TRUE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));
@@ -393,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSyncConsentTest, MAYBE_DefaultFlow) {
 #else
 #define MAYBE_UserCanDisable UserCanDisable
 #endif
-IN_PROC_BROWSER_TEST_F(SyncConsentSplitSyncConsentTest, MAYBE_UserCanDisable) {
+IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_UserCanDisable) {
   LoginToSyncConsentScreen();
 
   // Wait for content to load.
@@ -406,17 +412,13 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSyncConsentTest, MAYBE_UserCanDisable) {
   test::OobeJS().CreateVisibilityWaiter(true, {"sync-consent-impl"})->Wait();
 
   // Turn off the toggle.
-  test::OobeJS().ClickOnPath({"sync-consent-impl", "enableOsSyncToggle"});
+  test::OobeJS().ClickOnPath({"sync-consent-impl", "osSyncToggle"});
 
   // Click the continue button and wait for the JS to C++ callback.
   test::OobeJS().ClickOnPath(
-      {"sync-consent-impl", "osSyncAcceptAndContinueButton"});
+      {"sync-consent-impl", "settingsAcceptAndContinueButton"});
   consent_recorded_waiter.Wait();
   screen->SetDelegateForTesting(nullptr);
-
-  // User did not consent.
-  EXPECT_EQ(SyncConsentScreen::CONSENT_NOT_GIVEN,
-            consent_recorded_waiter.consent_given_);
 
   // OS sync is off.
   PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();

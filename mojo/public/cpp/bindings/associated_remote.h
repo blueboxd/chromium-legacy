@@ -277,16 +277,6 @@ class AssociatedRemote {
   DISALLOW_COPY_AND_ASSIGN(AssociatedRemote);
 };
 
-// Constructs an invalid PendingAssociatedRemote of any arbitrary interface
-// type. Useful as short-hand for a default constructed value.
-class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) NullAssociatedRemote {
- public:
-  template <typename Interface>
-  operator PendingAssociatedRemote<Interface>() const {
-    return PendingAssociatedRemote<Interface>();
-  }
-};
-
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_REMOTE_H_

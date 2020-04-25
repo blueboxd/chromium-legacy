@@ -596,6 +596,8 @@ public class IntentHandler {
      * Extracts the URL from voice search result intent.
      * @return URL if it was found, null otherwise.
      */
+    // TODO(https://crbug.com/783819): Investigate whether this function can return a GURL instead,
+    // or split into formatted/unformatted getUrl.
     static String getUrlFromVoiceSearchResult(Intent intent) {
         if (!RecognizerResultsIntent.ACTION_VOICE_SEARCH_RESULTS.equals(intent.getAction())) {
             return null;
@@ -627,7 +629,7 @@ public class IntentHandler {
             if (urls != null && urls.size() > 0) {
                 url = urls.get(0);
             } else {
-                url = TemplateUrlServiceFactory.get().getUrlForVoiceSearchQuery(query);
+                url = TemplateUrlServiceFactory.get().getUrlForVoiceSearchQuery(query).getSpec();
             }
         }
         return url;

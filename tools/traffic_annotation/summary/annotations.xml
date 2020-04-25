@@ -281,6 +281,7 @@ Refer to README.md for content description and update process.
  <item id="ssl_hmac_channel_authenticator" hash_code="106124561" type="0" content_hash_code="93707499" os_list="linux,windows" file_path="remoting/protocol/ssl_hmac_channel_authenticator.cc"/>
  <item id="ssl_name_mismatch_lookup" hash_code="114468207" type="0" content_hash_code="97619078" os_list="linux,windows" file_path="components/security_interstitials/content/common_name_mismatch_handler.cc"/>
  <item id="stream_message_pipe_adapter" hash_code="71837756" type="0" content_hash_code="131019242" os_list="linux,windows" file_path="remoting/protocol/stream_message_pipe_adapter.cc"/>
+ <item id="stream_packet_socket" hash_code="38197513" type="0" content_hash_code="55116994" os_list="linux,windows" file_path="remoting/protocol/stream_packet_socket.cc"/>
  <item id="suggestions_image_manager" hash_code="13211343" type="0" deprecated="2018-11-28" content_hash_code="36271280" file_path=""/>
  <item id="suggestions_service" hash_code="35370363" type="0" content_hash_code="66296423" os_list="linux,windows" file_path="components/suggestions/suggestions_service_impl.cc"/>
  <item id="supervised_user_refresh_token_fetcher" hash_code="136117054" type="0" deprecated="2018-04-18" content_hash_code="101636136" file_path=""/>

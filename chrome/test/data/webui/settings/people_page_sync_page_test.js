@@ -8,7 +8,7 @@ import 'chrome://settings/lazy_load.js';
 import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {getSyncAllPrefs, setupRouterWithSyncRoutes, simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.m.js';
 import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js';
 // clang-format on
@@ -40,7 +40,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
 
       document.body.appendChild(syncPage);
 
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'page-status-changed', PageStatus.CONFIGURE);
       assertFalse(syncPage.$$('#' + PageStatus.CONFIGURE).hidden);
       assertTrue(syncPage.$$('#' + PageStatus.SPINNER).hidden);
@@ -48,7 +48,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
       // Start with Sync All with no encryption selected. Also, ensure
       // that this is not a supervised user, so that Sync Passphrase is
       // enabled.
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'sync-prefs-changed', getSyncAllPrefs());
       syncPage.set('syncStatus', {supervisedUser: false});
       flush();
@@ -198,18 +198,18 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
 
       // NOTE: This isn't called in production, but the test suite starts the
       // tests with PageStatus.CONFIGURE.
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'page-status-changed', PageStatus.SPINNER);
       assertTrue(configurePage.hidden);
       assertFalse(spinnerPage.hidden);
 
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'page-status-changed', PageStatus.CONFIGURE);
       assertFalse(configurePage.hidden);
       assertTrue(spinnerPage.hidden);
 
       // Should remain on the CONFIGURE page even if the passphrase failed.
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'page-status-changed', PageStatus.PASSPHRASE_FAILED);
       assertFalse(configurePage.hidden);
       assertTrue(spinnerPage.hidden);
@@ -231,7 +231,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
       // The encryption menu should be expanded.
       const prefs = getSyncAllPrefs();
       prefs.encryptAllData = true;
-      cr.webUIListenerCallback('sync-prefs-changed', prefs);
+      webUIListenerCallback('sync-prefs-changed', prefs);
       flush();
       assertTrue(encryptionCollapse.opened);
 
@@ -266,7 +266,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
       assertTrue(!!saveNewPassphrase);
 
       // Test that a sync prefs update does not reset the selection.
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'sync-prefs-changed', getSyncAllPrefs());
       flush();
       assertTrue(encryptWithPassphrase.checked);
@@ -364,7 +364,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
         assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
 
         expected.fullEncryptionBody = 'Encrypted with custom passphrase';
-        cr.webUIListenerCallback('sync-prefs-changed', expected);
+        webUIListenerCallback('sync-prefs-changed', expected);
 
         flush();
 
@@ -388,7 +388,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
       prefs.encryptAllData = true;
       prefs.passphraseRequired = true;
       prefs.fullEncryptionBody = 'Sync already encrypted.';
-      cr.webUIListenerCallback('sync-prefs-changed', prefs);
+      webUIListenerCallback('sync-prefs-changed', prefs);
 
       flush();
 
@@ -404,7 +404,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
           const prefs = getSyncAllPrefs();
           prefs.encryptAllData = true;
           prefs.passphraseRequired = true;
-          cr.webUIListenerCallback('sync-prefs-changed', prefs);
+          webUIListenerCallback('sync-prefs-changed', prefs);
           flush();
 
           const existingPassphraseInput =
@@ -423,7 +423,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
       const prefs = getSyncAllPrefs();
       prefs.encryptAllData = true;
       prefs.passphraseRequired = true;
-      cr.webUIListenerCallback('sync-prefs-changed', prefs);
+      webUIListenerCallback('sync-prefs-changed', prefs);
       flush();
 
       const existingPassphraseInput = syncPage.$$('#existingPassphraseInput');
@@ -453,7 +453,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
       const prefs = getSyncAllPrefs();
       prefs.encryptAllData = true;
       prefs.passphraseRequired = true;
-      cr.webUIListenerCallback('sync-prefs-changed', prefs);
+      webUIListenerCallback('sync-prefs-changed', prefs);
       flush();
 
       const existingPassphraseInput = syncPage.$$('#existingPassphraseInput');
@@ -475,7 +475,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
 
         const newPrefs = getSyncAllPrefs();
         newPrefs.encryptAllData = true;
-        cr.webUIListenerCallback('sync-prefs-changed', newPrefs);
+        webUIListenerCallback('sync-prefs-changed', newPrefs);
 
         flush();
 
@@ -511,7 +511,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
       // EXPECTED: encryptionOptions enabled
       const prefs1 = getSyncAllPrefs();
       prefs1.encryptAllDataAllowed = true;
-      cr.webUIListenerCallback('sync-prefs-changed', prefs1);
+      webUIListenerCallback('sync-prefs-changed', prefs1);
       syncPage.syncStatus = {supervisedUser: false};
       flush();
       assertFalse(encryptionRadioGroup.disabled);
@@ -524,7 +524,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
       // EXPECTED: encryptionOptions disabled
       const prefs2 = getSyncAllPrefs();
       prefs2.encryptAllDataAllowed = false;
-      cr.webUIListenerCallback('sync-prefs-changed', prefs2);
+      webUIListenerCallback('sync-prefs-changed', prefs2);
       syncPage.syncStatus = {supervisedUser: false};
       flush();
       assertTrue(encryptionRadioGroup.disabled);
@@ -535,7 +535,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
       // EXPECTED: encryptionOptions disabled
       const prefs3 = getSyncAllPrefs();
       prefs3.encryptAllDataAllowed = false;
-      cr.webUIListenerCallback('sync-prefs-changed', prefs3);
+      webUIListenerCallback('sync-prefs-changed', prefs3);
       syncPage.syncStatus = {supervisedUser: true};
       flush();
       assertTrue(encryptionRadioGroup.disabled);
@@ -547,7 +547,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
       // EXPECTED: encryptionOptions disabled
       const prefs4 = getSyncAllPrefs();
       prefs4.encryptAllDataAllowed = true;
-      cr.webUIListenerCallback('sync-prefs-changed', prefs4);
+      webUIListenerCallback('sync-prefs-changed', prefs4);
       syncPage.syncStatus = {supervisedUser: true};
       flush();
       assertTrue(encryptionRadioGroup.disabled);
@@ -561,7 +561,7 @@ import {eventToPromise, waitBeforeNextRender} from 'chrome://test/test_util.m.js
       const dashboardLink = syncPage.$$('#syncDashboardLink');
 
       const prefs = getSyncAllPrefs();
-      cr.webUIListenerCallback('sync-prefs-changed', prefs);
+      webUIListenerCallback('sync-prefs-changed', prefs);
 
       // Normal user
       syncPage.syncStatus = {supervisedUser: false};

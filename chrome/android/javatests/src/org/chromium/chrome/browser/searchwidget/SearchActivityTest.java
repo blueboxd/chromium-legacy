@@ -57,6 +57,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -340,12 +341,14 @@ public class SearchActivityTest {
         classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
         OmniboxSuggestion mockSuggestion =
                 new OmniboxSuggestion(0, true, 0, 0, "https://google.com", classifications,
-                        "https://google.com", classifications, null, "", "https://google.com", null,
-                        null, false, false, null, null, OmniboxSuggestion.INVALID_GROUP);
+                        "https://google.com", classifications, null, "",
+                        new GURL("https://google.com"), GURL.emptyGURL(), null, false, false, null,
+                        null, OmniboxSuggestion.INVALID_GROUP);
         OmniboxSuggestion mockSuggestion2 =
                 new OmniboxSuggestion(0, true, 0, 0, "https://android.com", classifications,
-                        "https://android.com", classifications, null, "", "https://android.com",
-                        null, null, false, false, null, null, OmniboxSuggestion.INVALID_GROUP);
+                        "https://android.com", classifications, null, "",
+                        new GURL("https://android.com"), GURL.emptyGURL(), null, false, false, null,
+                        null, OmniboxSuggestion.INVALID_GROUP);
         List<OmniboxSuggestion> list = new ArrayList<>();
         list.add(mockSuggestion);
         list.add(mockSuggestion2);

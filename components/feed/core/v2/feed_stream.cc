@@ -28,6 +28,7 @@
 #include "components/feed/core/v2/surface_updater.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
 #include "components/feed/core/v2/tasks/wait_for_store_initialize_task.h"
+#include "components/offline_pages/task/closure_task.h"
 #include "components/prefs/pref_service.h"
 
 namespace feed {
@@ -210,7 +211,15 @@ DebugStreamData FeedStream::GetDebugStreamData() {
 }
 
 void FeedStream::ForceRefreshForDebugging() {
-  // TODO(harringtond): Add a way to force refresh.
+  task_queue_.AddTask(
+      std::make_unique<offline_pages::ClosureTask>(base::BindOnce(
+          &FeedStream::ForceRefreshForDebuggingTask, base::Unretained(this))));
+}
+
+void FeedStream::ForceRefreshForDebuggingTask() {
+  UnloadModel();
+  store_->ClearStreamData(base::DoNothing());
+  TriggerStreamLoad();
 }
 
 std::string FeedStream::DumpStateForDebugging() {

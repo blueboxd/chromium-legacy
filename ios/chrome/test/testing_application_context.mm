@@ -4,11 +4,14 @@
 
 #include "ios/chrome/test/testing_application_context.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/safe_browsing/core/features.h"
+#import "ios/chrome/browser/safe_browsing/fake_safe_browsing_service.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -186,7 +189,13 @@ TestingApplicationContext::GetComponentUpdateService() {
 
 SafeBrowsingService* TestingApplicationContext::GetSafeBrowsingService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
+  DCHECK(
+      base::FeatureList::IsEnabled(safe_browsing::kSafeBrowsingAvailableOnIOS));
+  if (!fake_safe_browsing_service_) {
+    fake_safe_browsing_service_ =
+        base::MakeRefCounted<FakeSafeBrowsingService>();
+  }
+  return fake_safe_browsing_service_.get();
 }
 
 network::NetworkConnectionTracker*

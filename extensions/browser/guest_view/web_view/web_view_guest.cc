@@ -1103,7 +1103,7 @@ bool WebViewGuest::HandleKeyboardShortcuts(
     return false;
   }
 
-  if (event.GetType() != blink::WebInputEvent::kRawKeyDown)
+  if (event.GetType() != blink::WebInputEvent::Type::kRawKeyDown)
     return false;
 
   // If the user hits the escape key without any modifiers then unlock the

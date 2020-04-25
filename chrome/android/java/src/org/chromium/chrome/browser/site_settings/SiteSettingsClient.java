@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 
 /**
  * An interface implemented by the embedder that allows the Site Settings UI to access
@@ -39,6 +40,11 @@ public interface SiteSettingsClient {
      * @return The NotificationSettingsClient that should be used when showing the Site Settings UI.
      */
     NotificationSettingsClient getNotificationSettingsClient();
+
+    /**
+     * @return The BrowserContextHandle that should be used to read and update settings.
+     */
+    BrowserContextHandle getBrowserContextHandle();
 
     /**
      * Asynchronously looks up the locally cached favicon image for the given URL.

@@ -134,13 +134,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     virtual void FidoAuthenticatorAdded(
         const FidoAuthenticator& authenticator) = 0;
     virtual void FidoAuthenticatorRemoved(base::StringPiece device_id) = 0;
-    virtual void FidoAuthenticatorIdChanged(
-        base::StringPiece old_authenticator_id,
-        std::string new_authenticator_id) = 0;
-    virtual void FidoAuthenticatorPairingModeChanged(
-        base::StringPiece authenticator_id,
-        bool is_in_pairing_mode,
-        base::string16 display_name) = 0;
 
     // SupportsPIN returns true if this observer supports collecting a PIN from
     // the user. If this function returns false, |CollectPIN| and
@@ -280,12 +273,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
                           FidoAuthenticator* authenticator) override;
   void AuthenticatorRemoved(FidoDiscoveryBase* discovery,
                             FidoAuthenticator* authenticator) override;
-  void AuthenticatorIdChanged(FidoDiscoveryBase* discovery,
-                              const std::string& previous_id,
-                              std::string new_id) override;
-  void AuthenticatorPairingModeChanged(FidoDiscoveryBase* discovery,
-                                       const std::string& device_id,
-                                       bool is_in_pairing_mode) override;
 
  private:
   friend class FidoRequestHandlerTest;

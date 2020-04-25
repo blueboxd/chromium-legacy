@@ -3012,6 +3012,7 @@ jumbo_static_library("browser") {
       "//components/content_capture/android",
       "//components/content_settings/android",
       "//components/crash/android:crash_android",
+      "//components/embedder_support/android:browser_context",
       "//components/embedder_support/android:util",
       "//components/embedder_support/android:web_contents_delegate",
       "//components/external_intents/android",

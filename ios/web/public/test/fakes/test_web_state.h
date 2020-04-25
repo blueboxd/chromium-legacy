@@ -118,9 +118,13 @@ class TestWebState : public WebState {
   WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
       NSURLRequest* request,
       const WebStatePolicyDecider::RequestInfo& request_info);
-  // Uses |policy_deciders| to return whether the navigation corresponding to
-  // |response| should be allowed. Defaults to true.
-  bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame);
+  // Uses |policy_deciders| to determine whether the navigation corresponding to
+  // |response| should be allowed. Calls |callback| with the decision. Defaults
+  // to PolicyDecision::Allow().
+  void ShouldAllowResponse(
+      NSURLResponse* response,
+      bool for_main_frame,
+      base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback);
   base::string16 GetLastExecutedJavascript() const;
   NSData* GetLastLoadedData() const;
 

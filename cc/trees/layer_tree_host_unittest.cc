@@ -3883,12 +3883,12 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        // Change layer opacity that should trigger lcd change.
-        layer_tree_host()->root_layer()->SetOpacity(.5f);
+        // Change contents_opaque that should trigger lcd change.
+        layer_tree_host()->root_layer()->SetContentsOpaque(false);
         break;
       case 3:
-        // Change layer opacity that should not trigger lcd change.
-        layer_tree_host()->root_layer()->SetOpacity(1.f);
+        // Change contents_opaque that should trigger lcd change.
+        layer_tree_host()->root_layer()->SetContentsOpaque(true);
         break;
       case 4:
         EndTest();

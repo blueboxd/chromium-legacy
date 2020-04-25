@@ -171,11 +171,16 @@ TEST_F(ExtensionManifestBackgroundTest, ServiceWorkerBasedBackgroundKey) {
   //   - specifying multiple files.
   //   - specifying invalid type (non-string) values.
   {
-    ScopedCurrentChannel dev(version_info::Channel::DEV);
+    ScopedCurrentChannel beta(version_info::Channel::BETA);
     scoped_refptr<Extension> extension =
         LoadAndExpectWarning("service_worker_based_background.json",
-                             "'background.service_worker' requires canary "
-                             "channel or newer, but this is the dev channel.");
+                             "'background.service_worker' requires dev "
+                             "channel or newer, but this is the beta channel.");
+  }
+  {
+    ScopedCurrentChannel dev(version_info::Channel::DEV);
+    scoped_refptr<Extension> extension =
+        LoadAndExpectSuccess("service_worker_based_background.json");
   }
   {
     ScopedCurrentChannel canary(version_info::Channel::CANARY);

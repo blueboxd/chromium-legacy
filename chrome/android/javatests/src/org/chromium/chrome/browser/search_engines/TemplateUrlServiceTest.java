@@ -25,6 +25,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.url.GURL;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -78,15 +79,15 @@ public class TemplateUrlServiceTest {
     private void validateQuery(final String query, final String alternative, final boolean prefetch,
             final String protocolVersion)
             throws ExecutionException {
-        String result = TestThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+        GURL result = TestThreadUtils.runOnUiThreadBlocking(new Callable<GURL>() {
             @Override
-            public String call() {
+            public GURL call() {
                 return TemplateUrlServiceFactory.get().getUrlForContextualSearchQuery(
                         query, alternative, prefetch, protocolVersion);
             }
         });
         Assert.assertNotNull(result);
-        Uri uri = Uri.parse(result);
+        Uri uri = Uri.parse(result.getSpec());
         Assert.assertEquals(query, uri.getQueryParameter(QUERY_PARAMETER));
         Assert.assertEquals(alternative, uri.getQueryParameter(ALTERNATIVE_PARAMETER));
         Assert.assertEquals(protocolVersion, uri.getQueryParameter(VERSION_PARAMETER));

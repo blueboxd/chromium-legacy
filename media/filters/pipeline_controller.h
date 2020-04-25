@@ -152,7 +152,7 @@ class MEDIA_EXPORT PipelineController {
   // PipelineStaus callback that also carries the target state.
   void OnPipelineStatus(State state, PipelineStatus pipeline_status);
 
-  void OnTrackChangeComplete(State previous_state);
+  void OnTrackChangeComplete();
 
   // The Pipeline we are managing state for.
   std::unique_ptr<Pipeline> pipeline_;
@@ -187,6 +187,10 @@ class MEDIA_EXPORT PipelineController {
 
   // Tracks the current state of |pipeline_|.
   State state_ = State::STOPPED;
+
+  // The previous state of |pipeline_| if it's currently undergoing a track
+  // change.
+  State previous_track_change_state_ = State::STOPPED;
 
   // Indicates that a seek has occurred. When set, a seeked callback will be
   // issued at the next stable state.

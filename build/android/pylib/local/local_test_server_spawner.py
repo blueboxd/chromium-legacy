@@ -76,10 +76,9 @@ class LocalTestServerSpawner(test_server.TestServer):
 
   #override
   def SetUp(self):
-    # See net/test/spawned_test_server/test_server_config.h for description of
+    # See net/test/spawned_test_server/remote_test_server.h for description of
     # the fields in the config file.
     test_server_config = json.dumps({
-      'address': '127.0.0.1',
       'spawner_url_base': 'http://localhost:%d' % self.port
     })
     self._device.WriteFile(

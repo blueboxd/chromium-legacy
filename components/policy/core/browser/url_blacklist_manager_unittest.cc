@@ -16,6 +16,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -474,6 +475,16 @@ TEST_F(URLBlacklistManagerTest, DefaultBlacklistExceptions) {
   EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-extension://xyz"))));
   EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-search://local-ntp"))));
   EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-native://ntp"))));
+#if defined(OS_IOS)
+  // Ensure that the NTP is not blocked on iOS by "*".
+  // TODO(crbug.com/1073291): On iOS, the NTP can not be blocked even by
+  // explicitly listing it as a blocked URL. This is due to the usage of
+  // "about:newtab" as its URL which is not recognized and filtered by the
+  // URLBlacklist code.
+  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("about:newtab"))));
+  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("about://newtab/"))));
+  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome://newtab"))));
+#endif
 
   // Unless they are explicitly blacklisted:
   blocked->AppendString("chrome-extension://*");

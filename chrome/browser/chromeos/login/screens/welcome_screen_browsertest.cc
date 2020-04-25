@@ -43,6 +43,11 @@ const char kStartupManifest[] =
       "keyboard_layout" : "xkb:us::eng",
     })";
 
+const char kCurrentLang[] =
+    R"(document.getElementById('connect').$.welcomeScreen.currentLanguage)";
+const char kCurrentKeyboard[] =
+    R"(document.getElementById('connect').currentKeyboard)";
+
 void ToggleAccessibilityFeature(const std::string& feature_name,
                                 bool new_value) {
   test::JSChecker js = test::OobeJS();
@@ -103,14 +108,6 @@ class WelcomeScreenBrowserTest : public OobeBaseTest {
         chromeos::FILE_STARTUP_CUSTOMIZATION_MANIFEST, startup_manifest);
     return true;
   }
-  void SetUpOnMainThread() override {
-    OobeBaseTest::SetUpOnMainThread();
-    observer_ = std::make_unique<LanguageReloadObserver>(welcome_screen());
-  }
-  void TearDownOnMainThread() override {
-    observer_.reset();
-    OobeBaseTest::TearDownOnMainThread();
-  }
 
   WelcomeScreen* welcome_screen() {
     EXPECT_NE(WizardController::default_controller(), nullptr);
@@ -123,7 +120,6 @@ class WelcomeScreenBrowserTest : public OobeBaseTest {
   void WaitForScreenExit() {
     OobeScreenExitWaiter(WelcomeView::kScreenId).Wait();
   }
-  std::unique_ptr<LanguageReloadObserver> observer_;
  private:
   std::unique_ptr<base::ScopedPathOverride> path_override_;
   base::ScopedTempDir data_dir_;
@@ -196,31 +192,34 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   test::OobeJS().ExpectVisiblePath({"connect", "keyboardSelect"});
 }
 
-// Flaky: https://crbug.com/1025396.
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
-                       DISABLED_WelcomeScreenLanguageSelection) {
+                       WelcomeScreenLanguageSelection) {
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
-  ASSERT_EQ(g_browser_process->GetApplicationLocale(), "en-US");
-  test::OobeJS().GetBool(
-      "document.getElementById('connect').$.welcomeScreen.currentLanguage == "
-      "'English (United States)'");
+  EXPECT_EQ(g_browser_process->GetApplicationLocale(), "en-US");
 
-  test::OobeJS().SelectElementInPath("fr",
-                                     {"connect", "languageSelect", "select"});
-  test::OobeJS().GetBool(
-      "document.getElementById('connect').$.welcomeScreen.currentLanguage == "
-      "'français'");
-  ASSERT_EQ(g_browser_process->GetApplicationLocale(), "fr");
+  test::OobeJS().ExpectEQ(kCurrentLang, std::string("English (United States)"));
 
-  test::OobeJS().SelectElementInPath("en-US",
-                                     {"connect", "languageSelect", "select"});
-  test::OobeJS().GetBool(
-      "document.getElementById('connect').$.welcomeScreen.currentLanguage == "
-      "'English (United States)'");
-  ASSERT_EQ(g_browser_process->GetApplicationLocale(), "en-US");
+  {
+    LanguageReloadObserver observer(welcome_screen());
+    test::OobeJS().SelectElementInPath("fr",
+                                       {"connect", "languageSelect", "select"});
+    observer.Wait();
+    test::OobeJS().ExpectEQ(kCurrentLang, std::string("français"));
+    EXPECT_EQ(g_browser_process->GetApplicationLocale(), "fr");
+  }
+
+  {
+    LanguageReloadObserver observer(welcome_screen());
+    test::OobeJS().SelectElementInPath("en-US",
+                                       {"connect", "languageSelect", "select"});
+    observer.Wait();
+    test::OobeJS().ExpectEQ(kCurrentLang,
+                            std::string("English (United States)"));
+    EXPECT_EQ(g_browser_process->GetApplicationLocale(), "en-US");
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
@@ -234,19 +233,13 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
 
   test::OobeJS().SelectElementInPath(extension_id_prefix + "xkb:us:intl:eng",
                                      {"connect", "keyboardSelect", "select"});
-  test::OobeJS().GetBool(
-      "document.getElementById('connect').$.welcomeScreen.currentKeyboard=="
-      "'US'");
+  test::OobeJS().ExpectEQ(kCurrentKeyboard, std::string("US international"));
   ASSERT_EQ(welcome_screen()->GetInputMethod(),
             extension_id_prefix + "xkb:us:intl:eng");
 
   test::OobeJS().SelectElementInPath(extension_id_prefix + "xkb:us:workman:eng",
                                      {"connect", "keyboardSelect", "select"});
-  test::OobeJS().GetBool(
-      std::string(
-          "document.getElementById('connect').$.welcomeScreen.currentKeyboard=="
-          "'") +
-      extension_id_prefix + "xkb:us:workman:eng'");
+  test::OobeJS().ExpectEQ(kCurrentKeyboard, std::string("US Workman"));
   ASSERT_EQ(welcome_screen()->GetInputMethod(),
             extension_id_prefix + "xkb:us:workman:eng");
 }

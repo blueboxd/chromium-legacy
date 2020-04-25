@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.homepage.settings.HomepageSettings;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.ui.widget.ChromeImageButton;
@@ -88,7 +89,7 @@ public class HomeButton extends ChromeImageButton
             }
         };
 
-        mSettingsLauncher = new SettingsLauncher();
+        mSettingsLauncher = new SettingsLauncherImpl();
     }
 
     public void destroy() {
@@ -147,7 +148,7 @@ public class HomeButton extends ChromeImageButton
         assert !isManagedByPolicy();
         if (isHomepageSettingsUIConversionEnabled()) {
             assert item.getItemId() == ID_SETTINGS;
-            mSettingsLauncher.launchSettingsPage(getContext(), HomepageSettings.class);
+            mSettingsLauncher.launchSettingsActivity(getContext(), HomepageSettings.class);
         } else {
             assert item.getItemId() == ID_REMOVE;
             HomepageManager.getInstance().setPrefHomepageEnabled(false);

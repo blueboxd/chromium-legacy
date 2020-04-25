@@ -195,6 +195,9 @@ class FeedStream : public FeedStreamApi,
 
  private:
   class ModelStoreChangeMonitor;
+  // A single function task to delete stored feed data and force a refresh.
+  // To only be called from within a |Task|.
+  void ForceRefreshForDebuggingTask();
   void TriggerStreamLoad();
   void UnloadModel();
 

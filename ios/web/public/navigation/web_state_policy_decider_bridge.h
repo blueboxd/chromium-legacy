@@ -20,8 +20,12 @@
                (const web::WebStatePolicyDecider::RequestInfo&)requestInfo;
 
 // Invoked by |WebStatePolicyDeciderBridge::ShouldAllowResponse|.
-- (BOOL)shouldAllowResponse:(NSURLResponse*)response
-               forMainFrame:(BOOL)forMainFrame;
+- (void)
+    decidePolicyForNavigationResponse:(NSURLResponse*)response
+                         forMainFrame:(BOOL)forMainFrame
+                    completionHandler:
+                        (void (^)(web::WebStatePolicyDecider::PolicyDecision))
+                            completionHandler;
 @end
 
 namespace web {
@@ -38,8 +42,10 @@ class WebStatePolicyDeciderBridge : public web::WebStatePolicyDecider {
   PolicyDecision ShouldAllowRequest(NSURLRequest* request,
                                     const RequestInfo& request_info) override;
 
-  bool ShouldAllowResponse(NSURLResponse* response,
-                           bool for_main_frame) override;
+  void ShouldAllowResponse(
+      NSURLResponse* response,
+      bool for_main_frame,
+      base::OnceCallback<void(PolicyDecision)> callback) override;
 
  private:
   // CRWWebStatePolicyDecider which receives forwarded calls.

@@ -14,9 +14,13 @@ void ScopedDeviceActions::GetScreenBrightnessLevel(
   std::move(callback).Run(/*success=*/true, current_brightness_);
 }
 
-bool ScopedDeviceActions::OpenAndroidApp(
-    chromeos::assistant::mojom::AndroidAppInfoPtr app_info) {
+bool ScopedDeviceActions::OpenAndroidApp(mojom::AndroidAppInfoPtr app_info) {
   return true;
+}
+
+mojom::AppStatus ScopedDeviceActions::GetAndroidAppStatus(
+    const mojom::AndroidAppInfo& app_info) {
+  return mojom::AppStatus::AVAILABLE;
 }
 
 }  // namespace assistant

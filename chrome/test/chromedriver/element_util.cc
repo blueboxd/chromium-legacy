@@ -442,9 +442,9 @@ Status IsDocumentTypeXml(
     bool* is_xml_document) {
 
   std::unique_ptr<base::Value> contentType;
-  Status status = web_view->EvaluateScript(
-      session->GetCurrentFrameId(),
-      "document.contentType", &contentType);
+  Status status =
+      web_view->EvaluateScript(session->GetCurrentFrameId(),
+                               "document.contentType", false, &contentType);
   if (status.IsError())
           return status;
   if (base::LowerCaseEqualsASCII(contentType->GetString(),

@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.site_settings.SingleWebsiteSettings;
 import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
@@ -371,8 +372,8 @@ public class VrBrowserTransitionTest {
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                SettingsLauncher.getInstance().launchSettingsPage(
-                        context, SingleWebsiteSettings.class);
+                SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+                settingsLauncher.launchSettingsActivity(context, SingleWebsiteSettings.class);
             });
         });
         TestThreadUtils.runOnUiThreadBlocking(
@@ -389,7 +390,8 @@ public class VrBrowserTransitionTest {
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApiWithDoff);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SettingsLauncher.getInstance().launchSettingsPage(context);
+            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            settingsLauncher.launchSettingsActivity(context);
             VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting();
         });
         CriteriaHelper.pollUiThread(() -> {
@@ -416,7 +418,8 @@ public class VrBrowserTransitionTest {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Intent preferencesIntent = SettingsLauncher.getInstance().createIntentForSettingsPage(
+            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            Intent preferencesIntent = settingsLauncher.createSettingsActivityIntent(
                     context, SingleWebsiteSettings.class.getName());
             Assert.assertFalse("Starting an activity did not trigger DOFF",
                     context.startActivityIfNeeded(preferencesIntent, 0));

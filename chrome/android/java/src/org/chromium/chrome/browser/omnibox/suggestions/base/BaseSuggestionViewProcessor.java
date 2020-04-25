@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.GURL;
 
 import java.util.List;
 
@@ -176,11 +177,11 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
      * @param onIconFetched Optional callback that will be invoked after successful fetch of a
      *         favicon.
      */
-    protected void fetchSuggestionFavicon(PropertyModel model, String url,
-            LargeIconBridge iconBridge, @Nullable Runnable onIconFetched) {
+    protected void fetchSuggestionFavicon(PropertyModel model, GURL url, LargeIconBridge iconBridge,
+            @Nullable Runnable onIconFetched) {
         if (url == null || iconBridge == null) return;
 
-        iconBridge.getLargeIconForStringUrl(url, mDesiredFaviconWidthPx,
+        iconBridge.getLargeIconForUrl(url, mDesiredFaviconWidthPx,
                 (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault, int iconType) -> {
                     if (icon == null) return;
 

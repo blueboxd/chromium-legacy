@@ -75,6 +75,11 @@ ScopedJavaLocalRef<jobject> GURLAndroid::FromNativeGURL(JNIEnv* env,
   return j_gurl;
 }
 
+// static
+ScopedJavaLocalRef<jobject> GURLAndroid::EmptyGURL(JNIEnv* env) {
+  return Java_GURL_emptyGURL(env);
+}
+
 static void JNI_GURL_GetOrigin(JNIEnv* env,
                                const JavaParamRef<jstring>& j_spec,
                                jboolean is_valid,

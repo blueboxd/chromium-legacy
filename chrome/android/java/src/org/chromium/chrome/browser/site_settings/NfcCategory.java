@@ -9,16 +9,17 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.chrome.R;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.permissions.nfc.NfcSystemLevelSetting;
 
 /**
  * A class for dealing with the NFC category.
  */
 public class NfcCategory extends SiteSettingsCategory {
-    public NfcCategory() {
+    public NfcCategory(BrowserContextHandle browserContextHandle) {
         // As NFC is not a per-app permission, passing an empty string means the NFC permission is
         // always enabled for Chrome.
-        super(Type.NFC, "" /* androidPermission*/);
+        super(browserContextHandle, Type.NFC, "" /* androidPermission*/);
     }
 
     @Override

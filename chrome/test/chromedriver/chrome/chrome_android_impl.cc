@@ -47,7 +47,7 @@ Status ChromeAndroidImpl::GetWindow(const std::string& target_id,
   std::unique_ptr<base::Value> result;
   std::string expression =
       "[window.screenX, window.screenY, window.outerWidth, window.outerHeight]";
-  status = web_view->EvaluateScript(target_id, expression, &result);
+  status = web_view->EvaluateScript(target_id, expression, false, &result);
   if (status.IsError())
     return status;
 

@@ -235,10 +235,14 @@ std::vector<std::string> OmniboxFieldTrial::GetZeroSuggestVariants(
   // order to specify the ZeroSuggestVariant parameter in those groups we allow
   // it to be associated with the feature that is being force enabled.
   const base::Feature* features_to_check[] = {
+      // kOnFocusSuggestions must be the first checked feature, because it's
+      // used by about:flags to set a variety of ZeroSuggest parameters.
+      // We want it to be first so it overrides server-provided field trials.
+      &omnibox::kOnFocusSuggestions,
+
       &omnibox::kZeroSuggestionsOnNTP,
       &omnibox::kZeroSuggestionsOnNTPRealbox,
       &omnibox::kZeroSuggestionsOnSERP,
-      &omnibox::kOnFocusSuggestions,
   };
   for (const base::Feature* feature : features_to_check) {
     auto parameter_value = internal::GetValueForRuleInContextByFeature(

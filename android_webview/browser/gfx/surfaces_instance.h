@@ -76,7 +76,8 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   void SetWideColorEnabled(bool enabled) override {}
   void SetPreferredFrameInterval(base::TimeDelta interval) override {}
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const viz::FrameSinkId& id) override;
+      const viz::FrameSinkId& id,
+      viz::mojom::CompositorFrameSinkType* type) override;
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(

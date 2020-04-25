@@ -1530,7 +1530,7 @@
     'name': 'chromium.dev',
     'mixins': ['chromium-tester-dev-service-account'],
     'machines': {
-      'android-kitkat-arm-rel-swarming': {
+      'android-lollipop-arm-rel-swarming': {
         'mixins': [
           'chromium-template-pool',
           'kitkat_or_lollipop',

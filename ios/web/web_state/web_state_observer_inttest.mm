@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gmock_callback_support.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #import "ios/net/protocol_handler_util.h"
@@ -28,6 +29,7 @@
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/test/error_test_util.h"
+#import "ios/web/public/test/fakes/async_web_state_policy_decider.h"
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
@@ -61,6 +63,7 @@ namespace web {
 
 namespace {
 
+using base::test::RunOnceCallback;
 using wk_navigation_util::CreateRedirectUrl;
 
 const char kExpectedMimeType[] = "text/html";
@@ -748,7 +751,12 @@ class PolicyDeciderMock : public WebStatePolicyDecider {
                WebStatePolicyDecider::PolicyDecision(
                    NSURLRequest*,
                    const WebStatePolicyDecider::RequestInfo& request_info));
-  MOCK_METHOD2(ShouldAllowResponse, bool(NSURLResponse*, bool for_main_frame));
+  MOCK_METHOD3(
+      ShouldAllowResponse,
+      void(NSURLResponse*,
+           bool for_main_frame,
+           base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)>
+               callback));
 };
 
 }  // namespace
@@ -820,8 +828,9 @@ TEST_F(WebStateObserverTest, NewPageNavigation) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
@@ -888,8 +897,9 @@ TEST_F(WebStateObserverTest, AboutNewTabNavigation) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), second_url, ui::PageTransition::PAGE_TRANSITION_TYPED,
           &context, &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
@@ -936,8 +946,9 @@ TEST_F(WebStateObserverTest, EnableWebUsageTwice) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
@@ -1026,8 +1037,9 @@ TEST_F(WebStateObserverTest, UrlWithSpecialSuffixNavigation) {
         .WillOnce(VerifyPageStartedContext(
             web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED,
             &context, &nav_id));
-    EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-        .WillOnce(Return(true));
+    EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+        .WillOnce(
+            RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
     EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
         .WillOnce(VerifyNewPageFinishedContext(
             web_state(), url, /*mime_type*/ std::string(),
@@ -1210,8 +1222,9 @@ TEST_F(WebStateObserverTest, WebPageReloadNavigation) {
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
@@ -1236,8 +1249,9 @@ TEST_F(WebStateObserverTest, WebPageReloadNavigation) {
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(
           VerifyReloadStartedContext(web_state(), url, &context, &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyReloadFinishedContext(web_state(), url, &context, &nav_id,
                                             true /* is_web_page */));
@@ -1268,8 +1282,9 @@ TEST_F(WebStateObserverTest, DISABLED_ReloadWithUserAgentType) {
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
@@ -1292,8 +1307,9 @@ TEST_F(WebStateObserverTest, DISABLED_ReloadWithUserAgentType) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_RELOAD,
           &context, &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   // TODO(crbug.com/798836): verify the correct User-Agent header is sent.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
@@ -1325,8 +1341,9 @@ TEST_F(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
@@ -1419,8 +1436,9 @@ TEST_F(WebStateObserverTest, RendererInitiatedHashChangeNavigation) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
@@ -1479,8 +1497,9 @@ TEST_F(WebStateObserverTest, StateNavigation) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
@@ -1546,8 +1565,9 @@ TEST_F(WebStateObserverTest, UserInitiatedPostNavigation) {
       .WillOnce(VerifyPostStartedContext(
           web_state(), url, /*has_user_gesture=*/true, &context, &nav_id,
           /*renderer_initiated=*/false));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyPostFinishedContext(
           web_state(), url, /*has_user_gesture=*/true, &context, &nav_id,
@@ -1581,8 +1601,9 @@ TEST_F(WebStateObserverTest, RendererInitiatedPostNavigation) {
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
@@ -1608,8 +1629,9 @@ TEST_F(WebStateObserverTest, RendererInitiatedPostNavigation) {
       .WillOnce(VerifyPostStartedContext(
           web_state(), action, /*has_user_gesture=*/false, &context, &nav_id,
           /*renderer_initiated=*/true));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyPostFinishedContext(
@@ -1641,8 +1663,9 @@ TEST_F(WebStateObserverTest, ReloadPostNavigation) {
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
@@ -1662,8 +1685,9 @@ TEST_F(WebStateObserverTest, ReloadPostNavigation) {
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
@@ -1688,8 +1712,9 @@ TEST_F(WebStateObserverTest, ReloadPostNavigation) {
       .WillOnce(VerifyPostStartedContext(
           web_state(), action, /*has_user_gesture=*/true, &context, &nav_id,
           /*reload_is_renderer_initiated=*/false));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyPostFinishedContext(
           web_state(), action, /*has_user_gesture=*/true, &context, &nav_id,
@@ -1726,8 +1751,9 @@ TEST_F(WebStateObserverTest, ForwardPostNavigation) {
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(url.GetContent()));
@@ -1747,8 +1773,9 @@ TEST_F(WebStateObserverTest, ForwardPostNavigation) {
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
@@ -1858,8 +1885,9 @@ TEST_F(WebStateObserverTest, RedirectNavigation) {
       .Times(5)
       .WillRepeatedly(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
 
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), redirect_url, kExpectedMimeType,
@@ -1926,8 +1954,9 @@ TEST_F(WebStateObserverTest, MAYBE_FailedLoad) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(web_state(), url, /*mime_type=*/"",
                                              /*content_is_html=*/false,
@@ -2031,8 +2060,9 @@ TEST_F(WebStateObserverTest, DisallowRequestAndShowError) {
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info_2)))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
@@ -2060,6 +2090,53 @@ TEST_F(WebStateObserverTest, DisallowRequestAndShowError) {
   EXPECT_EQ(url.spec(), web_state()->GetVisibleURL());
 }
 
+// Tests allowing the navigation from ShouldAllowResponse using an async
+// decider.
+TEST_F(WebStateObserverTest, AsyncAllowResponse) {
+  const GURL url = test_server_->GetURL("/echoall");
+  AsyncWebStatePolicyDecider async_decider(web_state());
+
+  // Perform new page navigation.
+  NavigationContext* context = nullptr;
+  int32_t nav_id = 0;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  WebStatePolicyDecider::RequestInfo expected_request_info(
+      ui::PageTransition::PAGE_TRANSITION_TYPED,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
+
+  test::LoadUrl(web_state(), url);
+  AsyncWebStatePolicyDecider* async_decider_ptr = &async_decider;
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return async_decider_ptr->ReadyToInvokeCallback();
+  }));
+
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageFinishedContext(
+          web_state(), url, kExpectedMimeType, /*content_is_html=*/true,
+          &context, &nav_id));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle(url.GetContent()));
+  EXPECT_CALL(observer_, TitleWasSet(web_state()))
+      .WillOnce(VerifyTitle("EmbeddedTestServer - EchoAll"));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
+  async_decider.InvokeCallback(WebStatePolicyDecider::PolicyDecision::Allow());
+
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+  EXPECT_EQ(url.spec(), web_state()->GetVisibleURL());
+}
+
 // Tests rejecting the navigation from ShouldAllowResponse. PageLoaded callback
 // is not called.
 TEST_F(WebStateObserverTest, DisallowResponse) {
@@ -2079,13 +2156,54 @@ TEST_F(WebStateObserverTest, DisallowResponse) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(false));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Cancel()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyResponseRejectedFinishedContext(web_state(), url,
                                                       &context, &nav_id));
   test::LoadUrl(web_state(), test_server_->GetURL("/echo"));
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+  EXPECT_EQ("", web_state()->GetVisibleURL());
+}
+
+// Tests rejecting the navigation from ShouldAllowResponse using an async
+// decider.
+TEST_F(WebStateObserverTest, AsyncDisallowResponse) {
+  const GURL url = test_server_->GetURL("/echo");
+  AsyncWebStatePolicyDecider async_decider(web_state());
+
+  // Perform new page navigation.
+  NavigationContext* context = nullptr;
+  int32_t nav_id = 0;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  WebStatePolicyDecider::RequestInfo expected_request_info(
+      ui::PageTransition::PAGE_TRANSITION_TYPED,
+      /*target_main_frame=*/true, /*has_user_gesture=*/false);
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
+      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyPageStartedContext(
+          web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
+          &nav_id));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
+
+  test::LoadUrl(web_state(), test_server_->GetURL("/echo"));
+  AsyncWebStatePolicyDecider* async_decider_ptr = &async_decider;
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return async_decider_ptr->ReadyToInvokeCallback();
+  }));
+
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyResponseRejectedFinishedContext(web_state(), url,
+                                                      &context, &nav_id));
+  async_decider.InvokeCallback(WebStatePolicyDecider::PolicyDecision::Cancel());
+
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
   EXPECT_EQ("", web_state()->GetVisibleURL());
 }
@@ -2166,8 +2284,9 @@ TEST_F(WebStateObserverTest, StopFinishedNavigation) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(web_state(), url, /*mime_type=*/"",
                                              /*content_is_html=*/false,
@@ -2201,8 +2320,9 @@ TEST_F(WebStateObserverTest, IframeNavigation) {
               ShouldAllowRequest(_, RequestInfoMatch(expected_request_info)))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()));
 
@@ -2213,8 +2333,9 @@ TEST_F(WebStateObserverTest, IframeNavigation) {
   EXPECT_CALL(*decider_,
               ShouldAllowRequest(_, RequestInfoMatch(iframe_request_info)))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/false))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/false, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -2229,8 +2350,9 @@ TEST_F(WebStateObserverTest, IframeNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowRequest(
                              _, RequestInfoMatch(link_clicked_request_info)))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/false))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/false, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   test::TapWebViewElementWithIdInIframe(web_state(), "normal-link");
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
@@ -2255,8 +2377,9 @@ TEST_F(WebStateObserverTest, IframeNavigation) {
 
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
 
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/false))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/false, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
 
   web_state()->GetNavigationManager()->GoBack();
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
@@ -2289,8 +2412,9 @@ TEST_F(WebStateObserverTest, NewPageLoadDestroysForwardItems) {
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state())).Times(2);
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
@@ -2339,8 +2463,9 @@ TEST_F(WebStateObserverTest, NewPageLoadDestroysForwardItems) {
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   // Called once each for CanGoBack and CanGoForward;
   EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
@@ -2378,8 +2503,9 @@ TEST_F(WebStateObserverTest, RestoreSessionOnline) {
 
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
 
   // Back/forward state changes due to History API calls during session
   // restoration. Called once each for CanGoBack and CanGoForward.
@@ -2397,8 +2523,9 @@ TEST_F(WebStateObserverTest, RestoreSessionOnline) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
 
   EXPECT_CALL(*decider_, ShouldAllowResponse(URLMatch(CreateRedirectUrl(url1)),
-                                             /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+                                             /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
 
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
 
@@ -2409,8 +2536,9 @@ TEST_F(WebStateObserverTest, RestoreSessionOnline) {
 
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
   EXPECT_CALL(*decider_,
-              ShouldAllowResponse(URLMatch(url1), /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+              ShouldAllowResponse(URLMatch(url1), /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
 
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()));
@@ -2439,8 +2567,9 @@ TEST_F(WebStateObserverTest, RestoreSessionOnline) {
               ShouldAllowRequest(URLMatch(CreateRedirectUrl(url0)), _))
       .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(*decider_, ShouldAllowResponse(URLMatch(CreateRedirectUrl(url0)),
-                                             /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+                                             /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
 
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
 
@@ -2530,8 +2659,9 @@ TEST_F(WebStateObserverTest, PdfFileUrlNavigation) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(
           VerifyPdfFileUrlFinishedContext(web_state(), url, &context, &nav_id));
@@ -2564,8 +2694,9 @@ TEST_F(WebStateObserverTest, LoadData) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), first_url, ui::PageTransition::PAGE_TRANSITION_TYPED,
           &context, &nav_id));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
-      .WillOnce(Return(true));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
+      .WillOnce(
+          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewPageFinishedContext(
           web_state(), first_url, kExpectedMimeType, /*content_is_html=*/true,

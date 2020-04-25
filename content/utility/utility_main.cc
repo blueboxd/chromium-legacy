@@ -48,7 +48,7 @@ namespace content {
 
 // Mainline routine for running as the utility process.
 int UtilityMain(const MainFunctionParams& parameters) {
-  const base::MessagePumpType message_pump_type =
+  base::MessagePumpType message_pump_type =
       parameters.command_line.HasSwitch(switches::kMessageLoopTypeUi)
           ? base::MessagePumpType::UI
           : base::MessagePumpType::DEFAULT;
@@ -65,6 +65,12 @@ int UtilityMain(const MainFunctionParams& parameters) {
         return std::make_unique<base::MessagePumpNSRunLoop>();
       });
 #endif
+
+#if defined(OS_FUCHSIA)
+  // On Fuchsia always use IO threads to allow FIDL calls.
+  if (message_pump_type == base::MessagePumpType::DEFAULT)
+    message_pump_type = base::MessagePumpType::IO;
+#endif  // defined(OS_FUCHSIA)
 
   // The main task executor of the utility process.
   base::SingleThreadTaskExecutor main_thread_task_executor(message_pump_type);

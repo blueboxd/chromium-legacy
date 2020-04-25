@@ -26,7 +26,6 @@
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "storage/common/storage_histograms.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace storage {
@@ -826,9 +825,6 @@ void BlobReader::RecordBytesReadFromDataHandle(int item_index, int result) {
   const auto& items = blob_data_->items();
   BlobDataItem& item = *items.at(item_index);
   DCHECK_EQ(item.type(), BlobDataItem::Type::kReadableDataHandle);
-  if (item.data_handle()->BytesReadHistogramLabel()) {
-    RecordBytesRead(item.data_handle()->BytesReadHistogramLabel(), result);
-  }
 }
 
 }  // namespace storage

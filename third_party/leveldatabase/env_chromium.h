@@ -145,8 +145,6 @@ class LEVELDB_EXPORT UMALogger {
   virtual void RecordErrorAt(MethodID method) const = 0;
   virtual void RecordOSError(MethodID method,
                              base::File::Error error) const = 0;
-  virtual void RecordBytesRead(int amount) const = 0;
-  virtual void RecordBytesWritten(int amount) const = 0;
 };
 
 class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env, public UMALogger {
@@ -207,8 +205,6 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env, public UMALogger {
  private:
   void RecordErrorAt(MethodID method) const override;
   void RecordOSError(MethodID method, base::File::Error error) const override;
-  void RecordBytesRead(int amount) const override;
-  void RecordBytesWritten(int amount) const override;
   base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
   void RemoveBackupFiles(const base::FilePath& dir);
 

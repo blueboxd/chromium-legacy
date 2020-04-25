@@ -7,6 +7,7 @@ import {EDIT_STARTUP_URL_EVENT, StartupUrlsPageBrowserProxy, StartupUrlsPageBrow
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
   /** @implements {StartupUrlsPageBrowserProxy} */
@@ -283,12 +284,12 @@ import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
         url: 'chrome://foo',
       };
 
-      cr.webUIListenerCallback('update-startup-pages', [entry1, entry2]);
+      webUIListenerCallback('update-startup-pages', [entry1, entry2]);
       page.fire(EDIT_STARTUP_URL_EVENT, {model: entry2, anchor: null});
       flush();
 
       assertTrue(!!page.$$('settings-startup-url-dialog'));
-      cr.webUIListenerCallback('update-startup-pages', [entry1]);
+      webUIListenerCallback('update-startup-pages', [entry1]);
       flush();
 
       assertFalse(!!page.$$('settings-startup-url-dialog'));

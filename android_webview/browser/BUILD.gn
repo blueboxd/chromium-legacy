@@ -65,6 +65,8 @@ source_set("browser") {
     "aw_javascript_dialog_manager.h",
     "aw_media_url_interceptor.cc",
     "aw_media_url_interceptor.h",
+    "aw_metrics_service_client_delegate.cc",
+    "aw_metrics_service_client_delegate.h",
     "aw_pac_processor.cc",
     "aw_pac_processor.h",
     "aw_pdf_exporter.cc",

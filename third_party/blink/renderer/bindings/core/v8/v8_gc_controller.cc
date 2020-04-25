@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
@@ -115,6 +116,9 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
         // Finish Oilpan's complete sweeping before running a V8 major GC.
         // This will let the GC collect more V8 objects.
         ThreadState::Current()->CompleteSweep();
+        V8PerIsolateData::From(isolate)
+            ->GetActiveScriptWrappableManager()
+            ->RecomputeActiveScriptWrappables();
       }
       break;
     case v8::kGCTypeProcessWeakCallbacks:

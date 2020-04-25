@@ -36,8 +36,8 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_client.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_context.h"
@@ -203,7 +203,7 @@ void DatabaseTracker::ForEachOpenDatabaseInPage(Page* page,
     for (auto& name_database_set : *origin_map.value) {
       for (Database* database : *name_database_set.value) {
         ExecutionContext* context = database->GetExecutionContext();
-        if (Document::From(context)->GetPage() == page)
+        if (To<LocalDOMWindow>(context)->GetFrame()->GetPage() == page)
           callback.Run(database);
       }
     }

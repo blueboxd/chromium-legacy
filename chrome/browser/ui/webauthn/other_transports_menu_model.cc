@@ -44,8 +44,6 @@ OtherTransportsMenuModel::OtherTransportsMenuModel(
   }
 #endif  // defined(OS_WIN)
 
-  if (current_transport == AuthenticatorTransport::kBluetoothLowEnergy)
-    AppendItemForAnotherBluetoothKey();
   PopulateWithTransportsExceptFor(current_transport);
 }
 
@@ -68,14 +66,6 @@ void OtherTransportsMenuModel::PopulateWithTransportsExceptFor(
     AddItemWithIcon(base::strict_cast<int>(transport), std::move(name),
                     ui::ImageModel::FromImageSkia(GetTransportIcon(transport)));
   }
-}
-
-void OtherTransportsMenuModel::AppendItemForAnotherBluetoothKey() {
-  AddItemWithIcon(
-      base::strict_cast<int>(AuthenticatorTransport::kBluetoothLowEnergy),
-      l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_ANOTHER_BLE),
-      ui::ImageModel::FromImageSkia(
-          GetTransportIcon(AuthenticatorTransport::kBluetoothLowEnergy)));
 }
 
 #if defined(OS_WIN)
@@ -115,14 +105,7 @@ void OtherTransportsMenuModel::ExecuteCommand(int command_id, int event_flags) {
   AuthenticatorTransport selected_transport =
       static_cast<AuthenticatorTransport>(command_id);
 
-  bool pair_with_new_bluetooth_device = false;
-  if (selected_transport == AuthenticatorTransport::kBluetoothLowEnergy &&
-      dialog_model_->current_step() ==
-          AuthenticatorRequestDialogModel::Step::kBleActivate) {
-    pair_with_new_bluetooth_device = true;
-  }
-  dialog_model_->StartGuidedFlowForTransport(selected_transport,
-                                             pair_with_new_bluetooth_device);
+  dialog_model_->StartGuidedFlowForTransport(selected_transport);
 }
 
 void OtherTransportsMenuModel::OnModelDestroyed() {

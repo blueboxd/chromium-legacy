@@ -89,7 +89,7 @@ class LayoutSVGContainer : public LayoutSVGModelObject {
                    HitTestAction) override;
 
   // Called during layout to update the local transform.
-  virtual SVGTransformChange CalculateLocalTransform();
+  virtual SVGTransformChange CalculateLocalTransform(bool bounds_changed);
 
   void UpdateCachedBoundaries();
 

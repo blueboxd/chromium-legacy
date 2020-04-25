@@ -37,8 +37,12 @@
 /* Styles used with SplitSettingsSync. */
 
 #splitSettingsSyncConsentDialog .overview-list-item {
-  margin-bottom: 16px;
+  border-top: 1px solid var(--google-grey-200);
   padding: 16px;
+}
+
+#splitSettingsSyncConsentDialog .overview-list-item:last-of-type {
+  border-bottom: 1px solid var(--google-grey-200);
 }
 
 #splitSettingsSyncConsentDialog .overview-list-item-icon {
@@ -49,25 +53,17 @@
   margin-top: 4px;
 }
 
+#splitSettingsSyncConsentDialog .overview-list-item-description {
+  padding-inline-end: 16px;
+}
+
 #splitSettingsSyncConsentDialog cr-checkbox {
   align-self: start; /* Prevent label from spanning the whole width. */
   margin-top: 16px;
   --cr-checkbox-label-padding-start: 12px;
 }
 
-/* Styles used with SplitSyncConsent. */
-
-#osSyncConsentFooter {
-  border-bottom: solid 1px var(--google-grey-300);
-  border-top: solid 1px var(--google-grey-300);
-  padding: 16px 0;
+#splitSettingsSyncConsentDialog cr-toggle {
+  margin-top: 8px;
 }
 
-#osSyncConsentToggleName {
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-#osSyncConsentToggleDescription {
-  color: var(--google-grey-700);
-}

@@ -8,9 +8,9 @@
  */
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
-// #import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from './constants.m.js';
-// #import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from './constants.js';
+import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 // clang-format on
 
 /**
@@ -19,7 +19,7 @@
  * should be treated as 'default'.
  * @enum {string}
  */
-/* #export */ const ContentSettingProvider = {
+export const ContentSettingProvider = {
   POLICY: 'policy',
   SUPERVISED_USER: 'supervised_user',
   EXTENSION: 'extension',
@@ -46,7 +46,7 @@ let IsValid;
  * @typedef {{disabled: boolean,
  *            indicator: !CrPolicyIndicatorType}}
  */
-/* #export */ let ManagedState;
+export let ManagedState;
 
 /**
  * Stores information about whether individual cookies controls are managed,
@@ -57,7 +57,7 @@ let IsValid;
  *            blockAll: !ManagedState,
               sessionOnly: !ManagedState}}
  */
-/* #export */ let CookieControlsManagedState;
+export let CookieControlsManagedState;
 
 /**
  * Stores origin information. The |hasPermissionSettings| will be set to true
@@ -70,7 +70,7 @@ let IsValid;
               hasPermissionSettings: boolean,
               isInstalled: boolean}}
  */
-/* #export */ let OriginInfo;
+export let OriginInfo;
 
 /**
  * Represents a list of sites, grouped under the same eTLD+1. For example, an
@@ -82,7 +82,7 @@ let IsValid;
  *            origins: Array<OriginInfo>,
  *            hasInstalledPWA: boolean}}
  */
-/* #export */ let SiteGroup;
+export let SiteGroup;
 
 /**
  * The site exception information passed from the C++ handler.
@@ -92,25 +92,25 @@ let IsValid;
  *            origin: string,
  *            displayName: string,
  *            type: string,
- *            setting: !settings.ContentSetting,
- *            source: !settings.SiteSettingSource}}
+ *            setting: !ContentSetting,
+ *            source: !SiteSettingSource}}
  */
-/* #export */ let RawSiteException;
+export let RawSiteException;
 
 /**
  * The site exception after it has been converted/filtered for UI use.
  * See also: RawSiteException.
- * @typedef {{category: !settings.ContentSettingsTypes,
+ * @typedef {{category: !ContentSettingsTypes,
  *            embeddingOrigin: string,
  *            incognito: boolean,
  *            origin: string,
  *            displayName: string,
- *            setting: !settings.ContentSetting,
+ *            setting: !ContentSetting,
  *            enforcement: ?chrome.settingsPrivate.Enforcement,
  *            controlledBy: !chrome.settingsPrivate.ControlledBy,
  *            showAndroidSmsNote: (boolean|undefined)}}
  */
-/* #export */ let SiteException;
+export let SiteException;
 
 /**
  * Represents a list of exceptions recently configured for a site, where recent
@@ -120,39 +120,39 @@ let IsValid;
  *            incognito: boolean,
  *            recentPermissions: !Array<!RawSiteException>}}
  */
-/* #export */ let RecentSitePermissions;
+export let RecentSitePermissions;
 
 /**
  * The chooser exception information passed from the C++ handler.
  * See also: ChooserException.
- * @typedef {{chooserType: !settings.ChooserType,
+ * @typedef {{chooserType: !ChooserType,
  *            displayName: string,
  *            object: Object,
  *            sites: Array<!RawSiteException>}}
  */
-/* #export */ let RawChooserException;
+export let RawChooserException;
 
 /**
  * The chooser exception after it has been converted/filtered for UI use.
  * See also: RawChooserException.
- * @typedef {{chooserType: !settings.ChooserType,
+ * @typedef {{chooserType: !ChooserType,
  *            displayName: string,
  *            object: Object,
  *            sites: Array<!SiteException>}}
  */
-/* #export */ let ChooserException;
+export let ChooserException;
 
 /**
- * @typedef {{setting: !settings.ContentSetting,
+ * @typedef {{setting: !ContentSetting,
  *            source: !ContentSettingProvider}}
  */
-/* #export */ let DefaultContentSetting;
+export let DefaultContentSetting;
 
 /**
  * @typedef {{name: string,
  *            id: string}}
  */
-/* #export */ let MediaPickerEntry;
+export let MediaPickerEntry;
 
 /**
  * @typedef {{protocol: string,
@@ -166,11 +166,10 @@ let ProtocolHandlerEntry;
  *            source: string,
  *            zoom: string}}
  */
-/* #export */ let ZoomLevelEntry;
+export let ZoomLevelEntry;
 
-cr.define('settings', function() {
   /** @interface */
-  /* #export */ class SiteSettingsPrefsBrowserProxy {
+  export class SiteSettingsPrefsBrowserProxy {
     /**
      * Sets the default value for a site settings category.
      * @param {string} contentType The name of the category to change.
@@ -180,7 +179,7 @@ cr.define('settings', function() {
 
     /**
      * Gets the default value for a site settings category.
-     * @param {!settings.ContentSettingsTypes} contentType The name of the
+     * @param {!ContentSettingsTypes} contentType The name of the
      *   category to query.
      * @return {!Promise<!DefaultContentSetting>}
      */
@@ -189,7 +188,7 @@ cr.define('settings', function() {
     /**
      * Gets a list of sites, grouped by eTLD+1, affected by any of the content
      * settings specified by |contentTypes|.
-     * @param {!Array<!settings.ContentSettingsTypes>} contentTypes A list of
+     * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
      *     the content types to retrieve sites for.
      * @return {!Promise<!Array<!SiteGroup>>}
      */
@@ -213,7 +212,7 @@ cr.define('settings', function() {
      * numSources different origin/profile (inconigto/regular) pairings.
      * This includes permissions adjusted by embargo, but excludes any set
      * via policy.
-     * @param {!Array<!settings.ContentSettingsTypes>} contentTypes A list of
+     * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
      *     the content types to retrieve sites with recently changed settings.
      * @param {!number} numSources Maximum number of different sources to return
      * @return {!Promise<!Array<!RecentSitePermissions>>}
@@ -222,7 +221,7 @@ cr.define('settings', function() {
 
     /**
      * Gets the chooser exceptions for a particular chooser type.
-     * @param {settings.ChooserType} chooserType The chooser type to grab
+     * @param {ChooserType} chooserType The chooser type to grab
      *     exceptions from.
      * @return {!Promise<!Array<!RawChooserException>>}
      */
@@ -248,7 +247,7 @@ cr.define('settings', function() {
      * may be different to the results retrieved by getExceptionList(), since it
      * combines different sources of data to get a permission's value.
      * @param {string} origin The origin to look up permissions for.
-     * @param {!Array<!settings.ContentSettingsTypes>} contentTypes A list of
+     * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
      *     categories to retrieve the ContentSetting for.
      * @return {!Promise<!NodeList<!RawSiteException>>}
      */
@@ -258,11 +257,11 @@ cr.define('settings', function() {
      * Resets the permissions for a list of categories for a given origin. This
      * does not support incognito settings or patterns.
      * @param {string} origin The origin to reset permissions for.
-     * @param {!Array<!settings.ContentSettingsTypes>} contentTypes A list of
+     * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
      *     categories to set the permission for. Typically this would be a
      *     single category, but sometimes it is useful to clear any permissions
      *     set for all categories.
-     * @param {!settings.ContentSetting} blanketSetting The setting to set all
+     * @param {!ContentSetting} blanketSetting The setting to set all
      *     permissions listed in |contentTypes| to.
      */
     setOriginPermissions(origin, contentTypes, blanketSetting) {}
@@ -291,7 +290,7 @@ cr.define('settings', function() {
     /**
      * Removes a particular chooser object permission by origin and embedding
      * origin.
-     * @param {settings.ChooserType} chooserType The chooser exception type
+     * @param {ChooserType} chooserType The chooser exception type
      * @param {string} origin The origin to look up the permission for.
      * @param {string} embeddingOrigin the embedding origin to look up.
      * @param {!Object} exception The exception to revoke permission for.
@@ -324,7 +323,7 @@ cr.define('settings', function() {
     /**
      * Checks whether a setting is valid.
      * @param {string} pattern The pattern to check.
-     * @param {settings.ContentSettingsTypes} category What kind of setting,
+     * @param {ContentSettingsTypes} category What kind of setting,
      *     e.g. Location, Camera, Cookies, etc.
      * @return {!Promise<IsValid>} Contains whether or not the pattern is
      *     valid for the type, and if it is invalid, the reason why.
@@ -437,9 +436,9 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.SiteSettingsPrefsBrowserProxy}
+   * @implements {SiteSettingsPrefsBrowserProxy}
    */
-  /* #export */ class SiteSettingsPrefsBrowserProxyImpl {
+  export class SiteSettingsPrefsBrowserProxyImpl {
     /** @override */
     setDefaultValueForContentType(contentType, defaultValue) {
       chrome.send('setDefaultValueForContentType', [contentType, defaultValue]);
@@ -447,48 +446,48 @@ cr.define('settings', function() {
 
     /** @override */
     getDefaultValueForContentType(contentType) {
-      return cr.sendWithPromise('getDefaultValueForContentType', contentType);
+      return sendWithPromise('getDefaultValueForContentType', contentType);
     }
 
     /** @override */
     getAllSites(contentTypes) {
-      return cr.sendWithPromise('getAllSites', contentTypes);
+      return sendWithPromise('getAllSites', contentTypes);
     }
 
     /** @override */
     getCookieControlsManagedState() {
-      return cr.sendWithPromise('getCookieControlsManagedState');
+      return sendWithPromise('getCookieControlsManagedState');
     }
 
     /** @override */
     getCookieSettingDescription() {
-      return cr.sendWithPromise('getCookieSettingDescription');
+      return sendWithPromise('getCookieSettingDescription');
     }
 
     /** @override */
     getRecentSitePermissions(contentTypes, numSources) {
-      return cr.sendWithPromise(
+      return sendWithPromise(
           'getRecentSitePermissions', contentTypes, numSources);
     }
 
     /** @override */
     getChooserExceptionList(chooserType) {
-      return cr.sendWithPromise('getChooserExceptionList', chooserType);
+      return sendWithPromise('getChooserExceptionList', chooserType);
     }
 
     /** @override */
     getFormattedBytes(numBytes) {
-      return cr.sendWithPromise('getFormattedBytes', numBytes);
+      return sendWithPromise('getFormattedBytes', numBytes);
     }
 
     /** @override */
     getExceptionList(contentType) {
-      return cr.sendWithPromise('getExceptionList', contentType);
+      return sendWithPromise('getExceptionList', contentType);
     }
 
     /** @override */
     getOriginPermissions(origin, contentTypes) {
-      return cr.sendWithPromise('getOriginPermissions', origin, contentTypes);
+      return sendWithPromise('getOriginPermissions', origin, contentTypes);
     }
 
     /** @override */
@@ -528,12 +527,12 @@ cr.define('settings', function() {
 
     /** @override */
     isOriginValid(origin) {
-      return cr.sendWithPromise('isOriginValid', origin);
+      return sendWithPromise('isOriginValid', origin);
     }
 
     /** @override */
     isPatternValidForType(pattern, category) {
-      return cr.sendWithPromise('isPatternValidForType', pattern, category);
+      return sendWithPromise('isPatternValidForType', pattern, category);
     }
 
     /** @override */
@@ -616,11 +615,5 @@ cr.define('settings', function() {
 
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
-  cr.addSingletonGetter(SiteSettingsPrefsBrowserProxyImpl);
+  addSingletonGetter(SiteSettingsPrefsBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    SiteSettingsPrefsBrowserProxy: SiteSettingsPrefsBrowserProxy,
-    SiteSettingsPrefsBrowserProxyImpl: SiteSettingsPrefsBrowserProxyImpl,
-  };
-});

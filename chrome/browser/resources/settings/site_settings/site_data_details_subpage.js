@@ -2,7 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../settings_shared_css.m.js';
+
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {routes} from '../route.m.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
+
+import {CookieDataForDisplay, CookieDetails, getCookieData} from './cookie_info.js';
+import {CookieList, LocalDataBrowserProxy, LocalDataBrowserProxyImpl} from './local_data_browser_proxy.js';
+
 
 const categoryLabels = {
   app_cache: loadTimeData.getString('cookieAppCache'),
@@ -23,7 +39,9 @@ const categoryLabels = {
 Polymer({
   is: 'site-data-details-subpage',
 
-  behaviors: [settings.RouteObserverBehavior, WebUIListenerBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [RouteObserverBehavior, WebUIListenerBehavior],
 
   properties: {
     /**
@@ -48,29 +66,29 @@ Polymer({
 
   /**
    * The browser proxy used to retrieve and change cookies.
-   * @private {?settings.LocalDataBrowserProxy}
+   * @private {?LocalDataBrowserProxy}
    */
   browserProxy_: null,
 
   /** @override */
   ready() {
-    this.browserProxy_ = settings.LocalDataBrowserProxyImpl.getInstance();
+    this.browserProxy_ = LocalDataBrowserProxyImpl.getInstance();
 
     this.addWebUIListener(
         'on-tree-item-removed', this.getCookieDetails_.bind(this));
   },
 
   /**
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} route
+   * RouteObserverBehavior
+   * @param {!Route} route
    * @protected
    */
   currentRouteChanged(route) {
-    if (settings.Router.getInstance().getCurrentRoute() !=
-        settings.routes.SITE_SETTINGS_DATA_DETAILS) {
+    if (Router.getInstance().getCurrentRoute() !=
+        routes.SITE_SETTINGS_DATA_DETAILS) {
       return;
     }
-    const site = settings.Router.getInstance().getQueryParameters().get('site');
+    const site = Router.getInstance().getQueryParameters().get('site');
     if (!site) {
       return;
     }
@@ -157,5 +175,3 @@ Polymer({
     this.browserProxy_.removeCookie(this.siteId_);
   },
 });
-
-})();

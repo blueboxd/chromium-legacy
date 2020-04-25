@@ -18,10 +18,7 @@
 struct AuthenticatorReference {
   AuthenticatorReference(base::StringPiece device_id,
                          base::StringPiece16 authenticator_display_name,
-                         device::FidoTransportProtocol transport,
-                         bool is_in_pairing_mode,
-                         bool is_paired,
-                         bool requires_ble_pairing_pin);
+                         device::FidoTransportProtocol transport);
   AuthenticatorReference(AuthenticatorReference&& data);
   AuthenticatorReference& operator=(AuthenticatorReference&& other);
   ~AuthenticatorReference();
@@ -29,9 +26,6 @@ struct AuthenticatorReference {
   std::string authenticator_id;
   base::string16 authenticator_display_name;
   device::FidoTransportProtocol transport;
-  bool is_in_pairing_mode = false;
-  bool is_paired = false;
-  bool requires_ble_pairing_pin = true;
   bool dispatched = false;
 
  private:

@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -1755,6 +1756,10 @@ class DisplayLockContextRenderingTest : public RenderingTest,
   bool IsObservingLifecycle(DisplayLockContext* context) const {
     return context->is_registered_for_lifecycle_notifications_;
   }
+  bool DescendantDependentFlagUpdateWasBlocked(
+      DisplayLockContext* context) const {
+    return context->needs_compositing_dependent_flag_update_;
+  }
   void LockImmediate(DisplayLockContext* context) {
     context->SetRequestedState(ESubtreeVisibility::kHidden);
   }
@@ -1783,6 +1788,58 @@ TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
   GetDocument().getElementById("frame")->remove();
 
   LockImmediate(&target->EnsureDisplayLockContext());
+}
+
+TEST_F(DisplayLockContextRenderingTest,
+       VisualOverflowCalculateOnChildPaintLayer) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .hidden { subtree-visibility: hidden }
+      .paint_layer { contain: paint }
+      .composited { will-change: transform }
+    </style>
+    <div id=lockable class=paint_layer>
+      <div id=parent class=paint_layer>
+        <div id=child class=paint_layer>
+          <span>content</span>
+          <span>content</span>
+          <span>content</span>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* parent = GetDocument().getElementById("parent");
+  auto* parent_box = ToLayoutBoxModelObject(parent->GetLayoutObject());
+  ASSERT_TRUE(parent_box);
+  EXPECT_TRUE(parent_box->Layer());
+  EXPECT_TRUE(parent_box->HasSelfPaintingLayer());
+
+  // Lock the container.
+  auto* lockable = GetDocument().getElementById("lockable");
+  lockable->classList().Add("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* child = GetDocument().getElementById("child");
+  auto* child_layer = ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  child_layer->SetNeedsVisualOverflowRecalc();
+  EXPECT_TRUE(child_layer->NeedsVisualOverflowRecalc());
+
+  // The following should not crash/DCHECK.
+  UpdateAllLifecyclePhasesForTest();
+
+  // Verify that the display lock knows that the descendant dependent flags
+  // update was blocked.
+  ASSERT_TRUE(lockable->GetDisplayLockContext());
+  EXPECT_TRUE(DescendantDependentFlagUpdateWasBlocked(
+      lockable->GetDisplayLockContext()));
+  EXPECT_TRUE(child_layer->NeedsVisualOverflowRecalc());
+
+  // After unlocking, we should process the pending visual overflow recalc.
+  lockable->classList().Remove("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(child_layer->NeedsVisualOverflowRecalc());
 }
 
 TEST_F(DisplayLockContextRenderingTest,

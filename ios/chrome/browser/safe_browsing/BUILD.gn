@@ -8,7 +8,8 @@ import("//ios/features.gni")
 source_set("safe_browsing") {
   sources = [
     "safe_browsing_service.h",
-    "safe_browsing_service.mm",
+    "safe_browsing_service_impl.h",
+    "safe_browsing_service_impl.mm",
     "safe_browsing_tab_helper.h",
     "safe_browsing_tab_helper.mm",
     "url_checker_delegate_impl.h",
@@ -36,6 +37,24 @@ source_set("safe_browsing") {
     "//services/network:network_service",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "fake_safe_browsing_service.h",
+    "fake_safe_browsing_service.mm",
+  ]
+
+  deps = [
+    ":safe_browsing",
+    "//components/safe_browsing/core/browser",
+    "//components/safe_browsing/core/db:test_database_manager",
+    "//ios/web/public",
+    "//services/network/public/cpp",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

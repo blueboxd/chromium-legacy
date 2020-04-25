@@ -24,9 +24,11 @@ FakeWebStatePolicyDecider::ShouldAllowRequest(NSURLRequest* request,
   return should_allow_request_;
 }
 
-bool FakeWebStatePolicyDecider::ShouldAllowResponse(NSURLResponse* response,
-                                                    bool for_main_frame) {
-  return true;
+void FakeWebStatePolicyDecider::ShouldAllowResponse(
+    NSURLResponse* response,
+    bool for_main_frame,
+    base::OnceCallback<void(PolicyDecision)> callback) {
+  std::move(callback).Run(PolicyDecision::Allow());
 }
 
 }  // namespace web

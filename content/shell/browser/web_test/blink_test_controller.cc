@@ -677,14 +677,26 @@ void BlinkTestController::OpenURL(const GURL& url) {
                          gfx::Size());
 }
 
-void BlinkTestController::OnTestFinishedInSecondaryRenderer() {
-  GetBlinkTestControlRemote(
-      main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
-      ->TestFinishedInSecondaryRenderer();
+void BlinkTestController::InitiateLayoutDump() {
+  // There should be at most 1 layout dump in progress at any given time.
+  DCHECK_EQ(0, pending_layout_dumps_);
+
+  int number_of_messages = 0;
+  for (RenderFrameHost* rfh : main_window_->web_contents()->GetAllFrames()) {
+    if (!rfh->IsRenderFrameLive())
+      continue;
+
+    ++number_of_messages;
+    GetBlinkTestControlRemote(rfh)->DumpFrameLayout(
+        base::BindOnce(&BlinkTestController::OnDumpFrameLayoutResponse,
+                       weak_factory_.GetWeakPtr(), rfh->GetFrameTreeNodeId()));
+  }
+
+  pending_layout_dumps_ = number_of_messages;
 }
 
-void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
-                                                bool capture_pixels) {
+void BlinkTestController::InitiateCaptureDump(bool capture_navigation_history,
+                                              bool capture_pixels) {
   if (test_phase_ != DURING_TEST)
     return;
 
@@ -737,6 +749,12 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
   GetBlinkTestControlRemote(rfh)->CaptureDump(
       base::BindOnce(&BlinkTestController::OnCaptureDumpCompleted,
                      weak_factory_.GetWeakPtr()));
+}
+
+void BlinkTestController::TestFinishedInSecondaryRenderer() {
+  GetBlinkTestControlRemote(
+      main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
+      ->FinishTestInMainWindow();
 }
 
 // Enqueue an image copy output request.
@@ -1252,24 +1270,6 @@ void BlinkTestController::OnTextDump(const std::string& dump) {
   printer_->PrintTextFooter();
 }
 
-void BlinkTestController::InitiateLayoutDump() {
-  // There should be at most 1 layout dump in progress at any given time.
-  DCHECK_EQ(0, pending_layout_dumps_);
-
-  int number_of_messages = 0;
-  for (RenderFrameHost* rfh : main_window_->web_contents()->GetAllFrames()) {
-    if (!rfh->IsRenderFrameLive())
-      continue;
-
-    ++number_of_messages;
-    GetBlinkTestControlRemote(rfh)->DumpFrameLayout(
-        base::BindOnce(&BlinkTestController::OnDumpFrameLayoutResponse,
-                       weak_factory_.GetWeakPtr(), rfh->GetFrameTreeNodeId()));
-  }
-
-  pending_layout_dumps_ = number_of_messages;
-}
-
 void BlinkTestController::OnWebTestRuntimeFlagsChanged(
     int sender_process_host_id,
     const base::DictionaryValue& changed_web_test_runtime_flags) {
@@ -1358,17 +1358,16 @@ void BlinkTestController::SetScreenOrientationChanged() {
   WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(true);
 }
 
-base::FilePath BlinkTestController::GetWritableDirectoryForTests() {
+void BlinkTestController::GetWritableDirectory(
+    GetWritableDirectoryCallback reply_callback) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  if (writable_directory_for_tests_.IsValid()) {
-    if (!writable_directory_for_tests_.Delete())
-      LOG(ERROR) << "Failed to delete temporary directory";
+  if (!writable_directory_for_tests_.IsValid()) {
+    if (!writable_directory_for_tests_.CreateUniqueTempDir()) {
+      LOG(ERROR) << "Failed to create temporary directory, test might not work "
+                    "correctly";
+    }
   }
-  if (!writable_directory_for_tests_.CreateUniqueTempDir()) {
-    LOG(ERROR) << "Failed to create temporary directory, test might not work "
-                  "correctly";
-  }
-  return writable_directory_for_tests_.GetPath();
+  std::move(reply_callback).Run(writable_directory_for_tests_.GetPath());
 }
 
 namespace {

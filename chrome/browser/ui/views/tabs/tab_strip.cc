@@ -2520,6 +2520,18 @@ void TabStrip::AnimateToIdealBounds() {
   }
 }
 
+void TabStrip::SnapToIdealBounds() {
+  for (int i = 0; i < tab_count(); ++i)
+    tab_at(i)->SetBoundsRect(ideal_bounds(i));
+
+  for (const auto& header_pair : group_views_) {
+    header_pair.second->header()->SetBoundsRect(
+        layout_helper_->group_header_ideal_bounds().at(header_pair.first));
+  }
+
+  new_tab_button_->SetBoundsRect(new_tab_button_ideal_bounds_);
+}
+
 void TabStrip::ExitTabClosingMode() {
   in_tab_close_ = false;
   override_available_width_for_tabs_.reset();
@@ -2554,37 +2566,18 @@ bool TabStrip::TitlebarBackgroundIsTransparent() const {
 }
 
 void TabStrip::CompleteAnimationAndLayout() {
-  LayoutToCurrentBounds();
-
-  UpdateIdealBounds();
-}
-
-void TabStrip::LayoutToCurrentBounds() {
   last_layout_size_ = size();
 
   bounds_animator_.Cancel();
 
   SwapLayoutIfNecessary();
-  if (touch_layout_) {
+  if (touch_layout_)
     touch_layout_->SetWidth(GetTabAreaWidth());
-    UpdateIdealBounds();
 
-    views::ViewModelUtils::SetViewBoundsToIdealBounds(tabs_);
-    bounds_animator_.StopAnimatingView(new_tab_button_);
-    new_tab_button_->SetBoundsRect(new_tab_button_ideal_bounds_);
-  } else {
-    const int available_width = GetTabAreaWidth();
-    const int trailing_x = layout_helper_->LayoutTabs(
-        override_available_width_for_tabs_.value_or(available_width));
-
-    gfx::Rect new_tab_button_current_bounds = new_tab_button_ideal_bounds_;
-    new_tab_button_current_bounds.set_origin(gfx::Point(
-        std::min(available_width, trailing_x) + TabToNewTabButtonSpacing(), 0));
-    new_tab_button_->SetBoundsRect(new_tab_button_current_bounds);
-  }
+  UpdateIdealBounds();
+  SnapToIdealBounds();
 
   SetTabVisibility();
-
   SchedulePaint();
 }
 

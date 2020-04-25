@@ -84,7 +84,8 @@ void GIFImageDecoder::OnSetData(SegmentReader* data) {
         // SkCodec::MakeFromStream will read enough of the image to get the
         // image size.
         SkImageInfo image_info = codec_->getInfo();
-        SetSize(image_info.width(), image_info.height());
+        SetSize(static_cast<unsigned>(image_info.width()),
+                static_cast<unsigned>(image_info.height()));
         return;
       }
       case SkCodec::kIncompleteInput:

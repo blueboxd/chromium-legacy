@@ -319,6 +319,22 @@ bool CompositorFrameSinkSupport::WantsAnimateOnlyBeginFrames() const {
   return wants_animate_only_begin_frames_;
 }
 
+void CompositorFrameSinkSupport::InitializeCompositorFrameSinkType(
+    mojom::CompositorFrameSinkType type) {
+  if (frame_sink_type_ != mojom::CompositorFrameSinkType::kUnspecified ||
+      type == mojom::CompositorFrameSinkType::kUnspecified) {
+    return;
+  }
+  frame_sink_type_ = type;
+}
+
+base::TimeDelta CompositorFrameSinkSupport::GetPreferredFrameInterval(
+    mojom::CompositorFrameSinkType* type) const {
+  if (type)
+    *type = frame_sink_type_;
+  return preferred_frame_interval_;
+}
+
 bool CompositorFrameSinkSupport::IsRoot() const {
   return is_root_;
 }
@@ -442,10 +458,10 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
   // |frame.metadata.frame_token| instead of maintaining a |last_frame_index_|.
   uint64_t frame_index = ++last_frame_index_;
 
-  if (frame.metadata.preferred_frame_interval) {
-    frame_sink_manager_->SetPreferredFrameIntervalForFrameSinkId(
-        frame_sink_id_, *frame.metadata.preferred_frame_interval);
-  }
+  if (frame.metadata.preferred_frame_interval)
+    preferred_frame_interval_ = *frame.metadata.preferred_frame_interval;
+  else
+    preferred_frame_interval_ = BeginFrameArgs::MinInterval();
 
   Surface* prev_surface =
       surface_manager_->GetSurfaceForId(last_created_surface_id_);

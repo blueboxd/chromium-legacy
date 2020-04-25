@@ -54,10 +54,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) DeviceActions {
   // successfully openned, false otherwise.
   virtual bool OpenAndroidApp(mojom::AndroidAppInfoPtr app_info) = 0;
 
-  // Verify the status of the Android apps. The status of each app is updated
-  // in place for the |apps_info|.
-  virtual void VerifyAndroidApp(
-      std::vector<mojom::AndroidAppInfoPtr>* apps_info) = 0;
+  // Get the status of the Android app.
+  virtual mojom::AppStatus GetAndroidAppStatus(
+      const mojom::AndroidAppInfo& app_info) = 0;
 
   // Launch Android intent. The intent is encoded as a URI string.
   // See Intent.toUri().

@@ -54,4 +54,7 @@ const char kProxyModePacScript[] = "pac_script";
 const char kProxyModeFixedServers[] = "fixed_servers";
 const char kProxyModeSystem[] = "system";
 
+// Specifies that urls that can be cached by proxies are preferred.
+const char kDownloadPreferenceCacheable[] = "cacheable";
+
 }  // namespace updater

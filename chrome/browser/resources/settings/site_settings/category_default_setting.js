@@ -32,6 +32,19 @@
  * +-------------------------------------------------+
  *
  */
+import '../controls/settings_toggle_button.m.js';
+import '../settings_shared_css.m.js';
+
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {routes} from '../route.m.js';
+
+import {ContentSetting, ContentSettingsTypes} from './constants.js';
+import {SiteSettingsBehavior} from './site_settings_behavior.js';
+import {ContentSettingProvider, DefaultContentSetting} from './site_settings_prefs_browser_proxy.js';
 
 /**
  * The setting to display as a sub-option, if any.
@@ -45,6 +58,8 @@ const SubOptionMode = {
 
 Polymer({
   is: 'category-default-setting',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
@@ -153,62 +168,59 @@ Polymer({
       return;
     }
     switch (this.category) {
-      case settings.ContentSettingsTypes.ADS:
-      case settings.ContentSettingsTypes.BACKGROUND_SYNC:
-      case settings.ContentSettingsTypes.IMAGES:
-      case settings.ContentSettingsTypes.JAVASCRIPT:
-      case settings.ContentSettingsTypes.MIXEDSCRIPT:
-      case settings.ContentSettingsTypes.SOUND:
-      case settings.ContentSettingsTypes.SENSORS:
-      case settings.ContentSettingsTypes.PAYMENT_HANDLER:
-      case settings.ContentSettingsTypes.POPUPS:
-      case settings.ContentSettingsTypes.PROTOCOL_HANDLERS:
+      case ContentSettingsTypes.ADS:
+      case ContentSettingsTypes.BACKGROUND_SYNC:
+      case ContentSettingsTypes.IMAGES:
+      case ContentSettingsTypes.JAVASCRIPT:
+      case ContentSettingsTypes.MIXEDSCRIPT:
+      case ContentSettingsTypes.SOUND:
+      case ContentSettingsTypes.SENSORS:
+      case ContentSettingsTypes.PAYMENT_HANDLER:
+      case ContentSettingsTypes.POPUPS:
+      case ContentSettingsTypes.PROTOCOL_HANDLERS:
 
         // "Allowed" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,
-            this.categoryEnabled ? settings.ContentSetting.ALLOW :
-                                   settings.ContentSetting.BLOCK);
+            this.categoryEnabled ? ContentSetting.ALLOW : ContentSetting.BLOCK);
         break;
-      case settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
-      case settings.ContentSettingsTypes.CAMERA:
-      case settings.ContentSettingsTypes.CLIPBOARD:
-      case settings.ContentSettingsTypes.GEOLOCATION:
-      case settings.ContentSettingsTypes.MIC:
-      case settings.ContentSettingsTypes.NOTIFICATIONS:
-      case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
-      case settings.ContentSettingsTypes.MIDI_DEVICES:
-      case settings.ContentSettingsTypes.USB_DEVICES:
-      case settings.ContentSettingsTypes.SERIAL_PORTS:
-      case settings.ContentSettingsTypes.BLUETOOTH_DEVICES:
-      case settings.ContentSettingsTypes.BLUETOOTH_SCANNING:
-      case settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE:
-      case settings.ContentSettingsTypes.HID_DEVICES:
-      case settings.ContentSettingsTypes.VR:
-      case settings.ContentSettingsTypes.AR:
+      case ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
+      case ContentSettingsTypes.CAMERA:
+      case ContentSettingsTypes.CLIPBOARD:
+      case ContentSettingsTypes.GEOLOCATION:
+      case ContentSettingsTypes.MIC:
+      case ContentSettingsTypes.NOTIFICATIONS:
+      case ContentSettingsTypes.UNSANDBOXED_PLUGINS:
+      case ContentSettingsTypes.MIDI_DEVICES:
+      case ContentSettingsTypes.USB_DEVICES:
+      case ContentSettingsTypes.SERIAL_PORTS:
+      case ContentSettingsTypes.BLUETOOTH_DEVICES:
+      case ContentSettingsTypes.BLUETOOTH_SCANNING:
+      case ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE:
+      case ContentSettingsTypes.HID_DEVICES:
+      case ContentSettingsTypes.VR:
+      case ContentSettingsTypes.AR:
         // "Ask" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,
-            this.categoryEnabled ? settings.ContentSetting.ASK :
-                                   settings.ContentSetting.BLOCK);
+            this.categoryEnabled ? ContentSetting.ASK : ContentSetting.BLOCK);
         break;
-      case settings.ContentSettingsTypes.COOKIES:
+      case ContentSettingsTypes.COOKIES:
         // This category is tri-state: "Allow", "Block", "Keep data until
         // browser quits".
-        let value = settings.ContentSetting.BLOCK;
+        let value = ContentSetting.BLOCK;
         if (this.categoryEnabled) {
-          value = this.subControlParams_.value ?
-              settings.ContentSetting.SESSION_ONLY :
-              settings.ContentSetting.ALLOW;
+          value = this.subControlParams_.value ? ContentSetting.SESSION_ONLY :
+                                                 ContentSetting.ALLOW;
         }
         this.browserProxy.setDefaultValueForContentType(this.category, value);
         break;
-      case settings.ContentSettingsTypes.PLUGINS:
+      case ContentSettingsTypes.PLUGINS:
         // "Run important content" vs. "Block".
         this.browserProxy.setDefaultValueForContentType(
             this.category,
-            this.categoryEnabled ? settings.ContentSetting.IMPORTANT_CONTENT :
-                                   settings.ContentSetting.BLOCK);
+            this.categoryEnabled ? ContentSetting.IMPORTANT_CONTENT :
+                                   ContentSetting.BLOCK);
         break;
       default:
         assertNotReached('Invalid category: ' + this.category);
@@ -259,15 +271,14 @@ Polymer({
     this.controlParams_ = /** @type {chrome.settingsPrivate.PrefObject} */ (
         Object.assign({'value': prefValue}, basePref));
 
-    if (!!settings.routes.COOKIES &&
+    if (!!routes.COOKIES &&
         !loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
       assertNotReached(
           'Cookie specific category logic should be removed when M82 settings' +
           'redesign solidifies.');
     } else {
-      const subPrefValue =
-          this.category == settings.ContentSettingsTypes.COOKIES &&
-          update.setting == settings.ContentSetting.SESSION_ONLY;
+      const subPrefValue = this.category == ContentSettingsTypes.COOKIES &&
+          update.setting == ContentSetting.SESSION_ONLY;
       // The subControlParams_ must be replaced (rather than just value changes)
       // so that observers will be notified of the change.
       this.subControlParams_ =
@@ -299,7 +310,7 @@ Polymer({
    * @private
    */
   isToggleDisabled_() {
-    return this.category == settings.ContentSettingsTypes.POPUPS &&
+    return this.category == ContentSettingsTypes.POPUPS &&
         loadTimeData.getBoolean('isGuest');
   },
 

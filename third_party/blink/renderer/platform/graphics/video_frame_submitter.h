@@ -57,7 +57,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   bool IsDrivingFrameUpdates() const override;
 
   // WebVideoFrameSubmitter implementation.
-  void Initialize(cc::VideoFrameProvider*) override;
+  void Initialize(cc::VideoFrameProvider*, bool is_media_stream) override;
   void SetRotation(media::VideoRotation) override;
   void EnableSubmission(
       viz::SurfaceId,
@@ -134,6 +134,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
       scoped_refptr<media::VideoFrame> video_frame);
 
   cc::VideoFrameProvider* video_frame_provider_ = nullptr;
+  bool is_media_stream_ = false;
   scoped_refptr<viz::RasterContextProvider> context_provider_;
   mojo::Remote<viz::mojom::blink::CompositorFrameSink> compositor_frame_sink_;
   mojo::Remote<mojom::blink::SurfaceEmbedder> surface_embedder_;

@@ -36,7 +36,6 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
       return !base::FeatureList::IsEnabled(
           service_manager::features::kNetworkServiceSandbox);
 #endif  // defined(OS_MACOSX)
-    case SandboxType::kInvalid:
     case SandboxType::kRenderer:
     case SandboxType::kUtility:
     case SandboxType::kGpu:
@@ -54,6 +53,9 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
 #endif
 #if !defined(OS_MACOSX)
     case SandboxType::kSharingService:
+#endif
+#if defined(OS_LINUX)
+    case SandboxType::kZygoteIntermediateSandbox:
 #endif
     case SandboxType::kSpeechRecognition:
       return false;
@@ -123,12 +125,16 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
       break;
 #if defined(OS_FUCHSIA)
     case SandboxType::kWebContext:
+      break;
 #endif  // defined(OS_FUCHSIA)
 #if defined(OS_MACOSX)
     case SandboxType::kNaClLoader:
-#endif  // defined(OS_MACOSX)
-    case SandboxType::kInvalid:
       break;
+#endif  // defined(OS_MACOSX)
+#if defined(OS_LINUX)
+    case SandboxType::kZygoteIntermediateSandbox:
+      break;
+#endif
   }
 }
 
@@ -164,13 +170,28 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
   if (process_type == switches::kPpapiPluginProcess)
     return SandboxType::kPpapi;
 
+  // NaCl tests on all platforms use the loader process.
+  if (process_type == switches::kNaClLoaderProcess) {
 #if defined(OS_MACOSX)
-  if (process_type == switches::kNaClLoaderProcess)
     return SandboxType::kNaClLoader;
+#else
+    return SandboxType::kUtility;
+#endif
+  }
+
+#if defined(OS_LINUX)
+  // Intermediate process gains a sandbox later.
+  if (process_type == switches::kZygoteProcessType)
+    return SandboxType::kZygoteIntermediateSandbox;
 #endif
 
-  // This is a process which we don't know about.
-  return SandboxType::kInvalid;
+  if (process_type == switches::kCloudPrintServiceProcess)
+    return SandboxType::kNoSandbox;
+
+  CHECK(false)
+      << "Command line does not provide a valid sandbox configuration.";
+  NOTREACHED();
+  return SandboxType::kNoSandbox;
 }
 
 std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
@@ -219,7 +240,9 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
 #if defined(OS_FUCHSIA)
     case SandboxType::kWebContext:
 #endif  // defined(OS_FUCHSIA)
-    case SandboxType::kInvalid:
+#if defined(OS_LINUX)
+    case SandboxType::kZygoteIntermediateSandbox:
+#endif
       NOTREACHED();
       return std::string();
   }

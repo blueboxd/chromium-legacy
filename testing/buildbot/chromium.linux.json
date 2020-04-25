@@ -3329,7 +3329,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//content/test:fuchsia_telemetry_gpu_integration_test"
+        "test_target": "//content/test:fuchsia_telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -3363,7 +3363,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//content/test:fuchsia_telemetry_gpu_integration_test"
+        "test_target": "//content/test:fuchsia_telemetry_gpu_integration_test/info_collection_tests"
       }
     ]
   },

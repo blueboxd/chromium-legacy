@@ -120,7 +120,8 @@ bool BMPImageReader::DecodeBMP(bool only_size) {
   // already been read); call SetSize() anyway, since it sanity-checks that the
   // size here matches the directory.
   if ((is_in_ico_ || !parent_->IsDecodedSizeAvailable()) &&
-      !parent_->SetSize(info_header_.width, info_header_.height))
+      !parent_->SetSize(static_cast<unsigned>(info_header_.width),
+                        static_cast<unsigned>(info_header_.height)))
     return false;
 
   if (only_size)

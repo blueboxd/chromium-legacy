@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /**
@@ -16,9 +16,8 @@
  * }}
  * @see chrome/browser/ui/webui/settings/chromeos/android_apps_handler.cc
  */
-/* #export */ let AndroidAppsInfo;
+export let AndroidAppsInfo;
 
-cr.define('settings', function() {
   /**
    * An object containing messages for web permissisions origin
    * and the messages multidevice feature state.
@@ -26,14 +25,14 @@ cr.define('settings', function() {
    * @typedef {{origin: string,
    *            enabled: boolean}}
    */
-  /* #export */ let AndroidSmsInfo;
+  export let AndroidSmsInfo;
 
   /** @interface */
   class AndroidInfoBrowserProxy {
     /**
      * Returns android messages info with messages feature state
      * and messages for web permissions origin.
-     * @return {!Promise<!settings.AndroidSmsInfo>} Android SMS Info
+     * @return {!Promise<!AndroidSmsInfo>} Android SMS Info
      */
     getAndroidSmsInfo() {}
 
@@ -41,12 +40,12 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.AndroidInfoBrowserProxy}
+   * @implements {AndroidInfoBrowserProxy}
    */
-  /* #export */ class AndroidInfoBrowserProxyImpl {
+  export class AndroidInfoBrowserProxyImpl {
     /** @override */
     getAndroidSmsInfo() {
-      return cr.sendWithPromise('getAndroidSmsInfo');
+      return sendWithPromise('getAndroidSmsInfo');
     }
 
     /** @override */
@@ -55,12 +54,5 @@ cr.define('settings', function() {
     }
   }
 
-  cr.addSingletonGetter(AndroidInfoBrowserProxyImpl);
+  addSingletonGetter(AndroidInfoBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    AndroidInfoBrowserProxy: AndroidInfoBrowserProxy,
-    AndroidInfoBrowserProxyImpl: AndroidInfoBrowserProxyImpl,
-    AndroidSmsInfo: AndroidSmsInfo,
-  };
-});

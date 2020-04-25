@@ -30,7 +30,6 @@ namespace {
 const char kTestUrl[] = "http://www.test.com/";
 }  // namespace
 
-// TODO(crbug/1035698): Migrate to TestOptimizationGuideDecider when provided.
 class MockOptimizationGuideKeyedService : public OptimizationGuideKeyedService {
  public:
   explicit MockOptimizationGuideKeyedService(
@@ -42,15 +41,6 @@ class MockOptimizationGuideKeyedService : public OptimizationGuideKeyedService {
       RegisterOptimizationTypesAndTargets,
       void(const std::vector<optimization_guide::proto::OptimizationType>&,
            const std::vector<optimization_guide::proto::OptimizationTarget>&));
-  MOCK_METHOD2(ShouldTargetNavigation,
-               optimization_guide::OptimizationGuideDecision(
-                   content::NavigationHandle*,
-                   optimization_guide::proto::OptimizationTarget));
-  MOCK_METHOD3(CanApplyOptimization,
-               optimization_guide::OptimizationGuideDecision(
-                   content::NavigationHandle*,
-                   optimization_guide::proto::OptimizationType,
-                   optimization_guide::OptimizationMetadata*));
   MOCK_METHOD3(CanApplyOptimizationAsync,
                void(content::NavigationHandle*,
                     optimization_guide::proto::OptimizationType,

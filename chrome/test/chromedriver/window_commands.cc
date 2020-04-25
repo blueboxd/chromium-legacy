@@ -1668,26 +1668,24 @@ Status ExecuteSendKeysToActiveElement(Session* session,
       web_view, key_list, false, &session->sticky_modifiers);
 }
 
+// TODO: Remove, applicationCache.status is deprecated in chrome
 Status ExecuteGetAppCacheStatus(Session* session,
                                 WebView* web_view,
                                 const base::DictionaryValue& params,
                                 std::unique_ptr<base::Value>* value,
                                 Timeout* timeout) {
-  return web_view->EvaluateScript(
-      session->GetCurrentFrameId(),
-      "applicationCache.status",
-      value);
+  return web_view->EvaluateScript(session->GetCurrentFrameId(),
+                                  "applicationCache.status", false, value);
 }
 
+// TODO: Remove, not used
 Status ExecuteIsBrowserOnline(Session* session,
                               WebView* web_view,
                               const base::DictionaryValue& params,
                               std::unique_ptr<base::Value>* value,
                               Timeout* timeout) {
-  return web_view->EvaluateScript(
-      session->GetCurrentFrameId(),
-      "navigator.onLine",
-      value);
+  return web_view->EvaluateScript(session->GetCurrentFrameId(),
+                                  "navigator.onLine", false, value);
 }
 
 Status ExecuteGetStorageItem(const char* storage,
@@ -1721,10 +1719,9 @@ Status ExecuteGetStorageKeys(const char* storage,
       "  keys.push(storage.key(i));"
       "}"
       "keys";
-  return web_view->EvaluateScript(
-      session->GetCurrentFrameId(),
-      base::StringPrintf(script, storage),
-      value);
+  return web_view->EvaluateScript(session->GetCurrentFrameId(),
+                                  base::StringPrintf(script, storage), false,
+                                  value);
 }
 
 Status ExecuteSetStorageItem(const char* storage,
@@ -1773,10 +1770,9 @@ Status ExecuteClearStorage(const char* storage,
                            const base::DictionaryValue& params,
                            std::unique_ptr<base::Value>* value,
                            Timeout* timeout) {
-  return web_view->EvaluateScript(
-      session->GetCurrentFrameId(),
-      base::StringPrintf("%s.clear()", storage),
-      value);
+  return web_view->EvaluateScript(session->GetCurrentFrameId(),
+                                  base::StringPrintf("%s.clear()", storage),
+                                  false, value);
 }
 
 Status ExecuteGetStorageSize(const char* storage,
@@ -1785,10 +1781,9 @@ Status ExecuteGetStorageSize(const char* storage,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value,
                              Timeout* timeout) {
-  return web_view->EvaluateScript(
-      session->GetCurrentFrameId(),
-      base::StringPrintf("%s.length", storage),
-      value);
+  return web_view->EvaluateScript(session->GetCurrentFrameId(),
+                                  base::StringPrintf("%s.length", storage),
+                                  false, value);
 }
 
 Status ExecuteScreenshot(Session* session,

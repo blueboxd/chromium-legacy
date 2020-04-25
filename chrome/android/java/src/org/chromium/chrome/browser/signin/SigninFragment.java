@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
@@ -145,14 +146,15 @@ public class SigninFragment extends SigninFragmentBase {
                     public void onSignInComplete() {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                                 Profile.getLastUsedRegularProfile(), true);
+                        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
                         if (settingsClicked) {
                             if (ChromeFeatureList.isEnabled(
                                         ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
-                                SettingsLauncher.getInstance().launchSettingsPage(getActivity(),
+                                settingsLauncher.launchSettingsActivity(getActivity(),
                                         ManageSyncSettings.class,
                                         ManageSyncSettings.createArguments(true));
                             } else {
-                                SettingsLauncher.getInstance().launchSettingsPage(getActivity(),
+                                settingsLauncher.launchSettingsActivity(getActivity(),
                                         SyncAndServicesSettings.class,
                                         SyncAndServicesSettings.createArguments(true));
                             }

@@ -126,6 +126,9 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
 
   Document* GetDocument() const;
 
+  DisplayPeriod ComputeFontDisplayAutoPeriod() const;
+  bool NeedsInterventionToAlignWithLCPGoal() const;
+
   DisplayPeriod ComputePeriod() const;
   void UpdatePeriod() override;
   bool ShouldTriggerWebFontsIntervention();

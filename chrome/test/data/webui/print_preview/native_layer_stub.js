@@ -4,6 +4,7 @@
 
 import {Destination, PrinterType} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {getPdfPrinter} from 'chrome://test/print_preview/print_preview_test_utils.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
@@ -111,12 +112,12 @@ export class NativeLayerStub extends TestBrowserProxy {
     this.methodCalled('getPrinters', type);
     if (type == PrinterType.LOCAL_PRINTER &&
         this.localDestinationInfos_.length > 0) {
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'printers-added', type, this.localDestinationInfos_);
     } else if (
         type == PrinterType.EXTENSION_PRINTER &&
         this.extensionDestinationInfos_.length > 0) {
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'printers-added', type, this.extensionDestinationInfos_);
     }
     return Promise.resolve();
@@ -132,14 +133,13 @@ export class NativeLayerStub extends TestBrowserProxy {
     const pageRanges = printTicketParsed.pageRange;
     const requestId = printTicketParsed.requestID;
     if (this.pageLayoutInfo_) {
-      cr.webUIListenerCallback(
-          'page-layout-ready', this.pageLayoutInfo_, false);
+      webUIListenerCallback('page-layout-ready', this.pageLayoutInfo_, false);
     }
     if (pageRanges.length == 0) {  // assume full length document, 1 page.
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'page-count-ready', this.pageCount_, requestId, 100);
       for (let i = 0; i < this.pageCount_; i++) {
-        cr.webUIListenerCallback('page-preview-ready', i, 0, requestId);
+        webUIListenerCallback('page-preview-ready', i, 0, requestId);
       }
     } else {
       const pages = pageRanges.reduce(function(soFar, range) {
@@ -148,10 +148,10 @@ export class NativeLayerStub extends TestBrowserProxy {
         }
         return soFar;
       }, []);
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'page-count-ready', this.pageCount_, requestId, 100);
       pages.forEach(function(page) {
-        cr.webUIListenerCallback('page-preview-ready', page - 1, 0, requestId);
+        webUIListenerCallback('page-preview-ready', page - 1, 0, requestId);
       });
     }
     return Promise.resolve(requestId);
@@ -241,7 +241,7 @@ export class NativeLayerStub extends TestBrowserProxy {
       accounts.push('bar@chromium.org');
     }
     if (accounts.length > 0) {
-      cr.webUIListenerCallback('user-accounts-updated', accounts);
+      webUIListenerCallback('user-accounts-updated', accounts);
     }
   }
 

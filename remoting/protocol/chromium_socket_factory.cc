@@ -21,7 +21,9 @@
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/udp_server_socket.h"
+#include "remoting/base/logging.h"
 #include "remoting/protocol/socket_util.h"
+#include "remoting/protocol/stream_packet_socket.h"
 #include "third_party/webrtc/media/base/rtp_utils.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
 #include "third_party/webrtc/rtc_base/net_helpers.h"
@@ -399,7 +401,9 @@ void UdpPacketSocket::HandleReadResult(int result) {
 
 }  // namespace
 
-ChromiumPacketSocketFactory::ChromiumPacketSocketFactory() = default;
+ChromiumPacketSocketFactory::ChromiumPacketSocketFactory(
+    scoped_refptr<TransportContext> transport_context)
+    : transport_context_(transport_context) {}
 
 ChromiumPacketSocketFactory::~ChromiumPacketSocketFactory() = default;
 
@@ -407,6 +411,11 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateUdpSocket(
     const rtc::SocketAddress& local_address,
     uint16_t min_port,
     uint16_t max_port) {
+  if (transport_context_->session_options().GetBool("Disable-UDP")) {
+    HOST_LOG
+        << "Disable-UDP experiment is enabled. UDP socket won't be created.";
+    return nullptr;
+  }
   std::unique_ptr<UdpPacketSocket> result(new UdpPacketSocket());
   if (!result->Init(local_address, min_port, max_port))
     return nullptr;
@@ -419,7 +428,7 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateServerTcpSocket(
     uint16_t max_port,
     int opts) {
   // TCP sockets are not supported.
-  // TODO(sergeyu): Implement TCP support crbug.com/600032 .
+  // TODO(yuweih): Implement server side TCP support crbug.com/600032 .
   NOTIMPLEMENTED();
   return nullptr;
 }
@@ -430,10 +439,18 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateClientTcpSocket(
     const rtc::ProxyInfo& proxy_info,
     const std::string& user_agent,
     const rtc::PacketSocketTcpOptions& opts) {
-  // TCP sockets are not supported.
-  // TODO(sergeyu): Implement TCP support crbug.com/600032 .
-  NOTIMPLEMENTED();
-  return nullptr;
+  if (!transport_context_->session_options().GetBool("Enable-TCP")) {
+    HOST_LOG << "Enable-TCP experiment is not enabled. Client TCP socket won't "
+             << "be created.";
+    return nullptr;
+  }
+  HOST_LOG << "Enable-TCP experiment is enabled. Creating client TCP socket...";
+  auto socket = std::make_unique<StreamPacketSocket>();
+  if (!socket->InitClientTcp(local_address, remote_address, proxy_info,
+                             user_agent, opts)) {
+    return nullptr;
+  }
+  return socket.release();
 }
 
 rtc::AsyncResolverInterface*

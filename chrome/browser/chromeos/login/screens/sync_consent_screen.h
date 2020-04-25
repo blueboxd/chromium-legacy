@@ -78,7 +78,8 @@ class SyncConsentScreen : public BaseScreen,
   // Reacts to "Accept and Continue".
   void OnAcceptAndContinue(const std::vector<int>& consent_description,
                            int consent_confirmation,
-                           bool enable_os_sync);
+                           bool enable_os_sync,
+                           bool review_browser_sync);
 
   // Sets internal condition "Sync disabled by policy" for tests.
   void SetProfileSyncDisabledByPolicyForTesting(bool value);

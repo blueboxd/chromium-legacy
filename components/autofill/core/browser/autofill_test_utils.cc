@@ -196,7 +196,6 @@ void CreateTestPersonalInformationFormData(FormData* form,
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
 
   FormFieldData field;
-  ServerFieldTypeSet type_set;
   test::CreateTestFormField("First Name", "firstname", "", "text", &field);
   form->fields.push_back(field);
   test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);

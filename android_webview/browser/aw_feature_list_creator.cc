@@ -12,6 +12,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_process.h"
+#include "android_webview/browser/aw_metrics_service_client_delegate.h"
 #include "android_webview/browser/aw_pref_names.h"
 #include "android_webview/browser/aw_variations_seed_bridge.h"
 #include "android_webview/browser/metrics/aw_metrics_service_client.h"
@@ -215,6 +216,8 @@ void AwFeatureListCreator::CreateFeatureListAndFieldTrials() {
   TRACE_EVENT0("startup",
                "AwFeatureListCreator::CreateFeatureListAndFieldTrials");
   CreateLocalState();
+  AwMetricsServiceClient::SetInstance(std::make_unique<AwMetricsServiceClient>(
+      std::make_unique<AwMetricsServiceClientDelegate>()));
   AwMetricsServiceClient::GetInstance()->Initialize(local_state_.get());
   SetUpFieldTrials();
 }

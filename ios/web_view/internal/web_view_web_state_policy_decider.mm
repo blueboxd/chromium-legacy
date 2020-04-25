@@ -42,16 +42,22 @@ WebViewWebStatePolicyDecider::ShouldAllowRequest(
   return WebStatePolicyDecider::PolicyDecision::Allow();
 }
 
-bool WebViewWebStatePolicyDecider::ShouldAllowResponse(NSURLResponse* response,
-                                                       bool for_main_frame) {
+void WebViewWebStatePolicyDecider::ShouldAllowResponse(
+    NSURLResponse* response,
+    bool for_main_frame,
+    base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback) {
   id<CWVNavigationDelegate> delegate = web_view_.navigationDelegate;
   if ([delegate respondsToSelector:@selector
                 (webView:shouldContinueLoadWithResponse:forMainFrame:)]) {
-    return [delegate webView:web_view_
+    BOOL allow = [delegate webView:web_view_
         shouldContinueLoadWithResponse:response
                           forMainFrame:for_main_frame];
+    if (!allow) {
+      std::move(callback).Run(WebStatePolicyDecider::PolicyDecision::Cancel());
+      return;
+    };
   }
-  return true;
+  std::move(callback).Run(WebStatePolicyDecider::PolicyDecision::Allow());
 }
 
 }  // namespace ios_web_view

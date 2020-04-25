@@ -270,7 +270,7 @@ extern const logging::LogSeverity kMinimumSeverityToReportError;
 
 // The minimum channel where Service Worker based extensions can run.
 constexpr version_info::Channel kMinChannelForServiceWorkerBasedExtension =
-    version_info::Channel::CANARY;
+    version_info::Channel::DEV;
 
 }  // namespace extension_misc
 

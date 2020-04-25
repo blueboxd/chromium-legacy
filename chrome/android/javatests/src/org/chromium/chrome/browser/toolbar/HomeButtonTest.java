@@ -131,6 +131,6 @@ public class HomeButtonTest extends DummyUiActivityTestCase {
         // Test click on context menu item
         onView(withText(R.string.options_homepage_edit_title)).perform(click());
         Mockito.verify(mSettingsLauncher)
-                .launchSettingsPage(mHomeButton.getContext(), HomepageSettings.class);
+                .launchSettingsActivity(mHomeButton.getContext(), HomepageSettings.class);
     }
 }

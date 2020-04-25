@@ -98,6 +98,13 @@ class OptimizationGuideKeyedService
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationGuideDecisionCallback callback) override;
 
+  // Adds hints for a URL with provided metadata to the optimziation guide.
+  // For testing purposes only.
+  void AddHintForTesting(
+      const GURL& url,
+      optimization_guide::proto::OptimizationType optimization_type,
+      const base::Optional<optimization_guide::OptimizationMetadata>& metadata);
+
   // KeyedService implementation:
   void Shutdown() override;
 

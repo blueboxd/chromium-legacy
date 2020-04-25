@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "remoting/base/session_options.h"
 #include "remoting/protocol/ice_config.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport.h"
@@ -70,6 +71,11 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
     network_manager_ = network_manager;
   }
 
+  // Sets the options for the current session.
+  void set_session_options(const SessionOptions& session_options) {
+    session_options_ = session_options;
+  }
+
   // Prepares fresh ICE configs. It may be called while connection is being
   // negotiated to minimize the chance that the following GetIceConfig() will
   // be blocking.
@@ -87,6 +93,7 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   const NetworkSettings& network_settings() const { return network_settings_; }
   TransportRole role() const { return role_; }
   rtc::NetworkManager* network_manager() const { return network_manager_; }
+  const SessionOptions& session_options() const { return session_options_; }
 
   // Returns the suggested bandwidth cap for TURN relay connections, or 0 if
   // no rate-limit is set in the IceConfig.
@@ -103,6 +110,7 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   std::unique_ptr<PortAllocatorFactory> port_allocator_factory_;
   std::unique_ptr<UrlRequestFactory> url_request_factory_;
   NetworkSettings network_settings_;
+  SessionOptions session_options_;
   TransportRole role_;
 
   RelayMode relay_mode_ = RelayMode::TURN;

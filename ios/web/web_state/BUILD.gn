@@ -7,6 +7,7 @@ import("//ios/build/config.gni")
 source_set("web_state") {
   deps = [
     ":context_menu",
+    ":policy_decision_state_tracker",
     ":web_state_impl_header",
     "//base",
     "//ios/third_party/webkit",
@@ -122,6 +123,20 @@ source_set("user_interaction") {
   deps = [
     "//base",
     "//url",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("policy_decision_state_tracker") {
+  sources = [
+    "policy_decision_state_tracker.h",
+    "policy_decision_state_tracker.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/web/public",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

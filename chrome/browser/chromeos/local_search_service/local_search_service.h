@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace local_search_service {
 
@@ -18,10 +19,10 @@ enum class IndexId { kCrosSettings = 0 };
 
 // LocalSearchService creates and owns content-specific Indices. Clients can
 // call it |GetIndex| method to get an Index for a given index id.
-class LocalSearchService {
+class LocalSearchService : public KeyedService {
  public:
   LocalSearchService();
-  ~LocalSearchService();
+  ~LocalSearchService() override;
   LocalSearchService(const LocalSearchService&) = delete;
   LocalSearchService& operator=(const LocalSearchService&) = delete;
 

@@ -155,7 +155,8 @@ class MockImageDecoderFactory : public ImageDecoderFactory {
 
   std::unique_ptr<ImageDecoder> Create() override {
     auto decoder = std::make_unique<MockImageDecoder>(client_);
-    decoder->SetSize(decoded_size_.Width(), decoded_size_.Height());
+    decoder->SetSize(static_cast<unsigned>(decoded_size_.Width()),
+                     static_cast<unsigned>(decoded_size_.Height()));
     return std::move(decoder);
   }
 

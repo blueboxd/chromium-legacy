@@ -1955,7 +1955,7 @@ base::TimeDelta DocumentLoader::RemainingTimeToLCPLimit() const {
   base::TimeTicks lcp_limit =
       document_load_timing_.NavigationStart() +
       base::TimeDelta::FromMilliseconds(
-          features::kAlignFontDisplayAutoTimeoutWithLCPGoalParam.Get());
+          features::kAlignFontDisplayAutoTimeoutWithLCPGoalTimeoutParam.Get());
   base::TimeTicks now = clock_->NowTicks();
   if (now < lcp_limit)
     return lcp_limit - now;

@@ -67,10 +67,6 @@ int WebLayerMetricsServiceClient::GetPackageNameLimitRatePerMille() {
   return kPackageNameLimitRatePerMille;
 }
 
-bool WebLayerMetricsServiceClient::ShouldWakeMetricsService() {
-  return true;
-}
-
 // static
 void JNI_MetricsServiceClient_SetHaveMetricsConsent(JNIEnv* env,
                                                     jboolean user_consent,

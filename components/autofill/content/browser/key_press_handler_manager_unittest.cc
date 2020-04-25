@@ -16,7 +16,7 @@ namespace autofill {
 namespace {
 
 const content::NativeWebKeyboardEvent
-    kDummyEvent(blink::WebInputEvent::kUndefined, 0, base::TimeTicks());
+    kDummyEvent(blink::WebInputEvent::Type::kUndefined, 0, base::TimeTicks());
 
 // Dummy keyboard event handler: ignores the event, but appends the given |name|
 // to a logging |target|.

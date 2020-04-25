@@ -818,13 +818,13 @@
     You're signed in!
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME" desc="Title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-    Settings sync
+    Chrome OS settings sync
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION" desc="Description of 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Your apps, settings, and other customizations will sync across all Chrome OS devices signed in with your Google Account.
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_NAME" desc="Title of the 'Chrome sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-    Chrome sync
+    Chrome browser sync
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_DESCRIPTION" desc="The description of 'Chrome sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Your bookmarks, history, passwords, and other settings will be synced to your Google Account so you can use them on all your devices.
@@ -843,19 +843,6 @@
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE" desc="The label on the button that closes dialog while accepting the selected settings.">
     Accept and continue
-  </message>
-
-  <message name="IDS_LOGIN_OS_SYNC_CONSENT_TITLE" desc="OS sync consent screen dialog title/header">
-    Sync for a personalized experience across devices
-  </message>
-  <message name="IDS_LOGIN_OS_SYNC_CONSENT_TOGGLE_NAME" desc="Label for the toggle button that enables OS sync">
-    Sync my <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
-  </message>
-  <message name="IDS_LOGIN_OS_SYNC_CONSENT_TOGGLE_DESCRIPTION" desc="Description for the toggle button that enables OS sync">
-    Your apps, settings, and Wi-Fi preferences will be synced. To make changes, go to Settings at any time after setup.
-  </message>
-  <message name="IDS_LOGIN_OS_SYNC_CONSENT_CONTINUE" desc="Button label for OS sync consent screen.">
-    Continue
   </message>
 
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_TITLE" desc="The title of the dialog that recommend apps which user has installed in other devices">

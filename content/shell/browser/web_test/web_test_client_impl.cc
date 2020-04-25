@@ -109,12 +109,6 @@ WebTestClientImpl::WebTestClientImpl(
 
 WebTestClientImpl::~WebTestClientImpl() = default;
 
-void WebTestClientImpl::TestFinishedInSecondaryRenderer() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (BlinkTestController::Get())
-    BlinkTestController::Get()->OnTestFinishedInSecondaryRenderer();
-}
-
 void WebTestClientImpl::SimulateWebNotificationClick(
     const std::string& title,
     int32_t action_index,
@@ -145,10 +139,6 @@ void WebTestClientImpl::SimulateWebContentIndexDelete(const std::string& id) {
   auto* context = GetContentIndexContext(registration_data.second);
   context->OnUserDeletedItem(registration_data.first, registration_data.second,
                              id);
-}
-
-void WebTestClientImpl::BlockThirdPartyCookies(bool block) {
-  BlinkTestController::Get()->BlockThirdPartyCookies(block);
 }
 
 void WebTestClientImpl::ResetPermissions() {
@@ -234,15 +224,6 @@ void WebTestClientImpl::DeleteAllCookies() {
                                  base::BindOnce([](uint32_t) {}));
 }
 
-void WebTestClientImpl::GetWritableDirectory(
-    GetWritableDirectoryCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::FilePath path;
-  if (BlinkTestController::Get())
-    path = BlinkTestController::Get()->GetWritableDirectoryForTests();
-  std::move(callback).Run(path);
-}
-
 void WebTestClientImpl::RegisterIsolatedFileSystem(
     const std::vector<base::FilePath>& absolute_filenames,
     RegisterIsolatedFileSystemCallback callback) {
@@ -261,13 +242,6 @@ void WebTestClientImpl::RegisterIsolatedFileSystem(
   std::move(callback).Run(filesystem_id);
 }
 
-void WebTestClientImpl::SetFilePathForMockFileDialog(
-    const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (BlinkTestController::Get())
-    BlinkTestController::Get()->SetFilePathForMockFileDialog(path);
-}
-
 void WebTestClientImpl::ClearAllDatabases() {
   database_tracker_->task_runner()->PostTask(
       FROM_HERE,
@@ -284,15 +258,6 @@ void WebTestClientImpl::SetDatabaseQuota(int32_t quota) {
   base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&SetDatabaseQuotaOnIOThread, quota_manager_, quota));
-}
-
-void WebTestClientImpl::InitiateCaptureDump(bool capture_navigation_history,
-                                            bool capture_pixels) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (BlinkTestController::Get()) {
-    BlinkTestController::Get()->OnInitiateCaptureDump(
-        capture_navigation_history, capture_pixels);
-  }
 }
 
 void WebTestClientImpl::SetTrustTokenKeyCommitments(

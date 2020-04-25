@@ -12,12 +12,14 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.TextAppearanceSpan;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.core.app.NotificationManagerCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.ContentSettingsResources;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsFeatureList;
@@ -41,6 +43,8 @@ import java.util.List;
  *
  */
 class PermissionParamsListBuilder {
+    private static Profile sProfileForTesting;
+
     private final List<PageInfoPermissionEntry> mEntries;
     private final String mFullUrl;
     private final boolean mShouldShowTitle;
@@ -176,7 +180,7 @@ class PermissionParamsListBuilder {
                                    + permission.type;
             }
             if (WebsitePreferenceBridge.isPermissionControlledByDSE(
-                        permission.type, mFullUrl, false)) {
+                        getProfile(), permission.type, mFullUrl)) {
                 status_text = statusTextForDSEPermission(permission.setting);
             }
         }
@@ -260,6 +264,16 @@ class PermissionParamsListBuilder {
         }
 
         return mContext.getString(R.string.page_info_dse_permission_blocked);
+    }
+
+    @VisibleForTesting
+    public static void setProfileForTesting(Profile profileForTesting) {
+        sProfileForTesting = profileForTesting;
+    }
+
+    private static Profile getProfile() {
+        return (sProfileForTesting != null) ? sProfileForTesting
+                                            : Profile.getLastUsedRegularProfile();
     }
 
     /**

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.site_settings;
 
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 
 import java.io.Serializable;
 
@@ -75,10 +76,10 @@ public class ChosenObjectInfo implements Serializable {
     /**
      * Revokes permission for the origin to access the object if the object is not managed.
      */
-    public void revoke() {
+    public void revoke(BrowserContextHandle browserContextHandle) {
         if (!mIsManaged) {
             WebsitePreferenceBridgeJni.get().revokeObjectPermission(
-                    mContentSettingsType, mOrigin, mEmbedder, mObject);
+                    browserContextHandle, mContentSettingsType, mOrigin, mEmbedder, mObject);
         }
     }
 }

@@ -287,7 +287,8 @@ bool ICOImageDecoder::ProcessDirectoryEntries() {
   const IconDirectoryEntry& dir_entry = dir_entries_.front();
   // Technically, this next call shouldn't be able to fail, since the width
   // and height here are each <= 256, and |frame_size_| is empty.
-  return SetSize(dir_entry.size_.Width(), dir_entry.size_.Height());
+  return SetSize(static_cast<unsigned>(dir_entry.size_.Width()),
+                 static_cast<unsigned>(dir_entry.size_.Height()));
 }
 
 ICOImageDecoder::IconDirectoryEntry ICOImageDecoder::ReadDirectoryEntry() {

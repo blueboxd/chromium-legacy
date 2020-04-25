@@ -76,7 +76,8 @@ class HardwareRendererViz::OnViz : public viz::DisplayClient {
   void SetWideColorEnabled(bool enabled) override {}
   void SetPreferredFrameInterval(base::TimeDelta interval) override {}
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const viz::FrameSinkId& id) override;
+      const viz::FrameSinkId& id,
+      viz::mojom::CompositorFrameSinkType* type) override;
 
  private:
   viz::FrameSinkManagerImpl* GetFrameSinkManager();
@@ -254,9 +255,11 @@ void HardwareRendererViz::OnViz::DisplayWillDrawAndSwap(
 
 base::TimeDelta
 HardwareRendererViz::OnViz::GetPreferredFrameIntervalForFrameSinkId(
-    const viz::FrameSinkId& id) {
+    const viz::FrameSinkId& id,
+    viz::mojom::CompositorFrameSinkType* type) {
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
-  return GetFrameSinkManager()->GetPreferredFrameIntervalForFrameSinkId(id);
+  return GetFrameSinkManager()->GetPreferredFrameIntervalForFrameSinkId(id,
+                                                                        type);
 }
 
 HardwareRendererViz::HardwareRendererViz(

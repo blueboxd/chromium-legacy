@@ -9,7 +9,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -56,8 +55,8 @@ TEST(WakeLockSentinelTest, MultipleReleaseCalls) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
 
-  auto* manager = MakeGarbageCollected<WakeLockManager>(
-      context.GetDocument()->ToExecutionContext(), WakeLockType::kScreen);
+  auto* manager = MakeGarbageCollected<WakeLockManager>(context.DomWindow(),
+                                                        WakeLockType::kScreen);
   auto* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise = resolver->Promise();
@@ -95,7 +94,7 @@ TEST(WakeLockSentinelTest, ContextDestruction) {
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise screen_promise = screen_resolver->Promise();
 
-  auto* wake_lock = MakeGarbageCollected<WakeLock>(*context.GetDocument());
+  auto* wake_lock = MakeGarbageCollected<WakeLock>(*context.DomWindow());
   wake_lock->DoRequest(WakeLockType::kScreen, screen_resolver);
 
   WakeLockManager* manager =
@@ -114,7 +113,7 @@ TEST(WakeLockSentinelTest, ContextDestruction) {
   sentinel->addEventListener(event_type_names::kRelease, event_listener);
   EXPECT_TRUE(sentinel->HasPendingActivity());
 
-  context.Frame()->DomWindow()->FrameDestroyed();
+  context.DomWindow()->FrameDestroyed();
 
   // If the method returns false the object can be GC'ed.
   EXPECT_FALSE(sentinel->HasPendingActivity());
@@ -124,8 +123,8 @@ TEST(WakeLockSentinelTest, HasPendingActivityConditions) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
 
-  auto* manager = MakeGarbageCollected<WakeLockManager>(
-      context.GetDocument()->ToExecutionContext(), WakeLockType::kScreen);
+  auto* manager = MakeGarbageCollected<WakeLockManager>(context.DomWindow(),
+                                                        WakeLockType::kScreen);
   auto* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise = resolver->Promise();

@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.PermissionInfo;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -101,7 +102,10 @@ public class PermissionUpdateInfobarTest {
 
         try {
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> geolocationSettings.setContentSetting(ContentSettingValues.ALLOW));
+                    ()
+                            -> geolocationSettings.setContentSetting(
+                                    Profile.getLastUsedRegularProfile(),
+                                    ContentSettingValues.ALLOW));
 
             mActivityTestRule.loadUrl(mTestServer.getURL(GEOLOCATION_PAGE));
             mListener.addInfoBarAnimationFinished("InfoBar not added");
@@ -138,7 +142,10 @@ public class PermissionUpdateInfobarTest {
             }));
         } finally {
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> geolocationSettings.setContentSetting(ContentSettingValues.DEFAULT));
+                    ()
+                            -> geolocationSettings.setContentSetting(
+                                    Profile.getLastUsedRegularProfile(),
+                                    ContentSettingValues.DEFAULT));
         }
     }
 

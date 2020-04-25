@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/threading/thread.h"
 #include "net/test/spawned_test_server/base_test_server.h"
-#include "net/test/spawned_test_server/remote_test_server_config.h"
 
 namespace net {
 
@@ -30,6 +29,19 @@ class TcpSocketProxy;
 // SpawnedTestServer are then redirected to the spawner server via
 // this spawner communicator. The spawner is implemented in
 // build/util/lib/common/chrome_test_server_spawner.py .
+//
+// URL for the spawner server is discovered by reading config file that's
+// expected to be written on the test device by the test scrips. Location of the
+// config dependends on platform:
+//   - Android: DIR_ANDROID_EXTERNAL_STORAGE/net-test-server-config
+//   - other: DIR_TEMP/net-test-server-config
+//
+// The config file must be stored in the following format:
+//   {
+//     'spawner_url_base': 'http://localhost:5000'
+//   }
+//
+// 'spawner_url_base' specifies base URL for the spawner.
 //
 // Currently the following two commands are supported by spawner.
 //
@@ -81,10 +93,15 @@ class RemoteTestServer : public BaseTestServer {
  private:
   bool Init(const base::FilePath& document_root);
 
-  RemoteTestServerConfig config_;
+  // Returns URL for the specified spawner |command|.
+  GURL GetSpawnerUrl(const std::string& command) const;
+
+  // URL of the test server spawner. Read from the config file during
+  // initialization.
+  std::string spawner_url_base_;
 
   // Thread used to run all IO activity in RemoteTestServerSpawnerRequest and
-  // |test_server_proxy_|.
+  // |ocsp_proxy_|.
   base::Thread io_thread_;
 
   std::unique_ptr<RemoteTestServerSpawnerRequest> start_request_;
@@ -92,7 +109,6 @@ class RemoteTestServer : public BaseTestServer {
   // Server port. Non-zero when the server is running.
   int remote_port_ = 0;
 
-  std::unique_ptr<TcpSocketProxy> test_server_proxy_;
   std::unique_ptr<TcpSocketProxy> ocsp_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteTestServer);

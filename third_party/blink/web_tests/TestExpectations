@@ -3122,6 +3122,12 @@ crbug.com/1072928 external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.http
 crbug.com/1072928 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/mathml/relations/css-styling/color-005.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/mathml/relations/css-styling/color-005.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/mathml/relations/css-styling/color-005.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/content-security-policy/script-src/script-src-strict_dynamic_double_policy_honor_source_expressions.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/content-security-policy/script-src/script-src-strict_dynamic_double_policy_honor_source_expressions.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/content-security-policy/script-src/script-src-strict_dynamic_double_policy_honor_source_expressions.html [ Timeout ]
@@ -4890,6 +4896,12 @@ crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/setcookie
 crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/setcookie-navigation.https.html [ Skip ]
 crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/window-open-reload.https.html [ Skip ]
 crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/window-open.https.html [ Skip ]
+
+# Temporarily disable some tests that produce non-deterministic outputs.
+crbug.com/1074441 external/wpt/cookies/samesite/iframe-reload.https.html [ Skip ]
+crbug.com/1074441 external/wpt/cookies/samesite/iframe.https.html [ Skip ]
+crbug.com/1074441 virtual/legacy-samesite/external/wpt/cookies/samesite/iframe-reload.https.html?legacy-samesite [ Skip ]
+crbug.com/1074441 virtual/legacy-samesite/external/wpt/cookies/samesite/iframe.https.html?legacy-samesite [ Skip ]
 
 # Sheriff failures 2017-11-15
 crbug.com/785179 [ Win7 Debug ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Skip ]

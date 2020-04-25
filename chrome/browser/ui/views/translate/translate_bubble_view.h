@@ -309,6 +309,10 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   void UpdateInsets(TranslateBubbleModel::ViewState state);
 
+  // If the page is already translated, revert it. Otherwise decline
+  // translation. Then close the bubble view.
+  void RevertOrDeclineTranslation();
+
   static TranslateBubbleView* translate_bubble_view_;
 
   views::View* before_translate_view_ = nullptr;
@@ -356,6 +360,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   const language::TranslateUIBubbleModel bubble_ui_model_;
 
   bool should_always_translate_ = false;
+  bool should_never_translate_language_ = false;
+  bool should_never_translate_site_ = false;
 
   std::unique_ptr<WebContentMouseHandler> mouse_handler_;
 

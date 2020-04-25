@@ -73,14 +73,6 @@ class AuthenticatorRequestDialogModel {
     kBlePowerOnAutomatic,
     kBlePowerOnManual,
 
-    kBlePairingBegin,
-    kBleEnterPairingMode,
-    kBleDeviceSelection,
-    kBlePinEntry,
-
-    kBleActivate,
-    kBleVerifying,
-
     // Touch ID.
     kTouchIdIncognitoSpeedBump,
 
@@ -185,8 +177,7 @@ class AuthenticatorRequestDialogModel {
   // Valid action when at step: kNotStarted.
   void StartFlow(
       TransportAvailabilityInfo transport_availability,
-      base::Optional<device::FidoTransportProtocol> last_used_transport,
-      const base::ListValue* previously_paired_bluetooth_device_list);
+      base::Optional<device::FidoTransportProtocol> last_used_transport);
 
   // Restarts the UX flow.
   void StartOver();
@@ -204,10 +195,8 @@ class AuthenticatorRequestDialogModel {
   //
   // Valid action when at step: kNotStarted.
   // kTransportSelection, and steps where the other transports menu is shown,
-  // namely, kUsbInsertAndActivate, kBleActivate, kCableActivate.
-  void StartGuidedFlowForTransport(
-      AuthenticatorTransport transport,
-      bool pair_with_new_device_for_bluetooth_low_energy = false);
+  // namely, kUsbInsertAndActivate, kCableActivate.
+  void StartGuidedFlowForTransport(AuthenticatorTransport transport);
 
   // Hides the modal Chrome UI dialog and shows the native Windows WebAuthn
   // UI instead.
@@ -229,7 +218,7 @@ class AuthenticatorRequestDialogModel {
   //
   // Valid action when at step: kNotStarted, kTransportSelection, and steps
   // where the other transports menu is shown, namely, kUsbInsertAndActivate,
-  // kBleActivate, kCableActivate.
+  // kCableActivate.
   void EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step step);
 
   // Continues with the BLE/caBLE flow now that the Bluetooth adapter is
@@ -242,32 +231,6 @@ class AuthenticatorRequestDialogModel {
   //
   // Valid action when at step: kBlePowerOnAutomatic.
   void PowerOnBleAdapter();
-
-  // Lets the pairing procedure start after the user learned about the need.
-  //
-  // Valid action when at step: kBlePairingBegin.
-  void StartBleDiscovery();
-
-  // Initiates pairing of the device that the user has chosen.
-  //
-  // Valid action when at step: kBleDeviceSelection.
-  void InitiatePairingDevice(base::StringPiece authenticator_id);
-
-  // Finishes pairing of the previously chosen device with the |pin| code
-  // entered.
-  //
-  // Valid action when at step: kBlePinEntry.
-  void FinishPairingWithPin(const base::string16& pin);
-
-  // Dispatches WebAuthN request to successfully paired Bluetooth authenticator.
-  //
-  // Valid action when at step: kBleVerifying.
-  void OnPairingSuccess();
-
-  // Returns to Bluetooth device selection modal.
-  //
-  // Valid action when at step: kBleVerifying.
-  void OnPairingFailure();
 
   // Tries if a USB device is present -- the user claims they plugged it in.
   //
@@ -351,13 +314,8 @@ class AuthenticatorRequestDialogModel {
 
   void SetRequestCallback(RequestCallback request_callback);
 
-  void SetBlePairingCallback(BlePairingCallback ble_pairing_callback);
-
   void SetBluetoothAdapterPowerOnCallback(
       base::RepeatingClosure bluetooth_adapter_power_on_callback);
-
-  void SetBleDevicePairedCallback(
-      BleDevicePairedCallback ble_device_paired_callback);
 
   void SetPINCallback(base::OnceCallback<void(std::string)> pin_callback);
 
@@ -376,15 +334,8 @@ class AuthenticatorRequestDialogModel {
   // disallows an attestation permission request.
   void OnAttestationPermissionResponse(bool attestation_permission_granted);
 
-  void UpdateAuthenticatorReferenceId(base::StringPiece old_authenticator_id,
-                                      std::string new_authenticator_id);
   void AddAuthenticator(const device::FidoAuthenticator& authenticator);
   void RemoveAuthenticator(base::StringPiece authenticator_id);
-
-  void UpdateAuthenticatorReferencePairingMode(
-      base::StringPiece authenticator_id,
-      bool is_in_pairing_mode,
-      base::string16 display_name);
 
   // SelectAccount is called to trigger an account selection dialog.
   void SelectAccount(
@@ -505,11 +456,6 @@ class AuthenticatorRequestDialogModel {
   // kBlePowerOnAutomatic.
   base::Optional<Step> next_step_once_ble_powered_;
 
-  // Determines whether Bluetooth device selection UI and pin pairing UI should
-  // be shown. We proceed directly to Step::kBleVerifying if the user has paired
-  // with a bluetooth authenticator previously.
-  bool previously_paired_with_bluetooth_authenticator_ = false;
-
   base::ObserverList<Observer>::Unchecked observers_;
 
   // These fields are only filled out when the UX flow is started.
@@ -518,9 +464,7 @@ class AuthenticatorRequestDialogModel {
   base::Optional<device::FidoTransportProtocol> last_used_transport_;
 
   RequestCallback request_callback_;
-  BlePairingCallback ble_pairing_callback_;
   base::RepeatingClosure bluetooth_adapter_power_on_callback_;
-  BleDevicePairedCallback ble_device_paired_callback_;
 
   base::Optional<int> max_bio_samples_;
   base::Optional<int> bio_samples_remaining_;

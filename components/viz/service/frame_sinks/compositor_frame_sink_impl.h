@@ -50,6 +50,8 @@ class CompositorFrameSinkImpl : public mojom::CompositorFrameSink {
   void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const SharedBitmapId& id) override;
+  void InitializeCompositorFrameSinkType(
+      mojom::CompositorFrameSinkType type) override;
 
  private:
   void SubmitCompositorFrameInternal(

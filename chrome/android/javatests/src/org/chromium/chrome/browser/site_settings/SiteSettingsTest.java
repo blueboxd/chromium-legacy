@@ -34,8 +34,10 @@ import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitio
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -48,6 +50,7 @@ import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.permissions.nfc.NfcSystemLevelSetting;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -88,6 +91,10 @@ public class SiteSettingsTest {
         mTestServer.stopAndDestroyServer();
     }
 
+    private BrowserContextHandle getBrowserContextHandle() {
+        return Profile.getLastUsedRegularProfile();
+    }
+
     private void setAllowLocation(final boolean enabled) {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
@@ -102,7 +109,8 @@ public class SiteSettingsTest {
 
             websitePreferences.onPreferenceChange(location, enabled);
             Assert.assertEquals("Location should be " + (enabled ? "allowed" : "blocked"), enabled,
-                    WebsitePreferenceBridge.areAllLocationSettingsEnabled());
+                    WebsitePreferenceBridge.areAllLocationSettingsEnabled(
+                            getBrowserContextHandle()));
             settingsActivity.finish();
         });
     }
@@ -178,7 +186,8 @@ public class SiteSettingsTest {
             }
 
             private boolean doesAcceptCookies() {
-                return WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES);
+                return WebsitePreferenceBridge.isCategoryEnabled(
+                        getBrowserContextHandle(), ContentSettingsType.COOKIES);
             }
         });
     }
@@ -208,7 +217,8 @@ public class SiteSettingsTest {
             }
 
             private boolean doesAcceptCookies() {
-                return WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES);
+                return WebsitePreferenceBridge.isCategoryEnabled(
+                        getBrowserContextHandle(), ContentSettingsType.COOKIES);
             }
         });
     }
@@ -248,7 +258,8 @@ public class SiteSettingsTest {
             }
 
             private boolean doesAcceptCookies() {
-                return WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.COOKIES);
+                return WebsitePreferenceBridge.isCategoryEnabled(
+                        getBrowserContextHandle(), ContentSettingsType.COOKIES);
             }
 
             private boolean improvedControlsEnabled() {
@@ -279,7 +290,8 @@ public class SiteSettingsTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     "Default Cookie Setting should be " + (expected ? "managed" : "unmanaged"),
-                    WebsitePreferenceBridge.isContentSettingManaged(ContentSettingsType.COOKIES),
+                    WebsitePreferenceBridge.isContentSettingManaged(
+                            getBrowserContextHandle(), ContentSettingsType.COOKIES),
                     expected);
         });
     }
@@ -345,7 +357,8 @@ public class SiteSettingsTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"), enabled,
-                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.POPUPS));
+                    WebsitePreferenceBridge.isCategoryEnabled(
+                            getBrowserContextHandle(), ContentSettingsType.POPUPS));
         });
     }
 
@@ -355,7 +368,7 @@ public class SiteSettingsTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"), enabled,
                     WebsitePreferenceBridge.isCategoryEnabled(
-                            ContentSettingsType.MEDIASTREAM_CAMERA));
+                            getBrowserContextHandle(), ContentSettingsType.MEDIASTREAM_CAMERA));
         });
     }
 
@@ -941,7 +954,8 @@ public class SiteSettingsTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertFalse("Mic should be blocked",
-                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.MEDIASTREAM_MIC));
+                    WebsitePreferenceBridge.isCategoryEnabled(
+                            getBrowserContextHandle(), ContentSettingsType.MEDIASTREAM_MIC));
         });
 
         // Test that the microphone permission doesn't get requested.
@@ -1013,7 +1027,8 @@ public class SiteSettingsTest {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.BACKGROUND_SYNC, enabled);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Background Sync should be " + (enabled ? "enabled" : "disabled"),
-                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.BACKGROUND_SYNC),
+                    WebsitePreferenceBridge.isCategoryEnabled(
+                            getBrowserContextHandle(), ContentSettingsType.BACKGROUND_SYNC),
                     enabled);
         });
     }
@@ -1040,7 +1055,8 @@ public class SiteSettingsTest {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.USB, enabled);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("USB should be " + (enabled ? "enabled" : "disabled"),
-                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.USB_GUARD),
+                    WebsitePreferenceBridge.isCategoryEnabled(
+                            getBrowserContextHandle(), ContentSettingsType.USB_GUARD),
                     enabled);
         });
     }
@@ -1070,7 +1086,7 @@ public class SiteSettingsTest {
             Assert.assertEquals(
                     "Automatic Downloads should be " + (enabled ? "enabled" : "disabled"),
                     WebsitePreferenceBridge.isCategoryEnabled(
-                            ContentSettingsType.AUTOMATIC_DOWNLOADS),
+                            getBrowserContextHandle(), ContentSettingsType.AUTOMATIC_DOWNLOADS),
                     enabled);
         });
     }
@@ -1100,7 +1116,7 @@ public class SiteSettingsTest {
             Assert.assertEquals(
                     "Bluetooth scanning should be " + (enabled ? "enabled" : "disabled"),
                     WebsitePreferenceBridge.isCategoryEnabled(
-                            ContentSettingsType.BLUETOOTH_SCANNING),
+                            getBrowserContextHandle(), ContentSettingsType.BLUETOOTH_SCANNING),
                     enabled);
         });
     }
@@ -1128,7 +1144,9 @@ public class SiteSettingsTest {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.NFC, enabled);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("NFC should be " + (enabled ? "enabled" : "disabled"),
-                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.NFC), enabled);
+                    WebsitePreferenceBridge.isCategoryEnabled(
+                            getBrowserContextHandle(), ContentSettingsType.NFC),
+                    enabled);
         });
     }
 
@@ -1155,7 +1173,9 @@ public class SiteSettingsTest {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.AUGMENTED_REALITY, enabled);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("AR should be " + (enabled ? "enabled" : "disabled"),
-                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.AR), enabled);
+                    WebsitePreferenceBridge.isCategoryEnabled(
+                            getBrowserContextHandle(), ContentSettingsType.AR),
+                    enabled);
         });
     }
 
@@ -1182,7 +1202,9 @@ public class SiteSettingsTest {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.VIRTUAL_REALITY, enabled);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("VR should be " + (enabled ? "enabled" : "disabled"),
-                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.VR), enabled);
+                    WebsitePreferenceBridge.isCategoryEnabled(
+                            getBrowserContextHandle(), ContentSettingsType.VR),
+                    enabled);
         });
     }
 
@@ -1220,7 +1242,8 @@ public class SiteSettingsTest {
             mActivityTestRule.runJavaScriptCodeInCurrentTab("requestPermissionAndRespond()");
         }
 
-        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        Intent intent = settingsLauncher.createSettingsActivityIntent(
                 InstrumentationRegistry.getTargetContext(), SingleWebsiteSettings.class.getName(),
                 SingleWebsiteSettings.createFragmentArgsForSite(url));
         final SettingsActivity settingsActivity =

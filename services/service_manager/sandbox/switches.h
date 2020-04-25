@@ -73,6 +73,8 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiBrokerProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiPluginProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kRendererProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilityProcess[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kCloudPrintServiceProcess[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kZygoteProcessType[];
 
 }  // namespace switches
 

@@ -19,8 +19,6 @@ const char* LCDTextDisallowedReasonToString(LCDTextDisallowedReason reason) {
       return "background-color-not-opaque";
     case LCDTextDisallowedReason::kContentsNotOpaque:
       return "contents-not-opaque";
-    case LCDTextDisallowedReason::kLayerOpacity:
-      return "layer-opacity";
     case LCDTextDisallowedReason::kNonIntegralTranslation:
       return "non-integral-translation";
     case LCDTextDisallowedReason::kNonIntegralXOffset:

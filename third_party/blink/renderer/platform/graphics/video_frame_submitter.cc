@@ -96,13 +96,15 @@ bool VideoFrameSubmitter::IsDrivingFrameUpdates() const {
   return is_rendering_ && ShouldSubmit();
 }
 
-void VideoFrameSubmitter::Initialize(cc::VideoFrameProvider* provider) {
+void VideoFrameSubmitter::Initialize(cc::VideoFrameProvider* provider,
+                                     bool is_media_stream) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!provider)
     return;
 
   DCHECK(!video_frame_provider_);
   video_frame_provider_ = provider;
+  is_media_stream_ = is_media_stream;
   context_provider_callback_.Run(
       nullptr, base::BindOnce(&VideoFrameSubmitter::OnReceivedContextProvider,
                               weak_ptr_factory_.GetWeakPtr()));
@@ -348,6 +350,12 @@ void VideoFrameSubmitter::StartSubmitting() {
   compositor_frame_sink_.set_disconnect_handler(base::BindOnce(
       &VideoFrameSubmitter::OnContextLost, base::Unretained(this)));
 
+  if (!compositor_frame_sink_)
+    return;
+
+  compositor_frame_sink_->InitializeCompositorFrameSinkType(
+      is_media_stream_ ? viz::mojom::CompositorFrameSinkType::kMediaStream
+                       : viz::mojom::CompositorFrameSinkType::kVideo);
   UpdateSubmissionState();
 }
 

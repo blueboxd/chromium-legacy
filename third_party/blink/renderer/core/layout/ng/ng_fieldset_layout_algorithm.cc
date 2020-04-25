@@ -55,14 +55,8 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // also needs to be handled by the anonymous child.
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    container_builder_.SetHasBlockFragmentation();
-    // The whereabouts of our container's so far best breakpoint is none of our
-    // business, but we store its appeal, so that we don't look for breakpoints
-    // with lower appeal than that.
-    container_builder_.SetBreakAppeal(ConstraintSpace().EarlyBreakAppeal());
-
-    if (ConstraintSpace().IsInitialColumnBalancingPass())
-      container_builder_.SetIsInitialColumnBalancingPass();
+    SetupFragmentBuilderForFragmentation(ConstraintSpace(), BreakToken(),
+                                         &container_builder_);
   }
 
   // Calculate the amount of the border block-start that was consumed in
@@ -434,8 +428,8 @@ NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForLegend(
   builder.SetTextDirection(legend.Style().Direction());
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    SetupFragmentation(ConstraintSpace(), legend, block_offset, &builder,
-                       /* is_new_fc */ true);
+    SetupSpaceBuilderForFragmentation(ConstraintSpace(), legend, block_offset,
+                                      &builder, /* is_new_fc */ true);
     builder.SetEarlyBreakAppeal(container_builder_.BreakAppeal());
   }
   return builder.ToConstraintSpace();
@@ -456,8 +450,9 @@ NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForFieldsetContent(
   builder.SetIsFixedBlockSize(padding_box_size.block_size != kIndefiniteSize);
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    SetupFragmentation(ConstraintSpace(), fieldset_content, block_offset,
-                       &builder, /* is_new_fc */ true);
+    SetupSpaceBuilderForFragmentation(ConstraintSpace(), fieldset_content,
+                                      block_offset, &builder,
+                                      /* is_new_fc */ true);
     builder.SetEarlyBreakAppeal(container_builder_.BreakAppeal());
   }
   return builder.ToConstraintSpace();

@@ -42,7 +42,7 @@ const char kAccountIdMigrationDescription[] =
 const char kAlignFontDisplayAutoTimeoutWithLCPGoalName[] =
     "Align 'font-display: auto' timeout with LCP goal";
 const char kAlignFontDisplayAutoTimeoutWithLCPGoalDescription[] =
-    "Make all pending 'display: auto' web fonts enter the failure period "
+    "Make pending 'display: auto' web fonts enter the swap or failure period "
     "immediately before reaching the LCP time limit (~2500ms), so that web "
     "fonts do not become a source of bad LCP (Largest Contentful Paint).";
 

@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -138,8 +139,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
         mLastProcessedSuggestion = suggestion;
 
-        if (!isSuggestionEquivalentToCurrentPage(
-                    mLastProcessedSuggestion, activeTab.getUrlString())) {
+        if (!isSuggestionEquivalentToCurrentPage(mLastProcessedSuggestion, activeTab.getUrl())) {
             return false;
         }
 
@@ -170,17 +170,18 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         model.set(EditUrlSuggestionProperties.BUTTON_CLICK_LISTENER, this);
         if (mOriginalTitle == null) mOriginalTitle = mTabProvider.get().getTitle();
         model.set(EditUrlSuggestionProperties.TITLE_TEXT, mOriginalTitle);
-        model.set(EditUrlSuggestionProperties.URL_TEXT, mLastProcessedSuggestion.getUrl());
+        model.set(
+                EditUrlSuggestionProperties.URL_TEXT, mLastProcessedSuggestion.getUrl().getSpec());
         fetchIcon(model, mLastProcessedSuggestion.getUrl());
     }
 
-    private void fetchIcon(PropertyModel model, String url) {
+    private void fetchIcon(PropertyModel model, GURL url) {
         if (url == null) return;
 
         final LargeIconBridge iconBridge = mIconBridgeSupplier.get();
         if (iconBridge == null) return;
 
-        iconBridge.getLargeIconForStringUrl(url, mDesiredFaviconWidthPx,
+        iconBridge.getLargeIconForUrl(url, mDesiredFaviconWidthPx,
                 (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
                         int iconType) -> model.set(EditUrlSuggestionProperties.SITE_FAVICON, icon));
     }
@@ -228,7 +229,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         if (R.id.url_copy_icon == view.getId()) {
             recordSuggestionAction(SuggestionAction.COPY);
             RecordUserAction.record("Omnibox.EditUrlSuggestion.Copy");
-            Clipboard.getInstance().copyUrlToClipboard(mLastProcessedSuggestion.getUrl());
+            Clipboard.getInstance().copyUrlToClipboard(mLastProcessedSuggestion.getUrl().getSpec());
         } else if (R.id.url_share_icon == view.getId()) {
             recordSuggestionAction(SuggestionAction.SHARE);
             RecordUserAction.record("Omnibox.EditUrlSuggestion.Share");
@@ -243,7 +244,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         } else if (R.id.url_edit_icon == view.getId()) {
             recordSuggestionAction(SuggestionAction.EDIT);
             RecordUserAction.record("Omnibox.EditUrlSuggestion.Edit");
-            mLocationBarDelegate.setOmniboxEditingText(mLastProcessedSuggestion.getUrl());
+            mLocationBarDelegate.setOmniboxEditingText(mLastProcessedSuggestion.getUrl().getSpec());
         }
     }
 
@@ -276,13 +277,13 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
      * 2. It's a URL suggestion for the current URL.
      */
     private boolean isSuggestionEquivalentToCurrentPage(
-            OmniboxSuggestion suggestion, String pageUrl) {
+            OmniboxSuggestion suggestion, GURL pageUrl) {
         switch (suggestion.getType()) {
             case OmniboxSuggestionType.SEARCH_WHAT_YOU_TYPED:
                 return TextUtils.equals(suggestion.getFillIntoEdit(),
                         TemplateUrlServiceFactory.get().getSearchQueryForUrl(pageUrl));
             case OmniboxSuggestionType.URL_WHAT_YOU_TYPED:
-                return TextUtils.equals(suggestion.getUrl(), pageUrl);
+                return suggestion.getUrl().equals(pageUrl);
             default:
                 return false;
         }

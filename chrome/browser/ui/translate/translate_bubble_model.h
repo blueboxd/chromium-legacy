@@ -81,9 +81,17 @@ class TranslateBubbleModel {
   // is closed due to focus loss.
   virtual void DeclineTranslation() = 0;
 
+  // Returns if the user doesn't want to have the page translated in the
+  // current page's language.
+  virtual bool ShouldNeverTranslateLanguage() = 0;
+
   // Sets the value if the user doesn't want to have the page translated in the
   // current page's language.
   virtual void SetNeverTranslateLanguage(bool value) = 0;
+
+  // Returns if the user doesn't want to have the page translated the
+  // current page's domain.
+  virtual bool ShouldNeverTranslateSite() = 0;
 
   // Sets the value if the user doesn't want to have the page translated the
   // current page's domain.

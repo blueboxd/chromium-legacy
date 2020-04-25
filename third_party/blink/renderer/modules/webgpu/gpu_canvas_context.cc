@@ -5,6 +5,9 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
 
 #include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_swap_chain_descriptor.h"
+#include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 
 namespace blink {
 
@@ -73,10 +76,13 @@ void GPUCanvasContext::SetFilterQuality(SkFilterQuality filter_quality) {
 
 // gpu_canvas_context.idl
 GPUSwapChain* GPUCanvasContext::configureSwapChain(
-    const GPUSwapChainDescriptor* descriptor) {
-  // TODO(cwallez@chromium.org): This should probably throw an exception,
-  // implement the exception when the WebGPU group decided what it should be.
+    const GPUSwapChainDescriptor* descriptor,
+    ExceptionState& exception_state) {
   if (stopped_) {
+    // This is probably not possible, or at least would only happen during page
+    // shutdown.
+    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
+                                      "canvas has been destroyed");
     return nullptr;
   }
 
@@ -85,8 +91,35 @@ GPUSwapChain* GPUCanvasContext::configureSwapChain(
     // destroy all its resources (and produce errors when used).
     swapchain_->Neuter();
   }
-  swapchain_ =
-      MakeGarbageCollected<GPUSwapChain>(this, descriptor, filter_quality_);
+
+  WGPUTextureUsage usage = AsDawnEnum<WGPUTextureUsage>(descriptor->usage());
+  WGPUTextureFormat format =
+      AsDawnEnum<WGPUTextureFormat>(descriptor->format());
+  switch (format) {
+    case WGPUTextureFormat_BGRA8Unorm:
+      break;
+    case WGPUTextureFormat_RGBA8Unorm:
+      if ((usage & WGPUTextureUsage_OutputAttachment) != usage) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kOperationError,
+            "rgba8unorm can only support OUTPUT_ATTACHMENT usage");
+      }
+      descriptor->device()->AddConsoleWarning(
+          "rgba8unorm swap chain is deprecated (for now); use bgra8unorm");
+      break;
+    case WGPUTextureFormat_RGBA16Float:
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kUnknownError,
+          "rgba16float swap chain is not yet supported");
+      return nullptr;
+    default:
+      exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                        "unsupported swap chain format");
+      return nullptr;
+  }
+
+  swapchain_ = MakeGarbageCollected<GPUSwapChain>(
+      this, descriptor->device(), usage, format, filter_quality_);
   return swapchain_;
 }
 

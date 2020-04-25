@@ -128,9 +128,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
       ConstraintSpace().HasKnownFragmentainerBlockSize();
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    container_builder_.SetHasBlockFragmentation();
-    if (ConstraintSpace().IsInitialColumnBalancingPass())
-      container_builder_.SetIsInitialColumnBalancingPass();
+    SetupFragmentBuilderForFragmentation(ConstraintSpace(), BreakToken(),
+                                         &container_builder_);
   }
 
   container_builder_.SetIsBlockFragmentationContextRoot();
@@ -994,8 +993,8 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForSpanner(
   space_builder.SetPercentageResolutionSize(content_box_size_);
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    SetupFragmentation(ConstraintSpace(), spanner, block_offset, &space_builder,
-                       /* is_new_fc */ true);
+    SetupSpaceBuilderForFragmentation(ConstraintSpace(), spanner, block_offset,
+                                      &space_builder, /* is_new_fc */ true);
   }
 
   return space_builder.ToConstraintSpace();

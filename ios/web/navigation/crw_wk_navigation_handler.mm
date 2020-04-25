@@ -149,9 +149,16 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         holderForBackForwardListItem:webView.backForwardList.currentItem]
         navigationItem];
   } else {
-    // There is no guarantee that the pending item belongs to this navigation
-    // but it is very likely that it is the case.
+    // Get the visible item. There is no guarantee that the pending item belongs
+    // to this navigation but it is very likely that it is the case. If there is
+    // no pending item, it is probably a render initiated navigation. Use the
+    // UserAgent of the previous navigation. This will also return the
+    // navigation item of the restoration if a restoration occurs. Request the
+    // pending item explicitly as the visible item might be the committed item
+    // if the pending navigation isn't user triggered.
     item = self.navigationManagerImpl->GetPendingItem();
+    if (!item)
+      item = self.navigationManagerImpl->GetVisibleItem();
   }
 
   // Don't initialize the userAgentType to have compilation error if there is a
@@ -160,12 +167,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if (item) {
     userAgentType = item->GetUserAgentType(webView);
   } else {
-    // Probably a renderer-initiated navigation. Use the UserAgent of the
-    // previous navigation.
-    item = self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();
-    if (item) {
-      userAgentType = item->GetUserAgentForInheritance();
-    } else {
       // It is possible that there isn't a last committed item, for example if a
       // new tab is being opened via JavaScript.
       if (web::features::UseWebClientDefaultUserAgent()) {
@@ -173,7 +174,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       } else {
         userAgentType = web::UserAgentType::MOBILE;
       }
-    }
     if (userAgentType == web::UserAgentType::AUTOMATIC) {
       userAgentType = web::GetWebClient()->GetDefaultUserAgent(
           webView, net::GURLWithNSURL(navigationAction.request.URL));
@@ -540,28 +540,38 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   [self updatePendingNavigationInfoFromNavigationResponse:WKResponse
                                               HTTPHeaders:headers];
 
-  BOOL shouldRenderResponse = [self shouldRenderResponse:WKResponse];
-  if (!shouldRenderResponse) {
-    if (web::UrlHasWebScheme(responseURL)) {
-      [self createDownloadTaskForResponse:WKResponse HTTPHeaders:headers.get()];
-    } else {
-      // DownloadTask only supports web schemes, so do nothing.
-    }
-    // Discard the pending item to ensure that the current URL is not different
-    // from what is displayed on the view.
-    self.navigationManagerImpl->DiscardNonCommittedItems();
+  web::WebStatePolicyDecider::PolicyDecision policyDecision =
+      web::WebStatePolicyDecider::PolicyDecision::Allow();
+
+  __weak CRWPendingNavigationInfo* weakPendingNavigationInfo =
+      self.pendingNavigationInfo;
+  auto callback = base::BindOnce(
+      ^(web::WebStatePolicyDecider::PolicyDecision policyDecision) {
+        if (policyDecision.ShouldCancelNavigation() &&
+            WKResponse.canShowMIMEType && WKResponse.forMainFrame) {
+          weakPendingNavigationInfo.cancelled = YES;
+        }
+
+        handler(policyDecision.ShouldAllowNavigation()
+                    ? WKNavigationResponsePolicyAllow
+                    : WKNavigationResponsePolicyCancel);
+      });
+
+  if ([self shouldRenderResponse:WKResponse]) {
+    self.webStateImpl->ShouldAllowResponse(
+        WKResponse.response, WKResponse.forMainFrame, std::move(callback));
+    return;
+  }
+
+  if (web::UrlHasWebScheme(responseURL)) {
+    [self createDownloadTaskForResponse:WKResponse HTTPHeaders:headers.get()];
   } else {
-    shouldRenderResponse = self.webStateImpl->ShouldAllowResponse(
-        WKResponse.response, WKResponse.forMainFrame);
+    // DownloadTask only supports web schemes, so do nothing.
   }
-
-  if (!shouldRenderResponse && WKResponse.canShowMIMEType &&
-      WKResponse.forMainFrame) {
-    self.pendingNavigationInfo.cancelled = YES;
-  }
-
-  handler(shouldRenderResponse ? WKNavigationResponsePolicyAllow
-                               : WKNavigationResponsePolicyCancel);
+  // Discard the pending item to ensure that the current URL is not different
+  // from what is displayed on the view.
+  self.navigationManagerImpl->DiscardNonCommittedItems();
+  std::move(callback).Run(web::WebStatePolicyDecider::PolicyDecision::Cancel());
 }
 
 - (void)webView:(WKWebView*)webView

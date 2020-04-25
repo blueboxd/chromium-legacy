@@ -14,7 +14,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "storage/common/storage_histograms.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "url/origin.h"
 
@@ -102,8 +101,6 @@ void CacheStorageBlobToDiskCache::DidWriteDataToEntry(int expected_bytes,
     RunCallback(false /* success */);
     return;
   }
-  if (rv > 0)
-    storage::RecordBytesWritten("DiskCache.CacheStorage", rv);
   cache_entry_offset_ += rv;
 
   ReadFromBlob();

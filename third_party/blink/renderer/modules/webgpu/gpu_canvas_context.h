@@ -62,7 +62,8 @@ class GPUCanvasContext : public CanvasRenderingContext {
   cc::Layer* CcLayer() const final;
 
   // gpu_canvas_context.idl
-  GPUSwapChain* configureSwapChain(const GPUSwapChainDescriptor* descriptor);
+  GPUSwapChain* configureSwapChain(const GPUSwapChainDescriptor* descriptor,
+                                   ExceptionState&);
   ScriptPromise getSwapChainPreferredFormat(ScriptState* script_state,
                                             const GPUDevice* device);
 

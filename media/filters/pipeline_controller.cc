@@ -96,9 +96,13 @@ void PipelineController::Suspend() {
 void PipelineController::Resume() {
   DCHECK(thread_checker_.CalledOnValidThread());
   pending_suspend_ = false;
-  if (state_ == State::SUSPENDING || state_ == State::SUSPENDED) {
+  // TODO(sandersd) fix resume during suspended start.
+  if (state_ == State::SUSPENDING || state_ == State::SUSPENDED ||
+      (state_ == State::SWITCHING_TRACKS &&
+       previous_track_change_state_ == State::SUSPENDED)) {
     pending_resume_ = true;
     Dispatch();
+    return;
   }
 }
 
@@ -279,7 +283,7 @@ void PipelineController::Dispatch() {
   // We can only switch tracks if we are not in a transitioning state already.
   if ((pending_audio_track_change_ || pending_video_track_change_) &&
       (state_ == State::PLAYING || state_ == State::SUSPENDED)) {
-    State old_state = state_;
+    previous_track_change_state_ = state_;
     state_ = State::SWITCHING_TRACKS;
 
     // Attempt to do a track change _before_ attempting a seek operation,
@@ -290,7 +294,7 @@ void PipelineController::Dispatch() {
       pipeline_->OnEnabledAudioTracksChanged(
           pending_audio_track_change_ids_,
           base::BindOnce(&PipelineController::OnTrackChangeComplete,
-                         weak_factory_.GetWeakPtr(), old_state));
+                         weak_factory_.GetWeakPtr()));
       return;
     }
 
@@ -299,7 +303,7 @@ void PipelineController::Dispatch() {
       pipeline_->OnSelectedVideoTrackChanged(
           pending_video_track_change_id_,
           base::BindOnce(&PipelineController::OnTrackChangeComplete,
-                         weak_factory_.GetWeakPtr(), old_state));
+                         weak_factory_.GetWeakPtr()));
       return;
     }
   }
@@ -431,14 +435,15 @@ void PipelineController::OnSelectedVideoTrackChanged(
 }
 
 void PipelineController::FireOnTrackChangeCompleteForTesting(State set_to) {
-  OnTrackChangeComplete(set_to);
+  previous_track_change_state_ = set_to;
+  OnTrackChangeComplete();
 }
 
-void PipelineController::OnTrackChangeComplete(State previous_state) {
+void PipelineController::OnTrackChangeComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == State::SWITCHING_TRACKS)
-    state_ = previous_state;
+    state_ = previous_track_change_state_;
 
   // Other track changed or seek/suspend/resume, etc may be waiting.
   Dispatch();

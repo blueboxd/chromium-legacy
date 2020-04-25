@@ -128,7 +128,7 @@ CallThroughOtherLibrary(NativeLibrary library, OnceClosure wait_for_sample) {
 struct RetrospectiveMetadata {
   TimeTicks period_start;
   TimeTicks period_end;
-  ProfileBuilder::MetadataItem item;
+  MetadataRecorder::Item item;
 };
 
 // Profile consists of a set of samples and other sampling information.
@@ -165,10 +165,11 @@ class TestProfileBuilder : public ProfileBuilder {
   // ProfileBuilder:
   ModuleCache* GetModuleCache() override;
   void RecordMetadata(
-      ProfileBuilder::MetadataProvider* metadata_provider) override;
-  void ApplyMetadataRetrospectively(TimeTicks period_start,
-                                    TimeTicks period_end,
-                                    const MetadataItem& item) override;
+      MetadataRecorder::MetadataProvider* metadata_provider) override;
+  void ApplyMetadataRetrospectively(
+      TimeTicks period_start,
+      TimeTicks period_end,
+      const MetadataRecorder::Item& item) override;
   void OnSampleCompleted(std::vector<Frame> sample,
                          TimeTicks sample_timestamp) override;
   void OnProfileCompleted(TimeDelta profile_duration,
@@ -203,14 +204,14 @@ ModuleCache* TestProfileBuilder::GetModuleCache() {
 }
 
 void TestProfileBuilder::RecordMetadata(
-    ProfileBuilder::MetadataProvider* metadata_provider) {
+    MetadataRecorder::MetadataProvider* metadata_provider) {
   ++record_metadata_count_;
 }
 
 void TestProfileBuilder::ApplyMetadataRetrospectively(
     TimeTicks period_start,
     TimeTicks period_end,
-    const MetadataItem& item) {
+    const MetadataRecorder::Item& item) {
   retrospective_metadata_.push_back(
       RetrospectiveMetadata{period_start, period_end, item});
 }

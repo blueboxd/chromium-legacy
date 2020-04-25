@@ -26,6 +26,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.PermissionInfo;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
@@ -84,8 +85,10 @@ public class VrBrowserDialogTest {
                     new PermissionInfo(PermissionInfo.Type.NOTIFICATION,
                             "https://127.0.0.1:" + String.valueOf(XrTestFramework.SERVER_PORT),
                             null, false);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                    () -> notificationSettings.setContentSetting(ContentSettingValues.DEFAULT));
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+                notificationSettings.setContentSetting(
+                        Profile.getLastUsedRegularProfile(), ContentSettingValues.DEFAULT);
+            });
         }
     }
 

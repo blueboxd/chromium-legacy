@@ -28,7 +28,6 @@ namespace {
 
 constexpr char kRegisteredAppName[] = "registered_app_name";
 constexpr char kOtherRegisteredAppName[] = "other_registered_app_name";
-constexpr char kUnknownAppName[] = "unkown_app_name";
 constexpr char kUnregisteredAppName[] = "unregistered_app_name";
 
 class FakeDeviceActionsDelegate : public DeviceActionsDelegate {
@@ -61,57 +60,29 @@ class DeviceActionsTest : public ChromeAshTestBase {
 
   DeviceActions* device_actions() { return device_actions_.get(); }
 
-  void VerifyAndroidApps(std::vector<std::string> app_names) {
-    std::vector<AndroidAppInfoPtr> apps_info;
-    for (const auto& app_name : app_names) {
-      AndroidAppInfoPtr app_info_ptr = AndroidAppInfo::New();
-      app_info_ptr->package_name = app_name;
-      apps_info.push_back(std::move(app_info_ptr));
-    }
-
-    device_actions()->VerifyAndroidApp(&apps_info);
-    apps_info_ = std::move(apps_info);
-  }
-
   AppStatus GetAppStatus(std::string package_name) {
-    DCHECK(apps_info_.size() > 0) << "Sanity check failed: VerifyAndroidApp() "
-                                     "has not called its callback yet";
+    AndroidAppInfoPtr app_info = AndroidAppInfo::New();
+    app_info->package_name = package_name;
 
-    for (const auto& app_info : apps_info_) {
-      if (app_info->package_name == package_name)
-        return app_info->status;
-    }
-    return AppStatus::UNKNOWN;
+    return device_actions()->GetAndroidAppStatus(*app_info);
   }
 
  private:
-  std::vector<AndroidAppInfoPtr> apps_info_;
-
   std::unique_ptr<DeviceActions> device_actions_;
 };
 
 TEST_F(DeviceActionsTest, RegisteredAppShouldBeAvailable) {
-  VerifyAndroidApps({kRegisteredAppName});
-
   ASSERT_EQ(GetAppStatus(kRegisteredAppName), AppStatus::AVAILABLE);
 }
 
 TEST_F(DeviceActionsTest, UnregisteredAppShouldBeUnavailable) {
-  VerifyAndroidApps({kUnregisteredAppName});
-
   ASSERT_EQ(GetAppStatus(kUnregisteredAppName), AppStatus::UNAVAILABLE);
 }
 
 TEST_F(DeviceActionsTest, UnknownAppShouldBeUnknown) {
-  VerifyAndroidApps({kRegisteredAppName});
-
-  ASSERT_EQ(GetAppStatus(kUnknownAppName), AppStatus::UNKNOWN);
 }
 
 TEST_F(DeviceActionsTest, MultipleAppsShouldBeVerifiedCorrectly) {
-  VerifyAndroidApps(
-      {kRegisteredAppName, kUnregisteredAppName, kOtherRegisteredAppName});
-
   ASSERT_EQ(GetAppStatus(kRegisteredAppName), AppStatus::AVAILABLE);
   ASSERT_EQ(GetAppStatus(kUnregisteredAppName), AppStatus::UNAVAILABLE);
   ASSERT_EQ(GetAppStatus(kOtherRegisteredAppName), AppStatus::AVAILABLE);

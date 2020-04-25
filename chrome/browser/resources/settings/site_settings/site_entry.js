@@ -6,10 +6,32 @@
  * @fileoverview
  * 'site-entry' is an element representing a single eTLD+1 site entity.
  */
+import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import '../settings_shared_css.m.js';
+import '../site_favicon.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {routes} from '../route.m.js';
+import {Router} from '../router.m.js';
+
+import {AllSitesAction2, SortMethod} from './constants.js';
+import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl} from './local_data_browser_proxy.js';
+import {SiteSettingsBehavior} from './site_settings_behavior.js';
+import {OriginInfo, SiteGroup} from './site_settings_prefs_browser_proxy.js';
+
 Polymer({
   is: 'site-entry',
 
-  behaviors: [SiteSettingsBehavior, cr.ui.FocusRowBehavior],
+  _template: html`{__html_template__}`,
+
+  behaviors: [SiteSettingsBehavior, FocusRowBehavior],
 
   properties: {
     /**
@@ -76,7 +98,7 @@ Polymer({
 
     /**
      * The selected sort method.
-     * @type {!settings.SortMethod|undefined}
+     * @type {!SortMethod|undefined}
      */
     sortMethod: {type: String, observer: 'updateOrigins_'},
 
@@ -91,7 +113,7 @@ Polymer({
     },
   },
 
-  /** @private {?settings.LocalDataBrowserProxy} */
+  /** @private {?LocalDataBrowserProxy} */
   localDataBrowserProxy_: null,
 
   /** @private {?Element} */
@@ -99,8 +121,7 @@ Polymer({
 
   /** @override */
   created() {
-    this.localDataBrowserProxy_ =
-        settings.LocalDataBrowserProxyImpl.getInstance();
+    this.localDataBrowserProxy_ = LocalDataBrowserProxyImpl.getInstance();
   },
 
   /** @override */
@@ -322,8 +343,8 @@ Polymer({
   navigateToSiteDetails_(origin) {
     this.fire(
         'site-entry-selected', {item: this.siteGroup, index: this.listIndex});
-    settings.Router.getInstance().navigateTo(
-        settings.routes.SITE_SETTINGS_SITE_DETAILS,
+    Router.getInstance().navigateTo(
+        routes.SITE_SETTINGS_SITE_DETAILS,
         new URLSearchParams('site=' + origin));
   },
 
@@ -334,7 +355,7 @@ Polymer({
    */
   onOriginTap_(e) {
     this.navigateToSiteDetails_(this.siteGroup.origins[e.model.index].origin);
-    this.browserProxy.recordAction(settings.AllSitesAction2.ENTER_SITE_DETAILS);
+    this.browserProxy.recordAction(AllSitesAction2.ENTER_SITE_DETAILS);
     chrome.metricsPrivate.recordUserAction('AllSites_EnterSiteDetails');
   },
 
@@ -347,8 +368,7 @@ Polymer({
     // Individual origins don't expand - just go straight to Site Details.
     if (!this.grouped_(this.siteGroup)) {
       this.navigateToSiteDetails_(this.siteGroup.origins[0].origin);
-      this.browserProxy.recordAction(
-          settings.AllSitesAction2.ENTER_SITE_DETAILS);
+      this.browserProxy.recordAction(AllSitesAction2.ENTER_SITE_DETAILS);
       chrome.metricsPrivate.recordUserAction('AllSites_EnterSiteDetails');
       return;
     }
@@ -417,7 +437,7 @@ Polymer({
 
   /**
    * Update the order and data display text for origins.
-   * @param {!settings.SortMethod|undefined} sortMethod
+   * @param {!SortMethod|undefined} sortMethod
    * @private
    */
   updateOrigins_(sortMethod) {
@@ -446,20 +466,20 @@ Polymer({
 
   /**
    * Sort functions for sorting origins based on selected method.
-   * @param {!settings.SortMethod|undefined} sortMethod
+   * @param {!SortMethod|undefined} sortMethod
    * @private
    */
   sortFunction_(sortMethod) {
-    if (sortMethod == settings.SortMethod.MOST_VISITED) {
+    if (sortMethod == SortMethod.MOST_VISITED) {
       return (origin1, origin2) => {
         return origin2.engagement - origin1.engagement;
       };
-    } else if (sortMethod == settings.SortMethod.STORAGE) {
+    } else if (sortMethod == SortMethod.STORAGE) {
       return (origin1, origin2) => {
         return origin2.usage - origin1.usage ||
             origin2.numCookies - origin1.numCookies;
       };
-    } else if (sortMethod == settings.SortMethod.NAME) {
+    } else if (sortMethod == SortMethod.NAME) {
       return (origin1, origin2) => {
         return origin1.origin.localeCompare(origin2.origin);
       };

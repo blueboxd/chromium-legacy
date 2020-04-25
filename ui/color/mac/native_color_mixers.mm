@@ -11,20 +11,24 @@
 #include "ui/color/color_provider.h"
 #include "ui/color/color_recipe.h"
 #include "ui/color/color_set.h"
+#include "ui/color/mac/scoped_current_nsappearance.h"
 #include "ui/gfx/color_palette.h"
 
 namespace ui {
 
 void AddNativeCoreColorMixer(ColorProvider* provider, bool dark_window) {
-  provider->AddMixer().AddSet({kColorSetNative,
-                               {
-                                   {kColorTextSelectionBackground,
-                                    skia::NSSystemColorToSkColor(
-                                        [NSColor selectedTextBackgroundColor])},
-                               }});
+  ScopedCurrentNSAppearance scoped_nsappearance(dark_window);
+  ColorMixer& mixer = provider->AddMixer();
+  mixer.AddSet({kColorSetNative,
+                {
+                    {kColorTextSelectionBackground,
+                     skia::NSSystemColorToSkColor(
+                         [NSColor selectedTextBackgroundColor])},
+                }});
 }
 
 void AddNativeUiColorMixer(ColorProvider* provider, bool dark_window) {
+  ScopedCurrentNSAppearance scoped_nsappearance(dark_window);
   ColorMixer& mixer = provider->AddMixer();
   mixer.AddSet(
       {kColorSetNative,
@@ -56,9 +60,10 @@ void AddNativeUiColorMixer(ColorProvider* provider, bool dark_window) {
         NSColor.controlAlternatingRowBackgroundColors[1])};
   }
 
-  dark_window
-      ? mixer[kColorMenuSeparator] = {SkColorSetA(gfx::kGoogleGrey800, 0xCC)}
-      : mixer[kColorMenuSeparator] = {SkColorSetA(SK_ColorBLACK, 0x26)};
+  SkColor menu_separator_color = dark_window
+                                     ? SkColorSetA(gfx::kGoogleGrey800, 0xCC)
+                                     : SkColorSetA(SK_ColorBLACK, 0x26);
+  mixer[kColorMenuSeparator] = {menu_separator_color};
 }
 
 }  // namespace ui

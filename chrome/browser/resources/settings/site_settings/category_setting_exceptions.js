@@ -7,8 +7,18 @@
  * 'category-setting-exceptions' is the polymer element for showing a certain
  * category of exceptions under Site Settings.
  */
+import './site_list.js';
+
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ContentSetting, ContentSettingsTypes, SiteSettingSource} from './constants.js';
+import {SiteSettingsBehavior} from './site_settings_behavior.js';
+
 Polymer({
   is: 'category-setting-exceptions',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
@@ -17,7 +27,7 @@ Polymer({
     /**
      * The string ID of the category that this element is displaying data for.
      * See site_settings/constants.js for possible values.
-     * @type {!settings.ContentSettingsTypes}
+     * @type {!ContentSettingsTypes}
      */
     category: String,
 
@@ -68,7 +78,7 @@ Polymer({
 
   /** @override */
   ready() {
-    this.ContentSetting = settings.ContentSetting;
+    this.ContentSetting = ContentSetting;
     this.addWebUIListener(
         'contentSettingCategoryChanged', this.updateDefaultManaged_.bind(this));
   },
@@ -80,8 +90,7 @@ Polymer({
    * @private
    */
   computeShowAllowSiteList_() {
-    return this.category !=
-        settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
+    return this.category != ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
   },
 
   /**
@@ -94,10 +103,9 @@ Polymer({
     }
 
     this.browserProxy.getDefaultValueForContentType(this.category)
-      .then(update => {
-        this.defaultManaged_ =
-          update.source === settings.SiteSettingSource.POLICY;
-      });
+        .then(update => {
+          this.defaultManaged_ = update.source === SiteSettingSource.POLICY;
+        });
   },
 
   /**

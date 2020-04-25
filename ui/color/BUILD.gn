@@ -91,7 +91,11 @@ jumbo_component("mixers") {
     sources += [ "linux/native_color_mixers.cc" ]
   } else if (is_mac) {
     libs = [ "AppKit.framework" ]
-    sources += [ "mac/native_color_mixers.mm" ]
+    sources += [
+      "mac/native_color_mixers.mm",
+      "mac/scoped_current_nsappearance.h",
+      "mac/scoped_current_nsappearance.mm",
+    ]
   } else if (is_win) {
     sources += [ "win/native_color_mixers.cc" ]
   }

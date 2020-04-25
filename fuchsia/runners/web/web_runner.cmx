@@ -6,6 +6,7 @@
     "services": [
       "fuchsia.accessibility.semantics.SemanticsManager",
       "fuchsia.device.NameProvider",
+      "fuchsia.camera3.DeviceWatcher",
       "fuchsia.fonts.Provider",
       "fuchsia.intl.PropertyProvider",
       "fuchsia.logger.LogSink",

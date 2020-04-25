@@ -42,6 +42,7 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
+#include "components/optimization_guide/optimization_metadata.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -1336,4 +1337,37 @@ void OptimizationGuideHintsManager::ClearFetchedHints() {
   hint_cache_->ClearFetchedHints();
   optimization_guide::HintsFetcher::ClearHostsSuccessfullyFetched(
       pref_service_);
+}
+
+void OptimizationGuideHintsManager::AddHintForTesting(
+    const GURL& url,
+    optimization_guide::proto::OptimizationType optimization_type,
+    const base::Optional<optimization_guide::OptimizationMetadata>& metadata) {
+  std::unique_ptr<optimization_guide::proto::Hint> hint =
+      std::make_unique<optimization_guide::proto::Hint>();
+  hint->set_key(url.spec());
+  optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("*");
+  optimization_guide::proto::Optimization* optimization =
+      page_hint->add_whitelisted_optimizations();
+  optimization->set_optimization_type(optimization_type);
+  if (!metadata) {
+    hint_cache_->AddHintForTesting(url, std::move(hint));
+    return;
+  }
+  if (metadata->previews_metadata()) {
+    *optimization->mutable_previews_metadata() = *metadata->previews_metadata();
+  } else if (metadata->loading_predictor_metadata()) {
+    *optimization->mutable_loading_predictor_metadata() =
+        *metadata->loading_predictor_metadata();
+  } else if (metadata->performance_hints_metadata()) {
+    *optimization->mutable_performance_hints_metadata() =
+        *metadata->performance_hints_metadata();
+  } else if (metadata->public_image_metadata()) {
+    *optimization->mutable_public_image_metadata() =
+        *metadata->public_image_metadata();
+  } else {
+    NOTREACHED();
+  }
+  hint_cache_->AddHintForTesting(url, std::move(hint));
 }

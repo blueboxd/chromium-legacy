@@ -19,6 +19,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.signin.SigninActivity.AccessPoint;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -174,11 +175,11 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
                 ? R.string.bookmarks_sync_promo_enable_sync
                 : R.string.recent_tabs_sync_promo_enable_chrome_sync;
 
-        ButtonState positiveButton = new ButtonPresent(R.string.enable_sync_button,
-                view
-                -> SettingsLauncher.getInstance().launchSettingsPage(getContext(),
-                        SyncAndServicesSettings.class,
-                        SyncAndServicesSettings.createArguments(false)));
+        ButtonState positiveButton = new ButtonPresent(R.string.enable_sync_button, view -> {
+            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            settingsLauncher.launchSettingsActivity(getContext(), SyncAndServicesSettings.class,
+                    SyncAndServicesSettings.createArguments(false));
+        });
 
         return new ViewState(descId, positiveButton);
     }

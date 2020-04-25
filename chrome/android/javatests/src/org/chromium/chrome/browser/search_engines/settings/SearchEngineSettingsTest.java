@@ -21,6 +21,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.MainSettings;
 import org.chromium.chrome.browser.settings.SettingsActivity;
@@ -91,7 +92,7 @@ public class SearchEngineSettingsTest {
             String keyword3 = pref.getKeywordFromIndexForTesting(3);
             String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword3);
             WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
-                    url, url, ContentSettingValues.BLOCK, false);
+                    Profile.getLastUsedRegularProfile(), url, url, ContentSettingValues.BLOCK);
             keyword3 = pref.setValueForTesting("3");
             Assert.assertEquals(keyword3,
                     TemplateUrlServiceFactory.get()
@@ -108,11 +109,11 @@ public class SearchEngineSettingsTest {
             // Otherwise the block setting will cause the content setting for search engine 2
             // to be reset when we switch to it.
             WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
-                    url, url, ContentSettingValues.ALLOW, false);
+                    Profile.getLastUsedRegularProfile(), url, url, ContentSettingValues.ALLOW);
             keyword2 = pref.getKeywordFromIndexForTesting(2);
             url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword2);
             WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
-                    url, url, ContentSettingValues.ALLOW, false);
+                    Profile.getLastUsedRegularProfile(), url, url, ContentSettingValues.ALLOW);
             keyword2 = pref.setValueForTesting("2");
             Assert.assertEquals(keyword2,
                     TemplateUrlServiceFactory.get()
@@ -245,7 +246,8 @@ public class SearchEngineSettingsTest {
         PermissionInfo locationSettings =
                 new PermissionInfo(PermissionInfo.Type.GEOLOCATION, url, null, false);
         @ContentSettingValues
-        int locationPermission = locationSettings.getContentSetting();
+        int locationPermission =
+                locationSettings.getContentSetting(Profile.getLastUsedRegularProfile());
         return locationPermission;
     }
 

@@ -134,6 +134,8 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
 #endif
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CreditCardAccessManagerBrowserTest,
+                           NavigateFromPage_UnmaskedCardCacheResets);
   friend class AutofillAssistantTest;
   friend class AutofillManagerTest;
   friend class AutofillMetricsTest;
@@ -145,6 +147,9 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
     fido_authenticator_ = std::move(fido_authenticator);
   }
 #endif
+
+  // Returns whether or not unmasked card cache is empty. Exposed for testing.
+  bool UnmaskedCardCacheIsEmpty();
 
   // Returns false if all suggested cards are local cards, otherwise true.
   bool ServerCardsAvailable();

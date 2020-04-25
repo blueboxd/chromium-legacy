@@ -296,14 +296,15 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     EXPECT_FALSE(bounds.IsEmpty());
 
     blink::WebMouseEvent mouse_event(
-        blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::Type::kMouseDown,
+        blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
     mouse_event.button = blink::WebMouseEvent::Button::kLeft;
     mouse_event.SetPositionInWidget(bounds.CenterPoint().x(),
                                     bounds.CenterPoint().y());
     mouse_event.click_count = 1;
     SendWebMouseEvent(mouse_event);
-    mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+    mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
     SendWebMouseEvent(mouse_event);
   }
 

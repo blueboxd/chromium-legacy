@@ -38,7 +38,6 @@ class WebLayerMetricsServiceClient
   int GetSampleRatePerMille() override;
   void OnMetricsStart() override;
   int GetPackageNameLimitRatePerMille() override;
-  bool ShouldWakeMetricsService() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebLayerMetricsServiceClient);

@@ -12,7 +12,6 @@
 namespace blink {
 
 class ExecutionContext;
-class ScriptWrappable;
 
 // Derived by wrappable objects which need to remain alive due to ongoing
 // asynchronous activity, even if they are not referenced in the JavaScript or
@@ -54,9 +53,6 @@ class ActiveScriptWrappable : public ActiveScriptWrappableBase {
 
   bool DispatchHasPendingActivity() const final {
     return static_cast<const T*>(this)->HasPendingActivity();
-  }
-  const ScriptWrappable* ToScriptWrappable() const final {
-    return static_cast<const T*>(this);
   }
 
  private:

@@ -1414,4 +1414,58 @@ TEST_F(HTMLPreloadScannerTest, LazyLoadImage_DisableMetadataFetch) {
   }
 }
 
+TEST_F(HTMLPreloadScannerTest,
+       LazyLoadImage_FirstKImagesNotAppliesForExplicit) {
+  ScopedAutomaticLazyImageLoadingForTest
+      scoped_automatic_lazy_image_loading_for_test(false);
+  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
+      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
+          false);
+  GetDocument().GetSettings()->SetLazyLoadEnabled(true);
+  GetDocument().GetSettings()->SetLazyImageFirstKFullyLoadUnknown(1);
+  RunSetUp(kViewportEnabled);
+
+  // Neither of the images should be preloaded.
+  LazyLoadImageTestCase test1 = {"<img src='foo.jpg' loading='lazy'>", true};
+  Test(test1);
+  LazyLoadImageTestCase test2 = {"<img src='bar.jpg' loading='lazy'>", true};
+  Test(test2);
+}
+
+TEST_F(HTMLPreloadScannerTest, LazyLoadImage_FirstKImagesAppliesForAutomatic) {
+  ScopedAutomaticLazyImageLoadingForTest
+      scoped_automatic_lazy_image_loading_for_test(true);
+  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
+      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
+          false);
+  GetDocument().GetSettings()->SetLazyLoadEnabled(true);
+  GetDocument().GetSettings()->SetLazyImageFirstKFullyLoadUnknown(1);
+  RunSetUp(kViewportEnabled);
+
+  // Only the first image should get preloaded
+  LazyLoadImageTestCase test1 = {"<img src='foo.jpg'>", false};
+  Test(test1);
+  LazyLoadImageTestCase test2 = {"<img src='bar.jpg'>", true};
+  Test(test2);
+}
+
+TEST_F(HTMLPreloadScannerTest,
+       LazyLoadImage_ExplicitImageCountedForFirstKImages) {
+  ScopedAutomaticLazyImageLoadingForTest
+      scoped_automatic_lazy_image_loading_for_test(true);
+  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
+      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
+          false);
+  GetDocument().GetSettings()->SetLazyLoadEnabled(true);
+  GetDocument().GetSettings()->SetLazyImageFirstKFullyLoadUnknown(1);
+  RunSetUp(kViewportEnabled);
+
+  // The first image should be counted towards first K images limit, even though
+  // it has loading='lazy'.
+  LazyLoadImageTestCase test1 = {"<img src='foo.jpg' loading='lazy'>", true};
+  Test(test1);
+  LazyLoadImageTestCase test2 = {"<img src='bar.jpg'>", true};
+  Test(test2);
+}
+
 }  // namespace blink

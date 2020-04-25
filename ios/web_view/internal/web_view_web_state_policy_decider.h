@@ -28,8 +28,11 @@ class WebViewWebStatePolicyDecider : public web::WebStatePolicyDecider {
   web::WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
       NSURLRequest* request,
       const web::WebStatePolicyDecider::RequestInfo& request_info) override;
-  bool ShouldAllowResponse(NSURLResponse* response,
-                           bool for_main_frame) override;
+  void ShouldAllowResponse(
+      NSURLResponse* response,
+      bool for_main_frame,
+      base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback)
+      override;
 
  private:
   // Delegates to |delegate| property of this web view.

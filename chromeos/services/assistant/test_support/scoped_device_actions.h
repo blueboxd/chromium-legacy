@@ -28,13 +28,11 @@ class ScopedDeviceActions : DeviceActions {
   void SetSwitchAccessEnabled(bool enabled) override {}
   bool OpenAndroidApp(
       chromeos::assistant::mojom::AndroidAppInfoPtr app_info) override;
-  void VerifyAndroidApp(
-      std::vector<chromeos::assistant::mojom::AndroidAppInfoPtr>* apps_info)
-      override {}
+  mojom::AppStatus GetAndroidAppStatus(
+      const mojom::AndroidAppInfo& app_info) override;
   void LaunchAndroidIntent(const std::string& intent) override {}
   void AddAppListEventSubscriber(
-      mojo::PendingRemote<chromeos::assistant::mojom::AppListEventSubscriber>
-          subscriber) override {}
+      mojo::PendingRemote<mojom::AppListEventSubscriber> subscriber) override {}
 
   // Set the brightness value that will be returned by
   // GetScreenBrightnessLevel();

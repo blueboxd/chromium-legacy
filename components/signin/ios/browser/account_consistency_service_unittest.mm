@@ -101,8 +101,18 @@ class TestWebState : public web::TestWebState {
     decider_ = nullptr;
   }
   bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame) {
-    return decider_ ? decider_->ShouldAllowResponse(response, for_main_frame)
-                    : true;
+    if (!decider_)
+      return true;
+
+    __block web::WebStatePolicyDecider::PolicyDecision policyDecision =
+        web::WebStatePolicyDecider::PolicyDecision::Allow();
+    auto callback =
+        base::Bind(^(web::WebStatePolicyDecider::PolicyDecision decision) {
+          policyDecision = decision;
+        });
+    decider_->ShouldAllowResponse(response, for_main_frame,
+                                  std::move(callback));
+    return policyDecision.ShouldAllowNavigation();
   }
   void WebStateDestroyed() {
     if (!decider_)

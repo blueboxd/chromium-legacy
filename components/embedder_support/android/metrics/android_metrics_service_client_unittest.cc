@@ -90,11 +90,6 @@ class TestClient : public AndroidMetricsServiceClient {
     return package_name_rate_per_mille_;
   }
 
-  bool ShouldWakeMetricsService() override {
-    NOTREACHED();
-    return true;
-  }
-
   void RegisterAdditionalMetricsProviders(MetricsService* service) override {}
 
  private:

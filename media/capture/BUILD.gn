@@ -310,6 +310,10 @@ jumbo_component("capture_lib") {
       "video/fuchsia/video_capture_device_factory_fuchsia.cc",
       "video/fuchsia/video_capture_device_factory_fuchsia.h",
     ]
+    deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.camera3",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
+    ]
   }
 }
 

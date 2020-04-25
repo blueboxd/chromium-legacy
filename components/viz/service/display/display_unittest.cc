@@ -96,7 +96,8 @@ class StubDisplayClient : public DisplayClient {
   void SetWideColorEnabled(bool enabled) override {}
   void SetPreferredFrameInterval(base::TimeDelta interval) override {}
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const FrameSinkId& id) override {
+      const FrameSinkId& id,
+      mojom::CompositorFrameSinkType* type) override {
     return BeginFrameArgs::MinInterval();
   }
 };
@@ -901,6 +902,55 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   EXPECT_TRUE(scheduler_->damaged());
   EXPECT_FALSE(scheduler2->damaged());
   manager_.UnregisterBeginFrameSource(begin_frame_source2.get());
+}
+
+// Quads that require blending should not be treated as occluders
+// regardless of full opacity.
+TEST_F(DisplayTest, DrawOcclusionWithBlending) {
+  RendererSettings settings;
+  settings.minimum_fragments_reduced = 0;
+  SetUpGpuDisplay(settings);
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  CompositorFrame frame = CompositorFrameBuilder()
+                              .AddDefaultRenderPass()
+                              .AddDefaultRenderPass()
+                              .Build();
+  bool is_clipped = false;
+  bool are_contents_opaque = true;
+  float opacity = 1.f;
+
+  auto src_rect = gfx::Rect(0, 0, 100, 100);
+  auto dest_rect = gfx::Rect(25, 25, 25, 25);
+
+  for (auto& render_pass : frame.render_pass_list) {
+    bool is_root_render_pass = render_pass == frame.render_pass_list.back();
+
+    auto* src_sqs = render_pass->CreateAndAppendSharedQuadState();
+    src_sqs->SetAll(
+        gfx::Transform(), src_rect, src_rect, gfx::RRectF(), src_rect,
+        is_clipped, are_contents_opaque, opacity,
+        is_root_render_pass ? SkBlendMode::kSrcOver : SkBlendMode::kSrcIn, 0);
+    auto* dest_sqs = render_pass->CreateAndAppendSharedQuadState();
+    dest_sqs->SetAll(
+        gfx::Transform(), dest_rect, dest_rect, gfx::RRectF(), dest_rect,
+        is_clipped, are_contents_opaque, opacity,
+        is_root_render_pass ? SkBlendMode::kSrcOver : SkBlendMode::kDstIn, 0);
+    auto* src_quad =
+        render_pass->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+    src_quad->SetNew(src_sqs, src_rect, src_rect, SK_ColorBLACK, false);
+    auto* dest_quad =
+        render_pass->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+    dest_quad->SetNew(dest_sqs, dest_rect, dest_rect, SK_ColorRED, false);
+  }
+
+  EXPECT_EQ(2u, NumVisibleRects(frame.render_pass_list.front()->quad_list));
+  EXPECT_EQ(2u, NumVisibleRects(frame.render_pass_list.back()->quad_list));
+
+  display_->RemoveOverdrawQuads(&frame);
+
+  EXPECT_EQ(2u, NumVisibleRects(frame.render_pass_list.front()->quad_list));
+  EXPECT_EQ(1u, NumVisibleRects(frame.render_pass_list.back()->quad_list));
 }
 
 // Quads that intersect backdrop filter render pass quads should not be

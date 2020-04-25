@@ -9,6 +9,7 @@
 #include <string>
 
 #include "components/feed/core/proto/v2/store.pb.h"
+#include "components/feed/core/proto/v2/ui.pb.h"
 
 namespace feedwire {
 class ContentId;
@@ -24,6 +25,7 @@ std::string ToTextProto(const feedstore::Content& v);
 std::string ToTextProto(const feedstore::StreamSharedState& v);
 std::string ToTextProto(const feedstore::StoredAction& v);
 std::string ToTextProto(const feedstore::Record& v);
+std::string ToTextProto(const feedui::StreamUpdate& v);
 
 inline std::ostream& operator<<(std::ostream& os,
                                 const feedwire::ContentId& v) {
@@ -53,6 +55,10 @@ inline std::ostream& operator<<(std::ostream& os,
   return os << ToTextProto(v);
 }
 inline std::ostream& operator<<(std::ostream& os, const feedstore::Record& v) {
+  return os << ToTextProto(v);
+}
+inline std::ostream& operator<<(std::ostream& os,
+                                const feedui::StreamUpdate& v) {
   return os << ToTextProto(v);
 }
 

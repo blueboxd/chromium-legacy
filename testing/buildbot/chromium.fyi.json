@@ -12164,6 +12164,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
+        "test_target": "//chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests",
         "trigger_script": {
           "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
         }
@@ -14563,7 +14564,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//content/test:fuchsia_telemetry_gpu_integration_test"
+        "test_target": "//content/test:fuchsia_telemetry_gpu_integration_test/hardware_accelerated_feature_tests"
       },
       {
         "args": [
@@ -14596,7 +14597,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//content/test:fuchsia_telemetry_gpu_integration_test"
+        "test_target": "//content/test:fuchsia_telemetry_gpu_integration_test/info_collection_tests"
       }
     ]
   },

@@ -6,6 +6,7 @@
 import {ImportDataBrowserProxyImpl, ImportDataStatus} from 'chrome://settings/lazy_load.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /** @implements {ImportDataBrowserProxy} */
@@ -177,7 +178,7 @@ suite('ImportDataDialog', function() {
 
   /** @param {!ImportDataStatus} status */
   function simulateImportStatusChange(status) {
-    cr.webUIListenerCallback('import-data-status-changed', status);
+    webUIListenerCallback('import-data-status-changed', status);
   }
 
   test('ImportFromBookmarksFile', function() {

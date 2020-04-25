@@ -99,6 +99,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -245,7 +246,8 @@ public class PasswordSettingsTest {
                     getSavedPasswordEntry(index).getUserName());
             fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD,
                     getSavedPasswordEntry(index).getPassword());
-            SettingsLauncher.getInstance().launchSettingsPage(
+            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            settingsLauncher.launchSettingsActivity(
                     context, PasswordEntryEditor.class, fragmentArgs);
         }
     }
@@ -753,7 +755,8 @@ public class PasswordSettingsTest {
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_URL, "https://example.com");
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_NAME, "test user");
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD, "test password");
-        SettingsLauncher.getInstance().launchSettingsPage(
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(
                 InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
 
         Espresso.onView(withId(R.id.site_edit)).check(matches(withText("https://example.com")));
@@ -838,7 +841,8 @@ public class PasswordSettingsTest {
         fragmentArgs.putString(PasswordSettings.PASSWORD_LIST_NAME, "test user");
         fragmentArgs.putString(PasswordSettings.PASSWORD_LIST_URL, "https://example.com");
         fragmentArgs.putString(PasswordSettings.PASSWORD_LIST_PASSWORD, "test password");
-        SettingsLauncher.getInstance().launchSettingsPage(
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(
                 InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
 
         ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);

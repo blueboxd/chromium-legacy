@@ -268,7 +268,8 @@ void TestLayerTreeFrameSink::SendCompositorFrameAckToClient() {
 }
 
 base::TimeDelta TestLayerTreeFrameSink::GetPreferredFrameIntervalForFrameSinkId(
-    const viz::FrameSinkId& id) {
+    const viz::FrameSinkId& id,
+    viz::mojom::CompositorFrameSinkType* type) {
   return viz::BeginFrameArgs::MinInterval();
 }
 

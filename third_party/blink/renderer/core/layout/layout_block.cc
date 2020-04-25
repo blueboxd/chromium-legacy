@@ -30,6 +30,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
@@ -434,7 +435,10 @@ void LayoutBlock::UpdateBlockLayout(bool) {
 }
 
 void LayoutBlock::AddVisualOverflowFromChildren() {
-  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
+  // It is an error to call this function on a LayoutBlock that it itself inside
+  // a display-locked subtree.
+  DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*this));
+  if (PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 
   if (ChildrenInline())
@@ -2114,8 +2118,11 @@ bool LayoutBlock::RecalcChildLayoutOverflow() {
 
 void LayoutBlock::RecalcChildVisualOverflow() {
   DCHECK(!IsTable());
+  // It is an error to call this function on a LayoutBlock that it itself inside
+  // a display-locked subtree.
+  DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*this));
 
-  if (PaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
+  if (PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 
   if (ChildrenInline()) {

@@ -274,7 +274,6 @@ void TranslateUIDelegate::SetLanguageBlocked(bool value) {
     prefs_->AddToLanguageList(GetOriginalLanguageCode(),
                               /*force_blocked=*/true);
     if (translate_manager_) {
-      translate_manager_->GetLanguageState().SetTranslateEnabled(false);
       // Translation has been blocked for this language. Capture that in the
       // metrics. Note that we don't capture a language being unblocked... which
       // is not the same as accepting a given translation for this language.
@@ -305,7 +304,6 @@ void TranslateUIDelegate::SetSiteBlacklist(bool value) {
   if (value) {
     prefs_->BlacklistSite(host);
     if (translate_manager_) {
-      translate_manager_->GetLanguageState().SetTranslateEnabled(false);
       // Translation has been blocked for this site. Capture that in the metrics
       // Note that we don't capture a language being unblocked... which is not
       // the same as accepting a given translation for this site.

@@ -43,7 +43,10 @@ class FrameRateDeciderTest : public testing::Test,
     display_interval_ = interval;
   }
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const FrameSinkId& id) override {
+      const FrameSinkId& id,
+      mojom::CompositorFrameSinkType* type) override {
+    if (type)
+      *type = mojom::CompositorFrameSinkType::kMediaStream;
     return preferred_intervals_[id];
   }
 

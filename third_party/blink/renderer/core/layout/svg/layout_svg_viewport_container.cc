@@ -63,7 +63,8 @@ void LayoutSVGViewportContainer::SetNeedsTransformUpdate() {
   needs_transform_update_ = true;
 }
 
-SVGTransformChange LayoutSVGViewportContainer::CalculateLocalTransform() {
+SVGTransformChange LayoutSVGViewportContainer::CalculateLocalTransform(
+    bool bounds_changed) {
   if (!needs_transform_update_)
     return SVGTransformChange::kNone;
 

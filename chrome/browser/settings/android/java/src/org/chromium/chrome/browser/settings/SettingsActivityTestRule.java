@@ -51,8 +51,9 @@ public class SettingsActivityTestRule<T extends Fragment>
      */
     public SettingsActivity startSettingsActivity() {
         Context context = InstrumentationRegistry.getTargetContext();
-        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
-                context, mFragmentClass.getName());
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        Intent intent =
+                settingsLauncher.createSettingsActivityIntent(context, mFragmentClass.getName());
         SettingsActivity activity = super.launchActivity(intent);
         Assert.assertNotNull(activity);
 
@@ -66,7 +67,8 @@ public class SettingsActivityTestRule<T extends Fragment>
      */
     public SettingsActivity startSettingsActivity(Bundle arguments) {
         Context context = InstrumentationRegistry.getTargetContext();
-        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        Intent intent = settingsLauncher.createSettingsActivityIntent(
                 context, mFragmentClass.getName(), arguments);
         SettingsActivity activity = super.launchActivity(intent);
         Assert.assertNotNull(activity);

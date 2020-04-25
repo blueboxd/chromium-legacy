@@ -12,7 +12,7 @@ import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_p
 import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
 import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.js';
 import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
-import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+import {isMac, isWindows, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {whenAttributeIs, flushTasks, isChildVisible} from 'chrome://test/test_util.m.js';
 // clang-format on
@@ -310,7 +310,7 @@ suite('PrivacyPageRedesignEnabled', function() {
     flush();
     assertEquals(page.$$('#cookiesLinkRow').subLabel, testLabels[0]);
 
-    cr.webUIListenerCallback('cookieSettingDescriptionChanged', testLabels[1]);
+    webUIListenerCallback('cookieSettingDescriptionChanged', testLabels[1]);
     assertEquals(page.$$('#cookiesLinkRow').subLabel, testLabels[1]);
   });
 });
@@ -363,7 +363,7 @@ suite('PrivacyPageSound', function() {
     assertTrue(getToggleElement().hasAttribute('disabled'));
     assertFalse(getToggleElement().hasAttribute('checked'));
 
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'onBlockAutoplayStatusChanged', {pref: {value: true}, enabled: true});
 
     return flushAsync().then(() => {
@@ -372,7 +372,7 @@ suite('PrivacyPageSound', function() {
       assertTrue(getToggleElement().hasAttribute('checked'));
 
       // Toggle the pref off.
-      cr.webUIListenerCallback(
+      webUIListenerCallback(
           'onBlockAutoplayStatusChanged',
           {pref: {value: false}, enabled: true});
 
@@ -382,7 +382,7 @@ suite('PrivacyPageSound', function() {
         assertFalse(getToggleElement().hasAttribute('checked'));
 
         // Disable the autoplay status toggle.
-        cr.webUIListenerCallback(
+        webUIListenerCallback(
             'onBlockAutoplayStatusChanged',
             {pref: {value: false}, enabled: false});
 
@@ -415,7 +415,7 @@ suite('PrivacyPageSound', function() {
     assertTrue(getToggleElement().hasAttribute('disabled'));
     assertFalse(getToggleElement().hasAttribute('checked'));
 
-    cr.webUIListenerCallback(
+    webUIListenerCallback(
         'onBlockAutoplayStatusChanged', {pref: {value: true}, enabled: true});
 
     return flushAsync().then(() => {

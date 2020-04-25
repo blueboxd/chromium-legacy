@@ -106,9 +106,9 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
 
   // NOTE: |callback| could be run synchronously before this method returns. Be
   // careful if |callback| could destroy this object.
-  void CheckUrl(const GURL& url,
-                const std::string& method,
-                NativeCheckUrlCallback callback);
+  virtual void CheckUrl(const GURL& url,
+                        const std::string& method,
+                        NativeCheckUrlCallback callback);
 
  private:
   class Notifier {

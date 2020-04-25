@@ -116,6 +116,8 @@ const char kPpapiBrokerProcess[] = "ppapi-broker";
 const char kPpapiPluginProcess[] = "ppapi";
 const char kRendererProcess[] = "renderer";
 const char kUtilityProcess[] = "utility";
+const char kCloudPrintServiceProcess[] = "service";
+const char kZygoteProcessType[] = "zygote";
 
 }  // namespace switches
 

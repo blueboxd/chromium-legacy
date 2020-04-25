@@ -195,10 +195,9 @@ bool DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info) {
   return app != nullptr;
 }
 
-void DeviceActions::VerifyAndroidApp(
-    std::vector<AndroidAppInfoPtr>* apps_info) {
-  for (const auto& app_info : *apps_info)
-    app_info->status = delegate_->GetAndroidAppStatus(app_info->package_name);
+chromeos::assistant::mojom::AppStatus DeviceActions::GetAndroidAppStatus(
+    const chromeos::assistant::mojom::AndroidAppInfo& app_info) {
+  return delegate_->GetAndroidAppStatus(app_info.package_name);
 }
 
 void DeviceActions::LaunchAndroidIntent(const std::string& intent) {

@@ -13,6 +13,7 @@
     ],
     "services": [
       "fuchsia.accessibility.semantics.SemanticsManager",
+      "fuchsia.camera3.DeviceWatcher",
       "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.intl.PropertyProvider",

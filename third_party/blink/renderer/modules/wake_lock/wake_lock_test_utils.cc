@@ -251,11 +251,11 @@ void MockPermissionService::AddPermissionObserver(
 
 WakeLockTestingContext::WakeLockTestingContext(
     MockWakeLockService* mock_wake_lock_service) {
-  GetDocument()->GetBrowserInterfaceBroker().SetBinderForTesting(
+  DomWindow()->GetBrowserInterfaceBroker().SetBinderForTesting(
       mojom::blink::WakeLockService::Name_,
       WTF::BindRepeating(&MockWakeLockService::BindRequest,
                          WTF::Unretained(mock_wake_lock_service)));
-  GetDocument()->GetBrowserInterfaceBroker().SetBinderForTesting(
+  DomWindow()->GetBrowserInterfaceBroker().SetBinderForTesting(
       mojom::blink::PermissionService::Name_,
       WTF::BindRepeating(&MockPermissionService::BindRequest,
                          WTF::Unretained(&permission_service_)));
@@ -265,14 +265,14 @@ WakeLockTestingContext::~WakeLockTestingContext() {
   // Remove the testing binder to avoid crashes between tests caused by
   // our mocks rebinding an already-bound Binding.
   // See https://crbug.com/1010116 for more information.
-  GetDocument()->GetBrowserInterfaceBroker().SetBinderForTesting(
+  DomWindow()->GetBrowserInterfaceBroker().SetBinderForTesting(
       mojom::blink::WakeLockService::Name_, {});
-  GetDocument()->GetBrowserInterfaceBroker().SetBinderForTesting(
+  DomWindow()->GetBrowserInterfaceBroker().SetBinderForTesting(
       mojom::blink::PermissionService::Name_, {});
 }
 
-Document* WakeLockTestingContext::GetDocument() {
-  return &testing_scope_.GetDocument();
+LocalDOMWindow* WakeLockTestingContext::DomWindow() {
+  return Frame()->DomWindow();
 }
 
 LocalFrame* WakeLockTestingContext::Frame() {

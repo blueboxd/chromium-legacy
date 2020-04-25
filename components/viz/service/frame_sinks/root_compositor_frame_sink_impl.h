@@ -88,6 +88,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       base::Optional<HitTestRegionList> hit_test_region_list,
       uint64_t submit_time,
       SubmitCompositorFrameSyncCallback callback) override;
+  void InitializeCompositorFrameSinkType(
+      mojom::CompositorFrameSinkType type) override;
 
   base::ScopedClosureRunner GetCacheBackBufferCb();
 
@@ -116,7 +118,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void SetWideColorEnabled(bool enabled) override;
   void SetPreferredFrameInterval(base::TimeDelta interval) override;
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
-      const FrameSinkId& id) override;
+      const FrameSinkId& id,
+      mojom::CompositorFrameSinkType* type) override;
   void UpdateVSyncParameters();
 
   BeginFrameSource* begin_frame_source();

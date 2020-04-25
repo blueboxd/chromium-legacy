@@ -230,7 +230,7 @@ class UtilitySandboxedProcessLauncherDelegate
  private:
 #if defined(OS_POSIX)
   base::EnvironmentMap env_;
-#endif  // OS_WIN
+#endif  // OS_POSIX
   service_manager::SandboxType sandbox_type_;
   base::CommandLine cmd_line_;
 };
@@ -278,7 +278,6 @@ bool UtilityProcessHost::Send(IPC::Message* message) {
 
 void UtilityProcessHost::SetSandboxType(
     service_manager::SandboxType sandbox_type) {
-  DCHECK(sandbox_type != service_manager::SandboxType::kInvalid);
   sandbox_type_ = sandbox_type;
 }
 

@@ -9,6 +9,7 @@ import {ExtensionControlBrowserProxyImpl, SearchEnginesBrowserProxyImpl} from 'c
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestExtensionControlBrowserProxy} from 'chrome://test/settings/test_extension_control_browser_proxy.js';
 import {TestSearchEnginesBrowserProxy} from 'chrome://test/settings/test_search_engines_browser_proxy.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /**
@@ -141,7 +142,7 @@ suite('AddSearchEngineDialogTests', function() {
 
   test('DialogCloseWhenEnginesChangedModelEngineNotFound', function() {
     dialog.set('model', createSampleSearchEngine(0, 'G', false, false, false));
-    cr.webUIListenerCallback('search-engines-changed', {
+    webUIListenerCallback('search-engines-changed', {
       defaults: [],
       others: [createSampleSearchEngine(1, 'H', false, false, false)],
       extensions: [],
@@ -152,7 +153,7 @@ suite('AddSearchEngineDialogTests', function() {
   test('DialogValidateInputsWhenEnginesChanged', function() {
     dialog.set('model', createSampleSearchEngine(0, 'G', false, false, false));
     dialog.set('keyword_', 'G');
-    cr.webUIListenerCallback('search-engines-changed', {
+    webUIListenerCallback('search-engines-changed', {
       defaults: [],
       others: [createSampleSearchEngine(0, 'G', false, false, false)],
       extensions: [],
@@ -364,7 +365,7 @@ suite('SearchEnginePageTests', function() {
   // Test that the "no other search engines" message is shown/hidden as
   // expected.
   test('NoOtherSearchEnginesMessage', function() {
-    cr.webUIListenerCallback('search-engines-changed', {
+    webUIListenerCallback('search-engines-changed', {
       defaults: [],
       others: [],
       extensions: [],
@@ -374,7 +375,7 @@ suite('SearchEnginePageTests', function() {
     assertTrue(!!message);
     assertFalse(message.hasAttribute('hidden'));
 
-    cr.webUIListenerCallback('search-engines-changed', {
+    webUIListenerCallback('search-engines-changed', {
       defaults: [],
       others: [createSampleSearchEngine(0, 'G', false, false, false)],
       extensions: [],

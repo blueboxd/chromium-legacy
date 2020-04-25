@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "remoting/protocol/transport_context.h"
 #include "third_party/webrtc/api/packet_socket_factory.h"
 
 namespace remoting {
@@ -16,7 +17,8 @@ namespace protocol {
 
 class ChromiumPacketSocketFactory : public rtc::PacketSocketFactory {
  public:
-  explicit ChromiumPacketSocketFactory();
+  explicit ChromiumPacketSocketFactory(
+      scoped_refptr<TransportContext> transport_context);
   ~ChromiumPacketSocketFactory() override;
 
   rtc::AsyncPacketSocket* CreateUdpSocket(
@@ -37,6 +39,8 @@ class ChromiumPacketSocketFactory : public rtc::PacketSocketFactory {
   rtc::AsyncResolverInterface* CreateAsyncResolver() override;
 
  private:
+  scoped_refptr<TransportContext> transport_context_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromiumPacketSocketFactory);
 };
 

@@ -5,11 +5,12 @@
 /** @fileoverview Suite of tests for extension-kiosk-dialog. */
 
 import {KioskBrowserProxyImpl} from 'chrome://extensions/extensions.js';
-
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {flushTasks} from '../test_util.m.js';
+
 import {TestKioskBrowserProxy} from './test_kiosk_browser_proxy.js';
 
 window.extension_kiosk_mode_tests = {};
@@ -225,7 +226,7 @@ suite(extension_kiosk_mode_tests.suiteName, function() {
 
     const newName = 'completely different name';
 
-    window.cr.webUIListenerCallback('kiosk-app-updated', {
+    webUIListenerCallback('kiosk-app-updated', {
       id: basicApps[0].id,
       name: newName,
       iconURL: '',
@@ -241,7 +242,7 @@ suite(extension_kiosk_mode_tests.suiteName, function() {
     const addInput = dialog.$['add-input'];
 
     expectFalse(!!addInput.invalid);
-    window.cr.webUIListenerCallback('kiosk-app-error', basicApps[0].id);
+    webUIListenerCallback('kiosk-app-error', basicApps[0].id);
 
     expectTrue(!!addInput.invalid);
     expectTrue(addInput.errorMessage.includes(basicApps[0].id));

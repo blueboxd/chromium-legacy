@@ -8,6 +8,7 @@ import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.site_settings.PermissionInfo;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy;
@@ -54,7 +55,7 @@ public class NotificationTestRule extends ChromeTabbedActivityTestRule {
             // The notification content setting does not consider the embedder origin.
             PermissionInfo notificationInfo =
                     new PermissionInfo(PermissionInfo.Type.NOTIFICATION, origin, "", false);
-            notificationInfo.setContentSetting(setting);
+            notificationInfo.setContentSetting(Profile.getLastUsedRegularProfile(), setting);
         });
 
         String permission = runJavaScriptCodeInCurrentTab("Notification.permission");

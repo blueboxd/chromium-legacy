@@ -138,15 +138,24 @@ void SyncConsentScreen::OnContinueWithDefaults(
 void SyncConsentScreen::OnAcceptAndContinue(
     const std::vector<int>& consent_description,
     int consent_confirmation,
-    bool enable_os_sync) {
-  DCHECK(chromeos::features::IsSplitSyncConsentEnabled());
+    bool enable_os_sync,
+    bool review_browser_sync) {
+  DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
   if (is_hidden())
     return;
-  // The user only consented to the feature if they left the toggle on.
-  RecordConsent(enable_os_sync ? CONSENT_GIVEN : CONSENT_NOT_GIVEN,
-                consent_description, consent_confirmation);
+  // Record that the user saw the consent text, regardless of which features
+  // they chose to enable.
+  RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
   profile_->GetPrefs()->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled,
                                    enable_os_sync);
+
+  // TODO(crbug.com/1013466): Remove |review_browser_sync|. Defer browser sync
+  // startup until this point, then enable or disable it based on the toggle.
+  if (review_browser_sync) {
+    profile_->GetPrefs()->SetBoolean(prefs::kShowSyncSettingsOnSessionStart,
+                                     true);
+  }
+
   exit_callback_.Run();
 }
 

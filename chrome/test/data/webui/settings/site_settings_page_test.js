@@ -7,6 +7,7 @@ import {ContentSetting,defaultSettingLabel,SiteSettingsPrefsBrowserProxyImpl} fr
 import {eventToPromise} from 'chrome://test/test_util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 suite('SiteSettingsPage', function() {
@@ -99,7 +100,7 @@ suite('SiteSettingsPage', function() {
     const cookiesLinkRow = page.$$('#basicContentList').$$('#cookies');
     assertEquals(testLabels[0], cookiesLinkRow.subLabel);
 
-    cr.webUIListenerCallback('cookieSettingDescriptionChanged', testLabels[1]);
+    webUIListenerCallback('cookieSettingDescriptionChanged', testLabels[1]);
     assertEquals(testLabels[1], cookiesLinkRow.subLabel);
   });
 });

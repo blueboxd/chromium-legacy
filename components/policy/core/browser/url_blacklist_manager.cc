@@ -26,6 +26,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -70,6 +71,14 @@ const char* kBypassBlacklistWildcardForSchemes[] = {
   "chrome-search",
 };
 
+#if defined(OS_IOS)
+// The two schemes used on iOS for the NTP.
+constexpr char kIosNtpAboutScheme[] = "about";
+constexpr char kIosNtpChromeScheme[] = "chrome";
+// The host string used on iOS for the NTP.
+constexpr char kIosNtpHost[] = "newtab";
+#endif
+
 // Returns a blacklist based on the given |block| and |allow| pattern lists.
 std::unique_ptr<URLBlacklist> BuildBlacklist(const base::ListValue* block,
                                              const base::ListValue* allow) {
@@ -85,6 +94,21 @@ bool BypassBlacklistWildcardForURL(const GURL& url) {
     if (scheme == kBypassBlacklistWildcardForSchemes[i])
       return true;
   }
+#if defined(OS_IOS)
+  // Compare the chrome scheme and host against the chrome://newtab version of
+  // the NTP URL.
+  if (scheme == kIosNtpChromeScheme && url.host() == kIosNtpHost) {
+    return true;
+  }
+  // Compare the URL scheme and path to the about:newtab version of the NTP URL.
+  // Leading and trailing slashes must be removed because the host name is
+  // parsed as the URL path (which may contain slashes).
+  base::StringPiece trimmed_path =
+      base::TrimString(url.path(), "/", base::TrimPositions::TRIM_ALL);
+  if (scheme == kIosNtpAboutScheme && trimmed_path == kIosNtpHost) {
+    return true;
+  }
+#endif
   return false;
 }
 

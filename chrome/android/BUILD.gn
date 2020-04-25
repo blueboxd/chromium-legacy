@@ -177,6 +177,8 @@ android_resources("chrome_app_java_resources") {
     "//components/autofill/android:autofill_java_resources",
     "//components/browser_ui/modaldialog/android:java_resources",
     "//components/browser_ui/settings/android:java_resources",
+
+    # TODO(crbug.com/1058595): Remove this dependency once site_settings is componentized.
     "//components/browser_ui/site_settings/android:java_resources",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
@@ -341,6 +343,7 @@ android_library("chrome_java") {
     "//components/download/public/common:public_java",
     "//components/download/public/task:public_java",
     "//components/embedder_support/android:application_java",
+    "//components/embedder_support/android:browser_context_java",
     "//components/embedder_support/android:content_view_java",
     "//components/embedder_support/android:context_menu_java",
     "//components/embedder_support/android:util_java",
@@ -878,6 +881,7 @@ android_library("chrome_test_java") {
     "//components/download/internal/common:internal_java",
     "//components/download/network:network_java",
     "//components/download/public/common:public_java",
+    "//components/embedder_support/android:browser_context_java",
     "//components/embedder_support/android:content_view_java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
@@ -2992,6 +2996,26 @@ generate_jni("chrome_jni_headers") {
   }
 }
 
+native_java_unittests_tests = [
+  "native_java_unittests/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulatorTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/installedapp/InstalledAppProviderTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediatorUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/basic/BasicSuggestionProcessorUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/clipboard/ClipboardSuggestionProcessorTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/status/StatusMediatorUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionProcessorTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerSuggestionProcessorUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/editurl/EditUrlSuggestionUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/entity/EntitySuggestionProcessorUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizationsUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinderUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/payments/PaymentManifestVerifierTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/tabmodel/TabPersistentStoreUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/toolbar/ToolbarSecurityIconTest.java",
+]
+
 android_library("native_java_unittests_java") {
   testonly = true
   deps = [
@@ -3004,6 +3028,7 @@ android_library("native_java_unittests_java") {
     "//base/test:test_support_java",
     "//chrome/android:chrome_java",
     "//chrome/browser/flags:java",
+    "//chrome/browser/image_fetcher:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/tab:java",
     "//chrome/browser/util:java",
@@ -3012,6 +3037,7 @@ android_library("native_java_unittests_java") {
     "//components/embedder_support/android:util_java",
     "//components/omnibox/browser:browser_java",
     "//components/payments/content/android:java",
+    "//components/search_engines/android:java",
     "//components/security_state/content/android:java",
     "//components/security_state/core:security_state_enums_java",
     "//content/public/android:content_java",
@@ -3020,6 +3046,7 @@ android_library("native_java_unittests_java") {
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/blink/public:blink_headers_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
+    "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_java",
@@ -3027,18 +3054,12 @@ android_library("native_java_unittests_java") {
     "//url:gurl_java",
     "//url/mojom:url_mojom_gurl_java",
   ]
+
   sources = [
     "native_java_unittests/src/org/chromium/chrome/browser/UnitTestUtils.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulatorTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/installedapp/InstalledAppProviderTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeUnitTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/omnibox/status/StatusMediatorUnitTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizationsUnitTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinderUnitTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/payments/PaymentManifestVerifierTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/tabmodel/TabPersistentStoreUnitTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/toolbar/ToolbarSecurityIconTest.java",
   ]
+
+  sources += native_java_unittests_tests
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
@@ -3047,16 +3068,6 @@ android_library("native_java_unittests_java") {
 # can't put 'java' in the name here.
 generate_jni("native_j_unittests_jni_headers") {
   testonly = true
-  sources = [
-    "native_java_unittests/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulatorTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/installedapp/InstalledAppProviderTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeUnitTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/omnibox/status/StatusMediatorUnitTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizationsUnitTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinderUnitTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/payments/PaymentManifestVerifierTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/tabmodel/TabPersistentStoreUnitTest.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/toolbar/ToolbarSecurityIconTest.java",
-  ]
+  sources = native_java_unittests_tests
   feature_list_file = "//chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java"
 }

@@ -4,7 +4,7 @@
 
 #include "sql/recover_module/table.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

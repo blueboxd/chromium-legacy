@@ -428,7 +428,8 @@ class MockWebVideoFrameSubmitter : public WebVideoFrameSubmitter {
   MOCK_METHOD1(SetForceSubmit, void(bool));
   MOCK_CONST_METHOD0(IsDrivingFrameUpdates, bool());
 
-  void Initialize(cc::VideoFrameProvider* provider) override {
+  void Initialize(cc::VideoFrameProvider* provider,
+                  bool is_media_stream) override {
     provider_ = provider;
     MockInitialize(provider);
   }

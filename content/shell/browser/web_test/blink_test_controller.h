@@ -128,9 +128,6 @@ class BlinkTestController : public WebContentsObserver,
   void OnWebTestRuntimeFlagsChanged(
       int sender_process_host_id,
       const base::DictionaryValue& changed_web_test_runtime_flags);
-  void OnTestFinishedInSecondaryRenderer();
-  void OnInitiateCaptureDump(bool capture_navigation_history,
-                             bool capture_pixels);
 
   // Makes sure that the potentially new renderer associated with |frame| is 1)
   // initialized for the test, 2) kept up to date wrt test flags and 3)
@@ -150,15 +147,6 @@ class BlinkTestController : public WebContentsObserver,
   void set_printer(BlinkTestResultPrinter* printer) { printer_.reset(printer); }
 
   void DevToolsProcessCrashed();
-
-  // Returns a path to a temporary directory. Each call to this method will
-  // return a new (empty) directory, as well as delete any directories that
-  // might have been created by previous calls.
-  base::FilePath GetWritableDirectoryForTests();
-
-  // For the duration of the current test this causes all file choosers to
-  // return the passed in path.
-  void SetFilePathForMockFileDialog(const base::FilePath& path);
 
   void AddBlinkTestClientReceiver(
       mojo::PendingAssociatedReceiver<mojom::BlinkTestClient> receiver);
@@ -196,6 +184,9 @@ class BlinkTestController : public WebContentsObserver,
 
   // BlinkTestClient implementation.
   void InitiateLayoutDump() override;
+  void InitiateCaptureDump(bool capture_navigation_history,
+                           bool capture_pixels) override;
+  void TestFinishedInSecondaryRenderer() override;
   void ResetRendererAfterWebTestDone() override;
   void PrintMessageToStderr(const std::string& message) override;
   void PrintMessage(const std::string& message) override;
@@ -211,7 +202,9 @@ class BlinkTestController : public WebContentsObserver,
   void SetPopupBlockingEnabled(bool block_popups) override;
   void LoadURLForFrame(const GURL& url, const std::string& frame_name) override;
   void SetScreenOrientationChanged() override;
-  void BlockThirdPartyCookies(bool block);
+  void BlockThirdPartyCookies(bool block) override;
+  void GetWritableDirectory(GetWritableDirectoryCallback callback) override;
+  void SetFilePathForMockFileDialog(const base::FilePath& path) override;
 
  private:
   enum TestPhase { BETWEEN_TESTS, DURING_TEST, CLEAN_UP };

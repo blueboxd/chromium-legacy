@@ -614,7 +614,17 @@ TEST_F(MediaFeedsConverterTest, SucceedsBroadcastEvent) {
   publication->properties.push_back(
       CreateDateTimeProperty(schema_org::property::kEndDate, "2020-03-23"));
   publication->properties.push_back(CreateEntityProperty(
-      schema_org::property::kWorkPerformed, ValidMediaFeedItem()));
+      schema_org::property::kPotentialAction, ValidActiveWatchAction()));
+
+  EntityPtr item = ValidMediaFeedItem();
+
+  // Ignore the item's action field by changing the name. Use the action
+  // on the BroadcastEvent instead.
+  GetProperty(item.get(), schema_org::property::kPotentialAction)->name =
+      "not an action";
+
+  publication->properties.push_back(CreateEntityProperty(
+      schema_org::property::kWorkPerformed, std::move(item)));
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(publication));
 

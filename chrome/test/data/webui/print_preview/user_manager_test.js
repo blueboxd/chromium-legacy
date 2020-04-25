@@ -4,6 +4,7 @@
 
 import {CloudPrintInterfaceImpl, DestinationStore, InvitationStore, NativeLayer} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
 import {createDestinationStore, getDestinations, getGoogleDriveDestination, setupTestListenerElement} from 'chrome://test/print_preview/print_preview_test_utils.js';
@@ -76,22 +77,22 @@ suite('UserManagerTest', function() {
     // Simulate signing in and out of accounts. This should update the list of
     // users and the active user, but shouldn't result in searching for cloud
     // printers since |shouldReloadCookies| is false.
-    cr.webUIListenerCallback('user-accounts-updated', [account1]);
+    webUIListenerCallback('user-accounts-updated', [account1]);
     assertEquals(account1, userManager.activeUser);
     assertEquals(1, userManager.users.length);
     assertEquals(0, cloudPrintInterface.getCallCount('search'));
 
-    cr.webUIListenerCallback('user-accounts-updated', [account1, account2]);
+    webUIListenerCallback('user-accounts-updated', [account1, account2]);
     assertEquals(account1, userManager.activeUser);
     assertEquals(2, userManager.users.length);
     assertEquals(0, cloudPrintInterface.getCallCount('search'));
 
-    cr.webUIListenerCallback('user-accounts-updated', [account2]);
+    webUIListenerCallback('user-accounts-updated', [account2]);
     assertEquals(account2, userManager.activeUser);
     assertEquals(1, userManager.users.length);
     assertEquals(0, cloudPrintInterface.getCallCount('search'));
 
-    cr.webUIListenerCallback('user-accounts-updated', []);
+    webUIListenerCallback('user-accounts-updated', []);
     assertEquals('', userManager.activeUser);
     assertEquals(0, userManager.users.length);
     assertEquals(0, cloudPrintInterface.getCallCount('search'));
@@ -119,7 +120,7 @@ suite('UserManagerTest', function() {
           // This should update the list of users and the active user and
           // trigger a call to search.
           cloudPrintInterface.setPrinter(getGoogleDriveDestination(account1));
-          cr.webUIListenerCallback('check-for-account-update');
+          webUIListenerCallback('check-for-account-update');
           return cloudPrintInterface.whenCalled('search');
         })
         .then(() => {
@@ -129,7 +130,7 @@ suite('UserManagerTest', function() {
 
           // Simulate signing in to a second account.
           cloudPrintInterface.setPrinter(getGoogleDriveDestination(account2));
-          cr.webUIListenerCallback('check-for-account-update');
+          webUIListenerCallback('check-for-account-update');
           return cloudPrintInterface.whenCalled('search');
         })
         .then(() => {
@@ -160,7 +161,7 @@ suite('UserManagerTest', function() {
           // This should update the list of users and the active user and
           // trigger a call to search.
           cloudPrintInterface.setPrinter(getGoogleDriveDestination(account1));
-          cr.webUIListenerCallback('check-for-account-update');
+          webUIListenerCallback('check-for-account-update');
           return cloudPrintInterface.whenCalled('search');
         })
         .then(() => {
@@ -170,7 +171,7 @@ suite('UserManagerTest', function() {
 
           // Simulate signing in to a second account.
           cloudPrintInterface.setPrinter(getGoogleDriveDestination(account2));
-          cr.webUIListenerCallback('check-for-account-update');
+          webUIListenerCallback('check-for-account-update');
           return cloudPrintInterface.whenCalled('search');
         })
         .then(() => {

@@ -352,6 +352,11 @@ void RootCompositorFrameSinkImpl::DidDeleteSharedBitmap(
   support_->DidDeleteSharedBitmap(id);
 }
 
+void RootCompositorFrameSinkImpl::InitializeCompositorFrameSinkType(
+    mojom::CompositorFrameSinkType type) {
+  support_->InitializeCompositorFrameSinkType(type);
+}
+
 RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
     FrameSinkManagerImpl* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
@@ -464,9 +469,10 @@ void RootCompositorFrameSinkImpl::SetPreferredFrameInterval(
 
 base::TimeDelta
 RootCompositorFrameSinkImpl::GetPreferredFrameIntervalForFrameSinkId(
-    const FrameSinkId& id) {
+    const FrameSinkId& id,
+    mojom::CompositorFrameSinkType* type) {
   return support_->frame_sink_manager()
-      ->GetPreferredFrameIntervalForFrameSinkId(id);
+      ->GetPreferredFrameIntervalForFrameSinkId(id, type);
 }
 
 void RootCompositorFrameSinkImpl::DisplayDidDrawAndSwap() {}

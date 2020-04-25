@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/optional.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/media/feeds/media_feeds_contents_observer.h"
+#include "chrome/browser/media/feeds/media_feeds_service.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom-forward.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
@@ -22,16 +27,24 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace media_feeds {
 
 namespace {
 
-const char kMediaFeedsTestURL[] = "/media-feed";
+const char kMediaFeedsTestURL[] = "/test";
+
+constexpr base::FilePath::CharType kMediaFeedsTestFileName[] =
+    FILE_PATH_LITERAL("chrome/test/data/media/feeds/media-feed.json");
 
 const char kMediaFeedsTestHTML[] =
     "  <!DOCTYPE html>"
     "  <head>%s</head>";
+
+const char kMediaFeedsTestHeadHTML[] =
+    "<link rel=feed type=\"application/ld+json\" "
+    "href=\"/media-feed.json\"/>";
 
 struct TestData {
   std::string head_html;
@@ -41,8 +54,7 @@ struct TestData {
 
 }  // namespace
 
-class MediaFeedsBrowserTest : public InProcessBrowserTest,
-                              public ::testing::WithParamInterface<TestData> {
+class MediaFeedsBrowserTest : public InProcessBrowserTest {
  public:
   MediaFeedsBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
@@ -71,6 +83,28 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest,
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
+  std::vector<media_feeds::mojom::MediaFeedPtr> GetDiscoveredFeeds() {
+    base::RunLoop run_loop;
+    std::vector<media_feeds::mojom::MediaFeedPtr> out;
+
+    GetMediaHistoryService()->GetMediaFeeds(
+        media_history::MediaHistoryKeyedService::GetMediaFeedsRequest(),
+        base::BindLambdaForTesting(
+            [&](std::vector<media_feeds::mojom::MediaFeedPtr> feeds) {
+              out = std::move(feeds);
+              run_loop.Quit();
+            }));
+
+    run_loop.Run();
+    return out;
+  }
+
+  void WaitForDB() {
+    base::RunLoop run_loop;
+    GetMediaHistoryService()->PostTaskToDBForTest(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   std::set<GURL> GetDiscoveredFeedURLs() {
     base::RunLoop run_loop;
     std::set<GURL> out;
@@ -86,6 +120,47 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest,
     return out;
   }
 
+  void DiscoverFeed() {
+    EXPECT_TRUE(GetDiscoveredFeedURLs().empty());
+
+    MediaFeedsContentsObserver* contents_observer =
+        static_cast<MediaFeedsContentsObserver*>(
+            MediaFeedsContentsObserver::FromWebContents(GetWebContents()));
+
+    GURL test_url(GetServer()->GetURL(kMediaFeedsTestURL));
+
+    // The contents observer will call this closure when it has checked for a
+    // media feed.
+    base::RunLoop run_loop;
+
+    contents_observer->SetClosureForTest(
+        base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+
+    ui_test_utils::NavigateToURL(browser(), test_url);
+
+    run_loop.Run();
+
+    // Wait until the session has finished saving.
+    WaitForDB();
+  }
+
+  std::vector<media_feeds::mojom::MediaFeedItemPtr> GetItemsForMediaFeedSync(
+      int64_t feed_id) {
+    base::RunLoop run_loop;
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> out;
+
+    GetMediaHistoryService()->GetItemsForMediaFeedForDebug(
+        feed_id,
+        base::BindLambdaForTesting(
+            [&](std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
+              out = std::move(items);
+              run_loop.Quit();
+            }));
+
+    run_loop.Run();
+    return out;
+  }
+
   content::WebContents* GetWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
@@ -95,32 +170,109 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest,
         browser()->profile());
   }
 
-  net::EmbeddedTestServer* GetServer() {
-    return GetParam().https ? &https_server_ : embedded_test_server();
+  media_feeds::MediaFeedsService* GetMediaFeedsService() {
+    return media_feeds::MediaFeedsService::Get(browser()->profile());
   }
 
- private:
-  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
-      const net::test_server::HttpRequest& request) {
-    if (request.relative_url != kMediaFeedsTestURL)
-      return nullptr;
+  virtual net::EmbeddedTestServer* GetServer() { return &https_server_; }
 
-    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-    response->set_content(
-        base::StringPrintf(kMediaFeedsTestHTML, GetParam().head_html.c_str()));
-    return response;
+ private:
+  virtual std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    if (request.relative_url == kMediaFeedsTestURL) {
+      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+      response->set_content(
+          base::StringPrintf(kMediaFeedsTestHTML, kMediaFeedsTestHeadHTML));
+      return response;
+    } else if (base::EndsWith(request.relative_url, "json",
+                              base::CompareCase::SENSITIVE)) {
+      if (full_test_data_.empty())
+        LoadFullTestData();
+      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+      response->set_content(full_test_data_);
+      return response;
+    }
+    return nullptr;
+  }
+
+  void LoadFullTestData() {
+    base::FilePath file;
+    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &file));
+    file = file.Append(kMediaFeedsTestFileName);
+
+    base::ReadFileToString(file, &full_test_data_);
+    ASSERT_TRUE(full_test_data_.size());
   }
 
   net::EmbeddedTestServer https_server_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  std::string full_test_data_;
+};
+
+IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
+  DiscoverFeed();
+
+  // Check we discovered the feed.
+  std::set<GURL> expected_urls = {GetServer()->GetURL("/media-feed.json")};
+  EXPECT_EQ(expected_urls, GetDiscoveredFeedURLs());
+
+  std::vector<media_feeds::mojom::MediaFeedPtr> discovered_feeds =
+      GetDiscoveredFeeds();
+  EXPECT_EQ(1u, discovered_feeds.size());
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->FetchMediaFeed(discovered_feeds[0]->id,
+                                         discovered_feeds[0]->url,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+  WaitForDB();
+
+  auto items = GetItemsForMediaFeedSync(discovered_feeds[0]->id);
+
+  EXPECT_EQ(7u, items.size());
+  std::vector<std::string> names;
+  std::transform(items.begin(), items.end(), std::back_inserter(names),
+                 [](auto& item) { return base::UTF16ToASCII(item->name); });
+  EXPECT_THAT(names, testing::UnorderedElementsAre(
+                         "Anatomy of a Web Media Experience",
+                         "Building Modern Web Media Experiences: "
+                         "Picture-in-Picture and AV1",
+                         "Chrome Releases", "Chrome University", "JAM stack",
+                         "Ask Chrome", "Big Buck Bunny"));
+}
+
+// Parameterized test to check that media feed discovery works with different
+// header HTMLs.
+class MediaFeedsDiscoveryBrowserTest
+    : public MediaFeedsBrowserTest,
+      public ::testing::WithParamInterface<TestData> {
+ public:
+  net::EmbeddedTestServer* GetServer() override {
+    return GetParam().https ? MediaFeedsBrowserTest::GetServer()
+                            : embedded_test_server();
+  }
+
+ private:
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) override {
+    if (request.relative_url == kMediaFeedsTestURL) {
+      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+      response->set_content(base::StringPrintf(kMediaFeedsTestHTML,
+                                               GetParam().head_html.c_str()));
+      return response;
+    }
+    return nullptr;
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(
     All,
-    MediaFeedsBrowserTest,
+    MediaFeedsDiscoveryBrowserTest,
     ::testing::Values(
-        TestData{"<link rel=feed type=\"application/ld+json\" href=\"/test\"/>",
+        TestData{"<link rel=feed type=\"application/ld+json\" "
+                 "href=\"/test\"/>",
                  true},
         TestData{"<link rel=feed type=\"application/ld+json\" href=\"/test\"/>",
                  false, false},
@@ -139,35 +291,14 @@ INSTANTIATE_TEST_SUITE_P(
             "<link rel=other type=\"application/ld+json\" href=\"/test\"/>",
             false}));
 
-IN_PROC_BROWSER_TEST_P(MediaFeedsBrowserTest, Discover) {
-  EXPECT_TRUE(GetDiscoveredFeedURLs().empty());
-
-  MediaFeedsContentsObserver* contents_observer =
-      static_cast<MediaFeedsContentsObserver*>(
-          MediaFeedsContentsObserver::FromWebContents(GetWebContents()));
-
-  GURL test_url(GetServer()->GetURL(kMediaFeedsTestURL));
-
-  // The contents observer will call this closure when it has checked for a
-  // media feed.
-  base::RunLoop run_loop;
-
-  contents_observer->SetClosureForTest(
-      base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
-
-  ui_test_utils::NavigateToURL(browser(), test_url);
-
-  run_loop.Run();
-
-  // Wait until the session has finished saving.
-  content::RunAllTasksUntilIdle();
+IN_PROC_BROWSER_TEST_P(MediaFeedsDiscoveryBrowserTest, Discover) {
+  DiscoverFeed();
 
   // Check we discovered the feed.
   std::set<GURL> expected_urls;
 
   if (GetParam().discovered)
     expected_urls.insert(GetServer()->GetURL("/test"));
-
   EXPECT_EQ(expected_urls, GetDiscoveredFeedURLs());
 }
 

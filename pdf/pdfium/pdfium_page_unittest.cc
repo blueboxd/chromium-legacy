@@ -4,6 +4,9 @@
 
 #include "pdf/pdfium/pdfium_page.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/logging.h"
 #include "base/test/gtest_util.h"
 #include "pdf/pdfium/pdfium_engine.h"
@@ -12,6 +15,7 @@
 #include "pdf/test/test_utils.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/range/range.h"
 
 namespace chrome_pdf {
 
@@ -53,6 +57,16 @@ void CompareTextRuns(
   EXPECT_EQ(expected_style.stroke_color, actual_style.stroke_color);
   EXPECT_EQ(expected_style.is_italic, actual_style.is_italic);
   EXPECT_EQ(expected_style.is_bold, actual_style.is_bold);
+}
+
+template <typename T>
+void PopulateTextObjects(const std::vector<gfx::Range>& ranges,
+                         std::vector<T>* text_objects) {
+  text_objects->resize(ranges.size());
+  for (size_t i = 0; i < ranges.size(); ++i) {
+    (*text_objects)[i].start_char_index = ranges[i].start();
+    (*text_objects)[i].char_count = ranges[i].end() - ranges[i].start();
+  }
 }
 
 }  // namespace
@@ -421,6 +435,37 @@ TEST_F(PDFiumPageTextFieldTest, TestPopulateTextFields) {
                 page->text_fields_[i].bounding_rect);
     EXPECT_EQ(kExpectedTextFields[i].flags, page->text_fields_[i].flags);
   }
+}
+
+using PDFiumPageOverlappingTest = PDFiumTestBase;
+
+// The following scenarios are covered across both test cases:
+// 1. Links overlapping amongst themselves.
+// 2. Highlights overlapping amongst themselves.
+// 3. Links partially and completely overlapping with highlights.
+// 4. Adjacent annotations.
+TEST_F(PDFiumPageOverlappingTest, CountPartialOverlaps) {
+  static const std::vector<gfx::Range> kLinkRanges = {
+      {0, 10}, {13, 25}, {37, 52}, {71, 84}, {93, 113}};
+  static const std::vector<gfx::Range> kHighlightRanges = {
+      {4, 13}, {8, 15}, {14, 22}, {37, 73}, {49, 95}, {80, 101}};
+  std::vector<PDFiumPage::Link> links;
+  std::vector<PDFiumPage::Highlight> highlights;
+  PopulateTextObjects(kLinkRanges, &links);
+  PopulateTextObjects(kHighlightRanges, &highlights);
+  ASSERT_EQ(15u, PDFiumPage::CountLinkHighlightOverlaps(links, highlights));
+}
+
+TEST_F(PDFiumPageOverlappingTest, CountCompleteOverlaps) {
+  static const std::vector<gfx::Range> kLinkRanges = {
+      {0, 15}, {25, 40}, {30, 50}, {50, 67}, {61, 72}, {67, 81}};
+  static const std::vector<gfx::Range> kHighlightRanges = {
+      {6, 25}, {25, 40}, {30, 50}, {50, 83}};
+  std::vector<PDFiumPage::Link> links;
+  std::vector<PDFiumPage::Highlight> highlights;
+  PopulateTextObjects(kLinkRanges, &links);
+  PopulateTextObjects(kHighlightRanges, &highlights);
+  ASSERT_EQ(12u, PDFiumPage::CountLinkHighlightOverlaps(links, highlights));
 }
 
 }  // namespace chrome_pdf

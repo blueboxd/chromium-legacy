@@ -292,18 +292,18 @@
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_LANGUAGES_PAGE_ADD_LANGUAGES_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/languages_page/add_languages_dialog.m.js"
+  <include name="IDR_SETTINGS_LANGUAGES_PAGE_ADD_LANGUAGES_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/languages_page/add_languages_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_LANGUAGES_PAGE_LANGUAGES_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/languages_page/languages_page.m.js"
+  <include name="IDR_SETTINGS_LANGUAGES_PAGE_LANGUAGES_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/languages_page/languages_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
   <if expr="not is_macosx">
-    <include name="IDR_SETTINGS_LANGUAGES_PAGE_EDIT_DICTIONARY_PAGE_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/languages_page/edit_dictionary_page.m.js"
+    <include name="IDR_SETTINGS_LANGUAGES_PAGE_EDIT_DICTIONARY_PAGE_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/languages_page/edit_dictionary_page.js"
              use_base_dir="false"
              compress="false" type="BINDATA" />
   </if>
@@ -649,124 +649,117 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/site_favicon.m.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_ADD_SITE_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/add_site_dialog.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_ADD_SITE_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/add_site_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_ALL_SITES_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/all_sites.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_ALL_SITES_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/all_sites.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_ALL_SITES_ICONS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/all_sites_icons.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_ALL_SITES_ICONS_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/all_sites_icons.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <if expr="chromeos">
-    <include name="IDR_SETTINGS_SITE_SETTINGS_ANDROID_INFO_BROWSER_PROXY_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/android_info_browser_proxy.m.js"
-             use_base_dir="false"
+    <include name="IDR_SETTINGS_SITE_SETTINGS_ANDROID_INFO_BROWSER_PROXY_JS"
+             file="site_settings/android_info_browser_proxy.js"
              compress="false" type="BINDATA" />
   </if>
-  <include name="IDR_SETTINGS_SITE_SETTINGS_CATEGORY_DEFAULT_SETTING_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/category_default_setting.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_CATEGORY_DEFAULT_SETTING_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/category_default_setting.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_CATEGORY_SETTING_EXCEPTIONS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/category_setting_exceptions.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_CATEGORY_SETTING_EXCEPTIONS_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/category_setting_exceptions.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_CHOOSER_EXCEPTION_LIST_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/chooser_exception_list.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_CHOOSER_EXCEPTION_LIST_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/chooser_exception_list.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_CHOOSER_EXCEPTION_LIST_ENTRY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/chooser_exception_list_entry.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_CHOOSER_EXCEPTION_LIST_ENTRY_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/chooser_exception_list_entry.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_CLEAR_STORAGE_DIALOG_CSS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/clear_storage_dialog_css.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_CLEAR_STORAGE_DIALOG_CSS_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/clear_storage_dialog_css.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_CONSTANTS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/constants.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_CONSTANTS_JS"
+           file="site_settings/constants.js"
+           compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_SITE_SETTINGS_COOKIE_INFO_JS"
+           file="site_settings/cookie_info.js"
+           compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_SITE_SETTINGS_EDIT_EXCEPTION_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/edit_exception_dialog.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_COOKIE_INFO_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/cookie_info.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_LOCAL_DATA_BROWSER_PROXY_JS"
+           file="site_settings/local_data_browser_proxy.js"
+           compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_SITE_SETTINGS_MEDIA_PICKER_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/media_picker.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_EDIT_EXCEPTION_DIALOG_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/edit_exception_dialog.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_PDF_DOCUMENTS_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/pdf_documents.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_LOCAL_DATA_BROWSER_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/local_data_browser_proxy.m.js"
-           use_base_dir="false"
-           compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_MEDIA_PICKER_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/media_picker.m.js"
-           use_base_dir="false"
-           compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_PDF_DOCUMENTS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/pdf_documents.m.js"
-           use_base_dir="false"
-           compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_PROTOCOL_HANDLERS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/protocol_handlers.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_PROTOCOL_HANDLERS_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/protocol_handlers.js"
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DATA_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_data.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DATA_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_data.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DATA_DETAILS_SUBPAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_data_details_subpage.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DATA_DETAILS_SUBPAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_data_details_subpage.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DATA_ENTRY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_data_entry.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DATA_ENTRY_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_data_entry.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DETAILS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_details.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DETAILS_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_details.js"
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DETAILS_PERMISSION_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_details_permission.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_DETAILS_PERMISSION_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_details_permission.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_ENTRY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_entry.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_ENTRY_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_entry.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_LIST_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_list.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_LIST_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_list.js"
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_LIST_ENTRY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_list_entry.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_LIST_ENTRY_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_list_entry.js"
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_SETTINGS_BEHAVIOR_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_settings_behavior.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_SETTINGS_BEHAVIOR_JS"
+           file="site_settings/site_settings_behavior.js"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_SETTINGS_PREFS_BROWSER_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/site_settings_prefs_browser_proxy.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_SITE_SETTINGS_PREFS_BROWSER_PROXY_JS"
+           file="site_settings/site_settings_prefs_browser_proxy.js"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_WEBSITE_USAGE_BROWSER_PROXY_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/website_usage_browser_proxy.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_WEBSITE_USAGE_BROWSER_PROXY_JS"
+           file="site_settings/website_usage_browser_proxy.js"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SITE_SETTINGS_ZOOM_LEVELS_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/zoom_levels.m.js"
+  <include name="IDR_SETTINGS_SITE_SETTINGS_ZOOM_LEVELS_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/site_settings/zoom_levels.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_SITE_SETTINGS_PAGE_RECENT_SITE_PERMISSIONS_JS"

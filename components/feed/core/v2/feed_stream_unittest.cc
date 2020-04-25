@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -127,6 +128,7 @@ class TestSurface : public FeedStream::SurfaceInterface {
 
   // FeedStream::SurfaceInterface.
   void StreamUpdate(const feedui::StreamUpdate& stream_update) override {
+    DVLOG(1) << "StreamUpdate: " << stream_update;
     // Some special-case treatment for the loading spinner. We don't count it
     // toward |initial_state|.
     bool is_initial_loading_spinner = IsInitialLoadSpinnerUpdate(stream_update);
@@ -168,14 +170,26 @@ class TestSurface : public FeedStream::SurfaceInterface {
     if (!initial_state)
       return "empty";
 
-    if (update->updated_slices().size() == 1 &&
-        update->updated_slices()[0].has_slice() &&
-        update->updated_slices()[0].slice().has_zero_state_slice()) {
-      // Returns either "no-cards" or "cant-refresh".
-      return update->updated_slices()[0].slice().slice_id();
+    bool has_loading_spinner = false;
+    for (int i = 0; i < update->updated_slices().size(); ++i) {
+      const feedui::StreamUpdate_SliceUpdate& slice_update =
+          update->updated_slices(i);
+      if (slice_update.has_slice() &&
+          slice_update.slice().has_zero_state_slice()) {
+        CHECK(update->updated_slices().size() == 1)
+            << "Zero state with other slices" << *update;
+        // Returns either "no-cards" or "cant-refresh".
+        return update->updated_slices()[0].slice().slice_id();
+      }
+      if (slice_update.has_slice() &&
+          slice_update.slice().has_loading_spinner_slice()) {
+        CHECK_EQ(i, update->updated_slices().size() - 1)
+            << "Loading spinner in an unexpected place" << *update;
+        has_loading_spinner = true;
+      }
     }
     std::stringstream ss;
-    if (HasLoadMoreSpinner(*update)) {
+    if (has_loading_spinner) {
       ss << update->updated_slices().size() - 1 << " slices +spinner";
     } else {
       ss << update->updated_slices().size() << " slices";
@@ -187,15 +201,6 @@ class TestSurface : public FeedStream::SurfaceInterface {
     return update.updated_slices().size() == 1 &&
            update.updated_slices()[0].has_slice() &&
            update.updated_slices()[0].slice().has_loading_spinner_slice();
-  }
-
-  bool HasLoadMoreSpinner(const feedui::StreamUpdate& update) {
-    int slice_count = update.updated_slices().size();
-    return slice_count > 1 &&
-           update.updated_slices()[slice_count - 1].has_slice() &&
-           update.updated_slices()[slice_count - 1]
-               .slice()
-               .has_loading_spinner_slice();
   }
 
   // The stream if it was attached using the constructor.
@@ -633,6 +638,20 @@ TEST_F(FeedStreamTest, SurfaceReceivesSecondUpdatedContent) {
                        .xsurface_frame());
 }
 
+TEST_F(FeedStreamTest, RemoveAllContentResultsInZeroState) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Remove both pieces of content.
+  stream_->ExecuteOperations({
+      MakeOperation(MakeRemove(MakeClusterId(0))),
+      MakeOperation(MakeRemove(MakeClusterId(1))),
+  });
+
+  ASSERT_EQ("loading -> 2 slices -> no-cards", surface.DescribeUpdates());
+}
+
 TEST_F(FeedStreamTest, DetachSurface) {
   {
     auto model = std::make_unique<StreamModel>();
@@ -667,6 +686,22 @@ TEST_F(FeedStreamTest, LoadFromNetwork) {
   // Verify the data was written to the store.
   EXPECT_STRINGS_EQUAL(ModelStateFor(store_.get()),
                        ModelStateFor(MakeTypicalInitialModelState()));
+}
+
+TEST_F(FeedStreamTest, ForceRefreshForDebugging) {
+  // First do a normal load via network that will fail.
+  is_offline_ = true;
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // Next, force a refresh that results in a successful load.
+  is_offline_ = false;
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  stream_->ForceRefreshForDebugging();
+
+  WaitForIdleTaskQueue();
+  EXPECT_EQ("loading -> cant-refresh -> loading -> 2 slices",
+            surface.DescribeUpdates());
 }
 
 TEST_F(FeedStreamTest, LoadFromNetworkBecauseStoreIsStale) {

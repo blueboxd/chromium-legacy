@@ -427,6 +427,17 @@ TEST_F(DialogTest, UnfocusableInitialFocus) {
   dialog_widget->CloseNow();
 }
 
+TEST_F(DialogTest, ButtonEnableUpdatesState) {
+  test::WidgetTest::WidgetAutoclosePtr widget(
+      CreateDialogWidget(new DialogDelegateView));
+  auto* dialog = static_cast<DialogDelegateView*>(widget->widget_delegate());
+
+  EXPECT_TRUE(dialog->GetOkButton()->GetEnabled());
+  dialog->SetButtonEnabled(ui::DIALOG_BUTTON_OK, false);
+  dialog->DialogModelChanged();
+  EXPECT_FALSE(dialog->GetOkButton()->GetEnabled());
+}
+
 using DialogDelegateCloseTest = ViewsTestBase;
 
 TEST_F(DialogDelegateCloseTest, AnyCallbackInhibitsDefaultClose) {

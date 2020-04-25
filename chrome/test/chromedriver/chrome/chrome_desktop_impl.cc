@@ -189,7 +189,7 @@ Status ChromeDesktopImpl::GetAutomationExtension(
     while (base::TimeTicks::Now() < deadline) {
       std::unique_ptr<base::Value> result;
       status = web_view->EvaluateScript(
-          std::string(), "typeof launchApp === 'function'", &result);
+          std::string(), "typeof launchApp === 'function'", false, &result);
       if (status.IsError())
         return Status(kUnknownError, "cannot get automation extension", status);
       if (result->is_bool() && result->GetBool())

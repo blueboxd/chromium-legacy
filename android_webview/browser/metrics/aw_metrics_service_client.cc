@@ -7,12 +7,9 @@
 #include <jni.h>
 #include <cstdint>
 
-#include "android_webview/browser/lifecycle/aw_contents_lifecycle_notifier.h"
 #include "android_webview/browser/metrics/aw_stability_metrics_provider.h"
 #include "android_webview/browser_jni_headers/AwMetricsServiceClient_jni.h"
-#include "android_webview/common/aw_features.h"
 #include "base/android/jni_android.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -45,16 +42,32 @@ const int kBetaDevCanarySampledInRatePerMille = 990;
 // consulting with the privacy team.
 const int kPackageNameLimitRatePerMille = 100;
 
+AwMetricsServiceClient* g_aw_metrics_service_client = nullptr;
+
 }  // namespace
+
+AwMetricsServiceClient::Delegate::Delegate() = default;
+AwMetricsServiceClient::Delegate::~Delegate() = default;
 
 // static
 AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
-  static base::NoDestructor<AwMetricsServiceClient> client;
-  client->EnsureOnValidSequence();
-  return client.get();
+  DCHECK(g_aw_metrics_service_client);
+  g_aw_metrics_service_client->EnsureOnValidSequence();
+  return g_aw_metrics_service_client;
 }
 
-AwMetricsServiceClient::AwMetricsServiceClient() = default;
+void AwMetricsServiceClient::SetInstance(
+    std::unique_ptr<AwMetricsServiceClient> aw_metrics_service_client) {
+  DCHECK(!g_aw_metrics_service_client);
+  DCHECK(aw_metrics_service_client);
+  g_aw_metrics_service_client = aw_metrics_service_client.release();
+  g_aw_metrics_service_client->EnsureOnValidSequence();
+}
+
+AwMetricsServiceClient::AwMetricsServiceClient(
+    std::unique_ptr<Delegate> delegate)
+    : delegate_(std::move(delegate)) {}
+
 AwMetricsServiceClient::~AwMetricsServiceClient() = default;
 
 int32_t AwMetricsServiceClient::GetProduct() {
@@ -73,15 +86,11 @@ int AwMetricsServiceClient::GetSampleRatePerMille() {
 }
 
 void AwMetricsServiceClient::OnMetricsStart() {
-  AwContentsLifecycleNotifier::GetInstance().AddObserver(this);
+  delegate_->AddWebViewAppStateObserver(this);
 }
 
 int AwMetricsServiceClient::GetPackageNameLimitRatePerMille() {
   return kPackageNameLimitRatePerMille;
-}
-
-bool AwMetricsServiceClient::ShouldWakeMetricsService() {
-  return base::FeatureList::IsEnabled(features::kWebViewWakeMetricsService);
 }
 
 void AwMetricsServiceClient::OnAppStateChanged(
@@ -93,8 +102,7 @@ void AwMetricsServiceClient::OnAppStateChanged(
   // - consolidates the other states other than kForeground into background.
   // - avoids the duplicated notification.
   if (state == WebViewAppStateObserver::State::kDestroyed &&
-      !AwContentsLifecycleNotifier::GetInstance()
-           .has_aw_contents_ever_created()) {
+      !delegate_->HasAwContentsEverCreated()) {
     return;
   }
 
@@ -116,11 +124,10 @@ void AwMetricsServiceClient::OnAppStateChanged(
 
 void AwMetricsServiceClient::RegisterAdditionalMetricsProviders(
     metrics::MetricsService* service) {
-  if (base::FeatureList::IsEnabled(features::kWebViewWakeMetricsService)) {
-    service->RegisterMetricsProvider(
-        std::make_unique<android_webview::AwStabilityMetricsProvider>(
-            pref_service()));
-  }
+  service->RegisterMetricsProvider(
+      std::make_unique<android_webview::AwStabilityMetricsProvider>(
+          pref_service()));
+  delegate_->RegisterAdditionalMetricsProviders(service);
 }
 
 // static

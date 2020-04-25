@@ -122,10 +122,6 @@ class TabStripLayoutHelper {
   // |first_non_pinned_tab_x_|.
   void UpdateIdealBoundsForPinnedTabs();
 
-  // Lays out tabs and group headers to their current bounds. Returns the
-  // x-coordinate of the trailing edge of the trailing-most tab.
-  int LayoutTabs(base::Optional<int> available_width);
-
  private:
   struct TabSlot;
 

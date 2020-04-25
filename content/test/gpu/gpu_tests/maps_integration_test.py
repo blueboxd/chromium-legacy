@@ -20,7 +20,7 @@ _MAPS_PERF_TEST_PATH = os.path.join(
 _DATA_PATH = os.path.join(path_util.GetChromiumSrcDir(),
                          'content', 'test', 'gpu', 'gpu_tests')
 
-_TOLERANCE = 3
+_TOLERANCE = 6
 
 class MapsIntegrationTest(
     skia_gold_integration_test_base.SkiaGoldIntegrationTestBase):

@@ -7,9 +7,10 @@
  */
 
 // clang-format off
-// #import {ContentSetting,ContentSettingsTypes} from './constants.m.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {RawSiteException,SiteException,SiteSettingsPrefsBrowserProxy,SiteSettingsPrefsBrowserProxyImpl} from './site_settings_prefs_browser_proxy.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
+import {ContentSetting,ContentSettingsTypes} from './constants.js';
+import {RawSiteException,SiteException,SiteSettingsPrefsBrowserProxy,SiteSettingsPrefsBrowserProxyImpl} from './site_settings_prefs_browser_proxy.js';
 // clang-format on
 
 /**
@@ -18,7 +19,7 @@
  * TODO(dschuyler): Can they be unified (and this dictionary removed)?
  * @type {!Object}
  */
-/* #export */ const kControlledByLookup = {
+export const kControlledByLookup = {
   'extension': chrome.settingsPrivate.ControlledBy.EXTENSION,
   'HostedApp': chrome.settingsPrivate.ControlledBy.EXTENSION,
   'platform_app': chrome.settingsPrivate.ControlledBy.EXTENSION,
@@ -32,7 +33,7 @@ const SiteSettingsBehaviorImpl = {
     /**
      * The string ID of the category this element is displaying data for.
      * See site_settings/constants.js for possible values.
-     * @type {!settings.ContentSettingsTypes}
+     * @type {!ContentSettingsTypes}
      */
     category: String,
 
@@ -40,7 +41,7 @@ const SiteSettingsBehaviorImpl = {
      * A cached list of ContentSettingsTypes with a standard allow-block-ask
      * pattern that are currently enabled for use. This property is the same
      * across all elements with SiteSettingsBehavior ('static').
-     * @type {Array<settings.ContentSettingsTypes>}
+     * @type {Array<ContentSettingsTypes>}
      * @private
      */
     contentTypes_: {
@@ -51,20 +52,19 @@ const SiteSettingsBehaviorImpl = {
     /**
      * The browser proxy used to retrieve and change information about site
      * settings categories and the sites within.
-     * @type {settings.SiteSettingsPrefsBrowserProxy}
+     * @type {SiteSettingsPrefsBrowserProxy}
      */
     browserProxy: Object,
   },
 
   /** @override */
   created() {
-    this.browserProxy =
-        settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+    this.browserProxy = SiteSettingsPrefsBrowserProxyImpl.getInstance();
   },
 
   /** @override */
   ready() {
-    this.ContentSetting = settings.ContentSetting;
+    this.ContentSetting = ContentSetting;
   },
 
   /**
@@ -103,7 +103,7 @@ const SiteSettingsBehaviorImpl = {
    * @protected
    */
   computeIsSettingEnabled(setting) {
-    return setting != settings.ContentSetting.BLOCK;
+    return setting != ContentSetting.BLOCK;
   },
 
   /**
@@ -153,7 +153,7 @@ const SiteSettingsBehaviorImpl = {
     const embeddingOrigin = exception.embeddingOrigin;
 
     // TODO(patricialor): |exception.source| should be one of the values defined
-    // in |settings.SiteSettingSource|.
+    // in |SiteSettingSource|.
     let enforcement = /** @type {?chrome.settingsPrivate.Enforcement} */ (null);
     if (exception.source == 'extension' || exception.source == 'HostedApp' ||
         exception.source == 'platform_app' || exception.source == 'policy') {
@@ -179,21 +179,21 @@ const SiteSettingsBehaviorImpl = {
   /**
    * Returns list of categories for each setting.ContentSettingsTypes that are
    * currently enabled.
-   * @return {!Array<!settings.ContentSettingsTypes>}
+   * @return {!Array<!ContentSettingsTypes>}
    */
   getCategoryList() {
     if (this.contentTypes_.length == 0) {
-      for (const typeName in settings.ContentSettingsTypes) {
-        const contentType = settings.ContentSettingsTypes[typeName];
+      for (const typeName in ContentSettingsTypes) {
+        const contentType = ContentSettingsTypes[typeName];
         // <if expr="not chromeos">
-        if (contentType == settings.ContentSettingsTypes.PROTECTED_CONTENT) {
+        if (contentType == ContentSettingsTypes.PROTECTED_CONTENT) {
           continue;
         }
         // </if>
         // Some categories store their data in a custom way.
-        if (contentType == settings.ContentSettingsTypes.COOKIES ||
-            contentType == settings.ContentSettingsTypes.PROTOCOL_HANDLERS ||
-            contentType == settings.ContentSettingsTypes.ZOOM_LEVELS) {
+        if (contentType == ContentSettingsTypes.COOKIES ||
+            contentType == ContentSettingsTypes.PROTOCOL_HANDLERS ||
+            contentType == ContentSettingsTypes.ZOOM_LEVELS) {
           continue;
         }
         this.contentTypes_.push(contentType);
@@ -213,29 +213,28 @@ const SiteSettingsBehaviorImpl = {
     };
     // These categories are gated behind flags.
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
+        ContentSettingsTypes.BLUETOOTH_SCANNING,
         'enableExperimentalWebPlatformFeatures');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.ADS,
-        'enableSafeBrowsingSubresourceFilter');
+        ContentSettingsTypes.ADS, 'enableSafeBrowsingSubresourceFilter');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.PAYMENT_HANDLER,
+        ContentSettingsTypes.PAYMENT_HANDLER,
         'enablePaymentHandlerContentSetting');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
+        ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
         'enableNativeFileSystemWriteContentSetting');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.MIXEDSCRIPT,
+        ContentSettingsTypes.MIXEDSCRIPT,
         'enableInsecureContentContentSetting');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.HID_DEVICES,
+        ContentSettingsTypes.HID_DEVICES,
         'enableExperimentalWebPlatformFeatures');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.AR, 'enableWebXrContentSetting');
+        ContentSettingsTypes.AR, 'enableWebXrContentSetting');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.VR, 'enableWebXrContentSetting');
+        ContentSettingsTypes.VR, 'enableWebXrContentSetting');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.BLUETOOTH_DEVICES,
+        ContentSettingsTypes.BLUETOOTH_DEVICES,
         'enableWebBluetoothNewPermissionsBackend');
     return this.contentTypes_.slice(0);
   },
@@ -243,4 +242,4 @@ const SiteSettingsBehaviorImpl = {
 };
 
 /** @polymerBehavior */
-/* #export */ const SiteSettingsBehavior = [SiteSettingsBehaviorImpl];
+export const SiteSettingsBehavior = [SiteSettingsBehaviorImpl];

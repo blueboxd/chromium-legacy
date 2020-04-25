@@ -823,19 +823,15 @@ void AssistantManagerServiceImpl::OnVerifyAndroidApp(
     const action::InteractionInfo& interaction) {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnVerifyAndroidApp,
                      apps_info, interaction);
-  std::vector<mojom::AndroidAppInfoPtr> apps_info_list;
+  std::vector<action::AndroidAppInfo> action_apps_info;
   for (auto& app_info : apps_info) {
     mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
     app_info_ptr->package_name = app_info.package_name;
-    apps_info_list.push_back(std::move(app_info_ptr));
-  }
-  device_actions()->VerifyAndroidApp(&apps_info_list);
-
-  std::vector<action::AndroidAppInfo> action_apps_info;
-  for (const auto& app_info : apps_info_list) {
-    action_apps_info.push_back({app_info->package_name, app_info->version,
-                                app_info->localized_app_name, app_info->intent,
-                                GetActionAppStatus(app_info->status)});
+    mojom::AppStatus status =
+        device_actions()->GetAndroidAppStatus(*app_info_ptr);
+    action_apps_info.push_back({app_info.package_name, app_info.version,
+                                app_info.localized_app_name, app_info.intent,
+                                GetActionAppStatus(status)});
   }
   std::string interaction_proto = CreateVerifyProviderResponseInteraction(
       interaction.interaction_id, action_apps_info);

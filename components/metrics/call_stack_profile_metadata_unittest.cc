@@ -20,7 +20,7 @@ namespace {
 // |metadata_index|. Because of the "edge-triggered" metadata encoding, this
 // expectation will be valid for the first sample seeing the item only.
 void ExpectMetadataApplied(
-    const base::ProfileBuilder::MetadataItem& expected_item,
+    const base::MetadataRecorder::Item& expected_item,
     const google::protobuf::RepeatedPtrField<CallStackProfile::StackSample>&
         samples,
     int sample_index,
@@ -50,7 +50,7 @@ void ExpectMetadataApplied(
 // "edge-triggered" metadata encoding, this expectation will be valid for the
 // sample following the last sample with the item only.
 void ExpectMetadataUnapplied(
-    const base::ProfileBuilder::MetadataItem& expected_item,
+    const base::MetadataRecorder::Item& expected_item,
     const google::protobuf::RepeatedPtrField<CallStackProfile::StackSample>&
         samples,
     int sample_index,
@@ -363,7 +363,7 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_Basic) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item(3, 30, 300);
+  const base::MetadataRecorder::Item item(3, 30, 300);
   metadata.ApplyMetadata(item, stack_samples.begin() + 1,
                          stack_samples.begin() + 4, &stack_samples,
                          &name_hashes);
@@ -396,8 +396,8 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_DifferentNameHashes) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item1(3, 30, 300);
-  const base::ProfileBuilder::MetadataItem item2(4, 30, 300);
+  const base::MetadataRecorder::Item item1(3, 30, 300);
+  const base::MetadataRecorder::Item item2(4, 30, 300);
   metadata.ApplyMetadata(item1, stack_samples.begin() + 1,
                          stack_samples.begin() + 4, &stack_samples,
                          &name_hashes);
@@ -433,9 +433,9 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_DifferentKeys) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item1(3, 30, 300);
-  const base::ProfileBuilder::MetadataItem item2(3, 40, 300);
-  const base::ProfileBuilder::MetadataItem item3(3, base::nullopt, 300);
+  const base::MetadataRecorder::Item item1(3, 30, 300);
+  const base::MetadataRecorder::Item item2(3, 40, 300);
+  const base::MetadataRecorder::Item item3(3, base::nullopt, 300);
   metadata.ApplyMetadata(item1, stack_samples.begin() + 1,
                          stack_samples.begin() + 4, &stack_samples,
                          &name_hashes);
@@ -475,7 +475,7 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_EmptyRange) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item(3, 30, 300);
+  const base::MetadataRecorder::Item item(3, 30, 300);
   metadata.ApplyMetadata(item, stack_samples.begin() + 1,
                          stack_samples.begin() + 1, &stack_samples,
                          &name_hashes);
@@ -497,7 +497,7 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_ThroughEnd) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item(3, 30, 300);
+  const base::MetadataRecorder::Item item(3, 30, 300);
   metadata.ApplyMetadata(item, stack_samples.begin() + 1, stack_samples.end(),
                          &stack_samples, &name_hashes);
 
@@ -532,8 +532,8 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_WithRecordMetadata) {
       stack_samples;
   google::protobuf::RepeatedField<uint64_t> name_hashes;
 
-  const base::ProfileBuilder::MetadataItem item1(3, 30, 300);
-  const base::ProfileBuilder::MetadataItem item2(5, 50, 500);
+  const base::MetadataRecorder::Item item1(3, 30, 300);
+  const base::MetadataRecorder::Item item2(5, 50, 500);
 
   stack_samples.Add();
 
@@ -592,8 +592,8 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_WithActiveMetadata) {
       stack_samples;
   google::protobuf::RepeatedField<uint64_t> name_hashes;
 
-  const base::ProfileBuilder::MetadataItem item1(3, 30, 300);
-  const base::ProfileBuilder::MetadataItem item2(3, 30, 400);
+  const base::MetadataRecorder::Item item1(3, 30, 300);
+  const base::MetadataRecorder::Item item2(3, 30, 400);
 
   metadata.RecordMetadata(metadata_recorder.CreateMetadataProvider().get());
   *stack_samples.Add()->mutable_metadata() =
@@ -643,7 +643,7 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_IndependentRanges) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item(3, 30, 300);
+  const base::MetadataRecorder::Item item(3, 30, 300);
 
   // Apply metadata over two non-overlapping ranges.
   metadata.ApplyMetadata(item, stack_samples.begin(), stack_samples.begin() + 2,
@@ -682,7 +682,7 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_BackToBackRanges) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item(3, 30, 300);
+  const base::MetadataRecorder::Item item(3, 30, 300);
 
   // Apply metadata over two ranges where the second starts on the same sample
   // that the first ends. This should result in one range covering both.
@@ -719,8 +719,8 @@ TEST(CallStackProfileMetadataTest,
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item1(3, 30, 300);
-  const base::ProfileBuilder::MetadataItem item2(3, 30, 400);
+  const base::MetadataRecorder::Item item1(3, 30, 300);
+  const base::MetadataRecorder::Item item2(3, 30, 400);
 
   metadata.ApplyMetadata(item1, stack_samples.begin(),
                          stack_samples.begin() + 2, &stack_samples,
@@ -759,7 +759,7 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_UpdateWithinExistingRange) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item(3, 30, 300);
+  const base::MetadataRecorder::Item item(3, 30, 300);
 
   metadata.ApplyMetadata(item, stack_samples.begin(), stack_samples.begin() + 4,
                          &stack_samples, &name_hashes);
@@ -795,8 +795,8 @@ TEST(CallStackProfileMetadataTest,
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item1(3, 30, 300);
-  const base::ProfileBuilder::MetadataItem item2(3, 30, 400);
+  const base::MetadataRecorder::Item item1(3, 30, 300);
+  const base::MetadataRecorder::Item item2(3, 30, 400);
 
   // Apply metadata over a range, then over a range fully enclosed within the
   // first one.
@@ -838,7 +838,7 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_UpdateEnclosesExistingRange) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item(3, 30, 300);
+  const base::MetadataRecorder::Item item(3, 30, 300);
 
   // Apply metadata over a range, then over a range that fully encloses the
   // first one.
@@ -876,8 +876,8 @@ TEST(CallStackProfileMetadataTest,
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item1(3, 30, 300);
-  const base::ProfileBuilder::MetadataItem item2(3, 30, 400);
+  const base::MetadataRecorder::Item item1(3, 30, 300);
+  const base::MetadataRecorder::Item item2(3, 30, 400);
 
   // Apply metadata over a range, then over a range that fully encloses the
   // first one.
@@ -915,7 +915,7 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_UpdateOverlapsBegin) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item(3, 30, 300);
+  const base::MetadataRecorder::Item item(3, 30, 300);
 
   // Apply metadata over a range, then over a range that overlaps the beginning
   // (but not the end) of first one.
@@ -954,8 +954,8 @@ TEST(CallStackProfileMetadataTest,
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item1(3, 30, 300);
-  const base::ProfileBuilder::MetadataItem item2(3, 30, 400);
+  const base::MetadataRecorder::Item item1(3, 30, 300);
+  const base::MetadataRecorder::Item item2(3, 30, 400);
 
   // Apply metadata over a range, then over a range that overlaps the beginning
   // (but not the end) of first one.
@@ -995,7 +995,7 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_UpdateOverlapsEnd) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item(3, 30, 300);
+  const base::MetadataRecorder::Item item(3, 30, 300);
 
   // Apply metadata over a range, then over a range that overlaps the beginning
   // (but not the end) of first one.
@@ -1033,8 +1033,8 @@ TEST(CallStackProfileMetadataTest,
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item1(3, 30, 300);
-  const base::ProfileBuilder::MetadataItem item2(3, 30, 400);
+  const base::MetadataRecorder::Item item1(3, 30, 300);
+  const base::MetadataRecorder::Item item2(3, 30, 400);
 
   // Apply metadata over a range, then over a range that overlaps the beginning
   // (but not the end) of first one.
@@ -1073,7 +1073,7 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_Update) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item(3, 30, 300);
+  const base::MetadataRecorder::Item item(3, 30, 300);
 
   // Apply metadata over the same range with one value, then a different value.
   metadata.ApplyMetadata(item, stack_samples.begin() + 1,
@@ -1110,8 +1110,8 @@ TEST(CallStackProfileMetadataTest, ApplyMetadata_UpdateWithDifferentValues) {
   for (int i = 0; i < 5; i++)
     stack_samples.Add();
 
-  const base::ProfileBuilder::MetadataItem item1(3, 30, 300);
-  const base::ProfileBuilder::MetadataItem item2(3, 30, 400);
+  const base::MetadataRecorder::Item item1(3, 30, 300);
+  const base::MetadataRecorder::Item item2(3, 30, 400);
 
   // Apply metadata over the same range with one value, then a different value.
   metadata.ApplyMetadata(item1, stack_samples.begin() + 1,

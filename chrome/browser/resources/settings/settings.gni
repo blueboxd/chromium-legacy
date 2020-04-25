@@ -135,7 +135,6 @@ settings_auto_imports = [
   "chrome/browser/resources/settings/prefs/prefs_behavior.html|PrefsBehavior",
   "chrome/browser/resources/settings/prefs/prefs_types.html|CrSettingsPrefs",
   "chrome/browser/resources/settings/printing_page/printing_browser_proxy.html|PrintingBrowserProxyImpl",
-  "chrome/browser/resources/settings/site_settings/site_settings_behavior.html|SiteSettingsBehavior",
 ]
 
 settings_closure_flags =

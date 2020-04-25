@@ -957,11 +957,16 @@ class LocalDeviceInstrumentationTestRun(
         gold_session = self._skia_gold_session_manager.GetSkiaGoldSession(
             keys_file=json_path)
 
-        status, error = gold_session.RunComparison(
-            name=render_name,
-            png_file=image_path,
-            output_manager=self._env.output_manager,
-            use_luci=use_luci)
+        try:
+          status, error = gold_session.RunComparison(
+              name=render_name,
+              png_file=image_path,
+              output_manager=self._env.output_manager,
+              use_luci=use_luci)
+        except Exception as e:  # pylint: disable=broad-except
+          _FailTestIfNecessary(results)
+          _AppendToLog(results, 'Skia Gold comparison raised exception: %s' % e)
+          continue
 
         if not status:
           continue

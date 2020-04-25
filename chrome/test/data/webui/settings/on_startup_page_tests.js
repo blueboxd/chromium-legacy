@@ -6,6 +6,7 @@
 import {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /** @implements {OnStartupBrowserProxy} */
@@ -29,7 +30,7 @@ class TestOnStartupBrowserProxy extends TestBrowserProxy {
    */
   setNtpExtension(ntpExtension) {
     this.ntpExtension_ = ntpExtension;
-    cr.webUIListenerCallback('update-ntp-extension', ntpExtension);
+    webUIListenerCallback('update-ntp-extension', ntpExtension);
   }
 }
 

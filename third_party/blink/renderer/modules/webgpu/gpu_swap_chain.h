@@ -16,7 +16,6 @@ namespace blink {
 
 class GPUCanvasContext;
 class GPUDevice;
-class GPUSwapChainDescriptor;
 class GPUTexture;
 
 class GPUSwapChain : public ScriptWrappable,
@@ -25,9 +24,11 @@ class GPUSwapChain : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit GPUSwapChain(GPUCanvasContext* context,
-                        const GPUSwapChainDescriptor* descriptor,
-                        SkFilterQuality filter_quality);
+  explicit GPUSwapChain(GPUCanvasContext*,
+                        GPUDevice*,
+                        WGPUTextureUsage,
+                        WGPUTextureFormat,
+                        SkFilterQuality);
   ~GPUSwapChain() override;
 
   void Trace(Visitor* visitor) override;

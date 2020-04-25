@@ -5,7 +5,7 @@
 // clang-format off
 import 'chrome://settings/settings.js';
 import {DownloadsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
@@ -70,7 +70,7 @@ suite('DownloadsHandler', function() {
     let button = downloadsPage.$$('#resetAutoOpenFileTypes');
     assertTrue(!button);
 
-    cr.webUIListenerCallback('auto-open-downloads-changed', true);
+    webUIListenerCallback('auto-open-downloads-changed', true);
     flush();
     button = downloadsPage.$$('#resetAutoOpenFileTypes');
     assertTrue(!!button);
@@ -78,7 +78,7 @@ suite('DownloadsHandler', function() {
     button.click();
     return downloadsBrowserProxy.whenCalled('resetAutoOpenFileTypes')
         .then(function() {
-          cr.webUIListenerCallback('auto-open-downloads-changed', false);
+          webUIListenerCallback('auto-open-downloads-changed', false);
           flush();
           const button = downloadsPage.$$('#resetAutoOpenFileTypes');
           assertTrue(!button);

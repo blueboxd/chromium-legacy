@@ -653,7 +653,7 @@
           'shards': 25,
         },
       },
-      'android-kitkat-arm-rel-swarming': {
+      'android-lollipop-arm-rel-swarming': {
         'swarming': {
           'service_account': 'chrome-gold-dev@chops-service-accounts.iam.gserviceaccount.com'
         },
@@ -774,6 +774,8 @@
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
       'android-code-coverage-native', # crbug/1018434
+      # http://crbug.com/1032336: Temporarily remove due to high CQ traffic.
+      'android-lollipop-arm-rel',
       # http://crbug.com/1060245#c30: due to low utility and capacity.
       'android-marshmallow-arm64-rel',
     ],
@@ -2431,7 +2433,7 @@
       'android-asan',  # https://crbug.com/964562
       # On chromium.swarm, this should possibly be being run (or removed
       # from android-marshmallow-arm64-rel-swarming).
-      'android-kitkat-arm-rel-swarming',
+      'android-lollipop-arm-rel-swarming',
       'android-code-coverage-native', # https://crbug.com/1018431
     ],
     'modifications': {

@@ -59,7 +59,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
-#include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "ios/chrome/browser/safe_browsing/safe_browsing_service_impl.h"
 #include "ios/chrome/browser/update_client/ios_chrome_update_query_params_delegate.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -393,7 +393,7 @@ SafeBrowsingService* ApplicationContextImpl::GetSafeBrowsingService() {
   if (base::FeatureList::IsEnabled(
           safe_browsing::kSafeBrowsingAvailableOnIOS) &&
       !safe_browsing_service_) {
-    safe_browsing_service_ = base::MakeRefCounted<SafeBrowsingService>();
+    safe_browsing_service_ = base::MakeRefCounted<SafeBrowsingServiceImpl>();
   }
   return safe_browsing_service_.get();
 }

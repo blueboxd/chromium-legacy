@@ -102,9 +102,9 @@ void AssertEvalFails(const base::DictionaryValue& command_result) {
   std::unique_ptr<base::DictionaryValue> result;
   FakeDevToolsClient client;
   client.set_result(command_result);
-  Status status = internal::EvaluateScript(&client, 0, std::string(),
-                                           internal::ReturnByValue,
-                                           base::TimeDelta::Max(), &result);
+  Status status = internal::EvaluateScript(
+      &client, 0, std::string(), internal::ReturnByValue,
+      base::TimeDelta::Max(), false, &result);
   ASSERT_EQ(kUnknownError, status.code());
   ASSERT_FALSE(result);
 }
@@ -115,9 +115,9 @@ TEST(EvaluateScript, CommandError) {
   std::unique_ptr<base::DictionaryValue> result;
   FakeDevToolsClient client;
   client.set_status(Status(kUnknownError));
-  Status status = internal::EvaluateScript(&client, 0, std::string(),
-                                           internal::ReturnByValue,
-                                           base::TimeDelta::Max(), &result);
+  Status status = internal::EvaluateScript(
+      &client, 0, std::string(), internal::ReturnByValue,
+      base::TimeDelta::Max(), false, &result);
   ASSERT_EQ(kUnknownError, status.code());
   ASSERT_FALSE(result);
 }
@@ -142,7 +142,7 @@ TEST(EvaluateScript, Ok) {
   client.set_result(dict);
   ASSERT_TRUE(internal::EvaluateScript(&client, 0, std::string(),
                                        internal::ReturnByValue,
-                                       base::TimeDelta::Max(), &result)
+                                       base::TimeDelta::Max(), false, &result)
                   .IsOk());
   ASSERT_TRUE(result);
   ASSERT_TRUE(result->HasKey("key"));
@@ -154,8 +154,9 @@ TEST(EvaluateScriptAndGetValue, MissingType) {
   base::DictionaryValue dict;
   dict.SetInteger("result.value", 1);
   client.set_result(dict);
-  ASSERT_TRUE(internal::EvaluateScriptAndGetValue(
-                  &client, 0, std::string(), base::TimeDelta::Max(), &result)
+  ASSERT_TRUE(internal::EvaluateScriptAndGetValue(&client, 0, std::string(),
+                                                  base::TimeDelta::Max(), false,
+                                                  &result)
                   .IsError());
 }
 
@@ -166,7 +167,7 @@ TEST(EvaluateScriptAndGetValue, Undefined) {
   dict.SetString("result.type", "undefined");
   client.set_result(dict);
   Status status = internal::EvaluateScriptAndGetValue(
-      &client, 0, std::string(), base::TimeDelta::Max(), &result);
+      &client, 0, std::string(), base::TimeDelta::Max(), false, &result);
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(result && result->is_none());
 }
@@ -179,7 +180,7 @@ TEST(EvaluateScriptAndGetValue, Ok) {
   dict.SetInteger("result.value", 1);
   client.set_result(dict);
   Status status = internal::EvaluateScriptAndGetValue(
-      &client, 0, std::string(), base::TimeDelta::Max(), &result);
+      &client, 0, std::string(), base::TimeDelta::Max(), false, &result);
   ASSERT_EQ(kOk, status.code());
   int value;
   ASSERT_TRUE(result && result->GetAsInteger(&value));
@@ -193,9 +194,9 @@ TEST(EvaluateScriptAndGetObject, NoObject) {
   client.set_result(dict);
   bool got_object;
   std::string object_id;
-  ASSERT_TRUE(internal::EvaluateScriptAndGetObject(&client, 0, std::string(),
-                                                   base::TimeDelta::Max(),
-                                                   &got_object, &object_id)
+  ASSERT_TRUE(internal::EvaluateScriptAndGetObject(
+                  &client, 0, std::string(), base::TimeDelta::Max(), false,
+                  &got_object, &object_id)
                   .IsOk());
   ASSERT_FALSE(got_object);
   ASSERT_TRUE(object_id.empty());
@@ -208,9 +209,9 @@ TEST(EvaluateScriptAndGetObject, Ok) {
   client.set_result(dict);
   bool got_object;
   std::string object_id;
-  ASSERT_TRUE(internal::EvaluateScriptAndGetObject(&client, 0, std::string(),
-                                                   base::TimeDelta::Max(),
-                                                   &got_object, &object_id)
+  ASSERT_TRUE(internal::EvaluateScriptAndGetObject(
+                  &client, 0, std::string(), base::TimeDelta::Max(), false,
+                  &got_object, &object_id)
                   .IsOk());
   ASSERT_TRUE(got_object);
   ASSERT_STREQ("id", object_id.c_str());

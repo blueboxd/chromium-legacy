@@ -187,6 +187,20 @@ class MediaHistoryKeyedServiceTest
                                       true);
   }
 
+  std::vector<mojom::MediaHistoryOriginRowPtr> GetOriginRowsSync() {
+    base::RunLoop run_loop;
+    std::vector<mojom::MediaHistoryOriginRowPtr> out;
+
+    service()->GetOriginRowsForDebug(base::BindLambdaForTesting(
+        [&](std::vector<mojom::MediaHistoryOriginRowPtr> rows) {
+          out = std::move(rows);
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return out;
+  }
+
   static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems() {
     std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
 
@@ -541,8 +555,8 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
   // Record a playback in the database for |url1a|.
   {
     content::MediaPlayerWatchTime watch_time(
-        url1a, url1a.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
-        base::TimeDelta::FromMilliseconds(321), true, false);
+        url1a, url1a.GetOrigin(), base::TimeDelta::FromMinutes(10),
+        base::TimeDelta::FromMilliseconds(321), true, true);
 
     history->AddPage(url1a, base::Time::Now(), history::SOURCE_BROWSED);
     service()->SavePlayback(watch_time);
@@ -555,8 +569,8 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
   // Record a playback in the database for |url1b|.
   {
     content::MediaPlayerWatchTime watch_time(
-        url1b, url1b.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
-        base::TimeDelta::FromMilliseconds(321), true, false);
+        url1b, url1b.GetOrigin(), base::TimeDelta::FromMinutes(25),
+        base::TimeDelta::FromMilliseconds(321), true, true);
 
     history->AddPage(url1b, base::Time::Now(), history::SOURCE_BROWSED);
     service()->SavePlayback(watch_time);
@@ -583,8 +597,8 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
   // Record a playback in the database for |url2a|.
   {
     content::MediaPlayerWatchTime watch_time(
-        url2a, url2a.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
-        base::TimeDelta::FromMilliseconds(321), true, false);
+        url2a, url2a.GetOrigin(), base::TimeDelta::FromMinutes(10),
+        base::TimeDelta::FromMilliseconds(321), true, true);
 
     history->AddPage(url2a, base::Time::Now(), history::SOURCE_BROWSED);
     service()->SavePlayback(watch_time);
@@ -597,8 +611,8 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
   // Record a playback in the database for |url2b|.
   {
     content::MediaPlayerWatchTime watch_time(
-        url2b, url2b.GetOrigin(), base::TimeDelta::FromMilliseconds(123),
-        base::TimeDelta::FromMilliseconds(321), true, false);
+        url2b, url2b.GetOrigin(), base::TimeDelta::FromMinutes(20),
+        base::TimeDelta::FromMilliseconds(321), true, true);
 
     history->AddPage(url2b, base::Time::Now(), history::SOURCE_BROWSED);
     service()->SavePlayback(watch_time);
@@ -653,6 +667,22 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
   EXPECT_EQ(images, GetURLsInTable(MediaHistoryImagesTable::kTableName));
   EXPECT_EQ(media_feeds, GetURLsInTable(MediaHistoryFeedsTable::kTableName));
 
+  // Check the origins have the correct aggregate watchtime.
+  {
+    auto origins = GetOriginRowsSync();
+    ASSERT_EQ(2u, origins.size());
+
+    EXPECT_EQ(base::TimeDelta::FromMinutes(35),
+              origins[0]->cached_audio_video_watchtime);
+    EXPECT_EQ(origins[0]->actual_audio_video_watchtime,
+              origins[0]->cached_audio_video_watchtime);
+
+    EXPECT_EQ(base::TimeDelta::FromMinutes(30),
+              origins[1]->cached_audio_video_watchtime);
+    EXPECT_EQ(origins[1]->actual_audio_video_watchtime,
+              origins[1]->cached_audio_video_watchtime);
+  }
+
   MaybeSetSavingBrowsingHistoryDisabled();
 
   {
@@ -697,6 +727,21 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
   EXPECT_EQ(remaining_images,
             GetURLsInTable(MediaHistoryImagesTable::kTableName));
   EXPECT_EQ(media_feeds, GetURLsInTable(MediaHistoryFeedsTable::kTableName));
+
+  // Check the origins have the correct aggregate watchtime.
+  {
+    auto origins = GetOriginRowsSync();
+    ASSERT_EQ(2u, origins.size());
+
+    EXPECT_EQ(base::TimeDelta(), origins[0]->cached_audio_video_watchtime);
+    EXPECT_EQ(origins[0]->actual_audio_video_watchtime,
+              origins[0]->cached_audio_video_watchtime);
+
+    EXPECT_EQ(base::TimeDelta::FromMinutes(30),
+              origins[1]->cached_audio_video_watchtime);
+    EXPECT_EQ(origins[1]->actual_audio_video_watchtime,
+              origins[1]->cached_audio_video_watchtime);
+  }
 }
 
 }  // namespace media_history

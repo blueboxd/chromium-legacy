@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 271 tests; 261 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 277 tests; 259 PASS, 18 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Navigator: original interface defined
@@ -197,10 +197,16 @@ PASS XRInputSourceArray interface: attribute length
 PASS XRInputSourceArray must be primary interface of xrInputSourceArray
 PASS Stringification of xrInputSourceArray
 PASS XRInputSourceArray interface: xrInputSourceArray must inherit property "length" with the proper type
-PASS XRWebGLLayer interface: existence and properties of interface object
+FAIL XRLayer interface: existence and properties of interface object assert_own_property: self does not have own property "XRLayer" expected property "XRLayer" missing
+FAIL XRLayer interface object length assert_own_property: self does not have own property "XRLayer" expected property "XRLayer" missing
+FAIL XRLayer interface object name assert_own_property: self does not have own property "XRLayer" expected property "XRLayer" missing
+FAIL XRLayer interface: existence and properties of interface prototype object assert_own_property: self does not have own property "XRLayer" expected property "XRLayer" missing
+FAIL XRLayer interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "XRLayer" expected property "XRLayer" missing
+FAIL XRLayer interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "XRLayer" expected property "XRLayer" missing
+FAIL XRWebGLLayer interface: existence and properties of interface object assert_own_property: self does not have own property "XRLayer" expected property "XRLayer" missing
 PASS XRWebGLLayer interface object length
 PASS XRWebGLLayer interface object name
-PASS XRWebGLLayer interface: existence and properties of interface prototype object
+FAIL XRWebGLLayer interface: existence and properties of interface prototype object assert_own_property: self does not have own property "XRLayer" expected property "XRLayer" missing
 PASS XRWebGLLayer interface: existence and properties of interface prototype object's "constructor" property
 PASS XRWebGLLayer interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRWebGLLayer interface: attribute antialias

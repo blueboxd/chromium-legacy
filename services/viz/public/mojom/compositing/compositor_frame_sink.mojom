@@ -15,6 +15,12 @@ import "services/viz/public/mojom/hit_test/hit_test_region_list.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "gpu/ipc/common/mailbox.mojom";
 
+// Tags the frame sink with the type of source producing its content.
+enum CompositorFrameSinkType {
+  kUnspecified,
+  kVideo,
+  kMediaStream,
+};
 
 // A CompositorFrameSink is an interface for receiving CompositorFrame
 // structs. A CompositorFrame contains the complete output meant for display.
@@ -76,6 +82,11 @@ interface CompositorFrameSink {
   // via DidAllocateSharedBitmap(). The |id| is a Mailbox type which doubles as a
   // SharedBitmapId for this case.
   DidDeleteSharedBitmap(gpu.mojom.Mailbox id);
+
+  // This should be called atmost once for the lifetime of this frame sink. Once
+  // the value has been set to anything other than kUnspecified, subsequent calls
+  // are silently ignored.
+  InitializeCompositorFrameSinkType(CompositorFrameSinkType type);
 };
 
 interface CompositorFrameSinkClient {

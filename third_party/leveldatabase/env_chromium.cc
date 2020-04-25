@@ -73,18 +73,6 @@ static const FilePath::CharType kLevelDBTestDirectoryPrefix[] =
 // able to recover data.
 static const char kDatabaseNameSuffixForRebuildDB[] = "__tmp_for_rebuild";
 
-// To avoid a dependency on storage_histograms.h and the storageLib,
-// we re-implement the BytesCountHistogram functions here.
-void RecordStorageBytesWritten(const char* label, int amount) {
-  const std::string name = "Storage.BytesWritten.";
-  base::UmaHistogramCounts10M(name + label, amount);
-}
-
-void RecordStorageBytesRead(const char* label, int amount) {
-  const std::string name = "Storage.BytesRead.";
-  base::UmaHistogramCounts10M(name + label, amount);
-}
-
 class ChromiumFileLock : public FileLock {
  public:
   ChromiumFileLock(std::unique_ptr<storage::FilesystemProxy::FileLock> lock,
@@ -145,8 +133,6 @@ class ChromiumSequentialFile : public leveldb::SequentialFile {
       return MakeIOError(filename_, base::File::ErrorToString(error),
                          kSequentialFileRead, error);
     }
-    if (bytes_read > 0)
-      uma_logger_->RecordBytesRead(bytes_read);
     *result = Slice(scratch, bytes_read);
     return Status::OK();
   }
@@ -188,8 +174,6 @@ Status ReadFromFileToScratch(uint64_t offset,
                        kRandomAccessFileRead);
   }
   *result = Slice(scratch, (bytes_read < 0) ? 0 : bytes_read);
-  if (bytes_read > 0)
-    uma_logger->RecordBytesRead(bytes_read);
 
   return Status::OK();
 }
@@ -375,8 +359,6 @@ Status ChromiumWritableFile::Append(const Slice& data) {
     return MakeIOError(filename_, base::File::ErrorToString(error),
                        kWritableFileAppend, error);
   }
-  if (bytes_written > 0)
-    uma_logger_->RecordBytesWritten(bytes_written);
   return Status::OK();
 }
 
@@ -1089,14 +1071,6 @@ void ChromiumEnv::RecordOSError(MethodID method,
   DCHECK_LT(error, 0);
   RecordErrorAt(method);
   GetOSErrorHistogram(method, -base::File::FILE_ERROR_MAX)->Add(-error);
-}
-
-void ChromiumEnv::RecordBytesRead(int amount) const {
-  RecordStorageBytesRead(name_.c_str(), amount);
-}
-
-void ChromiumEnv::RecordBytesWritten(int amount) const {
-  RecordStorageBytesWritten(name_.c_str(), amount);
 }
 
 base::HistogramBase* ChromiumEnv::GetOSErrorHistogram(MethodID method,

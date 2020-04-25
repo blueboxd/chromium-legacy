@@ -465,14 +465,8 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   container_builder_.SetIsInlineFormattingContext(inline_child_layout_context);
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    container_builder_.SetHasBlockFragmentation();
-    // The whereabouts of our container's so far best breakpoint is none of our
-    // business, but we store its appeal, so that we don't look for breakpoints
-    // with lower appeal than that.
-    container_builder_.SetBreakAppeal(ConstraintSpace().EarlyBreakAppeal());
-
-    if (ConstraintSpace().IsInitialColumnBalancingPass())
-      container_builder_.SetIsInitialColumnBalancingPass();
+    SetupFragmentBuilderForFragmentation(ConstraintSpace(), BreakToken(),
+                                         &container_builder_);
   }
   container_builder_.SetBfcLineOffset(
       ConstraintSpace().BfcOffset().line_offset);
@@ -2492,8 +2486,9 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // fragmentation line.
     if (is_new_fc)
       fragmentainer_offset_delta = *child_bfc_block_offset;
-    SetupFragmentation(ConstraintSpace(), child, fragmentainer_offset_delta,
-                       &builder, is_new_fc);
+    SetupSpaceBuilderForFragmentation(ConstraintSpace(), child,
+                                      fragmentainer_offset_delta, &builder,
+                                      is_new_fc);
     builder.SetEarlyBreakAppeal(container_builder_.BreakAppeal());
   }
 

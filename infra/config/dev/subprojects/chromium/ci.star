@@ -56,7 +56,7 @@ def ci_builder(*, name, **kwargs):
   )
 
 ci_builder(
-    name = 'android-kitkat-arm-rel-swarming',
+    name = 'android-lollipop-arm-rel-swarming',
 )
 
 ci_builder(

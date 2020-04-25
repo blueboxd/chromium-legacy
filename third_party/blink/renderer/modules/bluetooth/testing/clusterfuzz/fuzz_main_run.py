@@ -22,8 +22,10 @@ import test_case_fuzzer
 
 JS_FILES_AND_PARAMETERS = ((u'testharness.js', u'INCLUDE_TESTHARNESS'),
                            (u'testharnessreport.js',
-                            u'INCLUDE_REPORT'), (u'bluetooth-helpers.js',
-                                                 u'INCLUDE_BLUETOOTH_HELPERS'))
+                            u'INCLUDE_REPORT'), (u'bluetooth-test.js',
+                                                 u'INCLUDE_BLUETOOTH_TEST'),
+                           (u'bluetooth-fake-devices.js',
+                            u'INCLUDE_BLUETOOTH_FAKE_DEVICES'))
 
 SCRIPT_PREFIX = '<script type="text/javascript">\n'
 SCRIPT_SUFFIX = '\n</script>\n'

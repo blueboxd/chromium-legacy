@@ -184,6 +184,53 @@ class TextProtoPrinter {
     EndMessage();
     return *this;
   }
+  TextProtoPrinter& operator<<(const feedui::StreamUpdate& v) {
+    BeginMessage();
+    PRINT_FIELD(updated_slices);
+    PRINT_FIELD(new_shared_states);
+    EndMessage();
+    return *this;
+  }
+  TextProtoPrinter& operator<<(const feedui::StreamUpdate_SliceUpdate& v) {
+    BeginMessage();
+    PRINT_ONEOF(slice);
+    PRINT_FIELD(slice_id);
+    EndMessage();
+    return *this;
+  }
+  TextProtoPrinter& operator<<(const feedui::Slice& v) {
+    BeginMessage();
+    PRINT_ONEOF(xsurface_slice);
+    PRINT_ONEOF(zero_state_slice);
+    PRINT_ONEOF(loading_spinner_slice);
+    EndMessage();
+    return *this;
+  }
+  TextProtoPrinter& operator<<(const feedui::ZeroStateSlice& v) {
+    BeginMessage();
+    PRINT_FIELD(type);
+    EndMessage();
+    return *this;
+  }
+  TextProtoPrinter& operator<<(const feedui::LoadingSpinnerSlice& v) {
+    BeginMessage();
+    PRINT_FIELD(is_at_top);
+    EndMessage();
+    return *this;
+  }
+  TextProtoPrinter& operator<<(const feedui::XSurfaceSlice& v) {
+    BeginMessage();
+    PRINT_FIELD(xsurface_frame);
+    EndMessage();
+    return *this;
+  }
+  TextProtoPrinter& operator<<(const feedui::SharedState& v) {
+    BeginMessage();
+    PRINT_FIELD(id);
+    PRINT_FIELD(xsurface_shared_state);
+    EndMessage();
+    return *this;
+  }
 
   template <typename T>
   void Field(const std::string& name, const T& value) {
@@ -231,6 +278,9 @@ std::string ToTextProto(const feedstore::StoredAction& v) {
   return TextProtoPrinter::ToString(v);
 }
 std::string ToTextProto(const feedstore::Record& v) {
+  return TextProtoPrinter::ToString(v);
+}
+std::string ToTextProto(const feedui::StreamUpdate& v) {
   return TextProtoPrinter::ToString(v);
 }
 

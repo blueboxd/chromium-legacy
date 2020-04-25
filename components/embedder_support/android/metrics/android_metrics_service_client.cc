@@ -272,8 +272,7 @@ void AndroidMetricsServiceClient::Observe(
     case content::NOTIFICATION_LOAD_START:
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
     case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG:
-      if (ShouldWakeMetricsService())
-        metrics_service_->OnApplicationNotIdle();
+      metrics_service_->OnApplicationNotIdle();
       break;
     default:
       NOTREACHED();

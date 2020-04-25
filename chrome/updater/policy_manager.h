@@ -18,18 +18,18 @@ class PolicyManagerInterface {
 
   // This is human-readable string that indicates the policy manager being
   // queried.
-  virtual std::string source() = 0;
+  virtual std::string source() const = 0;
 
   // This method returns |true| if the current policy manager determines that
   // its policies are operational. For instance, the Device Management Policy
   // Manager will return |true| for this method if the machine is joined to
   // a DM server.
-  virtual bool IsManaged() = 0;
+  virtual bool IsManaged() const = 0;
 
   // Returns the policy for how often the Updater should check for updates.
   // Returns the time interval between update checks in minutes.
   // 0 indicates updates are disabled.
-  virtual bool GetLastCheckPeriodMinutes(int* minutes) = 0;
+  virtual bool GetLastCheckPeriodMinutes(int* minutes) const = 0;
 
   // For domain-joined machines, checks the current time against the times that
   // updates are suppressed. Updates are suppressed if the current time falls
@@ -40,47 +40,50 @@ class PolicyManagerInterface {
   // changes happen in between.
   virtual bool GetUpdatesSuppressedTimes(int* start_hour,
                                          int* start_min,
-                                         int* duration_min) = 0;
+                                         int* duration_min) const = 0;
   // Returns the policy for the download preference.
   virtual bool GetDownloadPreferenceGroupPolicy(
-      std::string* download_preference) = 0;
+      std::string* download_preference) const = 0;
 
   // Returns the policy for the package cache size limit in megabytes.
-  virtual bool GetPackageCacheSizeLimitMBytes(int* cache_size_limit) = 0;
+  virtual bool GetPackageCacheSizeLimitMBytes(int* cache_size_limit) const = 0;
 
   // Returns the policy for the package cache expiration in days.
-  virtual bool GetPackageCacheExpirationTimeDays(int* cache_life_limit) = 0;
+  virtual bool GetPackageCacheExpirationTimeDays(
+      int* cache_life_limit) const = 0;
 
   // Returns kPolicyEnabled if installation of the specified app is allowed.
   // Otherwise, returns kPolicyDisabled.
   virtual bool GetEffectivePolicyForAppInstalls(const std::string& app_id,
-                                                int* install_policy) = 0;
+                                                int* install_policy) const = 0;
   // Returns kPolicyEnabled if updates of the specified app is allowed.
   // Otherwise, returns one of kPolicyDisabled, kPolicyManualUpdatesOnly, or
   // kPolicyAutomaticUpdatesOnly.
   virtual bool GetEffectivePolicyForAppUpdates(const std::string& app_id,
-                                               int* update_policy) = 0;
+                                               int* update_policy) const = 0;
   // Returns the target version prefix for the app.
   // Examples:
   // * "" (or not configured): update to latest version available.
   // * "55.": update to any minor version of 55 (e.g. 55.24.34 or 55.60.2).
   // * "55.2.": update to any minor version of 55.2 (e.g. 55.2.34 or 55.2.2).
   // * "55.24.34": update to this specific version only.
-  virtual bool GetTargetVersionPrefix(const std::string& app_id,
-                                      std::string* target_version_prefix) = 0;
+  virtual bool GetTargetVersionPrefix(
+      const std::string& app_id,
+      std::string* target_version_prefix) const = 0;
   // Returns whether the RollbackToTargetVersion policy has been set for the
   // app. If RollbackToTargetVersion is set, the TargetVersionPrefix policy
   // governs the version to rollback clients with higher versions to.
-  virtual bool IsRollbackToTargetVersionAllowed(const std::string& app_id,
-                                                bool* rollback_allowed) = 0;
+  virtual bool IsRollbackToTargetVersionAllowed(
+      const std::string& app_id,
+      bool* rollback_allowed) const = 0;
   // Returns a proxy mode such as |auto_detect|.
-  virtual bool GetProxyMode(std::string* proxy_mode) = 0;
+  virtual bool GetProxyMode(std::string* proxy_mode) const = 0;
 
   // Returns a proxy PAC URL.
-  virtual bool GetProxyPacUrl(std::string* proxy_pac_url) = 0;
+  virtual bool GetProxyPacUrl(std::string* proxy_pac_url) const = 0;
 
   // Returns a proxy server.
-  virtual bool GetProxyServer(std::string* proxy_server) = 0;
+  virtual bool GetProxyServer(std::string* proxy_server) const = 0;
 };
 
 std::unique_ptr<PolicyManagerInterface> GetPolicyManager();

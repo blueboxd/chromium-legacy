@@ -1,4 +1,3 @@
-
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -19,11 +18,13 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -47,6 +48,8 @@ public class WebsitePermissionsFetcherTest {
     /** Command line flag to enable experimental web platform features in tests. */
     public static final String ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES =
             "enable-experimental-web-platform-features";
+
+    private static final BrowserContextHandle UNUSED_BROWSER_CONTEXT_HANDLE = null;
 
     private static final String[] PERMISSION_URLS = {
             "http://www.google.com/",
@@ -287,23 +290,24 @@ public class WebsitePermissionsFetcherTest {
         final WebsitePermissionsWaiter waiter = new WebsitePermissionsWaiter();
         // Set lots of permissions values.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Profile profile = Profile.getLastUsedRegularProfile();
             for (String url : PERMISSION_URLS) {
                 WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin(
-                        url, url, ContentSettingValues.BLOCK, false);
+                        profile, url, url, ContentSettingValues.BLOCK);
                 WebsitePreferenceBridgeJni.get().setMidiSettingForOrigin(
-                        url, url, ContentSettingValues.ALLOW, false);
+                        profile, url, url, ContentSettingValues.ALLOW);
                 WebsitePreferenceBridgeJni.get().setProtectedMediaIdentifierSettingForOrigin(
-                        url, url, ContentSettingValues.BLOCK, false);
+                        profile, url, url, ContentSettingValues.BLOCK);
                 WebsitePreferenceBridgeJni.get().setNotificationSettingForOrigin(
-                        url, ContentSettingValues.ALLOW, false);
+                        profile, url, ContentSettingValues.ALLOW);
                 WebsitePreferenceBridgeJni.get().setMicrophoneSettingForOrigin(
-                        url, ContentSettingValues.ALLOW, false);
+                        profile, url, ContentSettingValues.ALLOW);
                 WebsitePreferenceBridgeJni.get().setCameraSettingForOrigin(
-                        url, ContentSettingValues.BLOCK, false);
+                        profile, url, ContentSettingValues.BLOCK);
             }
 
             // This should not time out. See crbug.com/732907.
-            WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
+            WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher(profile);
             fetcher.fetchAllPreferences(waiter);
         });
         waiter.waitForCallback(0, 1, 1000L, TimeUnit.MILLISECONDS);
@@ -327,7 +331,8 @@ public class WebsitePermissionsFetcherTest {
         }
 
         @Override
-        public List<PermissionInfo> getPermissionInfo(@PermissionInfo.Type int type) {
+        public List<PermissionInfo> getPermissionInfo(
+                BrowserContextHandle browserContextHandle, @PermissionInfo.Type int type) {
             List<PermissionInfo> result = new ArrayList<>();
             for (PermissionInfo info : mPermissionInfos) {
                 if (info.getType() == type) {
@@ -339,6 +344,7 @@ public class WebsitePermissionsFetcherTest {
 
         @Override
         public List<ContentSettingException> getContentSettingsExceptions(
+                BrowserContextHandle browserContextHandle,
                 @ContentSettingsType int contentSettingsType) {
             List<ContentSettingException> result = new ArrayList<>();
             for (ContentSettingException exception : mContentSettingExceptions) {
@@ -350,7 +356,8 @@ public class WebsitePermissionsFetcherTest {
         }
 
         @Override
-        public void fetchLocalStorageInfo(Callback<HashMap> callback, boolean fetchImportant) {
+        public void fetchLocalStorageInfo(BrowserContextHandle browserContextHandle,
+                Callback<HashMap> callback, boolean fetchImportant) {
             if (fetchImportant) {
                 callback.onResult(mImportantLocalStorageInfoMap);
                 return;
@@ -359,12 +366,14 @@ public class WebsitePermissionsFetcherTest {
         }
 
         @Override
-        public void fetchStorageInfo(Callback<ArrayList> callback) {
+        public void fetchStorageInfo(
+                BrowserContextHandle browserContextHandle, Callback<ArrayList> callback) {
             callback.onResult(mStorageInfos);
         }
 
         @Override
-        public List<ChosenObjectInfo> getChosenObjectInfo(int contentSettingsType) {
+        public List<ChosenObjectInfo> getChosenObjectInfo(
+                BrowserContextHandle browserContextHandle, int contentSettingsType) {
             List<ChosenObjectInfo> result = new ArrayList<>();
             for (ChosenObjectInfo info : mChosenObjectInfos) {
                 if (info.getContentSettingsType() == contentSettingsType) {
@@ -407,7 +416,8 @@ public class WebsitePermissionsFetcherTest {
     @SmallTest
     @EnableFeatures(ContentFeatureList.WEBXR_PERMISSIONS_API)
     public void testFetchAllPreferencesForSingleOrigin() {
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
+        WebsitePermissionsFetcher fetcher =
+                new WebsitePermissionsFetcher(UNUSED_BROWSER_CONTEXT_HANDLE);
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
 
@@ -542,7 +552,8 @@ public class WebsitePermissionsFetcherTest {
     @Test
     @SmallTest
     public void testFetchAllPreferencesForMultipleOrigins() {
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
+        WebsitePermissionsFetcher fetcher =
+                new WebsitePermissionsFetcher(UNUSED_BROWSER_CONTEXT_HANDLE);
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
 
@@ -625,7 +636,8 @@ public class WebsitePermissionsFetcherTest {
     @SmallTest
     @EnableFeatures(ContentFeatureList.WEBXR_PERMISSIONS_API)
     public void testFetchPreferencesForCategoryPermissionInfoTypes() {
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
+        WebsitePermissionsFetcher fetcher =
+                new WebsitePermissionsFetcher(UNUSED_BROWSER_CONTEXT_HANDLE);
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
 
@@ -646,6 +658,7 @@ public class WebsitePermissionsFetcherTest {
 
             fetcher.fetchPreferencesForCategory(
                     SiteSettingsCategory.createFromContentSettingsType(
+                            UNUSED_BROWSER_CONTEXT_HANDLE,
                             PermissionInfo.getContentSettingsType(type)),
                     (sites) -> {
                         Assert.assertEquals(1, sites.size());
@@ -659,7 +672,8 @@ public class WebsitePermissionsFetcherTest {
     @Test
     @SmallTest
     public void testFetchPreferencesForCategoryContentSettingExceptionTypes() {
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
+        WebsitePermissionsFetcher fetcher =
+                new WebsitePermissionsFetcher(UNUSED_BROWSER_CONTEXT_HANDLE);
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
 
@@ -683,7 +697,8 @@ public class WebsitePermissionsFetcherTest {
                 websitePreferenceBridge.addContentSettingException(fakeContentSettingException);
 
                 fetcher.fetchPreferencesForCategory(
-                        SiteSettingsCategory.createFromContentSettingsType(contentSettingsType),
+                        SiteSettingsCategory.createFromContentSettingsType(
+                                UNUSED_BROWSER_CONTEXT_HANDLE, contentSettingsType),
                         (sites) -> {
                             Assert.assertEquals(1, sites.size());
 
@@ -701,7 +716,8 @@ public class WebsitePermissionsFetcherTest {
                 websitePreferenceBridge.addContentSettingException(fakeContentSettingException);
 
                 fetcher.fetchPreferencesForCategory(
-                        SiteSettingsCategory.createFromContentSettingsType(contentSettingsType),
+                        SiteSettingsCategory.createFromContentSettingsType(
+                                UNUSED_BROWSER_CONTEXT_HANDLE, contentSettingsType),
                         (sites) -> {
                             Assert.assertEquals(1, sites.size());
 
@@ -716,7 +732,8 @@ public class WebsitePermissionsFetcherTest {
     @Test
     @SmallTest
     public void testFetchPreferencesForAdvancedCookieSettings() {
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
+        WebsitePermissionsFetcher fetcher =
+                new WebsitePermissionsFetcher(UNUSED_BROWSER_CONTEXT_HANDLE);
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
 
@@ -747,7 +764,8 @@ public class WebsitePermissionsFetcherTest {
                 websitePreferenceBridge.addContentSettingException(fakeContentSettingException);
 
                 fetcher.fetchPreferencesForCategory(
-                        SiteSettingsCategory.createFromContentSettingsType(contentSettingsType),
+                        SiteSettingsCategory.createFromContentSettingsType(
+                                UNUSED_BROWSER_CONTEXT_HANDLE, contentSettingsType),
                         (sites) -> {
                             Assert.assertEquals(1, sites.size());
 
@@ -765,7 +783,8 @@ public class WebsitePermissionsFetcherTest {
                 websitePreferenceBridge.addContentSettingException(fakeContentSettingException);
 
                 fetcher.fetchPreferencesForCategory(
-                        SiteSettingsCategory.createFromContentSettingsType(contentSettingsType),
+                        SiteSettingsCategory.createFromContentSettingsType(
+                                UNUSED_BROWSER_CONTEXT_HANDLE, contentSettingsType),
                         (sites) -> {
                             Assert.assertEquals(1, sites.size());
 
@@ -780,7 +799,8 @@ public class WebsitePermissionsFetcherTest {
     @Test
     @SmallTest
     public void testFetchPreferencesForCategoryStorageInfo() {
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
+        WebsitePermissionsFetcher fetcher =
+                new WebsitePermissionsFetcher(UNUSED_BROWSER_CONTEXT_HANDLE);
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
 
@@ -798,7 +818,8 @@ public class WebsitePermissionsFetcherTest {
         websitePreferenceBridge.addLocalStorageInfoMapEntry(fakeImportantLocalStorageInfo);
 
         fetcher.fetchPreferencesForCategory(
-                SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.USE_STORAGE),
+                SiteSettingsCategory.createFromType(
+                        UNUSED_BROWSER_CONTEXT_HANDLE, SiteSettingsCategory.Type.USE_STORAGE),
                 (sites) -> {
                     Assert.assertEquals(1, sites.size());
 
@@ -818,10 +839,11 @@ public class WebsitePermissionsFetcherTest {
                 });
 
         // Test that the fetcher gets local storage info for important domains.
-        fetcher = new WebsitePermissionsFetcher(true);
+        fetcher = new WebsitePermissionsFetcher(UNUSED_BROWSER_CONTEXT_HANDLE, true);
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
         fetcher.fetchPreferencesForCategory(
-                SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.USE_STORAGE),
+                SiteSettingsCategory.createFromType(
+                        UNUSED_BROWSER_CONTEXT_HANDLE, SiteSettingsCategory.Type.USE_STORAGE),
                 (sites) -> {
                     Assert.assertEquals(2, sites.size());
 
@@ -856,7 +878,8 @@ public class WebsitePermissionsFetcherTest {
     @Test
     @SmallTest
     public void testFetchPreferencesForCategoryChooserDataTypes() {
-        WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
+        WebsitePermissionsFetcher fetcher =
+                new WebsitePermissionsFetcher(UNUSED_BROWSER_CONTEXT_HANDLE);
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
 
@@ -875,7 +898,8 @@ public class WebsitePermissionsFetcherTest {
             websitePreferenceBridge.addChosenObjectInfo(fakeObjectInfo);
 
             fetcher.fetchPreferencesForCategory(
-                    SiteSettingsCategory.createFromType(type), (sites) -> {
+                    SiteSettingsCategory.createFromType(UNUSED_BROWSER_CONTEXT_HANDLE, type),
+                    (sites) -> {
                         Assert.assertEquals(1, sites.size());
 
                         List<ChosenObjectInfo> objectInfos =

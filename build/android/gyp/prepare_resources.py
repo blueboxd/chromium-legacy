@@ -71,8 +71,8 @@ def _ParseArgs(args):
   resource_utils.HandleCommonOptions(options)
 
   with open(options.res_sources_path) as f:
-    options.sources = [line.strip() for line in f.readlines()]
-  options.resource_dirs = resource_utils.ExtractResourceDirsFromFileList(
+    options.sources = f.read().splitlines()
+  options.resource_dirs = resource_utils.DeduceResourceDirsFromFileList(
       options.sources)
 
   return options

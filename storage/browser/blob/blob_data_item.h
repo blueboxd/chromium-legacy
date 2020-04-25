@@ -71,10 +71,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataItem
     // Print a description of the readable DataHandle for debugging.
     virtual void PrintTo(::std::ostream* os) const = 0;
 
-    // Return the histogram label to use when calling RecordBytesRead().  If
-    // nullptr is returned then nothing will be recorded.
-    virtual const char* BytesReadHistogramLabel() const = 0;
-
    protected:
     virtual ~DataHandle();
 

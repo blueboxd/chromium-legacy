@@ -310,6 +310,44 @@ TEST_P(LazyLoadImagesSimTest, LargeImageStyleHeight1Width100) {
   VerifyImageElementWithDimensionDeferred("style='height: 1px; width: 100px;'");
 }
 
+TEST_P(LazyLoadImagesSimTest, ImgSrcset) {
+  if (!GetParam())  // Only test when LazyImage is enabled.
+    return;
+  SetLazyLoadEnabled(true);
+  WebView().Resize(WebSize(100, 1));
+  LoadMainResource(R"HTML(
+        <body onload='console.log("main body onload");'>
+          <div style='height:10000px;'></div>
+          <img src="img.png" srcset="img.png?100w 100w, img.png?200w 200w"
+           loading="lazy" onload= 'console.log("deferred_image onload");'>
+        </body>)HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_FALSE(ConsoleMessages().Contains("deferred_image onload"));
+
+  // Resizing should not load the image.
+  WebView().MainFrameWidget()->Resize(WebSize(200, 1));
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  EXPECT_FALSE(ConsoleMessages().Contains("deferred_image onload"));
+
+  // Scrolling down should load the larger image.
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 10000), mojom::blink::ScrollType::kProgrammatic);
+  SimRequest image_resource("https://example.com/img.png?200w", "image/png");
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  image_resource.Complete(ReadTestImage());
+  test::RunPendingTasks();
+  EXPECT_TRUE(ConsoleMessages().Contains("deferred_image onload"));
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kLazyLoadImageLoadingAttributeLazy));
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          LazyLoadImagesSimTest,
                          ::testing::Bool() /*is_lazyload_image_enabled*/);

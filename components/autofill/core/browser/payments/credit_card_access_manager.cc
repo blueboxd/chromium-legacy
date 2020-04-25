@@ -124,6 +124,10 @@ bool CreditCardAccessManager::ShouldDisplayGPayLogo() {
   return true;
 }
 
+bool CreditCardAccessManager::UnmaskedCardCacheIsEmpty() {
+  return unmasked_card_cache_.empty();
+}
+
 bool CreditCardAccessManager::ServerCardsAvailable() {
   for (const CreditCard* credit_card : GetCreditCardsToSuggest()) {
     if (!IsLocalCard(credit_card))

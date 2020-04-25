@@ -76,10 +76,7 @@ def SetupTestServer(target, test_concurrency, for_package):
 
   config_file = tempfile.NamedTemporaryFile(delete=True)
 
-  # Clean up the config JSON to only pass ports. See https://crbug.com/810209 .
   config_file.write(json.dumps({
-    'name': 'testserver',
-    'address': '127.0.0.1',
     'spawner_url_base': 'http://localhost:%d' % forwarded_port
   }))
 

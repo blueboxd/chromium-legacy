@@ -5,6 +5,7 @@
 import argparse
 import collections
 import contextlib
+import itertools
 import os
 import re
 import shutil
@@ -187,8 +188,7 @@ def _GenerateGlobs(pattern):
   return pattern.replace('!', '').split(':')
 
 
-def ExtractResourceDirsFromFileList(resource_files,
-                                    ignore_pattern=AAPT_IGNORE_PATTERN):
+def DeduceResourceDirsFromFileList(resource_files):
   """Return a list of resource directories from a list of resource files."""
   # Directory list order is important, cannot use set or other data structures
   # that change order. This is because resource files of the same name in
@@ -196,15 +196,27 @@ def ExtractResourceDirsFromFileList(resource_files,
   # Thus the order must be maintained to prevent non-deterministic and possibly
   # flakey builds.
   resource_dirs = []
-  globs = _GenerateGlobs(ignore_pattern)
   for resource_path in resource_files:
-    if build_utils.MatchesGlob(os.path.basename(resource_path), globs):
-      # Ignore non-resource files like OWNERS and the like.
-      continue
     # Resources are always 1 directory deep under res/.
     res_dir = os.path.dirname(os.path.dirname(resource_path))
     if res_dir not in resource_dirs:
       resource_dirs.append(res_dir)
+
+  # Check if any resource_dirs are children of other ones. This indicates that a
+  # file was listed that is not exactly 1 directory deep under res/.
+  # E.g.:
+  # sources = ["java/res/values/foo.xml", "java/res/README.md"]
+  # ^^ This will cause "java" to be detected as resource directory.
+  for a, b in itertools.permutations(resource_dirs, 2):
+    if not os.path.relpath(a, b).startswith('..'):
+      bad_sources = (s for s in resource_files
+                     if os.path.dirname(os.path.dirname(s)) == b)
+      msg = """\
+Resource(s) found that are not in a proper directory structure:
+  {}
+All resource files must follow a structure of "$ROOT/$SUBDIR/$FILE"."""
+      raise Exception(msg.format('\n  '.join(bad_sources)))
+
   return resource_dirs
 
 

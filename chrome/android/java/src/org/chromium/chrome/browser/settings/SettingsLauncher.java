@@ -4,96 +4,57 @@
 
 package org.chromium.chrome.browser.settings;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import org.chromium.base.IntentUtils;
 
 /**
- * A utility class for launching Chrome Settings.
+ * Interface for launching Settings.
  */
-public class SettingsLauncher {
-    public SettingsLauncher() {}
-
+public interface SettingsLauncher {
     /**
-     * @return An instance of this class.
-     * @deprecated New code should construct {@link SettingsLauncher} directly.
-     */
-    // TODO(crbug.com/1054193): Inline and remove this method.
-    @Deprecated
-    public static SettingsLauncher getInstance() {
-        return new SettingsLauncher();
-    }
-
-    /**
-     * Launches the top-level settings page.
+     * Launches a Settings Activity with the default (top-level) fragment.
      *
      * @param context The current Activity, or an application context if no Activity is available.
      */
-    public void launchSettingsPage(Context context) {
-        launchSettingsPage(context, null);
-    }
+    void launchSettingsActivity(Context context);
 
     /**
-     * Launches settings, either on the top-level page or on a subpage.
+     * Launches a Settings Activity with the specified fragment.
      *
      * @param context The current Activity, or an application context if no Activity is available.
-     * @param fragment The fragment to show, or null to show the top-level page.
+     * @param fragment The fragment to show, or null to show the default fragment.
      */
-    public void launchSettingsPage(Context context, @Nullable Class<? extends Fragment> fragment) {
-        launchSettingsPage(context, fragment, null);
-    }
+    void launchSettingsActivity(Context context, @Nullable Class<? extends Fragment> fragment);
 
     /**
-     * Launches settings, either on the top-level page or on a subpage.
+     * Launches a Settings Activity with the specified fragment and arguments.
      *
      * @param context The current Activity, or an application context if no Activity is available.
-     * @param fragment The name of the fragment to show, or null to show the top-level page.
-     * @param fragmentArgs The arguments bundle to initialize the instance of subpage fragment.
+     * @param fragment The fragment to show, or null to show the default fragment.
+     * @param fragmentArgs A bundle of additional fragment arguments.
      */
-    public void launchSettingsPage(Context context, @Nullable Class<? extends Fragment> fragment,
-            @Nullable Bundle fragmentArgs) {
-        String fragmentName = fragment != null ? fragment.getName() : null;
-        Intent intent = createIntentForSettingsPage(context, fragmentName, fragmentArgs);
-        IntentUtils.safeStartActivity(context, intent);
-    }
+    void launchSettingsActivity(Context context, @Nullable Class<? extends Fragment> fragment,
+            @Nullable Bundle fragmentArgs);
 
     /**
-     * Creates an intent for launching settings, either on the top-level settings page or a specific
-     * subpage.
+     * Creates an intent for launching a Settings Activity with the specified fragment.
      *
      * @param context The current Activity, or an application context if no Activity is available.
-     * @param fragmentName The name of the fragment to show, or null to show the top-level page.
+     * @param fragmentName The name of the fragment to show, or null to show the default fragment.
      */
-    public Intent createIntentForSettingsPage(Context context, @Nullable String fragmentName) {
-        return createIntentForSettingsPage(context, fragmentName, null);
-    }
+    Intent createSettingsActivityIntent(Context context, @Nullable String fragmentName);
 
     /**
-     * Creates an intent for launching settings, either on the top-level settings page or a specific
-     * subpage.
+     * Creates an intent for launching a Settings Activity with the specified fragment and
+     * arguments.
      *
      * @param context The current Activity, or an application context if no Activity is available.
-     * @param fragmentName The name of the fragment to show, or null to show the top-level page.
-     * @param fragmentArgs The arguments bundle to initialize the instance of subpage fragment.
+     * @param fragmentName The name of the fragment to show, or null to show the default fragment.
+     * @param fragmentArgs A bundle of additional fragment arguments.
      */
-    public Intent createIntentForSettingsPage(
-            Context context, @Nullable String fragmentName, @Nullable Bundle fragmentArgs) {
-        Intent intent = new Intent();
-        intent.setClass(context, SettingsActivity.class);
-        if (!(context instanceof Activity)) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        }
-        if (fragmentName != null) {
-            intent.putExtra(SettingsActivity.EXTRA_SHOW_FRAGMENT, fragmentName);
-        }
-        if (fragmentArgs != null) {
-            intent.putExtra(SettingsActivity.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
-        }
-        return intent;
-    }
+    Intent createSettingsActivityIntent(
+            Context context, @Nullable String fragmentName, @Nullable Bundle fragmentArgs);
 }

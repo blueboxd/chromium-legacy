@@ -172,7 +172,14 @@ BLINK_COMMON_EXPORT extern const base::Feature kAVIF;
 BLINK_COMMON_EXPORT extern const base::Feature
     kAlignFontDisplayAutoTimeoutWithLCPGoal;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
-    kAlignFontDisplayAutoTimeoutWithLCPGoalParam;
+    kAlignFontDisplayAutoTimeoutWithLCPGoalTimeoutParam;
+enum class AlignFontDisplayAutoTimeoutWithLCPGoalMode {
+  kToFailurePeriod,
+  kToSwapPeriod
+};
+BLINK_COMMON_EXPORT extern const base::FeatureParam<
+    AlignFontDisplayAutoTimeoutWithLCPGoalMode>
+    kAlignFontDisplayAutoTimeoutWithLCPGoalModeParam;
 
 BLINK_COMMON_EXPORT extern const base::Feature kThrottleInstallingServiceWorker;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>

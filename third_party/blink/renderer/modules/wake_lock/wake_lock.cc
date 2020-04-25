@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -26,16 +27,15 @@ namespace blink {
 using mojom::blink::PermissionService;
 using mojom::blink::PermissionStatus;
 
-WakeLock::WakeLock(Document& document)
-    : ExecutionContextLifecycleObserver(&document),
-      PageVisibilityObserver(document.GetPage()),
-      permission_service_(document.ToExecutionContext()),
+WakeLock::WakeLock(LocalDOMWindow& window)
+    : ExecutionContextLifecycleObserver(&window),
+      PageVisibilityObserver(window.GetFrame()->GetPage()),
+      permission_service_(&window),
       managers_{
-          MakeGarbageCollected<WakeLockManager>(document.ToExecutionContext(),
-                                                WakeLockType::kScreen),
-          MakeGarbageCollected<WakeLockManager>(document.ToExecutionContext(),
+          MakeGarbageCollected<WakeLockManager>(&window, WakeLockType::kScreen),
+          MakeGarbageCollected<WakeLockManager>(&window,
                                                 WakeLockType::kSystem)} {
-  document.GetScheduler()->RegisterStickyFeature(
+  window.GetScheduler()->RegisterStickyFeature(
       SchedulingPolicy::Feature::kWakeLock,
       {SchedulingPolicy::RecordMetricsForBackForwardCache()});
 }
@@ -52,6 +52,15 @@ WakeLock::WakeLock(DedicatedWorkerGlobalScope& worker_scope)
 ScriptPromise WakeLock::request(ScriptState* script_state,
                                 const String& type,
                                 ExceptionState& exception_state) {
+  // 4.1. If the document's browsing context is null, reject promise with a
+  //      "NotAllowedError" DOMException and return promise.
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "The document has no associated browsing context");
+    return ScriptPromise();
+  }
+
   // https://w3c.github.io/wake-lock/#the-request-method
   auto* context = ExecutionContext::From(script_state);
   DCHECK(context->IsDocument() || context->IsDedicatedWorkerGlobalScope());
@@ -104,24 +113,14 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
           "Screen locks cannot be requested from workers");
       return ScriptPromise();
     }
-  } else if (context->IsDocument()) {
+  } else if (auto* window = DynamicTo<LocalDOMWindow>(context)) {
     // 2. Let document be the responsible document of the current settings
     // object.
-    auto* document = Document::From(context);
 
     // 4. Otherwise, if the current global object is the Window object:
-    // 4.1. If the document's browsing context is null, reject promise with a
-    //      "NotAllowedError" DOMException and return promise.
-    if (!document) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kNotAllowedError,
-          "The document has no associated browsing context");
-      return ScriptPromise();
-    }
-
     // 4.2. If document is not fully active, reject promise with a
     //      "NotAllowedError" DOMException, and return promise.
-    if (!document->IsActive()) {
+    if (!window->document()->IsActive()) {
       exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
                                         "The document is not active");
       return ScriptPromise();
@@ -129,8 +128,7 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
     // 4.3. If type is "screen" and the Document of the top-level browsing
     //      context is hidden, reject promise with a "NotAllowedError"
     //      DOMException, and return promise.
-    if (type == "screen" &&
-        !(document->GetPage() && document->GetPage()->IsPageVisible())) {
+    if (type == "screen" && !window->GetFrame()->GetPage()->IsPageVisible()) {
       exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
                                         "The requesting page is not visible");
       return ScriptPromise();
@@ -264,9 +262,8 @@ void WakeLock::ObtainPermission(
       break;
   }
 
-  auto* local_frame = GetExecutionContext()->IsDocument()
-                          ? Document::From(GetExecutionContext())->GetFrame()
-                          : nullptr;
+  auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext());
+  auto* local_frame = window ? window->GetFrame() : nullptr;
   GetPermissionService()->RequestPermission(
       CreatePermissionDescriptor(permission_name),
       LocalFrame::HasTransientUserActivation(local_frame), std::move(callback));

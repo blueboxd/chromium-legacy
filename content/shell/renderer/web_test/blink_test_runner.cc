@@ -286,7 +286,7 @@ void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
 }
 
 void BlinkTestRunner::SetBlockThirdPartyCookies(bool block) {
-  GetWebTestClientRemote()->BlockThirdPartyCookies(block);
+  GetBlinkTestClientRemote()->BlockThirdPartyCookies(block);
 }
 
 void BlinkTestRunner::SetLocale(const std::string& locale) {
@@ -298,12 +298,12 @@ void BlinkTestRunner::SetLocale(const std::string& locale) {
 
 base::FilePath BlinkTestRunner::GetWritableDirectory() {
   base::FilePath result;
-  GetWebTestClientRemote()->GetWritableDirectory(&result);
+  GetBlinkTestClientRemote()->GetWritableDirectory(&result);
   return result;
 }
 
 void BlinkTestRunner::SetFilePathForMockFileDialog(const base::FilePath& path) {
-  GetWebTestClientRemote()->SetFilePathForMockFileDialog(path);
+  GetBlinkTestClientRemote()->SetFilePathForMockFileDialog(path);
 }
 
 void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
@@ -331,7 +331,7 @@ void BlinkTestRunner::TestFinished() {
   // If we're not in the main frame, then ask the browser to redirect the call
   // to the main frame instead.
   if (!is_main_window_ || !web_view_test_proxy_->GetMainRenderFrame()) {
-    GetWebTestClientRemote()->TestFinishedInSecondaryRenderer();
+    GetBlinkTestClientRemote()->TestFinishedInSecondaryRenderer();
     return;
   }
 
@@ -353,7 +353,7 @@ void BlinkTestRunner::TestFinished() {
   if (test_runner->ShouldDumpAsAudio()) {
     CaptureLocalAudioDump();
 
-    GetWebTestClientRemote()->InitiateCaptureDump(
+    GetBlinkTestClientRemote()->InitiateCaptureDump(
         browser_should_dump_back_forward_list,
         /*browser_should_capture_pixels=*/false);
     return;
@@ -366,7 +366,7 @@ void BlinkTestRunner::TestFinished() {
   CaptureLocalLayoutDump();
 
   if (!test_runner->ShouldGeneratePixelResults()) {
-    GetWebTestClientRemote()->InitiateCaptureDump(
+    GetBlinkTestClientRemote()->InitiateCaptureDump(
         browser_should_dump_back_forward_list,
         /*browser_should_capture_pixels=*/false);
     return;
@@ -386,7 +386,7 @@ void BlinkTestRunner::TestFinished() {
           web_frame->GetSelectionBoundsRectForTesting();
     }
   }
-  GetWebTestClientRemote()->InitiateCaptureDump(
+  GetBlinkTestClientRemote()->InitiateCaptureDump(
       browser_should_dump_back_forward_list,
       !test_runner->CanDumpPixelsFromRenderer());
 }
@@ -721,7 +721,7 @@ void BlinkTestRunner::OnResetRendererAfterWebTest() {
       request);
 }
 
-void BlinkTestRunner::OnTestFinishedInSecondaryRenderer() {
+void BlinkTestRunner::OnFinishTestInMainWindow() {
   DCHECK(is_main_window_ && web_view_test_proxy_->GetMainRenderFrame());
 
   // Avoid a situation where TestFinished is called twice, because

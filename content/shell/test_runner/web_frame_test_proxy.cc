@@ -332,8 +332,8 @@ void WebFrameTestProxy::ResetRendererAfterWebTest() {
   blink_test_runner()->OnResetRendererAfterWebTest();
 }
 
-void WebFrameTestProxy::TestFinishedInSecondaryRenderer() {
-  blink_test_runner()->OnTestFinishedInSecondaryRenderer();
+void WebFrameTestProxy::FinishTestInMainWindow() {
+  blink_test_runner()->OnFinishTestInMainWindow();
 }
 
 void WebFrameTestProxy::LayoutDumpCompleted(

@@ -25,6 +25,8 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/util.h"
 #include "net/base/url_util.h"
+#include "url/android/gurl_android.h"
+#include "url/gurl.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
@@ -157,44 +159,44 @@ base::android::ScopedJavaLocalRef<jstring>
 TemplateUrlServiceAndroid::GetSearchQueryForUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& jurl) {
+    const JavaParamRef<jobject>& jurl) {
   const TemplateURL* default_provider =
       template_url_service_->GetDefaultSearchProvider();
 
-  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
+  std::unique_ptr<GURL> url = url::GURLAndroid::ToNativeGURL(env, jurl);
+
   base::string16 query;
 
   if (default_provider &&
       default_provider->url_ref().SupportsReplacement(
           template_url_service_->search_terms_data()) &&
       template_url_service_->IsSearchResultsPageFromDefaultSearchProvider(
-          url)) {
+          *url)) {
     default_provider->ExtractSearchTermsFromURL(
-        url, template_url_service_->search_terms_data(), &query);
+        *url, template_url_service_->search_terms_data(), &query);
   }
 
   return base::android::ConvertUTF16ToJavaString(env, query);
 }
 
-base::android::ScopedJavaLocalRef<jstring>
+base::android::ScopedJavaLocalRef<jobject>
 TemplateUrlServiceAndroid::GetUrlForVoiceSearchQuery(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& jquery) {
   base::string16 query(base::android::ConvertJavaStringToUTF16(env, jquery));
-  std::string url;
 
   if (!query.empty()) {
     GURL gurl(GetDefaultSearchURLForSearchTerms(template_url_service_, query));
     if (google_util::IsGoogleSearchUrl(gurl))
       gurl = net::AppendQueryParameter(gurl, "inm", "vs");
-    url = gurl.spec();
+    return url::GURLAndroid::FromNativeGURL(env, gurl);
   }
 
-  return base::android::ConvertUTF8ToJavaString(env, url);
+  return url::GURLAndroid::EmptyGURL(env);
 }
 
-base::android::ScopedJavaLocalRef<jstring>
+base::android::ScopedJavaLocalRef<jobject>
 TemplateUrlServiceAndroid::GetUrlForContextualSearchQuery(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -203,7 +205,6 @@ TemplateUrlServiceAndroid::GetUrlForContextualSearchQuery(
     jboolean jshould_prefetch,
     const JavaParamRef<jstring>& jprotocol_version) {
   base::string16 query(base::android::ConvertJavaStringToUTF16(env, jquery));
-  std::string url;
 
   if (!query.empty()) {
     GURL gurl(GetDefaultSearchURLForSearchTerms(template_url_service_, query));
@@ -225,10 +226,10 @@ TemplateUrlServiceAndroid::GetUrlForContextualSearchQuery(
         }
       }
     }
-    url = gurl.spec();
+    return url::GURLAndroid::FromNativeGURL(env, gurl);
   }
 
-  return base::android::ConvertUTF8ToJavaString(env, url);
+  return url::GURLAndroid::EmptyGURL(env);
 }
 
 base::android::ScopedJavaLocalRef<jstring>

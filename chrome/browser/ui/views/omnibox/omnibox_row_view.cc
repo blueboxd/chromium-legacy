@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -60,7 +61,21 @@ class OmniboxRowView::HeaderView : public views::View,
   }
 
   // views::View:
-  gfx::Insets GetInsets() const override { return gfx::Insets(8, 16); }
+  gfx::Insets GetInsets() const override {
+    constexpr int vertical = 8;
+
+    // Aligns the header text with the icons of ordinary matches. The assumed
+    // small icon width here is lame, but necessary, since it's not explicitly
+    // defined anywhere else in the code.
+    constexpr int assumed_match_cell_icon_width = 16;
+    constexpr int left_inset = OmniboxMatchCellView::kMarginLeft +
+                               (OmniboxMatchCellView::kImageBoundsWidth -
+                                assumed_match_cell_icon_width) /
+                                   2;
+
+    return gfx::Insets(vertical, left_inset, vertical,
+                       OmniboxMatchCellView::kMarginRight);
+  }
   void OnMouseEntered(const ui::MouseEvent& event) override {
     UpdateUIForHoverState();
   }

@@ -54,17 +54,6 @@ class MojoDataItem : public BlobDataItem::DataHandle {
     *os << "<MojoDataItem>";
   }
 
-  const char* BytesReadHistogramLabel() const override {
-    switch (item_->type) {
-      case mojom::BlobDataItemType::kUnknown:
-        return nullptr;
-      case mojom::BlobDataItemType::kCacheStorage:
-        return "DiskCache.CacheStorage";
-      case mojom::BlobDataItemType::kIndexedDB:
-        return "IndexedDB";
-    }
-  }
-
  protected:
   ~MojoDataItem() override = default;
 

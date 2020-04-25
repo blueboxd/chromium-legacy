@@ -78,7 +78,11 @@ if (is_win || is_mac) {
     }
 
     if (is_win) {
-      sources += [ "external_constants_win.cc" ]
+      sources += [
+        "external_constants_win.cc",
+        "win/group_policy_manager.cc",
+        "win/group_policy_manager.h",
+      ]
       deps += [ "//chrome/updater/win:constants" ]
     }
   }
@@ -233,6 +237,7 @@ if (is_win || is_mac) {
       sources += [
         "external_constants_win_unittest.cc",
         "test/integration_tests_win.cc",
+        "win/group_policy_manager_unittest.cc",
       ]
 
       deps += [

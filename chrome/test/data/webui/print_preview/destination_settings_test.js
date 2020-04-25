@@ -4,7 +4,7 @@
 
 import {CloudPrintInterfaceEventType, CloudPrintInterfaceImpl, Destination, DestinationConnectionStatus, DestinationErrorType, DestinationOrigin, DestinationState, DestinationStore, DestinationType, Error, makeRecentDestination, NativeLayer, State} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
@@ -192,7 +192,7 @@ suite(destination_settings_test.suiteName, function() {
   function signIn() {
     cloudPrintInterface.resetResolver('printer');
     cloudPrintInterface.setPrinter(getGoogleDriveDestination(defaultUser));
-    window.cr.webUIListenerCallback('user-accounts-updated', [defaultUser]);
+    webUIListenerCallback('user-accounts-updated', [defaultUser]);
     return eventToPromise(
                CloudPrintInterfaceEventType.PRINTER_DONE,
                cloudPrintInterface.getEventTarget())
@@ -832,7 +832,7 @@ suite(destination_settings_test.suiteName, function() {
               ]);
 
               // Sign out.
-              window.cr.webUIListenerCallback('user-accounts-updated', []);
+              webUIListenerCallback('user-accounts-updated', []);
               flush();
 
               assertEquals('ID2', destinationSettings.destination.id);
@@ -845,12 +845,11 @@ suite(destination_settings_test.suiteName, function() {
 
               // Now that the selected destination is local, signing in and out
               // shouldn't impact it.
-              window.cr.webUIListenerCallback(
-                  'user-accounts-updated', [defaultUser]);
+              webUIListenerCallback('user-accounts-updated', [defaultUser]);
               flush();
               assertEquals('ID2', destinationSettings.destination.id);
 
-              window.cr.webUIListenerCallback('user-accounts-updated', []);
+              webUIListenerCallback('user-accounts-updated', []);
               flush();
               assertEquals('ID2', destinationSettings.destination.id);
             });

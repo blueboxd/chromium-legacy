@@ -123,24 +123,21 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
   const int vertical_spacing = layout_provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_VERTICAL);
+
   // The padding of the editing controls is adaptive, to improve the hit target
-  // size on touch devices.
+  // size and screen real estate usage on touch devices.
+  const int group_modifier_vertical_spacing =
+      ui::TouchUiController::Get()->touch_ui() ? vertical_spacing / 2
+                                               : vertical_spacing;
   const gfx::Insets control_insets =
       ui::TouchUiController::Get()->touch_ui()
-          ? gfx::Insets(3 * vertical_spacing / 2, 3 * horizontal_spacing / 2)
+          ? gfx::Insets(5 * vertical_spacing / 4, horizontal_spacing)
           : gfx::Insets(vertical_spacing, horizontal_spacing);
-  // Some spacing is only present on non-touch UI, since real estate is
-  // generally more precious on touch devices.
-  const int nontouch_only_spacing =
-      ui::TouchUiController::Get()->touch_ui()
-          ? 0
-          : ChromeLayoutProvider::Get()->GetDistanceMetric(
-                ChromeDistanceMetric::DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
 
   views::View* group_modifier_container =
       AddChildView(std::make_unique<views::View>());
-  group_modifier_container->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(control_insets.top(), 0)));
+  group_modifier_container->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(group_modifier_vertical_spacing, 0)));
 
   views::FlexLayout* group_modifier_container_layout =
       group_modifier_container->SetLayoutManager(
@@ -152,9 +149,9 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   // Add the text field for editing the title.
   views::View* title_field_container =
       group_modifier_container->AddChildView(std::make_unique<views::View>());
-  title_field_container->SetBorder(views::CreateEmptyBorder(control_insets));
-  title_field_container->SetProperty(views::kMarginsKey,
-                                     gfx::Insets(nontouch_only_spacing, 0));
+  title_field_container->SetBorder(views::CreateEmptyBorder(
+      control_insets.top(), control_insets.left(),
+      group_modifier_vertical_spacing, control_insets.right()));
 
   title_field_ = title_field_container->AddChildView(
       std::make_unique<TitleField>(stop_context_menu_propagation));
@@ -179,8 +176,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
                      base::Unretained(this))));
   color_selector_->SetProperty(
       views::kMarginsKey,
-      gfx::Insets(0, control_insets.left(), nontouch_only_spacing,
-                  control_insets.right()));
+      gfx::Insets(0, control_insets.left(), 0, control_insets.right()));
 
   AddChildView(std::make_unique<views::Separator>());
 

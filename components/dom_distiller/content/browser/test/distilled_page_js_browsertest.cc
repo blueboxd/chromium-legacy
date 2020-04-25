@@ -22,22 +22,6 @@
 namespace dom_distiller {
 namespace {
 
-base::Value ExecuteJsScript(content::WebContents* web_contents,
-                            const std::string& script) {
-  base::Value result;
-  base::RunLoop run_loop;
-  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16(script),
-      base::BindOnce(
-          [](base::Closure callback, base::Value* out, base::Value result) {
-            (*out) = std::move(result);
-            callback.Run();
-          },
-          run_loop.QuitClosure(), &result));
-  run_loop.Run();
-  return result;
-}
-
 class DistilledPageJsTest : public content::ContentBrowserTest {
  protected:
   explicit DistilledPageJsTest()
@@ -53,14 +37,13 @@ class DistilledPageJsTest : public content::ContentBrowserTest {
     distilled_page_ = SetUpTestServerWithDistilledPage(embedded_test_server());
   }
 
-  void LoadAndExecuteTestScript(const std::string& file,
-                                const std::string& fixture_name) {
+  void LoadAndExecuteTestScript(const std::string& file) {
     distilled_page_->AppendScriptFile(file);
     distilled_page_->Load(embedded_test_server(), shell()->web_contents());
-    const base::Value result = ExecuteJsScript(
-        shell()->web_contents(), base::StrCat({fixture_name, ".run()"}));
-    ASSERT_EQ(base::Value::Type::BOOLEAN, result.type());
-    EXPECT_TRUE(result.GetBool());
+    bool allTestsPassed;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        shell()->web_contents(), "mocha.run()", &allTestsPassed));
+    EXPECT_TRUE(allTestsPassed);
   }
 
   std::unique_ptr<FakeDistilledPage> distilled_page_;
@@ -72,7 +55,7 @@ class DistilledPageJsTest : public content::ContentBrowserTest {
 #define MAYBE_Pinch Pinch
 #endif
 IN_PROC_BROWSER_TEST_F(DistilledPageJsTest, MAYBE_Pinch) {
-  LoadAndExecuteTestScript("pinch_tester.js", "pinchtest");
+  LoadAndExecuteTestScript("pinch_tester.js");
 }
 
 }  // namespace

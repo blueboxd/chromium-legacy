@@ -30,8 +30,10 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.site_settings.PermissionInfo;
 import org.chromium.chrome.browser.site_settings.SingleWebsiteSettings;
 import org.chromium.chrome.browser.site_settings.WebsitePreferenceBridge;
@@ -470,7 +472,8 @@ public class SearchEngineAdapter extends BaseAdapter
         if (linkBeingShown == R.string.search_engine_system_location_disabled) {
             mContext.startActivity(LocationUtils.getInstance().getSystemLocationSettingsIntent());
         } else {
-            SettingsLauncher.getInstance().launchSettingsPage(mContext, SingleWebsiteSettings.class,
+            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+            settingsLauncher.launchSettingsActivity(mContext, SingleWebsiteSettings.class,
                     SingleWebsiteSettings.createFragmentArgsForSite(url));
         }
     }
@@ -497,16 +500,18 @@ public class SearchEngineAdapter extends BaseAdapter
     private int getPermissionsLinkMessage(String url) {
         if (url == null) return 0;
 
+        Profile profile = Profile.getLastUsedRegularProfile();
         PermissionInfo settings =
                 new PermissionInfo(PermissionInfo.Type.NOTIFICATION, url, null, false);
-        boolean notificationsAllowed = settings.getContentSetting() == ContentSettingValues.ALLOW
+        boolean notificationsAllowed =
+                settings.getContentSetting(profile) == ContentSettingValues.ALLOW
                 && WebsitePreferenceBridge.isPermissionControlledByDSE(
-                        ContentSettingsType.NOTIFICATIONS, url, false);
+                        profile, ContentSettingsType.NOTIFICATIONS, url);
 
         settings = new PermissionInfo(PermissionInfo.Type.GEOLOCATION, url, null, false);
-        boolean locationAllowed = settings.getContentSetting() == ContentSettingValues.ALLOW
+        boolean locationAllowed = settings.getContentSetting(profile) == ContentSettingValues.ALLOW
                 && WebsitePreferenceBridge.isPermissionControlledByDSE(
-                        ContentSettingsType.GEOLOCATION, url, false);
+                        profile, ContentSettingsType.GEOLOCATION, url);
 
         boolean systemLocationAllowed =
                 LocationUtils.getInstance().isSystemLocationSettingEnabled();
@@ -561,7 +566,8 @@ public class SearchEngineAdapter extends BaseAdapter
 
         PermissionInfo locationSettings =
                 new PermissionInfo(PermissionInfo.Type.GEOLOCATION, url, null, false);
-        return locationSettings.getContentSetting() == ContentSettingValues.ALLOW;
+        return locationSettings.getContentSetting(Profile.getLastUsedRegularProfile())
+                == ContentSettingValues.ALLOW;
     }
 
     private int computeStartIndexForRecentSearchEngines() {

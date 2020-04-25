@@ -50,6 +50,7 @@ namespace optimization_guide {
 class HintCache;
 class HintsFetcherFactory;
 class OptimizationFilter;
+class OptimizationMetadata;
 class OptimizationGuideService;
 enum class OptimizationTargetDecision;
 enum class OptimizationTypeDecision;
@@ -161,6 +162,12 @@ class OptimizationGuideHintsManager
   // updated based on the current state of |this|.
   void OnNavigationFinish(const std::vector<GURL>& navigation_redirect_chain,
                           OptimizationGuideNavigationData* navigation_data);
+
+  // Add hints to the cache with the provided metadata. For testing only.
+  void AddHintForTesting(
+      const GURL& url,
+      optimization_guide::proto::OptimizationType optimization_type,
+      const base::Optional<optimization_guide::OptimizationMetadata>& metadata);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OptimizationGuideHintsManagerTest, IsGoogleURL);

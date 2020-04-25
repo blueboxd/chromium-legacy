@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/feeds/media_feeds_converter.h"
 #include "chrome/browser/media/feeds/media_feeds_fetcher.h"
+#include "chrome/browser/media/feeds/media_feeds_service.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
@@ -64,44 +65,10 @@ void MediaFeedsUI::GetItemsForMediaFeed(int64_t feed_id,
                                                          std::move(callback));
 }
 
-void MediaFeedsUI::OnFetchResponse(
-    int64_t feed_id,
-    FetchMediaFeedCallback callback,
-    const schema_org::improved::mojom::EntityPtr& response,
-    media_feeds::MediaFeedsFetcher::Status status) {
-  std::vector<media_session::MediaImage> logos;
-  std::string display_name;
-  auto feed_items = media_feeds::GetMediaFeeds(response, &logos, &display_name);
-
-  if (!feed_items.has_value())
-    return;
-
-  GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      feed_id, std::move(feed_items.value()),
-      media_feeds::mojom::FetchResult::kSuccess, false, std::move(logos),
-      display_name, std::move(callback));
-
-  fetcher_.reset();
-}
-
 void MediaFeedsUI::FetchMediaFeed(int64_t feed_id,
                                   const GURL& url,
                                   FetchMediaFeedCallback callback) {
-  if (fetcher_) {
-    std::move(callback).Run();
-    return;
-  }
-
-  fetcher_ = std::make_unique<media_feeds::MediaFeedsFetcher>(
-      content::BrowserContext::GetDefaultStoragePartition(
-          Profile::FromWebUI(web_ui()))
-          ->GetURLLoaderFactoryForBrowserProcess());
-  fetcher_->FetchFeed(
-      url,
-      // Use of unretained is safe because the callback is owned
-      // by fetcher_, which will not outlive this.
-      base::BindOnce(&MediaFeedsUI::OnFetchResponse, base::Unretained(this),
-                     feed_id, std::move(callback)));
+  GetMediaFeedsService()->FetchMediaFeed(feed_id, url, std::move(callback));
 }
 
 media_history::MediaHistoryKeyedService*
@@ -111,6 +78,16 @@ MediaFeedsUI::GetMediaHistoryService() {
 
   media_history::MediaHistoryKeyedService* service =
       media_history::MediaHistoryKeyedServiceFactory::GetForProfile(profile);
+  DCHECK(service);
+  return service;
+}
+
+media_feeds::MediaFeedsService* MediaFeedsUI::GetMediaFeedsService() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  DCHECK(profile);
+
+  media_feeds::MediaFeedsService* service =
+      media_feeds::MediaFeedsService::Get(profile);
   DCHECK(service);
   return service;
 }

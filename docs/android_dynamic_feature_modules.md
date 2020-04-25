@@ -44,7 +44,7 @@ as resources. This section walks you through creating the module target in our
 build system.
 
 First, create the file
-`//chrome/android/features/foo/internal/java/AndroidManifest.xml` and add:
+`//chrome/android/modules/foo/internal/java/AndroidManifest.xml` and add:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -69,13 +69,13 @@ First, create the file
 ```
 
 Next, create a descriptor configuring the Foo module. To do this, create
-`//chrome/android/features/foo/foo_module.gni` and add the following:
+`//chrome/android/modules/foo/foo_module.gni` and add the following:
 
 ```gn
 foo_module_desc = {
   name = "foo"
   android_manifest =
-      "//chrome/android/features/foo/internal/java/AndroidManifest.xml"
+      "//chrome/android/modules/foo/internal/java/AndroidManifest.xml"
 }
 ```
 
@@ -84,7 +84,7 @@ Then, add the module descriptor to the appropriate descriptor list in
 list:
 
 ```gn
-import("//chrome/android/features/foo/foo_module.gni")
+import("//chrome/android/modules/foo/foo_module.gni")
 ...
 chrome_modern_module_descs += [ foo_module_desc ]
 ```
@@ -180,32 +180,26 @@ First, define a module interface for Foo. This is accomplished by adding the
 `@ModuleInterface` annotation to the Foo interface. This annotation
 automatically creates a `FooModule` class that can be used later to install and
 access the module. To do this, add the following in the new file
-`//chrome/android/features/foo/public/java/src/org/chromium/chrome/features/foo/Foo.java`:
+`//chrome/browser/foo/android/java/src/org/chromium/chrome/browser/foo/Foo.java`:
 
 ```java
-package org.chromium.chrome.features.foo;
+package org.chromium.chrome.browser.foo;
 
 import org.chromium.components.module_installer.builder.ModuleInterface;
 
 /** Interface to call into Foo feature. */
-@ModuleInterface(module = "foo", impl = "org.chromium.chrome.features.FooImpl")
+@ModuleInterface(module = "foo", impl = "org.chromium.chrome.browser.FooImpl")
 public interface Foo {
     /** Magical function. */
     void bar();
 }
 ```
 
-*** note
-**Note:** To reflect the separation from "Chrome browser" code, features should
-be defined in their own package name, distinct from the chrome package - i.e.
-`org.chromium.chrome.features.<feature-name>`.
-***
-
 Next, define an implementation that goes into the module in the new file
-`//chrome/android/features/foo/internal/java/src/org/chromium/chrome/features/foo/FooImpl.java`:
+`//chrome/browser/foo/internal/android/java/src/org/chromium/chrome/browser/foo/FooImpl.java`:
 
 ```java
-package org.chromium.chrome.features.foo;
+package org.chromium.chrome.browser.foo;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.UsedByReflection;
@@ -231,31 +225,36 @@ if (FooModule.isInstalled()) {
 ```
 
 The interface has to be available regardless of whether the Foo DFM is present.
-Therefore, put those classes into the base module. For this create a list of
-those Java files in
-`//chrome/android/features/foo/public/foo_public_java_sources.gni`:
+Therefore, put those classes into the base module, creating a new public
+build target in: `//chrome/browser/foo/BUILD.gn`:
 
 ```gn
-foo_public_java_sources = [
-  "//chrome/android/features/foo/public/java/src/org/chromium/chrome/features/foo/Foo.java",
-]
+import("//build/config/android/rules.gni")
+
+android_library("java") {
+  sources = [
+    "android/java/src/org/chromium/chrome/browser/foo/Foo.java",
+  ]
+}
 ```
 
-Then add this list to `chrome_java in //chrome/android/BUILD.gn`:
+Then, depend on this target from where it is used as usual. For example, if the
+caller is in `chrome_java in //chrome/android/BUILD.gn`:
 
 ```gn
 ...
-import("//chrome/android/features/foo/public/foo_public_java_sources.gni")
-...
 android_library("chrome_java") {
-  ...
-  sources += foo_public_java_sources
+  deps =[
+    ...
+    "//chrome/browser/foo:java",
+    ...
+  ]
 }
 ...
 ```
 
 The actual implementation, however, should go into the Foo DFM. For this
-purpose, create a new file `//chrome/android/features/foo/internal/BUILD.gn` and
+purpose, create a new file `//chrome/browser/foo/internal/BUILD.gn` and
 make a library with the module Java code in it:
 
 ```gn
@@ -264,15 +263,17 @@ import("//build/config/android/rules.gni")
 android_library("java") {
   # Define like ordinary Java Android library.
   sources = [
-    "java/src/org/chromium/chrome/features/foo/FooImpl.java",
+    "android/java/src/org/chromium/chrome/browser/foo/FooImpl.java",
     # Add other Java classes that should go into the Foo DFM here.
   ]
-  # Put other Chrome libs into the classpath so that you can call into the rest
-  # of Chrome from the Foo DFM.
   deps = [
     "//base:base_java",
+    # Put other Chrome libs into the classpath so that you can call into them
+    # from the Foo DFM.
+    "//chrome/browser/bar:java",
+    # The module can depend even on `chrome_java` due to factory magic, but this
+    # is discouraged. Consider passing a delegate interface in instead.
     "//chrome/android:chrome_java",
-    # etc.
     # Also, you'll need to depend on any //third_party or //components code you
     # are using in the module code.
   ]
@@ -280,20 +281,20 @@ android_library("java") {
 ```
 
 Then, add this new library as a dependency of the Foo module descriptor in
-`//chrome/android/features/foo/foo_module.gni`:
+`//chrome/android/modules/foo/foo_module.gni`:
 
 ```gn
 foo_module_desc = {
   ...
   java_deps = [
-    "//chrome/android/features/foo/internal:java",
+    "//chrome/browser/foo/internal:java",
   ]
 }
 ```
 
 Finally, tell Android that your module is now containing code. Do that by
 removing the `android:hasCode="false"` attribute from the `<application>` tag in
-`//chrome/android/features/foo/internal/java/AndroidManifest.xml`. You should be
+`//chrome/android/modules/foo/internal/java/AndroidManifest.xml`. You should be
 left with an empty tag like so:
 
 ```xml
@@ -311,7 +312,7 @@ logcat. Yay!
 
 You can add a third-party native library (or any standalone library that doesn't
 depend on Chrome code) by adding it as a loadable module to the module descriptor in
-`//chrome/android/features/foo/foo_module.gni`:
+`//chrome/android/moduiles/foo/foo_module.gni`:
 
 ```gn
 foo_module_desc = {
@@ -409,8 +410,8 @@ component("foo") {
   ]
   deps = [
     ":jni_registration",
-    "//chrome/android/features/foo/internal:native",
     "//base",
+    "//chrome/browser/foo/internal:native",
   ]
 
   # Instruct the compiler to flag exported entrypoint function as belonging in
@@ -426,7 +427,7 @@ component("foo") {
 # specified Java target, and not all its transitive deps (which could include
 # the base module).
 generate_jni_registration("jni_registration") {
-  targets = [ "//chrome/android/features/foo/internal:java" ]
+  targets = [ "//chrome/browser/foo/internal:java" ]
   header_output = "$target_gen_dir/jni_registration.h"
   namespace = "foo"
   no_transitive_deps = true
@@ -445,11 +446,11 @@ Now, over to the implementation of the module. These are the parts that
 shouldn't know or care whether they're living in a module or not.
 
 Add a stub implementation in
-`//chrome/android/features/foo/internal/foo_impl.cc`:
+`//chrome/browser/foo/internal/android/foo_impl.cc`:
 
 ```c++
 #include "base/logging.h"
-#include "chrome/android/features/foo/internal/jni_headers/FooImpl_jni.h"
+#include "chrome/browser/foo/internal/jni_headers/FooImpl_jni.h"
 
 static int JNI_FooImpl_Execute(JNIEnv* env) {
   LOG(INFO) << "Running foo feature code!";
@@ -458,7 +459,7 @@ static int JNI_FooImpl_Execute(JNIEnv* env) {
 ```
 
 And, the associated build config in
-`//chrome/android/features/foo/internal/BUILD.gn`:
+`//chrome/browser/foo/internal/BUILD.gn`:
 
 ```gn
 import("//build/config/android/rules.gni")
@@ -467,7 +468,7 @@ import("//build/config/android/rules.gni")
 
 source_set("native") {
   sources = [
-    "foo_impl.cc",
+    "android/foo_impl.cc",
   ]
 
   deps = [
@@ -478,7 +479,7 @@ source_set("native") {
 
 generate_jni("jni_headers") {
   sources = [
-    "java/src/org/chromium/chrome/features/foo/FooImpl.java",
+    "android/java/src/org/chromium/chrome/browser/foo/FooImpl.java",
   ]
 }
 ```
@@ -503,8 +504,8 @@ Finally, augment the module descriptor in
 foo_module_desc = {
   ...
   native_deps = [
-    "//chrome/android/features/foo/internal:native",
     "//chrome/android/modules/foo/internal:native",
+    "//chrome/browser/foo/internal:native",
   ]
   load_native_on_get_impl = true
 }
@@ -542,7 +543,7 @@ In this section we will add the required build targets to add Android resources
 to the Foo DFM.
 
 First, add a resources target to
-`//chrome/android/features/foo/internal/BUILD.gn` and add it as a dependency on
+`//chrome/browser/foo/internal/BUILD.gn` and add it as a dependency on
 Foo's `java` target in the same file:
 
 ```gn
@@ -550,7 +551,7 @@ Foo's `java` target in the same file:
 android_resources("java_resources") {
   # Define like ordinary Android resources target.
   ...
-  custom_package = "org.chromium.chrome.features.foo"
+  custom_package = "org.chromium.chrome.browser.foo"
 }
 ...
 android_library("java") {
@@ -564,7 +565,7 @@ android_library("java") {
 To add strings follow steps
 [here](http://dev.chromium.org/developers/design-documents/ui-localization) to
 add new Java GRD file. Then create
-`//chrome/android/features/foo/internal/java/strings/android_foo_strings.grd` as
+`//chrome/browser/foo/internal/android/resources/strings/android_foo_strings.grd` as
 follows:
 
 ```xml
@@ -599,13 +600,13 @@ follows:
 ```
 
 Then, create a new GRD target and add it as a dependency on `java_resources` in
-`//chrome/android/features/foo/internal/BUILD.gn`:
+`//chrome/browser/foo/internal/BUILD.gn`:
 
 ```gn
 ...
 java_strings_grd("java_strings_grd") {
   defines = chrome_grit_defines
-  grd_file = "java/strings/android_foo_strings.grd"
+  grd_file = "android/resources/strings/android_foo_strings.grd"
   outputs = [
     "values-am/android_foo_strings.xml",
     # Here, too, list output files for other supported languages.
@@ -616,23 +617,23 @@ java_strings_grd("java_strings_grd") {
 android_resources("java_resources") {
   ...
   deps = [":java_strings_grd"]
-  custom_package = "org.chromium.chrome.features.foo"
+  custom_package = "org.chromium.chrome.browser.foo"
 }
 ...
 ```
 
 You can then access Foo's resources using the
-`org.chromium.chrome.features.foo.R` class. To do this change
-`//chrome/android/features/foo/internal/java/src/org/chromium/chrome/features/foo/FooImpl.java`
+`org.chromium.chrome.browser.foo.R` class. To do this change
+`//chrome/browser/foo/internal/android/java/src/org/chromium/chrome/browser/foo/FooImpl.java`
 to:
 
 ```java
-package org.chromium.chrome.features.foo;
+package org.chromium.chrome.browser.foo;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.UsedByReflection;
-import org.chromium.chrome.features.foo.R;
+import org.chromium.chrome.browser.foo.R;
 
 @UsedByReflection("FooModule")
 public class FooImpl implements Foo {
@@ -703,8 +704,8 @@ for a DFM's native resources:
 ```gn
 foo_module_desc = {
   ...
-  paks = [ "$root_gen_dir/chrome/android/features/foo/internal/foo_resourcess.pak" ]
-  pak_deps = [ "//chrome/android/features/foo/internal:foo_paks" ]
+  paks = [ "$root_gen_dir/chrome/browser/foo/internal/foo_resourcess.pak" ]
+  pak_deps = [ "//chrome/browser/foo/internal:foo_paks" ]
   load_native_on_get_impl = true
 }
 ```
@@ -820,7 +821,7 @@ Conditional install means the DFM will be installed automatically upon first
 installing or updating Chrome if the device supports a particular feature.
 Conditional install is configured in the module's manifest. To install your
 module on all Daydream-ready devices for instance, your
-`//chrome/android/features/foo/internal/java/AndroidManifest.xml` should look
+`//chrome/android/modules/foo/internal/java/AndroidManifest.xml` should look
 like this:
 
 ```xml
@@ -881,7 +882,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
     ...
     if (_target_type != "android_app_bundle_module") {
       deps += [
-        "//chrome/android/features/foo/internal:java",
+        "//chrome/browser/foo/internal:java",
       ]
     }
   }

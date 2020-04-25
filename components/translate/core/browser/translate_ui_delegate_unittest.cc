@@ -143,23 +143,14 @@ TEST_F(TranslateUIDelegateTest, SetLanguageBlocked) {
 
   std::unique_ptr<TranslatePrefs> prefs(client_->GetTranslatePrefs());
   manager_->GetLanguageState().SetTranslateEnabled(true);
-  EXPECT_TRUE(manager_->GetLanguageState().translate_enabled());
   prefs->UnblockLanguage("ar");
   EXPECT_FALSE(prefs->IsBlockedLanguage("ar"));
 
   delegate_->SetLanguageBlocked(true);
-
   EXPECT_TRUE(prefs->IsBlockedLanguage("ar"));
-  EXPECT_FALSE(manager_->GetLanguageState().translate_enabled());
-
-  // Reset it to true again after delegate_->SetLanguageBlocked(true)
-  // turn it to false.
-  manager_->GetLanguageState().SetTranslateEnabled(true);
 
   delegate_->SetLanguageBlocked(false);
-
   EXPECT_FALSE(prefs->IsBlockedLanguage("ar"));
-  EXPECT_TRUE(manager_->GetLanguageState().translate_enabled());
 }
 
 TEST_F(TranslateUIDelegateTest, ShouldAlwaysTranslateBeCheckedByDefaultNever) {

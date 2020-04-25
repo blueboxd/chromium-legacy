@@ -1510,6 +1510,8 @@ EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi>::ToMojom(
       return media::mojom::VideoCaptureApi::ANDROID_API2_FULL;
     case media::VideoCaptureApi::ANDROID_API2_LIMITED:
       return media::mojom::VideoCaptureApi::ANDROID_API2_LIMITED;
+    case media::VideoCaptureApi::FUCHSIA_CAMERA3:
+      return media::mojom::VideoCaptureApi::FUCHSIA_CAMERA3;
     case media::VideoCaptureApi::VIRTUAL_DEVICE:
       return media::mojom::VideoCaptureApi::VIRTUAL_DEVICE;
     case media::VideoCaptureApi::UNKNOWN:
@@ -1553,6 +1555,9 @@ bool EnumTraits<media::mojom::VideoCaptureApi, media::VideoCaptureApi>::
       return true;
     case media::mojom::VideoCaptureApi::ANDROID_API2_LIMITED:
       *output = media::VideoCaptureApi::ANDROID_API2_LIMITED;
+      return true;
+    case media::mojom::VideoCaptureApi::FUCHSIA_CAMERA3:
+      *output = media::VideoCaptureApi::FUCHSIA_CAMERA3;
       return true;
     case media::mojom::VideoCaptureApi::VIRTUAL_DEVICE:
       *output = media::VideoCaptureApi::VIRTUAL_DEVICE;

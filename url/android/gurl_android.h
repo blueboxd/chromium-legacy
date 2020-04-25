@@ -20,6 +20,7 @@ class GURLAndroid {
   static base::android::ScopedJavaLocalRef<jobject> FromNativeGURL(
       JNIEnv* env,
       const GURL& gurl);
+  static base::android::ScopedJavaLocalRef<jobject> EmptyGURL(JNIEnv* env);
 };
 
 }  // namespace url

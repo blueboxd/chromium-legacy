@@ -7,8 +7,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
-#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy.h"
-#include "chrome/browser/chromeos/local_search_service/local_search_service_proxy_factory.h"
+#include "chrome/browser/chromeos/local_search_service/local_search_service_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/common/webui_url_constants.h"
@@ -42,9 +41,7 @@ class OsSettingsLocalizedStringsProviderTest : public testing::Test {
         OsSettingsLocalizedStringsProviderFactory::GetForProfile(profile);
 
     index_ =
-        local_search_service::LocalSearchServiceProxyFactory::GetForProfile(
-            profile)
-            ->GetLocalSearchService()
+        local_search_service::LocalSearchServiceFactory::GetForProfile(profile)
             ->GetIndex(local_search_service::IndexId::kCrosSettings);
 
     // Allow asynchronous networking code to complete (networking functionality

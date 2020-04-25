@@ -770,6 +770,9 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_PHONE_CALL_BUTTON" desc="Text in the confirmation dialog button that will initiate a phone call for the presented number. [Length: 10em] [iOS only]">
         Call
       </message>
+      <message name="IDS_IOS_FIRSTRUN_TERMS_TITLE" desc="Title for the Terms of Service page shown to user on First Run. [Length: 20em] [iOS only]">
+        Terms of Service
+      </message>
       <message name="IDS_IOS_FIRSTRUN_ACCOUNT_CONSISTENCY_SKIP_BUTTON" desc="Title of the button to skip the selection of an account on First Run when account consistency is enabled. [Length: 10em] [iOS only]">
         No Thanks
       </message>

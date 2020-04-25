@@ -30,6 +30,7 @@ class ViewPainter {
 
   void PaintRootElementGroup(const PaintInfo&,
                              const IntRect& pixel_snapped_background_rect,
+                             const PropertyTreeState& background_paint_state,
                              const DisplayItemClient& background_client,
                              bool painted_separate_backdrop,
                              bool painted_separate_effect);

@@ -2362,6 +2362,11 @@ if (!is_ios) {
       "//build/win:default_exe_manifest",
     ]
   }
+
+  executable("json_perftest_decodebench") {
+    sources = [ "json/json_perftest_decodebench.cc" ]
+    deps = [ ":base" ]
+  }
 }
 
 if (is_win) {

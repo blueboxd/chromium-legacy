@@ -308,6 +308,8 @@ jumbo_source_set("base") {
     "video_decoder.h",
     "video_decoder_config.cc",
     "video_decoder_config.h",
+    "video_encoder.cc",
+    "video_encoder.h",
     "video_frame.cc",
     "video_frame.h",
     "video_frame_layout.cc",

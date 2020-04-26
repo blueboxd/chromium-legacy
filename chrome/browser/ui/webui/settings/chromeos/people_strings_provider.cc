@@ -121,6 +121,9 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_UNMANAGED_ACCOUNT},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddString("accountManagerLearnMoreUrl",
+                         chrome::kAccountManagerLearnMoreURL);
 }
 
 void AddKerberosAddAccountDialogStrings(content::WebUIDataSource* html_source) {

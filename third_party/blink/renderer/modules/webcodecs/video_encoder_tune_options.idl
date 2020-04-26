@@ -9,6 +9,6 @@ dictionary VideoEncoderTuneOptions {
 
   double framerate;
 
-  unsigned long width;
-  unsigned long height;
+  required unsigned long width;
+  required unsigned long height;
 };

@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
@@ -513,7 +514,7 @@ void AddIncompatibleApplicationsStrings(content::WebUIDataSource* html_source) {
 }
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-void AddResetStrings(content::WebUIDataSource* html_source) {
+void AddResetStrings(content::WebUIDataSource* html_source, Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"resetPageTitle", IDS_SETTINGS_RESET_AND_CLEANUP},
@@ -538,6 +539,10 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
 #endif
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddBoolean(
+      "showResetProfileBanner",
+      ResetSettingsHandler::ShouldShowResetProfileBanner(profile));
 
   html_source->AddString("resetPageLearnMoreUrl",
                          chrome::kResetProfileSettingsLearnMoreURL);
@@ -2041,7 +2046,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddPeopleStrings(html_source, profile);
   AddPrintingStrings(html_source);
   AddPrivacyStrings(html_source, profile);
-  AddResetStrings(html_source);
+  AddResetStrings(html_source, profile);
   AddSearchEnginesStrings(html_source);
   AddSearchInSettingsStrings(html_source);
   AddSearchStrings(html_source);

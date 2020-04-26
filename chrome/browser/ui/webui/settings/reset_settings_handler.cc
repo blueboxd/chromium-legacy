@@ -32,12 +32,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -70,7 +66,24 @@ ResetRequestOriginFromString(const std::string& request_origin) {
 
 }  // namespace
 
+// static
 const char ResetSettingsHandler::kCctResetSettingsHash[] = "cct";
+
+// static
+bool ResetSettingsHandler::ShouldShowResetProfileBanner(Profile* profile) {
+  const base::Time reset_time = chrome_prefs::GetResetTime(profile);
+
+  // If there is no reset time, do not show the banner.
+  if (reset_time.is_null())
+    return false;
+
+  // Otherwise, only show the banner if it has been less than |kBannerShowTime|
+  // since reset.
+  static constexpr base::TimeDelta kBannerShowTime =
+      base::TimeDelta::FromDays(5);
+  const base::TimeDelta since_reset = base::Time::Now() - reset_time;
+  return since_reset < kBannerShowTime;
+}
 
 ResetSettingsHandler::ResetSettingsHandler(Profile* profile)
     : profile_(profile) {
@@ -78,33 +91,6 @@ ResetSettingsHandler::ResetSettingsHandler(Profile* profile)
 }
 
 ResetSettingsHandler::~ResetSettingsHandler() {}
-
-ResetSettingsHandler* ResetSettingsHandler::Create(
-    content::WebUIDataSource* html_source, Profile* profile) {
-#if defined(OS_CHROMEOS)
-  // TODO(crbug.com/891905): Centralize powerwash restriction checks.
-  bool allow_powerwash = false;
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  allow_powerwash =
-      !connector->IsEnterpriseManaged() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser() &&
-      !user_manager::UserManager::Get()->IsLoggedInAsChildUser();
-  html_source->AddBoolean("allowPowerwash", allow_powerwash);
-#endif  // defined(OS_CHROMEOS)
-
-  bool show_reset_profile_banner = false;
-  static const int kBannerShowTimeInDays = 5;
-  const base::Time then = chrome_prefs::GetResetTime(profile);
-  if (!then.is_null()) {
-    show_reset_profile_banner =
-        (base::Time::Now() - then).InDays() < kBannerShowTimeInDays;
-  }
-  html_source->AddBoolean("showResetProfileBanner", show_reset_profile_banner);
-
-  return new ResetSettingsHandler(profile);
-}
 
 void ResetSettingsHandler::OnJavascriptDisallowed() {
   callback_weak_ptr_factory_.InvalidateWeakPtrs();

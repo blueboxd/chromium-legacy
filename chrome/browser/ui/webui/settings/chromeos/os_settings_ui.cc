@@ -160,8 +160,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::SearchEnginesHandler>(profile));
   AddSettingsPageUIHandler(
       base::WrapUnique(::settings::AboutHandler::Create(html_source, profile)));
-  AddSettingsPageUIHandler(base::WrapUnique(
-      ::settings::ResetSettingsHandler::Create(html_source, profile)));
+  AddSettingsPageUIHandler(
+      std::make_unique<::settings::ResetSettingsHandler>(profile));
 
   // Add the metrics handler to write uma stats.
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());

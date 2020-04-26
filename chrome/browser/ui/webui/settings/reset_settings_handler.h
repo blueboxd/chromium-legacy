@@ -19,10 +19,6 @@ namespace base {
 class ListValue;
 }  // namespace base
 
-namespace content {
-class WebUIDataSource;
-}
-
 class BrandcodeConfigFetcher;
 class Profile;
 class ProfileResetter;
@@ -39,10 +35,10 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
   // profile settings URL.
   static const char kCctResetSettingsHash[];
 
-  ~ResetSettingsHandler() override;
+  static bool ShouldShowResetProfileBanner(Profile* profile);
 
-  static ResetSettingsHandler* Create(
-      content::WebUIDataSource* html_source, Profile* profile);
+  explicit ResetSettingsHandler(Profile* profile);
+  ~ResetSettingsHandler() override;
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -50,8 +46,6 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
   void OnJavascriptDisallowed() override;
 
  protected:
-  explicit ResetSettingsHandler(Profile* profile);
-
   // Overriden in tests to substitute with a test version of ProfileResetter.
   virtual ProfileResetter* GetResetter();
 

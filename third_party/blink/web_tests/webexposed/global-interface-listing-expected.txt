@@ -8775,8 +8775,10 @@ interface VideoDecoder
 interface VideoEncoder
     attribute @@toStringTag
     method close
+    method configure
     method constructor
     method encode
+    method flush
     method tune
 interface VideoFrame
     attribute @@toStringTag

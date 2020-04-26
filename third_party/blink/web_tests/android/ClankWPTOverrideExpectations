@@ -2967,7 +2967,6 @@ crbug.com/1050754 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attrib
 crbug.com/1050754 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.percent.worker.html [ Failure ]
 crbug.com/1050754 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.trailingjunk.html [ Failure ]
 crbug.com/1050754 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.trailingjunk.worker.html [ Failure ]
-crbug.com/1050754 external/wpt/orientation-event/orientation/deviceorientationabsoluteevent.https.html [ Failure ]
 crbug.com/1050754 external/wpt/orientation-event/idlharness.https.window.html [ Failure ]
 crbug.com/1050754 external/wpt/orientation-sensor/AbsoluteOrientationSensor-iframe-access.https.html [ Failure ]
 crbug.com/1050754 external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Failure ]

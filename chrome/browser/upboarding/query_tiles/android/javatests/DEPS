@@ -1,5 +1,0 @@
-specific_include_rules = {
-  'QueryTileSectionTest\.java': [
-    "+chrome/android/java/src/org/chromium/chrome/browser/tab/Tab.java",
-  ],
-}

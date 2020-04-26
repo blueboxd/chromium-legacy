@@ -299,8 +299,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   AddSettingsPageUIHandler(
       base::WrapUnique(AboutHandler::Create(html_source, profile)));
-  AddSettingsPageUIHandler(
-      base::WrapUnique(ResetSettingsHandler::Create(html_source, profile)));
+  AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));
 
   // Add a handler to provide pluralized strings.
   auto plural_string_handler = std::make_unique<PluralStringHandler>();

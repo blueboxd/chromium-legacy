@@ -71,6 +71,15 @@ enum class StatusCode : StatusCodeType {
   kVaapiReinitializedDuringDecode = 0x00000508,
   kVaapiFailedAcceleratorCreation = 0x00000509,
 
+  // Encoder Error: 0x06
+  kEncoderInitializeNeverCompleted = 0x00000601,
+  kEncoderInitializeTwice = 0x00000602,
+  kEncoderFailedEncode = 0x00000603,
+  kEncoderUnsupportedProfile = 0x00000604,
+  kEncoderUnsupportedCodec = 0x00000605,
+  kEncoderUnsupportedConfig = 0x00000606,
+  kEncoderInitializationError = 0x00000607,
+
   // Special codes
   kGenericErrorPleaseRemove = 0x79999999,
   kCodeOnlyForTesting = std::numeric_limits<StatusCodeType>::max(),

@@ -14,6 +14,18 @@
 
 namespace base {
 
+#if defined(_LIBCPP_VERSION)
+// SFINAE friendly type trait that only enables an overload if the passed in
+// type is trivially copy assignable, so that it would be safe to implement
+// std::copy as a memmove, as libc++ does for some iterator types.
+namespace internal {
+template <typename T>
+using PointerIfIsTriviallyCopyAssignable = std::enable_if_t<
+    std::is_trivially_copy_assignable<std::remove_const_t<T>>::value,
+    T*>;
+}  // namespace internal
+#endif
+
 template <typename T>
 class CheckedContiguousIterator {
  public:
@@ -28,6 +40,21 @@ class CheckedContiguousIterator {
   friend class CheckedContiguousIterator;
 
   constexpr CheckedContiguousIterator() = default;
+
+#if defined(_LIBCPP_VERSION)
+  // This constructor is required to be able to use a CheckedContiguousIterator
+  // as the third argument for the optimized pointer based std::copy version in
+  // libc++. Do not use this constructor otherwise.
+  constexpr CheckedContiguousIterator(T* ptr)
+      : start_(ptr), current_(ptr), end_(ptr) {}
+
+  // Friend __unwrap_iter so that it can get unchecked access to the underlying
+  // pointer.
+  template <typename U>
+  friend constexpr internal::PointerIfIsTriviallyCopyAssignable<U>
+  __unwrap_iter(CheckedContiguousIterator<U> iter);
+#endif
+
   constexpr CheckedContiguousIterator(T* start, const T* end)
       : CheckedContiguousIterator(start, start, end) {}
   constexpr CheckedContiguousIterator(const T* start, T* current, const T* end)
@@ -203,6 +230,17 @@ class CheckedContiguousIterator {
 
 template <typename T>
 using CheckedContiguousConstIterator = CheckedContiguousIterator<const T>;
+
+#if defined(_LIBCPP_VERSION)
+// This is a non-portable overload of libc++'s __unwrap_iter. This allows
+// treating a CheckedContiguousIterator as a raw pointer within STL algorithms
+// enabling performance optimizations that wouldn't be possible otherwise.
+template <typename T>
+constexpr internal::PointerIfIsTriviallyCopyAssignable<T> __unwrap_iter(
+    CheckedContiguousIterator<T> iter) {
+  return iter.current_;
+}
+#endif
 
 }  // namespace base
 

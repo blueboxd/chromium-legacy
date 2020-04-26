@@ -69,7 +69,7 @@ __gCrWeb.fill.MAX_DATA_LENGTH = 1024;
  * Google code project settings.
  *
  * This variable is |kMaxParseableFields| from
- * chromium/src/components/autofill/content/renderer/form_autofill_util.h
+ * chromium/src/components/autofill/core/common/autofill_constants.h
  *
  * @const {number}
  */

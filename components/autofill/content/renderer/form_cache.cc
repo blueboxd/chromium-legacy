@@ -245,7 +245,7 @@ std::vector<FormData> FormCache::ExtractNewForms(
       observed_unique_renderer_ids.insert(field.unique_renderer_id);
 
     num_fields_seen += form.fields.size();
-    if (num_fields_seen > form_util::kMaxParseableFields) {
+    if (num_fields_seen > kMaxParseableFields) {
       PruneInitialValueCaches(observed_unique_renderer_ids);
       return forms;
     }
@@ -290,7 +290,7 @@ std::vector<FormData> FormCache::ExtractNewForms(
     observed_unique_renderer_ids.insert(field.unique_renderer_id);
 
   num_fields_seen += synthetic_form.fields.size();
-  if (num_fields_seen > form_util::kMaxParseableFields) {
+  if (num_fields_seen > kMaxParseableFields) {
     PruneInitialValueCaches(observed_unique_renderer_ids);
     return forms;
   }

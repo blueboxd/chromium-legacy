@@ -165,24 +165,6 @@ NGFragmentItem::~NGFragmentItem() {
   }
 }
 
-bool NGFragmentItem::IsSiblingOf(const NGFragmentItem& other) const {
-  if (!GetLayoutObject())
-    return !other.GetLayoutObject();
-  if (!other.GetLayoutObject())
-    return false;
-  if (GetLayoutObject()->Parent() == other.GetLayoutObject()->Parent())
-    return true;
-  // To traverse list marker and line box of <li> with |MoveToNextSibling()|,
-  // we think list marker and <li> are sibling.
-  // See hittesting/culled-inline-crash.html (skip list marker)
-  // See fast/events/onclick-list-marker.html (hit on list marker)
-  if (IsListMarker())
-    return GetLayoutObject()->Parent() == other.GetLayoutObject();
-  if (other.IsListMarker())
-    return other.GetLayoutObject()->Parent() == GetLayoutObject();
-  return false;
-}
-
 bool NGFragmentItem::IsInlineBox() const {
   if (Type() == kBox) {
     if (const NGPhysicalBoxFragment* box = BoxFragment())

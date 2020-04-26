@@ -34,7 +34,9 @@
 namespace blink {
 
 class LayoutBlockFlow;
+class NGInlineCursor;
 class NGPaintFragment;
+
 // LayoutInline is the LayoutObject associated with display: inline.
 // This is called an "inline box" in CSS 2.1.
 // http://www.w3.org/TR/CSS2/visuren.html#inline-boxes
@@ -235,7 +237,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   bool HitTestCulledInline(HitTestResult&,
                            const HitTestLocation&,
                            const PhysicalOffset& accumulated_offset,
-                           const NGPaintFragment* parent_fragment = nullptr);
+                           const NGInlineCursor* parent_cursor = nullptr);
 
   PhysicalOffset FirstLineBoxTopLeft() const {
     return FirstLineBoxTopLeftInternal().value_or(PhysicalOffset());

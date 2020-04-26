@@ -61,14 +61,6 @@ enum ExtractMask {
                                  // could trigger layout if needed.
 };
 
-// The maximum number of form fields we are willing to parse, due to
-// computational costs.  Several examples of forms with lots of fields that are
-// not relevant to Autofill: (1) the Netflix queue; (2) the Amazon wishlist;
-// (3) router configuration pages; and (4) other configuration pages, e.g. for
-// Google code project settings.
-// Copied to components/autofill/ios/browser/resources/autofill_controller.js.
-extern const size_t kMaxParseableFields;
-
 // Helper function that strips any authentication data, as well as query and
 // ref portions of URL
 GURL StripAuthAndParams(const GURL& gurl);

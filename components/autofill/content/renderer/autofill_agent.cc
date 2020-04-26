@@ -613,7 +613,7 @@ bool AutofillAgent::CollectFormlessElements(FormData* output) {
       form_util::GetUnownedAutofillableFormFieldElements(document.All(),
                                                          &fieldsets);
 
-  if (control_elements.size() > form_util::kMaxParseableFields)
+  if (control_elements.size() > kMaxParseableFields)
     return false;
 
   const form_util::ExtractMask extract_mask =

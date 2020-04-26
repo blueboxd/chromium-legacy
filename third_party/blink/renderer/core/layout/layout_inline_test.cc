@@ -151,8 +151,9 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
   const auto* div = To<LayoutBlockFlow>(lots_of_boxes->Parent());
   for (const NGPaintFragment* line : div->PaintFragment()->Children()) {
     DCHECK(line->PhysicalFragment().IsLineBox());
-    bool hit_outcome = lots_of_boxes->HitTestCulledInline(hit_result, location,
-                                                          hit_offset, line);
+    NGInlineCursor line_cursor(*line);
+    bool hit_outcome = lots_of_boxes->HitTestCulledInline(
+        hit_result, location, hit_offset, &line_cursor);
     EXPECT_FALSE(hit_outcome);
   }
   // Make sure that the inline is hit

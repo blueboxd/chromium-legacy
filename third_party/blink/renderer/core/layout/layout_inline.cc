@@ -1101,12 +1101,11 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
                               hit_test_action);
 }
 
-bool LayoutInline::HitTestCulledInline(
-    HitTestResult& result,
-    const HitTestLocation& hit_test_location,
-    const PhysicalOffset& accumulated_offset,
-    const NGPaintFragment* container_fragment) {
-  DCHECK(container_fragment || !AlwaysCreateLineBoxes());
+bool LayoutInline::HitTestCulledInline(HitTestResult& result,
+                                       const HitTestLocation& hit_test_location,
+                                       const PhysicalOffset& accumulated_offset,
+                                       const NGInlineCursor* parent_cursor) {
+  DCHECK(parent_cursor || !AlwaysCreateLineBoxes());
   if (!VisibleToHitTestRequest(result.GetHitTestRequest()))
     return false;
 
@@ -1124,13 +1123,9 @@ bool LayoutInline::HitTestCulledInline(
   // NG generates purely physical rectangles here, while legacy sets the block
   // offset on the rectangles relatively to the block-start. NG is doing the
   // right thing. Legacy is wrong.
-  if (container_fragment) {
+  if (parent_cursor) {
     DCHECK(ContainingNGBlockFlow());
-    DCHECK(container_fragment->IsDescendantOfNotSelf(
-        *ContainingNGBlockFlow()->PaintFragment()));
-    DCHECK(container_fragment->PhysicalFragment().IsInline() ||
-           container_fragment->PhysicalFragment().IsLineBox());
-    NGInlineCursor cursor(*container_fragment);
+    NGInlineCursor cursor(*parent_cursor);
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
       yield(cursor.Current().RectInContainerBlock());
   } else {

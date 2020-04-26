@@ -38,9 +38,8 @@ bool ConstructNonce(uint32_t counter, base::span<uint8_t, 12> out_nonce) {
   // Nonce is just a little-endian counter.
   std::array<uint8_t, sizeof(counter)> counter_bytes;
   memcpy(counter_bytes.data(), &counter, sizeof(counter));
-  auto remaining =
-      std::copy(counter_bytes.begin(), counter_bytes.end(), out_nonce.begin());
-  std::fill(remaining, out_nonce.end(), 0);
+  std::copy(counter_bytes.begin(), counter_bytes.end(), out_nonce.begin());
+  std::fill(out_nonce.begin() + counter_bytes.size(), out_nonce.end(), 0);
   return true;
 }
 

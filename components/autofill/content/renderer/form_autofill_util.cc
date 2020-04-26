@@ -70,8 +70,6 @@ using mojom::ButtonTitleType;
 
 namespace form_util {
 
-const size_t kMaxParseableFields = 200;
-
 namespace {
 
 // Maximal length of a button's title.

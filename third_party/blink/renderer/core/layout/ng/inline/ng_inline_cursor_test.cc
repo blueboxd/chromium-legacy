@@ -38,7 +38,8 @@ class NGInlineCursorTest : public NGLayoutTest,
 
   Vector<String> SiblingsToDebugStringList(const NGInlineCursor& start) {
     Vector<String> list;
-    for (NGInlineCursor cursor(start); cursor; cursor.MoveToNextSibling())
+    for (NGInlineCursor cursor(start); cursor;
+         cursor.MoveToNextSkippingChildren())
       list.push_back(ToDebugString(cursor));
     return list;
   }
@@ -48,7 +49,8 @@ class NGInlineCursorTest : public NGLayoutTest,
   void TestPrevoiusSibling(const NGInlineCursor& start) {
     if (start.IsPaintFragmentCursor()) {
       Vector<const NGPaintFragment*> forwards;
-      for (NGInlineCursor cursor(start); cursor; cursor.MoveToNextSibling())
+      for (NGInlineCursor cursor(start); cursor;
+           cursor.MoveToNextSkippingChildren())
         forwards.push_back(cursor.CurrentPaintFragment());
       Vector<const NGPaintFragment*> backwards;
       for (NGInlineBackwardCursor cursor(start); cursor;
@@ -60,7 +62,8 @@ class NGInlineCursorTest : public NGLayoutTest,
     }
     DCHECK(start.IsItemCursor());
     Vector<const NGFragmentItem*> forwards;
-    for (NGInlineCursor cursor(start); cursor; cursor.MoveToNextSibling())
+    for (NGInlineCursor cursor(start); cursor;
+         cursor.MoveToNextSkippingChildren())
       forwards.push_back(cursor.CurrentItem());
     Vector<const NGFragmentItem*> backwards;
     for (NGInlineBackwardCursor cursor(start); cursor;
@@ -183,7 +186,7 @@ TEST_P(NGInlineCursorTest, ContainingLine) {
   ASSERT_TRUE(line1.Current().IsLineBox());
 
   NGInlineCursor line2(line1);
-  line2.MoveToNextSibling();
+  line2.MoveToNextSkippingChildren();
   ASSERT_TRUE(line2.Current().IsLineBox());
 
   cursor.MoveTo(*block_flow.FirstChild());

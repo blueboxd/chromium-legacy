@@ -134,7 +134,6 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   void LayoutObjectWillBeMoved() const;
   Node* GetNode() const { return layout_object_->GetNode(); }
   Node* NodeForHitTest() const { return layout_object_->NodeForHitTest(); }
-  bool IsSiblingOf(const NGFragmentItem& other) const;
 
   wtf_size_t DeltaToNextForSameLayoutObject() const {
     return delta_to_next_for_same_layout_object_;

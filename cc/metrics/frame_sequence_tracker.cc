@@ -5,8 +5,6 @@
 #include "cc/metrics/frame_sequence_tracker.h"
 
 #include "base/bind.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
@@ -83,7 +81,6 @@ FrameSequenceTracker::FrameSequenceTracker(
 FrameSequenceTracker::~FrameSequenceTracker() = default;
 
 void FrameSequenceTracker::ScheduleTerminate() {
-  TRACKER_TRACE_STREAM << "t";
   // If the last frame has ended and there is no frame awaiting presentation,
   // then it is ready to terminate.
   if (!is_inside_frame_ && last_submitted_frame_ == 0)
@@ -233,16 +230,6 @@ void FrameSequenceTracker::ReportSubmitFrame(
       last_submitted_frame_ != 0 &&
       viz::FrameTokenGT(frame_token,
                         last_submitted_frame_ + frames_to_terminate_tracker)) {
-#if DCHECK_IS_ON()
-    std::string full_str = frame_sequence_trace_.str();
-    std::string crash_str = full_str.size() < 255
-                                ? full_str
-                                : full_str.substr(full_str.size() - 255, 255);
-    static auto* crash_key = base::debug::AllocateCrashKeyString(
-        "tracker-sequence", base::debug::CrashKeySize::Size256);
-    base::debug::SetCrashKeyString(crash_key, crash_str);
-    base::debug::DumpWithoutCrashing();
-#endif
     termination_status_ = TerminationStatus::kReadyForTermination;
     return;
   }

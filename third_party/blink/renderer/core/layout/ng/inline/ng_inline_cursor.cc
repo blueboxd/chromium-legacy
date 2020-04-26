@@ -1199,12 +1199,6 @@ void NGInlineCursor::MoveToNextLine() {
   NOTREACHED();
 }
 
-void NGInlineCursor::MoveToNextSibling() {
-  if (current_.paint_fragment_)
-    return MoveToNextSiblingPaintFragment();
-  return MoveToNextSiblingItem();
-}
-
 void NGInlineCursor::MoveToNextSkippingChildren() {
   if (root_paint_fragment_)
     return MoveToNextPaintFragmentSkippingChildren();
@@ -1281,11 +1275,16 @@ bool NGInlineCursor::TryToMoveToLastChild() {
     return true;
   }
   const auto end = current_.item_iter_ + CurrentItem()->DescendantsCount();
-  MoveToNextItem();
+  MoveToNextItem();  // Move to the first child.
   DCHECK(!IsNull());
-  for (auto it = current_.item_iter_ + 1; it != end; ++it) {
-    if (CurrentItem()->IsSiblingOf(**it))
-      MoveToItem(it);
+  while (true) {
+    ItemsSpan::iterator previous = Current().item_iter_;
+    DCHECK(previous < end);
+    MoveToNextSkippingChildren();
+    if (!Current() || Current().item_iter_ == end) {
+      MoveToItem(previous);
+      break;
+    }
   }
   return true;
 }
@@ -1311,17 +1310,6 @@ void NGInlineCursor::MoveToNextItemSkippingChildren() {
   if (wtf_size_t descendants_count = current_.item_->DescendantsCount())
     return MoveToItem(current_.item_iter_ + descendants_count);
   return MoveToNextItem();
-}
-
-void NGInlineCursor::MoveToNextSiblingItem() {
-  DCHECK(IsItemCursor());
-  if (UNLIKELY(!current_.item_))
-    return;
-  const NGFragmentItem& item = *CurrentItem();
-  MoveToNextItemSkippingChildren();
-  if (IsNull() || item.IsSiblingOf(*CurrentItem()))
-    return;
-  MakeNull();
 }
 
 void NGInlineCursor::MoveToPreviousItem() {
@@ -1403,7 +1391,8 @@ NGInlineBackwardCursor::NGInlineBackwardCursor(const NGInlineCursor& cursor)
     DCHECK(!cursor.CurrentPaintFragment() ||
            cursor.CurrentPaintFragment()->Parent()->FirstChild() ==
                cursor.CurrentPaintFragment());
-    for (NGInlineCursor sibling(cursor); sibling; sibling.MoveToNextSibling())
+    for (NGInlineCursor sibling(cursor); sibling;
+         sibling.MoveToNextSiblingPaintFragment())
       sibling_paint_fragments_.push_back(sibling.CurrentPaintFragment());
     current_index_ = sibling_paint_fragments_.size();
     if (current_index_)

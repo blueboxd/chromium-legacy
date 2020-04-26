@@ -355,10 +355,6 @@ class CORE_EXPORT NGInlineCursor {
   // box.
   void MoveToNextLine();
 
-  // Move the current position to next sibling fragment.
-  // |MoveToNextSibling()| is deprecated. New code should not be used.
-  void MoveToNextSibling();
-
   // Same as |MoveToNext| except that this skips children even if they exist.
   void MoveToNextSkippingChildren();
 

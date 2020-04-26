@@ -32,7 +32,6 @@
 #include "base/macros.h"
 #include "gin/public/gin_embedders.h"
 #include "gin/public/isolate_holder.h"
-#include "third_party/blink/renderer/platform/bindings/active_script_wrappable_manager.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/v8_global_value_map.h"
@@ -49,6 +48,7 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 
+class ActiveScriptWrappableBase;
 class DOMWrapperWorld;
 class ScriptState;
 class StringCache;
@@ -208,11 +208,11 @@ class PLATFORM_EXPORT V8PerIsolateData {
   void SetProfilerGroup(V8PerIsolateData::GarbageCollectedData*);
   V8PerIsolateData::GarbageCollectedData* ProfilerGroup();
 
-  ActiveScriptWrappableManager* GetActiveScriptWrappableManager() const {
-    return active_script_wrappable_manager_;
-  }
-  void SetActiveScriptWrappableManager(ActiveScriptWrappableManager* manager) {
-    active_script_wrappable_manager_ = manager;
+  using ActiveScriptWrappableSet =
+      HeapHashSet<WeakMember<ActiveScriptWrappableBase>>;
+  void AddActiveScriptWrappable(ActiveScriptWrappableBase*);
+  const ActiveScriptWrappableSet* ActiveScriptWrappables() const {
+    return active_script_wrappables_.Get();
   }
 
  private:
@@ -282,7 +282,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
   std::unique_ptr<Data> thread_debugger_;
   Persistent<GarbageCollectedData> profiler_group_;
 
-  Persistent<ActiveScriptWrappableManager> active_script_wrappable_manager_;
+  Persistent<ActiveScriptWrappableSet> active_script_wrappables_;
 
   RuntimeCallStats runtime_call_stats_;
 

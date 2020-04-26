@@ -670,6 +670,11 @@ void CompositorFrameReporter::ReportAllTraceEvents(
       const int stage_type_index = static_cast<int>(stage.stage_type);
       CHECK_LT(stage_type_index, static_cast<int>(StageType::kStageTypeCount));
       CHECK_GE(stage_type_index, 0);
+      if (stage.start_time >= frame_termination_time_)
+        break;
+      DCHECK_GE(stage.end_time, stage.start_time);
+      if (stage.start_time == stage.end_time)
+        continue;
       const char* name = GetStageName(stage_type_index);
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
           "cc,benchmark", name, trace_id, stage.start_time);
@@ -711,10 +716,9 @@ void CompositorFrameReporter::ReportAllTraceEvents(
       TestReportType(FrameReportType::kDroppedFrame) ? "dropped_frame"
                                                      : "non_dropped_frame";
   TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP2(
-      "cc,benchmark", "PipelineReporter", trace_id,
-      stage_history_.back().end_time, "termination_status",
-      termination_status_str, "compositor_frame_submission_status",
-      submission_status_str);
+      "cc,benchmark", "PipelineReporter", trace_id, frame_termination_time_,
+      "termination_status", termination_status_str,
+      "compositor_frame_submission_status", submission_status_str);
 }
 
 base::TimeDelta CompositorFrameReporter::SumOfStageHistory() const {

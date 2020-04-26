@@ -97,6 +97,7 @@ bool FragmentVisibleToHitTestRequest(const NGPhysicalFragment& fragment,
 // box fragments.
 // @param physical_offset Physical offset of |fragment| in the paint layer.
 bool HitTestCulledInlineAncestors(HitTestResult& result,
+                                  const NGInlineCursor& parent_cursor,
                                   const NGPaintFragment& fragment,
                                   const NGPaintFragment* previous_sibling,
                                   const HitTestLocation& hit_test_location,
@@ -137,7 +138,7 @@ bool HitTestCulledInlineAncestors(HitTestResult& result,
     if (culled_parent->IsLayoutInline() &&
         ToLayoutInline(culled_parent)
             ->HitTestCulledInline(result, hit_test_location,
-                                  fallback_accumulated_offset, &parent))
+                                  fallback_accumulated_offset, &parent_cursor))
       return true;
 
     current_layout_object = culled_parent;
@@ -2121,9 +2122,9 @@ bool NGBoxFragmentPainter::HitTestPaintFragmentChildren(
       // fragment.
       const NGPaintFragment* previous_sibling =
           cursor ? cursor.Current().PaintFragment() : nullptr;
-      if (HitTestCulledInlineAncestors(*hit_test.result, *child_paint_fragment,
-                                       previous_sibling, hit_test.location,
-                                       child_offset))
+      if (HitTestCulledInlineAncestors(*hit_test.result, children,
+                                       *child_paint_fragment, previous_sibling,
+                                       hit_test.location, child_offset))
         return true;
     }
   }

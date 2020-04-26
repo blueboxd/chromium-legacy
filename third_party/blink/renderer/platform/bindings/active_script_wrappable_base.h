@@ -12,26 +12,26 @@
 
 namespace blink {
 
+class ScriptWrappable;
+class Visitor;
+
 /**
- * Classes deriving from ActiveScriptWrappable will be kept alive as long as
- * they have a pending activity. Destroying the corresponding ExecutionContext
- * implicitly releases them to avoid leaks.
+ * Classes deriving from ActiveScriptWrappable will be registered in a
+ * thread-specific list. They keep their wrappers and dependant objects alive
+ * as long as they have pending activity.
  */
 class PLATFORM_EXPORT ActiveScriptWrappableBase : public GarbageCollectedMixin {
  public:
+  static void TraceActiveScriptWrappables(v8::Isolate*, Visitor*);
+
   virtual ~ActiveScriptWrappableBase() = default;
 
-  virtual bool IsContextDestroyed() const { return false; }
-  virtual bool DispatchHasPendingActivity() const { return false; }
-
  protected:
-  // ActiveScriptWrappableBase registers itself with the corresponding
-  // ActiveScriptWrappableManager. The default versions of the virtual methods
-  // above make sure that in case of a conservative GC, the manager object can
-  // already call the virtual methods as non-virtual The objects themselves are
-  // generally held alive via conservative stack scan and do not require to be
-  // treated as active.
   ActiveScriptWrappableBase();
+
+  virtual bool IsContextDestroyed() const = 0;
+  virtual bool DispatchHasPendingActivity() const = 0;
+  virtual const ScriptWrappable* ToScriptWrappable() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ActiveScriptWrappableBase);

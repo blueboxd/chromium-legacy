@@ -28,9 +28,7 @@ ScrollbarLayerImplBase::ScrollbarLayerImplBase(
       scroll_layer_length_(0.f),
       orientation_(orientation),
       is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar),
-      vertical_adjust_(0.f) {
-  set_is_scrollbar(true);
-}
+      vertical_adjust_(0.f) {}
 
 ScrollbarLayerImplBase::~ScrollbarLayerImplBase() {
   layer_tree_impl()->UnregisterScrollbar(this);
@@ -38,13 +36,14 @@ ScrollbarLayerImplBase::~ScrollbarLayerImplBase() {
 
 void ScrollbarLayerImplBase::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
-  DCHECK(layer->ToScrollbarLayer());
-  layer->ToScrollbarLayer()->set_is_overlay_scrollbar(is_overlay_scrollbar_);
-  layer->ToScrollbarLayer()->SetScrollElementId(scroll_element_id());
+  DCHECK(layer->IsScrollbarLayer());
+  ScrollbarLayerImplBase* scrollbar_layer = ToScrollbarLayer(layer);
+  scrollbar_layer->set_is_overlay_scrollbar(is_overlay_scrollbar_);
+  scrollbar_layer->SetScrollElementId(scroll_element_id());
 }
 
-ScrollbarLayerImplBase* ScrollbarLayerImplBase::ToScrollbarLayer() {
-  return this;
+bool ScrollbarLayerImplBase::IsScrollbarLayer() const {
+  return true;
 }
 
 void ScrollbarLayerImplBase::SetScrollElementId(ElementId scroll_element_id) {

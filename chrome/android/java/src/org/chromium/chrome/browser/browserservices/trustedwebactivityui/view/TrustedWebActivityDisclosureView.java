@@ -71,6 +71,17 @@ public class TrustedWebActivityDisclosureView implements
         lifecycleDispatcher.register(this);
     }
 
+    public void showIfNeeded() {
+        if (mModel.get(DISCLOSURE_STATE) != DISCLOSURE_STATE_SHOWN) return;
+
+        Snackbar snackbar = makeRunningInChromeInfobar(mSnackbarController);
+        if (snackbar == null) {
+            return;
+        }
+
+        mSnackbarManager.get().showSnackbar(snackbar);
+    }
+
     @Override
     public void onPropertyChanged(PropertyObservable<PropertyKey> source,
             @Nullable PropertyKey propertyKey) {
@@ -89,9 +100,7 @@ public class TrustedWebActivityDisclosureView implements
     @Override
     public void onStartWithNative() {
         // SnackbarManager removes all snackbars when Chrome goes to background. Restore if needed.
-        if (mModel.get(DISCLOSURE_STATE) == DISCLOSURE_STATE_SHOWN) {
-            showIfNeeded();
-        }
+        showIfNeeded();
     }
 
     @Override
@@ -99,8 +108,7 @@ public class TrustedWebActivityDisclosureView implements
 
     /**
      * Creates the Infobar/Snackbar to show. The override of this method in
-     * {@link NewDisclosureSnackbar} may return {@code null}, meaning that no Infobar should be
-     * shown.
+     * {@link NewDisclosureSnackbar} may return {@code null}, if the infobar is already shown.
      */
     @Nullable
     protected Snackbar makeRunningInChromeInfobar(SnackbarManager.SnackbarController controller) {
@@ -113,14 +121,5 @@ public class TrustedWebActivityDisclosureView implements
         return Snackbar.make(title, mSnackbarController, type, code)
                 .setAction(action, null)
                 .setSingleLine(false);
-    }
-
-    private void showIfNeeded() {
-        Snackbar snackbar = makeRunningInChromeInfobar(mSnackbarController);
-        if (snackbar == null) {
-            return;
-        }
-
-        mSnackbarManager.get().showSnackbar(snackbar);
     }
 }

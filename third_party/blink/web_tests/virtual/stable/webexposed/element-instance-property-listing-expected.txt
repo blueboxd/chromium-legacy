@@ -102,6 +102,7 @@ namespace http://www.w3.org/1999/xhtml
     property firstChild
     property firstElementChild
     property focus
+    property getAnimations
     property getAttribute
     property getAttributeNS
     property getAttributeNames
@@ -1255,6 +1256,7 @@ namespace http://www.w3.org/2000/svg
     property firstChild
     property firstElementChild
     property focus
+    property getAnimations
     property getAttribute
     property getAttributeNS
     property getAttributeNames

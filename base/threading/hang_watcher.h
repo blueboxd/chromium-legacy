@@ -12,6 +12,7 @@
 #include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
@@ -88,10 +89,8 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
 
   // The first invocation of the constructor will set the global instance
   // accessible through GetInstance(). This means that only one instance can
-  // exist at a time. No locks owned by this class can be acquired in the
-  // closure. This indirectly means that registering a thread or creating a
-  // HangWatchScope from within the closure creates a deadlock.
-  explicit HangWatcher(RepeatingClosure on_hang_closure);
+  // exist at a time.
+  HangWatcher();
 
   // Clears the global instance for the class.
   ~HangWatcher() override;
@@ -102,10 +101,6 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   // Returns a non-owning pointer to the global HangWatcher instance.
   static HangWatcher* GetInstance();
 
-  // Invoke base::debug::DumpWithoutCrashing() insuring that the stack frame
-  // right under it in the trace belongs to HangWatcher for easier attribution.
-  NOINLINE static void RecordHang();
-
   // Sets up the calling thread to be monitored for threads. Returns a
   // ScopedClosureRunner that unregisters the thread. This closure has to be
   // called from the registered thread before it's joined.
@@ -113,10 +108,17 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
       LOCKS_EXCLUDED(watch_state_lock_) WARN_UNUSED_RESULT;
 
   // Choose a closure to be run at the end of each call to Monitor(). Use only
-  // for testing. No locks owned by this class can be acquired in the closure.
-  // This indirectly means that registering a thread or creating a
-  // HangWatchScope from within the closure creates a deadlock.
+  // for testing. Reentering the HangWatcher in the closure must be done with
+  // care. It should only be done through certain testing functions because
+  // deadlocks are possible.
   void SetAfterMonitorClosureForTesting(base::RepeatingClosure closure);
+
+  // Choose a closure to be run instead of recording the hang. Used to test
+  // that certain conditions hold true at the time of recording. Use only
+  // for testing. Reentering the HangWatcher in the closure must be done with
+  // care. It should only be done through certain testing functions because
+  // deadlocks are possible.
+  void SetOnHangClosureForTesting(base::RepeatingClosure closure);
 
   // Set a monitoring period other than the default. Use only for
   // testing.
@@ -133,7 +135,15 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   void BlockIfCaptureInProgress();
 
  private:
-  THREAD_CHECKER(thread_checker_);
+  // Use to assert that functions are called on the monitoring thread.
+  THREAD_CHECKER(hang_watcher_thread_checker_);
+
+  // Use to assert that functions are called on the constructing thread.
+  THREAD_CHECKER(constructing_thread_checker_);
+
+  // Invoke base::debug::DumpWithoutCrashing() insuring that the stack frame
+  // right under it in the trace belongs to HangWatcher for easier attribution.
+  NOINLINE static void RecordHang();
 
   using HangWatchStates =
       std::vector<std::unique_ptr<internal::HangWatchState>>;
@@ -211,7 +221,6 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   // watch list.
   void UnregisterThread() LOCKS_EXCLUDED(watch_state_lock_);
 
-  const RepeatingClosure on_hang_closure_;
   Lock watch_state_lock_;
 
   std::vector<std::unique_ptr<internal::HangWatchState>> watch_states_
@@ -219,7 +228,8 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
 
   base::DelegateSimpleThread thread_;
 
-  base::RepeatingClosure after_monitor_closure_for_testing_;
+  RepeatingClosure after_monitor_closure_for_testing_;
+  RepeatingClosure on_hang_closure_for_testing_;
 
   base::Lock capture_lock_ ACQUIRED_AFTER(watch_state_lock_);
   std::atomic<bool> capture_in_progress{false};

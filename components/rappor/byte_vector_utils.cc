@@ -4,6 +4,7 @@
 
 #include "components/rappor/byte_vector_utils.h"
 
+#include <string.h>
 #include <algorithm>
 #include <string>
 

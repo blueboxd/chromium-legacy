@@ -78,19 +78,20 @@ class HangWatcherTest : public testing::Test {
   const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(10);
   const base::TimeDelta kHangTime = kTimeout + base::TimeDelta::FromSeconds(1);
 
-  HangWatcherTest()
-      : hang_watcher_(std::make_unique<HangWatcher>(
-            base::BindRepeating(&WaitableEvent::Signal,
-                                base::Unretained(&hang_event_)))) {
-    hang_watcher_->SetAfterMonitorClosureForTesting(base::BindRepeating(
+  HangWatcherTest() {
+    hang_watcher_.SetAfterMonitorClosureForTesting(base::BindRepeating(
         &WaitableEvent::Signal, base::Unretained(&monitor_event_)));
-  }
 
-  void SetUp() override {
+    hang_watcher_.SetOnHangClosureForTesting(base::BindRepeating(
+        &WaitableEvent::Signal, base::Unretained(&hang_event_)));
+
     // We're not testing the monitoring loop behavior in this test so we want to
     // trigger monitoring manually.
-    hang_watcher_->SetMonitoringPeriodForTesting(base::TimeDelta::Max());
+    hang_watcher_.SetMonitoringPeriodForTesting(base::TimeDelta::Max());
   }
+
+  HangWatcherTest(const HangWatcherTest& other) = delete;
+  HangWatcherTest& operator=(const HangWatcherTest& other) = delete;
 
  protected:
   // Used to wait for monitoring. Will be signaled by the HangWatcher thread and
@@ -101,7 +102,7 @@ class HangWatcherTest : public testing::Test {
   // outlive the HangWatcher thread.
   WaitableEvent hang_event_;
 
-  std::unique_ptr<HangWatcher> hang_watcher_;
+  HangWatcher hang_watcher_;
 
   // Used exclusively for MOCK_TIME. No tasks will be run on the environment.
   // Single threaded to avoid ThreadPool WorkerThreads registering.
@@ -114,9 +115,15 @@ class HangWatcherTest : public testing::Test {
 }  // namespace
 
 class HangWatcherBlockingThreadTest : public HangWatcherTest {
- protected:
+ public:
   HangWatcherBlockingThreadTest() : thread_(&unblock_thread_, kTimeout) {}
 
+  HangWatcherBlockingThreadTest(const HangWatcherBlockingThreadTest& other) =
+      delete;
+  HangWatcherBlockingThreadTest& operator=(
+      const HangWatcherBlockingThreadTest& other) = delete;
+
+ protected:
   void JoinThread() {
     unblock_thread_.Signal();
 
@@ -146,7 +153,7 @@ class HangWatcherBlockingThreadTest : public HangWatcherTest {
     ASSERT_FALSE(monitor_event_.IsSignaled());
 
     // Triger a monitoring on HangWatcher thread and verify results.
-    hang_watcher_->SignalMonitorEventForTesting();
+    hang_watcher_.SignalMonitorEventForTesting();
     monitor_event_.Wait();
 
     JoinThread();
@@ -227,10 +234,16 @@ TEST_F(HangWatcherBlockingThreadTest, NoHang) {
 }
 
 class HangWatcherSnapshotTest : public testing::Test {
+ public:
+  HangWatcherSnapshotTest() = default;
+  HangWatcherSnapshotTest(const HangWatcherSnapshotTest& other) = delete;
+  HangWatcherSnapshotTest& operator=(const HangWatcherSnapshotTest& other) =
+      delete;
+
  protected:
   void TriggerMonitorAndWaitForCompletion() {
     monitor_event_.Reset();
-    hang_watcher_->SignalMonitorEventForTesting();
+    hang_watcher_.SignalMonitorEventForTesting();
     monitor_event_.Wait();
   }
 
@@ -281,30 +294,29 @@ class HangWatcherSnapshotTest : public testing::Test {
   // actually took place.
   int reference_capture_count_ = 0;
 
-  std::unique_ptr<HangWatcher> hang_watcher_;
+  HangWatcher hang_watcher_;
 };
 
 TEST_F(HangWatcherSnapshotTest, HungThreadIDs) {
   // During hang capture the list of hung threads should be populated.
-  hang_watcher_ =
-      std::make_unique<HangWatcher>(base::BindLambdaForTesting([this]() {
-        EXPECT_EQ(hang_watcher_->GrabWatchStateSnapshotForTesting()
-                      .PrepareHungThreadListCrashKey(),
-                  list_of_hung_thread_ids_during_capture_);
-        ++hang_capture_count_;
-      }));
+  hang_watcher_.SetOnHangClosureForTesting(base::BindLambdaForTesting([this]() {
+    EXPECT_EQ(hang_watcher_.GrabWatchStateSnapshotForTesting()
+                  .PrepareHungThreadListCrashKey(),
+              list_of_hung_thread_ids_during_capture_);
+    ++hang_capture_count_;
+  }));
 
   // When hang capture is over the list should be empty.
-  hang_watcher_->SetAfterMonitorClosureForTesting(
+  hang_watcher_.SetAfterMonitorClosureForTesting(
       base::BindLambdaForTesting([this]() {
-        EXPECT_EQ(hang_watcher_->GrabWatchStateSnapshotForTesting()
+        EXPECT_EQ(hang_watcher_.GrabWatchStateSnapshotForTesting()
                       .PrepareHungThreadListCrashKey(),
                   "");
         monitor_event_.Signal();
       }));
 
   // Register the main test thread for hang watching.
-  auto unregister_thread_closure_ = hang_watcher_->RegisterThread();
+  auto unregister_thread_closure_ = hang_watcher_.RegisterThread();
 
   BlockingThread blocking_thread(&monitor_event_, base::TimeDelta{});
   blocking_thread.StartAndWaitForScopeEntered();
@@ -349,13 +361,17 @@ TEST_F(HangWatcherSnapshotTest, HungThreadIDs) {
 // minimize flakiness as much as possible.
 class HangWatcherRealTimeTest : public testing::Test {
  public:
-  HangWatcherRealTimeTest()
-      : hang_watcher_(std::make_unique<HangWatcher>(
-            base::BindRepeating(&WaitableEvent::Signal,
-                                base::Unretained(&hang_event_)))) {}
+  HangWatcherRealTimeTest() {
+    hang_watcher_.SetOnHangClosureForTesting(base::BindRepeating(
+        &WaitableEvent::Signal, base::Unretained(&hang_event_)));
+  }
+
+  HangWatcherRealTimeTest(const HangWatcherRealTimeTest& other) = delete;
+  HangWatcherRealTimeTest& operator=(const HangWatcherRealTimeTest& other) =
+      delete;
 
  protected:
-  std::unique_ptr<HangWatcher> hang_watcher_;
+  HangWatcher hang_watcher_;
 
   // Signaled when a hang is detected.
   WaitableEvent hang_event_;
@@ -385,8 +401,8 @@ TEST_F(HangWatcherRealTimeTest, DISABLED_PeriodicCallsCount) {
 
   auto increment_monitor_count = [this]() { ++monitor_count_; };
 
-  hang_watcher_->SetMonitoringPeriodForTesting(kMonitoringPeriod);
-  hang_watcher_->SetAfterMonitorClosureForTesting(
+  hang_watcher_.SetMonitoringPeriodForTesting(kMonitoringPeriod);
+  hang_watcher_.SetAfterMonitorClosureForTesting(
       base::BindLambdaForTesting(increment_monitor_count));
 
   hang_event_.TimedWait(kExecutionTime);
@@ -394,7 +410,7 @@ TEST_F(HangWatcherRealTimeTest, DISABLED_PeriodicCallsCount) {
   // No thread ever registered so no monitoring took place at all.
   ASSERT_EQ(monitor_count_.load(), 0);
 
-  unregister_thread_closure_ = hang_watcher_->RegisterThread();
+  unregister_thread_closure_ = hang_watcher_.RegisterThread();
 
   hang_event_.TimedWait(kExecutionTime);
 
@@ -407,17 +423,15 @@ TEST_F(HangWatcherRealTimeTest, DISABLED_PeriodicCallsCount) {
 
 class HangWatchScopeBlockingTest : public testing::Test {
  public:
-  void SetUp() override {
-    // Start the HangWatcher.
-    hang_watcher_ =
-        std::make_unique<HangWatcher>(base::BindLambdaForTesting([&] {
-          capture_started_.Signal();
-          // Simulate capturing that takes a long time.
-          PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-          completed_capture_ = true;
-        }));
+  HangWatchScopeBlockingTest() {
+    hang_watcher_.SetOnHangClosureForTesting(base::BindLambdaForTesting([&] {
+      capture_started_.Signal();
+      // Simulate capturing that takes a long time.
+      PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+      completed_capture_ = true;
+    }));
 
-    hang_watcher_->SetAfterMonitorClosureForTesting(
+    hang_watcher_.SetAfterMonitorClosureForTesting(
         base::BindLambdaForTesting([&]() {
           // Simulate monitoring that takes a long time.
           PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
@@ -425,11 +439,15 @@ class HangWatchScopeBlockingTest : public testing::Test {
         }));
 
     // Make sure no periodic monitoring takes place.
-    hang_watcher_->SetMonitoringPeriodForTesting(base::TimeDelta::Max());
+    hang_watcher_.SetMonitoringPeriodForTesting(base::TimeDelta::Max());
 
     // Register the test main thread for hang watching.
-    unregister_thread_closure_ = hang_watcher_->RegisterThread();
+    unregister_thread_closure_ = hang_watcher_.RegisterThread();
   }
+
+  HangWatchScopeBlockingTest(const HangWatchScopeBlockingTest& other) = delete;
+  HangWatchScopeBlockingTest& operator=(
+      const HangWatchScopeBlockingTest& other) = delete;
 
   void VerifyScopesDontBlock() {
     // Start a hang watch scope that cannot possibly cause a hang to be
@@ -438,7 +456,7 @@ class HangWatchScopeBlockingTest : public testing::Test {
       HangWatchScope long_scope(base::TimeDelta::Max());
 
       // Manually trigger a monitoring.
-      hang_watcher_->SignalMonitorEventForTesting();
+      hang_watcher_.SignalMonitorEventForTesting();
 
       // Execution has to continue freely here as no capture is in progress.
     }
@@ -464,7 +482,7 @@ class HangWatchScopeBlockingTest : public testing::Test {
   // capture the accesses are serialized by the blocking in ~HangWatchScope().
   bool completed_capture_ = false;
 
-  std::unique_ptr<HangWatcher> hang_watcher_;
+  HangWatcher hang_watcher_;
   base::ScopedClosureRunner unregister_thread_closure_;
 };
 
@@ -487,7 +505,7 @@ TEST_F(HangWatchScopeBlockingTest, ScopeBlocksDuringCapture) {
     blocking_thread.StartAndWaitForScopeEntered();
 
     // Manually trigger a monitoring.
-    hang_watcher_->SignalMonitorEventForTesting();
+    hang_watcher_.SignalMonitorEventForTesting();
 
     // Ensure that the hang capturing started.
     capture_started_.Wait();

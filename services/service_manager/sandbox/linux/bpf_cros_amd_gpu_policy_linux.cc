@@ -4,6 +4,7 @@
 
 #include "services/service_manager/sandbox/linux/bpf_cros_amd_gpu_policy_linux.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <linux/kcmp.h>
 #include <sys/socket.h>
@@ -14,7 +15,6 @@
 #define __ARCH_WANT_SYSCALL_DEPRECATED
 #include <unistd.h>
 
-#include "base/logging.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 

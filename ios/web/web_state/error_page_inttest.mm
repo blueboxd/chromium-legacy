@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #include "ios/web/common/features.h"
+#import "ios/web/navigation/error_page_helper.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/navigation/reload_type.h"
@@ -27,6 +28,7 @@
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
+#import "net/base/mac/url_conversions.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 
@@ -69,22 +71,16 @@ class TestWebStatePolicyDecider : public WebStatePolicyDecider {
   // WebStatePolicyDecider overrides
   PolicyDecision ShouldAllowRequest(NSURLRequest* request,
                                     const RequestInfo& request_info) override {
-    // Don't block the error page itself.
-    // TODO(crbug.com/1069151): ShouldAllowRequest shouldn't be called for the
-    // presentation of error pages.
-    if ([request.URL.scheme isEqualToString:@"file"]) {
+    if ([request.URL.path isEqualToString:@"/echo-query"] &&
+        [request.URL.query isEqualToString:@"allowed"]) {
       return PolicyDecision::Allow();
     }
-    if ([request.URL.path isEqualToString:@"/echo-query"] &&
-        [request.URL.query isEqualToString:@"blocked"]) {
       NSError* error =
           [NSError errorWithDomain:base::SysUTF8ToNSString(
                                        kCancelledNavigationErrorDomain)
                               code:kCancelledNavigationErrorCode
                           userInfo:nil];
       return PolicyDecision::CancelAndDisplayError(error);
-    }
-    return PolicyDecision::Allow();
   }
 };
 

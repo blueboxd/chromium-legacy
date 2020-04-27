@@ -40,7 +40,7 @@ ExecutionContextLifecycleObserver::ExecutionContextLifecycleObserver(
     Document* document,
     Type type)
     : ExecutionContextLifecycleObserver(
-          document ? document->ToExecutionContext() : nullptr,
+          document ? document->GetExecutionContext() : nullptr,
           type) {}
 
 ExecutionContextLifecycleObserver::ExecutionContextLifecycleObserver(

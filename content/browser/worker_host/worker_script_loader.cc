@@ -168,6 +168,7 @@ void WorkerScriptLoader::LoadFromNetwork(bool reset_subresource_loader_params) {
 void WorkerScriptLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!new_url.has_value()) << "Redirect with modified URL was not "
@@ -181,6 +182,9 @@ void WorkerScriptLoader::FollowRedirect(
       resource_request_.url, resource_request_.method, *redirect_info_,
       removed_headers, modified_headers, &resource_request_.headers,
       &should_clear_upload);
+  resource_request_.cors_exempt_headers.MergeFrom(modified_cors_exempt_headers);
+  for (const std::string& name : removed_headers)
+    resource_request_.cors_exempt_headers.RemoveHeader(name);
 
   resource_request_.url = redirect_info_->new_url;
   resource_request_.method = redirect_info_->new_method;

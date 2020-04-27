@@ -60,6 +60,10 @@ struct MediaFeed {
   // The number of items in the last feed fetch that has been confirmed as
   // safe by the Safe Search API.
   int64 last_fetch_safe_item_count;
+
+  // The reason why the feed has been reset. If not kNone, this means the items
+  // have been deleted and the feed status has been reset to default.
+  ResetReason reset_reason;
 };
 
 // The result of fetching the feed. This enum is committed to storage so do not
@@ -76,6 +80,23 @@ enum FetchResult {
 
   // The feed failed to fetch because of a network error.
   kFailedNetworkError = 3,
+};
+
+// The reason why a feed has been reset. This enum is committed to storage so
+// do not change the numbering.
+enum ResetReason {
+  // The feed has not been reset.
+  kNone = 0,
+
+  // The feed has been reset because the cookies have expired or been deleted
+  // on the feed origin.
+  kCookies = 1,
+
+  // The feed has been reset because the user has visited the feed origin.
+  kVisit = 2,
+
+  // The feed has been reset because the user cleared the cache.
+  kCache = 3,
 };
 
 // Whether the user has forcibly opted out of the feed. This enum is committed

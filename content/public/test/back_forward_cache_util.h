@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_TEST_BACK_FORWARD_CACHE_UTIL_H_
 #define CONTENT_PUBLIC_TEST_BACK_FORWARD_CACHE_UTIL_H_
 
+#include <memory>
+
 #include "base/strings/string_piece.h"
 
 namespace content {

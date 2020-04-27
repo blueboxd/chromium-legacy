@@ -194,6 +194,10 @@ class MediaHistoryKeyedService : public KeyedService,
   // item in the UI.
   void MarkMediaFeedItemAsClicked(const int64_t& feed_item_id);
 
+  // Resets a Media Feed by deleting any items and resetting it to defaults.
+  void ResetMediaFeed(const int64_t feed_id,
+                      media_feeds::mojom::ResetReason reason);
+
  private:
   class StoreHolder;
 

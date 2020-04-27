@@ -80,7 +80,6 @@ Layer::Inputs::Inputs(int layer_id)
       contents_opaque(false),
       is_drawable(false),
       double_sided(true),
-      is_scrollbar(false),
       has_will_change_transform_hint(false),
       background_color(0) {}
 
@@ -1015,12 +1014,8 @@ void Layer::SetScrollable(const gfx::Size& bounds) {
   SetNeedsCommit();
 }
 
-void Layer::SetIsScrollbar(bool is_scrollbar) {
-  if (inputs_.is_scrollbar == is_scrollbar)
-    return;
-
-  inputs_.is_scrollbar = is_scrollbar;
-  SetNeedsCommit();
+bool Layer::IsScrollbarLayerForTesting() const {
+  return false;
 }
 
 void Layer::SetUserScrollable(bool horizontal, bool vertical) {
@@ -1329,8 +1324,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
 
   layer->UpdateScrollable();
-
-  layer->set_is_scrollbar(inputs_.is_scrollbar);
 
   // The property trees must be safe to access because they will be used below
   // to call |SetScrollOffsetClobberActiveValue|.

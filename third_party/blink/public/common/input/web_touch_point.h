@@ -33,6 +33,7 @@
 
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/input/web_pointer_properties.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom-shared.h"
 
 namespace blink {
 
@@ -45,17 +46,9 @@ class BLINK_COMMON_EXPORT WebTouchPoint : public WebPointerProperties {
   WebTouchPoint(WebPointerProperties web_pointer_properties)
       : WebPointerProperties(web_pointer_properties) {}
 
-  enum State {
-    kStateUndefined,
-    kStateReleased,
-    kStatePressed,
-    kStateMoved,
-    kStateStationary,
-    kStateCancelled,
-    kStateMax = kStateCancelled
-  };
+  using State = mojom::TouchState;
 
-  State state = kStateUndefined;
+  State state = State::kStateUndefined;
 
   float radius_x = 0.0f;
   float radius_y = 0.0f;

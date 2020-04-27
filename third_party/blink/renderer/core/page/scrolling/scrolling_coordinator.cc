@@ -240,7 +240,8 @@ void ScrollingCoordinator::RemoveScrollbarLayer(
   scrollbars.erase(scrollable_area);
 }
 
-static void DetachScrollbarLayer(GraphicsLayer* scrollbar_graphics_layer) {
+static void DetachScrollbarLayerFromGraphicsLayer(
+    GraphicsLayer* scrollbar_graphics_layer) {
   DCHECK(scrollbar_graphics_layer);
 
   scrollbar_graphics_layer->SetContentsToCcLayer(nullptr, false);
@@ -254,7 +255,7 @@ static void SetupScrollbarLayer(GraphicsLayer* scrollbar_graphics_layer,
   DCHECK(scrollbar_graphics_layer);
 
   if (!scrolling_layer) {
-    DetachScrollbarLayer(scrollbar_graphics_layer);
+    DetachScrollbarLayerFromGraphicsLayer(scrollbar_graphics_layer);
     return;
   }
 
@@ -301,8 +302,9 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
                                ? *scrollable_area->HorizontalScrollbar()
                                : *scrollable_area->VerticalScrollbar();
     if (scrollbar.IsCustomScrollbar()) {
-      DetachScrollbarLayer(scrollbar_graphics_layer);
-      scrollbar_graphics_layer->CcLayer()->SetIsScrollbar(true);
+      // |scrollbar_graphics_layer| and the cc::PictureLayer in it will be used
+      // for the custom scrollbar, without any special cc scrollbar layer.
+      DetachScrollbarLayerFromGraphicsLayer(scrollbar_graphics_layer);
       return;
     }
 

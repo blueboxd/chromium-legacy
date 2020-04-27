@@ -29,15 +29,15 @@ TEST_F(StylePropertyMapTest, SetRevertWithFeatureEnabled) {
   auto* map =
       MakeGarbageCollected<InlineStylePropertyMap>(GetDocument().body());
 
-  map->set(GetDocument().ToExecutionContext(), "top", revert_string,
+  map->set(GetDocument().GetExecutionContext(), "top", revert_string,
            exception_state);
-  map->set(GetDocument().ToExecutionContext(), "left", revert_style_value,
+  map->set(GetDocument().GetExecutionContext(), "left", revert_style_value,
            exception_state);
 
   CSSStyleValue* top =
-      map->get(GetDocument().ToExecutionContext(), "top", exception_state);
+      map->get(GetDocument().GetExecutionContext(), "top", exception_state);
   CSSStyleValue* left =
-      map->get(GetDocument().ToExecutionContext(), "left", exception_state);
+      map->get(GetDocument().GetExecutionContext(), "left", exception_state);
 
   ASSERT_TRUE(DynamicTo<CSSKeywordValue>(top));
   EXPECT_EQ(CSSValueID::kRevert,
@@ -68,29 +68,29 @@ TEST_F(StylePropertyMapTest, SetRevertWithFeatureDisabled) {
 
   {
     DummyExceptionStateForTesting exception_state;
-    map->set(GetDocument().ToExecutionContext(), "top", revert_string,
+    map->set(GetDocument().GetExecutionContext(), "top", revert_string,
              exception_state);
     EXPECT_TRUE(exception_state.HadException());
   }
   {
     DummyExceptionStateForTesting exception_state;
-    map->set(GetDocument().ToExecutionContext(), "left", revert_style_value,
+    map->set(GetDocument().GetExecutionContext(), "left", revert_style_value,
              exception_state);
     EXPECT_TRUE(exception_state.HadException());
   }
   {
     DummyExceptionStateForTesting exception_state;
-    map->set(GetDocument().ToExecutionContext(), "--y", revert_style_value,
+    map->set(GetDocument().GetExecutionContext(), "--y", revert_style_value,
              exception_state);
     EXPECT_TRUE(exception_state.HadException());
   }
 
   CSSStyleValue* top =
-      map->get(GetDocument().ToExecutionContext(), "top", exception_state);
+      map->get(GetDocument().GetExecutionContext(), "top", exception_state);
   CSSStyleValue* left =
-      map->get(GetDocument().ToExecutionContext(), "left", exception_state);
+      map->get(GetDocument().GetExecutionContext(), "left", exception_state);
   CSSStyleValue* y =
-      map->get(GetDocument().ToExecutionContext(), "--y", exception_state);
+      map->get(GetDocument().GetExecutionContext(), "--y", exception_state);
 
   EXPECT_FALSE(top);
   EXPECT_FALSE(left);

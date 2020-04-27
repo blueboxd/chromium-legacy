@@ -305,10 +305,10 @@ extern const char kOmniboxOnFocusSuggestionsDescription[];
 extern const char kOpenDownloadsInFilesAppName[];
 extern const char kOpenDownloadsInFilesAppDescription[];
 
-// Title and description for the flag to allow user to manage third-party cookie
-// blocking from the page info.
-extern const char kPageInfoChromeGuardName[];
-extern const char kPageInfoChromeGuardDescription[];
+// Title and description for the flag to provide user with improved settings
+// relating to cookies.
+extern const char kImprovedCookieControlsName[];
+extern const char kImprovedCookieControlsDescription[];
 
 // Title and description for the flag to enable the new design of the page info.
 extern const char kPageInfoRefactoringName[];

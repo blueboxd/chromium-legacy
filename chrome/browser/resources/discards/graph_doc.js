@@ -43,7 +43,7 @@ class ToolTip {
 
     /** @private {string} */
     this.description_json_ = '';
-    this.onDescription(JSON.stringify(null));
+    this.onDescription(JSON.stringify({}));
   }
 
   nodeMoved() {
@@ -64,43 +64,33 @@ class ToolTip {
       return;
     }
 
-    // The JSON is either 'null', or it's a dictionary of data describer name
-    // to data. Assuming a convention that describers emit a dictionary from
-    // string->string, this is flattened to an array. Each top-level dictionary
-    // entry is flattened to a 'heading' with the describer's name, followed by
-    // some number of entries with a two-element list, each representing a
-    // key/value pair.
+    // The JSON is a dictionary of data describer name to their data. Assuming a
+    // convention that describers emit a dictionary from string->string, this is
+    // flattened to an array. Each top-level dictionary entry is flattened to a
+    // 'heading' with [`the describer's name`, null], followed by some number of
+    // entries with a two-element list, each representing a key/value pair.
     this.description_json_ = description_json;
-    const description = JSON.parse(description_json);
+    const description =
+        /** @type {!Object<?,?>} */ (JSON.parse(description_json));
     const flattenedDescription = [];
-    if (!description) {
-      flattenedDescription.push(['No Data']);
-    } else {
-      for (const [title, value] of Object.entries(
-               /** @type {!Object<?,?>} */ (description))) {
-        flattenedDescription.push([title]);
-        flattenedDescription.push(...Object.entries(value));
-      }
+    for (const [title, value] of Object.entries(description)) {
+      flattenedDescription.push([title, null], ...Object.entries(value));
+    }
+    if (flattenedDescription.length === 0) {
+      flattenedDescription.push(['No Data', null]);
     }
 
-    const selection =
-        this.div_.select('tbody').selectAll('tr').data(flattenedDescription);
-    selection.enter().append('tr').each(function(d) {
-      const tr = d3.select(this);
-      if (d.length > 1) {
-        tr.append('td').classed('key', true).text(d[0]);
-        tr.append('td').classed('value', true).text(d[1]);
-      } else {
-        tr.append('td').classed('heading', true).attr('colspan', 2).text(d[0]);
-      }
-    });
+    let tr =
+        this.div_.selectAll('tbody').selectAll('tr').data(flattenedDescription);
+    tr.enter().append('tr').selectAll('td').data(d => d).enter().append('td');
+    tr.exit().remove();
 
-    // Update the existing datums.
-    selection.each(function(d) {
-      d3.select(this).selectAll('td').data(d).text(i => i);
+    tr = this.div_.selectAll('tr');
+    tr.select('td').attr('colspan', function(d) {
+      return (d3.select(this.parentElement).datum()[1] === null) ? 2 : null;
     });
-
-    selection.exit().remove();
+    tr = tr.attr('class', d => d[1] === null ? 'heading' : 'value');
+    tr.selectAll('td').data(d => d).text(d => d === null ? '' : d);
   }
 }
 

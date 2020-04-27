@@ -66,7 +66,6 @@ class CachedMetadataHandler;
 class CachedMetadataSender;
 class FetchParameters;
 class ResourceClient;
-class ResourceFetcher;
 class ResourceFinishObserver;
 class ResourceLoader;
 class ResponseBodyLoaderDrainableInterface;
@@ -144,15 +143,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
 
     // Match fails due to different request headers.
     kRequestHeadersDoNotMatch,
-
-    // Match fails due to different image placeholder policies.
-    kImagePlaceholder,
-  };
-
-  // Used by reloadIfLoFiOrPlaceholderImage().
-  enum ReloadLoFiOrPlaceholderPolicy {
-    kReloadIfNeeded,
-    kReloadAlways,
   };
 
   ~Resource() override;
@@ -378,12 +368,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
 
   virtual void OnMemoryDump(WebMemoryDumpLevelOfDetail,
                             WebProcessMemoryDump*) const;
-
-  // If this Resource is ImageResource and has the Lo-Fi response headers or is
-  // a placeholder, reload the full original image with the Lo-Fi state set to
-  // off and optionally bypassing the cache.
-  virtual void ReloadIfLoFiOrPlaceholderImage(ResourceFetcher*,
-                                              ReloadLoFiOrPlaceholderPolicy) {}
 
   // Used to notify ImageResourceContent of the start of actual loading.
   // JavaScript calls or client/observer notifications are disallowed inside

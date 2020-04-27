@@ -48,7 +48,8 @@ void AwURLLoaderThrottle::WillRedirectRequest(
     const network::mojom::URLResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,
-    net::HttpRequestHeaders* modified_request_headers) {
+    net::HttpRequestHeaders* modified_request_headers,
+    net::HttpRequestHeaders* modified_cors_exempt_request_headers) {
   if (!added_headers_.empty()) {
     if (original_origin_.CanBeDerivedFrom(redirect_info->new_url)) {
       RecordExtraHeadersUMA(ExtraHeaders::kKeptOnSameOriginRedirect);

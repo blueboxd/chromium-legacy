@@ -63,11 +63,13 @@ if (is_android) {
     input_locales = locales
     output_locales = locales
     source_patterns = [
+      "${root_gen_dir}/components/strings/components_chromium_strings_",
       "${root_gen_dir}/components/strings/components_locale_settings_",
       "${root_gen_dir}/weblayer/components_strings_",
     ]
     deps = [
       ":generate_components_strings",
+      "//components/strings:components_chromium_strings",
       "//components/strings:components_locale_settings",
     ]
     output_dir = "$root_out_dir/weblayer/locales"
@@ -191,6 +193,8 @@ source_set("weblayer_lib_base") {
     "browser/translate_ranker_factory.h",
     "browser/url_bar/autocomplete_scheme_classifier_impl.cc",
     "browser/url_bar/autocomplete_scheme_classifier_impl.h",
+    "browser/url_bar/page_info_delegate_impl.cc",
+    "browser/url_bar/page_info_delegate_impl.h",
     "browser/url_bar/url_bar_controller_impl.cc",
     "browser/url_bar/url_bar_controller_impl.h",
     "browser/web_contents_view_delegate_impl.cc",
@@ -264,6 +268,7 @@ source_set("weblayer_lib_base") {
     "//components/autofill/content/renderer",
     "//components/autofill/core/browser",
     "//components/base32",
+    "//components/browsing_data/content",
     "//components/captive_portal/core:buildflags",
     "//components/cdm/renderer",
     "//components/client_hints/browser",
@@ -285,6 +290,7 @@ source_set("weblayer_lib_base") {
     "//components/metrics",
     "//components/network_time",
     "//components/omnibox/browser",
+    "//components/page_info",
     "//components/page_load_metrics/browser",
     "//components/page_load_metrics/renderer",
     "//components/permissions",
@@ -404,6 +410,8 @@ source_set("weblayer_lib_base") {
       "browser/tab_callback_proxy.h",
       "browser/top_controls_container_view.cc",
       "browser/top_controls_container_view.h",
+      "browser/url_bar/page_info_client_impl.cc",
+      "browser/url_bar/page_info_client_impl.h",
       "browser/weblayer_factory_impl_android.cc",
       "browser/weblayer_factory_impl_android.h",
       "browser/weblayer_impl_android.cc",
@@ -434,6 +442,7 @@ source_set("weblayer_lib_base") {
       "//components/metrics",
       "//components/minidump_uploader",
       "//components/navigation_interception",
+      "//components/page_info/android",
       "//components/permissions/android:native",
       "//components/resources:android_resources",
       "//components/safe_browsing/content/common:interfaces",

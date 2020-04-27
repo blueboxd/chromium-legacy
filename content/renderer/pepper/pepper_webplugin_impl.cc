@@ -228,8 +228,8 @@ void PepperWebPluginImpl::UpdateFocus(bool focused,
       // As part of focus management for plugin, blink brings plugin to focus
       // but does not forward the tab event to plugin. Hence simulating tab
       // event here to enable seamless tabbing across UI & plugin.
-      blink::WebKeyboardEvent simulated_event(blink::WebInputEvent::kKeyDown,
-                                              modifiers, base::TimeTicks());
+      blink::WebKeyboardEvent simulated_event(
+          blink::WebInputEvent::Type::kKeyDown, modifiers, base::TimeTicks());
       simulated_event.windows_key_code = ui::KeyboardCode::VKEY_TAB;
       ui::Cursor cursor;
       instance_->HandleInputEvent(simulated_event, &cursor);

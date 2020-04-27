@@ -253,7 +253,7 @@ NaClProcessHost::NaClProcessHost(
 
 NaClProcessHost::~NaClProcessHost() {
   // Report exit status only if the process was successfully started.
-  if (!process_->GetData().GetProcess().IsValid()) {
+  if (process_->GetData().GetProcess().IsValid()) {
     content::ChildProcessTerminationInfo info =
         process_->GetTerminationInfo(false /* known_dead */);
     std::string message =

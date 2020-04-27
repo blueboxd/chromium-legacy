@@ -47,6 +47,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_tab_helper.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -123,6 +124,11 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   if (base::FeatureList::IsEnabled(
           safe_browsing::kSafeBrowsingAvailableOnIOS)) {
     SafeBrowsingTabHelper::CreateForWebState(web_state);
+    if (!for_prerender) {
+      // Unsafe navigations will never be allowed for prerender WebStates, so
+      // the allow list does not need to be created.
+      SafeBrowsingUrlAllowList::CreateForWebState(web_state);
+    }
   }
 
   if (IsURLBlocklistEnabled()) {

@@ -126,7 +126,6 @@ TabAndroid::TabAndroid(JNIEnv* env, const JavaRef<jobject>& obj)
     : weak_java_tab_(env, obj),
       session_window_id_(SessionID::InvalidValue()),
       content_layer_(cc::Layer::Create()),
-      tab_content_manager_(nullptr),
       synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)) {
   Java_TabImpl_setNativePtr(env, obj, reinterpret_cast<intptr_t>(this));
 }
@@ -151,17 +150,17 @@ int TabAndroid::GetAndroidId() const {
   return Java_TabImpl_getId(env, weak_java_tab_.get(env));
 }
 
+bool TabAndroid::IsNativePage() const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_TabImpl_isNativePage(env, weak_java_tab_.get(env));
+}
+
 base::string16 TabAndroid::GetTitle() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_title =
       Java_TabImpl_getTitle(env, weak_java_tab_.get(env));
   return java_title ? base::android::ConvertJavaStringToUTF16(java_title)
                     : base::string16();
-}
-
-bool TabAndroid::IsNativePage() const {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_TabImpl_isNativePage(env, weak_java_tab_.get(env));
 }
 
 GURL TabAndroid::GetURL() const {
@@ -203,6 +202,25 @@ void TabAndroid::SetWindowSessionID(SessionID window_id) {
   sessions::SessionTabHelper* session_tab_helper =
       sessions::SessionTabHelper::FromWebContents(web_contents());
   session_tab_helper->SetWindowID(session_window_id_);
+}
+
+std::unique_ptr<content::WebContents> TabAndroid::SwapWebContents(
+    std::unique_ptr<content::WebContents> new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
+  content::WebContents* old_contents = web_contents_.get();
+  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
+  // directly about tab contents swaps.
+  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
+      old_contents, new_contents.get());
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_TabImpl_swapWebContents(env, weak_java_tab_.get(env),
+                               new_contents->GetJavaWebContents(),
+                               did_start_load, did_finish_load);
+  DCHECK_EQ(web_contents_, new_contents);
+  new_contents.release();
+  return base::WrapUnique(old_contents);
 }
 
 void TabAndroid::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -446,25 +464,6 @@ scoped_refptr<content::DevToolsAgentHost> TabAndroid::GetDevToolsAgentHost() {
 void TabAndroid::SetDevToolsAgentHost(
     scoped_refptr<content::DevToolsAgentHost> host) {
   devtools_host_ = std::move(host);
-}
-
-std::unique_ptr<content::WebContents> TabAndroid::SwapWebContents(
-    std::unique_ptr<content::WebContents> new_contents,
-    bool did_start_load,
-    bool did_finish_load) {
-  content::WebContents* old_contents = web_contents_.get();
-  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
-  // directly about tab contents swaps.
-  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
-      old_contents, new_contents.get());
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_TabImpl_swapWebContents(env, weak_java_tab_.get(env),
-                               new_contents->GetJavaWebContents(),
-                               did_start_load, did_finish_load);
-  DCHECK_EQ(web_contents_, new_contents);
-  new_contents.release();
-  return base::WrapUnique(old_contents);
 }
 
 static void JNI_TabImpl_Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {

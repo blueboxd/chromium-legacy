@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/handoff/pref_names_ios.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -132,7 +133,7 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   [model addItem:[self handoffDetailItem]
       toSectionWithIdentifier:SectionIdentifierWebServices];
 
-  if (base::FeatureList::IsEnabled(kPageInfoChromeGuard)) {
+  if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls)) {
     // Cookies Section
     [model addSectionWithIdentifier:SectionIndentifierCookies];
     [model addItem:[self cookiesItem]

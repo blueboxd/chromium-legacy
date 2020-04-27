@@ -139,7 +139,7 @@ v8::Local<v8::Context> V8ContextSnapshot::CreateContextFromSnapshot(
   v8::Local<v8::Context> context =
       v8::Context::FromSnapshot(
           isolate, index, callback, extension_configuration, global_proxy,
-          document->ToExecutionContext()->GetMicrotaskQueue())
+          document->GetExecutionContext()->GetMicrotaskQueue())
           .ToLocalChecked();
 
   // In case we fail to deserialize v8::Context from snapshot,

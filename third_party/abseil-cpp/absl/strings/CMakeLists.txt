@@ -210,6 +210,8 @@ absl_cc_test(
     absl::base
     absl::core_headers
     absl::dynamic_annotations
+    absl::flat_hash_map
+    absl::node_hash_map
     gmock_main
 )
 
@@ -407,6 +409,7 @@ absl_cc_test(
     ${ABSL_TEST_COPTS}
   DEPS
     absl::str_format
+    absl::cord
     absl::strings
     absl::core_headers
     gmock_main
@@ -422,6 +425,7 @@ absl_cc_test(
   DEPS
     absl::str_format
     absl::str_format_internal
+    absl::strings
     gmock_main
 )
 
@@ -485,6 +489,7 @@ absl_cc_test(
     ${ABSL_TEST_COPTS}
   DEPS
     absl::str_format_internal
+    absl::cord
     gmock_main
 )
 
@@ -539,7 +544,6 @@ absl_cc_library(
   COPTS
     ${ABSL_DEFAULT_COPTS}
   DEPS
-    absl::strings_internal
     absl::base
     absl::base_internal
     absl::core_headers
@@ -550,6 +554,7 @@ absl_cc_library(
     absl::optional
     absl::raw_logging_internal
     absl::strings
+    absl::strings_internal
     absl::type_traits
   PUBLIC
 )
@@ -575,6 +580,7 @@ absl_cc_test(
     ${ABSL_TEST_COPTS}
   DEPS
     absl::cord
+    absl::str_format
     absl::strings
     absl::base
     absl::config

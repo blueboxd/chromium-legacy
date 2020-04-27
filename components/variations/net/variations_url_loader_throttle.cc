@@ -45,7 +45,8 @@ void VariationsURLLoaderThrottle::WillRedirectRequest(
     const network::mojom::URLResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_headers,
-    net::HttpRequestHeaders* modified_headers) {
+    net::HttpRequestHeaders* modified_headers,
+    net::HttpRequestHeaders* modified_cors_exempt_headers) {
   variations::RemoveVariationsHeaderIfNeeded(*redirect_info, response_head,
                                              to_be_removed_headers);
 }

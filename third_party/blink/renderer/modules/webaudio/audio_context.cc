@@ -131,7 +131,7 @@ AudioContext::AudioContext(Document& document,
                            base::Optional<float> sample_rate)
     : BaseAudioContext(&document, kRealtimeContext),
       context_id_(g_context_id++),
-      audio_context_manager_(document.ToExecutionContext()),
+      audio_context_manager_(document.GetExecutionContext()),
       keep_alive_(PERSISTENT_FROM_HERE, this) {
   destination_node_ =
       RealtimeAudioDestinationNode::Create(this, latency_hint, sample_rate);

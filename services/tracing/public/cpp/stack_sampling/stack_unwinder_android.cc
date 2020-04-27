@@ -15,9 +15,10 @@
 #include <algorithm>
 
 #include "base/android/jni_generator/jni_generator_helper.h"
+#include "base/check_op.h"
 #include "base/debug/proc_maps_linux.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

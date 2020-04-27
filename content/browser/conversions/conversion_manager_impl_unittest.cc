@@ -25,6 +25,20 @@ namespace content {
 
 namespace {
 
+constexpr base::TimeDelta kExpiredReportOffset =
+    base::TimeDelta::FromMinutes(2);
+
+class ConstantStartupDelayPolicy : public ConversionPolicy {
+ public:
+  ConstantStartupDelayPolicy() = default;
+  ~ConstantStartupDelayPolicy() override = default;
+
+  base::Time GetReportTimeForExpiredReportAtStartup(
+      base::Time now) const override {
+    return now + kExpiredReportOffset;
+  }
+};
+
 // Mock reporter that tracks reports being queued by the ConversionManager.
 class TestConversionReporter
     : public ConversionManagerImpl::ConversionReporter {
@@ -36,6 +50,7 @@ class TestConversionReporter
   void AddReportsToQueue(std::vector<ConversionReport> reports) override {
     num_reports_ += reports.size();
     last_conversion_id_ = *reports.back().conversion_id;
+    last_report_time_ = reports.back().report_time;
 
     if (quit_closure_ && num_reports_ >= expected_num_reports_)
       std::move(quit_closure_).Run();
@@ -44,6 +59,8 @@ class TestConversionReporter
   size_t num_reports() { return num_reports_; }
 
   int64_t last_conversion_id() { return last_conversion_id_; }
+
+  base::Time last_report_time() { return last_report_time_; }
 
   void WaitForNumReports(size_t expected_num_reports) {
     if (num_reports_ >= expected_num_reports)
@@ -59,6 +76,7 @@ class TestConversionReporter
   size_t expected_num_reports_ = 0u;
   size_t num_reports_ = 0u;
   int64_t last_conversion_id_ = 0UL;
+  base::Time last_report_time_;
   base::OnceClosure quit_closure_;
 };
 
@@ -83,7 +101,8 @@ class ConversionManagerImplTest : public testing::Test {
     auto reporter = std::make_unique<TestConversionReporter>();
     test_reporter_ = reporter.get();
     conversion_manager_ = ConversionManagerImpl::CreateForTesting(
-        std::move(reporter), task_environment_.GetMockClock(), dir_.GetPath(),
+        std::move(reporter), std::make_unique<ConstantStartupDelayPolicy>(),
+        task_environment_.GetMockClock(), dir_.GetPath(),
         base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}));
   }
 
@@ -200,6 +219,55 @@ TEST_F(ConversionManagerImplTest, ClearData) {
     size_t expected_reports = match_url ? 0u : 1u;
     EXPECT_EQ(expected_reports, test_reporter_->num_reports());
   }
+}
+
+TEST_F(ConversionManagerImplTest, ExpiredReportsAtStartup_Delayed) {
+  // Create a report that will be reported at t= 2 days.
+  base::Time start_time = clock().Now();
+  conversion_manager_->HandleImpression(
+      ImpressionBuilder(clock().Now()).SetExpiry(kImpressionExpiry).Build());
+  conversion_manager_->HandleConversion(DefaultConversion());
+  EXPECT_EQ(0u, test_reporter_->num_reports());
+
+  // Reset the manager to simulate shutdown.
+  conversion_manager_.reset();
+
+  // Fast forward past the expected report time of the first conversion, t =
+  // (kFirstReportingWindow+ 1 minute).
+  task_environment_.FastForwardBy(kFirstReportingWindow +
+                                  base::TimeDelta::FromMinutes(1));
+
+  CreateManager();
+  test_reporter_->WaitForNumReports(1);
+
+  // Ensure that the expired report is delayed based on the time the browser
+  // started.
+  EXPECT_EQ(start_time + kFirstReportingWindow +
+                base::TimeDelta::FromMinutes(1) + kExpiredReportOffset,
+            test_reporter_->last_report_time());
+}
+
+TEST_F(ConversionManagerImplTest, NonExpiredReportsQueuedAtStartup_NotDelayed) {
+  // Create a report that will be reported at t= 2 days.
+  base::Time start_time = clock().Now();
+  conversion_manager_->HandleImpression(
+      ImpressionBuilder(clock().Now()).SetExpiry(kImpressionExpiry).Build());
+  conversion_manager_->HandleConversion(DefaultConversion());
+  EXPECT_EQ(0u, test_reporter_->num_reports());
+
+  // Reset the manager to simulate shutdown.
+  conversion_manager_.reset();
+
+  // Fast forward just before the expected report time.
+  task_environment_.FastForwardBy(kFirstReportingWindow -
+                                  base::TimeDelta::FromMinutes(1));
+
+  // Ensure that this report does not receive additional delay.
+  CreateManager();
+  test_reporter_->WaitForNumReports(1);
+  EXPECT_EQ(1u, test_reporter_->num_reports());
+  EXPECT_EQ(start_time + kFirstReportingWindow,
+            test_reporter_->last_report_time());
 }
 
 }  // namespace content

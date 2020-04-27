@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/on_device_head_model.h"
 
 #include <algorithm>
+#include <cstring>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"

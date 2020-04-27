@@ -23,10 +23,6 @@ web::WebStatePolicyDecider::PolicyDecision
 PolicyUrlBlockingTabHelper::ShouldAllowRequest(
     NSURLRequest* request,
     const web::WebStatePolicyDecider::RequestInfo& request_info) {
-  // TODO(crbug.com/1069151): Do not block the error page itself.
-  if ([request.URL.scheme isEqualToString:@"file"]) {
-    return web::WebStatePolicyDecider::PolicyDecision::Allow();
-  }
 
   GURL gurl = net::GURLWithNSURL(request.URL);
   PolicyBlocklistService* blocklistService =

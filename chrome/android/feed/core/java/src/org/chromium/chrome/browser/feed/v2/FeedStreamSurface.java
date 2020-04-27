@@ -4,21 +4,28 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import android.content.Context;
 import android.view.View;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
+import org.chromium.chrome.browser.xsurface.HybridListRenderer;
+import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
+import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
+import org.chromium.chrome.browser.xsurface.SurfaceScope;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
@@ -42,6 +49,24 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final FeedListContentManager mContentManager;
     private final TabModelSelector mTabModelSelector;
     private final Supplier<Tab> mTabProvider;
+    private final SurfaceScope mSurfaceScope;
+    private final View mRootView;
+    private final HybridListRenderer mHybridListRenderer;
+
+    private static ProcessScope sXSurfaceProcessScope;
+
+    public static ProcessScope xSurfaceProcessScope() {
+        if (sXSurfaceProcessScope == null) {
+            sXSurfaceProcessScope =
+                    AppHooks.get().getExternalSurfaceProcessScope(new SurfaceDependencyProvider() {
+                        @Override
+                        public Context getContext() {
+                            return ContextUtils.getApplicationContext();
+                        }
+                    });
+        }
+        return sXSurfaceProcessScope;
+    }
 
     /**
      * A {@link TabObserver} that observes navigation related events that originate from Feed
@@ -88,8 +113,24 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
         mContentManager = new FeedListContentManager(this, this);
 
-        // TODO(jianli): Get HybridListRender in order to bind FeedListContentManager to it.
-        // Then add the returned RecyclerView to NTP layout.
+        ProcessScope processScope = xSurfaceProcessScope();
+        if (processScope != null) {
+            mSurfaceScope = xSurfaceProcessScope().obtainSurfaceScope();
+        } else {
+            mSurfaceScope = null;
+        }
+
+        if (mSurfaceScope != null) {
+            mHybridListRenderer = mSurfaceScope.provideListRenderer();
+        } else {
+            mHybridListRenderer = null;
+        }
+
+        if (mHybridListRenderer != null) {
+            mRootView = mHybridListRenderer.bind(mContentManager);
+        } else {
+            mRootView = null;
+        }
     }
 
     @VisibleForTesting

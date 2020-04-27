@@ -133,6 +133,8 @@ class CastExtensionsBrowserClient : public ExtensionsBrowserClient {
   // Support for extension APIs.
   std::unique_ptr<ExtensionsAPIClient> api_client_;
 
+  std::unique_ptr<KioskDelegate> kiosk_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(CastExtensionsBrowserClient);
 };
 

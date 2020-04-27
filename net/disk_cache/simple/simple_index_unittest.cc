@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
@@ -184,6 +185,13 @@ class SimpleIndexTest : public net::TestWithTaskEnvironment,
 class SimpleIndexAppCacheTest : public SimpleIndexTest {
  protected:
   net::CacheType CacheType() const override { return net::APP_CACHE; }
+};
+
+class SimpleIndexCodeCacheTest : public SimpleIndexTest {
+ protected:
+  net::CacheType CacheType() const override {
+    return net::GENERATED_BYTE_CODE_CACHE;
+  }
 };
 
 TEST_F(EntryMetadataTest, Basics) {
@@ -625,6 +633,74 @@ TEST_F(SimpleIndexTest, EvictBySize) {
   // TODO(morlovich): This is dependent on the innards of the implementation
   // as to at exactly what point we trigger eviction. Not sure how to fix
   // that.
+  index()->UpdateEntrySize(hashes_.at<3>(), 40000u);
+  EXPECT_EQ(1, doom_entries_calls());
+  EXPECT_EQ(2, index()->GetEntryCount());
+  EXPECT_TRUE(index()->Has(hashes_.at<1>()));
+  EXPECT_FALSE(index()->Has(hashes_.at<2>()));
+  EXPECT_TRUE(index()->Has(hashes_.at<3>()));
+  ASSERT_EQ(1u, last_doom_entry_hashes().size());
+}
+
+TEST_F(SimpleIndexCodeCacheTest, DisableEvictBySize) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {SimpleIndex::kSimpleCacheDisableEvictionSizeHeuristicForCodeCache}, {});
+
+  base::Time now(base::Time::Now());
+  index()->SetMaxSize(50000);
+  InsertIntoIndexFileReturn(hashes_.at<1>(), now - base::TimeDelta::FromDays(2),
+                            475u);
+  InsertIntoIndexFileReturn(hashes_.at<2>(), now - base::TimeDelta::FromDays(1),
+                            40000u);
+  ReturnIndexFile();
+  WaitForTimeChange();
+
+  index()->Insert(hashes_.at<3>());
+  // Confirm index is as expected: No eviction, everything there.
+  EXPECT_EQ(3, index()->GetEntryCount());
+  EXPECT_EQ(0, doom_entries_calls());
+  EXPECT_TRUE(index()->Has(hashes_.at<1>()));
+  EXPECT_TRUE(index()->Has(hashes_.at<2>()));
+  EXPECT_TRUE(index()->Has(hashes_.at<3>()));
+
+  // Trigger an eviction, and make sure the right things are tossed.
+  // Since evict by size is supposed to be disabled, it evicts in LRU order,
+  // so entries 1 and 2 are both kicked out.
+  index()->UpdateEntrySize(hashes_.at<3>(), 40000u);
+  EXPECT_EQ(1, doom_entries_calls());
+  EXPECT_EQ(1, index()->GetEntryCount());
+  EXPECT_FALSE(index()->Has(hashes_.at<1>()));
+  EXPECT_FALSE(index()->Has(hashes_.at<2>()));
+  EXPECT_TRUE(index()->Has(hashes_.at<3>()));
+  ASSERT_EQ(2u, last_doom_entry_hashes().size());
+}
+
+TEST_F(SimpleIndexCodeCacheTest, EnableEvictBySize) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {}, {SimpleIndex::kSimpleCacheDisableEvictionSizeHeuristicForCodeCache});
+
+  base::Time now(base::Time::Now());
+  index()->SetMaxSize(50000);
+  InsertIntoIndexFileReturn(hashes_.at<1>(), now - base::TimeDelta::FromDays(2),
+                            475u);
+  InsertIntoIndexFileReturn(hashes_.at<2>(), now - base::TimeDelta::FromDays(1),
+                            40000u);
+  ReturnIndexFile();
+  WaitForTimeChange();
+
+  index()->Insert(hashes_.at<3>());
+  // Confirm index is as expected: No eviction, everything there.
+  EXPECT_EQ(3, index()->GetEntryCount());
+  EXPECT_EQ(0, doom_entries_calls());
+  EXPECT_TRUE(index()->Has(hashes_.at<1>()));
+  EXPECT_TRUE(index()->Has(hashes_.at<2>()));
+  EXPECT_TRUE(index()->Has(hashes_.at<3>()));
+
+  // Trigger an eviction, and make sure the right things are tossed.
+  // This has size-weighting enabled, so it end sup kickicking out entry
+  // 2, which is biggest, and is enough, even though <1> is older.
   index()->UpdateEntrySize(hashes_.at<3>(), 40000u);
   EXPECT_EQ(1, doom_entries_calls());
   EXPECT_EQ(2, index()->GetEntryCount());

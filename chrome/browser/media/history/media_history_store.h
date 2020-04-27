@@ -169,6 +169,9 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
 
   void UpdateMediaFeedDisplayTime(const int64_t feed_id);
 
+  void ResetMediaFeed(const int64_t feed_id,
+                      media_feeds::mojom::ResetReason reason);
+
   // Cancels pending DB transactions. Should only be called on the UI thread.
   void SetCancelled();
 

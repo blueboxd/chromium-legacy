@@ -817,7 +817,7 @@ TEST(Mutex, MutexReaderDecrementBug) ABSL_NO_THREAD_SAFETY_ANALYSIS {
 // held and then destroyed (w/o unlocking).
 #ifdef THREAD_SANITIZER
 // TSAN reports errors when locked Mutexes are destroyed.
-TEST(Mutex, DISABLED_LockedMutexDestructionBug) ABSL_NO_THREAD_SAFETY_ANALYSIS {
+TEST(Mutex, DISABLED_LockedMutexDestructionBug) NO_THREAD_SAFETY_ANALYSIS {
 #else
 TEST(Mutex, LockedMutexDestructionBug) ABSL_NO_THREAD_SAFETY_ANALYSIS {
 #endif
@@ -1097,7 +1097,7 @@ TEST(Mutex, DeadlockDetectorBazelWarning) {
   absl::SetMutexDeadlockDetectionMode(absl::OnDeadlockCycle::kAbort);
 }
 
-// This test is tagged with ABSL_NO_THREAD_SAFETY_ANALYSIS because the
+// This test is tagged with NO_THREAD_SAFETY_ANALYSIS because the
 // annotation-based static thread-safety analysis is not currently
 // predicate-aware and cannot tell if the two for-loops that acquire and
 // release the locks have the same predicates.
@@ -1121,7 +1121,7 @@ TEST(Mutex, DeadlockDetectorStessTest) ABSL_NO_THREAD_SAFETY_ANALYSIS {
 
 #ifdef THREAD_SANITIZER
 // TSAN reports errors when locked Mutexes are destroyed.
-TEST(Mutex, DISABLED_DeadlockIdBug) ABSL_NO_THREAD_SAFETY_ANALYSIS {
+TEST(Mutex, DISABLED_DeadlockIdBug) NO_THREAD_SAFETY_ANALYSIS {
 #else
 TEST(Mutex, DeadlockIdBug) ABSL_NO_THREAD_SAFETY_ANALYSIS {
 #endif

@@ -88,9 +88,11 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
   }
 
   // network::mojom::URLLoader implementation:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override {
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override {
     NOTREACHED()
         << "The original client shouldn't have been notified of any redirects";
   }
@@ -118,6 +120,7 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
     // Don't tell the original client since it thinks this is a local load and
     // just follow the redirect.
     network_loader_->FollowRedirect(std::vector<std::string>(),
+                                    net::HttpRequestHeaders(),
                                     net::HttpRequestHeaders(), base::nullopt);
   }
 

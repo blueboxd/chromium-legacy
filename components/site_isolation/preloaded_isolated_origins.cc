@@ -18,8 +18,9 @@ std::vector<url::Origin> GetBrowserSpecificBuiltInIsolatedOrigins() {
   std::vector<url::Origin> list;
 
 #if BUILDFLAG(USE_INTERNAL_ISOLATED_ORIGINS)
-  // Only apply preloaded isolated origins when memory requirements are
-  // satisfied.
+  // Only apply preloaded isolated origins when allowed by site isolation
+  // policy (e.g., when memory requirements are satisfied, and when not using
+  // full site isolation).
   if (content::SiteIsolationPolicy::ArePreloadedIsolatedOriginsEnabled()) {
     list.reserve(kNumberOfBuiltInIsolatedOrigins);
     for (size_t i = 0; i < kNumberOfBuiltInIsolatedOrigins; i++)

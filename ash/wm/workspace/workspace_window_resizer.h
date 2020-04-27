@@ -53,8 +53,8 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
  private:
   friend class WorkspaceWindowResizerTest;
 
-  // The edge to which the window should be snapped at the end of the drag.
-  enum SnapType { SNAP_LEFT, SNAP_RIGHT, SNAP_NONE };
+  // Possible states the window can end up in after a drag is complete.
+  enum class SnapType { kLeft, kRight, kNone };
 
   WorkspaceWindowResizer(WindowState* window_state,
                          const std::vector<aura::Window*>& attached_windows);
@@ -140,8 +140,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   void RestackWindows();
 
   // Returns the edge to which the window should be snapped to if the user does
-  // no more dragging. SNAP_NONE is returned if the window should not be
-  // snapped.
+  // no more dragging. kSnapNone is returned if the window should not be
+  // snapped, whether it has not been dragged to the correct region, or the
+  // window does not allow for snapping.
   SnapType GetSnapType(const display::Display& display,
                        const gfx::PointF& location_in_screen) const;
 
@@ -160,6 +161,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   void EndDragForAttachedWindows(bool revert_drag);
 
   WindowState* window_state() { return window_state_; }
+  const WindowState* window_state() const { return window_state_; }
 
   const std::vector<aura::Window*> attached_windows_;
 
@@ -189,7 +191,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   std::unique_ptr<PhantomWindowController> snap_phantom_window_controller_;
 
   // The edge to which the window should be snapped to at the end of the drag.
-  SnapType snap_type_ = SNAP_NONE;
+  SnapType snap_type_ = SnapType::kNone;
 
   // The mouse location passed to Drag().
   gfx::PointF last_mouse_location_;

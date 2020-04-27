@@ -12,6 +12,7 @@ import android.content.IntentSender;
 import android.os.Build;
 
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
+import org.chromium.ui.base.ImmutableWeakReference;
 import org.chromium.ui.base.IntentWindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
@@ -24,6 +25,9 @@ import java.lang.ref.WeakReference;
 public class FragmentWindowAndroid extends IntentWindowAndroid {
     private BrowserFragmentImpl mFragment;
     private ModalDialogManager mModalDialogManager;
+
+    // Just create one ImmutableWeakReference object to avoid gc churn.
+    private ImmutableWeakReference<Activity> mActivityWeakRefHolder;
 
     FragmentWindowAndroid(Context context, BrowserFragmentImpl fragment) {
         super(context);
@@ -46,7 +50,10 @@ public class FragmentWindowAndroid extends IntentWindowAndroid {
 
     @Override
     public final WeakReference<Activity> getActivity() {
-        return new WeakReference<>(mFragment.getActivity());
+        if (mActivityWeakRefHolder == null) {
+            mActivityWeakRefHolder = new ImmutableWeakReference<>(mFragment.getActivity());
+        }
+        return mActivityWeakRefHolder;
     }
 
     @Override

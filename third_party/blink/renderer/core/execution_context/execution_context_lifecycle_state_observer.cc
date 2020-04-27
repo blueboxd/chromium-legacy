@@ -44,7 +44,7 @@ ExecutionContextLifecycleStateObserver::ExecutionContextLifecycleStateObserver(
 ExecutionContextLifecycleStateObserver::ExecutionContextLifecycleStateObserver(
     Document* document)
     : ExecutionContextLifecycleStateObserver(
-          document ? document->ToExecutionContext() : nullptr) {}
+          document ? document->GetExecutionContext() : nullptr) {}
 
 ExecutionContextLifecycleStateObserver::
     ~ExecutionContextLifecycleStateObserver() {

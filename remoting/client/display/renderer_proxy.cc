@@ -5,7 +5,7 @@
 #include "remoting/client/display/renderer_proxy.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "remoting/client/display/gl_renderer.h"
 #include "remoting/client/queued_task_poster.h"
 #include "remoting/client/ui/view_matrix.h"

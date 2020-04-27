@@ -1953,6 +1953,15 @@ if (define_upstream_webview_targets) {
     if (!is_component_build) {
       verify_native_libs_and_assets = true
     }
+
+    # Having //clank present causes different flags because of how play services
+    # is wired up.
+    # The channel is required because manifest entries vary based on channel.
+    _verify_android_configuration =
+        !enable_chrome_android_internal && android_channel == "stable"
+    if (_verify_android_configuration) {
+      verify_manifest = true
+    }
   }
 
   if (android_64bit_target_cpu) {
@@ -2535,15 +2544,11 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
                              "static_library_synchronized_proguard",
                              "resource_ids_provider_dep",
                              "use_trichrome_library",
+                             "verify_manifest",
                            ])
     target_type = "android_app_bundle_module"
     is_base_module = true
     version_code = _version_code
-
-    if (defined(invoker.verify_android_configuration) &&
-        invoker.verify_android_configuration) {
-      verify_manifest = true
-    }
 
     if (!_is_trichrome ||
         !defined(invoker.static_library_synchronized_proguard) ||
@@ -2561,6 +2566,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
                              "static_library_provider",
                              "static_library_synchronized_proguard",
                              "verify_native_libs_and_assets",
+                             "verify_proguard_flags",
                            ])
     base_module_target = ":$_base_module_target_name"
     bundle_name = _bundle_name
@@ -2572,10 +2578,6 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
 
     if (!is_java_debug) {
       proguard_android_sdk_dep = webview_framework_dep
-      if (defined(invoker.verify_android_configuration) &&
-          invoker.verify_android_configuration) {
-        verify_proguard_flags = true
-      }
     }
   }
 }
@@ -2594,11 +2596,14 @@ if (public_android_sdk) {
     # Having //clank present causes different flags because of how play services
     # is wired up.
     # The channel is required because manifest entries vary based on channel.
-    if (!enable_chrome_android_internal && android_channel == "stable") {
-      verify_android_configuration = true
-    }
     if (!is_component_build) {
       verify_native_libs_and_assets = true
+    }
+    _verify_android_configuration =
+        !enable_chrome_android_internal && android_channel == "stable"
+    if (_verify_android_configuration) {
+      verify_manifest = true
+      verify_proguard_flags = true
     }
   }
 
@@ -2631,6 +2636,15 @@ if (public_android_sdk) {
     }
     if (!is_component_build) {
       verify_native_libs_and_assets = true
+    }
+
+    # Having //clank present causes different flags because of how play services
+    # is wired up.
+    # The channel is required because manifest entries vary based on channel.
+    _verify_android_configuration =
+        !enable_chrome_android_internal && android_channel == "stable"
+    if (_verify_android_configuration) {
+      verify_manifest = true
     }
   }
 

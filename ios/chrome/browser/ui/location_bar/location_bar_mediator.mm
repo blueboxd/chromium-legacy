@@ -300,7 +300,7 @@
   if (self.webContentAreaShowingHTTPAuthDialog)
     return YES;
   GURL url = self.locationBarModel->GetURL();
-  return url.SchemeIs(url::kDataScheme);
+  return url.SchemeIs(url::kDataScheme) || url.SchemeIs(url::kBlobScheme);
 }
 
 #pragma mark Security status icon helpers

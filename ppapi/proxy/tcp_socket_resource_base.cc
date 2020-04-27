@@ -7,7 +7,8 @@
 #include <cstring>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"

@@ -4,7 +4,6 @@
 
 #include "remoting/protocol/ice_config.h"
 
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "remoting/proto/remoting/v1/network_traversal_messages.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -5,7 +5,6 @@
 #include "storage/browser/file_system/sandbox_isolated_origin_database.h"
 
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "storage/browser/file_system/sandbox_origin_database.h"
 
 namespace storage {

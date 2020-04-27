@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 
 // If queue grows bigger than 150ms we start dropping packets.

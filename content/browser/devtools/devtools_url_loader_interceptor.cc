@@ -337,9 +337,11 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   }
 
   // network::mojom::URLLoader methods
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -893,7 +895,7 @@ Response InterceptionJob::InnerContinueRequest(
     } else {
       // TODO(caseq): report error if other modifications are present.
       state_ = State::kRequestSent;
-      loader_->FollowRedirect({}, {}, base::nullopt);
+      loader_->FollowRedirect({}, {}, {}, base::nullopt);
       return Response::Success();
     }
   }
@@ -1294,6 +1296,7 @@ void InterceptionJob::Shutdown() {
 void InterceptionJob::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   // TODO(arthursonzogni, juncai): This seems to be correctly implemented, but
   // not used nor tested so far. Add tests and remove this DCHECK to support
@@ -1318,6 +1321,10 @@ void InterceptionJob::FollowRedirect(
   net::RedirectUtil::UpdateHttpRequest(request->url, request->method, info,
                                        removed_headers, modified_headers,
                                        &request->headers, &clear_body);
+  request->cors_exempt_headers.MergeFrom(modified_cors_exempt_headers);
+  for (const std::string& name : removed_headers)
+    request->cors_exempt_headers.RemoveHeader(name);
+
   if (clear_body)
     request->request_body = nullptr;
   request->method = info.new_method;
@@ -1340,6 +1347,7 @@ void InterceptionJob::FollowRedirect(
   if (state_ == State::kRedirectReceived) {
     state_ = State::kRequestSent;
     loader_->FollowRedirect(removed_headers, modified_headers,
+                            modified_cors_exempt_headers,
                             base::nullopt /* new_url */);
     return;
   }

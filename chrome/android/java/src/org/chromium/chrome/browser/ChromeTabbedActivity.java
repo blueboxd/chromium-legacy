@@ -75,6 +75,7 @@ import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
+import org.chromium.chrome.browser.feed.v2.FeedStreamSurface;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -800,6 +801,8 @@ public class ChromeTabbedActivity
                 // We call getFeedAppLifecycle() here to ensure the app lifecycle is created so
                 // that it can start listening for state changes.
                 FeedProcessScopeFactory.getFeedAppLifecycle();
+            } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
+                FeedStreamSurface.xSurfaceProcessScope();
             }
 
             if (UsageStatsService.isEnabled()) {

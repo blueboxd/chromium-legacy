@@ -64,10 +64,10 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
     return base::PathService::Get(android_webview::DIR_CRASH_DUMPS, crash_dir);
   }
 
-  void GetSanitizationInformation(const char* const** annotations_whitelist,
+  void GetSanitizationInformation(const char* const** crash_key_allowlist,
                                   void** target_module,
                                   bool* sanitize_stacks) override {
-    *annotations_whitelist = crash_keys::kWebViewCrashKeyWhiteList;
+    *crash_key_allowlist = crash_keys::kWebViewCrashKeyAllowList;
 #if defined(COMPONENT_BUILD)
     *target_module = nullptr;
 #else

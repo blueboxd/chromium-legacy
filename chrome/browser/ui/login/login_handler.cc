@@ -155,7 +155,8 @@ void LoginHandler::Start(
 
 void LoginHandler::ShowLoginPromptAfterCommit(const GURL& request_url) {
   // The request may have been handled while the WebRequest API was processing.
-  if (!web_contents() || !web_contents()->GetDelegate() || WasAuthHandled()) {
+  if (!web_contents() || !web_contents()->GetDelegate() ||
+      web_contents()->IsBeingDestroyed() || WasAuthHandled()) {
     CancelAuth();
     return;
   }

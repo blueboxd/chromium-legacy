@@ -71,7 +71,6 @@ crbug.com/878727 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline
 crbug.com/862029 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Failure ]
 
 crbug.com/733494 [ Linux ] media/autoplay/document-user-activation.html [ Pass Failure ]
-crbug.com/733494 [ Linux ] virtual/audio-service/media/autoplay/document-user-activation.html [ Pass Failure ]
 
 # Sheriff 2019-01-07
 crbug.com/919497 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-gpu-tasks.js [ Pass Failure ]

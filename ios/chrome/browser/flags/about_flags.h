@@ -23,6 +23,9 @@ namespace flags_ui {
 class FlagsStorage;
 }
 
+// Adds all switches from experimental flags to |command_line|.
+void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line);
+
 // Reads the state from |flags_storage| and adds the command line flags
 // belonging to the active feature entries to |command_line| in addition
 // to the flags from experimental settings.

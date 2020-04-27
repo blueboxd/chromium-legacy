@@ -2193,6 +2193,24 @@ EVENT_TYPE(QUIC_SESSION_HANDSHAKE_DONE_FRAME_RECEIVED)
 // }
 EVENT_TYPE(QUIC_SESSION_COALESCED_PACKET_SENT)
 
+// Session buffered an undecryptable packet.
+// {
+//   "encryption_level": <the encryption level of the packet>
+// }
+EVENT_TYPE(QUIC_SESSION_BUFFERED_UNDECRYPTABLE_PACKET)
+
+// Session dropped an undecryptable packet.
+// {
+//   "encryption_level": <the encryption level of the packet>
+// }
+EVENT_TYPE(QUIC_SESSION_DROPPED_UNDECRYPTABLE_PACKET)
+
+// Session is attempting to process an undecryptable packet.
+// {
+//   "encryption_level": <the encryption level of the packet>
+// }
+EVENT_TYPE(QUIC_SESSION_ATTEMPTING_TO_PROCESS_UNDECRYPTABLE_PACKET)
+
 // ------------------------------------------------------------------------
 // QuicHttpStream
 // ------------------------------------------------------------------------

@@ -406,9 +406,6 @@
       <message name="IDS_DOWNLOAD_UI_GB" desc="String indicating the size of a downloaded file (in progress or complete), in gigabytes.">
         <ph name="gigabytes">%1$3.2f<ex>12.5</ex></ph> GB
       </message>
-      <message name="IDS_RENAME" desc="Label for the option to rename items.">
-        Rename
-      </message>
 
       <!-- Override URL -->
       <message name="IDS_BLOCKED_NAVIGATION_WARNING" desc="Warning message added to dev tools console when navigation to a given URL is blocked.">

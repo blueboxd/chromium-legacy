@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/host_status_monitor.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"

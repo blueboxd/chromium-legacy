@@ -4,11 +4,16 @@
 
 #include "content/browser/conversions/conversion_network_sender_impl.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "content/public/browser/storage_partition.h"
+#include "net/base/load_flags.h"
+#include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -53,8 +58,10 @@ void ConversionNetworkSenderImpl::SendReport(ConversionReport* report,
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GetReportUrl(*report);
   resource_request->referrer = report->impression.conversion_origin().GetURL();
-  resource_request->method = "POST";
+  resource_request->method = net::HttpRequestHeaders::kPostMethod;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  resource_request->load_flags =
+      net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE;
 
   // TODO(https://crbug.com/1058018): Update the "policy" field in the traffic
   // annotation when a setting to disable the API is properly

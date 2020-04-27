@@ -823,6 +823,8 @@ struct HashTraits<blink::Member<T>> : SimpleClassHashTraits<blink::Member<T>> {
   static void ConstructDeletedValue(blink::Member<T>& slot, bool) {
     slot = WTF::kHashTableDeletedValue;
   }
+
+  static constexpr bool kCanTraceConcurrently = true;
 };
 
 template <typename T>
@@ -857,6 +859,8 @@ struct HashTraits<blink::WeakMember<T>>
   static void ConstructDeletedValue(blink::WeakMember<T>& slot, bool) {
     slot = WTF::kHashTableDeletedValue;
   }
+
+  static constexpr bool kCanTraceConcurrently = true;
 };
 
 template <typename T>
@@ -887,6 +891,8 @@ struct HashTraits<blink::UntracedMember<T>>
   static PeekOutType Peek(const blink::UntracedMember<T>& value) {
     return value;
   }
+
+  static constexpr bool kCanTraceConcurrently = true;
 };
 
 template <typename T, wtf_size_t inlineCapacity>

@@ -143,6 +143,10 @@ public class PasswordSettingsTest {
     public SettingsActivityTestRule<PasswordSettings> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(PasswordSettings.class);
 
+    @Rule
+    public SettingsActivityTestRule<PasswordEntryEditor> mEditorActivityTestRule =
+            new SettingsActivityTestRule<>(PasswordEntryEditor.class);
+
     private static final class FakePasswordManagerHandler implements PasswordManagerHandler {
         // This class has exactly one observer, set on construction and expected to last at least as
         // long as this object (a good candidate is the owner of this object).
@@ -755,9 +759,7 @@ public class PasswordSettingsTest {
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_URL, "https://example.com");
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_NAME, "test user");
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD, "test password");
-        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        settingsLauncher.launchSettingsActivity(
-                InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
+        mEditorActivityTestRule.startSettingsActivity(fragmentArgs);
 
         Espresso.onView(withId(R.id.site_edit)).check(matches(withText("https://example.com")));
         Espresso.onView(withId(R.id.username_edit)).check(matches(withText("test user")));
@@ -841,9 +843,7 @@ public class PasswordSettingsTest {
         fragmentArgs.putString(PasswordSettings.PASSWORD_LIST_NAME, "test user");
         fragmentArgs.putString(PasswordSettings.PASSWORD_LIST_URL, "https://example.com");
         fragmentArgs.putString(PasswordSettings.PASSWORD_LIST_PASSWORD, "test password");
-        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        settingsLauncher.launchSettingsActivity(
-                InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
+        mEditorActivityTestRule.startSettingsActivity(fragmentArgs);
 
         ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
         ReauthenticationManager.setScreenLockSetUpOverride(

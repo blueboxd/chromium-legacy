@@ -60,12 +60,12 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
   // empty InputHandlerPointerResult in this case so that when it is bubbled up
   // to InputHandlerProxy::RouteToTypeSpecificHandler, the pointer event gets
   // passed on to the main thread.
-  if (!(layer_impl && layer_impl->ToScrollbarLayer()))
+  if (!(layer_impl && layer_impl->IsScrollbarLayer()))
     return InputHandlerPointerResult();
 
   // If the scrollbar layer has faded out (eg: Overlay scrollbars), don't
   // initiate a scroll.
-  const ScrollbarLayerImplBase* scrollbar = layer_impl->ToScrollbarLayer();
+  const ScrollbarLayerImplBase* scrollbar = ToScrollbarLayer(layer_impl);
   if (scrollbar->OverlayScrollbarOpacity() == 0.f)
     return InputHandlerPointerResult();
 

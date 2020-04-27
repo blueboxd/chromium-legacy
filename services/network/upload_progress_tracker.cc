@@ -4,7 +4,7 @@
 
 #include "services/network/upload_progress_tracker.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "net/base/upload_progress.h"
 #include "net/url_request/url_request.h"
 

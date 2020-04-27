@@ -21,6 +21,7 @@
 
 using cast_channel::BroadcastRequest;
 using cast_channel::CastDeviceCapability;
+using cast_channel::ReceiverAppType;
 
 namespace cast_util {
 
@@ -56,6 +57,14 @@ const EnumTable<CastDeviceCapability> EnumTable<CastDeviceCapability>::instance(
         // NONE deliberately omitted
     },
     NonConsecutiveEnumTable);
+
+template <>
+const EnumTable<ReceiverAppType> EnumTable<ReceiverAppType>::instance(
+    {
+        {ReceiverAppType::kWeb, "WEB"},
+        {ReceiverAppType::kAndroidTv, "ANDROID_TV"},
+    },
+    ReceiverAppType::kMaxValue);
 
 }  // namespace cast_util
 
@@ -160,6 +169,21 @@ BitwiseOr<CastDeviceCapability> CastDeviceCapabilitiesFromString(
   return result;
 }
 
+std::vector<ReceiverAppType> SupportedAppTypesFromString(
+    const base::StringPiece& s) {
+  std::vector<ReceiverAppType> result;
+  for (const auto& type_str : base::SplitStringPiece(
+           s, ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    const auto type = cast_util::StringToEnum<ReceiverAppType>(type_str);
+    if (type) {
+      result.push_back(*type);
+    } else {
+      DLOG(ERROR) << "Unkown supported app type: " << type_str;
+    }
+  }
+  return result;
+}
+
 std::unique_ptr<CastMediaSource> CastMediaSourceForTabMirroring(
     const MediaSource::Id& source_id) {
   return std::make_unique<CastMediaSource>(
@@ -185,7 +209,8 @@ std::unique_ptr<CastMediaSource> CreateFromURLParams(
     const std::string& client_id,
     const std::string& broadcast_namespace,
     const std::string& encoded_broadcast_message,
-    const std::string& launch_timeout_str) {
+    const std::string& launch_timeout_str,
+    const std::vector<ReceiverAppType>& supported_app_types) {
   if (app_infos.empty())
     return nullptr;
 
@@ -208,6 +233,10 @@ std::unique_ptr<CastMediaSource> CreateFromURLParams(
         base::TimeDelta::FromMilliseconds(launch_timeout_millis));
   }
 
+  if (!supported_app_types.empty()) {
+    cast_source->set_supported_app_types(supported_app_types);
+  }
+
   return cast_source;
 }
 
@@ -228,7 +257,9 @@ std::unique_ptr<CastMediaSource> ParseCastUrl(const MediaSource::Id& source_id,
       FindValueOr(params, "clientId", ""),
       FindValueOr(params, "broadcastNamespace", ""),
       FindValueOr(params, "broadcastMessage", ""),
-      FindValueOr(params, "launchTimeout", ""));
+      FindValueOr(params, "launchTimeout", ""),
+      SupportedAppTypesFromString(
+          FindValueOr(params, "supportedAppTypes", "")));
 }
 
 std::unique_ptr<CastMediaSource> ParseLegacyCastUrl(
@@ -285,7 +316,8 @@ std::unique_ptr<CastMediaSource> ParseLegacyCastUrl(
       FindValueOr(params, "__castClientId__", ""),
       FindValueOr(params, "__castBroadcastNamespace__", ""),
       FindValueOr(params, "__castBroadcastMessage__", ""),
-      FindValueOr(params, "__castLaunchTimeout__", ""));
+      FindValueOr(params, "__castLaunchTimeout__", ""),
+      /* supported_app_types */ {});
 }
 
 }  // namespace
@@ -387,6 +419,13 @@ std::vector<std::string> CastMediaSource::GetAppIds() const {
     app_ids.push_back(info.app_id);
 
   return app_ids;
+}
+
+void CastMediaSource::set_supported_app_types(
+    const std::vector<ReceiverAppType>& types) {
+  DCHECK(!types.empty());
+  DCHECK(base::Contains(types, ReceiverAppType::kWeb));
+  supported_app_types_ = types;
 }
 
 }  // namespace media_router

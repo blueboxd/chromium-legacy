@@ -348,7 +348,10 @@ public abstract class ToolbarLayout
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        addProgressBarToHierarchy();
+        // TODO(crbug.com/1021877): lazy initialize progress bar.
+        // Posting adding progress bar can prevent parent view group from using a stale children
+        // count, which can cause a crash in rare cases.
+        post(this::addProgressBarToHierarchy);
     }
 
     /**

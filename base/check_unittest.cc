@@ -8,7 +8,6 @@
 #include "base/strings/string_piece.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -449,12 +448,8 @@ TEST_F(CheckTest, NotReached) {
 }
 
 TEST_F(CheckTest, NotImplemented) {
-#if defined(COMPILER_GCC)
   static const std::string expected_msg =
       std::string("Not implemented reached in ") + __PRETTY_FUNCTION__;
-#else
-  static const std::string expected_msg = "NOT IMPLEMENTED";
-#endif
 
 #if DCHECK_IS_ON()
   // Expect LOG(ERROR) with streamed params intact.
@@ -471,15 +466,11 @@ void NiLogOnce() {
 }
 
 TEST_F(CheckTest, NotImplementedLogOnce) {
-#if defined(COMPILER_GCC)
   static const std::string expected_msg =
       "Not implemented reached in void (anonymous namespace)::NiLogOnce()\n";
-#else
-  static const std::string expected_msg = "NOT IMPLEMENTED\n";
-#endif
 
 #if DCHECK_IS_ON()
-  EXPECT_LOG_ERROR(expected_msg, NiLogOnce(), __LINE__ - 12);
+  EXPECT_LOG_ERROR(expected_msg, NiLogOnce(), __LINE__ - 8);
   EXPECT_NO_LOG(NiLogOnce());
 #else
   EXPECT_NO_LOG(NiLogOnce());

@@ -49,7 +49,6 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   bool CanScrollOrientation() const;
 
   void PushPropertiesTo(LayerImpl* layer) override;
-  ScrollbarLayerImplBase* ToScrollbarLayer() override;
 
   // Thumb quad rect in layer space.
   gfx::Rect ComputeThumbQuadRect() const;
@@ -99,6 +98,8 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   virtual bool IsThumbResizable() const = 0;
 
  private:
+  bool IsScrollbarLayer() const final;
+
   gfx::Rect ComputeThumbQuadRectWithThumbThicknessScale(
       float thumb_thickness_scale_factor) const;
 
@@ -119,6 +120,11 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   FRIEND_TEST_ALL_PREFIXES(ScrollbarLayerTest,
                            ScrollElementIdPushedAcrossCommit);
 };
+
+inline ScrollbarLayerImplBase* ToScrollbarLayer(LayerImpl* layer) {
+  DCHECK(layer->IsScrollbarLayer());
+  return static_cast<ScrollbarLayerImplBase*>(layer);
+}
 
 using ScrollbarSet = base::flat_set<ScrollbarLayerImplBase*>;
 

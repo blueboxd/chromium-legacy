@@ -29,6 +29,10 @@ class View;
 // Handles events on Widgets in context-specific ways.
 class VIEWS_EXPORT WidgetDelegate {
  public:
+  struct Params {
+    base::string16 title;
+  };
+
   WidgetDelegate();
 
   // Sets the return value of CanActivate(). Default is true.
@@ -202,11 +206,17 @@ class VIEWS_EXPORT WidgetDelegate {
   // be cycled through with keyboard focus.
   virtual void GetAccessiblePanes(std::vector<View*>* panes) {}
 
+  // Setters for data parameters of the WidgetDelegate. If you use these
+  // setters, there is no need to override the corresponding virtual getters.
+  void SetWindowTitle(const base::string16& title);
+
  protected:
   virtual ~WidgetDelegate();
 
  private:
   friend class Widget;
+
+  Params params_;
 
   View* default_contents_view_ = nullptr;
   bool can_activate_ = true;

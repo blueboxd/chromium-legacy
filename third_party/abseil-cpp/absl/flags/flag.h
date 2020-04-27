@@ -149,9 +149,6 @@ class Flag {
   }
   T Get() const { return GetImpl()->Get(); }
   void Set(const T& v) { GetImpl()->Set(v); }
-  void SetCallback(const flags_internal::FlagCallbackFunc mutation_callback) {
-    GetImpl()->SetCallback(mutation_callback);
-  }
   void InvokeCallback() { GetImpl()->InvokeCallback(); }
 
   // The data members are logically private, but they need to be public for
@@ -314,9 +311,9 @@ ABSL_NAMESPACE_END
     static std::string NonConst() { return ABSL_FLAG_IMPL_FLAGHELP(txt); } \
   }
 
-#define ABSL_FLAG_IMPL_DECLARE_DEF_VAL_WRAPPER(name, Type, default_value)   \
-  static void* AbslFlagsInitFlag##name() {                                  \
-    return absl::flags_internal::MakeFromDefaultValue<Type>(default_value); \
+#define ABSL_FLAG_IMPL_DECLARE_DEF_VAL_WRAPPER(name, Type, default_value) \
+  static void AbslFlagsInitFlag##name(void* dst) {                        \
+    absl::flags_internal::MakeFromDefaultValue<Type>(dst, default_value); \
   }
 
 // ABSL_FLAG_IMPL
@@ -333,8 +330,9 @@ ABSL_NAMESPACE_END
       ABSL_FLAG_IMPL_FLAGNAME(#name), ABSL_FLAG_IMPL_FILENAME(),    \
       absl::flags_internal::HelpArg<AbslFlagHelpGenFor##name>(0),   \
       &AbslFlagsInitFlag##name};                                    \
-  extern bool FLAGS_no##name;                                       \
-  bool FLAGS_no##name = ABSL_FLAG_IMPL_REGISTRAR(Type, FLAGS_##name)
+  extern absl::flags_internal::FlagRegistrarEmpty FLAGS_no##name;   \
+  absl::flags_internal::FlagRegistrarEmpty FLAGS_no##name =         \
+      ABSL_FLAG_IMPL_REGISTRAR(Type, FLAGS_##name)
 #else
 // MSVC version uses aggregate initialization. We also do not try to
 // optimize away help wrapper.
@@ -345,8 +343,9 @@ ABSL_NAMESPACE_END
   ABSL_CONST_INIT absl::Flag<Type> FLAGS_##name{                      \
       ABSL_FLAG_IMPL_FLAGNAME(#name), ABSL_FLAG_IMPL_FILENAME(),      \
       &AbslFlagHelpGenFor##name::NonConst, &AbslFlagsInitFlag##name}; \
-  extern bool FLAGS_no##name;                                         \
-  bool FLAGS_no##name = ABSL_FLAG_IMPL_REGISTRAR(Type, FLAGS_##name)
+  extern absl::flags_internal::FlagRegistrarEmpty FLAGS_no##name;     \
+  absl::flags_internal::FlagRegistrarEmpty FLAGS_no##name =           \
+      ABSL_FLAG_IMPL_REGISTRAR(Type, FLAGS_##name)
 #endif
 
 // ABSL_RETIRED_FLAG

@@ -4,7 +4,6 @@
 
 #include "services/network/public/cpp/proxy_config_mojom_traits.h"
 
-#include "base/logging.h"
 #include "url/gurl.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 

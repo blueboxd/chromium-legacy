@@ -707,8 +707,30 @@ void QuicConnectionLogger::OnIncorrectConnectionId(
   ++num_incorrect_connection_ids_;
 }
 
-void QuicConnectionLogger::OnUndecryptablePacket() {
+void QuicConnectionLogger::OnUndecryptablePacket(
+    quic::EncryptionLevel decryption_level,
+    bool dropped) {
   ++num_undecryptable_packets_;
+  if (!net_log_.IsCapturing())
+    return;
+  if (dropped) {
+    net_log_.AddEventWithStringParams(
+        NetLogEventType::QUIC_SESSION_DROPPED_UNDECRYPTABLE_PACKET,
+        "encryption_level", quic::EncryptionLevelToString(decryption_level));
+    return;
+  }
+  net_log_.AddEventWithStringParams(
+      NetLogEventType::QUIC_SESSION_BUFFERED_UNDECRYPTABLE_PACKET,
+      "encryption_level", quic::EncryptionLevelToString(decryption_level));
+}
+
+void QuicConnectionLogger::OnAttemptingToProcessUndecryptablePacket(
+    quic::EncryptionLevel decryption_level) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEventWithStringParams(
+      NetLogEventType::QUIC_SESSION_ATTEMPTING_TO_PROCESS_UNDECRYPTABLE_PACKET,
+      "encryption_level", quic::EncryptionLevelToString(decryption_level));
 }
 
 void QuicConnectionLogger::OnDuplicatePacket(

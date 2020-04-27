@@ -147,6 +147,7 @@ absl_cc_test(
     ${ABSL_TEST_COPTS}
   DEPS
     absl::fixed_array
+    absl::counting_allocator
     absl::config
     absl::exception_testing
     absl::hash_testing
@@ -303,6 +304,7 @@ absl_cc_test(
     absl::unordered_map_members_test
     absl::unordered_map_modifiers_test
     absl::any
+    absl::raw_logging_internal
     gmock_main
 )
 
@@ -339,6 +341,7 @@ absl_cc_test(
     absl::unordered_set_members_test
     absl::unordered_set_modifiers_test
     absl::memory
+    absl::raw_logging_internal
     absl::strings
     gmock_main
 )

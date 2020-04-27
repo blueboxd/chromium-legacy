@@ -402,4 +402,16 @@ void MediaHistoryKeyedService::MarkMediaFeedItemAsClicked(
   }
 }
 
+void MediaHistoryKeyedService::ResetMediaFeed(
+    const int64_t feed_id,
+    media_feeds::mojom::ResetReason reason) {
+  CHECK_NE(media_feeds::mojom::ResetReason::kNone, reason);
+
+  if (auto* store = store_->GetForWrite()) {
+    store->db_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&MediaHistoryStore::ResetMediaFeed, store,
+                                  feed_id, reason));
+  }
+}
+
 }  // namespace media_history

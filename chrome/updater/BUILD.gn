@@ -130,6 +130,10 @@ if (is_win || is_mac) {
       sources += [
         "installer_win.cc",
         "lib_util_win.cc",
+        "server/win/com_classes.cc",
+        "server/win/com_classes.h",
+        "server/win/com_classes_legacy.cc",
+        "server/win/com_classes_legacy.h",
         "server/win/server.cc",
         "server/win/server.h",
         "server/win/service_main.cc",

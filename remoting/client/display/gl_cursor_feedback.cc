@@ -8,7 +8,7 @@
 
 #include <array>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "remoting/client/display/canvas.h"
 #include "remoting/client/display/gl_cursor_feedback_texture.h"
 #include "remoting/client/display/gl_math.h"

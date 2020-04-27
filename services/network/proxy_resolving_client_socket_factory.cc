@@ -4,7 +4,7 @@
 
 #include "services/network/proxy_resolving_client_socket_factory.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/time/time.h"
 #include "net/base/ip_address.h"
 #include "net/http/http_network_session.h"

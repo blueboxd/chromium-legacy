@@ -11,193 +11,89 @@
 #include <string>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
-#include "base/synchronization/lock.h"
-#include "chrome/updater/server/win/updater_idl.h"
+#include "base/sequenced_task_runner.h"
+#include "base/win/scoped_com_initializer.h"
+#include "chrome/updater/app/app.h"
 #include "chrome/updater/update_service.h"
-
-namespace base {
-class SequencedTaskRunner;
-}  // namespace base
 
 namespace updater {
 
-// TODO(crbug.com/1065712): these Impl classes don't have to be
-// visible in the updater namespace. Additionally, there is some code
-// duplication for the registration and unregistration code in both server and
-// service_main compilation units.
-//
-// This class implements the legacy Omaha3 interfaces as expected by Chrome's
-// on-demand client.
-class LegacyOnDemandImpl
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IGoogleUpdate3Web,
-          IAppBundleWeb,
-          IAppWeb,
-          ICurrentState,
-          IDispatch> {
- public:
-  LegacyOnDemandImpl();
-  LegacyOnDemandImpl(const LegacyOnDemandImpl&) = delete;
-  LegacyOnDemandImpl& operator=(const LegacyOnDemandImpl&) = delete;
+class Configurator;
+class UpdateService;
 
-  // Overrides for IGoogleUpdate3Web.
-  IFACEMETHODIMP createAppBundleWeb(IDispatch** app_bundle_web) override;
-
-  // Overrides for IAppBundleWeb.
-  IFACEMETHODIMP createApp(BSTR app_id,
-                           BSTR brand_code,
-                           BSTR language,
-                           BSTR ap) override;
-  IFACEMETHODIMP createInstalledApp(BSTR app_id) override;
-  IFACEMETHODIMP createAllInstalledApps() override;
-  IFACEMETHODIMP get_displayLanguage(BSTR* language) override;
-  IFACEMETHODIMP put_displayLanguage(BSTR language) override;
-  IFACEMETHODIMP put_parentHWND(ULONG_PTR hwnd) override;
-  IFACEMETHODIMP get_length(int* number) override;
-  IFACEMETHODIMP get_appWeb(int index, IDispatch** app_web) override;
-  IFACEMETHODIMP initialize() override;
-  IFACEMETHODIMP checkForUpdate() override;
-  IFACEMETHODIMP download() override;
-  IFACEMETHODIMP install() override;
-  IFACEMETHODIMP pause() override;
-  IFACEMETHODIMP resume() override;
-  IFACEMETHODIMP cancel() override;
-  IFACEMETHODIMP downloadPackage(BSTR app_id, BSTR package_name) override;
-  IFACEMETHODIMP get_currentState(VARIANT* current_state) override;
-
-  // Overrides for IAppWeb.
-  IFACEMETHODIMP get_appId(BSTR* app_id) override;
-  IFACEMETHODIMP get_currentVersionWeb(IDispatch** current) override;
-  IFACEMETHODIMP get_nextVersionWeb(IDispatch** next) override;
-  IFACEMETHODIMP get_command(BSTR command_id, IDispatch** command) override;
-  IFACEMETHODIMP get_currentState(IDispatch** current_state) override;
-  IFACEMETHODIMP launch() override;
-  IFACEMETHODIMP uninstall() override;
-  IFACEMETHODIMP get_serverInstallDataIndex(BSTR* language) override;
-  IFACEMETHODIMP put_serverInstallDataIndex(BSTR language) override;
-
-  // Overrides for ICurrentState.
-  IFACEMETHODIMP get_stateValue(LONG* state_value) override;
-  IFACEMETHODIMP get_availableVersion(BSTR* available_version) override;
-  IFACEMETHODIMP get_bytesDownloaded(ULONG* bytes_downloaded) override;
-  IFACEMETHODIMP get_totalBytesToDownload(
-      ULONG* total_bytes_to_download) override;
-  IFACEMETHODIMP get_downloadTimeRemainingMs(
-      LONG* download_time_remaining_ms) override;
-  IFACEMETHODIMP get_nextRetryTime(ULONGLONG* next_retry_time) override;
-  IFACEMETHODIMP get_installProgress(
-      LONG* install_progress_percentage) override;
-  IFACEMETHODIMP get_installTimeRemainingMs(
-      LONG* install_time_remaining_ms) override;
-  IFACEMETHODIMP get_isCanceled(VARIANT_BOOL* is_canceled) override;
-  IFACEMETHODIMP get_errorCode(LONG* error_code) override;
-  IFACEMETHODIMP get_extraCode1(LONG* extra_code1) override;
-  IFACEMETHODIMP get_completionMessage(BSTR* completion_message) override;
-  IFACEMETHODIMP get_installerResultCode(LONG* installer_result_code) override;
-  IFACEMETHODIMP get_installerResultExtraCode1(
-      LONG* installer_result_extra_code1) override;
-  IFACEMETHODIMP get_postInstallLaunchCommandLine(
-      BSTR* post_install_launch_command_line) override;
-  IFACEMETHODIMP get_postInstallUrl(BSTR* post_install_url) override;
-  IFACEMETHODIMP get_postInstallAction(LONG* post_install_action) override;
-
-  // Overrides for IDispatch.
-  IFACEMETHODIMP GetTypeInfoCount(UINT*) override;
-  IFACEMETHODIMP GetTypeInfo(UINT, LCID, ITypeInfo**) override;
-  IFACEMETHODIMP GetIDsOfNames(REFIID, LPOLESTR*, UINT, LCID, DISPID*) override;
-  IFACEMETHODIMP Invoke(DISPID,
-                        REFIID,
-                        LCID,
-                        WORD,
-                        DISPPARAMS*,
-                        VARIANT*,
-                        EXCEPINFO*,
-                        UINT*) override;
-
- private:
-  ~LegacyOnDemandImpl() override;
-
-  void UpdateStateCallback(UpdateService::UpdateState state_update);
-  void UpdateResultCallback(UpdateService::Result result);
-
-  // Returns the state of the update and the error code as seen by the
-  // on-demand client.
-  CurrentState GetOnDemandCurrentState() const;
-  HRESULT GetOnDemandError() const;
-
-  // Handles the update service callbacks.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  // Synchronized accessors.
-  std::string app_id() const {
-    base::AutoLock lock{lock_};
-    return app_id_;
-  }
-  void set_app_id(const std::string& app_id) {
-    base::AutoLock lock{lock_};
-    app_id_ = app_id;
-  }
-
-  // Access to these members must be serialized by using the lock.
-  mutable base::Lock lock_;
-  std::string app_id_;
-  base::Optional<UpdateService::UpdateState> state_update_;
-  base::Optional<UpdateService::Result> result_;
-};
-
-// This class implements the ICompleteStatus interface and exposes it as a COM
-// object.
-class CompleteStatusImpl
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          ICompleteStatus> {
- public:
-  CompleteStatusImpl(int code, const base::string16& message)
-      : code_(code), message_(message) {}
-  CompleteStatusImpl(const CompleteStatusImpl&) = delete;
-  CompleteStatusImpl& operator=(const CompleteStatusImpl&) = delete;
-
-  // Overrides for ICompleteStatus.
-  IFACEMETHODIMP get_statusCode(LONG* code) override;
-  IFACEMETHODIMP get_statusMessage(BSTR* message) override;
-
- private:
-  ~CompleteStatusImpl() override = default;
-
-  const int code_;
-  const base::string16 message_;
-};
-
-// This class implements the IUpdater interface and exposes it as a COM object.
-class UpdaterImpl
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IUpdater> {
- public:
-  UpdaterImpl() = default;
-  UpdaterImpl(const UpdaterImpl&) = delete;
-  UpdaterImpl& operator=(const UpdaterImpl&) = delete;
-
-  // Overrides for IUpdater.
-  IFACEMETHODIMP CheckForUpdate(const base::char16* app_id) override;
-  IFACEMETHODIMP Register(const base::char16* app_id,
-                          const base::char16* brand_code,
-                          const base::char16* tag,
-                          const base::char16* version,
-                          const base::char16* existence_checker_path) override;
-  IFACEMETHODIMP Update(const base::char16* app_id) override;
-  IFACEMETHODIMP UpdateAll(IUpdaterObserver* observer) override;
-
- private:
-  ~UpdaterImpl() override = default;
-};
-
-class App;
-
+// Returns an application object bound to this COM server.
 scoped_refptr<App> AppServerInstance();
+
+// The COM objects involved in this server are free threaded. Incoming COM calls
+// arrive on COM RPC threads. Outgoing COM calls are posted from a blocking
+// sequenced task runner in the thread pool. Calls to the update service occur
+// in the main sequence, which is bound to the main thread.
+//
+// The free-threaded COM objects exposed by this server are entered either by
+// COM RPC threads, when their functions are invoked by COM clients, or by
+// threads from the updater's thread pool, when callbacks posted by the
+// update service are handled. Access to the shared state maintained by these
+// objects is synchronized by a lock. The sequencing of callbacks is ensured
+// by using a sequenced task runner, since the callbacks can't use base
+// synchronization primitives on the main sequence where they are posted from.
+//
+// This class is responsible for the lifetime of the COM server, as well as
+// class factory registration.
+class ComServerApp : public App {
+ public:
+  ComServerApp();
+
+  // Returns the singleton instance of this ComServerApp.
+  static scoped_refptr<ComServerApp> Instance() {
+    return static_cast<ComServerApp*>(AppServerInstance().get());
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner() {
+    return main_task_runner_;
+  }
+  scoped_refptr<UpdateService> service() { return service_; }
+
+ private:
+  ~ComServerApp() override;
+
+  // Overrides for App.
+  void InitializeThreadPool() override;
+  void Initialize() override;
+  void FirstTaskRun() override;
+
+  // Registers and unregisters the out-of-process COM class factories.
+  HRESULT RegisterClassObjects();
+  void UnregisterClassObjects();
+
+  // Waits until the last COM object is released.
+  void WaitForExitSignal();
+
+  // Called when the last object is released.
+  void SignalExit();
+
+  // Creates an out-of-process WRL Module.
+  void CreateWRLModule();
+
+  // Handles object unregistration then triggers program shutdown.
+  void Stop();
+
+  // Identifier of registered class objects used for unregistration.
+  DWORD cookies_[2] = {};
+
+  // While this object lives, COM can be used by all threads in the program.
+  base::win::ScopedCOMInitializer com_initializer_;
+
+  // Task runner bound to the main sequence and the update service instance.
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
+
+  // The UpdateService to use for handling the incoming COM requests. This
+  // instance of the service runs the in-process update service code, which is
+  // delegating to the update_client component.
+  scoped_refptr<UpdateService> service_;
+
+  // The updater's Configurator.
+  scoped_refptr<Configurator> config_;
+};
 
 }  // namespace updater
 

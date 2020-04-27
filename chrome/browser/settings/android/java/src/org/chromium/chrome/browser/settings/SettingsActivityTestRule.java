@@ -47,29 +47,21 @@ public class SettingsActivityTestRule<T extends Fragment>
     /**
      * Launches the settings activity with the specified fragment.
      * @return The activity that just started.
-     * TODO(https://crbug.com/1074252): Replace this method with startSettingsActivity(null)
      */
     public SettingsActivity startSettingsActivity() {
-        Context context = InstrumentationRegistry.getTargetContext();
-        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        Intent intent =
-                settingsLauncher.createSettingsActivityIntent(context, mFragmentClass.getName());
-        SettingsActivity activity = super.launchActivity(intent);
-        Assert.assertNotNull(activity);
-
-        return activity;
+        return startSettingsActivity(null);
     }
 
     /**
-     * Launches the settings activity with the specified fragment and provided arguments.
-     * @param arguments Arguments to be passed to the fragment.
+     * Launches the settings activity with the specified fragment and arguments.
+     * @param fragmentArgs A bundle of additional fragment arguments.
      * @return The activity that just started.
      */
-    public SettingsActivity startSettingsActivity(Bundle arguments) {
+    public SettingsActivity startSettingsActivity(Bundle fragmentArgs) {
         Context context = InstrumentationRegistry.getTargetContext();
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         Intent intent = settingsLauncher.createSettingsActivityIntent(
-                context, mFragmentClass.getName(), arguments);
+                context, mFragmentClass.getName(), fragmentArgs);
         SettingsActivity activity = super.launchActivity(intent);
         Assert.assertNotNull(activity);
 

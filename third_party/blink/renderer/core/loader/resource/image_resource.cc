@@ -88,21 +88,11 @@ class ImageResource::ImageResourceInfoImpl final
   base::TimeTicks LoadResponseEnd() const override {
     return resource_->LoadResponseEnd();
   }
-  bool IsSchedulingReload() const override {
-    return resource_->is_scheduling_reload_;
-  }
   const ResourceResponse& GetResponse() const override {
     return resource_->GetResponse();
   }
-  bool ShouldShowPlaceholder() const override {
-    return resource_->ShouldShowPlaceholder();
-  }
   bool IsCacheValidator() const override {
     return resource_->IsCacheValidator();
-  }
-  bool SchedulingReloadOrShouldReloadBrokenPlaceholder() const override {
-    return resource_->is_scheduling_reload_ ||
-           resource_->ShouldReloadBrokenPlaceholder();
   }
   bool IsAccessAllowed(
       DoesCurrentFrameHaveSingleSecurityOrigin
@@ -183,17 +173,6 @@ ImageResource* ImageResource::Fetch(FetchParameters& params,
   return resource;
 }
 
-Resource::MatchStatus ImageResource::CanReuse(
-    const FetchParameters& params) const {
-  // If the image is a placeholder, but this fetch doesn't allow a
-  // placeholder, then do not reuse this resource.
-  if (placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder) {
-    return MatchStatus::kImagePlaceholder;
-  }
-
-  return Resource::CanReuse(params);
-}
-
 bool ImageResource::CanUseCacheValidator() const {
   // Disable revalidation while ImageResourceContent is still waiting for
   // SVG load completion.
@@ -227,9 +206,7 @@ ImageResource::ImageResource(const ResourceRequest& resource_request,
                              const ResourceLoaderOptions& options,
                              ImageResourceContent* content)
     : Resource(resource_request, ResourceType::kImage, options),
-      content_(content),
-      is_scheduling_reload_(false),
-      placeholder_option_(PlaceholderOption::kDoNotReloadPlaceholder) {
+      content_(content) {
   DCHECK(GetContent());
   RESOURCE_LOADING_DVLOG(1)
       << "MakeGarbageCollected<ImageResource>(ResourceRequest) " << this;
@@ -260,15 +237,6 @@ void ImageResource::Trace(Visitor* visitor) {
   MultipartImageResourceParser::Client::Trace(visitor);
 }
 
-void ImageResource::NotifyFinished() {
-  // Don't notify clients of completion if this ImageResource is
-  // about to be reloaded.
-  if (is_scheduling_reload_ || ShouldReloadBrokenPlaceholder())
-    return;
-
-  Resource::NotifyFinished();
-}
-
 bool ImageResource::HasClientsOrObservers() const {
   return Resource::HasClientsOrObservers() || GetContent()->HasObservers();
 }
@@ -276,11 +244,6 @@ bool ImageResource::HasClientsOrObservers() const {
 void ImageResource::DidAddClient(ResourceClient* client) {
   DCHECK((multipart_parser_ && IsLoading()) || !Data() ||
          GetContent()->HasImage());
-
-  // Don't notify observers and clients of completion if this ImageResource is
-  // about to be reloaded.
-  if (is_scheduling_reload_ || ShouldReloadBrokenPlaceholder())
-    return;
 
   Resource::DidAddClient(client);
 }
@@ -450,22 +413,6 @@ void ImageResource::FinishAsError(const ResourceError& error,
               true);
 }
 
-// Determines if |response| likely contains the entire resource for the purposes
-// of determining whether or not to show a placeholder, e.g. if the server
-// responded with a full 200 response or if the full image is smaller than the
-// requested range.
-static bool IsEntireResource(const ResourceResponse& response) {
-  if (response.HttpStatusCode() != 206)
-    return true;
-
-  int64_t first_byte_position = -1, last_byte_position = -1,
-          instance_length = -1;
-  return ParseContentRangeHeaderFor206(
-             response.HttpHeaderField("Content-Range"), &first_byte_position,
-             &last_byte_position, &instance_length) &&
-         first_byte_position == 0 && last_byte_position + 1 == instance_length;
-}
-
 void ImageResource::ResponseReceived(const ResourceResponse& response) {
   DCHECK(!multipart_parser_);
   if (response.MimeType() == "multipart/x-mixed-replace") {
@@ -484,93 +431,6 @@ void ImageResource::ResponseReceived(const ResourceResponse& response) {
   // (e.g. a 304) with a partial set of updated headers that were folded into
   // the cached response.
   Resource::ResponseReceived(response);
-
-  if (placeholder_option_ ==
-          PlaceholderOption::kShowAndReloadPlaceholderAlways &&
-      IsEntireResource(GetResponse())) {
-    if (GetResponse().HttpStatusCode() < 400 ||
-        GetResponse().HttpStatusCode() >= 600) {
-      // Don't treat a complete and broken image as a placeholder if the
-      // response code is something other than a 4xx or 5xx error.
-      // This is done to prevent reissuing the request in cases like
-      // "204 No Content" responses to tracking requests triggered by <img>
-      // tags, and <img> tags used to preload non-image resources.
-      placeholder_option_ = PlaceholderOption::kDoNotReloadPlaceholder;
-    } else {
-      placeholder_option_ = PlaceholderOption::kReloadPlaceholderOnDecodeError;
-    }
-  }
-}
-
-bool ImageResource::ShouldShowPlaceholder() const {
-  switch (placeholder_option_) {
-    case PlaceholderOption::kShowAndReloadPlaceholderAlways:
-    case PlaceholderOption::kShowAndDoNotReloadPlaceholder:
-      return true;
-    case PlaceholderOption::kReloadPlaceholderOnDecodeError:
-    case PlaceholderOption::kDoNotReloadPlaceholder:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool ImageResource::ShouldReloadBrokenPlaceholder() const {
-  switch (placeholder_option_) {
-    case PlaceholderOption::kShowAndReloadPlaceholderAlways:
-      return ErrorOccurred();
-    case PlaceholderOption::kReloadPlaceholderOnDecodeError:
-      return GetStatus() == ResourceStatus::kDecodeError;
-    case PlaceholderOption::kShowAndDoNotReloadPlaceholder:
-    case PlaceholderOption::kDoNotReloadPlaceholder:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
-void ImageResource::ReloadIfLoFiOrPlaceholderImage(
-    ResourceFetcher* fetcher,
-    ReloadLoFiOrPlaceholderPolicy policy) {
-  if (policy == kReloadIfNeeded && !ShouldReloadBrokenPlaceholder())
-    return;
-
-  // Prevent clients and observers from being notified of completion while the
-  // reload is being scheduled, so that e.g. canceling an existing load in
-  // progress doesn't cause clients and observers to be notified of completion
-  // prematurely.
-  DCHECK(!is_scheduling_reload_);
-  is_scheduling_reload_ = true;
-
-  // The reloaded image should not use any previews transformations.
-  WebURLRequest::PreviewsState previews_state_for_reload =
-      WebURLRequest::kPreviewsNoTransform;
-
-  SetPreviewsState(previews_state_for_reload);
-
-  if (placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder) {
-    ClearRangeRequestHeader();
-    placeholder_option_ = PlaceholderOption::kDoNotReloadPlaceholder;
-  }
-
-  if (IsLoading()) {
-    Loader()->Cancel();
-    // Canceling the loader causes error() to be called, which in turn calls
-    // clear() and notifyObservers(), so there's no need to call these again
-    // here.
-  } else {
-    ClearData();
-    SetEncodedSize(0);
-    UpdateImage(nullptr, ImageResourceContent::kClearImageAndNotifyObservers,
-                false);
-  }
-
-  SetStatus(ResourceStatus::kNotStarted);
-
-  DCHECK(is_scheduling_reload_);
-  is_scheduling_reload_ = false;
-
-  fetcher->StartLoad(this);
 }
 
 void ImageResource::OnePartInMultipartReceived(

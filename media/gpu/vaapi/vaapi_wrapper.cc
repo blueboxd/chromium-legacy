@@ -220,7 +220,8 @@ static const struct {
     {H264PROFILE_HIGH, VAProfileH264High},
     {VP8PROFILE_ANY, VAProfileVP8Version0_3},
     {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
-    {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
+    // VP9 hw encode/decode on profile 1 is not enabled on chromium-vaapi.
+    // {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
     // TODO(crbug.com/1011454, crbug.com/1011469): Reenable VP9PROFILE_PROFILE2
     // and _PROFILE3 when P010 is completely supported.
     //{VP9PROFILE_PROFILE2, VAProfileVP9Profile2},

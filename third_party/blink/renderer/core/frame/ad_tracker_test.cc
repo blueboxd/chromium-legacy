@@ -1263,7 +1263,7 @@ TEST_F(AdTrackerSimTest, StyleRecalcCausedByAdScript) {
 
   // We override these to ensure the ad script appears on top of the stack when
   // the requests are made.
-  ad_tracker_->SetExecutionContext(GetDocument().ToExecutionContext());
+  ad_tracker_->SetExecutionContext(GetDocument().GetExecutionContext());
   ad_tracker_->SetScriptAtTopOfStack(ad_script_url);
 
   script.Complete(R"SCRIPT(

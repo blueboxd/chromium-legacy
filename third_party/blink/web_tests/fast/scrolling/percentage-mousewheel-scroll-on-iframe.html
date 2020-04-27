@@ -38,14 +38,8 @@ promise_test(async () => {
 
   const SCROLL_PERCENTAGE = 0.4;
   const WHEEL_DELTA_CONSTANT = 100;
-  await smoothScroll(SCROLL_PERCENTAGE, 200, 150,
-                     GestureSourceType.MOUSE_INPUT,
-                     'downright',
-                     SPEED_INSTANT /* speed_in_pixels_s */,
-                     false /* precise_scrolling_deltas */,
-                     false /* scroll_by_page */,
-                     true /* cursor_visible */,
-                     true /* scroll_by_percentage */);
+  await percentScroll(SCROLL_PERCENTAGE, SCROLL_PERCENTAGE, 200, 150,
+                     GestureSourceType.MOUSE_INPUT);
 
   function isCorrectXOffset() {
     return isNear(iframeElement.contentDocument.scrollingElement.scrollLeft,
@@ -68,13 +62,12 @@ promise_test(async () => {
                 "Wheel event deltaY must be a constant");
 
   // Scroll back to the top and ensure we scroll back to the origin and have
-  // negated wheel deltas
-  await smoothScroll(SCROLL_PERCENTAGE, 200, 150, GestureSourceType.MOUSE_INPUT,
-               'upleft', 100 /* speed_in_pixels_s */,
-               false /* precise_scrolling_deltas */,
-               false /* scroll_by_page */,
-               true /* cursor_visible */,
-               true /* scroll_by_percentage */);
+  // negated wheel deltas. Scrolling upleft so use negative pixels
+  await percentScroll(-SCROLL_PERCENTAGE,
+                      -SCROLL_PERCENTAGE,
+                      200,
+                      150,
+                      GestureSourceType.MOUSE_INPUT);
 
   await waitFor(() =>
       iframeElement.contentDocument.scrollingElement.scrollTop === 0,

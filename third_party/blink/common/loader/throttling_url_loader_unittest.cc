@@ -60,6 +60,11 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
     return headers_modified_on_redirect_;
   }
 
+  const net::HttpRequestHeaders& cors_exempt_headers_modified_on_redirect()
+      const {
+    return cors_exempt_headers_modified_on_redirect_;
+  }
+
   size_t pause_reading_body_from_net_called() const {
     return pause_reading_body_from_net_called_;
   }
@@ -122,11 +127,14 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   }
 
   // network::mojom::URLLoader implementation.
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override {
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override {
     headers_removed_on_redirect_ = removed_headers;
     headers_modified_on_redirect_ = modified_headers;
+    cors_exempt_headers_modified_on_redirect_ = modified_cors_exempt_headers;
   }
 
   void SetPriority(net::RequestPriority priority,
@@ -143,6 +151,7 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   size_t create_loader_and_start_called_ = 0;
   std::vector<std::string> headers_removed_on_redirect_;
   net::HttpRequestHeaders headers_modified_on_redirect_;
+  net::HttpRequestHeaders cors_exempt_headers_modified_on_redirect_;
   size_t pause_reading_body_from_net_called_ = 0;
   size_t resume_reading_body_from_net_called_ = 0;
 
@@ -236,11 +245,12 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
   using ThrottleCallback =
       base::RepeatingCallback<void(URLLoaderThrottle::Delegate* delegate,
                                    bool* defer)>;
-  using ThrottleRedirectCallback =
-      base::OnceCallback<void(blink::URLLoaderThrottle::Delegate* delegate,
-                              bool* defer,
-                              std::vector<std::string>* removed_headers,
-                              net::HttpRequestHeaders* modified_headers)>;
+  using ThrottleRedirectCallback = base::OnceCallback<void(
+      blink::URLLoaderThrottle::Delegate* delegate,
+      bool* defer,
+      std::vector<std::string>* removed_headers,
+      net::HttpRequestHeaders* modified_headers,
+      net::HttpRequestHeaders* modified_cors_exempt_headers)>;
 
   size_t will_start_request_called() const {
     return will_start_request_called_;
@@ -292,15 +302,18 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
       will_start_request_callback_.Run(delegate_, defer);
   }
 
-  void WillRedirectRequest(net::RedirectInfo* redirect_info,
-                           const network::mojom::URLResponseHead& response_head,
-                           bool* defer,
-                           std::vector<std::string>* removed_headers,
-                           net::HttpRequestHeaders* modified_headers) override {
+  void WillRedirectRequest(
+      net::RedirectInfo* redirect_info,
+      const network::mojom::URLResponseHead& response_head,
+      bool* defer,
+      std::vector<std::string>* removed_headers,
+      net::HttpRequestHeaders* modified_headers,
+      net::HttpRequestHeaders* modified_cors_exempt_headers) override {
     will_redirect_request_called_++;
     if (will_redirect_request_callback_) {
       std::move(will_redirect_request_callback_)
-          .Run(delegate_, defer, removed_headers, modified_headers);
+          .Run(delegate_, defer, removed_headers, modified_headers,
+               modified_cors_exempt_headers);
     }
   }
 
@@ -518,7 +531,8 @@ TEST_F(ThrottlingURLLoaderTest, ModifyURLAndDeferRedirect) {
   throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [&](blink::URLLoaderThrottle::Delegate* /* delegate */, bool* defer,
           std::vector<std::string>* /* removed_headers */,
-          net::HttpRequestHeaders* /* modified_headers */) {
+          net::HttpRequestHeaders* /* modified_headers */,
+          net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
         *defer = true;
         run_loop.Quit();
       }));
@@ -556,7 +570,8 @@ TEST_F(ThrottlingURLLoaderTest,
   throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [&](blink::URLLoaderThrottle::Delegate* /* delegate */, bool* defer,
           std::vector<std::string>* /* removed_headers */,
-          net::HttpRequestHeaders* /* modified_headers */) {
+          net::HttpRequestHeaders* /* modified_headers */,
+          net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
         *defer = true;
         called = true;
       }));
@@ -580,7 +595,8 @@ TEST_F(ThrottlingURLLoaderTest, CancelBeforeRedirect) {
   throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* /* removed_headers */,
-         net::HttpRequestHeaders* /* modified_headers */) {
+         net::HttpRequestHeaders* /* modified_headers */,
+         net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
         delegate->CancelWithError(net::ERR_ACCESS_DENIED);
       }));
 
@@ -610,9 +626,11 @@ TEST_F(ThrottlingURLLoaderTest, CancelBeforeRedirect) {
 TEST_F(ThrottlingURLLoaderTest, DeferBeforeRedirect) {
   base::RunLoop run_loop1;
   throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
-      [&run_loop1](blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
-                   std::vector<std::string>* /* removed_headers */,
-                   net::HttpRequestHeaders* /* modified_headers */) {
+      [&run_loop1](
+          blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
+          std::vector<std::string>* /* removed_headers */,
+          net::HttpRequestHeaders* /* modified_headers */,
+          net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
         *defer = true;
         run_loop1.Quit();
       }));
@@ -661,18 +679,25 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeadersBeforeRedirect) {
   throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* removed_headers,
-         net::HttpRequestHeaders* modified_headers) {
+         net::HttpRequestHeaders* modified_headers,
+         net::HttpRequestHeaders* modified_cors_exempt_headers) {
         removed_headers->push_back("X-Test-Header-1");
         modified_headers->SetHeader("X-Test-Header-2", "Foo");
         modified_headers->SetHeader("X-Test-Header-3", "Throttle Value");
+        modified_cors_exempt_headers->SetHeader("X-Test-Cors-Exempt-Header-1",
+                                                "Bubble");
       }));
 
   client_.set_on_received_redirect_callback(base::BindLambdaForTesting([&]() {
     net::HttpRequestHeaders modified_headers;
     modified_headers.SetHeader("X-Test-Header-3", "Client Value");
     modified_headers.SetHeader("X-Test-Header-4", "Bar");
+    net::HttpRequestHeaders modified_cors_exempt_headers;
+    modified_cors_exempt_headers.SetHeader("X-Test-Cors-Exempt-Header-1",
+                                           "Bobble");
     loader_->FollowRedirect({} /* removed_headers */,
-                            std::move(modified_headers));
+                            std::move(modified_headers),
+                            std::move(modified_cors_exempt_headers));
   }));
 
   CreateLoaderAndStart();
@@ -688,6 +713,9 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeadersBeforeRedirect) {
       "X-Test-Header-3: Client Value\r\n"
       "X-Test-Header-4: Bar\r\n\r\n",
       factory_.headers_modified_on_redirect().ToString());
+  ASSERT_FALSE(factory_.cors_exempt_headers_modified_on_redirect().IsEmpty());
+  EXPECT_EQ("X-Test-Cors-Exempt-Header-1: Bobble\r\n\r\n",
+            factory_.cors_exempt_headers_modified_on_redirect().ToString());
 }
 
 TEST_F(ThrottlingURLLoaderTest, ModifyHeaderInResumeBeforeRedirect) {
@@ -695,7 +723,8 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeaderInResumeBeforeRedirect) {
   throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [&run_loop1](blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
                    std::vector<std::string>* removed_headers,
-                   net::HttpRequestHeaders* modified_headers) {
+                   net::HttpRequestHeaders* modified_headers,
+                   net::HttpRequestHeaders* modified_cors_exempt_headers) {
         *defer = true;
         run_loop1.Quit();
       }));
@@ -712,15 +741,15 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeaderInResumeBeforeRedirect) {
       modified_headers, modified_cors_exempt_headers);
   throttle_->delegate()->Resume();
 
-  loader_->FollowRedirect({}, {});
+  loader_->FollowRedirect({}, {}, {});
 
   base::RunLoop run_loop2;
   run_loop2.RunUntilIdle();
 
-  EXPECT_EQ(
-      "X-Test-Header-1: Foo\r\n"
-      "X-Test-Header-2: Bar\r\n\r\n",
-      factory_.headers_modified_on_redirect().ToString());
+  EXPECT_EQ("X-Test-Header-1: Foo\r\n\r\n",
+            factory_.headers_modified_on_redirect().ToString());
+  EXPECT_EQ("X-Test-Header-2: Bar\r\n\r\n",
+            factory_.cors_exempt_headers_modified_on_redirect().ToString());
 }
 
 TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
@@ -730,7 +759,8 @@ TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
   throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* removed_headers,
-         net::HttpRequestHeaders* modified_headers) {
+         net::HttpRequestHeaders* modified_headers,
+         net::HttpRequestHeaders* modified_cors_exempt_headers) {
         removed_headers->push_back("X-Test-Header-0");
         removed_headers->push_back("X-Test-Header-1");
         modified_headers->SetHeader("X-Test-Header-3", "Foo");
@@ -740,14 +770,15 @@ TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
   throttle2->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* removed_headers,
-         net::HttpRequestHeaders* modified_headers) {
+         net::HttpRequestHeaders* modified_headers,
+         net::HttpRequestHeaders* modified_cors_exempt_headers) {
         removed_headers->push_back("X-Test-Header-1");
         removed_headers->push_back("X-Test-Header-2");
         modified_headers->SetHeader("X-Test-Header-4", "Throttle2");
       }));
 
-  client_.set_on_received_redirect_callback(
-      base::BindLambdaForTesting([&]() { loader_->FollowRedirect({}, {}); }));
+  client_.set_on_received_redirect_callback(base::BindLambdaForTesting(
+      [&]() { loader_->FollowRedirect({}, {}, {}); }));
 
   CreateLoaderAndStart();
   factory_.NotifyClientOnReceiveRedirect();
@@ -887,7 +918,8 @@ TEST_F(ThrottlingURLLoaderTest, ResumeNoOpIfNotDeferred) {
   throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* /* removed_headers */,
-         net::HttpRequestHeaders* /* modified_headers */) {
+         net::HttpRequestHeaders* /* modified_headers */,
+         net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
         delegate->Resume();
         delegate->Resume();
       }));
@@ -1240,9 +1272,11 @@ TEST_F(ThrottlingURLLoaderTest,
        DestroyingThrottlingURLLoaderInDelegateCall_Redirect) {
   base::RunLoop run_loop1;
   throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
-      [&run_loop1](blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
-                   std::vector<std::string>* /* removed_headers */,
-                   net::HttpRequestHeaders* /* modified_headers */) {
+      [&run_loop1](
+          blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
+          std::vector<std::string>* /* removed_headers */,
+          net::HttpRequestHeaders* /* modified_headers */,
+          net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
         *defer = true;
         run_loop1.Quit();
       }));
@@ -1803,7 +1837,8 @@ TEST_F(ThrottlingURLLoaderTest, RestartWithURLResetAndFlags) {
   client_.set_on_received_redirect_callback(base::BindLambdaForTesting([&]() {
     net::HttpRequestHeaders modified_headers;
     loader_->FollowRedirect({} /* removed_headers */,
-                            std::move(modified_headers));
+                            std::move(modified_headers),
+                            {} /* modified_cors_exempt_headers */);
   }));
 
   // Restart the request when processing BeforeWillProcessResponse(), using
@@ -1889,7 +1924,8 @@ TEST_F(ThrottlingURLLoaderTest, DeferThenRestartWithURLResetAndFlags) {
   client_.set_on_received_redirect_callback(base::BindLambdaForTesting([&]() {
     net::HttpRequestHeaders modified_headers;
     loader_->FollowRedirect({} /* removed_headers */,
-                            std::move(modified_headers));
+                            std::move(modified_headers),
+                            {} /* modified_cors_exempt_headers */);
   }));
 
   // Defer BeforeWillProcessResponse().
@@ -2002,7 +2038,8 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartWithURLResetAndFlags) {
   client_.set_on_received_redirect_callback(base::BindLambdaForTesting([&]() {
     net::HttpRequestHeaders modified_headers;
     loader_->FollowRedirect({} /* removed_headers */,
-                            std::move(modified_headers));
+                            std::move(modified_headers),
+                            {} /* modified_cors_exempt_headers */);
   }));
 
   // Have two of the three throttles restart whe processing
@@ -2115,7 +2152,8 @@ TEST_F(ThrottlingURLLoaderTest, MultipleDeferThenRestartWithURLResetAndFlags) {
   client_.set_on_received_redirect_callback(base::BindLambdaForTesting([&]() {
     net::HttpRequestHeaders modified_headers;
     loader_->FollowRedirect({} /* removed_headers */,
-                            std::move(modified_headers));
+                            std::move(modified_headers),
+                            {} /* modified_cors_exempt_headers */);
   }));
 
   // Have all of the throttles defer. Once they have all been deferred, quit
@@ -2249,7 +2287,8 @@ TEST_F(ThrottlingURLLoaderTest,
   client_.set_on_received_redirect_callback(base::BindLambdaForTesting([&]() {
     net::HttpRequestHeaders modified_headers;
     loader_->FollowRedirect({} /* removed_headers */,
-                            std::move(modified_headers));
+                            std::move(modified_headers),
+                            {} /* modified_cors_exempt_headers */);
     run_loop_for_redirect.Quit();
   }));
 
@@ -2396,7 +2435,8 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartsOfMultipleTypes) {
   client_.set_on_received_redirect_callback(base::BindLambdaForTesting([&]() {
     net::HttpRequestHeaders modified_headers;
     loader_->FollowRedirect({} /* removed_headers */,
-                            std::move(modified_headers));
+                            std::move(modified_headers),
+                            {} /* modified_cors_exempt_headers */);
   }));
 
   // Have two of the three throttles restart when processing
@@ -2508,7 +2548,8 @@ TEST_F(ThrottlingURLLoaderTest, MultipleDeferThenRestartsOfMultipleTypes) {
   client_.set_on_received_redirect_callback(base::BindLambdaForTesting([&]() {
     net::HttpRequestHeaders modified_headers;
     loader_->FollowRedirect({} /* removed_headers */,
-                            std::move(modified_headers));
+                            std::move(modified_headers),
+                            {} /* modified_cors_exempt_headers */);
   }));
 
   // Have all of the throttles defer. Once they have all been deferred, quit
@@ -2648,7 +2689,8 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartOfMultipleTypesDeferAndSync) {
   client_.set_on_received_redirect_callback(base::BindLambdaForTesting([&]() {
     net::HttpRequestHeaders modified_headers;
     loader_->FollowRedirect({} /* removed_headers */,
-                            std::move(modified_headers));
+                            std::move(modified_headers),
+                            {} /* modified_cors_exempt_headers */);
     run_loop_for_redirect.Quit();
   }));
 

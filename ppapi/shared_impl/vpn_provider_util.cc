@@ -4,7 +4,8 @@
 
 #include "ppapi/shared_impl/vpn_provider_util.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 
 namespace ppapi {
 

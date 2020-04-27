@@ -9,7 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/host_config.h"

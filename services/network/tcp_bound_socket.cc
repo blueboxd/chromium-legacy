@@ -7,7 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "net/base/ip_endpoint.h"

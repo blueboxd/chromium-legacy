@@ -5,9 +5,10 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"

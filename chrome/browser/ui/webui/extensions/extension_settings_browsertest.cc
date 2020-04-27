@@ -217,15 +217,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ListenerRegistration) {
   }
 }
 
-// Flaky on Windows: crbug.com/
-#if defined(OS_WIN)
-#define MAYBE_ActivityLogInactiveWithoutSwitch \
-  DISABLED_ActivityLogInactiveWithoutSwitch
-#else
-#define MAYBE_ActivityLogInactiveWithoutSwitch ActivityLogInactiveWithoutSwitch
-#endif  // OS_WIN
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest,
-                       MAYBE_ActivityLogInactiveWithoutSwitch) {
+                       ActivityLogInactiveWithoutSwitch) {
   // Navigate to chrome://extensions which is a whitelisted URL for the
   // chrome.activityLogPrivate API.
   GURL extensions_url("chrome://extensions");

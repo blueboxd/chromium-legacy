@@ -1163,7 +1163,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AllowedDomainsForApps) {
   content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [&](content::URLLoaderInterceptor::RequestParams* params) -> bool {
         base::AutoLock auto_lock(lock);
-        urls_requested[params->url_request.url] = params->url_request.headers;
+        urls_requested[params->url_request.url] =
+            params->url_request.cors_exempt_headers;
         return false;
       }));
 

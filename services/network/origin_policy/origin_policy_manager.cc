@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

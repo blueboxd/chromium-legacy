@@ -4,9 +4,11 @@
 
 #import "ios/chrome/browser/ui/find_bar/find_bar_view.h"
 
+#include "base/feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/dynamic_color_util.h"
@@ -242,6 +244,13 @@ const CGFloat kButtonLength = 44;
     SetA11yLabelAndUiAutomationName(_previousButton,
                                     IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP,
                                     kFindInPagePreviousButtonId);
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _previousButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
   }
 
   return _previousButton;
@@ -258,6 +267,13 @@ const CGFloat kButtonLength = 44;
     _nextButton.translatesAutoresizingMaskIntoConstraints = NO;
     SetA11yLabelAndUiAutomationName(_nextButton, IDS_FIND_IN_PAGE_NEXT_TOOLTIP,
                                     kFindInPageNextButtonId);
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _nextButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
   }
 
   return _nextButton;
@@ -272,6 +288,13 @@ const CGFloat kButtonLength = 44;
     _closeButton.translatesAutoresizingMaskIntoConstraints = NO;
     _closeButton.accessibilityIdentifier = kFindInPageCloseButtonId;
     _closeButton.titleLabel.font = [UIFont systemFontOfSize:kButtonFontSize];
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _closeButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
   }
 
   return _closeButton;

@@ -12,9 +12,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 
 #if !defined(PR_SET_PTRACER_ANY)

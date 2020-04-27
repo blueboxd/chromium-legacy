@@ -14,6 +14,8 @@
 
 namespace blink {
 
+class ResourceFetcher;
+
 class CORE_EXPORT TextResource : public Resource {
  public:
   static TextResource* FetchSVGDocument(FetchParameters&,

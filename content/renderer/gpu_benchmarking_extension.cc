@@ -715,6 +715,8 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   // Scroll by percentage only for mouse inputs.
   DCHECK(!scroll_by_percentage ||
          gesture_source_type == SyntheticGestureParams::MOUSE_INPUT);
+  // Scroll by percentage does not require speed in pixels
+  DCHECK(!scroll_by_percentage || (speed_in_pixels_s == 800));
 
   base::Optional<gfx::Vector2dF> pixels_to_scrol_vector =
       ToVector(direction, pixels_to_scroll);

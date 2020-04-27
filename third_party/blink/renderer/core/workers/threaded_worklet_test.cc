@@ -240,7 +240,7 @@ class ThreadedWorkletTest : public testing::Test {
 
     messaging_proxy_ =
         MakeGarbageCollected<ThreadedWorkletMessagingProxyForTest>(
-            page_->GetDocument().ToExecutionContext());
+            page_->GetFrame().DomWindow());
     ThreadedWorkletThreadForTest::EnsureSharedBackingThread();
   }
 

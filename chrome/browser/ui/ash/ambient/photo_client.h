@@ -14,9 +14,6 @@
 // The interface of a client to retrieve photos.
 class PhotoClient {
  public:
-  using OnTopicInfoFetchedCallback = base::OnceCallback<void(
-      const base::Optional<ash::PhotoController::Topic>& topic)>;
-
   // Creates PhotoClient based on the build flag ENABLE_CROS_LIBASSISTANT.
   static std::unique_ptr<PhotoClient> Create();
 
@@ -25,7 +22,14 @@ class PhotoClient {
   PhotoClient& operator=(const PhotoClient&) = delete;
   virtual ~PhotoClient() = default;
 
-  virtual void FetchTopicInfo(OnTopicInfoFetchedCallback callback);
+  // Sends request to retrieve |ScreenUpdate| from the backdrop server.
+  // Upon completion, |callback| is run with the parsed |ScreenUpdate|. If any
+  // errors happened during the process, e.g. failed to fetch access token, a
+  // dummy instance will be returned.
+  using OnScreenUpdateInfoFetchedCallback =
+      base::OnceCallback<void(const ash::PhotoController::ScreenUpdate&)>;
+  virtual void FetchScreenUpdateInfo(
+      OnScreenUpdateInfoFetchedCallback callback);
 
   virtual void GetSettings(ash::PhotoController::GetSettingsCallback callback);
 

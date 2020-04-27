@@ -281,6 +281,10 @@ std::string FrameTreeVisualizer::GetName(SiteInstance* site_instance) {
 Shell* OpenPopup(const ToRenderFrameHost& opener,
                  const GURL& url,
                  const std::string& name) {
+  TestNavigationObserver observer(url);
+  observer.StartWatchingNewWebContents();
+  observer.set_ignore_other_urls(true);
+
   ShellAddedObserver new_shell_observer;
   bool did_create_popup = false;
   bool did_execute_script = ExecuteScriptAndExtractBool(
@@ -291,9 +295,12 @@ Shell* OpenPopup(const ToRenderFrameHost& opener,
   if (!did_execute_script || !did_create_popup)
     return nullptr;
 
+  observer.Wait();
+
   Shell* new_shell = new_shell_observer.GetShell();
-  WaitForLoadStop(new_shell->web_contents());
-  return new_shell;
+  EXPECT_EQ(url,
+            new_shell->web_contents()->GetMainFrame()->GetLastCommittedURL());
+  return new_shell_observer.GetShell();
 }
 
 FileChooserDelegate::FileChooserDelegate(const base::FilePath& file,

@@ -12,6 +12,8 @@ source_set("safe_browsing") {
     "safe_browsing_service_impl.mm",
     "safe_browsing_tab_helper.h",
     "safe_browsing_tab_helper.mm",
+    "safe_browsing_url_allow_list.h",
+    "safe_browsing_url_allow_list.mm",
     "url_checker_delegate_impl.h",
     "url_checker_delegate_impl.mm",
   ]
@@ -62,7 +64,10 @@ source_set("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "safe_browsing_service_unittest.mm" ]
+  sources = [
+    "safe_browsing_service_unittest.mm",
+    "safe_browsing_url_allow_list_unittest.mm",
+  ]
 
   deps = [
     ":safe_browsing",
@@ -80,6 +85,7 @@ source_set("unit_tests") {
     "//ios/web/public",
     "//ios/web/public/test",
     "//services/network/public/cpp",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 

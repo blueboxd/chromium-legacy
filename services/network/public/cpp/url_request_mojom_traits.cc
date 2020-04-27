@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/debug/dump_without_crashing.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "mojo/public/cpp/base/file_mojom_traits.h"
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"

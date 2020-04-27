@@ -59,6 +59,12 @@ class MockWebsiteLoginFetcher : public WebsiteLoginFetcher {
                     const autofill::FormData& form_data,
                     base::OnceCallback<void()>&));
 
+  bool ReadyToCommitGeneratedPassword() override {
+    return OnReadyToCommitGeneratedPassword();
+  }
+
+  MOCK_METHOD0(OnReadyToCommitGeneratedPassword, bool());
+
   void CommitGeneratedPassword() override { OnCommitGeneratedPassword(); }
 
   MOCK_METHOD0(OnCommitGeneratedPassword, void());

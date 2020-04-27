@@ -41,6 +41,8 @@ class WebsiteLoginFetcherImpl : public WebsiteLoginFetcher {
                                 const autofill::FormData& form_data,
                                 base::OnceCallback<void()> callback) override;
 
+  bool ReadyToCommitGeneratedPassword() override;
+
   void CommitGeneratedPassword() override;
 
  private:

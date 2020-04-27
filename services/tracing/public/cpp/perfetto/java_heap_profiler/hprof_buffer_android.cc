@@ -4,7 +4,7 @@
 
 #include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_buffer_android.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_data_type_android.h"
 
 namespace tracing {

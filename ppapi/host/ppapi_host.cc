@@ -8,7 +8,8 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/host_factory.h"
 #include "ppapi/host/host_message_context.h"

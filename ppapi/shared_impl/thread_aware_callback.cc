@@ -5,7 +5,7 @@
 #include "ppapi/shared_impl/thread_aware_callback.h"
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_message_loop_shared.h"
 

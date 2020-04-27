@@ -4,7 +4,7 @@
 
 #include "services/network/test/test_shared_url_loader_factory.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"

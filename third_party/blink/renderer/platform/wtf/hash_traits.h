@@ -103,6 +103,11 @@ struct GenericHashTraitsBase<false, T> {
   // write barrier. Users of this value have to provide RegisterMovingCallback
   // function.
   static constexpr bool kHasMovingCallback = false;
+
+  // The kCanTraceConcurrently value is used by Oilpan concurrent marking. Only
+  // type for which HashTraits<T>::kCanTraceConcurrently is true can be traced
+  // on a concurrent thread.
+  static constexpr bool kCanTraceConcurrently = false;
 };
 
 // Default integer traits disallow both 0 and -1 as keys (max value instead of
@@ -470,7 +475,11 @@ struct KeyValuePairHashTraits
 
 template <typename Key, typename Value>
 struct HashTraits<KeyValuePair<Key, Value>>
-    : public KeyValuePairHashTraits<HashTraits<Key>, HashTraits<Value>> {};
+    : public KeyValuePairHashTraits<HashTraits<Key>, HashTraits<Value>> {
+  static constexpr bool kCanTraceConcurrently =
+      HashTraits<Key>::kCanTraceConcurrently &&
+      (HashTraits<Value>::kCanTraceConcurrently || !IsTraceable<Value>::value);
+};
 
 template <typename T>
 struct NullableHashTraits : public HashTraits<T> {

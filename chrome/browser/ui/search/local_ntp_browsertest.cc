@@ -361,9 +361,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
 
-  // Attach a console observer, listening for any message ("*" pattern).
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(active_tab);
 
   base::HistogramTester histograms;
 
@@ -377,7 +375,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
   EXPECT_TRUE(is_google);
 
   // We shouldn't have gotten any console error messages.
-  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+  EXPECT_TRUE(console_observer.messages().empty())
+      << console_observer.GetMessageAt(0u);
 
   // Make sure load time metrics were recorded.
   histograms.ExpectTotalCount("NewTabPage.LoadTime", 1);
@@ -411,8 +410,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
 
   // Attach a console observer, listening for any message ("*" pattern).
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(active_tab);
 
   base::HistogramTester histograms;
 
@@ -426,7 +424,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
   EXPECT_FALSE(is_google);
 
   // We shouldn't have gotten any console error messages.
-  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+  EXPECT_TRUE(console_observer.messages().empty())
+      << console_observer.GetMessageAt(0u);
 
   // Make sure load time metrics were recorded.
   histograms.ExpectTotalCount("NewTabPage.LoadTime", 1);
@@ -460,16 +459,15 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, FrenchGoogleNTPLoadsWithoutError) {
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
 
-  // Attach a console observer, listening for any message ("*" pattern).
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(active_tab);
 
   // Navigate to the NTP and make sure it's actually in French.
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
   ASSERT_EQ(base::ASCIIToUTF16("Nouvel onglet"), active_tab->GetTitle());
 
   // We shouldn't have gotten any console error messages.
-  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+  EXPECT_TRUE(console_observer.messages().empty())
+      << console_observer.GetMessageAt(0u);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsMDIframe) {

@@ -2057,18 +2057,14 @@ void CompositedLayerMapping::PaintScrollableArea(
   CullRect cull_rect(interest_rect);
   cull_rect.Move(graphics_layer->OffsetFromLayoutObject());
   PaintLayerScrollableArea* scrollable_area = owning_layer_.GetScrollableArea();
+  ScrollableAreaPainter painter(*scrollable_area);
   if (graphics_layer == LayerForHorizontalScrollbar()) {
-    if (const Scrollbar* scrollbar = scrollable_area->HorizontalScrollbar()) {
-      if (cull_rect.Intersects(scrollbar->FrameRect()))
-        scrollbar->Paint(context, IntPoint());
-    }
+    if (Scrollbar* scrollbar = scrollable_area->HorizontalScrollbar())
+      painter.PaintScrollbar(context, *scrollbar, IntPoint(), cull_rect);
   } else if (graphics_layer == LayerForVerticalScrollbar()) {
-    if (const Scrollbar* scrollbar = scrollable_area->VerticalScrollbar()) {
-      if (cull_rect.Intersects(scrollbar->FrameRect()))
-        scrollbar->Paint(context, IntPoint());
-    }
+    if (Scrollbar* scrollbar = scrollable_area->VerticalScrollbar())
+      painter.PaintScrollbar(context, *scrollbar, IntPoint(), cull_rect);
   } else if (graphics_layer == LayerForScrollCorner()) {
-    ScrollableAreaPainter painter(*scrollable_area);
     painter.PaintScrollCorner(context, IntPoint(), cull_rect);
     painter.PaintResizer(context, IntPoint(), cull_rect);
   }

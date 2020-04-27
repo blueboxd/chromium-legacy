@@ -282,6 +282,10 @@ void WebsiteLoginFetcherImpl::PresaveGeneratedPassword(
   update_password_request_->FetchAndPresave();
 }
 
+bool WebsiteLoginFetcherImpl::ReadyToCommitGeneratedPassword() {
+  return update_password_request_ != nullptr;
+}
+
 void WebsiteLoginFetcherImpl::CommitGeneratedPassword() {
   DCHECK(update_password_request_);
 

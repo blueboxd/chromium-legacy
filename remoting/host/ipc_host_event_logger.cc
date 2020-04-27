@@ -4,7 +4,7 @@
 
 #include "remoting/host/ipc_host_event_logger.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_messages.h"

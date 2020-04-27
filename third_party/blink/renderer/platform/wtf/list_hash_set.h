@@ -80,6 +80,9 @@ struct ListHashSetTraits
     AsAtomicPtr(&slot)->store(reinterpret_cast<Node*>(-1),
                               std::memory_order_relaxed);
   }
+
+  static constexpr bool kCanTraceConcurrently =
+      HashTraits<Value>::kCanTraceConcurrently;
 };
 
 // Note that for a ListHashSet you cannot specify the HashTraits as a template
@@ -518,13 +521,15 @@ class ListHashSetNode
   template <typename VisitorDispatcher, typename A = NodeAllocator>
   std::enable_if_t<A::kIsGarbageCollected> Trace(
       VisitorDispatcher visitor) const {
-    if (visitor->ConcurrentTracingBailOut(
-            {this, [](blink::Visitor* visitor, const void* object) {
-               reinterpret_cast<const ListHashSetNode<ValueArg, AllocatorArg>*>(
-                   object)
-                   ->Trace(visitor);
-             }}))
-      return;
+    if (!ListHashSetTraits<Value, NodeAllocator>::kCanTraceConcurrently) {
+      if (visitor->ConcurrentTracingBailOut(
+              {this, [](blink::Visitor* visitor, const void* object) {
+                 reinterpret_cast<
+                     const ListHashSetNode<ValueArg, AllocatorArg>*>(object)
+                     ->Trace(visitor);
+               }}))
+        return;
+    }
 
     // The conservative stack scan can find nodes that have been removed
     // from the set and destructed. We don't need to trace these, and it
@@ -1203,13 +1208,15 @@ template <typename T, size_t inlineCapacity, typename U, typename V>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) const {
-  if (visitor->ConcurrentTracingBailOut(
-          {this, [](blink::Visitor* visitor, const void* object) {
-             reinterpret_cast<const ListHashSet<T, inlineCapacity, U, V>*>(
-                 object)
-                 ->Trace(visitor);
-           }}))
-    return;
+  if (!NodeTraits::kCanTraceConcurrently) {
+    if (visitor->ConcurrentTracingBailOut(
+            {this, [](blink::Visitor* visitor, const void* object) {
+               reinterpret_cast<const ListHashSet<T, inlineCapacity, U, V>*>(
+                   object)
+                   ->Trace(visitor);
+             }}))
+      return;
+  }
 
   static_assert(!IsWeak<T>::value,
                 "HeapListHashSet does not support weakness, consider using "

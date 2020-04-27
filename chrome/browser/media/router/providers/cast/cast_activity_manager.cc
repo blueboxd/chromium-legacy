@@ -18,6 +18,7 @@
 #include "chrome/browser/media/router/providers/cast/mirroring_activity_record.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "components/cast_channel/enum_table.h"
 #include "url/origin.h"
 
 using blink::mojom::PresentationConnectionCloseReason;
@@ -154,8 +155,12 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
 
   NotifyAllOnRoutesUpdated();
   base::TimeDelta launch_timeout = cast_source.launch_timeout();
+  std::vector<std::string> type_str;
+  for (ReceiverAppType type : cast_source.supported_app_types()) {
+    type_str.push_back(cast_util::EnumToString(type).value().data());
+  }
   message_handler_->LaunchSession(
-      sink.cast_data().cast_channel_id, app_id, launch_timeout,
+      sink.cast_data().cast_channel_id, app_id, launch_timeout, type_str,
       base::BindOnce(&CastActivityManager::HandleLaunchSessionResponse,
                      weak_ptr_factory_.GetWeakPtr(), route_id, sink,
                      cast_source));

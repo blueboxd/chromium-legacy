@@ -370,14 +370,20 @@ gfx::Vector2dF SyntheticSmoothMoveGesture::GetPositionDeltaAtTime(
 void SyntheticSmoothMoveGesture::ComputeNextMoveSegment() {
   current_move_segment_++;
   DCHECK_LT(current_move_segment_, static_cast<int>(params_.distances.size()));
-  int64_t total_duration_in_us = static_cast<int64_t>(
-      1e6 * (params_.distances[current_move_segment_].Length() /
-             params_.speed_in_pixels_s));
-  DCHECK_GT(total_duration_in_us, 0);
-  current_move_segment_start_time_ = current_move_segment_stop_time_;
-  current_move_segment_stop_time_ =
-      current_move_segment_start_time_ +
-      base::TimeDelta::FromMicroseconds(total_duration_in_us);
+  // Percentage based scrolls do not require velocity and are delivered in a
+  // single segment. No need to compute another segment
+  if (params_.granularity == ui::ScrollGranularity::kScrollByPercentage) {
+    current_move_segment_start_time_ = current_move_segment_stop_time_;
+  } else {
+    int64_t total_duration_in_us = static_cast<int64_t>(
+        1e6 * (params_.distances[current_move_segment_].Length() /
+               params_.speed_in_pixels_s));
+    DCHECK_GT(total_duration_in_us, 0);
+    current_move_segment_start_time_ = current_move_segment_stop_time_;
+    current_move_segment_stop_time_ =
+        current_move_segment_start_time_ +
+        base::TimeDelta::FromMicroseconds(total_duration_in_us);
+  }
 }
 
 base::TimeTicks SyntheticSmoothMoveGesture::ClampTimestamp(

@@ -250,6 +250,22 @@ class MediaFeedsTableDelegate {
       // Format the fetch item count.
       td.textContent =
           data + ' (' + dataRow.lastFetchSafeItemCount + ' confirmed as safe)';
+    } else if (key == 'resetReason') {
+      // Format a ResetReason.
+      switch (parseInt(data, 10)) {
+        case mediaFeeds.mojom.ResetReason.kNone:
+          td.textContent = 'None';
+          break;
+        case mediaFeeds.mojom.ResetReason.kCookies:
+          td.textContent = 'Cookies';
+          break;
+        case mediaFeeds.mojom.ResetReason.kVisit:
+          td.textContent = 'Visit';
+          break;
+        case mediaFeeds.mojom.ResetReason.kCache:
+          td.textContent = 'Cache';
+          break;
+      }
     } else {
       td.textContent = data;
     }

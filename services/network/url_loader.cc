@@ -844,9 +844,11 @@ URLLoader::~URLLoader() {
 // static
 const void* const URLLoader::kUserDataKey = &URLLoader::kUserDataKey;
 
-void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
-                               const net::HttpRequestHeaders& modified_headers,
-                               const base::Optional<GURL>& new_url) {
+void URLLoader::FollowRedirect(
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
+    const base::Optional<GURL>& new_url) {
   if (!deferred_redirect_url_) {
     NOTREACHED();
     return;
@@ -854,7 +856,8 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
 
   // Removing headers can't make the set of pre-existing headers unsafe, but
   // adding headers can.
-  if (!AreRequestHeadersSafe(modified_headers)) {
+  if (!AreRequestHeadersSafe(modified_headers) |
+      !AreRequestHeadersSafe(modified_cors_exempt_headers)) {
     NotifyCompleted(net::ERR_INVALID_ARGUMENT);
     // |this| may have been deleted.
     return;
@@ -867,7 +870,11 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
   deferred_redirect_url_.reset();
   new_redirect_url_ = new_url;
 
-  url_request_->FollowDeferredRedirect(removed_headers, modified_headers);
+  net::HttpRequestHeaders merged_modified_headers;
+  merged_modified_headers.CopyFrom(modified_headers);
+  merged_modified_headers.MergeFrom(modified_cors_exempt_headers);
+  url_request_->FollowDeferredRedirect(removed_headers,
+                                       merged_modified_headers);
   new_redirect_url_.reset();
 }
 

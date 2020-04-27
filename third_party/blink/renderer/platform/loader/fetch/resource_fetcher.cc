@@ -1334,9 +1334,6 @@ void ResourceFetcher::PrintPreloadWarning(Resource* resource,
     case Resource::MatchStatus::kRequestHeadersDoNotMatch:
       builder.Append("because the request headers do not match.");
       break;
-    case Resource::MatchStatus::kImagePlaceholder:
-      builder.Append("due to different image placeholder policies.");
-      break;
   }
   console_logger_->AddConsoleMessage(mojom::ConsoleMessageSource::kOther,
                                      mojom::ConsoleMessageLevel::kWarning,
@@ -1816,7 +1813,6 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
         resource->GetResponse().DecodedBodyLength(),
         should_report_corb_blocking);
   }
-  resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }
 
 void ResourceFetcher::HandleLoaderError(Resource* resource,
@@ -1849,7 +1845,6 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
             resource->Options().initiator_info.name ==
             fetch_initiator_type_names::kInternal));
   }
-  resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }
 
 void ResourceFetcher::MoveResourceLoaderToNonBlocking(ResourceLoader* loader) {

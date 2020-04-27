@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_AMBIENT_PHOTO_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_ASH_AMBIENT_PHOTO_CONTROLLER_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/public/cpp/ambient/photo_controller.h"
@@ -17,21 +18,29 @@
 // Class to handle photos from Backdrop service.
 class PhotoControllerImpl : public ash::PhotoController {
  public:
-  using PhotoDownloadCallback = ash::PhotoController::PhotoDownloadCallback;
-
   PhotoControllerImpl();
   ~PhotoControllerImpl() override;
 
   // ash::PhotoController:
-  void GetNextImage(PhotoDownloadCallback callback) override;
+  void GetNextScreenUpdateInfo(
+      PhotoDownloadCallback photo_callback,
+      WeatherIconDownloadCallback icon_callback) override;
   void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(int topic_source,
                       UpdateSettingsCallback callback) override;
 
  private:
-  void OnNextImageInfoFetched(
-      PhotoDownloadCallback callback,
-      const base::Optional<ash::PhotoController::Topic>& topic);
+  void StartDownloadingPhotoImage(
+      const ash::PhotoController::ScreenUpdate& screen_update,
+      PhotoDownloadCallback photo_callback);
+  void StartDownloadingWeatherConditionIcon(
+      const ash::PhotoController::ScreenUpdate& screen_update,
+      WeatherIconDownloadCallback icon_callback);
+
+  void OnNextScreenUpdateInfoFetched(
+      PhotoDownloadCallback photo_callback,
+      WeatherIconDownloadCallback icon_callback,
+      const ash::PhotoController::ScreenUpdate& screen_update);
 
   std::unique_ptr<PhotoClient> photo_client_;
 

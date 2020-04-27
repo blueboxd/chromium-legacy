@@ -88,11 +88,7 @@ CheckError CheckError::NotImplemented(const char* file,
                                       int line,
                                       const char* function) {
   CheckError check_error(new LogMessage(file, line, LOG_ERROR));
-  if (function) {
-    check_error.stream() << "Not implemented reached in " << function;
-  } else {
-    check_error.stream() << "NOT IMPLEMENTED";
-  }
+  check_error.stream() << "Not implemented reached in " << function;
   return check_error;
 }
 

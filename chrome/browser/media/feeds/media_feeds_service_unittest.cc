@@ -4,6 +4,9 @@
 
 #include "chrome/browser/media/feeds/media_feeds_service.h"
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -18,6 +21,8 @@
 #include "components/safe_search_api/stub_url_checker.h"
 #include "components/safe_search_api/url_checker.h"
 #include "media/base/media_switches.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,6 +31,9 @@ namespace media_feeds {
 namespace {
 
 constexpr size_t kCacheSize = 2;
+
+constexpr base::FilePath::CharType kMediaFeedsTestFileName[] =
+    FILE_PATH_LITERAL("chrome/test/data/media/feeds/media-feed.json");
 
 const char kFirstItemActionURL[] = "https://www.example.com/action";
 const char kFirstItemPlayNextActionURL[] = "https://www.example.com/next";
@@ -37,7 +45,8 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
   MediaFeedsServiceTest() = default;
 
   void SetUp() override {
-    features_.InitAndEnableFeature(media::kMediaFeeds);
+    features_.InitWithFeatures(
+        {media::kMediaFeeds, media::kMediaFeedsSafeSearch}, {});
 
     ChromeRenderViewHostTestHarness::SetUp();
 
@@ -45,6 +54,10 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
 
     GetMediaFeedsService()->SetSafeSearchURLCheckerForTest(
         stub_url_checker_->BuildURLChecker(kCacheSize));
+
+    GetMediaFeedsService()->test_url_loader_factory_for_fetcher_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &url_loader_factory_);
   }
 
   void WaitForDB() {
@@ -102,6 +115,21 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
   void SetSafeSearchEnabled(bool enabled) {
     profile()->GetPrefs()->SetBoolean(prefs::kMediaFeedsSafeSearchEnabled,
                                       enabled);
+  }
+
+  bool RespondToPendingFeedFetch(const GURL& feed_url) {
+    base::FilePath file;
+    base::PathService::Get(base::DIR_SOURCE_ROOT, &file);
+    file = file.Append(kMediaFeedsTestFileName);
+
+    std::string response_body;
+    base::ReadFileToString(file, &response_body);
+
+    bool rv = url_loader_factory_.SimulateResponseForPendingRequest(
+        feed_url, network::URLLoaderCompletionStatus(net::OK),
+        network::CreateURLResponseHead(net::HttpStatusCode::HTTP_OK),
+        response_body);
+    return rv;
   }
 
   safe_search_api::StubURLChecker* safe_search_checker() {
@@ -167,6 +195,8 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
 
  private:
   base::test::ScopedFeatureList features_;
+
+  network::TestURLLoaderFactory url_loader_factory_;
 
   std::unique_ptr<safe_search_api::StubURLChecker> stub_url_checker_;
 };
@@ -627,6 +657,173 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_UnsafeUncertain) {
   histogram_tester.ExpectUniqueSample(
       MediaFeedsService::kSafeSearchResultHistogramName,
       media_feeds::mojom::SafeSearchResult::kUnsafe, 1);
+}
+
+TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Feature) {
+  SetSafeSearchEnabled(true);
+
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(media::kMediaFeedsSafeSearch);
+
+  base::HistogramTester histogram_tester;
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(
+      GURL("https://www.google.com/feed"));
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
+      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+  WaitForDB();
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetSafeSearchCompletionCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Get the pending items and check them against Safe Search.
+    auto pending_items = GetPendingSafeSearchCheckMediaFeedItemsSync();
+    EXPECT_EQ(3u, pending_items.size());
+    GetMediaFeedsService()->CheckItemsAgainstSafeSearch(
+        std::move(pending_items));
+  }
+
+  // Wait for the service and DB to finish.
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    // The pending items should still be 3.
+    auto pending_items = GetPendingSafeSearchCheckMediaFeedItemsSync();
+    EXPECT_EQ(3u, pending_items.size());
+  }
+
+  // Check the items were updated.
+  auto items = GetItemsForMediaFeedSync(1);
+  EXPECT_EQ(3u, items.size());
+  EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kUnknown,
+            items[0]->safe_search_result);
+  EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kUnknown,
+            items[1]->safe_search_result);
+  EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kUnknown,
+            items[2]->safe_search_result);
+
+  histogram_tester.ExpectTotalCount(
+      MediaFeedsService::kSafeSearchResultHistogramName, 0);
+}
+
+TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
+  const GURL feed_url("https://www.google.com/feed");
+
+  SetSafeSearchEnabled(true);
+  safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetSafeSearchCompletionCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Fetch the Media Feed.
+    base::RunLoop run_loop;
+    GetMediaFeedsService()->FetchMediaFeed(1, feed_url, run_loop.QuitClosure());
+    ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
+    run_loop.Run();
+  }
+
+  // Wait for the items to be checked against safe search
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    // The pending items should be empty.
+    auto pending_items = GetPendingSafeSearchCheckMediaFeedItemsSync();
+    EXPECT_TRUE(pending_items.empty());
+  }
+
+  // Check the items were updated.
+  auto items = GetItemsForMediaFeedSync(1);
+  EXPECT_EQ(7u, items.size());
+
+  for (auto& item : items) {
+    EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kSafe,
+              item->safe_search_result);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest, PrefChangeShouldTriggerSafeSearchCheck) {
+  safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(
+      GURL("https://www.google.com/feed"));
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
+      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+  WaitForDB();
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetSafeSearchCompletionCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Check there are pending items.
+    auto pending_items = GetPendingSafeSearchCheckMediaFeedItemsSync();
+    EXPECT_EQ(3u, pending_items.size());
+  }
+
+  // Enable the safe search pref. This should trigger a refetch.
+  SetSafeSearchEnabled(true);
+
+  // Wait for the service and DB to finish.
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    // The pending items should be empty.
+    auto pending_items = GetPendingSafeSearchCheckMediaFeedItemsSync();
+    EXPECT_TRUE(pending_items.empty());
+  }
+
+  {
+    // Check the items were updated.
+    auto items = GetItemsForMediaFeedSync(1);
+    EXPECT_EQ(3u, items.size());
+
+    for (auto& item : items) {
+      EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kSafe,
+                item->safe_search_result);
+    }
+  }
+
+  // Store some new media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
+      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+  WaitForDB();
+
+  {
+    // Check there are pending items.
+    auto pending_items = GetPendingSafeSearchCheckMediaFeedItemsSync();
+    EXPECT_EQ(3u, pending_items.size());
+  }
+
+  // Disable the Safe Search pref. This should not trigger a check.
+  SetSafeSearchEnabled(false);
+
+  {
+    // Check there are pending items.
+    auto pending_items = GetPendingSafeSearchCheckMediaFeedItemsSync();
+    EXPECT_EQ(3u, pending_items.size());
+  }
 }
 
 }  // namespace media_feeds

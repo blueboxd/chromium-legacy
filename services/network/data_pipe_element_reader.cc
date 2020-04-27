@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "mojo/public/c/system/types.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

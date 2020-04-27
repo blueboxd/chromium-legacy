@@ -505,7 +505,7 @@ class URLLoaderTest : public testing::Test {
 
     if (expect_redirect_) {
       client_.RunUntilRedirectReceived();
-      loader->FollowRedirect({}, {}, base::nullopt);
+      loader->FollowRedirect({}, {}, {}, base::nullopt);
     }
 
     if (body) {
@@ -1926,7 +1926,7 @@ TEST_F(URLLoaderTest, RedirectModifiedHeaders) {
   net::HttpRequestHeaders redirect_headers;
   redirect_headers.SetHeader("Header2", "");
   redirect_headers.SetHeader("Header3", "Value3");
-  loader->FollowRedirect({}, redirect_headers, base::nullopt);
+  loader->FollowRedirect({}, redirect_headers, {}, base::nullopt);
 
   client()->RunUntilComplete();
   delete_run_loop.Run();
@@ -1973,7 +1973,7 @@ TEST_F(URLLoaderTest, RedirectFailsOnModifyUnsafeHeader) {
 
     net::HttpRequestHeaders redirect_headers;
     redirect_headers.SetHeader(unsafe_header, "foo");
-    loader->FollowRedirect({}, redirect_headers, base::nullopt);
+    loader->FollowRedirect({}, redirect_headers, {}, base::nullopt);
 
     client.RunUntilComplete();
     delete_run_loop.Run();
@@ -2015,7 +2015,7 @@ TEST_F(URLLoaderTest, RedirectLogsModifiedConcerningHeader) {
   redirect_headers.SetHeader(net::HttpRequestHeaders::kReferer,
                              "https://somewhere.test/");
   redirect_headers.SetHeader("Via", "Albuquerque");
-  loader->FollowRedirect({}, redirect_headers, base::nullopt);
+  loader->FollowRedirect({}, redirect_headers, {}, base::nullopt);
 
   client.RunUntilComplete();
   delete_run_loop.Run();
@@ -2072,7 +2072,7 @@ TEST_F(URLLoaderTest, RedirectRemoveHeader) {
 
   // Remove Header1.
   std::vector<std::string> removed_headers = {"Header1"};
-  loader->FollowRedirect(removed_headers, {}, base::nullopt);
+  loader->FollowRedirect(removed_headers, {}, {}, base::nullopt);
 
   client()->RunUntilComplete();
   delete_run_loop.Run();
@@ -2118,7 +2118,7 @@ TEST_F(URLLoaderTest, RedirectRemoveHeaderAndAddItBack) {
   std::vector<std::string> removed_headers = {"Header1"};
   net::HttpRequestHeaders modified_headers;
   modified_headers.SetHeader("Header1", "NewValue1");
-  loader->FollowRedirect(removed_headers, modified_headers, base::nullopt);
+  loader->FollowRedirect(removed_headers, modified_headers, {}, base::nullopt);
 
   client()->RunUntilComplete();
   delete_run_loop.Run();
@@ -2164,7 +2164,7 @@ TEST_F(URLLoaderTest, UpgradeAddsSecHeaders) {
   EXPECT_EQ(request_headers1.end(), request_headers1.find("Sec-Fetch-User"));
 
   // Now follow the redirect to the final destination and validate again.
-  loader->FollowRedirect({}, {}, base::nullopt);
+  loader->FollowRedirect({}, {}, {}, base::nullopt);
   client()->RunUntilComplete();
   delete_run_loop.Run();
 
@@ -2220,7 +2220,7 @@ TEST_F(URLLoaderTest, DowngradeRemovesSecHeaders) {
   EXPECT_EQ(request_headers1.end(), request_headers1.find("Sec-Fetch-User"));
 
   // Now follow the redirect to the final destination and validate again.
-  loader->FollowRedirect({}, {}, base::nullopt);
+  loader->FollowRedirect({}, {}, {}, base::nullopt);
   client()->RunUntilComplete();
   delete_run_loop.Run();
 
@@ -2281,7 +2281,7 @@ TEST_F(URLLoaderTest, RedirectChainRemovesAndAddsSecHeaders) {
   EXPECT_EQ(request_headers1.end(), request_headers1.find("Sec-Fetch-User"));
 
   // Follow our redirect and then verify again.
-  loader->FollowRedirect({}, {}, base::nullopt);
+  loader->FollowRedirect({}, {}, {}, base::nullopt);
   client()->ClearHasReceivedRedirect();
   client()->RunUntilRedirectReceived();
 
@@ -2297,7 +2297,7 @@ TEST_F(URLLoaderTest, RedirectChainRemovesAndAddsSecHeaders) {
 
   // Now follow the final redirect back to a trustworthy destination and
   // re-validate.
-  loader->FollowRedirect({}, {}, base::nullopt);
+  loader->FollowRedirect({}, {}, {}, base::nullopt);
   client()->RunUntilComplete();
   delete_run_loop.Run();
 
@@ -3274,8 +3274,8 @@ TEST_F(URLLoaderTest, FollowRedirectTwice) {
 
   client()->RunUntilRedirectReceived();
 
-  url_loader->FollowRedirect({}, {}, base::nullopt);
-  EXPECT_DCHECK_DEATH(url_loader->FollowRedirect({}, {}, base::nullopt));
+  url_loader->FollowRedirect({}, {}, {}, base::nullopt);
+  EXPECT_DCHECK_DEATH(url_loader->FollowRedirect({}, {}, {}, base::nullopt));
 
   client()->RunUntilComplete();
   delete_run_loop.Run();
@@ -3379,7 +3379,7 @@ TEST_F(URLLoaderTest, ClientAuthRespondTwice) {
   EXPECT_EQ(0, private_key->sign_count());
 
   client()->RunUntilRedirectReceived();
-  loader->FollowRedirect({}, {}, base::nullopt);
+  loader->FollowRedirect({}, {}, {}, base::nullopt);
   // MockNetworkServiceClient gives away the private key when it invokes
   // ContinueWithCertificate, so we have to give it the key again.
   network_context_client.set_private_key(private_key);
@@ -3881,7 +3881,7 @@ TEST_F(URLLoaderTest, CookieReportingRedirect) {
       nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
   loader_client.RunUntilRedirectReceived();
-  loader->FollowRedirect({}, {}, base::nullopt);
+  loader->FollowRedirect({}, {}, {}, base::nullopt);
   loader_client.RunUntilComplete();
   delete_run_loop.Run();
   EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
@@ -4171,7 +4171,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
                   "Set-Cookie: server-redirect=true"),
               std::string::npos);
 
-    loader->FollowRedirect({}, {}, base::nullopt);
+    loader->FollowRedirect({}, {}, {}, base::nullopt);
     loader_client.RunUntilComplete();
     delete_run_loop.Run();
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
@@ -4216,7 +4216,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
         nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */);
 
     loader_client.RunUntilRedirectReceived();
-    loader->FollowRedirect({}, {}, base::nullopt);
+    loader->FollowRedirect({}, {}, {}, base::nullopt);
     loader_client.RunUntilComplete();
     delete_run_loop.Run();
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);

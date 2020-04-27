@@ -24,6 +24,7 @@
 
 #if defined(OS_ANDROID)
 #include "weblayer/browser/safe_browsing/safe_browsing_service.h"
+#include "weblayer/browser/url_bar/page_info_client_impl.h"
 #endif
 
 namespace weblayer {
@@ -51,6 +52,10 @@ BrowserProcess* BrowserProcess::GetInstance() {
 
 void BrowserProcess::PreMainMessageLoopRun() {
   CreateNetworkQualityObserver();
+
+#if defined(OS_ANDROID)
+  page_info::SetPageInfoClient(PageInfoClientImpl::GetInstance());
+#endif
 }
 
 void BrowserProcess::StartTearDown() {

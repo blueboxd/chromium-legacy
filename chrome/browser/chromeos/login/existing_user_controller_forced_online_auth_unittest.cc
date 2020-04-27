@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/test/task_environment.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -22,6 +21,7 @@
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -107,7 +107,7 @@ class ExistingUserControllerForcedOnlineAuthTest : public ::testing::Test {
   const AccountId saml_login_account2_id_ =
       AccountId::FromUserEmailGaiaId(kSecondSAMLUserEmail, kSecondSAMLUserId);
 
-  base::test::TaskEnvironment task_environment_{
+  content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
  private:

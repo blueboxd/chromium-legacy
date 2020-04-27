@@ -4,7 +4,7 @@
 
 #include "remoting/client/input/touch_input_scaler.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/numerics/ranges.h"
 #include "remoting/proto/event.pb.h"
 

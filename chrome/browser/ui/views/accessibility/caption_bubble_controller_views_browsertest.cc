@@ -128,14 +128,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   EXPECT_FALSE(GetTitle()->GetVisible());
 }
 
-// Flaky on Mac 10.12, crbug.com/1072818.
-#if defined(OS_MACOSX)
-#define MAYBE_BubblePositioning DISABLED_BubblePositioning
-#else
-#define MAYBE_BubblePositioning BubblePositioning
-#endif
-IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
-                       MAYBE_BubblePositioning) {
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, BubblePositioning) {
   views::View* contents_view =
       BrowserView::GetBrowserViewForBrowser(browser())->GetContentsView();
 
@@ -176,14 +169,16 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   EXPECT_EQ(20, contents_bounds.right() - widget_bounds.right());
 
   // Make it bigger again and ensure it's visible and wide again.
-  browser()->window()->SetBounds(gfx::Rect(10, 10, 800, 600));
+  // Note: On Mac we cannot put the window too close to the top of the screen
+  // or it gets pushed down by the menu bar.
+  browser()->window()->SetBounds(gfx::Rect(100, 100, 800, 600));
   ExpectInBottomCenter(contents_view->GetBoundsInScreen(),
                        GetCaptionWidget()->GetClientAreaBoundsInScreen());
   EXPECT_EQ(GetBubble()->GetBoundsInScreen().width(), 548);
 
   // Now move the widget within the window.
   GetCaptionWidget()->SetBounds(
-      gfx::Rect(110, 210, GetCaptionWidget()->GetWindowBoundsInScreen().width(),
+      gfx::Rect(200, 300, GetCaptionWidget()->GetWindowBoundsInScreen().width(),
                 GetCaptionWidget()->GetWindowBoundsInScreen().height()));
 
   // The bubble width should not have changed.
@@ -197,10 +192,10 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   EXPECT_EQ(GetBubble()->GetBoundsInScreen().width(), 548);
 
   // Now put the window in the top corner for easier math.
-  browser()->window()->SetBounds(gfx::Rect(0, 0, 800, 600));
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 800, 600));
   widget_bounds = GetCaptionWidget()->GetClientAreaBoundsInScreen();
-  EXPECT_EQ(100, widget_bounds.x());
-  EXPECT_EQ(200, widget_bounds.y());
+  EXPECT_EQ(150, widget_bounds.x());
+  EXPECT_EQ(250, widget_bounds.y());
   contents_bounds = contents_view->GetBoundsInScreen();
   double x_ratio = (widget_bounds.CenterPoint().x() - contents_bounds.x()) /
                    (1.0 * contents_bounds.width());
@@ -209,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
 
   // The center point ratio should not change as we resize the window, and the
   // widget is repositioned.
-  browser()->window()->SetBounds(gfx::Rect(0, 0, 750, 550));
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 750, 550));
   widget_bounds = GetCaptionWidget()->GetClientAreaBoundsInScreen();
   contents_bounds = contents_view->GetBoundsInScreen();
   double new_x_ratio = (widget_bounds.CenterPoint().x() - contents_bounds.x()) /
@@ -219,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   EXPECT_NEAR(x_ratio, new_x_ratio, .005);
   EXPECT_NEAR(y_ratio, new_y_ratio, .005);
 
-  browser()->window()->SetBounds(gfx::Rect(0, 0, 700, 500));
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 700, 500));
   widget_bounds = GetCaptionWidget()->GetClientAreaBoundsInScreen();
   contents_bounds = contents_view->GetBoundsInScreen();
   new_x_ratio = (widget_bounds.CenterPoint().x() - contents_bounds.x()) /
@@ -231,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
 
   // But if we make the window too small, the widget will stay within its
   // bounds.
-  browser()->window()->SetBounds(gfx::Rect(0, 0, 500, 500));
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 500, 500));
   widget_bounds = GetCaptionWidget()->GetClientAreaBoundsInScreen();
   contents_bounds = contents_view->GetBoundsInScreen();
   new_y_ratio = (widget_bounds.CenterPoint().y() - contents_bounds.y()) /
@@ -240,18 +235,21 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   EXPECT_TRUE(contents_bounds.Contains(widget_bounds));
 
   // Making it big again resets the position to what it was before.
-  browser()->window()->SetBounds(gfx::Rect(0, 0, 800, 600));
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 800, 600));
   widget_bounds = GetCaptionWidget()->GetClientAreaBoundsInScreen();
-  EXPECT_EQ(100, widget_bounds.x());
-  EXPECT_EQ(200, widget_bounds.y());
+  EXPECT_EQ(150, widget_bounds.x());
+  EXPECT_EQ(250, widget_bounds.y());
 
+#if !defined(OS_MACOSX)
   // Shrink it so small the caption bubble can't fit. Ensure it's hidden.
-  browser()->window()->SetBounds(gfx::Rect(0, 0, 200, 100));
+  // Mac windows cannot be shrunk small enough to force the bubble to hide.
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 200, 100));
   EXPECT_FALSE(GetCaptionWidget()->IsVisible());
 
   // Make it bigger again and ensure it's visible and wide again.
-  browser()->window()->SetBounds(gfx::Rect(0, 0, 800, 400));
+  browser()->window()->SetBounds(gfx::Rect(50, 50, 800, 400));
   EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {

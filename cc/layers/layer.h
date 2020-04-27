@@ -401,8 +401,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
                                : gfx::Size();
   }
 
-  void SetIsScrollbar(bool is_scrollbar);
-  bool is_scrollbar() const { return inputs_.is_scrollbar; }
+  virtual bool IsScrollbarLayerForTesting() const;
 
   // For layer tree mode only.
   // Set or get if this layer is able to be scrolled along each axis. These are
@@ -833,9 +832,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     bool is_drawable : 1;
 
     bool double_sided : 1;
-
-    // Indicates that this layer is a scrollbar.
-    bool is_scrollbar : 1;
 
     bool has_will_change_transform_hint : 1;
 

@@ -136,8 +136,10 @@ void IsolatedPrerenderURLLoader::OnComplete(
 void IsolatedPrerenderURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
-  network_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
+  network_loader_->FollowRedirect(removed_headers, modified_headers,
+                                  modified_cors_exempt_headers, new_url);
 }
 
 void IsolatedPrerenderURLLoader::SetPriority(net::RequestPriority priority,

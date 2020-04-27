@@ -789,7 +789,8 @@ TEST(WebInputEventBuilderMacTest, BuildWebTouchEvents) {
   EXPECT_FALSE(touch_event.hovering);
   EXPECT_EQ(1U, touch_event.touches_length);
   EXPECT_EQ(gfx::PointF(6, 9), touch_event.touches[0].PositionInScreen());
-  EXPECT_EQ(blink::WebTouchPoint::kStatePressed, touch_event.touches[0].state);
+  EXPECT_EQ(blink::WebTouchPoint::State::kStatePressed,
+            touch_event.touches[0].state);
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
             touch_event.touches[0].pointer_type);
   EXPECT_EQ(0, touch_event.touches[0].id);

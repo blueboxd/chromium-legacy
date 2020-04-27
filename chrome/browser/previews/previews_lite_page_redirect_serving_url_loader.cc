@@ -463,6 +463,7 @@ void PreviewsLitePageRedirectServingURLLoader::OnComplete(
 void PreviewsLitePageRedirectServingURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should never be called for a non-network service URLLoader.

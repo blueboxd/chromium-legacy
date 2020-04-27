@@ -262,7 +262,8 @@ TEST_F(AppServiceImplTest, PubSub) {
   }
 }
 
-TEST_F(AppServiceImplTest, PreferredApps) {
+// TODO(https://crbug.com/1074596) disabled due to flakiness
+TEST_F(AppServiceImplTest, DISABLED_PreferredApps) {
   // Test Initialize.
   AppServiceImpl::RegisterProfilePrefs(pref_service_.registry());
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

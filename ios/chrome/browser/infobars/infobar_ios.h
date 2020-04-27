@@ -72,6 +72,10 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   // Returns a weak pointer to the infobar.
   base::WeakPtr<InfoBarIOS> GetWeakPtr();
 
+ protected:
+  void PlatformSpecificSetOwner() override;
+  void PlatformSpecificOnCloseSoon() override;
+
  private:
   // InfoBarControllerDelegate overrides:
   bool IsOwned() override;

@@ -30,7 +30,6 @@ class Layer;
 
 namespace android {
 class TabWebContentsDelegateAndroid;
-class TabContentManager;
 }
 
 namespace content {
@@ -76,7 +75,6 @@ class TabAndroid {
   const SessionID& window_id() const { return session_window_id_; }
 
   int GetAndroidId() const;
-  int GetSyncId() const;
   bool IsNativePage() const;
 
   // Return the tab title.
@@ -99,7 +97,6 @@ class TabAndroid {
       const WebContentsState::DeletionPredicate& predicate);
 
   void SetWindowSessionID(SessionID window_id);
-  void SetSyncId(int sync_id);
 
   std::unique_ptr<content::WebContents> SwapWebContents(
       std::unique_ptr<content::WebContents> new_contents,
@@ -155,19 +152,8 @@ class TabAndroid {
       const base::android::JavaParamRef<jstring>& jurl,
       const base::android::JavaParamRef<jstring>& jtitle);
 
-  // Called to get default favicon of current tab, return null if no
-  // favicon is avaliable for current tab.
-  base::android::ScopedJavaLocalRef<jobject> GetFavicon(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   void LoadOriginalImage(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
-
-  void SetInterceptNavigationDelegate(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& delegate);
 
   scoped_refptr<content::DevToolsAgentHost> GetDevToolsAgentHost();
 
@@ -180,7 +166,6 @@ class TabAndroid {
   SessionID session_window_id_;
 
   scoped_refptr<cc::Layer> content_layer_;
-  android::TabContentManager* tab_content_manager_;
 
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<android::TabWebContentsDelegateAndroid>

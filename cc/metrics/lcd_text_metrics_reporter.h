@@ -6,6 +6,7 @@
 #define CC_METRICS_LCD_TEXT_METRICS_REPORTER_H_
 
 #include <cstdint>
+#include <memory>
 
 #include "base/time/time.h"
 #include "cc/cc_export.h"

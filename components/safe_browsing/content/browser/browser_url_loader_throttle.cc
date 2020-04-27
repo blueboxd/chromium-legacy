@@ -208,7 +208,8 @@ void BrowserURLLoaderThrottle::WillRedirectRequest(
     const network::mojom::URLResponseHead& /* response_head */,
     bool* defer,
     std::vector<std::string>* /* to_be_removed_headers */,
-    net::HttpRequestHeaders* /* modified_headers */) {
+    net::HttpRequestHeaders* /* modified_headers */,
+    net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (blocked_) {
     // OnCheckUrlResult() has set |blocked_| to true and called

@@ -3,5 +3,6 @@ include_rules = [
   "+components/prefs",
   "+components/version_info",
   "+content/public/browser",
+  "+content/public/test",
   "+services/resource_coordinator/public/cpp/memory_instrumentation",
 ]

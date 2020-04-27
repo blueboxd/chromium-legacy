@@ -5,7 +5,7 @@
 #include "remoting/protocol/pairing_client_authenticator.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/channel_authenticator.h"

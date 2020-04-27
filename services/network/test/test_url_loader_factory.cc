@@ -4,7 +4,7 @@
 
 #include "services/network/test/test_url_loader_factory.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "net/http/http_status_code.h"

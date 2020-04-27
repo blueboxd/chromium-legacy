@@ -43,8 +43,9 @@ import dagger.Lazy;
  * Add methods here if other components need to communicate with Trusted Web Activity component.
  */
 @ActivityScope
-public class TrustedWebActivityCoordinator implements InflationObserver {
-
+public class TrustedWebActivityCoordinator implements InflationObserver, NativeInitObserver {
+    private final Lazy<TrustedWebActivityDisclosureView> mDisclosureView;
+    private final Lazy<NewDisclosureSnackbar> mNewDisclosureView;
     private final CurrentPageVerifier mCurrentPageVerifier;
     private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private final CustomTabToolbarColorController mToolbarColorController;
@@ -81,6 +82,8 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             CustomTabsConnection customTabsConnection) {
         // We don't need to do anything with most of the classes above, we just need to resolve them
         // so they start working.
+        mDisclosureView = disclosureView;
+        mNewDisclosureView = newDisclosureView;
         mCurrentPageVerifier = currentPageVerifier;
         mBrowserControlsVisibilityManager = browserControlsVisibilityManager;
         mToolbarColorController = toolbarColorController;
@@ -95,24 +98,12 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
         externalIntentsPolicyProvider.setPolicyCriteria(
                 verifier::shouldIgnoreExternalIntentHandlers);
 
-        initDisclosure(disclosureView, newDisclosureView);
         initSplashScreen(splashController, intentDataProvider, umaRecorder);
 
         currentPageVerifier.addVerificationObserver(this::onVerificationUpdate);
         lifecycleDispatcher.register(this);
         lifecycleDispatcher.register(
                 new PostMessageDisabler(customTabsConnection, intentDataProvider));
-    }
-
-    private void initDisclosure(Lazy<TrustedWebActivityDisclosureView> disclosureView,
-            Lazy<NewDisclosureSnackbar> newDisclosureView) {
-        // Calling get on the appropriate Lazy instance will cause Dagger to create the class.
-        // The classes wire themselves up to the rest of the code in their constructors.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)) {
-            newDisclosureView.get();
-        } else {
-            disclosureView.get();
-        }
     }
 
     @Override
@@ -128,6 +119,17 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
         // the trusted web activity mode to UI.
         if (mCurrentPageVerifier.getState() == null) {
             updateUi(true);
+        }
+    }
+
+    @Override
+    public void onFinishNativeInitialization() {
+        // Calling get on the appropriate Lazy instance will cause Dagger to create the class.
+        // The classes wire themselves up to the rest of the code in their constructors.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)) {
+            mNewDisclosureView.get().showIfNeeded();
+        } else {
+            mDisclosureView.get().showIfNeeded();
         }
     }
 

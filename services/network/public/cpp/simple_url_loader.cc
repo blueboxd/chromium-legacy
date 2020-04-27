@@ -10,11 +10,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -1626,6 +1626,7 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
 
   final_url_ = redirect_info.new_url;
   url_loader_->FollowRedirect(removed_headers, {} /* modified_headers */,
+                              {} /* modified_cors_exempt_headers */,
                               {} /* new_url */);
 }
 

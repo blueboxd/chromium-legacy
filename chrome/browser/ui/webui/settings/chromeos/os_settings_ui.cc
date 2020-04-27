@@ -218,7 +218,7 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
                                IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS);
 
   OsSettingsLocalizedStringsProviderFactory::GetForProfile(profile)
-      ->AddOsLocalizedStrings(html_source, profile);
+      ->AddOsLocalizedStrings(html_source);
 
   auto plural_string_handler = std::make_unique<PluralStringHandler>();
   plural_string_handler->AddLocalizedString("profileLabel",

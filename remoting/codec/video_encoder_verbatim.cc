@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 #include "remoting/base/util.h"
 #include "remoting/proto/video.pb.h"

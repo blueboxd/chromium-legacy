@@ -21,14 +21,6 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
     return;
 
   for (const auto& active_wrappable : *active_script_wrappables) {
-    // Ignore objects that are currently under construction. They are kept alive
-    // via conservative stack scan.
-    HeapObjectHeader const* const header =
-        active_wrappable->GetHeapObjectHeader();
-    if ((header == BlinkGC::kNotFullyConstructedObject) ||
-        header->IsInConstruction())
-      continue;
-
     // A wrapper isn't kept alive after its ExecutionContext becomes detached,
     // even if |HasPendingActivity()| returns |true|. This measure avoids memory
     // leaks and has proven not to be too eager wrt garbage collection of
@@ -51,7 +43,7 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
   }
 }
 
-ActiveScriptWrappableBase::ActiveScriptWrappableBase() {
+void ActiveScriptWrappableBase::ActiveScriptWrappableBaseConstructed() {
   DCHECK(ThreadState::Current());
   v8::Isolate* isolate = ThreadState::Current()->GetIsolate();
   V8PerIsolateData* isolate_data = V8PerIsolateData::From(isolate);

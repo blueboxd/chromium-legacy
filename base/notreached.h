@@ -7,7 +7,6 @@
 
 #include "base/check.h"
 #include "base/logging_buildflags.h"
-#include "build/build_config.h"
 
 namespace logging {
 
@@ -24,17 +23,10 @@ void BASE_EXPORT LogErrorNotReached(const char* file, int line);
 // implemented yet. If output spam is a serious concern,
 // NOTIMPLEMENTED_LOG_ONCE can be used.
 #if DCHECK_IS_ON()
-
-#if defined(COMPILER_GCC)
 #define NOTIMPLEMENTED()                                     \
   ::logging::CheckError::NotImplemented(__FILE__, __LINE__,  \
                                         __PRETTY_FUNCTION__) \
       .stream()
-#else
-#define NOTIMPLEMENTED() \
-  ::logging::CheckError::NotImplemented(__FILE__, __LINE__, nullptr).stream()
-#endif
-
 #else
 #define NOTIMPLEMENTED() EAT_CHECK_STREAM_PARAMS()
 #endif

@@ -145,7 +145,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
           'User Status', 'Last Fetch Result', 'Fetch Failed Count',
           'Last Fetch Time (not cache hit)', 'Last Fetch Item Count',
           'Last Fetch Play Next Count', 'Last Fetch Content Types',
-          'Last Display Time', 'Logos', 'Actions'
+          'Last Display Time', 'Reset Reason', 'Logos', 'Actions'
         ],
         feedsHeaders.map(x => x.textContent.trim()));
 
@@ -165,15 +165,16 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
     assertEquals('1', feedsContents.childNodes[10].textContent.trim());
     assertEquals('Movie', feedsContents.childNodes[11].textContent.trim());
     assertNotEquals('', feedsContents.childNodes[12].textContent.trim());
+    assertEquals('None', feedsContents.childNodes[13].textContent.trim());
     assertEquals(
         'https://www.example.org/logo1.pnghttps://www.example.org/logo2.png',
-        feedsContents.childNodes[13].textContent.trim());
+        feedsContents.childNodes[14].textContent.trim());
     assertEquals(
         'Show ContentsFetch Feed',
-        feedsContents.childNodes[14].textContent.trim());
+        feedsContents.childNodes[15].textContent.trim());
 
     // Click on the show contents button.
-    feedsContents.childNodes[14].firstChild.click();
+    feedsContents.childNodes[15].firstChild.click();
 
     return whenFeedTableIsPopulatedForTest().then(() => {
       assertEquals(

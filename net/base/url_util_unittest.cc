@@ -313,7 +313,7 @@ TEST(UrlUtilTest, IsSubdomainOf) {
       {"bar.foo.com", "ar.foo.com", false},
       {"foo.com", "foo.com.", false},
       {"bar.foo.com", "foo.com.", false},
-      {"", "", false},
+      {"", "", true},
       {"a", "", false},
       {"", "a", false},
       {"127.0.0.1", "0.0.1", true},  // Don't do this...

@@ -4,7 +4,6 @@
 
 #include "remoting/base/leaky_bucket.h"
 
-#include "base/logging.h"
 
 namespace remoting {
 

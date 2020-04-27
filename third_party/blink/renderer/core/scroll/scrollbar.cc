@@ -806,7 +806,7 @@ void Scrollbar::SetNeedsPaintInvalidation(ScrollbarPart invalid_parts) {
     scrollable_area_->SetScrollbarNeedsPaintInvalidation(Orientation());
 }
 
-CompositorElementId Scrollbar::GetElementId() {
+CompositorElementId Scrollbar::GetElementId() const {
   DCHECK(scrollable_area_);
   return scrollable_area_->GetScrollbarElementId(orientation_);
 }

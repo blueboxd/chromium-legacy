@@ -61,6 +61,9 @@ class WebsiteLoginFetcher {
       const autofill::FormData& form_data,
       base::OnceCallback<void()> callback) = 0;
 
+  // Checks if generated password can be committed.
+  virtual bool ReadyToCommitGeneratedPassword() = 0;
+
   // Commits the presaved passwod to the store.
   virtual void CommitGeneratedPassword() = 0;
 

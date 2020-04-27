@@ -7,8 +7,9 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "services/device/generic_sensor/platform_sensor_fusion_algorithm.h"
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 #include "services/device/generic_sensor/platform_sensor_util.h"

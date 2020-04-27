@@ -426,6 +426,8 @@ void WindowPerformance::DispatchFirstInputTiming(
   if (HasObserverFor(PerformanceEntry::kFirstInput)) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kEventTimingExplicitlyRequested);
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kEventTimingFirstInputExplicitlyRequested);
     NotifyObserversOfEntry(*entry);
   }
 

@@ -69,7 +69,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       current_draw_mode_(DRAW_MODE_NONE),
       has_will_change_transform_hint_(false),
       needs_push_properties_(false),
-      is_scrollbar_(false),
       scrollbars_hidden_(false),
       needs_show_scrollbars_(false),
       raster_even_if_not_drawn_(false),
@@ -408,8 +407,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBounds(bounds_);
   layer->UpdateScrollable();
 
-  layer->set_is_scrollbar(is_scrollbar_);
-
   layer->UnionUpdateRect(update_rect_);
 
   layer->UpdateDebugInfo(debug_info_.get());
@@ -512,8 +509,8 @@ void LayerImpl::SetBounds(const gfx::Size& bounds) {
   NoteLayerPropertyChanged();
 }
 
-ScrollbarLayerImplBase* LayerImpl::ToScrollbarLayer() {
-  return nullptr;
+bool LayerImpl::IsScrollbarLayer() const {
+  return false;
 }
 
 void LayerImpl::SetDrawsContent(bool draws_content) {

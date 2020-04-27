@@ -36,6 +36,7 @@ source_set("unit_tests") {
 
   deps = [
     ":alerts",
+    "//base/test:test_support",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/public/common/alerts",

@@ -1949,9 +1949,9 @@ ScrollbarSet LayerTreeImpl::ScrollbarsFor(ElementId scroll_element_id) const {
   if (it != element_id_to_scrollbar_layer_ids_.end()) {
     const ScrollbarLayerIds& layer_ids = it->second;
     if (layer_ids.horizontal != Layer::INVALID_ID)
-      scrollbars.insert(LayerById(layer_ids.horizontal)->ToScrollbarLayer());
+      scrollbars.insert(ToScrollbarLayer(LayerById(layer_ids.horizontal)));
     if (layer_ids.vertical != Layer::INVALID_ID)
-      scrollbars.insert(LayerById(layer_ids.vertical)->ToScrollbarLayer());
+      scrollbars.insert(ToScrollbarLayer(LayerById(layer_ids.vertical)));
   }
   return scrollbars;
 }
@@ -2162,7 +2162,7 @@ LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
   auto HitTestScrollingLayerOrScrollbarFunctor =
       [this](const LayerImpl* layer) {
         return layer->HitTestable() &&
-               (layer->is_scrollbar() ||
+               (layer->IsScrollbarLayer() ||
                 (property_trees()->scroll_tree.FindNodeFromElementId(
                     layer->element_id())));
       };

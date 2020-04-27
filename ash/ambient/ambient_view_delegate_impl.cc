@@ -5,6 +5,7 @@
 #include "ash/ambient/ambient_view_delegate_impl.h"
 
 #include "ash/ambient/ambient_controller.h"
+#include "ash/ambient/model/ambient_backend_model.h"
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
@@ -16,8 +17,8 @@ AmbientViewDelegateImpl::AmbientViewDelegateImpl(
 
 AmbientViewDelegateImpl::~AmbientViewDelegateImpl() = default;
 
-PhotoModel* AmbientViewDelegateImpl::GetPhotoModel() {
-  return ambient_controller_->photo_model();
+AmbientBackendModel* AmbientViewDelegateImpl::GetAmbientBackendModel() {
+  return ambient_controller_->ambient_backend_model();
 }
 
 void AmbientViewDelegateImpl::OnBackgroundPhotoEvents() {

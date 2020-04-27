@@ -22,12 +22,13 @@ const constexpr base::TimeDelta kConversionManagerQueueReportsInterval =
 // static
 std::unique_ptr<ConversionManagerImpl> ConversionManagerImpl::CreateForTesting(
     std::unique_ptr<ConversionReporter> reporter,
+    std::unique_ptr<ConversionPolicy> policy,
     const base::Clock* clock,
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> storage_task_runner) {
-  return base::WrapUnique<ConversionManagerImpl>(
-      new ConversionManagerImpl(std::move(reporter), clock, user_data_directory,
-                                std::move(storage_task_runner)));
+  return base::WrapUnique<ConversionManagerImpl>(new ConversionManagerImpl(
+      std::move(reporter), std::move(policy), clock, user_data_directory,
+      std::move(storage_task_runner)));
 }
 
 ConversionManagerImpl::ConversionManagerImpl(
@@ -38,12 +39,14 @@ ConversionManagerImpl::ConversionManagerImpl(
                                 storage_partition,
                                 this,
                                 base::DefaultClock::GetInstance()),
+                            std::make_unique<ConversionPolicy>(),
                             base::DefaultClock::GetInstance(),
                             user_data_directory,
                             std::move(task_runner)) {}
 
 ConversionManagerImpl::ConversionManagerImpl(
     std::unique_ptr<ConversionReporter> reporter,
+    std::unique_ptr<ConversionPolicy> policy,
     const base::Clock* clock,
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> storage_task_runner)
@@ -55,7 +58,7 @@ ConversionManagerImpl::ConversionManagerImpl(
                    std::make_unique<ConversionStorageDelegateImpl>(),
                    clock_),
                base::OnTaskRunnerDeleter(storage_task_runner_)),
-      conversion_policy_(std::make_unique<ConversionPolicy>()),
+      conversion_policy_(std::move(policy)),
       weak_factory_(this) {
   // Unretained is safe because any task to delete |storage_| will be posted
   // after this one.
@@ -165,8 +168,16 @@ void ConversionManagerImpl::QueueReports(
 
 void ConversionManagerImpl::HandleReportsExpiredAtStartup(
     std::vector<ConversionReport> reports) {
-  // TODO(https://crbug.com/1054119): We need to add special logic to ensure
-  // that these reports are not temporally joinable.
+  // Add delay to all reports that expired while the browser was not running so
+  // they are not temporally join-able.
+  base::Time current_time = clock_->Now();
+  for (ConversionReport& report : reports) {
+    if (report.report_time > current_time)
+      continue;
+    report.report_time =
+        conversion_policy_->GetReportTimeForExpiredReportAtStartup(
+            current_time);
+  }
   QueueReports(std::move(reports));
 }
 

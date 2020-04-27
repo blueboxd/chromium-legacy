@@ -28,6 +28,7 @@ source_set("find_bar") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/main",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/image_util",

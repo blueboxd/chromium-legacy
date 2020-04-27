@@ -362,6 +362,8 @@ cast_source_set("browser") {
       "extensions/cast_extensions_browser_api_provider.h",
       "extensions/cast_extensions_browser_client.cc",
       "extensions/cast_extensions_browser_client.h",
+      "extensions/cast_kiosk_delegate.cc",
+      "extensions/cast_kiosk_delegate.h",
       "extensions/cast_prefs.cc",
       "extensions/cast_prefs.h",
       "extensions/stub_storage_monitor.cc",

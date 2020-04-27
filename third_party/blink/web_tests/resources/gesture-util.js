@@ -198,6 +198,20 @@ function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type,
                             cursor_visible, scroll_by_percentage);
 }
 
+// Perform a percent based scroll using smoothScrollWithXY
+function percentScroll(percent_to_scroll_x, percent_to_scroll_y, start_x, start_y, gesture_source_type) {
+  return smoothScrollWithXY(percent_to_scroll_x, percent_to_scroll_y, start_x, start_y,
+    gesture_source_type,
+    undefined /* speed_in_pixels_s - not defined for percent based scrolls */,
+    false /* precise_scrolling_deltas */,
+    false /* scroll_by_page */,
+    true /* cursor_visible */,
+    true /* scroll_by_percentage */);
+}
+
+// modifier_keys means the keys pressed while doing the mouse wheel scroll, it
+// should be one of the values in the |Modifiers| or a comma separated string
+// to specify multiple values.
 function smoothScrollWithXY(pixels_to_scroll_x, pixels_to_scroll_y, start_x,
                             start_y, gesture_source_type, speed_in_pixels_s,
                             precise_scrolling_deltas, scroll_by_page,

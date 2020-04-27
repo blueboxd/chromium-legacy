@@ -32,6 +32,8 @@
 
 namespace {
 
+using BackdropClientConfig = chromeos::ambient::BackdropClientConfig;
+
 constexpr char kPhotosOAuthScope[] = "https://www.googleapis.com/auth/photos";
 
 constexpr char kProtoMimeType[] = "application/protobuf";
@@ -54,7 +56,7 @@ std::string GetClientId() {
 }
 
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
-    const chromeos::ambient::BackdropClientConfig::Request& request) {
+    const BackdropClientConfig::Request& request) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(request.url);
   resource_request->method = request.method;
@@ -75,14 +77,38 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   return resource_request;
 }
 
-ash::PhotoController::Topic CreateTopicFrom(
-    const backdrop::ScreenUpdate::Topic& backdrop_topic) {
-  ash::PhotoController::Topic topic;
-  topic.url = backdrop_topic.url();
-  if (!backdrop_topic.portrait_image_url().empty())
-    topic.portrait_image_url = backdrop_topic.portrait_image_url();
+// Helper function to save the information we got from the backdrop server to a
+// public struct so that they can be accessed by public codes.
+ash::PhotoController::ScreenUpdate CreateScreenUpdateFrom(
+    const backdrop::ScreenUpdate& backdrop_screen_update) {
+  ash::PhotoController::ScreenUpdate screen_update;
+  // Parse |Topic|.
+  int topics_size = backdrop_screen_update.next_topics_size();
+  if (topics_size > 0) {
+    for (auto backdrop_topic : backdrop_screen_update.next_topics()) {
+      ash::PhotoController::Topic topic;
+      DCHECK(backdrop_topic.has_url());
+      topic.url = backdrop_topic.url();
+      if (backdrop_topic.has_portrait_image_url())
+        topic.portrait_image_url = backdrop_topic.portrait_image_url();
+      screen_update.next_topics.emplace_back(topic);
+    }
+  }
 
-  return topic;
+  // Parse |WeatherInfo|.
+  if (backdrop_screen_update.has_weather_info()) {
+    backdrop::WeatherInfo backdrop_weather_info =
+        backdrop_screen_update.weather_info();
+    ash::PhotoController::WeatherInfo weather_info;
+    if (backdrop_weather_info.has_condition_icon_url())
+      weather_info.condition_icon_url =
+          backdrop_weather_info.condition_icon_url();
+    if (backdrop_weather_info.has_temp_f())
+      weather_info.temp_f = backdrop_weather_info.temp_f();
+    screen_update.weather_info = weather_info;
+  }
+
+  return screen_update;
 }
 
 }  // namespace
@@ -155,14 +181,15 @@ PhotoClientImpl::PhotoClientImpl() = default;
 
 PhotoClientImpl::~PhotoClientImpl() = default;
 
-void PhotoClientImpl::FetchTopicInfo(OnTopicInfoFetchedCallback callback) {
+void PhotoClientImpl::FetchScreenUpdateInfo(
+    OnScreenUpdateInfoFetchedCallback callback) {
   // TODO(b/148463064): Access token will be requested and cached before
   // entering lock screen.
-  // Consolidate the functions of StartToFetchTopicInfo, StartToGetSettings, and
-  // StartToUpdateSettings after this is done.
-  RequestAccessToken(base::BindOnce(&PhotoClientImpl::StartToFetchTopicInfo,
-                                    weak_factory_.GetWeakPtr(),
-                                    std::move(callback)));
+  // Consolidate the functions of FetchScreenUpdateInfoInternal,
+  // StartToGetSettings, and StartToUpdateSettings after this is done.
+  RequestAccessToken(
+      base::BindOnce(&PhotoClientImpl::FetchScreenUpdateInfoInternal,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void PhotoClientImpl::GetSettings(GetSettingsCallback callback) {
@@ -192,25 +219,26 @@ void PhotoClientImpl::RequestAccessToken(GetAccessTokenCallback callback) {
   DCHECK(!access_token_fetcher_);
   access_token_fetcher_ = identity_manager->CreateAccessTokenFetcherForAccount(
       account_info.account_id, /*oauth_consumer_name=*/"ChromeOS_AmbientMode",
-
       scopes, base::BindOnce(std::move(callback), account_info.gaia),
       signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
-void PhotoClientImpl::StartToFetchTopicInfo(
-    OnTopicInfoFetchedCallback callback,
+void PhotoClientImpl::FetchScreenUpdateInfoInternal(
+    OnScreenUpdateInfoFetchedCallback callback,
     const std::string& gaia_id,
     GoogleServiceAuthError error,
     signin::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
   if (gaia_id.empty() || access_token_info.token.empty()) {
-    std::move(callback).Run(base::nullopt);
+    LOG(ERROR) << "Failed to fetch access token";
+    // Returns a dummy instance to indicate the failure.
+    std::move(callback).Run(ash::PhotoController::ScreenUpdate());
     return;
   }
 
   std::string client_id = GetClientId();
-  chromeos::ambient::BackdropClientConfig::Request request =
-      backdrop_client_config_.CreateFetchTopicInfoRequest(
+  BackdropClientConfig::Request request =
+      backdrop_client_config_.CreateFetchScreenUpdateRequest(
           gaia_id, access_token_info.token, client_id);
   auto resource_request = CreateResourceRequest(request);
 
@@ -220,21 +248,25 @@ void PhotoClientImpl::StartToFetchTopicInfo(
   backdrop_url_loader_ = std::make_unique<BackdropURLLoader>();
   backdrop_url_loader_->Start(
       std::move(resource_request), request.body, NO_TRAFFIC_ANNOTATION_YET,
-      base::BindOnce(&PhotoClientImpl::OnTopicInfoFetched,
+      base::BindOnce(&PhotoClientImpl::OnScreenUpdateInfoFetched,
                      base::Unretained(this), std::move(callback)));
 }
 
-void PhotoClientImpl::OnTopicInfoFetched(
-    OnTopicInfoFetchedCallback callback,
+void PhotoClientImpl::OnScreenUpdateInfoFetched(
+    OnScreenUpdateInfoFetchedCallback callback,
     std::unique_ptr<std::string> response) {
   DCHECK(backdrop_url_loader_);
   backdrop_url_loader_.reset();
 
-  using BackdropClientConfig = chromeos::ambient::BackdropClientConfig;
-  backdrop::ScreenUpdate::Topic backdrop_topic =
-      BackdropClientConfig::ParseFetchTopicInfoResponse(*response);
-  ash::PhotoController::Topic topic = CreateTopicFrom(backdrop_topic);
-  std::move(callback).Run(topic);
+  // Parse the |ScreenUpdate| out from the response string.
+  // Note that the |backdrop_screen_update| can be a dummy instance if the
+  // parsing has failed.
+  backdrop::ScreenUpdate backdrop_screen_update =
+      BackdropClientConfig::ParseScreenUpdateFromResponse(*response);
+
+  // Store the information to a public struct and notify the caller.
+  auto screen_update = CreateScreenUpdateFrom(backdrop_screen_update);
+  std::move(callback).Run(screen_update);
 }
 
 void PhotoClientImpl::StartToGetSettings(

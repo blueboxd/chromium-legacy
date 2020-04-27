@@ -14,7 +14,7 @@ import org.chromium.base.UserData;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.blink_public.web.WebInputEventType;
+import org.chromium.blink.mojom.EventType;
 import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -189,7 +189,7 @@ public class GestureListenerManagerImpl
     @CalledByNative
     private void onEventAck(int event, boolean consumed) {
         switch (event) {
-            case WebInputEventType.GESTURE_FLING_START:
+            case EventType.GESTURE_FLING_START:
                 if (consumed) {
                     // The view expects the fling velocity in pixels/s.
                     mHasActiveFlingScroll = true;
@@ -204,36 +204,36 @@ public class GestureListenerManagerImpl
                     updateOnScrollEnd();
                 }
                 break;
-            case WebInputEventType.GESTURE_SCROLL_BEGIN:
+            case EventType.GESTURE_SCROLL_BEGIN:
                 setGestureScrollInProgress(true);
                 for (mIterator.rewind(); mIterator.hasNext();) {
                     mIterator.next().onScrollStarted(
                             verticalScrollOffset(), verticalScrollExtent());
                 }
                 break;
-            case WebInputEventType.GESTURE_SCROLL_UPDATE:
+            case EventType.GESTURE_SCROLL_UPDATE:
                 if (!consumed) break;
                 destroyPastePopup();
                 for (mIterator.rewind(); mIterator.hasNext();) {
                     mIterator.next().onScrollUpdateGestureConsumed();
                 }
                 break;
-            case WebInputEventType.GESTURE_SCROLL_END:
+            case EventType.GESTURE_SCROLL_END:
                 updateOnScrollEnd();
                 break;
-            case WebInputEventType.GESTURE_PINCH_BEGIN:
+            case EventType.GESTURE_PINCH_BEGIN:
                 for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onPinchStarted();
                 break;
-            case WebInputEventType.GESTURE_PINCH_END:
+            case EventType.GESTURE_PINCH_END:
                 for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onPinchEnded();
                 break;
-            case WebInputEventType.GESTURE_TAP:
+            case EventType.GESTURE_TAP:
                 destroyPastePopup();
                 for (mIterator.rewind(); mIterator.hasNext();) {
                     mIterator.next().onSingleTap(consumed);
                 }
                 break;
-            case WebInputEventType.GESTURE_LONG_PRESS:
+            case EventType.GESTURE_LONG_PRESS:
                 if (!consumed) break;
                 mViewDelegate.getContainerView().performHapticFeedback(
                         HapticFeedbackConstants.LONG_PRESS);

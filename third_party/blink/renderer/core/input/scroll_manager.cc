@@ -228,6 +228,14 @@ bool ScrollManager::CanScroll(const ScrollState& scroll_state,
   if (!scrollable_area->UserInputScrollable(kVerticalScrollbar))
     delta_y = 0;
 
+  if (scroll_state.deltaGranularity() ==
+      static_cast<double>(ui::ScrollGranularity::kScrollByPercentage)) {
+    delta_x *= scrollable_area->ScrollStep(
+        ui::ScrollGranularity::kScrollByPercentage, kHorizontalScrollbar);
+    delta_y *= scrollable_area->ScrollStep(
+        ui::ScrollGranularity::kScrollByPercentage, kVerticalScrollbar);
+  }
+
   ScrollOffset current_offset = scrollable_area->GetScrollOffset();
   ScrollOffset target_offset = current_offset + ScrollOffset(delta_x, delta_y);
   ScrollOffset clamped_offset =
@@ -473,6 +481,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
   scroll_state_data->position_y = position.Y();
   scroll_state_data->delta_x_hint = -gesture_event.DeltaXInRootFrame();
   scroll_state_data->delta_y_hint = -gesture_event.DeltaYInRootFrame();
+  scroll_state_data->delta_granularity = gesture_event.DeltaUnits();
   scroll_state_data->is_beginning = true;
   scroll_state_data->from_user_input = true;
   scroll_state_data->is_direct_manipulation =

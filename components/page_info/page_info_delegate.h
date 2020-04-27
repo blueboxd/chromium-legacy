@@ -20,12 +20,9 @@ class PasswordProtectionService;
 }  // namespace safe_browsing
 
 namespace permissions {
+class ChooserContextBase;
 class PermissionDecisionAutoBlocker;
 }  // namespace permissions
-
-namespace permissions {
-class ChooserContextBase;
-}
 
 class HostContentSettingsMap;
 class StatefulSSLHostStateDelegate;

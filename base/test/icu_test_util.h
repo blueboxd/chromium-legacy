@@ -5,6 +5,7 @@
 #ifndef BASE_TEST_ICU_TEST_UTIL_H_
 #define BASE_TEST_ICU_TEST_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"

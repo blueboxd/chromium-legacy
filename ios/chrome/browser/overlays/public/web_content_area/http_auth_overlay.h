@@ -9,6 +9,11 @@
 #include "ios/chrome/browser/overlays/public/overlay_response_info.h"
 #include "url/gurl.h"
 
+// Name of UMA User Action logged when user taps Sign In button.
+extern const char kHttpAuthSignInTappedActionName[];
+// Name of UMA User Action logged when user taps Cancel button.
+extern const char kHttpAuthCancelTappedActionName[];
+
 // Configuration object for OverlayRequests for HTTP authentication challenges.
 class HTTPAuthOverlayRequestConfig
     : public OverlayRequestConfig<HTTPAuthOverlayRequestConfig> {

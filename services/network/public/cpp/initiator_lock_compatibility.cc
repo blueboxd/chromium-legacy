@@ -8,7 +8,6 @@
 
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/cpp/features.h"

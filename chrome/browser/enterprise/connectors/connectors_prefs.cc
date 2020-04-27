@@ -10,8 +10,11 @@ namespace enterprise_connectors {
 
 const char kOnFileAttachedPref[] = "enterprise_connectors.on_file_attached";
 
+const char kOnFileDownloadedPref[] = "enterprise_connectors.on_file_downloaded";
+
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kOnFileAttachedPref);
+  registry->RegisterListPref(kOnFileDownloadedPref);
 }
 
 }  // namespace enterprise_connectors

@@ -69,8 +69,7 @@ constexpr base::TimeDelta MediaControlsOrientationLockDelegate::kLockToAnyDelay;
 
 MediaControlsOrientationLockDelegate::MediaControlsOrientationLockDelegate(
     HTMLVideoElement& video)
-    : monitor_(video.GetDocument().ToExecutionContext()),
-      video_element_(video) {
+    : monitor_(video.GetExecutionContext()), video_element_(video) {
   if (VideoElement().isConnected())
     Attach();
 }

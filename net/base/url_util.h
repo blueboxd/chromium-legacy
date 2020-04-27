@@ -134,6 +134,7 @@ NET_EXPORT std::string GetSuperdomain(base::StringPiece domain);
 // Returns whether |subdomain| is a subdomain of (or identical to)
 // |superdomain|, if both are hostnames (not IP addresses -- for which this
 // function is nonsensical). Does not consider the Public Suffix List.
+// Returns true if both input strings are empty.
 NET_EXPORT bool IsSubdomainOf(base::StringPiece subdomain,
                               base::StringPiece superdomain);
 

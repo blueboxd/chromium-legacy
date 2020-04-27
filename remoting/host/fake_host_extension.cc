@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "remoting/host/client_session_details.h"
 #include "remoting/host/host_extension_session.h"

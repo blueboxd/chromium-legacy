@@ -4,7 +4,6 @@
 
 #include "remoting/protocol/errors.h"
 
-#include "base/logging.h"
 #include "remoting/base/name_value_map.h"
 
 namespace remoting {

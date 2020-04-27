@@ -162,6 +162,7 @@ void URLLoaderThrottle::WillStartRequest(network::ResourceRequest* request,
   // FixAccountConsistencyRequestHeader. Perhaps this could be replaced with
   // more specific per-request state.
   request_headers_.CopyFrom(request->headers);
+  request_cors_exempt_headers_.CopyFrom(request->cors_exempt_headers);
 }
 
 void URLLoaderThrottle::WillRedirectRequest(
@@ -169,7 +170,8 @@ void URLLoaderThrottle::WillRedirectRequest(
     const network::mojom::URLResponseHead& response_head,
     bool* /* defer */,
     std::vector<std::string>* to_be_removed_request_headers,
-    net::HttpRequestHeaders* modified_request_headers) {
+    net::HttpRequestHeaders* modified_request_headers,
+    net::HttpRequestHeaders* modified_cors_exempt_request_headers) {
   ThrottleRequestAdapter request_adapter(this, request_headers_,
                                          modified_request_headers,
                                          to_be_removed_request_headers);

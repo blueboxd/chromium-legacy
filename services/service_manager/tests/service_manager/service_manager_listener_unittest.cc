@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"

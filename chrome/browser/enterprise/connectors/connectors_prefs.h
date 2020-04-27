@@ -12,6 +12,9 @@ namespace enterprise_connectors {
 // Pref that maps to the "OnFileAttachedEnterpriseConnector" policy.
 extern const char kOnFileAttachedPref[];
 
+// Pref that maps to the "OnFileDownloadedEnterpriseConnector" policy.
+extern const char kOnFileDownloadedPref[];
+
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
 }  // namespace enterprise_connectors

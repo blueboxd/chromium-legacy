@@ -70,7 +70,8 @@ void RendererURLLoaderThrottle::WillRedirectRequest(
     const network::mojom::URLResponseHead& /* response_head */,
     bool* /* defer */,
     std::vector<std::string>* /* to_be_removed_headers */,
-    net::HttpRequestHeaders* /* modified_headers */) {
+    net::HttpRequestHeaders* /* modified_headers */,
+    net::HttpRequestHeaders* /* modified_cors_exempt_headers */) {
   // If |blocked_| is true, the resource load has been canceled and there
   // shouldn't be such a notification.
   DCHECK(!blocked_);

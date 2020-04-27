@@ -275,8 +275,11 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   }
 
   // If this is a placeholder navigation, pass through.
-  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
-      IsPlaceholderUrl(requestURL)) {
+  if ((!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+       IsPlaceholderUrl(requestURL)) ||
+      (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+       ![ErrorPageHelper failedNavigationURLFromErrorPageFileURL:requestURL]
+            .is_empty())) {
     if (action.sourceFrame.mainFrame) {
       // Disallow renderer initiated navigations to placeholder URLs.
       decisionHandler(WKNavigationActionPolicyCancel);
@@ -523,8 +526,11 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   // If this is a placeholder navigation, pass through.
   GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
-  if (!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
-      IsPlaceholderUrl(responseURL)) {
+  if ((!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+       IsPlaceholderUrl(responseURL)) ||
+      (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
+       ![ErrorPageHelper failedNavigationURLFromErrorPageFileURL:responseURL]
+            .is_empty())) {
     handler(WKNavigationResponsePolicyAllow);
     return;
   }

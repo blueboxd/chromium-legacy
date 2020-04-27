@@ -5,7 +5,7 @@
 #include "services/resource_coordinator/memory_instrumentation/graph_processor.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/strings/string_split.h"
 

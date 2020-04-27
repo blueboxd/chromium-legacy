@@ -267,9 +267,6 @@ std::string GetSuperdomain(base::StringPiece domain) {
 }
 
 bool IsSubdomainOf(base::StringPiece subdomain, base::StringPiece superdomain) {
-  if (subdomain.empty() || superdomain.empty())
-    return false;
-
   // Subdomain must be identical or have strictly more labels than the
   // superdomain.
   if (subdomain.length() <= superdomain.length())

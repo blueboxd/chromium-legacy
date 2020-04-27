@@ -99,16 +99,6 @@ public abstract class PaymentApp extends EditableOption {
                 String methodName, String stringifiedDetails, PayerData payerData);
 
         /**
-         * Stub method to get removed after resolving clank dependencies.
-         *
-         * @param methodName         Method name. For example, "visa".
-         * @param stringifiedDetails JSON-serialized object. For example, {"card": "123"}.
-         * @param payerData          Payer's shipping address and contact information.
-         */
-        void onInstrumentDetailsReady(String methodName, String stringifiedDetails,
-                org.chromium.chrome.browser.payments.PayerData payerData);
-
-        /**
          * Called if unable to retrieve payment details.
          * @param errorMessage Developer-facing error message to be used when rejecting the promise
          *                     returned from PaymentRequest.show().

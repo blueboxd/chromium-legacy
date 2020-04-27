@@ -76,6 +76,10 @@ translate::TranslateDriver* TranslateClientImpl::GetTranslateDriver() {
   return &translate_driver_;
 }
 
+translate::TranslateManager* TranslateClientImpl::GetTranslateManager() {
+  return translate_manager_.get();
+}
+
 PrefService* TranslateClientImpl::GetPrefs() {
   BrowserContextImpl* browser_context =
       static_cast<BrowserContextImpl*>(web_contents()->GetBrowserContext());

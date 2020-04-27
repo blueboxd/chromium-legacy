@@ -389,6 +389,11 @@ ShellContentBrowserClient::CreateNetworkContextParams(BrowserContext* context) {
       allow_any_cors_exempt_header_for_browser_;
   context_params->user_agent = GetUserAgent();
   context_params->accept_language = GetAcceptLangs(context);
+  auto exempt_header =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          "cors_exempt_header_list");
+  if (!exempt_header.empty())
+    context_params->cors_exempt_header_list.push_back(exempt_header);
   return context_params;
 }
 

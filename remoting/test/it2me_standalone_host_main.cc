@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "remoting/host/resources.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/test/it2me_standalone_host.h"

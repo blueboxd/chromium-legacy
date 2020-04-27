@@ -83,17 +83,15 @@ base::Value NodeDataDescriberRegistryImpl::DescribeNodeImpl(
     const NodeImplType* node) const {
   base::Value result(base::Value::Type::DICTIONARY);
 
-  bool inserted = false;
   for (const auto& name_and_describer : describers_) {
     base::Value description = (name_and_describer.first->*Describe)(node);
     if (!description.is_none()) {
       DCHECK_EQ(nullptr, result.FindDictKey(name_and_describer.second));
       result.SetKey(name_and_describer.second, std::move(description));
-      inserted = true;
     }
   }
 
-  return inserted ? std::move(result) : base::Value();
+  return result;
 }
 
 NodeDataDescriberRegistryImpl::~NodeDataDescriberRegistryImpl() {

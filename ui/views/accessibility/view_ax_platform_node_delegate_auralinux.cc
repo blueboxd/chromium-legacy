@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
+#include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -86,7 +87,7 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
       return;
 
     widgets_.push_back(widget);
-    widget->AddObserver(this);
+    observer_.Add(widget);
 
     aura::Window* window = widget->GetNativeWindow();
     if (!window)
@@ -103,9 +104,8 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
   // WidgetObserver:
 
   void OnWidgetDestroying(Widget* widget) override {
+    observer_.Remove(widget);
     auto iter = std::find(widgets_.begin(), widgets_.end(), widget);
-    // Since |widget| is about to be destroyed, there is no point in removing
-    // |this| from its list of observers.
     if (iter != widgets_.end())
       widgets_.erase(iter);
   }
@@ -163,6 +163,7 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
   ui::AXNodeData data_;
   ui::AXUniqueId unique_id_;
   std::vector<Widget*> widgets_;
+  ScopedObserver<views::Widget, views::WidgetObserver> observer_{this};
 };
 
 }  // namespace

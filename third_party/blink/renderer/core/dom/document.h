@@ -356,8 +356,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // inherited from Node, or domWindow().
   // Downcasts will cast to a LocalDOMWindow, then use
   // LocalDOMWindow::document() if the Document is what is actually needed.
-  ExecutionContext* ToExecutionContext();
-  const ExecutionContext* ToExecutionContext() const;
   static Document* From(ExecutionContext* context) {
     return context ? &From(*context) : nullptr;
   }

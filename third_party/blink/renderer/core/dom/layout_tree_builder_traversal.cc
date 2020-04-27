@@ -109,18 +109,18 @@ Node* LayoutTreeBuilderTraversal::NextSibling(const Node& node) {
         if (Node* next = FlatTreeTraversal::NextSibling(node))
           return next;
         parent_element = DynamicTo<Element>(FlatTreeTraversal::Parent(node));
+        if (!parent_element)
+          return nullptr;
       }
-      if (parent_element) {
-        if (Node* next = parent_element->GetPseudoElement(kPseudoIdAfter))
-          return next;
-      }
+      if (Node* next = parent_element->GetPseudoElement(kPseudoIdAfter))
+        return next;
       FALLTHROUGH;
     case kPseudoIdAfter:
-      break;
+      return nullptr;
     default:
       NOTREACHED();
+      return nullptr;
   }
-  return nullptr;
 }
 
 Node* LayoutTreeBuilderTraversal::PreviousSibling(const Node& node) {
@@ -140,24 +140,22 @@ Node* LayoutTreeBuilderTraversal::PreviousSibling(const Node& node) {
         if (Node* previous = FlatTreeTraversal::PreviousSibling(node))
           return previous;
         parent_element = DynamicTo<Element>(FlatTreeTraversal::Parent(node));
+        if (!parent_element)
+          return nullptr;
       }
-      if (parent_element) {
-        if (Node* previous = parent_element->GetPseudoElement(kPseudoIdBefore))
-          return previous;
-      }
+      if (Node* previous = parent_element->GetPseudoElement(kPseudoIdBefore))
+        return previous;
       FALLTHROUGH;
     case kPseudoIdBefore:
-      if (parent_element) {
-        if (Node* previous = parent_element->GetPseudoElement(kPseudoIdMarker))
-          return previous;
-      }
+      if (Node* previous = parent_element->GetPseudoElement(kPseudoIdMarker))
+        return previous;
       FALLTHROUGH;
     case kPseudoIdMarker:
-      break;
+      return nullptr;
     default:
       NOTREACHED();
+      return nullptr;
   }
-  return nullptr;
 }
 
 Node* LayoutTreeBuilderTraversal::LastChild(const Node& node) {

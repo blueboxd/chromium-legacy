@@ -230,7 +230,7 @@
   },
   {
     "name": "auto-fetch-on-net-error-page",
-    "owners": [ "harringtond", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 82
   },
   {
@@ -2937,7 +2937,7 @@
   },
   {
     "name": "new-net-error-page-ui",
-    "owners": [ "harringtond" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 75
   },
   {
@@ -3012,12 +3012,12 @@
   },
   {
     "name": "offline-indicator-always-http-probe",
-    "owners": [ "jianli", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-indicator-choice",
-    "owners": [ "jianli", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -3027,67 +3027,67 @@
   },
   {
     "name": "offline-pages-alternate-dino-page",
-    "owners": [ "carlosk", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-ct",
-    "owners": [ "dewittj", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-ct-suppress-completed-notification",
-    "owners": [ "dewittj", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-ct-v2",
-    "owners": [ "dewittj", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-failed-download",
-    "owners": [ "chili", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-in-downloads-home-open-in-cct",
-    "owners": [ "carlosk", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-live-page-sharing",
-    "owners": [ "petewil", "jianli", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 86
   },
   {
     "name": "offline-pages-load-signal-collecting",
-    "owners": [ "petewil", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 86
   },
   {
     "name": "offline-pages-pending-download",
-    "owners": [ "chili", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-prefetching",
-    "owners": [ "carlosk", "dewittj", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "offline-pages-renovations",
-    "owners": [ "petewil", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 86
   },
   {
     "name": "offline-pages-resource-based-snapshot",
-    "owners": [ "petewil", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 86
   },
   {
     "name": "offlining-recent-pages",
-    "owners": [ "carlosk", "offline-dev" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -3292,7 +3292,7 @@
   },
   {
     "name": "on-the-fly-mhtml-hash-computation",
-    "owners": [ "mtlieuu", "offline-dev@chromium.org" ],
+    "owners": [ "sclittle", "srsudar", "offline-dev" ],
     "expiry_milestone": 76
   },
   {

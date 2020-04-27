@@ -1441,9 +1441,6 @@ void HostProcess::InitializeSignaling() {
   heartbeat_sender_ = std::make_unique<HeartbeatSender>(
       this, host_id_, ftl_signal_strategy.get(), oauth_token_getter_.get(),
       log_to_server_.get());
-  ftl_host_change_notification_listener_ =
-      std::make_unique<FtlHostChangeNotificationListener>(
-          this, ftl_signal_strategy.get());
   signal_strategy_ = std::move(ftl_signal_strategy);
 }
 
@@ -1536,6 +1533,10 @@ void HostProcess::StartHost() {
   power_save_blocker_.reset(new HostPowerSaveBlocker(
       host_->status_monitor(), context_->ui_task_runner(),
       context_->file_task_runner()));
+
+  ftl_host_change_notification_listener_ =
+      std::make_unique<FtlHostChangeNotificationListener>(
+          this, signal_strategy_.get());
 
   // Set up reporting the host status notifications.
 #if defined(REMOTING_MULTI_PROCESS)

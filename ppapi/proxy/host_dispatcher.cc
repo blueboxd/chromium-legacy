@@ -7,7 +7,8 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/private/ppb_proxy_private.h"

@@ -33,7 +33,7 @@
 #include <memory>
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 using testing::AnyNumber;
@@ -61,8 +61,14 @@ class ExecutionContextLifecycleStateObserverTest : public testing::Test {
  protected:
   ExecutionContextLifecycleStateObserverTest();
 
-  Document& SrcDocument() const { return src_page_holder_->GetDocument(); }
-  Document& DestDocument() const { return dest_page_holder_->GetDocument(); }
+  LocalDOMWindow* SrcWindow() const {
+    return src_page_holder_->GetFrame().DomWindow();
+  }
+  LocalDOMWindow* DestWindow() const {
+    return dest_page_holder_->GetFrame().DomWindow();
+  }
+
+  void ClearDestPage() { dest_page_holder_.reset(); }
   MockExecutionContextLifecycleStateObserver& Observer() { return *observer_; }
 
  private:
@@ -77,57 +83,48 @@ ExecutionContextLifecycleStateObserverTest::
       dest_page_holder_(std::make_unique<DummyPageHolder>(IntSize(800, 600))),
       observer_(
           MakeGarbageCollected<MockExecutionContextLifecycleStateObserver>(
-              src_page_holder_->GetDocument().ToExecutionContext())) {
+              src_page_holder_->GetFrame().DomWindow())) {
   observer_->UpdateStateIfNeeded();
 }
 
 TEST_F(ExecutionContextLifecycleStateObserverTest, NewContextObserved) {
   unsigned initial_src_count =
-      SrcDocument()
-          .ToExecutionContext()
-          ->ContextLifecycleStateObserverCountForTesting();
+      SrcWindow()->ContextLifecycleStateObserverCountForTesting();
   unsigned initial_dest_count =
-      DestDocument()
-          .ToExecutionContext()
-          ->ContextLifecycleStateObserverCountForTesting();
+      DestWindow()->ContextLifecycleStateObserverCountForTesting();
 
   EXPECT_CALL(Observer(), ContextLifecycleStateChanged(
                               mojom::FrameLifecycleState::kRunning));
   EXPECT_CALL(Observer(), ContextDestroyed()).Times(AnyNumber());
-  Observer().SetExecutionContext(DestDocument().ToExecutionContext());
+  Observer().SetExecutionContext(DestWindow());
 
   EXPECT_EQ(initial_src_count - 1,
-            SrcDocument()
-                .ToExecutionContext()
-                ->ContextLifecycleStateObserverCountForTesting());
+            SrcWindow()->ContextLifecycleStateObserverCountForTesting());
   EXPECT_EQ(initial_dest_count + 1,
-            DestDocument()
-                .ToExecutionContext()
-                ->ContextLifecycleStateObserverCountForTesting());
+            DestWindow()->ContextLifecycleStateObserverCountForTesting());
 }
 
-TEST_F(ExecutionContextLifecycleStateObserverTest, MoveToActiveDocument) {
+TEST_F(ExecutionContextLifecycleStateObserverTest, MoveToActiveContext) {
   EXPECT_CALL(Observer(), ContextLifecycleStateChanged(
                               mojom::FrameLifecycleState::kRunning));
   EXPECT_CALL(Observer(), ContextDestroyed()).Times(AnyNumber());
-  Observer().SetExecutionContext(DestDocument().ToExecutionContext());
+  Observer().SetExecutionContext(DestWindow());
 }
 
-TEST_F(ExecutionContextLifecycleStateObserverTest, MoveToSuspendedDocument) {
-  DestDocument().ToExecutionContext()->SetLifecycleState(
-      mojom::FrameLifecycleState::kFrozen);
+TEST_F(ExecutionContextLifecycleStateObserverTest, MoveToSuspendedContext) {
+  DestWindow()->SetLifecycleState(mojom::FrameLifecycleState::kFrozen);
 
   EXPECT_CALL(Observer(), ContextLifecycleStateChanged(
                               mojom::FrameLifecycleState::kFrozen));
   EXPECT_CALL(Observer(), ContextDestroyed()).Times(AnyNumber());
-  Observer().SetExecutionContext(DestDocument().ToExecutionContext());
+  Observer().SetExecutionContext(DestWindow());
 }
 
-TEST_F(ExecutionContextLifecycleStateObserverTest, MoveToStoppedDocument) {
-  DestDocument().Shutdown();
-
+TEST_F(ExecutionContextLifecycleStateObserverTest, MoveToStoppedContext) {
+  Persistent<LocalDOMWindow> window = DestWindow();
+  ClearDestPage();
   EXPECT_CALL(Observer(), ContextDestroyed());
-  Observer().SetExecutionContext(DestDocument().ToExecutionContext());
+  Observer().SetExecutionContext(window.Get());
 }
 
 }  // namespace blink

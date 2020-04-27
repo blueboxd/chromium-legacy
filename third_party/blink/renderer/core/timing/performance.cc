@@ -283,6 +283,8 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
     case PerformanceEntry::kFirstInput:
       UseCounter::Count(GetExecutionContext(),
                         WebFeature::kEventTimingExplicitlyRequested);
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kEventTimingFirstInputExplicitlyRequested);
       if (first_input_timing_)
         entries.push_back(first_input_timing_);
       break;

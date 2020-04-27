@@ -30,6 +30,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/google_url_loader_throttle.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/ct_known_logs.h"
 #include "components/net_log/net_export_file_writer.h"
@@ -541,6 +542,7 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
       network::mojom::NetworkContextParams::New();
   content::UpdateCorsExemptHeader(network_context_params.get());
   variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
+  GoogleURLLoaderThrottle::UpdateCorsExemptHeader(network_context_params.get());
 
   network_context_params->enable_brotli = true;
 

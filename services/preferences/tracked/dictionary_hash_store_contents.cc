@@ -5,8 +5,9 @@
 #include "services/preferences/tracked/dictionary_hash_store_contents.h"
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/persistent_pref_store.h"

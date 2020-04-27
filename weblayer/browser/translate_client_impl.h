@@ -41,6 +41,9 @@ class TranslateClientImpl
     return &translate_driver_;
   }
 
+  // Gets the associated TranslateManager.
+  translate::TranslateManager* GetTranslateManager();
+
   // TranslateClient implementation.
   translate::TranslateDriver* GetTranslateDriver() override;
   PrefService* GetPrefs() override;

@@ -86,7 +86,7 @@ class TestWebState : public WebState {
 
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override;
-  void DidChangeVisibleSecurityState() override {}
+  void DidChangeVisibleSecurityState() override;
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
   bool CanTakeSnapshot() const override;

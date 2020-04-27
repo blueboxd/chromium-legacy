@@ -320,5 +320,38 @@ TEST(UriTest, ParserErrorEmptySegmentInPath) {
   EXPECT_EQ(pe2.parsed_strings, 0u);
 }
 
+TEST(UriTest, ParserErrorInPath) {
+  // Non-printable character (0xBA) inside the path.
+  Uri uri(
+      "  HTTP://example.org/aa/\xba_d/cc"
+      "?name1&name2=param2&\xba_d=character#here\xba ");
+  const Uri::ParserError pe = uri.GetLastParsingError();
+  EXPECT_EQ(pe.status, Uri::ParserStatus::kDisallowedASCIICharacter);
+  EXPECT_EQ(pe.parsed_chars, 24u);
+  EXPECT_EQ(pe.parsed_strings, 0u);
+}
+
+TEST(UriTest, ParserErrorInQuery) {
+  // Non-printable character (0xBA) inside the query.
+  Uri uri(
+      "  HTTP://example.org/aa/bb/cc"
+      "?name1&name2=param2&\xba_d=character#here\xba ");
+  const Uri::ParserError pe = uri.GetLastParsingError();
+  EXPECT_EQ(pe.status, Uri::ParserStatus::kDisallowedASCIICharacter);
+  EXPECT_EQ(pe.parsed_chars, 49u);
+  EXPECT_EQ(pe.parsed_strings, 0u);
+}
+
+TEST(UriTest, ParserErrorInFragment) {
+  // Non-printable character (0xBA) inside the fragment.
+  Uri uri(
+      "  HTTP://example.org/aa/bb/cc"
+      "?name1&name2=param2&good=character#here\xba ");
+  const Uri::ParserError pe = uri.GetLastParsingError();
+  EXPECT_EQ(pe.status, Uri::ParserStatus::kDisallowedASCIICharacter);
+  EXPECT_EQ(pe.parsed_chars, 68u);
+  EXPECT_EQ(pe.parsed_strings, 0u);
+}
+
 }  // namespace
 }  // namespace chromeos

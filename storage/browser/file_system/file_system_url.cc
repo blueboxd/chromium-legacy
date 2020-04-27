@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
 #include "storage/common/file_system/file_system_util.h"

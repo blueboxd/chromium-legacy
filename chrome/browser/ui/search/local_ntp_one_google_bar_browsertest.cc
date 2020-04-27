@@ -97,9 +97,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
 
-  // Attach a console observer, listening for any message ("*" pattern).
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(active_tab);
 
   // Navigate to the NTP.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
@@ -108,7 +106,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
             active_tab->GetController().GetVisibleEntry()->GetURL());
 
   // We shouldn't have gotten any console error messages.
-  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+  EXPECT_TRUE(console_observer.messages().empty())
+      << console_observer.GetMessageAt(0u);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
@@ -127,8 +126,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
 
   // Attach a console observer, listening for the "ogb-done" message, which
   // indicates that the OGB has finished loading.
-  content::ConsoleObserverDelegate console_observer(active_tab, "ogb-done");
-  active_tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(active_tab);
+  console_observer.SetPattern("ogb-done");
 
   // Navigate to the NTP.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
@@ -138,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPOneGoogleBarSmokeTest,
   // Make sure the OGB is finished loading.
   console_observer.Wait();
 
-  EXPECT_EQ("ogb-done", console_observer.message());
+  EXPECT_EQ("ogb-done", console_observer.GetMessageAt(0u));
 
   bool in_head_ran = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(

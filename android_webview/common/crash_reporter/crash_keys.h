@@ -12,7 +12,7 @@ namespace crash_keys {
 // reporting server. Returns the size of the union of all keys.
 void InitCrashKeysForWebViewTesting();
 
-extern const char* const kWebViewCrashKeyWhiteList[];
+extern const char* const kWebViewCrashKeyAllowList[];
 
 // Crash Key Name Constants ////////////////////////////////////////////////////
 

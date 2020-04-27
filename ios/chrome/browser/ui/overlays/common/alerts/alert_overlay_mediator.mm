@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator.h"
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/overlays/public/common/alerts/alert_overlay.h"
 #import "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #import "ios/chrome/browser/ui/alert_view/alert_action.h"
@@ -90,7 +92,12 @@ using alert_overlays::AlertResponse;
 // Returns the action block for the button at |index|.
 - (void (^)(AlertAction* action))actionForButtonAtIndex:(size_t)index {
   __weak __typeof__(self) weakSelf = self;
+  base::StringPiece actionName =
+      self.alertConfig->button_configs()[index].user_action_name;
   return ^(AlertAction*) {
+    if (!actionName.empty()) {
+      base::RecordComputedAction(actionName.data());
+    }
     __typeof__(self) strongSelf = weakSelf;
     [strongSelf setCompletionResponse:index];
     [strongSelf.delegate stopOverlayForMediator:strongSelf];

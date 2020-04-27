@@ -6289,13 +6289,13 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
 
     if (expect_redirect) {
       client->RunUntilRedirectReceived();
-      loader->FollowRedirect({}, {}, new_url);
+      loader->FollowRedirect({}, {}, {}, new_url);
       client->ClearHasReceivedRedirect();
     }
 
     if (new_url) {
       client->RunUntilRedirectReceived();
-      loader->FollowRedirect({}, {}, base::nullopt);
+      loader->FollowRedirect({}, {}, {}, base::nullopt);
     }
 
     client->RunUntilComplete();

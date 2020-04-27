@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/blink/public/platform/web_data.h"

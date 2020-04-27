@@ -14,7 +14,7 @@
 // This header defines the (DP)CHECK_EQ etc. macros.
 //
 // (DP)CHECK_EQ(x, y) is similar to (DP)CHECK(x == y) but will also log the
-// values of x and y if the condition doesn't old. This works for basic types
+// values of x and y if the condition doesn't hold. This works for basic types
 // and types with an operator<< or .ToString() method.
 //
 // The operands are evaluated exactly once, and even in build modes where e.g.
@@ -24,6 +24,10 @@
 // To support the stringification of the check operands, this header is
 // *significantly* larger than base/check.h, so it should be avoided in common
 // headers.
+//
+// This header also provides the (DP)CHECK macros (by including check.h), so if
+// you use e.g. both CHECK_EQ and CHECK, including this header is enough. If you
+// only use CHECK however, please include the smaller check.h instead.
 
 namespace logging {
 

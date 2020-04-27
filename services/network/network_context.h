@@ -155,8 +155,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   CookieManager* cookie_manager() { return cookie_manager_.get(); }
 
-  const std::unordered_set<std::string>& cors_exempt_header_list() const {
-    return cors_exempt_header_list_;
+  const std::unordered_set<std::string>* cors_exempt_header_list() const {
+    return &cors_exempt_header_list_;
   }
 
   bool allow_any_cors_exempt_header_for_browser() const {

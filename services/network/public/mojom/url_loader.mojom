@@ -185,16 +185,18 @@ struct URLRequest {
   // set additional HTTP headers, but such internal headers must be ignored by
   // CORS check (which run inside Network Service), so the values are stored
   // here (rather than in |headers|) and later merged into the |headers| after
-  // CORS check.
+  // CORS check. If this request is sent to the network service, the header
+  // names stored in this member should be declared in
+  // NetworkContextParams::cors_exempt_header_list for the NetworkContext.
+  // Otherwise, the request will fail.
   //
-  // *Warning*: Adding new headers to this list is strongly discouraged. What
+  // *Warning*: Adding new headers to this list is strongly discouraged and
+  // should only be done for non-standard headers used for legacy reasons. What
   // usually you need is to update the fetch spec, and add your custom headers
   // to the CORS-safelisted header so to pass proper CORS checks. 'Proxy-' or
   // 'Sec-' prefixes are also available. See cors::IsCORSSafelistedHeader and
-  // cors::IsForbiddenHeader for details.
-  //
-  // You should ask Loading and CORS OWNERS when you need to add your own
-  // headers to the list.
+  // cors::IsForbiddenHeader for details, and Loading and CORS OWNERS when you
+  // need to add your own headers to the list.
   HttpRequestHeaders cors_exempt_headers;  // See Note above before using.
 
   // net::URLRequest load flags.
@@ -434,12 +436,17 @@ interface URLLoader {
   // |removed_headers| can be used to remove existing headers for the redirect.
   // This parameter is before |modified_headers| since removing headers is
   // applied first in the URLLoader::FollowRedirect().  |modified_headers| can
-  // be used to add or override existing headers for the redirect. If |new_url|
-  // is specified, then the request will be made to it instead of the redirected
-  // URL. Note: it has to be in the same origin as the redirected URL, and this
-  // is only supported when the network service is enabled.
+  // be used to add or override existing headers for the redirect.
+  // |modified_cors_exempt_headers| can be used to modify |cors_exempt_headers|
+  // in the URLRequest. See NetworkContextParams::cors_exempt_header_list
+  // and URLRequest::cors_exempt_headers for details.
+  // If |new_url| is specified, then the request will be made to
+  // it instead of the redirected URL.
+  // Note: it has to be in the same origin as the redirected URL, and this is
+  // only supported when the network service is enabled.
   FollowRedirect(array<string> removed_headers,
                  network.mojom.HttpRequestHeaders modified_headers,
+                 network.mojom.HttpRequestHeaders modified_cors_exempt_headers,
                  url.mojom.Url? new_url);
 
   // Sets the request priority.

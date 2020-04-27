@@ -10,7 +10,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"

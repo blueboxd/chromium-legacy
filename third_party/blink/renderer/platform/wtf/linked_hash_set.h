@@ -338,14 +338,16 @@ class LinkedHashSet {
 
   template <typename VisitorDispatcher>
   void Trace(VisitorDispatcher visitor) const {
-    if (visitor->ConcurrentTracingBailOut(
-            {this, [](blink::Visitor* visitor, const void* object) {
-               reinterpret_cast<const LinkedHashSet<ValueArg, HashFunctions,
-                                                    TraitsArg, Allocator>*>(
-                   object)
-                   ->Trace(visitor);
-             }}))
-      return;
+    if (!NodeHashTraits::kCanTraceConcurrently) {
+      if (visitor->ConcurrentTracingBailOut(
+              {this, [](blink::Visitor* visitor, const void* object) {
+                 reinterpret_cast<const LinkedHashSet<ValueArg, HashFunctions,
+                                                      TraitsArg, Allocator>*>(
+                     object)
+                     ->Trace(visitor);
+               }}))
+        return;
+    }
 
     impl_.Trace(visitor);
     // Should the underlying table be moved by GC, register a callback
@@ -545,6 +547,9 @@ struct LinkedHashSetTraits
           reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
     }
   }
+
+  static constexpr bool kCanTraceConcurrently =
+      ValueTraitsArg::kCanTraceConcurrently;
 };
 
 template <typename LinkedHashSetType>

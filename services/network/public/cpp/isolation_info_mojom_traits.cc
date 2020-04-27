@@ -4,7 +4,7 @@
 
 #include "services/network/public/cpp/isolation_info_mojom_traits.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "services/network/public/cpp/site_for_cookies_mojom_traits.h"
 
 namespace mojo {

@@ -135,6 +135,20 @@ enum class V2MessageType {
   kMaxValue = kOther,
 };
 
+// Receiver App Type determines App types that can be supported by a Cast media
+// source. All Cast media sources support the web type.
+enum class ReceiverAppType {
+  // Web-based Cast receiver apps. This is supported by all Cast media source
+  // by default.
+  kWeb,
+
+  // A media source may support launching an Android TV app in addition to a
+  // Cast web app.
+  kAndroidTv,
+
+  kMaxValue = kAndroidTv,
+};
+
 std::ostream& operator<<(std::ostream& lhs, const CastMessage& rhs);
 
 // Checks if the contents of |message_proto| are valid.
@@ -234,10 +248,12 @@ CastMessage CreateBroadcastRequest(const std::string& source_id,
                                    const BroadcastRequest& request);
 
 // Creates a session launch request with the given parameters.
-CastMessage CreateLaunchRequest(const std::string& source_id,
-                                int request_id,
-                                const std::string& app_id,
-                                const std::string& locale);
+CastMessage CreateLaunchRequest(
+    const std::string& source_id,
+    int request_id,
+    const std::string& app_id,
+    const std::string& locale,
+    const std::vector<std::string>& supported_app_types);
 
 CastMessage CreateStopRequest(const std::string& source_id,
                               int request_id,

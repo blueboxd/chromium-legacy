@@ -80,9 +80,12 @@ TEST_F(HttpAuthOverlayTest, AlertSetup) {
   NSString* sign_in_label =
       l10n_util::GetNSStringWithFixup(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL);
   EXPECT_NSEQ(sign_in_label, ok_button_config.title);
+  EXPECT_EQ(kHttpAuthSignInTappedActionName, ok_button_config.user_action_name);
 
   EXPECT_EQ(UIAlertActionStyleCancel, cancel_button_config.style);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_CANCEL), cancel_button_config.title);
+  EXPECT_EQ(kHttpAuthCancelTappedActionName,
+            cancel_button_config.user_action_name);
 }
 
 // Tests that an alert response after tapping the OK button successfully creates

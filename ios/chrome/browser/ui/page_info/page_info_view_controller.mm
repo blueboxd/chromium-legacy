@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 
+#include "components/content_settings/core/common/features.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/page_info/page_info_navigation_commands.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
@@ -58,8 +59,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self.tableViewModel addItem:securityItem
        toSectionWithIdentifier:SectionIdentifierContent];
 
-  if (base::FeatureList::IsEnabled(kPageInfoChromeGuard)) {
-    // Create the Chrome Guard item.
+  if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls)) {
+    // Create the Cookies item.
     TableViewDetailIconItem* CookiesItem =
         [[TableViewDetailIconItem alloc] initWithType:ItemTypeCookies];
     CookiesItem.text = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_COOKIES_TITLE);

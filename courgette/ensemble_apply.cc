@@ -12,10 +12,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "courgette/crc.h"
 #include "courgette/patcher_x86_32.h"

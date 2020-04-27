@@ -2446,16 +2446,20 @@ if (enable_java_templates) {
         _max_sdk_version = invoker.max_sdk_version
         args += [ "--max-sdk-version=$_max_sdk_version" ]
       }
-      if (defined(invoker.expected_manifest)) {
-        inputs += [ invoker.expected_manifest ]
+      if (defined(invoker.verify_manifest_target_name)) {
+        _target_src_dir = get_label_info(":$target_name", "dir")
+        _expected_manifest =
+            "$_target_src_dir/java/" +
+            "${invoker.verify_manifest_target_name}.AndroidManifest.expected"
+        inputs += [ _expected_manifest ]
         _normalized_output = "${invoker.android_manifest}.normalized"
         outputs += [ _normalized_output ]
         _manifest_expectations_failure_filepath =
             "$android_configuration_failure_dir/" +
-            string_replace(invoker.expected_manifest, "/", "_")
+            "${invoker.verify_manifest_target_name}.AndoridManifest.failed"
         args += [
           "--android-manifest-expected",
-          rebase_path(invoker.expected_manifest, root_build_dir),
+          rebase_path(_expected_manifest, root_build_dir),
           "--android-manifest-normalized",
           rebase_path(_normalized_output, root_build_dir),
           "--android-manifest-expectations-failure-file",

@@ -33,8 +33,6 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,29 +42,6 @@ using net::test::IsOk;
 
 namespace net {
 namespace test_server {
-
-namespace {
-
-// Gets the content from the given URLFetcher.
-std::string GetContentFromFetcher(const URLFetcher& fetcher) {
-  std::string result;
-  const bool success = fetcher.GetResponseAsString(&result);
-  EXPECT_TRUE(success);
-  return result;
-}
-
-// Gets the content type from the given URLFetcher.
-std::string GetContentTypeFromFetcher(const URLFetcher& fetcher) {
-  const HttpResponseHeaders* headers = fetcher.GetResponseHeaders();
-  if (headers) {
-    std::string content_type;
-    if (headers->GetMimeType(&content_type))
-      return content_type;
-  }
-  return std::string();
-}
-
-}  // namespace
 
 // Gets notified by the EmbeddedTestServer on incoming connections being
 // accepted, read from, or closed.
@@ -140,22 +115,11 @@ class TestConnectionListener
 
 class EmbeddedTestServerTest
     : public testing::TestWithParam<EmbeddedTestServer::Type>,
-      public URLFetcherDelegate,
       public WithTaskEnvironment {
  public:
-  EmbeddedTestServerTest()
-      : num_responses_received_(0),
-        num_responses_expected_(0),
-        io_thread_("io_thread") {}
+  EmbeddedTestServerTest() {}
 
   void SetUp() override {
-    base::Thread::Options thread_options;
-    thread_options.message_pump_type = base::MessagePumpType::IO;
-    ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
-
-    request_context_getter_ = base::MakeRefCounted<TestURLRequestContextGetter>(
-        io_thread_.task_runner());
-
     server_ = std::make_unique<EmbeddedTestServer>(GetParam());
     server_->SetConnectionListener(&connection_listener_);
   }
@@ -163,23 +127,6 @@ class EmbeddedTestServerTest
   void TearDown() override {
     if (server_->Started())
       ASSERT_TRUE(server_->ShutdownAndWaitUntilComplete());
-  }
-
-  // URLFetcherDelegate override.
-  void OnURLFetchComplete(const URLFetcher* source) override {
-    ++num_responses_received_;
-    if (num_responses_received_ == num_responses_expected_)
-      std::move(quit_run_loop_).Run();
-  }
-
-  // Waits until the specified number of responses are received.
-  void WaitForResponses(int num_responses) {
-    num_responses_received_ = 0;
-    num_responses_expected_ = num_responses;
-    // Will be terminated in OnURLFetchComplete().
-    base::RunLoop run_loop;
-    quit_run_loop_ = run_loop.QuitClosure();
-    run_loop.Run();
   }
 
   // Handles |request| sent to |path| and returns the response per |content|,
@@ -204,12 +151,9 @@ class EmbeddedTestServerTest
   }
 
  protected:
-  int num_responses_received_;
-  int num_responses_expected_;
   std::string request_relative_url_;
   GURL request_absolute_url_;
-  base::Thread io_thread_;
-  scoped_refptr<TestURLRequestContextGetter> request_context_getter_;
+  TestURLRequestContext context_;
   TestConnectionListener connection_listener_;
   std::unique_ptr<EmbeddedTestServer> server_;
   base::OnceClosure quit_run_loop_;
@@ -258,17 +202,22 @@ TEST_P(EmbeddedTestServerTest, RegisterRequestHandler) {
       "<b>Worked!</b>", "text/html", HTTP_OK));
   ASSERT_TRUE(server_->Start());
 
-  std::unique_ptr<URLFetcher> fetcher =
-      URLFetcher::Create(server_->GetURL("/test?q=foo"), URLFetcher::GET, this,
-                         TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher->SetRequestContext(request_context_getter_.get());
-  fetcher->Start();
-  WaitForResponses(1);
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request(
+      context_.CreateRequest(server_->GetURL("/test?q=foo"), DEFAULT_PRIORITY,
+                             &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
-  EXPECT_EQ(HTTP_OK, fetcher->GetResponseCode());
-  EXPECT_EQ("<b>Worked!</b>", GetContentFromFetcher(*fetcher));
-  EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher));
+  request->Start();
+  delegate.RunUntilComplete();
+
+  EXPECT_EQ(net::OK, delegate.request_status());
+  ASSERT_TRUE(request->response_headers());
+  EXPECT_EQ(HTTP_OK, request->response_headers()->response_code());
+  EXPECT_EQ("<b>Worked!</b>", delegate.data_received());
+  std::string content_type;
+  ASSERT_TRUE(request->response_headers()->GetNormalizedHeader("Content-Type",
+                                                               &content_type));
+  EXPECT_EQ("text/html", content_type);
 
   EXPECT_EQ("/test?q=foo", request_relative_url_);
   EXPECT_EQ(server_->GetURL("/test?q=foo"), request_absolute_url_);
@@ -281,17 +230,22 @@ TEST_P(EmbeddedTestServerTest, ServeFilesFromDirectory) {
       src_dir.AppendASCII("net").AppendASCII("data"));
   ASSERT_TRUE(server_->Start());
 
-  std::unique_ptr<URLFetcher> fetcher =
-      URLFetcher::Create(server_->GetURL("/test.html"), URLFetcher::GET, this,
-                         TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher->SetRequestContext(request_context_getter_.get());
-  fetcher->Start();
-  WaitForResponses(1);
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request(
+      context_.CreateRequest(server_->GetURL("/test.html"), DEFAULT_PRIORITY,
+                             &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
-  EXPECT_EQ(HTTP_OK, fetcher->GetResponseCode());
-  EXPECT_EQ("<p>Hello World!</p>", GetContentFromFetcher(*fetcher));
-  EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher));
+  request->Start();
+  delegate.RunUntilComplete();
+
+  EXPECT_EQ(net::OK, delegate.request_status());
+  ASSERT_TRUE(request->response_headers());
+  EXPECT_EQ(HTTP_OK, request->response_headers()->response_code());
+  EXPECT_EQ("<p>Hello World!</p>", delegate.data_received());
+  std::string content_type;
+  ASSERT_TRUE(request->response_headers()->GetNormalizedHeader("Content-Type",
+                                                               &content_type));
+  EXPECT_EQ("text/html", content_type);
 }
 
 TEST_P(EmbeddedTestServerTest, MockHeadersWithoutCRLF) {
@@ -302,31 +256,38 @@ TEST_P(EmbeddedTestServerTest, MockHeadersWithoutCRLF) {
           "embedded_test_server"));
   ASSERT_TRUE(server_->Start());
 
-  std::unique_ptr<URLFetcher> fetcher =
-      URLFetcher::Create(server_->GetURL("/mock-headers-without-crlf.html"),
-                         URLFetcher::GET, this, TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher->SetRequestContext(request_context_getter_.get());
-  fetcher->Start();
-  WaitForResponses(1);
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request(context_.CreateRequest(
+      server_->GetURL("/mock-headers-without-crlf.html"), DEFAULT_PRIORITY,
+      &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
-  EXPECT_EQ(HTTP_OK, fetcher->GetResponseCode());
-  EXPECT_EQ("<p>Hello World!</p>", GetContentFromFetcher(*fetcher));
-  EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher));
+  request->Start();
+  delegate.RunUntilComplete();
+
+  EXPECT_EQ(net::OK, delegate.request_status());
+  ASSERT_TRUE(request->response_headers());
+  EXPECT_EQ(HTTP_OK, request->response_headers()->response_code());
+  EXPECT_EQ("<p>Hello World!</p>", delegate.data_received());
+  std::string content_type;
+  ASSERT_TRUE(request->response_headers()->GetNormalizedHeader("Content-Type",
+                                                               &content_type));
+  EXPECT_EQ("text/html", content_type);
 }
 
 TEST_P(EmbeddedTestServerTest, DefaultNotFoundResponse) {
   ASSERT_TRUE(server_->Start());
 
-  std::unique_ptr<URLFetcher> fetcher =
-      URLFetcher::Create(server_->GetURL("/non-existent"), URLFetcher::GET,
-                         this, TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher->SetRequestContext(request_context_getter_.get());
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request(
+      context_.CreateRequest(server_->GetURL("/non-existent"), DEFAULT_PRIORITY,
+                             &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  fetcher->Start();
-  WaitForResponses(1);
-  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher->GetStatus().status());
-  EXPECT_EQ(HTTP_NOT_FOUND, fetcher->GetResponseCode());
+  request->Start();
+  delegate.RunUntilComplete();
+
+  EXPECT_EQ(net::OK, delegate.request_status());
+  ASSERT_TRUE(request->response_headers());
+  EXPECT_EQ(HTTP_NOT_FOUND, request->response_headers()->response_code());
 }
 
 TEST_P(EmbeddedTestServerTest, ConnectionListenerAccept) {
@@ -352,30 +313,33 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerAccept) {
 TEST_P(EmbeddedTestServerTest, ConnectionListenerRead) {
   ASSERT_TRUE(server_->Start());
 
-  std::unique_ptr<URLFetcher> fetcher =
-      URLFetcher::Create(server_->GetURL("/non-existent"), URLFetcher::GET,
-                         this, TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher->SetRequestContext(request_context_getter_.get());
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request(
+      context_.CreateRequest(server_->GetURL("/non-existent"), DEFAULT_PRIORITY,
+                             &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  fetcher->Start();
-  WaitForResponses(1);
+  request->Start();
+  delegate.RunUntilComplete();
+
   EXPECT_EQ(1u, connection_listener_.SocketAcceptedCount());
   EXPECT_TRUE(connection_listener_.DidReadFromSocket());
-
-  connection_listener_.WaitUntilGotSocketFromResponseCompleted();
-  EXPECT_TRUE(connection_listener_.DidGetSocketOnComplete());
 }
 
 TEST_P(EmbeddedTestServerTest, ConnectionListenerComplete) {
+  if (GetParam() == EmbeddedTestServer::TYPE_HTTP) {
+    // Test is flaky on HTTP. crbug/1073761.
+    return;
+  }
   ASSERT_TRUE(server_->Start());
 
-  std::unique_ptr<URLFetcher> fetcher =
-      URLFetcher::Create(server_->GetURL("/non-existent"), URLFetcher::GET,
-                         this, TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher->SetRequestContext(request_context_getter_.get());
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request(
+      context_.CreateRequest(server_->GetURL("/non-existent"), DEFAULT_PRIORITY,
+                             &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  fetcher->Start();
-  WaitForResponses(1);
+  request->Start();
+  delegate.RunUntilComplete();
+
   EXPECT_EQ(1u, connection_listener_.SocketAcceptedCount());
   EXPECT_TRUE(connection_listener_.DidReadFromSocket());
 
@@ -395,39 +359,61 @@ TEST_P(EmbeddedTestServerTest, ConcurrentFetches) {
       "No chocolates", "text/plain", HTTP_NOT_FOUND));
   ASSERT_TRUE(server_->Start());
 
-  std::unique_ptr<URLFetcher> fetcher1 =
-      URLFetcher::Create(server_->GetURL("/test1"), URLFetcher::GET, this,
-                         TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher1->SetRequestContext(request_context_getter_.get());
-  std::unique_ptr<URLFetcher> fetcher2 =
-      URLFetcher::Create(server_->GetURL("/test2"), URLFetcher::GET, this,
-                         TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher2->SetRequestContext(request_context_getter_.get());
-  std::unique_ptr<URLFetcher> fetcher3 =
-      URLFetcher::Create(server_->GetURL("/test3"), URLFetcher::GET, this,
-                         TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher3->SetRequestContext(request_context_getter_.get());
+  TestDelegate delegate1;
+  std::unique_ptr<URLRequest> request1(
+      context_.CreateRequest(server_->GetURL("/test1"), DEFAULT_PRIORITY,
+                             &delegate1, TRAFFIC_ANNOTATION_FOR_TESTS));
+  TestDelegate delegate2;
+  std::unique_ptr<URLRequest> request2(
+      context_.CreateRequest(server_->GetURL("/test2"), DEFAULT_PRIORITY,
+                             &delegate2, TRAFFIC_ANNOTATION_FOR_TESTS));
+  TestDelegate delegate3;
+  std::unique_ptr<URLRequest> request3(
+      context_.CreateRequest(server_->GetURL("/test3"), DEFAULT_PRIORITY,
+                             &delegate3, TRAFFIC_ANNOTATION_FOR_TESTS));
 
-  // Fetch the three URLs concurrently.
-  fetcher1->Start();
-  fetcher2->Start();
-  fetcher3->Start();
-  WaitForResponses(3);
+  // Fetch the three URLs concurrently. Have to manually create RunLoops when
+  // running multiple requests simultaneously, to avoid the deprecated
+  // RunUntilIdle() path.
+  base::RunLoop run_loop1;
+  base::RunLoop run_loop2;
+  base::RunLoop run_loop3;
+  delegate1.set_on_complete(run_loop1.QuitClosure());
+  delegate2.set_on_complete(run_loop2.QuitClosure());
+  delegate3.set_on_complete(run_loop3.QuitClosure());
+  request1->Start();
+  request2->Start();
+  request3->Start();
+  run_loop1.Run();
+  run_loop2.Run();
+  run_loop3.Run();
 
-  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher1->GetStatus().status());
-  EXPECT_EQ(HTTP_OK, fetcher1->GetResponseCode());
-  EXPECT_EQ("Raspberry chocolate", GetContentFromFetcher(*fetcher1));
-  EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher1));
+  EXPECT_EQ(net::OK, delegate2.request_status());
+  ASSERT_TRUE(request1->response_headers());
+  EXPECT_EQ(HTTP_OK, request1->response_headers()->response_code());
+  EXPECT_EQ("Raspberry chocolate", delegate1.data_received());
+  std::string content_type1;
+  ASSERT_TRUE(request1->response_headers()->GetNormalizedHeader(
+      "Content-Type", &content_type1));
+  EXPECT_EQ("text/html", content_type1);
 
-  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher2->GetStatus().status());
-  EXPECT_EQ(HTTP_OK, fetcher2->GetResponseCode());
-  EXPECT_EQ("Vanilla chocolate", GetContentFromFetcher(*fetcher2));
-  EXPECT_EQ("text/html", GetContentTypeFromFetcher(*fetcher2));
+  EXPECT_EQ(net::OK, delegate2.request_status());
+  ASSERT_TRUE(request2->response_headers());
+  EXPECT_EQ(HTTP_OK, request2->response_headers()->response_code());
+  EXPECT_EQ("Vanilla chocolate", delegate2.data_received());
+  std::string content_type2;
+  ASSERT_TRUE(request2->response_headers()->GetNormalizedHeader(
+      "Content-Type", &content_type2));
+  EXPECT_EQ("text/html", content_type2);
 
-  EXPECT_EQ(URLRequestStatus::SUCCESS, fetcher3->GetStatus().status());
-  EXPECT_EQ(HTTP_NOT_FOUND, fetcher3->GetResponseCode());
-  EXPECT_EQ("No chocolates", GetContentFromFetcher(*fetcher3));
-  EXPECT_EQ("text/plain", GetContentTypeFromFetcher(*fetcher3));
+  EXPECT_EQ(net::OK, delegate3.request_status());
+  ASSERT_TRUE(request3->response_headers());
+  EXPECT_EQ(HTTP_NOT_FOUND, request3->response_headers()->response_code());
+  EXPECT_EQ("No chocolates", delegate3.data_received());
+  std::string content_type3;
+  ASSERT_TRUE(request3->response_headers()->GetNormalizedHeader(
+      "Content-Type", &content_type3));
+  EXPECT_EQ("text/plain", content_type3);
 }
 
 namespace {
@@ -489,7 +475,6 @@ std::unique_ptr<HttpResponse> HandleInfiniteRequest(
 // shutting down before it is discovered).
 TEST_P(EmbeddedTestServerTest, CloseDuringWrite) {
   CancelRequestDelegate cancel_delegate;
-  TestURLRequestContext context;
   cancel_delegate.set_cancel_in_response_started(true);
   server_->RegisterRequestHandler(
       base::BindRepeating(&HandlePrefixedRequest, "/infinite",
@@ -497,8 +482,8 @@ TEST_P(EmbeddedTestServerTest, CloseDuringWrite) {
   ASSERT_TRUE(server_->Start());
 
   std::unique_ptr<URLRequest> request =
-      context.CreateRequest(server_->GetURL("/infinite"), DEFAULT_PRIORITY,
-                            &cancel_delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+      context_.CreateRequest(server_->GetURL("/infinite"), DEFAULT_PRIORITY,
+                             &cancel_delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
   request->Start();
   cancel_delegate.WaitUntilDone();
 }
@@ -540,7 +525,6 @@ INSTANTIATE_TEST_SUITE_P(EmbeddedTestServerTestInstantiation,
                          EmbeddedTestServerTest,
                          testing::Values(EmbeddedTestServer::TYPE_HTTP,
                                          EmbeddedTestServer::TYPE_HTTPS));
-
 // Below test exercises EmbeddedTestServer's ability to cope with the situation
 // where there is no MessageLoop available on the thread at EmbeddedTestServer
 // initialization and/or destruction.
@@ -552,8 +536,7 @@ class EmbeddedTestServerThreadingTest
       public WithTaskEnvironment {};
 
 class EmbeddedTestServerThreadingTestDelegate
-    : public base::PlatformThread::Delegate,
-      public URLFetcherDelegate {
+    : public base::PlatformThread::Delegate {
  public:
   EmbeddedTestServerThreadingTestDelegate(
       bool message_loop_present_on_initialize,
@@ -583,18 +566,15 @@ class EmbeddedTestServerThreadingTestDelegate
           base::MessagePumpType::IO);
     }
 
-    std::unique_ptr<URLFetcher> fetcher =
-        URLFetcher::Create(server.GetURL("/test?q=foo"), URLFetcher::GET, this,
-                           TRAFFIC_ANNOTATION_FOR_TESTS);
-    auto test_context_getter =
-        base::MakeRefCounted<TestURLRequestContextGetter>(
-            executor->task_runner());
-    fetcher->SetRequestContext(test_context_getter.get());
-    base::RunLoop run_loop;
-    quit_run_loop_ = run_loop.QuitClosure();
-    fetcher->Start();
-    run_loop.Run();
-    fetcher.reset();
+    TestURLRequestContext context;
+    TestDelegate delegate;
+    std::unique_ptr<URLRequest> request(
+        context.CreateRequest(server.GetURL("/test?q=foo"), DEFAULT_PRIORITY,
+                              &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    request->Start();
+    delegate.RunUntilComplete();
+    request.reset();
 
     // Shut down.
     if (message_loop_present_on_shutdown_)
@@ -603,17 +583,10 @@ class EmbeddedTestServerThreadingTestDelegate
     ASSERT_TRUE(server.ShutdownAndWaitUntilComplete());
   }
 
-  // URLFetcherDelegate override.
-  void OnURLFetchComplete(const URLFetcher* source) override {
-    std::move(quit_run_loop_).Run();
-  }
-
  private:
   const bool message_loop_present_on_initialize_;
   const bool message_loop_present_on_shutdown_;
   const EmbeddedTestServer::Type type_;
-
-  base::OnceClosure quit_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServerThreadingTestDelegate);
 };

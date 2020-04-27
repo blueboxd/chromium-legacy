@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/win/pe_image.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/interception.h"

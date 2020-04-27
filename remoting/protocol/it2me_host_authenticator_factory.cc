@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/negotiating_host_authenticator.h"
 #include "remoting/protocol/validating_authenticator.h"

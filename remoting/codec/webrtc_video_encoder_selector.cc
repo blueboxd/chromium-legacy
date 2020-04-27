@@ -4,7 +4,7 @@
 
 #include "remoting/codec/webrtc_video_encoder_selector.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "remoting/base/constants.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 

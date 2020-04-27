@@ -29,13 +29,6 @@ class Uri::Pim {
   Pim(const Pim&);
   ~Pim();
 
-  // Resets the internal field |parser_error|.
-  void ResetParserError() {
-    parser_error_.parsed_chars = 0;
-    parser_error_.parsed_strings = 0;
-    parser_error_.status = ParserStatus::kNoErrors;
-  }
-
   // These methods parse and normalize the corresponding component(s) from the
   // input string |begin|-|end|. Each component is saved only if successfully
   // parsed and verified. In case of an error, the field |parser_error| is set
@@ -60,7 +53,8 @@ class Uri::Pim {
 
   // This method fails (and return false) <=> |port| is smaller than -1 or
   // larger than 65535. If |port| == -1 and the current Scheme has a default
-  // port, the default port is set as a new Port number.
+  // port, the default port is set as a new Port number. The field
+  // |parser_error| is set accordingly.
   bool SavePort(int port);
 
   // These methods save values of corresponding components. The template

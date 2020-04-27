@@ -420,6 +420,10 @@ void TestWebState::RemovePolicyDecider(WebStatePolicyDecider* decider) {
   policy_deciders_.RemoveObserver(decider);
 }
 
+void TestWebState::DidChangeVisibleSecurityState() {
+  OnVisibleSecurityStateChanged();
+}
+
 bool TestWebState::HasOpener() const {
   return has_opener_;
 }

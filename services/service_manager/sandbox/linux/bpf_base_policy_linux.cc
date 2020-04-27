@@ -6,7 +6,7 @@
 
 #include <errno.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"

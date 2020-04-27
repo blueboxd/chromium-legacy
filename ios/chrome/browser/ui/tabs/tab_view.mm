@@ -64,6 +64,11 @@ UIImage* DefaultFaviconImage() {
 }
 }
 
+#if defined(__IPHONE_13_4)
+@interface TabView (PointerInteraction) <UIPointerInteractionDelegate>
+@end
+#endif  // defined(__IPHONE_13_4)
+
 @interface TabView ()<DropAndNavigateDelegate> {
   __weak id<TabViewDelegate> _delegate;
 
@@ -89,6 +94,11 @@ UIImage* DefaultFaviconImage() {
   MDCActivityIndicator* _activityIndicator;
 
   API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _dropInteraction;
+
+#if defined(__IPHONE_13_4)
+  // Adds hover interaction to background tabs.
+  API_AVAILABLE(ios(13.4)) UIPointerInteraction* _pointerInteraction;
+#endif  // defined(__IPHONE_13_4)
 }
 @end
 
@@ -386,6 +396,22 @@ UIImage* DefaultFaviconImage() {
       StretchableImageFromUIImage(resolvedImage, leftInset, 0);
   _backgroundImageView.image = backgroundImage;
 
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (!base::FeatureList::IsEnabled(kPointerSupport))
+      return;
+    if (selected) {
+      if (_pointerInteraction)
+        [self removeInteraction:_pointerInteraction];
+    } else {
+      if (!_pointerInteraction)
+        _pointerInteraction =
+            [[UIPointerInteraction alloc] initWithDelegate:self];
+      [self addInteraction:_pointerInteraction];
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
+
   // Style the close button tint color.
   NSString* closeButtonColorName;
   if (selected) {
@@ -425,11 +451,85 @@ UIImage* DefaultFaviconImage() {
   [_titleLabel setAccessibilityValue:(selected ? @"active" : @"inactive")];
 }
 
+// Bezier path for the border shape of the tab. While the shape of the tab is an
+// illusion achieved with a background image, the actual border path is required
+// for the hover pointer interaction.
+- (UIBezierPath*)borderPath {
+  CGFloat margin = 15;
+  CGFloat width = self.frame.size.width - margin * 2;
+  CGFloat height = self.frame.size.height;
+  CGFloat cornerRadius = 12;
+  UIBezierPath* path = [UIBezierPath bezierPath];
+  [path moveToPoint:CGPointMake(margin - cornerRadius, height)];
+  // Lower left arc.
+  [path
+      addArcWithCenter:CGPointMake(margin - cornerRadius, height - cornerRadius)
+                radius:cornerRadius
+            startAngle:M_PI / 2
+              endAngle:0
+             clockwise:NO];
+  // Left vertical line.
+  [path addLineToPoint:CGPointMake(margin, cornerRadius)];
+  // Upper left arc.
+  [path addArcWithCenter:CGPointMake(margin + cornerRadius, cornerRadius)
+                  radius:cornerRadius
+              startAngle:M_PI
+                endAngle:3 * M_PI / 2
+               clockwise:YES];
+  // Top horizontal line.
+  [path addLineToPoint:CGPointMake(width + margin - cornerRadius, 0)];
+  // Upper right arc.
+  [path
+      addArcWithCenter:CGPointMake(width + margin - cornerRadius, cornerRadius)
+                radius:cornerRadius
+            startAngle:3 * M_PI / 2
+              endAngle:0
+             clockwise:YES];
+  // Right vertical line.
+  [path addLineToPoint:CGPointMake(width + margin, height - cornerRadius)];
+  // Lower right arc.
+  [path addArcWithCenter:CGPointMake(width + margin + cornerRadius,
+                                     height - cornerRadius)
+                  radius:cornerRadius
+              startAngle:M_PI
+                endAngle:M_PI / 2
+               clockwise:NO];
+  [path closePath];
+  return path;
+}
+
 #pragma mark - DropAndNavigateDelegate
 
 - (void)URLWasDropped:(GURL const&)url {
   [_delegate tabView:self receivedDroppedURL:url];
 }
+
+#pragma mark UIPointerInteractionDelegate
+#if defined(__IPHONE_13_4)
+- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
+                      regionForRequest:(UIPointerRegionRequest*)request
+                         defaultRegion:(UIPointerRegion*)defaultRegion
+    API_AVAILABLE(ios(13.4)) {
+  return defaultRegion;
+}
+
+- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
+                       styleForRegion:(UIPointerRegion*)region
+    API_AVAILABLE(ios(13.4)) {
+  UIPreviewParameters* parameters = [[UIPreviewParameters alloc] init];
+  parameters.visiblePath = [self borderPath];
+
+  // Use the background view for the preview so that z-order of overlapping tabs
+  // is respected.
+  UIPointerHoverEffect* effect = [UIPointerHoverEffect
+      effectWithPreview:[[UITargetedPreview alloc]
+                            initWithView:_backgroundImageView
+                              parameters:parameters]];
+  effect.prefersScaledContent = NO;
+  effect.prefersShadow = NO;
+  return [UIPointerStyle styleWithEffect:effect shape:nil];
+}
+#endif  // defined(__IPHONE_13_4)
 
 #pragma mark - Touch events
 

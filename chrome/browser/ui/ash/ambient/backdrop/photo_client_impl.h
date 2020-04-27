@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_ASH_AMBIENT_BACKDROP_PHOTO_CLIENT_IMPL_H_
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "ash/public/cpp/ambient/photo_controller.h"
 #include "base/memory/weak_ptr.h"
@@ -32,7 +34,8 @@ class PhotoClientImpl : public PhotoClient {
   ~PhotoClientImpl() override;
 
   // PhotoClient:
-  void FetchTopicInfo(OnTopicInfoFetchedCallback callback) override;
+  void FetchScreenUpdateInfo(
+      OnScreenUpdateInfoFetchedCallback callback) override;
   void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(int topic_source,
                       UpdateSettingsCallback callback) override;
@@ -46,13 +49,13 @@ class PhotoClientImpl : public PhotoClient {
 
   void RequestAccessToken(GetAccessTokenCallback callback);
 
-  void StartToFetchTopicInfo(OnTopicInfoFetchedCallback callback,
-                             const std::string& gaia_id,
-                             GoogleServiceAuthError error,
-                             signin::AccessTokenInfo access_token_info);
+  void FetchScreenUpdateInfoInternal(OnScreenUpdateInfoFetchedCallback callback,
+                                     const std::string& gaia_id,
+                                     GoogleServiceAuthError error,
+                                     signin::AccessTokenInfo access_token_info);
 
-  void OnTopicInfoFetched(OnTopicInfoFetchedCallback callback,
-                          std::unique_ptr<std::string> response);
+  void OnScreenUpdateInfoFetched(OnScreenUpdateInfoFetchedCallback callback,
+                                 std::unique_ptr<std::string> response);
 
   void StartToGetSettings(GetSettingsCallback callback,
                           const std::string& gaia_id,

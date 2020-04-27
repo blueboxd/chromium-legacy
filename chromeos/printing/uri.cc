@@ -245,7 +245,6 @@ std::string Uri::GetScheme() const {
 }
 
 bool Uri::SetScheme(const std::string& val) {
-  pim_->ResetParserError();
   return pim_->ParseScheme(val.begin(), val.end());
 }
 
@@ -254,7 +253,6 @@ int Uri::GetPort() const {
 }
 
 bool Uri::SetPort(int val) {
-  pim_->ResetParserError();
   return pim_->SavePort(val);
 }
 
@@ -323,54 +321,42 @@ std::string Uri::GetFragmentEncoded() const {
 }
 
 bool Uri::SetUserinfo(const std::string& val) {
-  pim_->ResetParserError();
   return pim_->SaveUserinfo<false>(val);
 }
 bool Uri::SetHost(const std::string& val) {
-  pim_->ResetParserError();
   return pim_->SaveHost<false>(val);
 }
 bool Uri::SetPath(const std::vector<std::string>& val) {
-  pim_->ResetParserError();
   return pim_->SavePath<false>(val);
 }
 bool Uri::SetQuery(
     const std::vector<std::pair<std::string, std::string>>& val) {
-  pim_->ResetParserError();
   return pim_->SaveQuery<false>(val);
 }
 bool Uri::SetFragment(const std::string& val) {
-  pim_->ResetParserError();
   return pim_->SaveFragment<false>(val);
 }
 
 bool Uri::SetUserinfoEncoded(const std::string& val) {
-  pim_->ResetParserError();
   return pim_->SaveUserinfo<true>(val);
 }
 bool Uri::SetHostEncoded(const std::string& val) {
-  pim_->ResetParserError();
   return pim_->SaveHost<true>(val);
 }
 bool Uri::SetPathEncoded(const std::vector<std::string>& val) {
-  pim_->ResetParserError();
   return pim_->SavePath<true>(val);
 }
 bool Uri::SetPathEncoded(const std::string& val) {
-  pim_->ResetParserError();
   return pim_->ParsePath(val.begin(), val.end());
 }
 bool Uri::SetQueryEncoded(
     const std::vector<std::pair<std::string, std::string>>& val) {
-  pim_->ResetParserError();
   return pim_->SaveQuery<true>(val);
 }
 bool Uri::SetQueryEncoded(const std::string& val) {
-  pim_->ResetParserError();
   return pim_->ParseQuery(val.begin(), val.end());
 }
 bool Uri::SetFragmentEncoded(const std::string& val) {
-  pim_->ResetParserError();
   return pim_->SaveFragment<true>(val);
 }
 

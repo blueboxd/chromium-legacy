@@ -31,11 +31,13 @@ class URLLoaderThrottle : public blink::URLLoaderThrottle,
   // blink::URLLoaderThrottle
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
-  void WillRedirectRequest(net::RedirectInfo* redirect_info,
-                           const network::mojom::URLResponseHead& response_head,
-                           bool* defer,
-                           std::vector<std::string>* headers_to_remove,
-                           net::HttpRequestHeaders* modified_headers) override;
+  void WillRedirectRequest(
+      net::RedirectInfo* redirect_info,
+      const network::mojom::URLResponseHead& response_head,
+      bool* defer,
+      std::vector<std::string>* headers_to_remove,
+      net::HttpRequestHeaders* modified_headers,
+      net::HttpRequestHeaders* modified_cors_exempt_headers) override;
   void WillProcessResponse(const GURL& response_url,
                            network::mojom::URLResponseHead* response_head,
                            bool* defer) override;
@@ -54,6 +56,7 @@ class URLLoaderThrottle : public blink::URLLoaderThrottle,
   GURL request_url_;
   GURL request_referrer_;
   net::HttpRequestHeaders request_headers_;
+  net::HttpRequestHeaders request_cors_exempt_headers_;
   blink::mojom::ResourceType request_resource_type_;
 
   base::OnceClosure destruction_callback_;

@@ -22,6 +22,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -60,6 +61,7 @@ public class TabSuggestionMessageCardTest {
 
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1075650")
     public void closeTabSuggestionReviewedAndAccepted() {
         TabModel currentTabModel =
                 mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();

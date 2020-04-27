@@ -18,7 +18,9 @@ class ASH_PUBLIC_EXPORT TestPhotoController : public PhotoController {
   ~TestPhotoController() override;
 
   // PhotoController:
-  void GetNextImage(PhotoDownloadCallback callback) override;
+  void GetNextScreenUpdateInfo(
+      PhotoDownloadCallback photo_callback,
+      WeatherIconDownloadCallback icon_callback) override;
   void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(int topic_source,
                       UpdateSettingsCallback callback) override;

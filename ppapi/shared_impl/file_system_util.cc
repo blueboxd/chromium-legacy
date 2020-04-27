@@ -4,7 +4,9 @@
 
 #include "ppapi/shared_impl/file_system_util.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/notreached.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
 
 namespace ppapi {

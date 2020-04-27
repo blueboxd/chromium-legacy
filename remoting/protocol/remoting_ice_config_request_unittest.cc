@@ -5,7 +5,6 @@
 #include "remoting/protocol/remoting_ice_config_request.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "remoting/base/grpc_test_support/grpc_test_server.h"

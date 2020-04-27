@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "remoting/android/jni_headers/Client_jni.h"
 #include "remoting/client/audio/audio_player_android.h"
 #include "remoting/client/chromoting_client_runtime.h"

@@ -7,6 +7,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/x/x11_display_util.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/xproto.h"
 #include "ui/gl/egl_util.h"
 
 namespace gl {
@@ -55,19 +56,9 @@ bool NativeViewGLSurfaceEGLX11::Initialize(GLSurfaceFormat format) {
   // eglCreateWidnowSurface is called on X11 and expose events from this window
   // need to be received by this class.
   Display* x11_display = GetXNativeDisplay();
-  Window root = 0;
-  Window parent = 0;
-  Window* children = nullptr;
-  unsigned num_children = 0;
-  if (XQueryTree(x11_display, window_, &root, &parent, &children,
-                 &num_children)) {
-    for (unsigned int i = 0; i < num_children; ++i) {
-      children_.push_back(children[i]);
-    }
-    if (num_children > 0) {
-      XFree(children);
-    }
-  }
+  x11::XProto conn{XGetXCBConnection(x11_display)};
+  if (auto reply = conn.QueryTree({window_}).Sync())
+    children_ = std::move(reply->children);
 
   if (ui::X11EventSource::HasInstance()) {
     dispatcher_set_ = true;

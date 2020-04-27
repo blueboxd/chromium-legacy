@@ -200,8 +200,7 @@ class LayerTreeHostOverlayScrollbarsPixelTest
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
     LayerImpl* layer = host_impl->active_tree()->LayerById(scrollbar_layer_id_);
-    ScrollbarLayerImplBase* scrollbar = layer->ToScrollbarLayer();
-    scrollbar->SetThumbThicknessScaleFactor(thickness_scale_);
+    ToScrollbarLayer(layer)->SetThumbThicknessScaleFactor(thickness_scale_);
   }
 
   int scrollbar_layer_id_;

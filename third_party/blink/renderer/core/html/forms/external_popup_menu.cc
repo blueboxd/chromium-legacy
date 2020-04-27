@@ -61,7 +61,7 @@ ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
       dispatch_event_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                             this,
                             &ExternalPopupMenu::DispatchEvent),
-      receiver_(this, owner_element.GetDocument().ToExecutionContext()) {}
+      receiver_(this, owner_element.GetExecutionContext()) {}
 
 ExternalPopupMenu::~ExternalPopupMenu() = default;
 
@@ -92,7 +92,7 @@ bool ExternalPopupMenu::ShowInternal() {
   if (menu_items.IsEmpty())
     return false;
 
-  auto* execution_context = owner_element_->GetDocument().ToExecutionContext();
+  auto* execution_context = owner_element_->GetExecutionContext();
   if (!receiver_.is_bound()) {
     LayoutObject* layout_object = owner_element_->GetLayoutObject();
     if (!layout_object || !layout_object->IsBox())

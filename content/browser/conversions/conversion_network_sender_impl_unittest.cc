@@ -4,6 +4,9 @@
 
 #include "content/browser/conversions/conversion_network_sender_impl.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
@@ -16,6 +19,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
+#include "net/base/load_flags.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -198,6 +202,15 @@ TEST_F(ConversionNetworkSenderTest, ManyReports_AllSentSuccessfully) {
   }
   EXPECT_EQ(10u, num_reports_sent_);
   EXPECT_EQ(0, test_url_loader_factory_.NumPending());
+}
+
+TEST_F(ConversionNetworkSenderTest, LoadFlags) {
+  auto report = GetReport(/*conversion_id=*/1);
+  network_sender_->SendReport(&report, GetSentCallback());
+  int load_flags =
+      test_url_loader_factory_.GetPendingRequest(0)->request.load_flags;
+  EXPECT_TRUE(load_flags & net::LOAD_BYPASS_CACHE);
+  EXPECT_TRUE(load_flags & net::LOAD_DISABLE_CACHE);
 }
 
 }  // namespace content

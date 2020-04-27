@@ -42,7 +42,7 @@ class GL_EXPORT NativeViewGLSurfaceEGLX11 : public NativeViewGLSurfaceEGL,
   // XEventDispatcher:
   bool DispatchXEvent(XEvent* xev) override;
 
-  std::vector<Window> children_;
+  std::vector<uint32_t> children_;
 
   // Indicates if the dispatcher has been set.
   bool dispatcher_set_ = false;

@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/garbage_collected_script_wrappable.h"
 #include "third_party/blink/renderer/core/testing/gc_observation.h"
@@ -108,10 +108,10 @@ class ScriptPromisePropertyTestBase {
 
   virtual ~ScriptPromisePropertyTestBase() { DestroyContext(); }
 
-  Document& GetDocument() { return page_->GetDocument(); }
-  v8::Isolate* GetIsolate() { return GetDocument().GetIsolate(); }
+  LocalDOMWindow* DomWindow() { return page_->GetFrame().DomWindow(); }
+  v8::Isolate* GetIsolate() { return DomWindow()->GetIsolate(); }
   ScriptState* MainScriptState() {
-    return ToScriptStateForMainWorld(GetDocument().GetFrame());
+    return ToScriptStateForMainWorld(&page_->GetFrame());
   }
   DOMWrapperWorld& MainWorld() { return MainScriptState()->World(); }
   ScriptState* OtherScriptState() { return other_script_state_; }
@@ -146,8 +146,8 @@ class ScriptPromisePropertyTestBase {
   template <typename T>
   ScriptValue Wrap(DOMWrapperWorld& world, const T& value) {
     v8::HandleScope handle_scope(GetIsolate());
-    ScriptState* script_state = ScriptState::From(
-        ToV8Context(GetDocument().ToExecutionContext(), world));
+    ScriptState* script_state =
+        ScriptState::From(ToV8Context(DomWindow(), world));
     ScriptState::Scope scope(script_state);
     return ScriptValue(
         GetIsolate(),
@@ -169,8 +169,7 @@ class ScriptPromisePropertyGarbageCollectedTest
   typedef GarbageCollectedHolder::Property Property;
 
   ScriptPromisePropertyGarbageCollectedTest()
-      : holder_(MakeGarbageCollected<GarbageCollectedHolder>(
-            GetDocument().ToExecutionContext())) {}
+      : holder_(MakeGarbageCollected<GarbageCollectedHolder>(DomWindow())) {}
 
   void ClearHolder() { holder_.Clear(); }
   GarbageCollectedHolder* Holder() { return holder_; }
@@ -192,8 +191,7 @@ class ScriptPromisePropertyNonScriptWrappableResolutionTargetTest
   template <typename T>
   void Test(const T& value, const char* expected, const char* file, int line) {
     typedef ScriptPromiseProperty<T, ToV8UndefinedGenerator> Property;
-    Property* property =
-        MakeGarbageCollected<Property>(GetDocument().ToExecutionContext());
+    Property* property = MakeGarbageCollected<Property>(DomWindow());
     size_t n_resolve_calls = 0;
     ScriptValue actual_value;
     String actual;
@@ -231,7 +229,7 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest,
   {
     ScriptState::Scope scope(MainScriptState());
     EXPECT_EQ(v.V8Value().As<v8::Object>()->CreationContext(),
-              ToV8Context(GetDocument().ToExecutionContext(), MainWorld()));
+              ToV8Context(DomWindow(), MainWorld()));
   }
   EXPECT_EQ(Property::kPending, GetProperty()->GetState());
 }
@@ -250,12 +248,12 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest,
   {
     ScriptState::Scope scope(OtherScriptState());
     EXPECT_EQ(u.V8Value().As<v8::Object>()->CreationContext(),
-              ToV8Context(GetDocument().ToExecutionContext(), OtherWorld()));
+              ToV8Context(DomWindow(), OtherWorld()));
   }
   {
     ScriptState::Scope scope(MainScriptState());
     EXPECT_EQ(v.V8Value().As<v8::Object>()->CreationContext(),
-              ToV8Context(GetDocument().ToExecutionContext(), MainWorld()));
+              ToV8Context(DomWindow(), MainWorld()));
   }
   EXPECT_EQ(Property::kPending, GetProperty()->GetState());
 }

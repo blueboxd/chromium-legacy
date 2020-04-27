@@ -50,6 +50,7 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
 
   static std::unique_ptr<ConversionManagerImpl> CreateForTesting(
       std::unique_ptr<ConversionReporter> reporter,
+      std::unique_ptr<ConversionPolicy> policy,
       const base::Clock* clock,
       const base::FilePath& user_data_directory,
       scoped_refptr<base::SequencedTaskRunner> storage_task_runner);
@@ -76,6 +77,7 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
  private:
   ConversionManagerImpl(
       std::unique_ptr<ConversionReporter> reporter,
+      std::unique_ptr<ConversionPolicy> policy,
       const base::Clock* clock,
       const base::FilePath& user_data_directory,
       scoped_refptr<base::SequencedTaskRunner> storage_task_runner);

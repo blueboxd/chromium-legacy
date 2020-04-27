@@ -5,7 +5,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 #include "base/atomic_sequence_num.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/rand_util.h"
 
 namespace ukm {

@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace device {
 

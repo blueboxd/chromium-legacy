@@ -587,10 +587,6 @@ mojom("mojo_bindings") {
           move_only = true
         },
         {
-          mojom = "content.mojom.EventType"
-          cpp = "::blink::WebInputEvent::Type"
-        },
-        {
           mojom = "content.mojom.FrameReplicationState"
           cpp = "::content::FrameReplicationState"
         },
@@ -633,10 +629,6 @@ mojom("mojo_bindings") {
         {
           mojom = "content.mojom.TouchActionOptional"
           cpp = "::cc::TouchAction"
-        },
-        {
-          mojom = "content.mojom.TouchState"
-          cpp = "::blink::WebTouchPoint::State"
         },
         {
           mojom = "content.mojom.VisualProperties"

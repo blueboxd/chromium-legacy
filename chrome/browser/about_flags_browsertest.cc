@@ -350,13 +350,7 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_ExpiredFlagDoesntApply) {
 }
 #endif
 
-// Flaky on Windows 7: https://crbug.com/1066456
-#if defined(OS_WIN)
-#define MAYBE_FormRestore DISABLED_FormRestore
-#else
-#define MAYBE_FormRestore FormRestore
-#endif
-IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, MAYBE_FormRestore) {
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, FormRestore) {
   NavigateToFlagsPage();
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();

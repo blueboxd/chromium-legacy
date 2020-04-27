@@ -71,16 +71,12 @@ class CORE_EXPORT ImageResource final
   ImageResourceContent* GetContent();
   const ImageResourceContent* GetContent() const;
 
-  void ReloadIfLoFiOrPlaceholderImage(ResourceFetcher*,
-                                      ReloadLoFiOrPlaceholderPolicy) override;
-
   void DidAddClient(ResourceClient*) override;
 
   ResourcePriority PriorityFromObservers() override;
 
   void AllClientsAndObserversRemoved() override;
 
-  MatchStatus CanReuse(const FetchParameters&) const override;
   bool CanUseCacheValidator() const override;
 
   scoped_refptr<const SharedBuffer> ResourceBuffer() const override;
@@ -98,8 +94,6 @@ class CORE_EXPORT ImageResource final
   // MultipartImageResourceParser::Client
   void OnePartInMultipartReceived(const ResourceResponse&) final;
   void MultipartDataReceived(const char*, size_t) final;
-
-  bool ShouldShowPlaceholder() const;
 
   // If the ImageResource came from a user agent CSS stylesheet then we should
   // flag it so that it can persist beyond navigation.
@@ -132,43 +126,16 @@ class CORE_EXPORT ImageResource final
                    ImageResourceContent::UpdateImageOption,
                    bool all_data_received);
 
-  void NotifyFinished() override;
-
   void DestroyDecodedDataIfPossible() override;
   void DestroyDecodedDataForFailedRevalidation() override;
 
   void FlushImageIfNeeded();
-
-  bool ShouldReloadBrokenPlaceholder() const;
 
   Member<ImageResourceContent> content_;
 
   Member<MultipartImageResourceParser> multipart_parser_;
   MultipartParsingState multipart_parsing_state_ =
       MultipartParsingState::kWaitingForFirstPart;
-
-  // Indicates if the ImageResource is currently scheduling a reload, e.g.
-  // because reloadIfLoFi() was called.
-  bool is_scheduling_reload_;
-
-  // Indicates if this ImageResource is either attempting to load a placeholder
-  // image, or is a (possibly broken) placeholder image.
-  enum class PlaceholderOption {
-    // Do not show or reload placeholder.
-    kDoNotReloadPlaceholder,
-
-    // Show placeholder, and do not reload. The original image will still be
-    // loaded and shown if the image is explicitly reloaded, e.g. when
-    // ReloadIfLoFiOrPlaceholderImage is called with kReloadAlways.
-    kShowAndDoNotReloadPlaceholder,
-
-    // Do not show placeholder, reload only when decode error occurs.
-    kReloadPlaceholderOnDecodeError,
-
-    // Show placeholder and reload.
-    kShowAndReloadPlaceholderAlways,
-  };
-  PlaceholderOption placeholder_option_;
 
   base::TimeTicks last_flush_time_;
 

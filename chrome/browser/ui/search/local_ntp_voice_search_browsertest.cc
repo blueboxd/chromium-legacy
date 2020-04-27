@@ -42,9 +42,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   ASSERT_FALSE(search::IsInstantNTP(active_tab));
 
-  // Attach a console observer, listening for any message ("*" pattern).
-  content::ConsoleObserverDelegate console_observer(active_tab, "*");
-  active_tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(active_tab);
 
   // Navigate to the NTP.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
@@ -64,7 +62,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
   EXPECT_TRUE(microphone_is_visible);
 
   // We shouldn't have gotten any console error messages.
-  EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+  EXPECT_TRUE(console_observer.messages().empty())
+      << console_observer.GetMessageAt(0u);
 }
 
 // Test is flaky: crbug.com/790963.

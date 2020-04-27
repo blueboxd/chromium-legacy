@@ -858,4 +858,32 @@ void MediaHistoryStore::UpdateMediaFeedDisplayTime(const int64_t feed_id) {
   DB()->CommitTransaction();
 }
 
+void MediaHistoryStore::ResetMediaFeed(const int64_t feed_id,
+                                       media_feeds::mojom::ResetReason reason) {
+  if (!CanAccessDatabase())
+    return;
+
+  if (!feeds_table_ || !feed_items_table_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    LOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  // Remove all the items currently associated with this feed.
+  if (!feeds_table_->Reset(feed_id, reason)) {
+    DB()->RollbackTransaction();
+    return;
+  }
+
+  // Remove all the items currently associated with this feed.
+  if (!feed_items_table_->DeleteItems(feed_id)) {
+    DB()->RollbackTransaction();
+    return;
+  }
+
+  DB()->CommitTransaction();
+}
+
 }  // namespace media_history

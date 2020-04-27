@@ -24,6 +24,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -863,5 +864,34 @@ TEST_F(BuiltInIsolatedOriginsTest, BelowThreshold) {
   EXPECT_EQ(isolated_origins.size(), 0u);
 
   cpsp->ClearIsolatedOriginsForTesting();
+}
+
+// Check that the list of preloaded isolated origins is not applied when full
+// site isolation is used, since in that case the list is redundant.
+TEST_F(BuiltInIsolatedOriginsTest, NotAppliedWithFullSiteIsolation) {
+  // Force full site-per-process mode.
+  content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+  // Define a memory threshold at 128MB.  This is below the 512MB of physical
+  // memory that this test simulates, so preloaded isolated origins shouldn't
+  // be disabled by the memory threshold.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
+
+  // Ensure that isolated origins that are normally loaded on browser
+  // startup are applied.
+  content::SiteIsolationPolicy::ApplyGlobalIsolatedOrigins();
+
+  // Because full site-per-process is used, the preloaded isolated origins are
+  // redundant and should not be applied.
+  EXPECT_FALSE(
+      content::SiteIsolationPolicy::ArePreloadedIsolatedOriginsEnabled());
+
+  auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
+  std::vector<url::Origin> isolated_origins = cpsp->GetIsolatedOrigins(
+      content::ChildProcessSecurityPolicy::IsolatedOriginSource::BUILT_IN);
+  EXPECT_EQ(isolated_origins.size(), 0u);
 }
 #endif

@@ -161,7 +161,7 @@
 //
 // Documents if a class does RAII locking (such as the `MutexLock` class).
 // The constructor should use `LOCK_FUNCTION()` to specify the mutex that is
-// acquired, and the destructor should use `ABSL_UNLOCK_FUNCTION()` with no
+// acquired, and the destructor should use `UNLOCK_FUNCTION()` with no
 // arguments; the analysis will assume that the destructor unlocks whatever the
 // constructor locked.
 #define ABSL_SCOPED_LOCKABLE \

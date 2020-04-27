@@ -7,9 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/proto/control.pb.h"

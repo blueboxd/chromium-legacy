@@ -3151,7 +3151,9 @@ bool AXNodeObject::OnNativeFocusAction() {
   // existence of layout objects to determine the result. However, these layout
   // objects may have been deferred by display-locking.
   Document* document = GetDocument();
-  document->UpdateStyleAndLayoutTreeForNode(GetNode());
+  Node* node = GetNode();
+  if (document && node)
+    document->UpdateStyleAndLayoutTreeForNode(node);
 
   if (!CanSetFocusAttribute())
     return false;

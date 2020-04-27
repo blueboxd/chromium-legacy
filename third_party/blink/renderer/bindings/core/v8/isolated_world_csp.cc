@@ -114,7 +114,7 @@ class IsolatedWorldCSPDelegate final
       const String& directive_text) override {
     // This allows users to set breakpoints in the Devtools for the case when
     // script execution is blocked by CSP.
-    probe::ScriptExecutionBlockedByCSP(document_->ToExecutionContext(),
+    probe::ScriptExecutionBlockedByCSP(document_->GetExecutionContext(),
                                        directive_text);
   }
 

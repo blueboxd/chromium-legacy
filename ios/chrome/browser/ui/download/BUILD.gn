@@ -39,6 +39,7 @@ source_set("download") {
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/store_kit",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",

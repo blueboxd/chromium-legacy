@@ -17,6 +17,8 @@
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
 
+using cast_channel::ReceiverAppType;
+
 namespace media_router {
 
 static constexpr char kCastStreamingAppId[] = "0F5096E8";
@@ -163,6 +165,10 @@ class CastMediaSource {
   DefaultActionPolicy default_action_policy() const {
     return default_action_policy_;
   }
+  const std::vector<ReceiverAppType>& supported_app_types() const {
+    return supported_app_types_;
+  }
+  void set_supported_app_types(const std::vector<ReceiverAppType>& types);
 
  private:
   MediaSource::Id source_id_;
@@ -173,6 +179,7 @@ class CastMediaSource {
   // Empty if not set.
   std::string client_id_;
   base::Optional<cast_channel::BroadcastRequest> broadcast_request_;
+  std::vector<ReceiverAppType> supported_app_types_ = {ReceiverAppType::kWeb};
 };
 
 }  // namespace media_router

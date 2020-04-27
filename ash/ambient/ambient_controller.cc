@@ -7,7 +7,7 @@
 #include <string>
 
 #include "ash/ambient/ambient_constants.h"
-#include "ash/ambient/model/photo_model_observer.h"
+#include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/util/ambient_util.h"
 #include "ash/login/ui/lock_screen.h"
@@ -69,7 +69,7 @@ AmbientController::~AmbientController() {
 
 void AmbientController::OnWidgetDestroying(views::Widget* widget) {
   refresh_timer_.Stop();
-  photo_model_.Clear();
+  ambient_backend_model_.Clear();
   weak_factory_.InvalidateWeakPtrs();
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
@@ -161,7 +161,7 @@ void AmbientController::DestroyContainerView() {
 }
 
 void AmbientController::RefreshImage() {
-  if (photo_model_.ShouldFetchImmediately()) {
+  if (ambient_backend_model_.ShouldFetchImmediately()) {
     // TODO(b/140032139): Defer downloading image if it is animating.
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
@@ -169,14 +169,14 @@ void AmbientController::RefreshImage() {
                        weak_factory_.GetWeakPtr()),
         kAnimationDuration);
   } else {
-    photo_model_.ShowNextImage();
+    ambient_backend_model_.ShowNextImage();
     ScheduleRefreshImage();
   }
 }
 
 void AmbientController::ScheduleRefreshImage() {
   base::TimeDelta refresh_interval;
-  if (!photo_model_.ShouldFetchImmediately()) {
+  if (!ambient_backend_model_.ShouldFetchImmediately()) {
     // TODO(b/139953713): Change to a correct time interval.
     refresh_interval = base::TimeDelta::FromSeconds(5);
   }
@@ -187,19 +187,33 @@ void AmbientController::ScheduleRefreshImage() {
 }
 
 void AmbientController::GetNextImage() {
-  PhotoController::Get()->GetNextImage(base::BindOnce(
-      &AmbientController::OnPhotoDownloaded, weak_factory_.GetWeakPtr()));
+  // Start requesting photo and weather information from the backdrop server.
+  PhotoController::Get()->GetNextScreenUpdateInfo(
+      base::BindOnce(&AmbientController::OnPhotoDownloaded,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&AmbientController::OnWeatherConditionIconDownloaded,
+                     weak_factory_.GetWeakPtr()));
 }
 
-void AmbientController::OnPhotoDownloaded(bool success,
-                                          const gfx::ImageSkia& image) {
+void AmbientController::OnPhotoDownloaded(const gfx::ImageSkia& image) {
   // TODO(b/148485116): Implement retry logic.
-  if (!success)
+  if (image.isNull())
     return;
 
   DCHECK(!image.isNull());
-  photo_model_.AddNextImage(image);
+  ambient_backend_model_.AddNextImage(image);
   ScheduleRefreshImage();
+}
+
+void AmbientController::OnWeatherConditionIconDownloaded(
+    base::Optional<float> temp_f,
+    const gfx::ImageSkia& icon) {
+  // For now we only show the weather card when both fields have values.
+  // TODO(meilinw): optimize the behavior with more specific error handling.
+  if (icon.isNull() || !temp_f.has_value())
+    return;
+
+  ambient_backend_model_.UpdateWeatherInfo(icon, temp_f.value());
 }
 
 }  // namespace ash

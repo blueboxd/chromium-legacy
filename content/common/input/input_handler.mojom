@@ -13,6 +13,7 @@ import "third_party/blink/public/mojom/input/gesture_event.mojom";
 import "third_party/blink/public/mojom/input/input_event.mojom";
 import "third_party/blink/public/mojom/input/input_event_result.mojom";
 import "third_party/blink/public/mojom/input/pointer_lock_result.mojom";
+import "third_party/blink/public/mojom/input/touch_event.mojom";
 import "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom";
 import "ui/base/ime/mojom/ime_types.mojom";
 import "ui/events/mojom/event.mojom";
@@ -137,7 +138,7 @@ struct GestureData {
 };
 
 struct TouchPoint {
-  TouchState state;
+  blink.mojom.TouchState state;
   float radius_x;
   float radius_y;
   float rotation_angle;
@@ -154,7 +155,7 @@ struct TouchData {
 };
 
 struct Event {
-  EventType type;
+  blink.mojom.EventType type;
   int32 modifiers;
   mojo_base.mojom.TimeTicks timestamp;
   ui.mojom.LatencyInfo latency;

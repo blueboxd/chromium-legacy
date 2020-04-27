@@ -66,8 +66,10 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
   // with the same request_id.
   void ResetForFollowRedirect();
 
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers);
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers);
   void SetPriority(net::RequestPriority priority, int32_t intra_priority_value);
   void PauseReadingBodyFromNet();
   void ResumeReadingBodyFromNet();
@@ -286,6 +288,7 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
 
   std::vector<std::string> removed_headers_;
   net::HttpRequestHeaders modified_headers_;
+  net::HttpRequestHeaders modified_cors_exempt_headers_;
 
   int pending_restart_flags_ = 0;
   bool has_pending_restart_ = false;

@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"

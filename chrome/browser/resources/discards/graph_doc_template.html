@@ -47,17 +47,17 @@ URL. As result, this document needs to be self-contained, hence inline scripts.
         text-align: center;
       }
 
-      td {
+      tr {
         font: 10px sans-serif;
       }
 
-      td.key {
-        text-align: end;
-      }
-
-      td.heading {
+      tr.heading > td {
         font-weight: bold;
         text-align: center;
+      }
+
+      tr.value > td:nth-child(1) {
+        text-align: end;
       }
 
     </style>

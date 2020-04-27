@@ -2139,26 +2139,26 @@ TEST_F(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
 
   EXPECT_EQ(7ul, begin_events.size());
   EXPECT_EQ(7ul, end_events.size());
-  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
+  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGestureScrollUpdate),
             end_events[0]->GetKnownArgAsInt("type"));
   EXPECT_EQ(3, end_events[0]->GetKnownArgAsInt("coalesced_count"));
-  EXPECT_EQ(WebInputEvent::Type::kGestureScrollEnd,
+  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGestureScrollEnd),
             end_events[1]->GetKnownArgAsInt("type"));
 
-  EXPECT_EQ(WebInputEvent::Type::kGestureScrollBegin,
+  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGestureScrollBegin),
             end_events[2]->GetKnownArgAsInt("type"));
-  EXPECT_EQ(WebInputEvent::Type::kGesturePinchBegin,
+  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGesturePinchBegin),
             end_events[3]->GetKnownArgAsInt("type"));
   // Original scroll and pinch updates will be stored in the coalesced
   // PinchUpdate of the <ScrollUpdate, PinchUpdate> pair.
   // The ScrollUpdate of the pair doesn't carry original events and won't be
   // traced.
-  EXPECT_EQ(WebInputEvent::Type::kGesturePinchUpdate,
+  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGesturePinchUpdate),
             end_events[4]->GetKnownArgAsInt("type"));
   EXPECT_EQ(4, end_events[4]->GetKnownArgAsInt("coalesced_count"));
-  EXPECT_EQ(WebInputEvent::Type::kGesturePinchEnd,
+  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGesturePinchEnd),
             end_events[5]->GetKnownArgAsInt("type"));
-  EXPECT_EQ(WebInputEvent::Type::kGestureScrollEnd,
+  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGestureScrollEnd),
             end_events[6]->GetKnownArgAsInt("type"));
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }

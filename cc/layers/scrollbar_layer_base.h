@@ -39,6 +39,8 @@ class CC_EXPORT ScrollbarLayerBase : public Layer {
   ~ScrollbarLayerBase() override;
 
  private:
+  bool IsScrollbarLayerForTesting() const final;
+
   const ScrollbarOrientation orientation_;
   const bool is_left_side_vertical_scrollbar_;
   ElementId scroll_element_id_;

@@ -192,7 +192,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   // part.
   void SetNeedsPaintInvalidation(ScrollbarPart invalid_parts);
 
-  CompositorElementId GetElementId();
+  CompositorElementId GetElementId() const;
 
   float EffectiveZoom() const;
   bool ContainerIsRightToLeft() const;

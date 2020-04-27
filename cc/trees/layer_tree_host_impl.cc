@@ -3819,9 +3819,9 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
     // layer corresponding to the scrollbars owner and then use its
     // scroll_tree_index instead.
     int scroll_tree_index = layer_impl->scroll_tree_index();
-    if (layer_impl->ToScrollbarLayer()) {
+    if (layer_impl->IsScrollbarLayer()) {
       LayerImpl* owner_scroll_layer = active_tree_->LayerByElementId(
-          layer_impl->ToScrollbarLayer()->scroll_element_id());
+          ToScrollbarLayer(layer_impl)->scroll_element_id());
       scroll_tree_index = owner_scroll_layer->scroll_tree_index();
     }
 
@@ -4037,7 +4037,7 @@ bool LayerTreeHostImpl::IsTouchDraggingScrollbar(
     LayerImpl* first_scrolling_layer_or_scrollbar,
     ScrollInputType type) {
   return first_scrolling_layer_or_scrollbar &&
-         first_scrolling_layer_or_scrollbar->is_scrollbar() &&
+         first_scrolling_layer_or_scrollbar->IsScrollbarLayer() &&
          type == ScrollInputType::kTouchscreen;
 }
 
@@ -4094,7 +4094,7 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
     return true;
 
   // Hit tests directly on a composited scrollbar are always reliable.
-  if (layer_impl->ToScrollbarLayer()) {
+  if (layer_impl->IsScrollbarLayer()) {
     DCHECK(layer_impl == first_scrolling_layer_or_scrollbar);
     return true;
   }
@@ -4116,7 +4116,7 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
   // a scrollabe layer with a scroll node. If this scroll node corresponds to
   // first scrollable ancestor along the scroll tree for |layer_impl|, the hit
   // test has not escaped to other areas of the scroll tree and is reliable.
-  if (!first_scrolling_layer_or_scrollbar->is_scrollbar()) {
+  if (!first_scrolling_layer_or_scrollbar->IsScrollbarLayer()) {
     return closest_scroll_node->id ==
            first_scrolling_layer_or_scrollbar->scroll_tree_index();
   }
@@ -4575,6 +4575,10 @@ bool LayerTreeHostImpl::CanConsumeDelta(const ScrollState& scroll_state,
       return false;
     }
     delta_to_scroll = local_scroll_delta;
+  } else if (scroll_state.delta_granularity() ==
+             ui::ScrollGranularity::kScrollByPercentage) {
+    delta_to_scroll =
+        ResolveScrollPercentageToPixels(scroll_node, delta_to_scroll);
   }
 
   if (ComputeScrollDelta(scroll_node, delta_to_scroll) != gfx::Vector2dF())
@@ -5046,8 +5050,8 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseMoveAt(
   // FindScrollNodeForDeviceViewportPoint finds the proper node for scrolling on
   // the main thread when the mouse is over a scrollbar as well.
   ElementId scroll_element_id;
-  if (layer_impl && layer_impl->ToScrollbarLayer())
-    scroll_element_id = layer_impl->ToScrollbarLayer()->scroll_element_id();
+  if (layer_impl && layer_impl->IsScrollbarLayer())
+    scroll_element_id = ToScrollbarLayer(layer_impl)->scroll_element_id();
   if (!scroll_element_id) {
     bool scroll_on_main_thread = false;
     uint32_t main_thread_scrolling_reasons;

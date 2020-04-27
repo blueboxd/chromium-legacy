@@ -85,8 +85,9 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     ~MockURLLoader() override = default;
 
     // network::mojom::URLLoader overrides:
-    MOCK_METHOD3(FollowRedirect,
+    MOCK_METHOD4(FollowRedirect,
                  void(const std::vector<std::string>&,
+                      const net::HttpRequestHeaders&,
                       const net::HttpRequestHeaders&,
                       const base::Optional<GURL>&));
     MOCK_METHOD2(SetPriority,

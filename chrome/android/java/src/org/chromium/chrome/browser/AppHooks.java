@@ -48,8 +48,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
+import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
-import org.chromium.chrome.browser.xsurface.SurfaceRenderer;
 import org.chromium.components.browser_ui.widget.FeatureHighlightProvider;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
@@ -369,7 +369,7 @@ public abstract class AppHooks {
      * Returns a new {@link SurfaceRenderer} if the xsurface implementation is included in the
      * apk. Otherwise null is returned.
      */
-    public @Nullable SurfaceRenderer createExternalSurfaceRenderer(
+    public @Nullable ProcessScope getExternalSurfaceProcessScope(
             SurfaceDependencyProvider dependencies) {
         return null;
     }

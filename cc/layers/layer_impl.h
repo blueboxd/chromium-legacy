@@ -51,7 +51,6 @@ struct LayerDebugInfo;
 class LayerTreeImpl;
 class MicroBenchmarkImpl;
 class PrioritizedTile;
-class ScrollbarLayerImplBase;
 class SimpleEnclosedRegion;
 class Tile;
 
@@ -149,7 +148,7 @@ class CC_EXPORT LayerImpl {
 
   virtual void NotifyTileStateChanged(const Tile* tile) {}
 
-  virtual ScrollbarLayerImplBase* ToScrollbarLayer();
+  virtual bool IsScrollbarLayer() const;
 
   // Returns true if this layer has content to draw.
   void SetDrawsContent(bool draws_content);
@@ -358,10 +357,6 @@ class CC_EXPORT LayerImpl {
     return contributes_to_drawn_render_surface_;
   }
 
-  bool is_scrollbar() const { return is_scrollbar_; }
-
-  void set_is_scrollbar(bool is_scrollbar) { is_scrollbar_ = is_scrollbar; }
-
   void set_may_contain_video(bool yes) { may_contain_video_ = yes; }
   bool may_contain_video() const { return may_contain_video_; }
 
@@ -532,7 +527,6 @@ class CC_EXPORT LayerImpl {
 
   bool has_will_change_transform_hint_ : 1;
   bool needs_push_properties_ : 1;
-  bool is_scrollbar_ : 1;
   bool scrollbars_hidden_ : 1;
 
   // The needs_show_scrollbars_ bit tracks a pending request from Blink to show

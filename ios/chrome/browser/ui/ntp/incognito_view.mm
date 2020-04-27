@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/ntp/incognito_view.h"
 
+#include "base/feature_list.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
@@ -11,6 +13,7 @@
 #import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -180,8 +183,8 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
     [self addTextSections];
 
-    if (base::FeatureList::IsEnabled(kPageInfoChromeGuard))
-      [self addCoockiesViewController];
+    if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls))
+      [self addCookiesViewController];
 
     // |topGuide| and |bottomGuide| exist to vertically position the stackview
     // inside the container scrollview.
@@ -401,6 +404,14 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   [learnMoreButton addTarget:self
                       action:@selector(learnMoreButtonPressed)
             forControlEvents:UIControlEventTouchUpInside];
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      // TODO(crbug.com/1075616): Style as a link rather than a button.
+      learnMoreButton.pointerInteractionEnabled = YES;
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 
   UIStackView* subtitleStackView = [[UIStackView alloc]
       initWithArrangedSubviews:@[ subtitleLabel, learnMoreButton ]];
@@ -451,7 +462,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
            object:nil];
 }
 
-- (void)addCoockiesViewController {
+- (void)addCookiesViewController {
   IncognitoCookiesView* cookiesView = [[IncognitoCookiesView alloc] init];
   [_stackView addArrangedSubview:cookiesView];
 }

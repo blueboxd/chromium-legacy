@@ -52,7 +52,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       mojom::URLLoaderFactory* network_loader_factory,
       const OriginAccessList* origin_access_list,
       const OriginAccessList* factory_bound_origin_access_list,
-      PreflightController* preflight_controller);
+      PreflightController* preflight_controller,
+      const std::unordered_set<std::string>* allowed_exempt_headers);
 
   ~CorsURLLoader() override;
 
@@ -61,9 +62,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   void Start();
 
   // mojom::URLLoader overrides:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -181,6 +184,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   const OriginAccessList* const origin_access_list_;
   const OriginAccessList* const factory_bound_origin_access_list_;
   PreflightController* preflight_controller_;
+  const std::unordered_set<std::string>* allowed_exempt_headers_;
 
   // Flag to specify if the CORS-enabled scheme check should be applied.
   const bool skip_cors_enabled_scheme_check_;

@@ -36,8 +36,10 @@ class OmniboxRowView::HeaderView : public views::View,
     header_text_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
     layout->SetFlexForView(header_text_, 1);
 
-    const gfx::FontList& font = views::style::GetFont(
-        CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
+    const gfx::FontList& font =
+        views::style::GetFont(CONTEXT_OMNIBOX_PRIMARY,
+                              views::style::STYLE_PRIMARY)
+            .DeriveWithWeight(gfx::Font::Weight::MEDIUM);
     header_text_->SetFontList(font);
     header_text_->SetEnabledColor(gfx::kGoogleGrey700);
 

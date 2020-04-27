@@ -240,12 +240,17 @@ void ThrottlingURLLoader::FollowRedirectForcingRestart() {
   client_receiver_.reset();
   CHECK(throttle_will_redirect_redirect_url_.is_empty());
 
-  for (const std::string& header : removed_headers_)
+  for (const std::string& header : removed_headers_) {
     start_info_->url_request.headers.RemoveHeader(header);
+    start_info_->url_request.cors_exempt_headers.RemoveHeader(header);
+  }
   start_info_->url_request.headers.MergeFrom(modified_headers_);
+  start_info_->url_request.cors_exempt_headers.MergeFrom(
+      modified_cors_exempt_headers_);
 
   removed_headers_.clear();
   modified_headers_.Clear();
+  modified_cors_exempt_headers_.Clear();
 
   StartNow();
 }
@@ -270,9 +275,11 @@ void ThrottlingURLLoader::RestartWithFactory(
 
 void ThrottlingURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
-    const net::HttpRequestHeaders& modified_headers) {
+    const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers) {
   MergeRemovedHeaders(&removed_headers_, removed_headers);
   modified_headers_.MergeFrom(modified_headers);
+  modified_cors_exempt_headers_.MergeFrom(modified_cors_exempt_headers);
 
   if (!throttle_will_start_redirect_url_.is_empty()) {
     throttle_will_start_redirect_url_ = GURL();
@@ -285,12 +292,14 @@ void ThrottlingURLLoader::FollowRedirect(
     base::Optional<GURL> new_url;
     if (!throttle_will_redirect_redirect_url_.is_empty())
       new_url = throttle_will_redirect_redirect_url_;
-    url_loader_->FollowRedirect(removed_headers_, modified_headers_, new_url);
+    url_loader_->FollowRedirect(removed_headers_, modified_headers_,
+                                modified_cors_exempt_headers_, new_url);
     throttle_will_redirect_redirect_url_ = GURL();
   }
 
   removed_headers_.clear();
   modified_headers_.Clear();
+  modified_cors_exempt_headers_.Clear();
 }
 
 void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
@@ -597,10 +606,11 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       auto weak_ptr = weak_factory_.GetWeakPtr();
       std::vector<std::string> removed_headers;
       net::HttpRequestHeaders modified_headers;
+      net::HttpRequestHeaders modified_cors_exempt_headers;
       net::RedirectInfo redirect_info_copy = redirect_info;
-      throttle->WillRedirectRequest(&redirect_info_copy, *response_head,
-                                    &throttle_deferred, &removed_headers,
-                                    &modified_headers);
+      throttle->WillRedirectRequest(
+          &redirect_info_copy, *response_head, &throttle_deferred,
+          &removed_headers, &modified_headers, &modified_cors_exempt_headers);
       if (redirect_info_copy.new_url != redirect_info.new_url) {
         DCHECK(throttle_will_redirect_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
@@ -615,6 +625,7 @@ void ThrottlingURLLoader::OnReceiveRedirect(
 
       MergeRemovedHeaders(&removed_headers_, removed_headers);
       modified_headers_.MergeFrom(modified_headers);
+      modified_cors_exempt_headers_.MergeFrom(modified_cors_exempt_headers);
     }
 
     if (deferred) {
@@ -813,9 +824,8 @@ void ThrottlingURLLoader::UpdateDeferredRequestHeaders(
         modified_cors_exempt_request_headers);
   } else if (deferred_stage_ == DEFERRED_REDIRECT) {
     modified_headers_.MergeFrom(modified_request_headers);
-    // TODO(juke): Figure out if we need to support |cors_exempt_headers| in
-    // DEFERRED_REDIRECT case.
-    modified_headers_.MergeFrom(modified_cors_exempt_request_headers);
+    modified_cors_exempt_headers_.MergeFrom(
+        modified_cors_exempt_request_headers);
   } else {
     NOTREACHED()
         << "Can only update headers of a request before it's sent out.";

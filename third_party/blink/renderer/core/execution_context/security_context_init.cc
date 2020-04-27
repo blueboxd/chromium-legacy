@@ -121,7 +121,7 @@ void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
   for (auto feature : feature_count_)
     UseCounter::Count(document, feature);
   for (auto feature : parsed_feature_policies_)
-    document.ToExecutionContext()->FeaturePolicyFeatureObserved(feature);
+    document.GetExecutionContext()->FeaturePolicyFeatureObserved(feature);
   for (const auto& message : feature_policy_parse_messages_) {
     document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,

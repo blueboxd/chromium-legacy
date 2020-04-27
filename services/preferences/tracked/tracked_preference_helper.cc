@@ -4,9 +4,10 @@
 
 #include "services/preferences/tracked/tracked_preference_helper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "services/preferences/public/cpp/tracked/tracked_preference_histogram_names.h"
 

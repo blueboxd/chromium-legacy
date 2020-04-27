@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"

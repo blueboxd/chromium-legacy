@@ -67,7 +67,10 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                         const quic::QuicEncryptedPacket& packet) override;
   void OnUnauthenticatedHeader(const quic::QuicPacketHeader& header) override;
   void OnIncorrectConnectionId(quic::QuicConnectionId connection_id) override;
-  void OnUndecryptablePacket() override;
+  void OnUndecryptablePacket(quic::EncryptionLevel decryption_level,
+                             bool dropped) override;
+  void OnAttemptingToProcessUndecryptablePacket(
+      quic::EncryptionLevel decryption_level) override;
   void OnDuplicatePacket(quic::QuicPacketNumber packet_number) override;
   void OnProtocolVersionMismatch(quic::ParsedQuicVersion version) override;
   void OnPacketHeader(const quic::QuicPacketHeader& header) override;

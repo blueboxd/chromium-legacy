@@ -144,6 +144,7 @@ base::WeakPtr<AppCacheURLLoader> AppCacheURLLoader::GetWeakPtr() {
 void AppCacheURLLoader::FollowRedirect(
     const std::vector<std::string>& modified_headers,
     const net::HttpRequestHeaders& removed_headers,
+    const net::HttpRequestHeaders& removed_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   NOTREACHED() << "appcache never produces redirects";
 }

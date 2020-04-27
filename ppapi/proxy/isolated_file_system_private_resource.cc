@@ -5,7 +5,6 @@
 #include "ppapi/proxy/isolated_file_system_private_resource.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/proxy/file_system_resource.h"

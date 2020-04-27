@@ -37,7 +37,7 @@ CreateAnimationAndPaintWorkletThread(
           window->IsSecureContext(), window->GetHttpsState(), clients,
           nullptr /* content_settings_client */,
           window->GetSecurityContext().AddressSpace(),
-          OriginTrialContext::GetTokens(document->ToExecutionContext()).get(),
+          OriginTrialContext::GetTokens(window).get(),
           base::UnguessableToken::Create(), nullptr /* worker_settings */,
           kV8CacheOptionsDefault,
           MakeGarbageCollected<WorkletModuleResponsesMap>()),

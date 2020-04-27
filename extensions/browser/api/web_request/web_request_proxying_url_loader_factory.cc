@@ -241,6 +241,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::RestartInternal() {
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   if (new_url)
     request_.url = new_url.value();
@@ -261,11 +262,12 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
     // headers and if so we'll pass these modifications to FollowRedirect.
     if (current_request_uses_header_client_) {
       target_loader_->FollowRedirect(removed_headers, modified_headers,
-                                     new_url);
+                                     modified_cors_exempt_headers, new_url);
     } else {
       auto params = std::make_unique<FollowRedirectParams>();
       params->removed_headers = removed_headers;
       params->modified_headers = modified_headers;
+      params->modified_cors_exempt_headers = modified_cors_exempt_headers;
       params->new_url = new_url;
       pending_follow_redirect_params_ = std::move(params);
     }
@@ -669,6 +671,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       target_loader_->FollowRedirect(
           pending_follow_redirect_params_->removed_headers,
           pending_follow_redirect_params_->modified_headers,
+          pending_follow_redirect_params_->modified_cors_exempt_headers,
           pending_follow_redirect_params_->new_url);
     }
 

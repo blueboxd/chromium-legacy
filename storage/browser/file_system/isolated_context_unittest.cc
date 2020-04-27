@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "storage/browser/file_system/file_system_url.h"

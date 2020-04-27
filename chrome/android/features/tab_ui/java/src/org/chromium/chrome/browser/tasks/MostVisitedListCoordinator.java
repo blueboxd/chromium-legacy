@@ -61,9 +61,7 @@ class MostVisitedListCoordinator implements TileGroup.Observer, TileGroup.TileSe
         if (mRenderer != null) return;
         assert mTileGroup == null;
 
-        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and needs to be
-        // fixed.
+        // This function is never called in incognito mode.
         Profile profile = Profile.getLastUsedRegularProfile();
         SuggestionsSource suggestionsSource =
                 SuggestionsDependencyFactory.getInstance().createSuggestionSource(profile);

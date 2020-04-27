@@ -2540,8 +2540,7 @@ TEST_P(OverviewSessionTest, Backdrop) {
 }
 
 // Test that the rounded corners are removed during animations.
-// TODO(https://crbug.com/1000730): Re-enable this test.
-TEST_P(OverviewSessionTest, DISABLED_RoundedCornersVisibility) {
+TEST_P(OverviewSessionTest, RoundedCornersVisibility) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
@@ -2585,6 +2584,8 @@ TEST_P(OverviewSessionTest, DISABLED_RoundedCornersVisibility) {
 
   // Test that leaving overview mode cleans up properly.
   ToggleOverview();
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kExitAnimationComplete);
 }
 
 // Test that the shadow disappears while dragging an overview item.

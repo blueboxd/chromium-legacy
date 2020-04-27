@@ -4,6 +4,8 @@
 
 #include "ash/ambient/ui/ambient_container_view.h"
 
+#include <memory>
+
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/public/cpp/ambient/photo_controller.h"

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.incognito;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -128,6 +130,10 @@ public class IncognitoDataTestUtils {
         testRule.startMainActivityOnBlankPage();
 
         Tab tab = testRule.loadUrlInNewTab(url, incognito);
+
+        // Giving time to the WebContents to be ready.
+        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab.getWebContents()); });
+
         assertEquals(incognito, tab.getWebContents().isIncognito());
         return tab;
     }
@@ -144,6 +150,10 @@ public class IncognitoDataTestUtils {
         testRule.startCustomTabActivityWithIntent(intent);
 
         Tab tab = testRule.getActivity().getActivityTab();
+
+        // Giving time to the WebContents to be ready.
+        CriteriaHelper.pollUiThread(() -> { assertNotNull(tab.getWebContents()); });
+
         assertEquals(incognito, tab.getWebContents().isIncognito());
         return tab;
     }

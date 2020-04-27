@@ -58,6 +58,7 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
                          "logo BLOB, "
                          "display_name TEXT, "
                          "last_display_time_s INTEGER, "
+                         "reset_reason INTEGER DEFAULT 0, "
                          "CONSTRAINT fk_origin "
                          "FOREIGN KEY (origin_id) "
                          "REFERENCES origin(id) "
@@ -169,7 +170,8 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       "mediaFeed.last_fetch_content_types, "
       "mediaFeed.logo, "
       "mediaFeed.display_name, "
-      "mediaFeed.last_display_time_s");
+      "mediaFeed.last_display_time_s, "
+      "mediaFeed.reset_reason");
 
   sql::Statement statement;
 
@@ -243,6 +245,8 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
         statement.ColumnInt64(4));
     feed->last_fetch_result =
         static_cast<media_feeds::mojom::FetchResult>(statement.ColumnInt64(5));
+    feed->reset_reason =
+        static_cast<media_feeds::mojom::ResetReason>(statement.ColumnInt64(15));
 
     if (!IsKnownEnumValue(feed->user_status)) {
       base::UmaHistogramEnumeration(kFeedReadResultHistogramName,
@@ -253,6 +257,12 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
     if (!IsKnownEnumValue(feed->last_fetch_result)) {
       base::UmaHistogramEnumeration(kFeedReadResultHistogramName,
                                     FeedReadResult::kBadFetchResult);
+      continue;
+    }
+
+    if (!IsKnownEnumValue(feed->reset_reason)) {
+      base::UmaHistogramEnumeration(kFeedReadResultHistogramName,
+                                    FeedReadResult::kBadResetReason);
       continue;
     }
 
@@ -355,8 +365,8 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         "UPDATE mediaFeed SET last_fetch_time_s = ?, last_fetch_result = ?, "
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
-        "logo = ?, display_name = ?, last_fetch_safe_item_count = ? WHERE id = "
-        "?"));
+        "logo = ?, display_name = ?, last_fetch_safe_item_count = ?, "
+        "reset_reason = ? WHERE id = ?"));
   } else {
     statement.Assign(DB()->GetCachedStatement(
         SQL_FROM_HERE,
@@ -364,7 +374,7 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
         "logo = ?, display_name = ?, last_fetch_safe_item_count = ?, "
-        "last_fetch_time_not_cache_hit_s = ? WHERE "
+        "reset_reason = ?, last_fetch_time_not_cache_hit_s = ? WHERE "
         "id = ?"));
   }
 
@@ -385,13 +395,15 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
 
   statement.BindString(7, display_name);
   statement.BindInt64(8, item_safe_count);
+  statement.BindInt64(9,
+                      static_cast<int>(media_feeds::mojom::ResetReason::kNone));
 
   if (was_fetched_from_cache) {
-    statement.BindInt64(9, feed_id);
+    statement.BindInt64(10, feed_id);
   } else {
     statement.BindInt64(
-        9, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
-    statement.BindInt64(10, feed_id);
+        10, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
+    statement.BindInt64(11, feed_id);
   }
 
   return statement.Run() && DB()->GetLastChangeCount() == 1;
@@ -423,6 +435,22 @@ bool MediaHistoryFeedsTable::RecalculateSafeSearchItemCount(
       0, static_cast<int>(media_feeds::mojom::SafeSearchResult::kSafe));
   statement.BindInt64(1, feed_id);
   statement.BindInt64(2, feed_id);
+  return statement.Run() && DB()->GetLastChangeCount() == 1;
+}
+
+bool MediaHistoryFeedsTable::Reset(
+    const int64_t feed_id,
+    const media_feeds::mojom::ResetReason reason) {
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE mediaFeed SET last_fetch_time_s = NULL, last_fetch_result = 0, "
+      "fetch_failed_count = 0, last_fetch_time_not_cache_hit_s = NULL, "
+      "last_fetch_item_count = 0, last_fetch_safe_item_count = 0, "
+      "last_fetch_play_next_count = 0, last_fetch_content_types = 0, "
+      "logo = NULL, display_name = NULL, reset_reason = ? "
+      "WHERE id = ?"));
+  statement.BindInt64(0, static_cast<int>(reason));
+  statement.BindInt64(1, feed_id);
   return statement.Run() && DB()->GetLastChangeCount() == 1;
 }
 

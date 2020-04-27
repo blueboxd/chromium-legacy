@@ -15,10 +15,13 @@ namespace ash {
 TestPhotoController::TestPhotoController() = default;
 TestPhotoController::~TestPhotoController() = default;
 
-void TestPhotoController::GetNextImage(PhotoDownloadCallback callback) {
+void TestPhotoController::GetNextScreenUpdateInfo(
+    PhotoDownloadCallback photo_callback,
+    WeatherIconDownloadCallback icon_callback) {
   gfx::ImageSkia image =
       gfx::test::CreateImageSkia(/*width=*/10, /*height=*/10);
-  std::move(callback).Run(/*success=*/true, image);
+  std::move(photo_callback).Run(image);
+  std::move(icon_callback).Run(/*temp_f*/ 1.f, image);
 }
 
 void TestPhotoController::GetSettings(GetSettingsCallback callback) {

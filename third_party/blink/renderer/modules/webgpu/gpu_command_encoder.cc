@@ -115,7 +115,7 @@ base::Optional<WGPUBufferCopyView> AsDawnType(
   DCHECK(webgpu_view);
   DCHECK(webgpu_view->buffer());
 
-  WGPUBufferCopyView dawn_view;
+  WGPUBufferCopyView dawn_view = {};
   dawn_view.nextInChain = nullptr;
   dawn_view.buffer = webgpu_view->buffer()->GetHandle();
   dawn_view.offset = webgpu_view->offset();

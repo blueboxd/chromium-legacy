@@ -19,100 +19,28 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/win/scoped_bstr.h"
-#include "base/win/scoped_com_initializer.h"
-#include "chrome/updater/app/app.h"
 #include "chrome/updater/configurator.h"
-#include "chrome/updater/update_service.h"
+#include "chrome/updater/server/win/com_classes.h"
+#include "chrome/updater/server/win/com_classes_legacy.h"
 #include "chrome/updater/update_service_in_process.h"
-#include "components/update_client/update_client_errors.h"
 
 namespace updater {
-namespace {
 
-// The COM objects involved in this server are free threaded. Incoming COM calls
-// arrive on COM RPC threads. Outgoing COM calls are posted from a blocking
-// sequenced task runner in the thread pool. Calls to the update service occur
-// in the main sequence, which is bound to the main thread.
-//
-// The free-threaded COM objects exposed by this server are entered either by
-// COM RPC threads, when their functions are invoked by COM clients, or by
-// threads from the updater's thread pool, when callbacks posted by the
-// update service are handled. Access to the shared state maintained by these
-// objects is synchronized by a lock. The sequencing of callbacks is ensured
-// by using a sequenced task runner, since the callbacks can't use base
-// synchronization primitives on the main sequence where they are posted from.
-//
-// This class is responsible for the lifetime of the COM server, as well as
-// class factory registration.
-class ComServer : public App {
- public:
-  ComServer();
+scoped_refptr<App> AppServerInstance() {
+  return AppInstance<ComServerApp>();
+}
 
-  // Returns the singleton instance of this ComServer.
-  static scoped_refptr<ComServer> Instance() {
-    return static_cast<ComServer*>(AppServerInstance().get());
-  }
-
-  scoped_refptr<base::SequencedTaskRunner> main_task_runner() {
-    return main_task_runner_;
-  }
-  scoped_refptr<UpdateService> service() { return service_; }
-
- private:
-  ~ComServer() override = default;
-
-  // Overrides for App.
-  void InitializeThreadPool() override;
-  void Initialize() override;
-  void FirstTaskRun() override;
-
-  // Registers and unregisters the out-of-process COM class factories.
-  HRESULT RegisterClassObjects();
-  void UnregisterClassObjects();
-
-  // Waits until the last COM object is released.
-  void WaitForExitSignal();
-
-  // Called when the last object is released.
-  void SignalExit();
-
-  // Creates an out-of-process WRL Module.
-  void CreateWRLModule();
-
-  // Handles object unregistration then triggers program shutdown.
-  void Stop();
-
-  // Identifier of registered class objects used for unregistration.
-  DWORD cookies_[2] = {};
-
-  // While this object lives, COM can be used by all threads in the program.
-  base::win::ScopedCOMInitializer com_initializer_;
-
-  // Task runner bound to the main sequence and the update service instance.
-  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
-
-  // The UpdateService to use for handling the incoming COM requests. This
-  // instance of the service runs the in-process update service code, which is
-  // delegating to the update_client component.
-  scoped_refptr<UpdateService> service_;
-
-  // The updater's Configurator.
-  scoped_refptr<Configurator> config_;
-};
-
-ComServer::ComServer()
+ComServerApp::ComServerApp()
     : com_initializer_(base::win::ScopedCOMInitializer::kMTA) {}
 
-void ComServer::InitializeThreadPool() {
+ComServerApp::~ComServerApp() = default;
+
+void ComServerApp::InitializeThreadPool() {
   base::ThreadPoolInstance::Create(kThreadPoolName);
 
   // Reuses the logic in base::ThreadPoolInstance::StartWithDefaultParams.
@@ -124,7 +52,7 @@ void ComServer::InitializeThreadPool() {
   base::ThreadPoolInstance::Get()->Start(init_params);
 }
 
-HRESULT ComServer::RegisterClassObjects() {
+HRESULT ComServerApp::RegisterClassObjects() {
   auto& module = Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule();
 
   Microsoft::WRL::ComPtr<IUnknown> factory;
@@ -184,7 +112,7 @@ HRESULT ComServer::RegisterClassObjects() {
   return hr;
 }
 
-void ComServer::UnregisterClassObjects() {
+void ComServerApp::UnregisterClassObjects() {
   auto& module = Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule();
   const HRESULT hr =
       module.UnregisterCOMObject(nullptr, cookies_, base::size(cookies_));
@@ -192,22 +120,22 @@ void ComServer::UnregisterClassObjects() {
     LOG(ERROR) << "UnregisterCOMObject failed; hr: " << hr;
 }
 
-void ComServer::CreateWRLModule() {
-  Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create(this,
-                                                            &ComServer::Stop);
+void ComServerApp::CreateWRLModule() {
+  Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create(
+      this, &ComServerApp::Stop);
 }
 
-void ComServer::Stop() {
+void ComServerApp::Stop() {
   VLOG(2) << __func__ << ": COM server is shutting down.";
   UnregisterClassObjects();
   Shutdown(0);
 }
 
-void ComServer::Initialize() {
+void ComServerApp::Initialize() {
   config_ = base::MakeRefCounted<Configurator>();
 }
 
-void ComServer::FirstTaskRun() {
+void ComServerApp::FirstTaskRun() {
   if (!com_initializer_.Succeeded()) {
     PLOG(ERROR) << "Failed to initialize COM";
     Shutdown(-1);
@@ -219,409 +147,6 @@ void ComServer::FirstTaskRun() {
   HRESULT hr = RegisterClassObjects();
   if (FAILED(hr))
     Shutdown(hr);
-}
-
-}  // namespace
-
-LegacyOnDemandImpl::LegacyOnDemandImpl()
-    : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::WithBaseSyncPrimitives()})) {}
-
-LegacyOnDemandImpl::~LegacyOnDemandImpl() = default;
-
-STDMETHODIMP LegacyOnDemandImpl::createAppBundleWeb(
-    IDispatch** app_bundle_web) {
-  DCHECK(app_bundle_web);
-
-  Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle(this);
-  *app_bundle_web = app_bundle.Detach();
-  return S_OK;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::createApp(BSTR app_id,
-                                           BSTR brand_code,
-                                           BSTR language,
-                                           BSTR ap) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::createInstalledApp(BSTR app_id) {
-  set_app_id(base::UTF16ToASCII(app_id));
-  return S_OK;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::createAllInstalledApps() {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_displayLanguage(BSTR* language) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::put_displayLanguage(BSTR language) {
-  return S_OK;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::put_parentHWND(ULONG_PTR hwnd) {
-  return S_OK;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_length(int* number) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_appWeb(int index, IDispatch** app_web) {
-  DCHECK_EQ(index, 0);
-  DCHECK(app_web);
-
-  Microsoft::WRL::ComPtr<IAppWeb> app(this);
-  *app_web = app.Detach();
-  return S_OK;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::initialize() {
-  return S_OK;
-}
-
-// Invokes the in-process update service on the main sequence. Forwards the
-// callbacks to a sequenced task runner. |obj| is bound to this object.
-STDMETHODIMP LegacyOnDemandImpl::checkForUpdate() {
-  using LegacyOnDemandImplPtr = Microsoft::WRL::ComPtr<LegacyOnDemandImpl>;
-  auto com_server = ComServer::Instance();
-  com_server->main_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](scoped_refptr<UpdateService> update_service,
-             LegacyOnDemandImplPtr obj) {
-            update_service->Update(
-                obj->app_id(), UpdateService::Priority::kForeground,
-                base::BindRepeating(
-                    [](LegacyOnDemandImplPtr obj,
-                       UpdateService::UpdateState state_update) {
-                      obj->task_runner_->PostTask(
-                          FROM_HERE,
-                          base::BindOnce(
-                              &LegacyOnDemandImpl::UpdateStateCallback, obj,
-                              state_update));
-                    },
-                    obj),
-                base::BindOnce(
-                    [](LegacyOnDemandImplPtr obj,
-                       UpdateService::Result result) {
-                      obj->task_runner_->PostTask(
-                          FROM_HERE,
-                          base::BindOnce(
-                              &LegacyOnDemandImpl::UpdateResultCallback, obj,
-                              result));
-                    },
-                    obj));
-          },
-          com_server->service(), LegacyOnDemandImplPtr(this)));
-  return S_OK;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::download() {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::install() {
-  return S_OK;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::pause() {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::resume() {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::cancel() {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::downloadPackage(BSTR app_id,
-                                                 BSTR package_name) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_currentState(VARIANT* current_state) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_appId(BSTR* app_id) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_currentVersionWeb(IDispatch** current) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_nextVersionWeb(IDispatch** next) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_command(BSTR command_id,
-                                             IDispatch** command) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_currentState(IDispatch** current_state) {
-  DCHECK(current_state);
-
-  Microsoft::WRL::ComPtr<ICurrentState> state(this);
-  *current_state = state.Detach();
-  return S_OK;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::launch() {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::uninstall() {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_serverInstallDataIndex(BSTR* language) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::put_serverInstallDataIndex(BSTR language) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_stateValue(LONG* state_value) {
-  DCHECK(state_value);
-
-  *state_value = GetOnDemandCurrentState();
-  return S_OK;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_availableVersion(BSTR* available_version) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_bytesDownloaded(ULONG* bytes_downloaded) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_totalBytesToDownload(
-    ULONG* total_bytes_to_download) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_downloadTimeRemainingMs(
-    LONG* download_time_remaining_ms) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_nextRetryTime(ULONGLONG* next_retry_time) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_installProgress(
-    LONG* install_progress_percentage) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_installTimeRemainingMs(
-    LONG* install_time_remaining_ms) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_isCanceled(VARIANT_BOOL* is_canceled) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_errorCode(LONG* error_code) {
-  *error_code = GetOnDemandError();
-
-  return S_OK;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_extraCode1(LONG* extra_code1) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_completionMessage(
-    BSTR* completion_message) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_installerResultCode(
-    LONG* installer_result_code) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_installerResultExtraCode1(
-    LONG* installer_result_extra_code1) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_postInstallLaunchCommandLine(
-    BSTR* post_install_launch_command_line) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_postInstallUrl(BSTR* post_install_url) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::get_postInstallAction(
-    LONG* post_install_action) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::GetTypeInfoCount(UINT*) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::GetTypeInfo(UINT, LCID, ITypeInfo**) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::GetIDsOfNames(REFIID,
-                                               LPOLESTR*,
-                                               UINT,
-                                               LCID,
-                                               DISPID*) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP LegacyOnDemandImpl::Invoke(DISPID,
-                                        REFIID,
-                                        LCID,
-                                        WORD,
-                                        DISPPARAMS*,
-                                        VARIANT*,
-                                        EXCEPINFO*,
-                                        UINT*) {
-  return E_NOTIMPL;
-}
-
-void LegacyOnDemandImpl::UpdateStateCallback(
-    UpdateService::UpdateState state_update) {
-  base::AutoLock lock{lock_};
-  state_update_ = state_update;
-}
-
-void LegacyOnDemandImpl::UpdateResultCallback(UpdateService::Result result) {
-  base::AutoLock lock{lock_};
-  result_ = result;
-}
-
-// Returns the state of update as seen by the on-demand client:
-// - if the repeading callback has been received: returns the specific state.
-// - if the completion callback has been received, but no repeating callback,
-//   then it returns STATE_ERROR. This is an error state and it indicates that
-//   update is not going to be further handled and repeating callbacks posted.
-// - if no callback has been received at all: returns STATE_INIT.
-CurrentState LegacyOnDemandImpl::GetOnDemandCurrentState() const {
-  base::AutoLock lock{lock_};
-  if (state_update_) {
-    switch (state_update_.value()) {
-      case UpdateService::UpdateState::kUnknown:
-        // Fall through.
-      case UpdateService::UpdateState::kNotStarted:
-        return STATE_INIT;
-      case UpdateService::UpdateState::kCheckingForUpdates:
-        return STATE_CHECKING_FOR_UPDATE;
-      case UpdateService::UpdateState::kDownloading:
-        return STATE_DOWNLOADING;
-      case UpdateService::UpdateState::kInstalling:
-        return STATE_INSTALLING;
-      case UpdateService::UpdateState::kUpdated:
-        return STATE_INSTALL_COMPLETE;
-      case UpdateService::UpdateState::kNoUpdate:
-        return STATE_NO_UPDATE;
-      case UpdateService::UpdateState::kUpdateError:
-        return STATE_ERROR;
-    }
-  } else if (result_) {
-    DCHECK_NE(result_.value(), update_client::Error::NONE);
-    return STATE_ERROR;
-  } else {
-    return STATE_INIT;
-  }
-}
-
-// TODO(crbug.com/1073659): improve the error handling.
-HRESULT LegacyOnDemandImpl::GetOnDemandError() const {
-  base::AutoLock lock{lock_};
-  if (!result_)
-    return S_OK;
-
-  return (result_.value() == update_client::Error::NONE) ? S_OK : E_FAIL;
-}
-
-STDMETHODIMP CompleteStatusImpl::get_statusCode(LONG* code) {
-  DCHECK(code);
-
-  *code = code_;
-  return S_OK;
-}
-
-STDMETHODIMP CompleteStatusImpl::get_statusMessage(BSTR* message) {
-  DCHECK(message);
-
-  *message = base::win::ScopedBstr(message_).Release();
-  return S_OK;
-}
-
-HRESULT UpdaterImpl::CheckForUpdate(const base::char16* app_id) {
-  return E_NOTIMPL;
-}
-
-HRESULT UpdaterImpl::Register(const base::char16* app_id,
-                              const base::char16* brand_code,
-                              const base::char16* tag,
-                              const base::char16* version,
-                              const base::char16* existence_checker_path) {
-  return E_NOTIMPL;
-}
-
-HRESULT UpdaterImpl::Update(const base::char16* app_id) {
-  return E_NOTIMPL;
-}
-
-// Called by the COM RPC runtime on one of its threads.
-HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
-  using IUpdaterObserverPtr = Microsoft::WRL::ComPtr<IUpdaterObserver>;
-
-  // Invoke the in-process |update_service| on the main sequence.
-  auto com_server = ComServer::Instance();
-  com_server->main_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](scoped_refptr<UpdateService> update_service,
-             IUpdaterObserverPtr observer) {
-            update_service->UpdateAll(
-                base::DoNothing(),
-                base::BindOnce(
-                    [](IUpdaterObserverPtr observer,
-                       UpdateService::Result result) {
-                      // The COM RPC outgoing call blocks and it must be posted
-                      // through the thread pool.
-                      base::ThreadPool::PostTaskAndReplyWithResult(
-                          FROM_HERE, {base::MayBlock()},
-                          base::BindOnce(
-                              &IUpdaterObserver::OnComplete, observer,
-                              Microsoft::WRL::Make<CompleteStatusImpl>(
-                                  static_cast<int>(result), L"Test")),
-                          base::BindOnce([](HRESULT hr) {
-                            VLOG(2) << "IUpdaterObserver::OnComplete returned "
-                                    << std::hex << hr;
-                          }));
-                    },
-                    observer));
-          },
-          com_server->service(), IUpdaterObserverPtr(observer)));
-
-  return S_OK;
-}
-
-scoped_refptr<App> AppServerInstance() {
-  return AppInstance<ComServer>();
 }
 
 }  // namespace updater

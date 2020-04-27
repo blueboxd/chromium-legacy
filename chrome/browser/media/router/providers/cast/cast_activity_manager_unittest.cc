@@ -171,9 +171,11 @@ class CastActivityManagerTest : public testing::Test,
     ExpectSingleRouteUpdate();
 
     // A launch session request is sent to the sink.
+    std::vector<std::string> supported_app_types = {"WEB"};
     EXPECT_CALL(message_handler_,
-                LaunchSession(kChannelId, app_id, kDefaultLaunchTimeout, _))
-        .WillOnce(WithArg<3>([this](auto callback) {
+                LaunchSession(kChannelId, app_id, kDefaultLaunchTimeout,
+                              supported_app_types, _))
+        .WillOnce(WithArg<4>([this](auto callback) {
           launch_session_callback_ = std::move(callback);
         }));
 
@@ -390,8 +392,10 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
 
   // LaunchSession() should not be called until we notify |maanger_| that the
   // previous session was removed.
+  std::vector<std::string> supported_app_types = {"WEB"};
   EXPECT_CALL(message_handler_,
-              LaunchSession(kChannelId, "BBBBBBBB", kDefaultLaunchTimeout, _));
+              LaunchSession(kChannelId, "BBBBBBBB", kDefaultLaunchTimeout,
+                            supported_app_types, _));
   manager_->OnSessionRemoved(sink_);
 }
 

@@ -1634,6 +1634,11 @@ class WebContentsConsoleObserver : public WebContentsObserver {
   // A convenience method to just match the message against a string pattern.
   void SetPattern(std::string pattern);
 
+  // A helper method to return the string content (in UTF8) of the message at
+  // the given |index|. This will cause a test failure if there is no such
+  // message.
+  std::string GetMessageAt(size_t index) const;
+
   const std::vector<Message>& messages() const { return messages_; }
 
  private:

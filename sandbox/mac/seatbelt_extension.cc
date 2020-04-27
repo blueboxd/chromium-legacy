@@ -4,8 +4,11 @@
 
 #include "sandbox/mac/seatbelt_extension.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "sandbox/mac/seatbelt_extension_token.h"
 
 // libsandbox private API.

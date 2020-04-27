@@ -6,7 +6,7 @@
 #define ASH_AMBIENT_AMBIENT_CONTROLLER_H_
 
 #include "ash/ambient/ambient_view_delegate_impl.h"
-#include "ash/ambient/model/photo_model.h"
+#include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/session/session_observer.h"
@@ -53,7 +53,11 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
   // Should be removed once we delete the shortcut entry point.
   void Toggle();
 
-  PhotoModel* photo_model() { return &photo_model_; }
+  AmbientBackendModel* ambient_backend_model() {
+    return &ambient_backend_model_;
+  }
+
+  bool is_showing() const { return !!container_view_; }
 
   // Handles user interactions on the background photo. For now the behavior
   // is showing lock screen contents (login pod and media control view) on top
@@ -68,21 +72,24 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
     return refresh_timer_;
   }
 
-  bool is_showing() const { return !!container_view_; }
-
  private:
   void CreateContainerView();
   void DestroyContainerView();
   void RefreshImage();
   void ScheduleRefreshImage();
   void GetNextImage();
-  void OnPhotoDownloaded(bool success, const gfx::ImageSkia& image);
+  void OnPhotoDownloaded(const gfx::ImageSkia& image);
+
+  // Invoked upon completion of the weather icon download, |icon| can be a null
+  // image if the download attempt from the url failed.
+  void OnWeatherConditionIconDownloaded(base::Optional<float> temp_f,
+                                        const gfx::ImageSkia& icon);
 
   void StartFadeOutAnimation();
 
   AmbientViewDelegateImpl delegate_{this};
   AmbientContainerView* container_view_ = nullptr;   // Owned by view hierarchy.
-  PhotoModel photo_model_;
+  AmbientBackendModel ambient_backend_model_;
   AmbientModeState ambient_state_;
   base::OneShotTimer refresh_timer_;
   base::WeakPtrFactory<AmbientController> weak_factory_{this};

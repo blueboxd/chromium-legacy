@@ -120,6 +120,11 @@ void IOSChromeMainParts::PreCreateThreads() {
   // use.)
   FirstRun::IsChromeFirstRun();
 
+  // Convert freeform experimental settings into switches before initializing
+  // local state, in case any of the settings affect policy.
+  AppendSwitchesFromExperimentalSettings(
+      base::CommandLine::ForCurrentProcess());
+
   // Initialize local state.
   local_state_ = application_context_->GetLocalState();
   DCHECK(local_state_);

@@ -404,8 +404,10 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
   TargetTouchesHeapMap touches_by_target;
 
   // Array of touches per state, used to assemble the |changedTouches| list.
-  ChangedTouches changed_touches[WebInputEvent::Type::kPointerTypeLast -
-                                 WebInputEvent::Type::kPointerTypeFirst + 1];
+  ChangedTouches
+      changed_touches[static_cast<int>(WebInputEvent::Type::kPointerTypeLast) -
+                      static_cast<int>(WebInputEvent::Type::kPointerTypeFirst) +
+                      1];
 
   Vector<int> available_ids;
   for (const auto& id : touch_attribute_map_.Keys())
@@ -445,7 +447,8 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
     // for further discussion about the TouchStationary state.
     if (!touch_point_attribute->stale_ && known_target) {
       size_t event_type_idx =
-          event_type - WebInputEvent::Type::kPointerTypeFirst;
+          static_cast<int>(event_type) -
+          static_cast<int>(WebInputEvent::Type::kPointerTypeFirst);
       if (!changed_touches[event_type_idx].touches_)
         changed_touches[event_type_idx].touches_ = TouchList::Create();
       changed_touches[event_type_idx].touches_->Append(touch);
@@ -461,9 +464,12 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
 
   // Now iterate through the |changedTouches| list and |m_targets| within it,
   // sending TouchEvents to the targets as required.
-  for (unsigned action = WebInputEvent::Type::kPointerTypeFirst;
-       action <= WebInputEvent::Type::kPointerTypeLast; ++action) {
-    size_t action_idx = action - WebInputEvent::Type::kPointerTypeFirst;
+  for (unsigned action =
+           static_cast<int>(WebInputEvent::Type::kPointerTypeFirst);
+       action <= static_cast<int>(WebInputEvent::Type::kPointerTypeLast);
+       ++action) {
+    size_t action_idx =
+        action - static_cast<int>(WebInputEvent::Type::kPointerTypeFirst);
     if (!changed_touches[action_idx].touches_)
       continue;
 

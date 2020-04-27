@@ -5,6 +5,7 @@
 #ifndef ASH_AMBIENT_AMBIENT_VIEW_DELEGATE_IMPL_H_
 #define ASH_AMBIENT_AMBIENT_VIEW_DELEGATE_IMPL_H_
 
+#include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
 
 #include "base/memory/weak_ptr.h"
@@ -21,7 +22,7 @@ class AmbientViewDelegateImpl : public AmbientViewDelegate {
   ~AmbientViewDelegateImpl() override;
 
   // AmbientViewDelegate:
-  PhotoModel* GetPhotoModel() override;
+  AmbientBackendModel* GetAmbientBackendModel() override;
   void OnBackgroundPhotoEvents() override;
 
  private:

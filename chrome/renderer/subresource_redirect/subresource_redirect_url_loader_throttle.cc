@@ -136,7 +136,8 @@ void SubresourceRedirectURLLoaderThrottle::WillRedirectRequest(
     const network::mojom::URLResponseHead& response_head,
     bool* defer,
     std::vector<std::string>* to_be_removed_request_headers,
-    net::HttpRequestHeaders* modified_request_headers) {
+    net::HttpRequestHeaders* modified_request_headers,
+    net::HttpRequestHeaders* modified_cors_exempt_request_headers) {
   UMA_HISTOGRAM_ENUMERATION(
       "SubresourceRedirect.CompressionAttempt.ResponseCode",
       static_cast<net::HttpStatusCode>(response_head.headers->response_code()),

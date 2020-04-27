@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 #include "net/base/net_errors.h"
 #include "services/network/socket_data_pump.h"

@@ -120,13 +120,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPSearchSuggestTest,
   // Open a new blank tab, then go to NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  content::ConsoleObserverDelegate console_observer(active_tab,
-                                                    "suggestions-done");
-  active_tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(active_tab);
+  console_observer.SetPattern("suggestions-done");
+
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser(),
                                                         /*delay=*/1000);
   console_observer.Wait();
-  EXPECT_EQ("suggestions-done", console_observer.message());
+  EXPECT_EQ("suggestions-done", console_observer.GetMessageAt(0u));
 
   bool result;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(

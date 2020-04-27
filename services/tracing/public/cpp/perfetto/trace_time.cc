@@ -4,7 +4,6 @@
 
 #include "services/tracing/public/cpp/perfetto/trace_time.h"
 
-#include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/perfetto/include/perfetto/base/time.h"

@@ -97,6 +97,10 @@ void CastComponent::StartComponent() {
                      kBindingsFailureExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR));
 
+  // Media loading has to be unblocked by the agent via the
+  // ApplicationController.
+  frame()->SetBlockMediaLoading(true);
+
   if (application_config_.has_force_content_dimensions()) {
     frame()->ForceContentDimensions(std::make_unique<fuchsia::ui::gfx::vec2>(
         application_config_.force_content_dimensions()));

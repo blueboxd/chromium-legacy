@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
@@ -26,10 +27,10 @@
 namespace base {
 
 // static
-const base::Feature HangWatcher::kEnableHangWatcher{
+constexpr base::Feature HangWatcher::kEnableHangWatcher{
     "EnableHangWatcher", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::TimeDelta HangWatchScope::kDefaultHangWatchTime =
+constexpr base::TimeDelta HangWatchScope::kDefaultHangWatchTime =
     base::TimeDelta::FromSeconds(10);
 
 namespace {
@@ -104,13 +105,12 @@ HangWatchScope::~HangWatchScope() {
   // and that went undetected by the HangWatcher.
 }
 
-HangWatcher::HangWatcher(RepeatingClosure on_hang_closure)
+HangWatcher::HangWatcher()
     : monitor_period_(kMonitoringPeriod),
       should_monitor_(WaitableEvent::ResetPolicy::AUTOMATIC),
-      on_hang_closure_(std::move(on_hang_closure)),
       thread_(this, kThreadName) {
   // |thread_checker_| should not be bound to the constructing thread.
-  DETACH_FROM_THREAD(thread_checker_);
+  DETACH_FROM_THREAD(hang_watcher_thread_checker_);
 
   should_monitor_.declare_only_used_while_idle();
 
@@ -144,7 +144,7 @@ bool HangWatcher::IsWatchListEmpty() {
 void HangWatcher::Run() {
   // Monitor() should only run on |thread_|. Bind |thread_checker_| here to make
   // sure of that.
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(hang_watcher_thread_checker_);
 
   while (keep_monitoring_.load(std::memory_order_relaxed)) {
     // If there is nothing to watch sleep until there is.
@@ -172,13 +172,11 @@ HangWatcher* HangWatcher::GetInstance() {
 
 // static
 void HangWatcher::RecordHang() {
+  // Prevent tail call optimization from omitting this function's address on the
+  // stack. It's necessary for it to be there for crash analysis.
+  const int line_number = __LINE__;
   base::debug::DumpWithoutCrashing();
-
-  // Defining |inhibit_tail_call_optimization| *after* calling
-  // DumpWithoutCrashing() prevents tail call optimization from omitting this
-  // function's address on the stack.
-  volatile int inhibit_tail_call_optimization = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_tail_call_optimization);
+  base::debug::Alias(&line_number);
 }
 
 ScopedClosureRunner HangWatcher::RegisterThread() {
@@ -270,7 +268,7 @@ HangWatcher::WatchStateSnapShot HangWatcher::GrabWatchStateSnapshotForTesting()
 }
 
 void HangWatcher::Monitor() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(hang_watcher_thread_checker_);
   AutoLock auto_lock(watch_state_lock_);
 
   // If all threads unregistered since this function was invoked there's
@@ -340,7 +338,10 @@ void HangWatcher::CaptureHang(base::TimeTicks capture_time) {
   base::TimeTicks latest_expired_deadline =
       watch_state_snapshot.GetHighestDeadline();
 
-  on_hang_closure_.Run();
+  if (on_hang_closure_for_testing_)
+    on_hang_closure_for_testing_.Run();
+  else
+    RecordHang();
 
   // Update after running the actual capture.
   latest_expired_deadline_ = latest_expired_deadline;
@@ -350,14 +351,22 @@ void HangWatcher::CaptureHang(base::TimeTicks capture_time) {
 
 void HangWatcher::SetAfterMonitorClosureForTesting(
     base::RepeatingClosure closure) {
+  DCHECK_CALLED_ON_VALID_THREAD(constructing_thread_checker_);
   after_monitor_closure_for_testing_ = std::move(closure);
 }
 
+void HangWatcher::SetOnHangClosureForTesting(base::RepeatingClosure closure) {
+  DCHECK_CALLED_ON_VALID_THREAD(constructing_thread_checker_);
+  on_hang_closure_for_testing_ = std::move(closure);
+}
+
 void HangWatcher::SetMonitoringPeriodForTesting(base::TimeDelta period) {
+  DCHECK_CALLED_ON_VALID_THREAD(constructing_thread_checker_);
   monitor_period_ = period;
 }
 
 void HangWatcher::SignalMonitorEventForTesting() {
+  DCHECK_CALLED_ON_VALID_THREAD(constructing_thread_checker_);
   should_monitor_.Signal();
 }
 

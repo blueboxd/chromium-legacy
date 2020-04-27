@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/ash/ambient/photo_client.h"
 
+#include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ambient/photo_controller.h"
 #include "base/callback.h"
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
@@ -23,8 +25,9 @@ std::unique_ptr<PhotoClient> PhotoClient::Create() {
 #endif
 }
 
-void PhotoClient::FetchTopicInfo(OnTopicInfoFetchedCallback callback) {
-  std::move(callback).Run(/*topic=*/base::nullopt);
+void PhotoClient::FetchScreenUpdateInfo(
+    OnScreenUpdateInfoFetchedCallback callback) {
+  std::move(callback).Run(ash::PhotoController::ScreenUpdate());
 }
 
 void PhotoClient::GetSettings(

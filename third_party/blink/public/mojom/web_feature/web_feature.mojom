@@ -2588,6 +2588,7 @@ enum WebFeature {
   kXRHitTestResultCreateAnchor = 3251,
   kCSSKeywordRevert = 3252,
   kOverlayPopupAd = 3253,
+  kEventTimingFirstInputExplicitlyRequested = 3254,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

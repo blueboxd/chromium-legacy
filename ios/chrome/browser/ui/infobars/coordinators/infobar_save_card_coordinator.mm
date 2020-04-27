@@ -109,7 +109,9 @@
     self.started = NO;
     // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator
     // from memory.
-    self.delegate->RemoveInfoBar();
+    if (self.delegate) {
+      self.delegate->RemoveInfoBar();
+    }
     _saveCardInfoBarDelegate = nil;
     [self.infobarContainer childCoordinatorStopped:self];
   }

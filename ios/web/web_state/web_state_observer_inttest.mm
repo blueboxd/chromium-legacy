@@ -2050,19 +2050,7 @@ TEST_F(WebStateObserverTest, DisallowRequestAndShowError) {
       .WillOnce(Return(
           WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(error)));
 
-  // Allow error page to load
-  // TODO(crbug.com/1069151): ShouldAllowRequest shouldn't be called for the
-  // presentation of error pages.
-  WebStatePolicyDecider::RequestInfo expected_request_info_2(
-      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
-      /*target_main_frame=*/true, /*has_user_gesture=*/false);
-  EXPECT_CALL(*decider_,
-              ShouldAllowRequest(_, RequestInfoMatch(expected_request_info_2)))
-      .WillOnce(Return(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
-  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true, _))
-      .WillOnce(
-          RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, TitleWasSet(web_state()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));

@@ -154,8 +154,9 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
   //
   // Request headers added to |to_be_removed_request_headers| will be removed
   // before the redirect is followed. Headers added to
-  // |modified_request_headers| will be merged into the existing request headers
-  // before the redirect is followed.
+  // |modified_request_headers| and |modified_cors_exempt_request_headers| will
+  // be merged into the existing request headers and cors_exempt_headers before
+  // the redirect is followed.
   //
   // If |redirect_info->new_url| is modified by a throttle, the request will be
   // redirected to the new URL. Only one throttle can update this and it must
@@ -166,7 +167,8 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
       const network::mojom::URLResponseHead& response_head,
       bool* defer,
       std::vector<std::string>* to_be_removed_request_headers,
-      net::HttpRequestHeaders* modified_request_headers);
+      net::HttpRequestHeaders* modified_request_headers,
+      net::HttpRequestHeaders* modified_cors_exempt_request_headers);
 
   // Called when the response headers and meta data are available.
   // TODO(776312): Migrate this URL to URLResponseHead.

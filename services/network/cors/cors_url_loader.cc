@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "net/base/load_flags.h"
+#include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
@@ -99,7 +100,8 @@ CorsURLLoader::CorsURLLoader(
     mojom::URLLoaderFactory* network_loader_factory,
     const OriginAccessList* origin_access_list,
     const OriginAccessList* factory_bound_origin_access_list,
-    PreflightController* preflight_controller)
+    PreflightController* preflight_controller,
+    const std::unordered_set<std::string>* allowed_exempt_headers)
     : receiver_(this, std::move(loader_receiver)),
       process_id_(process_id),
       routing_id_(routing_id),
@@ -113,6 +115,7 @@ CorsURLLoader::CorsURLLoader(
       origin_access_list_(origin_access_list),
       factory_bound_origin_access_list_(factory_bound_origin_access_list),
       preflight_controller_(preflight_controller),
+      allowed_exempt_headers_(allowed_exempt_headers),
       skip_cors_enabled_scheme_check_(skip_cors_enabled_scheme_check) {
   if (ignore_isolated_world_origin)
     request_.isolated_world_origin = base::nullopt;
@@ -122,6 +125,7 @@ CorsURLLoader::CorsURLLoader(
   DCHECK(network_loader_factory_);
   DCHECK(origin_access_list_);
   DCHECK(preflight_controller_);
+  DCHECK(allowed_exempt_headers_);
   SetCorsFlagIfNeeded();
 }
 
@@ -147,6 +151,7 @@ void CorsURLLoader::Start() {
 void CorsURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     const base::Optional<GURL>& new_url) {
   if (!network_loader_ || !deferred_redirect_url_) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
@@ -181,12 +186,21 @@ void CorsURLLoader::FollowRedirect(
 
   network::URLLoader::LogConcerningRequestHeaders(
       modified_headers, true /* added_during_redirect */);
+  network::URLLoader::LogConcerningRequestHeaders(
+      modified_cors_exempt_headers, true /* added_during_redirect */);
 
   for (const auto& name : removed_headers) {
     request_.headers.RemoveHeader(name);
     request_.cors_exempt_headers.RemoveHeader(name);
   }
   request_.headers.MergeFrom(modified_headers);
+
+  if (!CorsURLLoaderFactory::IsCorsExemptHeadersSane(
+          *allowed_exempt_headers_, modified_cors_exempt_headers)) {
+    HandleComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+    return;
+  }
+  request_.cors_exempt_headers.MergeFrom(modified_cors_exempt_headers);
 
   if (!AreRequestHeadersSafe(request_.headers)) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
@@ -238,7 +252,8 @@ void CorsURLLoader::FollowRedirect(
       request_.url, request_.mode, request_.request_initiator,
       request_.isolated_world_origin, fetch_cors_flag_, tainted_,
       origin_access_list_);
-  network_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
+  network_loader_->FollowRedirect(removed_headers, modified_headers,
+                                  modified_cors_exempt_headers, new_url);
 }
 
 void CorsURLLoader::SetPriority(net::RequestPriority priority,

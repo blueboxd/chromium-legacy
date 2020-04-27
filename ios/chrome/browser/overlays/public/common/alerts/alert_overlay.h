@@ -68,9 +68,18 @@ struct ButtonConfig {
   // Creates a ButtonConfig with |title| and |style|.
   explicit ButtonConfig(NSString* title,
                         UIAlertActionStyle style = UIAlertActionStyleDefault);
+  // Creates a ButtonConfig with |title| and |style|. UMA User Action with
+  // |user_action_name| will be recorded when this button is tapped.
+  ButtonConfig(NSString* title,
+               base::StringPiece user_action_name,
+               UIAlertActionStyle style = UIAlertActionStyleDefault);
+  ButtonConfig(const ButtonConfig&);
   ButtonConfig() = delete;
+  ~ButtonConfig();
   // The button's title.
   NSString* title;
+  // Name of UMA User Action to log when the button is tapped.
+  base::StringPiece user_action_name;
   // The button's style.
   UIAlertActionStyle style;
 };

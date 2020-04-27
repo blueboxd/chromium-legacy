@@ -56,7 +56,7 @@ const cc::ScrollbarLayerBase* ScrollbarLayerForScrollNode(
   if (!scroll_node)
     return nullptr;
   for (auto& layer : root->children()) {
-    if (!layer->is_scrollbar())
+    if (!layer->IsScrollbarLayerForTesting())
       continue;
     const auto* scrollbar_layer =
         static_cast<const cc::ScrollbarLayerBase*>(layer.get());

@@ -42,7 +42,7 @@ def _ResolveRelativeImportPath(path, roots):
   for root in reversed(sorted(roots, key=len)):
     abs_path = os.path.join(root, path)
     if os.path.isfile(abs_path):
-      return os.path.normpath(abs_path)
+      return os.path.normcase(os.path.normpath(abs_path))
 
   raise ValueError('"%s" does not exist in any of %s' % (path, roots))
 
@@ -146,7 +146,8 @@ def _CollectAllowedImportsFromBuildMetadata(build_metadata_filename):
     processed_deps.add(metadata_filename)
     with open(metadata_filename) as f:
       metadata = json.load(f)
-      allowed_imports.update(map(os.path.normpath, metadata['sources']))
+      allowed_imports.update(
+          map(os.path.normcase, map(os.path.normpath, metadata['sources'])))
       for dep_metadata in metadata['deps']:
         if dep_metadata not in processed_deps:
           collect(dep_metadata)
@@ -186,7 +187,7 @@ def _ParseMojoms(mojom_files,
   loaded_mojom_asts = {}
   loaded_modules = {}
   input_dependencies = defaultdict(set)
-  mojom_files_to_parse = dict((abs_path,
+  mojom_files_to_parse = dict((os.path.normcase(abs_path),
                                _RebaseAbsolutePath(abs_path, input_root_paths))
                               for abs_path in mojom_files)
   abs_paths = dict(

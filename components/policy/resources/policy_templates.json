@@ -19587,6 +19587,99 @@
       '''
     },
     {
+      'name': 'OnFileDownloadedEnterpriseConnector',
+      'owners': ['drubery@chromium.org', 'rogerta@chromium.org', 'mad@chromium.org', 'domfc@chromium.org'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'service_provider': { 'type': 'string' },
+            'enable': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'url_list': {
+                    'type': 'array',
+                    'items': { 'type': 'string' },
+                  },
+                  'tags': {
+                    'type': 'array',
+                    'items': { 'type': 'string' },
+                  }
+                },
+              }
+            },
+            'disable': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'url_list': {
+                    'type': 'array',
+                    'items': { 'type': 'string' },
+                  },
+                  'tags': {
+                    'type': 'array',
+                    'items': { 'type': 'string' },
+                  }
+                },
+              },
+            },
+            'block_until_verdict': { 'type': 'integer' },
+            'block_password_protected': { 'type': 'boolean' },
+            'block_large_files': { 'type': 'boolean' },
+          },
+        },
+      },
+      'example_value': [{
+        'service_provider': 'Google',
+        'enable': [
+          {
+            'url_list': ['*'],
+            'tags': ['malware']
+          },
+          {
+            'url_list': ['*.them.com', '*.others.com'],
+            'tags': ['dlp']
+          },
+        ],
+        'disable': [
+          {
+            'url_list': ['*.us.com'],
+            'tags': ['malware']
+          },
+        ],
+        'block_until_verdict': 1,
+        'block_password_protected': False,
+        'block_large_files': True,
+      }],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'id': 696,
+      'supported_on': ['chrome.*:84-', 'chrome_os:84-'],
+      'future': True,
+      'caption': '''Configuration policy for the OnFileDownloaded Chrome Enterprise Connector''',
+      'tags': [],
+      'desc': '''List of Chrome Enterprise Connectors services settings to be applied to the <ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR">OnFileDownloaded</ph> Enterprise Connector, which triggers when a file is downloaded in Chrome.
+
+      The <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD">url_list</ph>, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD">tags</ph>, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD">enable</ph> and <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD">disable</ph> fields are used to determine if the connector should send a file for analysis when it is downloaded from a specific page and what tags to include in the analysis request for that file. A tag corresponding to an 'enable' pattern will be included in the analysis request if the page URL matches a pattern associated to that tag as long as no 'disable' pattern with that same tag matches the page URL. The analysis occurs if at least 1 tag is to be included in the request.
+
+      The <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD">service_provider</ph> field identifies which analysis service provider the settings correspond to.
+
+      The <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD">block_until_verdict</ph> field being set to 1 means Chrome will wait to get a response from the analysis service before giving the user access to the downloaded file. Any other integer value means Chrome gives the user access to the file immediately.
+
+      The <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD">block_password_protected</ph> field controls whether Chrome blocks or allows files that are password protected.
+
+      The <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD">block_large_files</ph> fields controls whether Chrome blocks or allows files that are too large to be analyzed (50+ MB).
+
+      This policy can only be set from the Google Admin console.'''
+    },
+    {
       'name': 'OnFileAttachedEnterpriseConnector',
       'owners': ['rogerta@chromium.org', 'mad@chromium.org', 'domfc@chromium.org'],
       'type': 'dict',
@@ -21691,6 +21784,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 695,
+  'highest_id_currently_used': 696,
   'highest_atomic_group_id_currently_used': 38
 }

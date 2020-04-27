@@ -224,11 +224,11 @@ Document* ToDocumentFromExecutionContext(ExecutionContext* execution_context) {
 }
 
 ExecutionContext* ExecutionContextFromV8Wrappable(const Range* range) {
-  return range->startContainer()->GetDocument().ToExecutionContext();
+  return range->startContainer()->GetExecutionContext();
 }
 
 ExecutionContext* ExecutionContextFromV8Wrappable(const DOMParser* parser) {
-  return parser->GetDocument() ? parser->GetDocument()->ToExecutionContext()
+  return parser->GetDocument() ? parser->GetDocument()->GetExecutionContext()
                                : nullptr;
 }
 

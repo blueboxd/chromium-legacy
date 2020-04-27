@@ -7,7 +7,8 @@
 #include <utility>
 
 #include "base/barrier_closure.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 

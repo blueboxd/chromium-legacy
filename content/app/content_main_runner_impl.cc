@@ -892,8 +892,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     // The hang watcher needs to be started once the feature list is available
     // but before the IO thread is started.
     if (base::FeatureList::IsEnabled(base::HangWatcher::kEnableHangWatcher)) {
-      hang_watcher_ = new base::HangWatcher(
-          base::BindRepeating((&base::HangWatcher::RecordHang)));
+      hang_watcher_ = new base::HangWatcher();
       ANNOTATE_LEAKING_OBJECT_PTR(hang_watcher_);
     }
 

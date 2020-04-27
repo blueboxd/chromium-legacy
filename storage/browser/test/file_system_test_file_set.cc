@@ -11,7 +11,6 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"

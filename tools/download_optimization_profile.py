@@ -76,9 +76,9 @@ def RetrieveProfile(desired_profile_name, out_path, gs_url_base):
 
   gs_prefix = 'gs://'
   if not desired_profile_name.startswith(gs_prefix):
-    gs_url = os.path.join(GS_HTTP_URL, gs_url_base, desired_profile_name)
+    gs_url = '/'.join([GS_HTTP_URL, gs_url_base, desired_profile_name])
   else:
-    gs_url = os.path.join(GS_HTTP_URL, desired_profile_name[len(gs_prefix):])
+    gs_url = '/'.join([GS_HTTP_URL, desired_profile_name[len(gs_prefix):]])
 
   with contextlib.closing(urllib2.urlopen(gs_url)) as u:
     with open(out_path, 'wb') as f:

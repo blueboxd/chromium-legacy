@@ -97,9 +97,11 @@ class ProxyingURLLoaderFactory::InProgressRequest
   }
 
   // network::mojom::URLLoader:
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      const base::Optional<GURL>& new_url) override;
 
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {
@@ -160,6 +162,7 @@ class ProxyingURLLoaderFactory::InProgressRequest
   GURL response_url_;
   GURL referrer_origin_;
   net::HttpRequestHeaders headers_;
+  net::HttpRequestHeaders cors_exempt_headers_;
   net::RedirectInfo redirect_info_;
   const blink::mojom::ResourceType resource_type_;
   const bool is_main_frame_;
@@ -180,6 +183,8 @@ class ProxyingURLLoaderFactory::InProgressRequest
 class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
     : public ChromeRequestAdapter {
  public:
+  // Does not take |modified_cors_exempt_headers| just because we don't have a
+  // use-case to modify it in this class now.
   ProxyRequestAdapter(InProgressRequest* in_progress_request,
                       const net::HttpRequestHeaders& original_headers,
                       net::HttpRequestHeaders* modified_headers,
@@ -330,17 +335,21 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     // We need to keep a full copy of the request headers in case there is a
     // redirect and the request headers need to be modified again.
     headers_.CopyFrom(request.headers);
+    cors_exempt_headers_.CopyFrom(request.cors_exempt_headers);
   } else {
     network::ResourceRequest request_copy = request;
     request_copy.headers.MergeFrom(modified_headers);
-    for (const std::string& name : removed_headers)
+    for (const std::string& name : removed_headers) {
       request_copy.headers.RemoveHeader(name);
+      request_copy.cors_exempt_headers.RemoveHeader(name);
+    }
 
     factory_->target_factory_->CreateLoaderAndStart(
         target_loader_.BindNewPipeAndPassReceiver(), routing_id, request_id,
         options, request_copy, std::move(proxy_client), traffic_annotation);
 
     headers_.Swap(&request_copy.headers);
+    cors_exempt_headers_.Swap(&request_copy.cors_exempt_headers);
   }
 
   base::RepeatingClosure closure = base::BarrierClosure(
@@ -353,19 +362,25 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
 void ProxyingURLLoaderFactory::InProgressRequest::FollowRedirect(
     const std::vector<std::string>& removed_headers_ext,
     const net::HttpRequestHeaders& modified_headers_ext,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers_ext,
     const base::Optional<GURL>& opt_new_url) {
   std::vector<std::string> removed_headers = removed_headers_ext;
   net::HttpRequestHeaders modified_headers = modified_headers_ext;
+  net::HttpRequestHeaders modified_cors_exempt_headers =
+      modified_cors_exempt_headers_ext;
   ProxyRequestAdapter adapter(this, headers_, &modified_headers,
                               &removed_headers);
   factory_->delegate_->ProcessRequest(&adapter, redirect_info_.new_url);
 
   headers_.MergeFrom(modified_headers);
-  for (const std::string& name : removed_headers)
+  cors_exempt_headers_.MergeFrom(modified_cors_exempt_headers);
+  for (const std::string& name : removed_headers) {
     headers_.RemoveHeader(name);
+    cors_exempt_headers_.RemoveHeader(name);
+  }
 
   target_loader_->FollowRedirect(removed_headers, modified_headers,
-                                 opt_new_url);
+                                 modified_cors_exempt_headers, opt_new_url);
 
   request_url_ = redirect_info_.new_url;
   referrer_origin_ = GURL(redirect_info_.new_referrer).GetOrigin();

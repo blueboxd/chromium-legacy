@@ -38,7 +38,8 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
       const network::mojom::URLResponseHead& response_head,
       bool* defer,
       std::vector<std::string>* to_be_removed_request_headers,
-      net::HttpRequestHeaders* modified_request_headers) override;
+      net::HttpRequestHeaders* modified_request_headers,
+      net::HttpRequestHeaders* modified_cors_exempt_request_headers) override;
   void BeforeWillProcessResponse(
       const GURL& response_url,
       const network::mojom::URLResponseHead& response_head,

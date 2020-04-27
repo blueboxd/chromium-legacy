@@ -57,7 +57,7 @@ void PowerMonitor::NotifyPowerStateChange(bool battery_in_use) {
 void PowerMonitor::NotifySuspend() {
   DCHECK(IsInitialized());
   TRACE_EVENT_INSTANT0("base", "PowerMonitor::NotifySuspend",
-                       TRACE_EVENT_SCOPE_GLOBAL);
+                       TRACE_EVENT_SCOPE_PROCESS);
   DVLOG(1) << "Power Suspending";
   GetInstance()->observers_->Notify(FROM_HERE, &PowerObserver::OnSuspend);
 }
@@ -65,7 +65,7 @@ void PowerMonitor::NotifySuspend() {
 void PowerMonitor::NotifyResume() {
   DCHECK(IsInitialized());
   TRACE_EVENT_INSTANT0("base", "PowerMonitor::NotifyResume",
-                       TRACE_EVENT_SCOPE_GLOBAL);
+                       TRACE_EVENT_SCOPE_PROCESS);
   DVLOG(1) << "Power Resuming";
   GetInstance()->observers_->Notify(FROM_HERE, &PowerObserver::OnResume);
 }

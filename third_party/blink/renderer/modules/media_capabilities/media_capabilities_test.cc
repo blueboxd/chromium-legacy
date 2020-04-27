@@ -246,32 +246,36 @@ class MediaCapabilitiesTestContext {
     fake_metrics_provider_ = std::make_unique<FakeMediaMetricsProvider>(
         bad_window_service_.get(), nnr_service_.get());
 
-    CHECK(
-        v8_scope_.GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
-            media::mojom::blink::MediaMetricsProvider::Name_,
-            base::BindRepeating(
-                &FakeMediaMetricsProvider::BindRequest,
-                base::Unretained(fake_metrics_provider_.get()))));
+    CHECK(v8_scope_.GetExecutionContext()
+              ->GetBrowserInterfaceBroker()
+              .SetBinderForTesting(
+                  media::mojom::blink::MediaMetricsProvider::Name_,
+                  base::BindRepeating(
+                      &FakeMediaMetricsProvider::BindRequest,
+                      base::Unretained(fake_metrics_provider_.get()))));
 
-    CHECK(
-        v8_scope_.GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
-            media::mojom::blink::VideoDecodePerfHistory::Name_,
-            base::BindRepeating(
-                &MockPerfHistoryService::BindRequest,
-                base::Unretained(perf_history_service_.get()))));
+    CHECK(v8_scope_.GetExecutionContext()
+              ->GetBrowserInterfaceBroker()
+              .SetBinderForTesting(
+                  media::mojom::blink::VideoDecodePerfHistory::Name_,
+                  base::BindRepeating(
+                      &MockPerfHistoryService::BindRequest,
+                      base::Unretained(perf_history_service_.get()))));
 
     media_capabilities_ = MakeGarbageCollected<MediaCapabilities>(
-        v8_scope_.GetDocument().ToExecutionContext());
+        v8_scope_.GetExecutionContext());
   }
 
   ~MediaCapabilitiesTestContext() {
-    CHECK(
-        v8_scope_.GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
-            media::mojom::blink::MediaMetricsProvider::Name_, {}));
+    CHECK(v8_scope_.GetExecutionContext()
+              ->GetBrowserInterfaceBroker()
+              .SetBinderForTesting(
+                  media::mojom::blink::MediaMetricsProvider::Name_, {}));
 
-    CHECK(
-        v8_scope_.GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
-            media::mojom::blink::VideoDecodePerfHistory::Name_, {}));
+    CHECK(v8_scope_.GetExecutionContext()
+              ->GetBrowserInterfaceBroker()
+              .SetBinderForTesting(
+                  media::mojom::blink::VideoDecodePerfHistory::Name_, {}));
   }
 
   ExceptionState& GetExceptionState() { return v8_scope_.GetExceptionState(); }

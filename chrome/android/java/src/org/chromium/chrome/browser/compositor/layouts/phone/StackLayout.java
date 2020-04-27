@@ -23,9 +23,6 @@ import java.util.ArrayList;
  * Layout that displays all normal tabs in one stack and all incognito tabs in a second.
  */
 public class StackLayout extends StackLayoutBase {
-    // One stack for normal tabs and one stack for incognito tabs.
-    private static final int NUM_STACKS = 2;
-
     public static final int NORMAL_STACK_INDEX = 0;
     public static final int INCOGNITO_STACK_INDEX = 1;
 

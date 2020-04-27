@@ -30,11 +30,8 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
   ~ImageResourceInfo() = default;
   virtual const KURL& Url() const = 0;
   virtual base::TimeTicks LoadResponseEnd() const = 0;
-  virtual bool IsSchedulingReload() const = 0;
   virtual const ResourceResponse& GetResponse() const = 0;
-  virtual bool ShouldShowPlaceholder() const = 0;
   virtual bool IsCacheValidator() const = 0;
-  virtual bool SchedulingReloadOrShouldReloadBrokenPlaceholder() const = 0;
   enum DoesCurrentFrameHaveSingleSecurityOrigin {
     kHasMultipleSecurityOrigin,
     kHasSingleSecurityOrigin

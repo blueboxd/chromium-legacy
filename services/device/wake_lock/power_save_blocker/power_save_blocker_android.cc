@@ -6,8 +6,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "services/device/wake_lock/power_save_blocker/jni_headers/PowerSaveBlocker_jni.h"

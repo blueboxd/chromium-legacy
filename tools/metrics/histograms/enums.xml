@@ -20032,6 +20032,7 @@ Called by update_document_policy_enum.py.-->
   <int value="693" label="OnFileAttachedEnterpriseConnector"/>
   <int value="694" label="VoiceInteractionQuickAnswersEnabled"/>
   <int value="695" label="DeviceCrostiniArcAdbSideloadingAllowed"/>
+  <int value="696" label="OnFileDownloadedEnterpriseConnector"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -27078,6 +27079,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3251" label="XRHitTestResultCreateAnchor"/>
   <int value="3252" label="CSSKeywordRevert"/>
   <int value="3253" label="OverlayPopupAd"/>
+  <int value="3254" label="EventTimingFirstInputExplicitlyRequested"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -43306,6 +43308,7 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Bad user status"/>
   <int value="2" label="Bad fetch result"/>
   <int value="3" label="Bad logo"/>
+  <int value="4" label="Bad reset reason"/>
 </enum>
 
 <enum name="MediaFeedSafeSearchResult">

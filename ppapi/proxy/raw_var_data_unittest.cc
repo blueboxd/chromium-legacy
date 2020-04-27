@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"

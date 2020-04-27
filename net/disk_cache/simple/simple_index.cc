@@ -58,6 +58,11 @@ static const int kEstimatedEntryOverhead = 512;
 
 namespace disk_cache {
 
+const base::Feature
+    SimpleIndex::kSimpleCacheDisableEvictionSizeHeuristicForCodeCache{
+        "SimpleCacheDisableEvictionSizeHeuristicForCodeCache",
+        base::FEATURE_DISABLED_BY_DEFAULT};
+
 EntryMetadata::EntryMetadata()
     : last_used_time_seconds_since_epoch_(0),
       entry_size_256b_chunks_(0),
@@ -417,6 +422,12 @@ void SimpleIndex::StartEvictionIfNeeded() {
       MEMORY_KB, "Eviction.MaxCacheSizeOnStart2", cache_type_,
       static_cast<base::HistogramBase::Sample>(max_size_ / kBytesInKb));
 
+  bool use_size_heuristic = true;
+  if (cache_type_ == net::GENERATED_BYTE_CODE_CACHE) {
+    use_size_heuristic = !base::FeatureList::IsEnabled(
+        kSimpleCacheDisableEvictionSizeHeuristicForCodeCache);
+  }
+
   // Flatten for sorting.
   std::vector<std::pair<uint64_t, const EntrySet::value_type*>> entries;
   entries.reserve(entries_set_.size());
@@ -428,7 +439,8 @@ void SimpleIndex::StartEvictionIfNeeded() {
     //
     // Will not overflow since we're multiplying two 32-bit values and storing
     // them in a 64-bit variable.
-    sort_value *= i->second.GetEntrySize() + kEstimatedEntryOverhead;
+    if (use_size_heuristic)
+      sort_value *= i->second.GetEntrySize() + kEstimatedEntryOverhead;
     // Subtract so we don't need a custom comparator.
     entries.emplace_back(std::numeric_limits<uint64_t>::max() - sort_value,
                          &*i);

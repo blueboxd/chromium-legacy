@@ -2654,7 +2654,7 @@ TEST_P(VisualViewportTest, PaintScrollbar) {
   auto check_scrollbar = [](const cc::Layer* scrollbar, float scale) {
     EXPECT_TRUE(scrollbar->DrawsContent());
     EXPECT_FALSE(scrollbar->HitTestable());
-    EXPECT_TRUE(scrollbar->is_scrollbar());
+    EXPECT_TRUE(scrollbar->IsScrollbarLayerForTesting());
     EXPECT_EQ(
         cc::VERTICAL,
         static_cast<const cc::ScrollbarLayerBase*>(scrollbar)->orientation());

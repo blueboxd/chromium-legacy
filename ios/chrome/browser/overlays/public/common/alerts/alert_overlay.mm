@@ -14,10 +14,22 @@ namespace alert_overlays {
 
 #pragma mark - ButtonConfig
 
+ButtonConfig::~ButtonConfig() = default;
+
 ButtonConfig::ButtonConfig(NSString* title, UIAlertActionStyle style)
     : title(title), style(style) {
   DCHECK_GT(title.length, 0U);
 }
+
+ButtonConfig::ButtonConfig(NSString* title,
+                           base::StringPiece user_action_name,
+                           UIAlertActionStyle style)
+    : title(title), user_action_name(user_action_name), style(style) {
+  DCHECK_GT(title.length, 0U);
+  DCHECK_GT(user_action_name.length(), 0U);
+}
+
+ButtonConfig::ButtonConfig(const ButtonConfig& copy) = default;
 
 #pragma mark - AlertRequest
 

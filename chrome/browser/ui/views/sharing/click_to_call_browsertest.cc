@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -82,6 +81,17 @@ class BaseClickToCallBrowserTest : public SharingBrowserTest {
 
   std::string HistogramName(const char* suffix) {
     return base::StrCat({"Sharing.ClickToCall", suffix});
+  }
+
+  base::HistogramTester::CountsMap GetTotalHistogramCounts(
+      const base::HistogramTester& histograms) {
+    base::HistogramTester::CountsMap counts =
+        histograms.GetTotalCountsForPrefix(HistogramName(""));
+    // PhoneNumberPrecompileTime will be logged 15 seconds after startup but
+    // we want to ignore it in these browser tests as we don't know if the
+    // test takes more or less time than that.
+    counts.erase(HistogramName("PhoneNumberPrecompileTime"));
+    return counts;
   }
 };
 
@@ -239,29 +249,25 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, ContextMenu_TelLink_Histograms) {
   // Trigger a context menu for a link with 8 digits and 9 characters.
   std::unique_ptr<TestRenderViewContextMenu> menu = InitContextMenu(
       GURL("tel:1234-5678"), kLinkText, kTextWithoutPhoneNumber);
-  // RegexVariantResult is logged on a thread pool.
-  base::ThreadPoolInstance::Get()->FlushForTesting();
 
   base::HistogramTester::CountsMap expected_counts = {
       {HistogramName("DevicesToShow"), 1},
       {HistogramName("DevicesToShow.ContextMenu"), 1},
   };
 
-  EXPECT_THAT(histograms.GetTotalCountsForPrefix(HistogramName("")),
+  EXPECT_THAT(GetTotalHistogramCounts(histograms),
               testing::ContainerEq(expected_counts));
 
   // Send the number to the device in the context menu.
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
                        0);
-  // RegexVariantResult is logged on a thread pool.
-  base::ThreadPoolInstance::Get()->FlushForTesting();
 
   expected_counts.insert({
       {HistogramName("SelectedDeviceIndex"), 1},
       {HistogramName("SelectedDeviceIndex.ContextMenu"), 1},
   });
 
-  EXPECT_THAT(histograms.GetTotalCountsForPrefix(HistogramName("")),
+  EXPECT_THAT(GetTotalHistogramCounts(histograms),
               testing::ContainerEq(expected_counts));
 }
 
@@ -274,8 +280,6 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   // Trigger a context menu for a selection with 8 digits and 9 characters.
   std::unique_ptr<TestRenderViewContextMenu> menu =
       InitContextMenu(GURL(kNonTelUrl), kLinkText, "1234-5678");
-  // RegexVariantResult is logged on a thread pool.
-  base::ThreadPoolInstance::Get()->FlushForTesting();
 
   base::HistogramTester::CountsMap expected_counts = {
       {HistogramName("DevicesToShow"), 1},
@@ -283,21 +287,19 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
       {HistogramName("ContextMenuPhoneNumberParsingDelay"), 1},
   };
 
-  EXPECT_THAT(histograms.GetTotalCountsForPrefix(HistogramName("")),
+  EXPECT_THAT(GetTotalHistogramCounts(histograms),
               testing::ContainerEq(expected_counts));
 
   // Send the number to the device in the context menu.
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE,
                        0);
-  // RegexVariantResult is logged on a thread pool.
-  base::ThreadPoolInstance::Get()->FlushForTesting();
 
   expected_counts.insert({
       {HistogramName("SelectedDeviceIndex"), 1},
       {HistogramName("SelectedDeviceIndex.ContextMenu"), 1},
   });
 
-  EXPECT_THAT(histograms.GetTotalCountsForPrefix(HistogramName("")),
+  EXPECT_THAT(GetTotalHistogramCounts(histograms),
               testing::ContainerEq(expected_counts));
 }
 

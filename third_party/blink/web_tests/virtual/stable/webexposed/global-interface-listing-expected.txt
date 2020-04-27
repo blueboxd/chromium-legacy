@@ -43,17 +43,24 @@ interface Animation : EventTarget
     attribute @@toStringTag
     getter currentTime
     getter effect
+    getter finished
     getter id
     getter oncancel
     getter onfinish
+    getter onremove
     getter pending
     getter playState
     getter playbackRate
+    getter ready
+    getter replaceState
     getter startTime
+    getter timeline
     method cancel
+    method commitStyles
     method constructor
     method finish
     method pause
+    method persist
     method play
     method reverse
     method updatePlaybackRate
@@ -62,6 +69,7 @@ interface Animation : EventTarget
     setter id
     setter oncancel
     setter onfinish
+    setter onremove
     setter playbackRate
     setter startTime
 interface AnimationEffect
@@ -75,6 +83,15 @@ interface AnimationEvent : Event
     getter animationName
     getter elapsedTime
     getter pseudoElement
+    method constructor
+interface AnimationPlaybackEvent : Event
+    attribute @@toStringTag
+    getter currentTime
+    getter timelineTime
+    method constructor
+interface AnimationTimeline
+    attribute @@toStringTag
+    getter currentTime
     method constructor
 interface ApplicationCache : EventTarget
     attribute @@toStringTag
@@ -429,6 +446,10 @@ interface CSS
     static method vw
     attribute @@toStringTag
     method constructor
+interface CSSAnimation : Animation
+    attribute @@toStringTag
+    getter animationName
+    method constructor
 interface CSSConditionRule : CSSGroupingRule
     attribute @@toStringTag
     getter conditionText
@@ -681,6 +702,10 @@ interface CSSTransformValue : CSSStyleValue
     method keys
     method toMatrix
     method values
+interface CSSTransition : Animation
+    attribute @@toStringTag
+    getter transitionProperty
+    method constructor
 interface CSSTranslate : CSSTransformComponent
     attribute @@toStringTag
     getter x
@@ -1407,6 +1432,7 @@ interface Document : Node
     getter scripts
     getter scrollingElement
     getter styleSheets
+    getter timeline
     getter title
     getter visibilityState
     getter vlinkColor
@@ -1449,6 +1475,7 @@ interface Document : Node
     method exitFullscreen
     method exitPictureInPicture
     method exitPointerLock
+    method getAnimations
     method getElementById
     method getElementsByClassName
     method getElementsByName
@@ -1605,6 +1632,9 @@ interface DocumentFragment : Node
     method prepend
     method querySelector
     method querySelectorAll
+interface DocumentTimeline : AnimationTimeline
+    attribute @@toStringTag
+    method constructor
 interface DocumentType : Node
     attribute @@toStringTag
     attribute @@unscopables
@@ -1717,6 +1747,7 @@ interface Element : Node
     method closest
     method computedStyleMap
     method constructor
+    method getAnimations
     method getAttribute
     method getAttributeNS
     method getAttributeNames
@@ -4031,8 +4062,14 @@ interface KeyboardLayoutMap
     method values
 interface KeyframeEffect : AnimationEffect
     attribute @@toStringTag
+    getter composite
+    getter pseudoElement
     getter target
     method constructor
+    method getKeyframes
+    method setKeyframes
+    setter composite
+    setter pseudoElement
     setter target
 interface LargestContentfulPaint : PerformanceEntry
     attribute @@toStringTag
@@ -6912,6 +6949,7 @@ interface ShadowRoot : DocumentFragment
     method constructor
     method elementFromPoint
     method elementsFromPoint
+    method getAnimations
     method getSelection
     setter adoptedStyleSheets
     setter fullscreenElement

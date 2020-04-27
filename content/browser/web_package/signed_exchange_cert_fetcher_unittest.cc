@@ -50,7 +50,8 @@ class DeferringURLLoaderThrottle final : public blink::URLLoaderThrottle {
       const network::mojom::URLResponseHead& /* response_head */,
       bool* defer,
       std::vector<std::string>* /* to_be_removed_headers */,
-      net::HttpRequestHeaders* /* modified_headers */) override {
+      net::HttpRequestHeaders* /* modified_headers */,
+      net::HttpRequestHeaders* /* modified_cors_exempt_headers */) override {
     will_redirect_request_called_ = true;
     *defer = true;
   }
@@ -87,8 +88,9 @@ class MockURLLoader final : public network::mojom::URLLoader {
       : receiver_(this, std::move(url_loader_receiver)) {}
   ~MockURLLoader() override = default;
 
-  MOCK_METHOD3(FollowRedirect,
+  MOCK_METHOD4(FollowRedirect,
                void(const std::vector<std::string>&,
+                    const net::HttpRequestHeaders&,
                     const net::HttpRequestHeaders&,
                     const base::Optional<GURL>&));
   MOCK_METHOD2(SetPriority,

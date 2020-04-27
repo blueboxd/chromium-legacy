@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/math_constants.h"
 #include "base/strings/string_util.h"

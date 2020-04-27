@@ -135,7 +135,6 @@ crbug.com/856601 [ Linux ] external/wpt/hr-time/idlharness.any.sharedworker.html
 crbug.com/856601 [ Linux ] external/wpt/media-capabilities/idlharness.any.worker.html [ Skip ]
 crbug.com/856601 [ Linux ] external/wpt/mediacapture-image/idlharness.window.html [ Skip ]
 crbug.com/856601 [ Linux ] external/wpt/mediacapture-streams/idlharness.https.window.html [ Skip ]
-crbug.com/856601 [ Linux ] virtual/audio-service/external/wpt/mediacapture-streams/idlharness.https.window.html [ Skip ]
 crbug.com/856601 [ Linux ] external/wpt/netinfo/idlharness.any.worker.html [ Skip ]
 crbug.com/856601 [ Linux ] external/wpt/notifications/idlharness.https.any.html [ Skip ]
 crbug.com/856601 [ Linux ] external/wpt/notifications/idlharness.https.any.serviceworker.html [ Skip ]

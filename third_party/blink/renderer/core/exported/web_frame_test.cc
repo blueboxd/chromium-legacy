@@ -13041,7 +13041,7 @@ TEST_F(WebFrameSimTest, GetPageSizeType) {
   EXPECT_EQ(PageSizeType::kAuto, main_frame->GetPageSizeType(1));
 
   for (const auto& test : test_cases) {
-    style_decl->setProperty(doc->ToExecutionContext(), "size", test.size, "",
+    style_decl->setProperty(doc->GetExecutionContext(), "size", test.size, "",
                             ASSERT_NO_EXCEPTION);
     EXPECT_EQ(test.page_size_type, main_frame->GetPageSizeType(1));
   }

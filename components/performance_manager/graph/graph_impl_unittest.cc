@@ -269,7 +269,7 @@ TEST_F(GraphImplTest, NodeDataDescribers) {
 
   // No describers->no description.
   base::Value descr = registry->DescribeNodeData(mock_graph.frame.get());
-  EXPECT_TRUE(descr.is_none());
+  EXPECT_EQ(0u, descr.DictSize());
 
   // Test that the default impl does nothing.
   NodeDataDescriberDefaultImpl default_impl;
@@ -319,7 +319,7 @@ TEST_F(GraphImplTest, NodeDataDescribers) {
 
   // No describers after unregistration->no description.
   descr = registry->DescribeNodeData(mock_graph.frame.get());
-  EXPECT_TRUE(descr.is_none());
+  EXPECT_EQ(0u, descr.DictSize());
 }
 
 }  // namespace performance_manager

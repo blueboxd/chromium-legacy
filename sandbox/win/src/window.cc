@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/win/win_util.h"
 #include "sandbox/win/src/acl.h"
 #include "sandbox/win/src/sid.h"

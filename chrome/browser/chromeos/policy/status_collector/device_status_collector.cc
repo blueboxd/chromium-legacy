@@ -815,6 +815,7 @@ class DeviceStatusCollectorState : public StatusCollectorState {
   void OnCrosHealthdDataReceived(
       chromeos::cros_healthd::mojom::TelemetryInfoPtr probe_result,
       const base::circular_deque<std::unique_ptr<SampledData>>& samples) {
+    namespace cros_healthd = chromeos::cros_healthd::mojom;
     // Make sure we edit the state on the right thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -836,21 +837,28 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     // Process NonRemovableBlockDeviceResult.
     const auto& block_device_result = probe_result->block_device_result;
     if (!block_device_result.is_null()) {
-      if (block_device_result->is_error()) {
-        LOG(ERROR) << "cros_healthd: Error getting block device info: "
-                   << block_device_result->get_error()->msg;
-      } else {
-        em::StorageStatus* const storage_status_out =
-            response_params_.device_status->mutable_storage_status();
-        for (const auto& storage :
-             block_device_result->get_block_device_info()) {
-          em::DiskInfo* const disk_info_out = storage_status_out->add_disks();
-          disk_info_out->set_serial(base::NumberToString(storage->serial));
-          disk_info_out->set_manufacturer(
-              base::NumberToString(storage->manufacturer_id));
-          disk_info_out->set_model(storage->name);
-          disk_info_out->set_type(storage->type);
-          disk_info_out->set_size(storage->size);
+      switch (block_device_result->which()) {
+        case cros_healthd::NonRemovableBlockDeviceResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting block device info: "
+                     << block_device_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::NonRemovableBlockDeviceResult::Tag::
+            BLOCK_DEVICE_INFO: {
+          em::StorageStatus* const storage_status_out =
+              response_params_.device_status->mutable_storage_status();
+          for (const auto& storage :
+               block_device_result->get_block_device_info()) {
+            em::DiskInfo* const disk_info_out = storage_status_out->add_disks();
+            disk_info_out->set_serial(base::NumberToString(storage->serial));
+            disk_info_out->set_manufacturer(
+                base::NumberToString(storage->manufacturer_id));
+            disk_info_out->set_model(storage->name);
+            disk_info_out->set_type(storage->type);
+            disk_info_out->set_size(storage->size);
+          }
+          break;
         }
       }
     }
@@ -858,51 +866,65 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     // Process CachedVpdResult.
     const auto& vpd_result = probe_result->vpd_result;
     if (!vpd_result.is_null()) {
-      if (vpd_result->is_error()) {
-        LOG(ERROR) << "cros_healthd: Error getting cached VPD info: "
-                   << vpd_result->get_error()->msg;
-      } else {
-        const auto& vpd_info = vpd_result->get_vpd_info();
-        em::SystemStatus* const system_status_out =
-            response_params_.device_status->mutable_system_status();
-        if (vpd_info->sku_number.has_value())
-          system_status_out->set_vpd_sku_number(vpd_info->sku_number.value());
+      switch (vpd_result->which()) {
+        case cros_healthd::CachedVpdResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting cached VPD info: "
+                     << vpd_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::CachedVpdResult::Tag::VPD_INFO: {
+          const auto& vpd_info = vpd_result->get_vpd_info();
+          em::SystemStatus* const system_status_out =
+              response_params_.device_status->mutable_system_status();
+          if (vpd_info->sku_number.has_value())
+            system_status_out->set_vpd_sku_number(vpd_info->sku_number.value());
+          break;
+        }
       }
     }
 
     // Process BatteryResult.
     const auto& battery_result = probe_result->battery_result;
     if (!battery_result.is_null()) {
-      if (battery_result->is_error()) {
-        LOG(ERROR) << "cros_healthd: Error getting battery info: "
-                   << battery_result->get_error()->msg;
-      } else if (!battery_result->get_battery_info().is_null()) {
-        const auto& battery_info = battery_result->get_battery_info();
-        em::PowerStatus* const power_status_out =
-            response_params_.device_status->mutable_power_status();
-        em::BatteryInfo* const battery_info_out =
-            power_status_out->add_batteries();
-        battery_info_out->set_serial(battery_info->serial_number);
-        battery_info_out->set_manufacturer(battery_info->vendor);
-        battery_info_out->set_cycle_count(battery_info->cycle_count);
-        battery_info_out->set_technology(battery_info->technology);
-        // Convert Ah to mAh:
-        battery_info_out->set_design_capacity(
-            std::lround(battery_info->charge_full_design * 1000));
-        battery_info_out->set_full_charge_capacity(
-            std::lround(battery_info->charge_full * 1000));
-        // Convert V to mV:
-        battery_info_out->set_design_min_voltage(
-            std::lround(battery_info->voltage_min_design * 1000));
-        if (battery_info->manufacture_date) {
-          battery_info_out->set_manufacture_date(
-              battery_info->manufacture_date.value());
+      switch (battery_result->which()) {
+        case cros_healthd::BatteryResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting battery info: "
+                     << battery_result->get_error()->msg;
+          break;
         }
 
-        for (const std::unique_ptr<SampledData>& sample_data : samples) {
-          auto it = sample_data->battery_samples.find(battery_info->model_name);
-          if (it != sample_data->battery_samples.end())
-            battery_info_out->add_samples()->CheckTypeAndMergeFrom(it->second);
+        case cros_healthd::BatteryResult::Tag::BATTERY_INFO: {
+          const auto& battery_info = battery_result->get_battery_info();
+          em::PowerStatus* const power_status_out =
+              response_params_.device_status->mutable_power_status();
+          em::BatteryInfo* const battery_info_out =
+              power_status_out->add_batteries();
+          battery_info_out->set_serial(battery_info->serial_number);
+          battery_info_out->set_manufacturer(battery_info->vendor);
+          battery_info_out->set_cycle_count(battery_info->cycle_count);
+          battery_info_out->set_technology(battery_info->technology);
+          // Convert Ah to mAh:
+          battery_info_out->set_design_capacity(
+              std::lround(battery_info->charge_full_design * 1000));
+          battery_info_out->set_full_charge_capacity(
+              std::lround(battery_info->charge_full * 1000));
+          // Convert V to mV:
+          battery_info_out->set_design_min_voltage(
+              std::lround(battery_info->voltage_min_design * 1000));
+          if (battery_info->manufacture_date) {
+            battery_info_out->set_manufacture_date(
+                battery_info->manufacture_date.value());
+          }
+
+          for (const std::unique_ptr<SampledData>& sample_data : samples) {
+            auto it =
+                sample_data->battery_samples.find(battery_info->model_name);
+            if (it != sample_data->battery_samples.end())
+              battery_info_out->add_samples()->CheckTypeAndMergeFrom(
+                  it->second);
+          }
+          break;
         }
       }
     }
@@ -910,17 +932,23 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     // Process CpuResult.
     const auto& cpu_result = probe_result->cpu_result;
     if (!cpu_result.is_null()) {
-      if (cpu_result->is_error()) {
-        LOG(ERROR) << "cros_healthd: Error getting CPU info: "
-                   << cpu_result->get_error()->msg;
-      } else {
-        for (const auto& cpu : cpu_result->get_cpu_info()) {
-          em::CpuInfo* const cpu_info_out =
-              response_params_.device_status->add_cpu_info();
-          cpu_info_out->set_model_name(cpu->model_name);
-          cpu_info_out->set_architecture(
-              em::CpuInfo::Architecture(cpu->architecture));
-          cpu_info_out->set_max_clock_speed_khz(cpu->max_clock_speed_khz);
+      switch (cpu_result->which()) {
+        case cros_healthd::CpuResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting CPU info: "
+                     << cpu_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::CpuResult::Tag::CPU_INFO: {
+          for (const auto& cpu : cpu_result->get_cpu_info()) {
+            em::CpuInfo* const cpu_info_out =
+                response_params_.device_status->add_cpu_info();
+            cpu_info_out->set_model_name(cpu->model_name);
+            cpu_info_out->set_architecture(
+                em::CpuInfo::Architecture(cpu->architecture));
+            cpu_info_out->set_max_clock_speed_khz(cpu->max_clock_speed_khz);
+          }
+          break;
         }
       }
     }
@@ -928,50 +956,68 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     // Process TimezoneResult.
     const auto& timezone_result = probe_result->timezone_result;
     if (!timezone_result.is_null()) {
-      if (timezone_result->is_error()) {
-        LOG(ERROR) << "cros_healthd: Error getting timezone info: "
-                   << timezone_result->get_error()->msg;
-      } else {
-        const auto& timezone_info = timezone_result->get_timezone_info();
-        em::TimezoneInfo* const timezone_info_out =
-            response_params_.device_status->mutable_timezone_info();
-        timezone_info_out->set_posix(timezone_info->posix);
-        timezone_info_out->set_region(timezone_info->region);
+      switch (timezone_result->which()) {
+        case cros_healthd::TimezoneResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting timezone info: "
+                     << timezone_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::TimezoneResult::Tag::TIMEZONE_INFO: {
+          const auto& timezone_info = timezone_result->get_timezone_info();
+          em::TimezoneInfo* const timezone_info_out =
+              response_params_.device_status->mutable_timezone_info();
+          timezone_info_out->set_posix(timezone_info->posix);
+          timezone_info_out->set_region(timezone_info->region);
+          break;
+        }
       }
     }
 
     // Process MemoryResult.
     const auto& memory_result = probe_result->memory_result;
     if (!memory_result.is_null()) {
-      if (memory_result->is_error()) {
-        LOG(ERROR) << "cros_healthd: Error getting memory info: "
-                   << memory_result->get_error()->msg;
-      } else {
-        const auto& memory_info = memory_result->get_memory_info();
-        em::MemoryInfo* const memory_info_out =
-            response_params_.device_status->mutable_memory_info();
-        memory_info_out->set_total_memory_kib(memory_info->total_memory_kib);
-        memory_info_out->set_free_memory_kib(memory_info->free_memory_kib);
-        memory_info_out->set_available_memory_kib(
-            memory_info->available_memory_kib);
-        memory_info_out->set_page_faults_since_last_boot(
-            memory_info->page_faults_since_last_boot);
+      switch (memory_result->which()) {
+        case cros_healthd::MemoryResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting memory info: "
+                     << memory_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::MemoryResult::Tag::MEMORY_INFO: {
+          const auto& memory_info = memory_result->get_memory_info();
+          em::MemoryInfo* const memory_info_out =
+              response_params_.device_status->mutable_memory_info();
+          memory_info_out->set_total_memory_kib(memory_info->total_memory_kib);
+          memory_info_out->set_free_memory_kib(memory_info->free_memory_kib);
+          memory_info_out->set_available_memory_kib(
+              memory_info->available_memory_kib);
+          memory_info_out->set_page_faults_since_last_boot(
+              memory_info->page_faults_since_last_boot);
+          break;
+        }
       }
     }
 
     // Process BacklightResult.
     const auto& backlight_result = probe_result->backlight_result;
     if (!backlight_result.is_null()) {
-      if (backlight_result->is_error()) {
-        LOG(ERROR) << "cros_healthd: Error getting backlight info: "
-                   << backlight_result->get_error()->msg;
-      } else {
-        for (const auto& backlight : backlight_result->get_backlight_info()) {
-          em::BacklightInfo* const backlight_info_out =
-              response_params_.device_status->add_backlight_info();
-          backlight_info_out->set_path(backlight->path);
-          backlight_info_out->set_max_brightness(backlight->max_brightness);
-          backlight_info_out->set_brightness(backlight->brightness);
+      switch (backlight_result->which()) {
+        case cros_healthd::BacklightResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting backlight info: "
+                     << backlight_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::BacklightResult::Tag::BACKLIGHT_INFO: {
+          for (const auto& backlight : backlight_result->get_backlight_info()) {
+            em::BacklightInfo* const backlight_info_out =
+                response_params_.device_status->add_backlight_info();
+            backlight_info_out->set_path(backlight->path);
+            backlight_info_out->set_max_brightness(backlight->max_brightness);
+            backlight_info_out->set_brightness(backlight->brightness);
+          }
+          break;
         }
       }
     }
@@ -979,15 +1025,20 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     // Process FanResult.
     const auto& fan_result = probe_result->fan_result;
     if (!fan_result.is_null()) {
-      if (fan_result->is_error()) {
-        LOG(ERROR) << "cros_healthd: Error getting fan info: "
-                   << fan_result->get_error()->msg;
-      } else {
-        const auto& fan_info = fan_result->get_fan_info();
-        for (const auto& fan : fan_info) {
-          em::FanInfo* const fan_info_out =
-              response_params_.device_status->add_fan_info();
-          fan_info_out->set_speed_rpm(fan->speed_rpm);
+      switch (fan_result->which()) {
+        case cros_healthd::FanResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting fan info: "
+                     << fan_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::FanResult::Tag::FAN_INFO: {
+          for (const auto& fan : fan_result->get_fan_info()) {
+            em::FanInfo* const fan_info_out =
+                response_params_.device_status->add_fan_info();
+            fan_info_out->set_speed_rpm(fan->speed_rpm);
+          }
+          break;
         }
       }
     }

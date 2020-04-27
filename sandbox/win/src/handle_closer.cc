@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/free_deleter.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/interceptors.h"

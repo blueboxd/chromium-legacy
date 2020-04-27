@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/notreached.h"
 #include "services/device/usb/usb_device.h"
 
 namespace device {

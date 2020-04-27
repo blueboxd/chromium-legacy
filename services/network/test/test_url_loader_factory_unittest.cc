@@ -4,7 +4,6 @@
 
 #include "services/network/test/test_url_loader_factory.h"
 
-#include "base/logging.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"

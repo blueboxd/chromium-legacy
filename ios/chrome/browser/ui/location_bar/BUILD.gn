@@ -57,7 +57,6 @@ source_set("location_bar") {
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
     "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/infobars:feature_flags",
-    "//ios/chrome/browser/ui/infobars/badge",
     "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/ui/omnibox:omnibox",
     "//ios/chrome/browser/ui/omnibox:omnibox_internal",

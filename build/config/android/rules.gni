@@ -2493,9 +2493,7 @@ if (enable_java_templates) {
       target_sdk_version = _target_sdk_version
       if (defined(invoker.verify_manifest) && invoker.verify_manifest &&
           !is_java_debug) {
-        _target_src_dir = get_label_info(":$target_name", "dir")
-        expected_manifest =
-            "$_target_src_dir/java/$_template_name.AndroidManifest.expected"
+        verify_manifest_target_name = _template_name
       }
 
       if (defined(_resource_ids_provider_dep)) {
@@ -3483,6 +3481,7 @@ if (enable_java_templates) {
                                "uncompress_dex",
                                "uncompress_shared_libraries",
                                "use_chromium_linker",
+                               "verify_manifest",
                                "verify_native_libs_and_assets",
                                "version_code",
                                "version_name",

@@ -4,7 +4,7 @@
 
 #include "services/device/public/cpp/generic_sensor/platform_sensor_configuration.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace device {
 

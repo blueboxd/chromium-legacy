@@ -370,6 +370,7 @@ struct FunctorTraits<Functor,
   using RunType = ExtractCallableRunType<Functor>;
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = false;
+  static constexpr bool is_callback = false;
 
   template <typename RunFunctor, typename... RunArgs>
   static ExtractReturnType<RunType> Invoke(RunFunctor&& functor,
@@ -384,6 +385,7 @@ struct FunctorTraits<R (*)(Args...)> {
   using RunType = R(Args...);
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
+  static constexpr bool is_callback = false;
 
   template <typename Function, typename... RunArgs>
   static R Invoke(Function&& function, RunArgs&&... args) {
@@ -399,6 +401,7 @@ struct FunctorTraits<R(__stdcall*)(Args...)> {
   using RunType = R(Args...);
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
+  static constexpr bool is_callback = false;
 
   template <typename... RunArgs>
   static R Invoke(R(__stdcall* function)(Args...), RunArgs&&... args) {
@@ -412,6 +415,7 @@ struct FunctorTraits<R(__fastcall*)(Args...)> {
   using RunType = R(Args...);
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
+  static constexpr bool is_callback = false;
 
   template <typename... RunArgs>
   static R Invoke(R(__fastcall* function)(Args...), RunArgs&&... args) {
@@ -441,6 +445,7 @@ struct FunctorTraits<R (^)(Args...)> {
   using RunType = R(Args...);
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
+  static constexpr bool is_callback = false;
 
   template <typename BlockType, typename... RunArgs>
   static R Invoke(BlockType&& block, RunArgs&&... args) {
@@ -462,6 +467,7 @@ struct FunctorTraits<base::mac::ScopedBlock<R (^)(Args...)>> {
   using RunType = R(Args...);
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
+  static constexpr bool is_callback = false;
 
   template <typename BlockType, typename... RunArgs>
   static R Invoke(BlockType&& block, RunArgs&&... args) {
@@ -482,6 +488,7 @@ struct FunctorTraits<R (Receiver::*)(Args...)> {
   using RunType = R(Receiver*, Args...);
   static constexpr bool is_method = true;
   static constexpr bool is_nullable = true;
+  static constexpr bool is_callback = false;
 
   template <typename Method, typename ReceiverPtr, typename... RunArgs>
   static R Invoke(Method method,
@@ -497,6 +504,7 @@ struct FunctorTraits<R (Receiver::*)(Args...) const> {
   using RunType = R(const Receiver*, Args...);
   static constexpr bool is_method = true;
   static constexpr bool is_nullable = true;
+  static constexpr bool is_callback = false;
 
   template <typename Method, typename ReceiverPtr, typename... RunArgs>
   static R Invoke(Method method,
@@ -514,6 +522,7 @@ struct FunctorTraits<R (__stdcall Receiver::*)(Args...)> {
   using RunType = R(Receiver*, Args...);
   static constexpr bool is_method = true;
   static constexpr bool is_nullable = true;
+  static constexpr bool is_callback = false;
 
   template <typename Method, typename ReceiverPtr, typename... RunArgs>
   static R Invoke(Method method,
@@ -529,6 +538,7 @@ struct FunctorTraits<R (__stdcall Receiver::*)(Args...) const> {
   using RunType = R(const Receiver*, Args...);
   static constexpr bool is_method = true;
   static constexpr bool is_nullable = true;
+  static constexpr bool is_callback = false;
 
   template <typename Method, typename ReceiverPtr, typename... RunArgs>
   static R Invoke(Method method,
@@ -578,6 +588,7 @@ struct FunctorTraits<OnceCallback<R(Args...)>> {
   using RunType = R(Args...);
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
+  static constexpr bool is_callback = true;
 
   template <typename CallbackType, typename... RunArgs>
   static R Invoke(CallbackType&& callback, RunArgs&&... args) {
@@ -593,6 +604,7 @@ struct FunctorTraits<RepeatingCallback<R(Args...)>> {
   using RunType = R(Args...);
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;
+  static constexpr bool is_callback = true;
 
   template <typename CallbackType, typename... RunArgs>
   static R Invoke(CallbackType&& callback, RunArgs&&... args) {
@@ -830,7 +842,6 @@ struct BindState final : BindStateBase {
   using IsCancellable = bool_constant<
       CallbackCancellationTraits<Functor,
                                  std::tuple<BoundArgs...>>::is_cancellable>;
-
   template <typename ForwardFunctor, typename... ForwardBoundArgs>
   static BindState* Create(BindStateBase::InvokeFuncStorage invoke_func,
                            ForwardFunctor&& functor,
@@ -851,6 +862,9 @@ struct BindState final : BindStateBase {
   std::tuple<BoundArgs...> bound_args_;
 
  private:
+  static constexpr bool is_nested_callback =
+      internal::MakeFunctorTraits<Functor>::is_callback;
+
   template <typename ForwardFunctor, typename... ForwardBoundArgs>
   explicit BindState(std::true_type,
                      BindStateBase::InvokeFuncStorage invoke_func,
@@ -861,7 +875,15 @@ struct BindState final : BindStateBase {
                       &QueryCancellationTraits<BindState>),
         functor_(std::forward<ForwardFunctor>(functor)),
         bound_args_(std::forward<ForwardBoundArgs>(bound_args)...) {
-    DCHECK(!IsNull(functor_));
+    // We check the validity of nested callbacks (e.g., Bind(callback, ...)) in
+    // release builds to avoid null pointers from ending up in posted tasks,
+    // causing hard-to-diagnose crashes. Ideally we'd do this for all functors
+    // here, but that would have a large binary size impact.
+    if (is_nested_callback) {
+      CHECK(!IsNull(functor_));
+    } else {
+      DCHECK(!IsNull(functor_));
+    }
   }
 
   template <typename ForwardFunctor, typename... ForwardBoundArgs>
@@ -872,7 +894,12 @@ struct BindState final : BindStateBase {
       : BindStateBase(invoke_func, &Destroy),
         functor_(std::forward<ForwardFunctor>(functor)),
         bound_args_(std::forward<ForwardBoundArgs>(bound_args)...) {
-    DCHECK(!IsNull(functor_));
+    // See above for CHECK/DCHECK rationale.
+    if (is_nested_callback) {
+      CHECK(!IsNull(functor_));
+    } else {
+      DCHECK(!IsNull(functor_));
+    }
   }
 
   ~BindState() = default;

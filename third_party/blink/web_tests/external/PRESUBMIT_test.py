@@ -12,42 +12,24 @@ import PRESUBMIT
 
 
 class MockInputApi(object):
-  """A minimal mock InputApi for our checks."""
+  """A minimal mock InputApi for _LintWPT."""
   def __init__(self):
-    self.affected_paths = []
+    self.affected_files = []
     self.os_path = os.path
     self.python_executable = sys.executable
     self.subprocess = subprocess
 
   def AbsoluteLocalPaths(self):
-    return self.affected_paths
+    return self.affected_files
 
   def PresubmitLocalPath(self):
     return os.path.abspath(os.path.dirname(__file__))
 
-  def AffectedSourceFiles(self, filter_func):
-    all_files = [MockFile(self.PresubmitLocalPath(), path) for path in self.affected_paths]
-    return filter(lambda f: filter_func(f), all_files)
-
 
 class MockOutputApi(object):
-  """A minimal mock OutputApi for our checks."""
-  def PresubmitError(self, message, items=None, long_text=''):
-    return (message, items, long_text)
-
-
-class MockFile(object):
-  """A minimal mock File for our checks."""
-
-  def __init__(self, presubmit_abs_path, file_abs_path):
-    self.abs_path = file_abs_path
-    self.local_path = os.path.relpath(file_abs_path, presubmit_abs_path)
-
-  def AbsoluteLocalPath(self):
-    return self.abs_path
-
-  def LocalPath(self):
-    return self.local_path
+  """A minimal mock OutputApi for _LintWPT."""
+  def PresubmitError(self, message, long_text=''):
+    return (message, long_text)
 
 
 class LintWPTTest(unittest.TestCase):
@@ -63,7 +45,7 @@ class LintWPTTest(unittest.TestCase):
       f.write('<body>Hello, world!</body>')
     mock_input = MockInputApi()
     mock_output = MockOutputApi()
-    mock_input.affected_paths = [os.path.abspath(self._test_file)]
+    mock_input.affected_files = [os.path.abspath(self._test_file)]
     errors = PRESUBMIT._LintWPT(mock_input, mock_output)
     self.assertEqual(len(errors), 0)
 
@@ -73,38 +55,9 @@ class LintWPTTest(unittest.TestCase):
       f.write('<script>testRunner.notifyDone()</script>')
     mock_input = MockInputApi()
     mock_output = MockOutputApi()
-    mock_input.affected_paths = [os.path.abspath(self._test_file)]
+    mock_input.affected_files = [os.path.abspath(self._test_file)]
     errors = PRESUBMIT._LintWPT(mock_input, mock_output)
     self.assertEqual(len(errors), 1)
-
-
-class DontModifyIDLFilesTest(unittest.TestCase):
-  def testModifiesIDL(self):
-    mock_input = MockInputApi()
-    mock_output = MockOutputApi()
-    mock_input.affected_paths = [
-        os.path.join(mock_input.PresubmitLocalPath(), 'wpt', 'interfaces', 'test.idl')
-    ]
-    errors = PRESUBMIT._DontModifyIDLFiles(mock_input, mock_output)
-    self.assertEqual(len(errors), 1)
-
-  def testModifiesNonIDLFiles(self):
-    mock_input = MockInputApi()
-    mock_output = MockOutputApi()
-    mock_input.affected_paths = [
-        os.path.join(mock_input.PresubmitLocalPath(), 'wpt', 'css', 'foo.html')
-    ]
-    errors = PRESUBMIT._DontModifyIDLFiles(mock_input, mock_output)
-    self.assertEqual(len(errors), 0)
-
-  def testModifiesInterfaceDirOutsideOfWPT(self):
-    mock_input = MockInputApi()
-    mock_output = MockOutputApi()
-    mock_input.affected_paths = [
-        os.path.join(mock_input.PresubmitLocalPath(), 'other', 'interfaces', 'test.idl')
-    ]
-    errors = PRESUBMIT._DontModifyIDLFiles(mock_input, mock_output)
-    self.assertEqual(len(errors), 0)
 
 
 if __name__ == '__main__':

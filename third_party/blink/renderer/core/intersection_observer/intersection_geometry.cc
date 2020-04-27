@@ -473,11 +473,16 @@ bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
       // done yet.
       LocalFrame* local_root_frame = root->GetDocument().GetFrame();
       IntRect clip_rect(local_root_frame->RemoteViewportIntersection());
-      // Map clip_rect from the coordinate system of the local root frame to
-      // the coordinate system of the remote main frame.
-      clip_rect.MoveBy(IntPoint(local_root_frame->RemoteViewportOffset()));
-      does_intersect &=
-          intersection_rect.InclusiveIntersect(PhysicalRect(clip_rect));
+      if (clip_rect.IsEmpty()) {
+        intersection_rect = PhysicalRect();
+        does_intersect = false;
+      } else {
+        // Map clip_rect from the coordinate system of the local root frame to
+        // the coordinate system of the remote main frame.
+        clip_rect.MoveBy(IntPoint(local_root_frame->RemoteViewportOffset()));
+        does_intersect &=
+            intersection_rect.InclusiveIntersect(PhysicalRect(clip_rect));
+      }
     }
   }
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/network/origin_policy/origin_policy_header_values.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace network {
 

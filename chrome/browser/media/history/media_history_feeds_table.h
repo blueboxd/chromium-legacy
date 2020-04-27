@@ -34,7 +34,8 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
     kBadFetchResult = 2,
     kBadLogo = 3,
     kBadUserIdentifier = 4,
-    kMaxValue = kBadUserIdentifier,
+    kBadResetReason = 5,
+    kMaxValue = kBadResetReason,
   };
 
  private:
@@ -73,6 +74,10 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
   // Recalculates the Safe Search safe item count and returns true if it was
   // successful.
   bool RecalculateSafeSearchItemCount(const int64_t feed_id);
+
+  // Resets the feed to defaults and returns a boolean if it was saved.
+  bool Reset(const int64_t feed_id,
+             const media_feeds::mojom::ResetReason reason);
 };
 
 }  // namespace media_history

@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/atomicops.h"
+#include "base/check_op.h"
 #include "base/hash/hash.h"
-#include "base/logging.h"
 #include "third_party/metrics_proto/ukm/source.pb.h"
 
 namespace ukm {

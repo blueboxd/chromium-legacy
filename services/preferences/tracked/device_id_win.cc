@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 
 MachineIdStatus GetDeterministicMachineSpecificId(std::string* machine_id) {

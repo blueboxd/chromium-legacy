@@ -149,7 +149,7 @@ void GestureListenerManager::GestureEventAck(
   if (j_obj.is_null())
     return;
   Java_GestureListenerManagerImpl_onEventAck(
-      env, j_obj, event.GetType(),
+      env, j_obj, static_cast<int>(event.GetType()),
       ack_result == blink::mojom::InputEventResultState::kConsumed);
 }
 

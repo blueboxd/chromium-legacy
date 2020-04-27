@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator.h"
 
 #include "base/bind.h"
+#include "base/test/metrics/user_action_tester.h"
 #import "ios/chrome/browser/overlays/public/common/alerts/alert_overlay.h"
 #include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
@@ -31,6 +32,9 @@ namespace {
 // Alert setup consts.
 const size_t kButtonIndexOk = 0;
 const size_t kTextFieldIndex = 0;
+
+// Recorded when OK button is tapped.
+const char kOKTappedUserActionName[] = "OKTappedUserActionName";
 
 // Fake response for use in tests.
 class FakeResponseInfo : public OverlayResponseInfo<FakeResponseInfo> {
@@ -81,7 +85,7 @@ class FakeRequestConfig : public OverlayResponseInfo<FakeRequestConfig> {
                                    secureTextEntry:NO],
     ];
     const std::vector<ButtonConfig> button_configs{
-        ButtonConfig(@"OK"),
+        ButtonConfig(@"OK", kOKTappedUserActionName),
         ButtonConfig(@"Cancel", UIAlertActionStyleDefault)};
     AlertRequest::CreateForUserData(user_data, @"title", @"message",
                                     @"accessibility_identifier",
@@ -144,4 +148,27 @@ TEST_F(AlertOverlayMediatorTest, ResponseConversion) {
   ASSERT_TRUE(info);
   EXPECT_TRUE(info->ok_button_tapped());
   EXPECT_NSEQ(data_source.textFieldValues[0], info->input());
+}
+
+// Tests UMA user action recording.
+TEST_F(AlertOverlayMediatorTest, UserActionRecording) {
+  // Create a request with FakeRequestConfig and create the mediator for that
+  // request.
+  auto request = OverlayRequest::CreateWithConfig<FakeRequestConfig>();
+  AlertOverlayMediator* mediator =
+      [[AlertOverlayMediator alloc] initWithRequest:request.get()];
+  SetMediator(mediator);
+
+  // Set up a fake datasource for the text field values.
+  FakeAlertOverlayMediatorDataSource* data_source =
+      [[FakeAlertOverlayMediatorDataSource alloc] init];
+  data_source.textFieldValues = @[ @"TextFieldValue" ];
+  mediator.dataSource = data_source;
+
+  // Tapping OK button records User Action.
+  AlertAction* ok_button_action = consumer().actions[kButtonIndexOk];
+  base::UserActionTester user_action_tester;
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kOKTappedUserActionName));
+  ok_button_action.handler(ok_button_action);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kOKTappedUserActionName));
 }

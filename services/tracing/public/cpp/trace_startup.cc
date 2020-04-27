@@ -4,8 +4,8 @@
 
 #include "services/tracing/public/cpp/trace_startup.h"
 
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/trace_event/trace_log.h"
 #include "components/tracing/common/trace_startup_config.h"

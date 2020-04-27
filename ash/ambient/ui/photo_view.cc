@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ambient/ambient_constants.h"
-#include "ash/ambient/model/photo_model.h"
+#include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -66,7 +66,7 @@ PhotoView::PhotoView(AmbientViewDelegate* delegate) : delegate_(delegate) {
 }
 
 PhotoView::~PhotoView() {
-  delegate_->GetPhotoModel()->RemoveObserver(this);
+  delegate_->GetAmbientBackendModel()->RemoveObserver(this);
 }
 
 const char* PhotoView::GetClassName() const {
@@ -108,13 +108,13 @@ void PhotoView::Init() {
   image_view_next_ =
       AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
 
-  delegate_->GetPhotoModel()->AddObserver(this);
+  delegate_->GetAmbientBackendModel()->AddObserver(this);
 }
 
 void PhotoView::UpdateImages() {
   // TODO(b/140193766): Investigate a more efficient way to update images and do
   // layer animation.
-  auto* model = delegate_->GetPhotoModel();
+  auto* model = delegate_->GetAmbientBackendModel();
   image_view_prev_->SetImage(model->GetPrevImage());
   image_view_curr_->SetImage(model->GetCurrImage());
   image_view_next_->SetImage(model->GetNextImage());

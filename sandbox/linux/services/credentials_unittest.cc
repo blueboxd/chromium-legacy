@@ -18,10 +18,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/logging.h"
 #include "sandbox/linux/services/proc_util.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
 #include "sandbox/linux/system_headers/capability.h"

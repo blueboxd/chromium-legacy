@@ -7,25 +7,16 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
@@ -64,9 +55,10 @@ class ProxyAuthDialogWaiter : public content::WindowedNotificationObserver {
 class ProxyAuthOnUserBoardScreenTest : public LoginManagerTest {
  public:
   ProxyAuthOnUserBoardScreenTest()
-      : LoginManagerTest(),
-        proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
-                      base::FilePath()) {}
+      : proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
+                      base::FilePath()) {
+    login_manager_mixin_.AppendRegularUsers(1);
+  }
 
   ~ProxyAuthOnUserBoardScreenTest() override {}
 
@@ -83,40 +75,19 @@ class ProxyAuthOnUserBoardScreenTest : public LoginManagerTest {
 
  private:
   net::SpawnedTestServer proxy_server_;
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
 
   DISALLOW_COPY_AND_ASSIGN(ProxyAuthOnUserBoardScreenTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
-                       PRE_ProxyAuthDialogOnUserBoardScreen) {
-  RegisterUser(
-      AccountId::FromUserEmailGaiaId("test-user@gmail.com", "1234567890"));
-  StartupUtils::MarkOobeCompleted();
-}
-
-// Flaky: https://crbug.com/481651 and https://crbug.com/772072
-IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
-                       DISABLED_ProxyAuthDialogOnUserBoardScreen) {
-  {
-    OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_ACCOUNT_PICKER);
-    ProxyAuthDialogWaiter auth_dialog_waiter;
-    screen_waiter.Wait();
-    auth_dialog_waiter.Wait();
-
-    ASSERT_TRUE(auth_dialog_waiter.login_handler());
-    auth_dialog_waiter.login_handler()->CancelAuth();
-  }
-
-  {
-    OobeScreenWaiter screen_waiter(GaiaView::kScreenId);
-    ProxyAuthDialogWaiter auth_dialog_waiter;
-    ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
-    screen_waiter.Wait();
-    auth_dialog_waiter.Wait();
-    ASSERT_TRUE(auth_dialog_waiter.login_handler());
-    auth_dialog_waiter.login_handler()->CancelAuth();
-  }
-  base::RunLoop().RunUntilIdle();
+                       ProxyAuthDialogOnUserBoardScreen) {
+  ASSERT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  ProxyAuthDialogWaiter auth_dialog_waiter;
+  ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  auth_dialog_waiter.Wait();
+  ASSERT_TRUE(auth_dialog_waiter.login_handler());
 }
 
 }  // namespace chromeos

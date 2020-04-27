@@ -10,8 +10,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/channel_authenticator.h"

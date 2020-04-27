@@ -9,8 +9,8 @@
 #include <string>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "net/base/features.h"

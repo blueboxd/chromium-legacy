@@ -6,7 +6,6 @@
 
 #include "courgette/assembly_program.h"
 
-#include "base/logging.h"
 #include "courgette/encoded_program.h"
 #include "courgette/instruction_utils.h"
 

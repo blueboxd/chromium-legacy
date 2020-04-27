@@ -84,8 +84,7 @@ class OsSettingsLocalizedStringsProvider
   // Adds the strings needed by the OS settings page to |html_source|
   // This function causes |html_source| to expose a strings.js file from its
   // source which contains a mapping from string's name to its translated value.
-  void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
-                             Profile* profile);
+  void AddOsLocalizedStrings(content::WebUIDataSource* html_source);
 
   // Returns the tag metadata associated with |canonical_message_id|, which must
   // be one of the canonical IDS_SETTINGS_TAG_* identifiers used for a search

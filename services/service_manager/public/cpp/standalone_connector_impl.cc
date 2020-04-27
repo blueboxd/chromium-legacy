@@ -4,7 +4,8 @@
 
 #include "services/service_manager/public/cpp/standalone_connector_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 
 namespace service_manager {
 

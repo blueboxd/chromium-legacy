@@ -181,7 +181,7 @@ void GPUQueue::copyImageBitmapToTexture(
   GetProcs().bufferUnmap(result.buffer);
 
   // Start a B2T copy to move contents from buffer to destination texture
-  WGPUBufferCopyView dawn_intermediate;
+  WGPUBufferCopyView dawn_intermediate = {};
   dawn_intermediate.nextInChain = nullptr;
   dawn_intermediate.buffer = result.buffer;
   dawn_intermediate.offset = 0;

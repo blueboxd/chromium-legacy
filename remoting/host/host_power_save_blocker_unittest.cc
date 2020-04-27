@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"

@@ -4,8 +4,8 @@
 
 #include "remoting/codec/video_encoder.h"
 
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "remoting/codec/video_encoder_verbatim.h"
 #include "remoting/codec/video_encoder_vpx.h"
 #include "remoting/protocol/session_config.h"

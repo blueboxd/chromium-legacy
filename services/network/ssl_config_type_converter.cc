@@ -4,7 +4,8 @@
 
 #include "services/network/ssl_config_type_converter.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace mojo {
 

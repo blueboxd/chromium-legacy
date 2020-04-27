@@ -118,6 +118,10 @@ Node* GetClosestNodeForLayoutObject(LayoutObject* layout_object) {
   return node ? node : GetClosestNodeForLayoutObject(layout_object->Parent());
 }
 
+bool IsActive(Document& document) {
+  return document.IsActive() && !document.IsDetached();
+}
+
 }  // namespace
 
 // static
@@ -803,7 +807,9 @@ AXObject::InOrderTraversalIterator AXObjectCacheImpl::InOrderTraversalEnd() {
 
 void AXObjectCacheImpl::DeferTreeUpdateInternal(Node* node,
                                                 base::OnceClosure callback) {
-  if (GetDocument().IsDetached())
+  // The node's document can be different from the main document_ when the node
+  // is inside a popup. Check to ensure both documents are in a good state.
+  if (!node || !IsActive(node->GetDocument()) || !IsActive(GetDocument()))
     return;
 
   DCHECK(!node->GetDocument().GetPage()->Animator().IsServicingAnimations() ||

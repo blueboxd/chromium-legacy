@@ -56,6 +56,7 @@ std::unique_ptr<NavigationURLLoader> CachedNavigationURLLoader::Create(
 void CachedNavigationURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     PreviewsState new_previews_state) {
   NOTREACHED();
 }

@@ -677,8 +677,9 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
     in_process_ = true;
   }
 #if !defined(OS_ANDROID)
-  if (!in_process_ && base::FeatureList::IsEnabled(
-                          features::kForwardMemoryPressureEventsToGpuProcess)) {
+  if (!in_process_ && kind != GPU_PROCESS_KIND_INFO_COLLECTION &&
+      base::FeatureList::IsEnabled(
+          features::kForwardMemoryPressureEventsToGpuProcess)) {
     memory_pressure_listener_ =
         std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
             &GpuProcessHost::OnMemoryPressure, base::Unretained(this)));
@@ -860,6 +861,8 @@ bool GpuProcessHost::Init() {
       switches::GetDeadlineToSynchronizeSurfaces();
   params.main_thread_task_runner =
       base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+  params.info_collection_gpu_process =
+      kind_ == GPU_PROCESS_KIND_INFO_COLLECTION;
   gpu_host_ = std::make_unique<viz::GpuHostImpl>(
       this, std::move(viz_main_pending_remote), std::move(params));
 
@@ -1242,6 +1245,14 @@ viz::mojom::GpuService* GpuProcessHost::gpu_service() {
   DCHECK(gpu_host_);
   return gpu_host_->gpu_service();
 }
+
+#if defined(OS_WIN)
+viz::mojom::InfoCollectionGpuService*
+GpuProcessHost::info_collection_gpu_service() {
+  DCHECK(gpu_host_);
+  return gpu_host_->info_collection_gpu_service();
+}
+#endif
 
 int GpuProcessHost::GetIDForTesting() const {
   return process_->GetData().id;

@@ -25,6 +25,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
@@ -552,9 +553,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"reload-sad-tab", flag_descriptions::kReloadSadTabName,
      flag_descriptions::kReloadSadTabDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::kReloadSadTab)},
-    {"page-info-chrome-guard", flag_descriptions::kPageInfoChromeGuardName,
-     flag_descriptions::kPageInfoChromeGuardDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kPageInfoChromeGuard)},
+    {"improved-cookie-controls",
+     flag_descriptions::kImprovedCookieControlsDescription,
+     flag_descriptions::kImprovedCookieControlsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(content_settings::kImprovedCookieControls)},
     {"page-info-refactoring", flag_descriptions::kPageInfoRefactoringName,
      flag_descriptions::kPageInfoRefactoringDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kPageInfoRefactoring)},
@@ -633,6 +635,17 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableGoogleIssuedCard)},
 };
 
+bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
+  return false;
+}
+
+flags_ui::FlagsState& GetGlobalFlagsState() {
+  static base::NoDestructor<flags_ui::FlagsState> flags_state(kFeatureEntries,
+                                                              nullptr);
+  return *flags_state;
+}
+}  // namespace
+
 // Add all switches from experimental flags to |command_line|.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
@@ -699,20 +712,8 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
       defaults, command_line);
 }
 
-bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
-  return false;
-}
-
-flags_ui::FlagsState& GetGlobalFlagsState() {
-  static base::NoDestructor<flags_ui::FlagsState> flags_state(kFeatureEntries,
-                                                              nullptr);
-  return *flags_state;
-}
-}  // namespace
-
 void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
                             base::CommandLine* command_line) {
-  AppendSwitchesFromExperimentalSettings(command_line);
   GetGlobalFlagsState().ConvertFlagsToSwitches(
       flags_storage, command_line, flags_ui::kAddSentinels,
       switches::kEnableFeatures, switches::kDisableFeatures);

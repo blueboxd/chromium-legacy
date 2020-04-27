@@ -8,10 +8,12 @@
 #include <memory>
 #include <set>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/feeds/media_feeds_fetcher.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class Profile;
 class GURL;
@@ -85,7 +87,14 @@ class MediaFeedsService : public KeyedService {
                        const schema_org::improved::mojom::EntityPtr& response,
                        MediaFeedsFetcher::Status status);
 
+  void OnSafeSearchPrefChanged();
+
   media_history::MediaHistoryKeyedService* GetMediaHistoryService();
+
+  scoped_refptr<::network::SharedURLLoaderFactory>
+  GetURLLoaderFactoryForFetcher();
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Used to fetch media feeds. Null if no fetch is ongoing.
   std::map<int64_t, std::unique_ptr<MediaFeedsFetcher>> fetchers_;
@@ -108,8 +117,13 @@ class MediaFeedsService : public KeyedService {
 
   base::Optional<base::OnceClosure> safe_search_completion_callback_;
 
+  scoped_refptr<::network::SharedURLLoaderFactory>
+      test_url_loader_factory_for_fetcher_;
+
   std::unique_ptr<safe_search_api::URLChecker> safe_search_url_checker_;
   Profile* const profile_;
+
+  base::WeakPtrFactory<MediaFeedsService> weak_factory_{this};
 };
 
 }  // namespace media_feeds

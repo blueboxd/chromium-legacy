@@ -3151,6 +3151,15 @@ void WebContentsConsoleObserver::SetPattern(std::string pattern) {
   pattern_ = std::move(pattern);
 }
 
+std::string WebContentsConsoleObserver::GetMessageAt(size_t index) const {
+  if (index >= messages_.size()) {
+    ADD_FAILURE() << "Tried to retrieve a non-existent message at index: "
+                  << index;
+    return std::string();
+  }
+  return base::UTF16ToUTF8(messages_[index].message);
+}
+
 void WebContentsConsoleObserver::OnDidAddMessageToConsole(
     blink::mojom::ConsoleMessageLevel log_level,
     const base::string16& message_contents,

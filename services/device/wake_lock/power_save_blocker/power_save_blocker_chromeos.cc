@@ -7,10 +7,11 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 

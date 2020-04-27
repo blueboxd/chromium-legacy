@@ -7,10 +7,11 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "services/preferences/tracked/device_id.h"
 #include "services/preferences/tracked/hash_store_contents.h"
 

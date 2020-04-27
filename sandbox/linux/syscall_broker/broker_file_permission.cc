@@ -9,9 +9,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <ostream>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
 
 namespace sandbox {

@@ -14,6 +14,7 @@ absl_source_set("status") {
     "status_payload_printer.cc",
   ]
   deps = [
+    "//third_party/abseil-cpp/absl/base:atomic_hook",
     "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:core_headers",
     "//third_party/abseil-cpp/absl/base:raw_logging_internal",

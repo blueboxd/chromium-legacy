@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -14,33 +15,52 @@
 
 namespace gpu {
 
+namespace {
+
+#if DCHECK_IS_ON()
+const char* kSkippedErrors[] = {
+    // http://anglebug.com/4583
+    "VUID-VkGraphicsPipelineCreateInfo-blendEnable-02023",
+};
+
 VKAPI_ATTR VkBool32 VKAPI_CALL
 VulkanErrorCallback(VkDebugReportFlagsEXT flags,
-                    VkDebugReportObjectTypeEXT objectType,
+                    VkDebugReportObjectTypeEXT object_type,
                     uint64_t object,
                     size_t location,
-                    int32_t messageCode,
-                    const char* pLayerPrefix,
-                    const char* pMessage,
-                    void* pUserData) {
-  LOG(ERROR) << pMessage;
-  return VK_TRUE;
+                    int32_t message_code,
+                    const char* layer_prefix,
+                    const char* message,
+                    void* user_data) {
+  static base::flat_set<const char*> hitted_errors;
+  for (const char* error : kSkippedErrors) {
+    if (strstr(message, error) != nullptr) {
+      if (hitted_errors.find(error) != hitted_errors.end())
+        return VK_FALSE;
+      hitted_errors.insert(error);
+    }
+  }
+  LOG(ERROR) << message;
+  return VK_FALSE;
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL
 VulkanWarningCallback(VkDebugReportFlagsEXT flags,
-                      VkDebugReportObjectTypeEXT objectType,
+                      VkDebugReportObjectTypeEXT object_type,
                       uint64_t object,
                       size_t location,
-                      int32_t messageCode,
-                      const char* pLayerPrefix,
-                      const char* pMessage,
-                      void* pUserData) {
-  LOG(WARNING) << pMessage;
-  return VK_TRUE;
+                      int32_t message_code,
+                      const char* layer_prefix,
+                      const char* message,
+                      void* user_data) {
+  LOG(WARNING) << message;
+  return VK_FALSE;
 }
+#endif  // DCHECK_IS_ON()
 
-VulkanInstance::VulkanInstance() {}
+}  // namespace
+
+VulkanInstance::VulkanInstance() = default;
 
 VulkanInstance::~VulkanInstance() {
   Destroy();

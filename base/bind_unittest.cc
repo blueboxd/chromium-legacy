@@ -1587,7 +1587,18 @@ TEST_F(BindTest, BindNoexcept) {
 TEST(BindDeathTest, NullCallback) {
   base::RepeatingCallback<void(int)> null_cb;
   ASSERT_TRUE(null_cb.is_null());
-  EXPECT_DCHECK_DEATH(base::BindRepeating(null_cb, 42));
+  EXPECT_CHECK_DEATH(base::BindRepeating(null_cb, 42));
+}
+
+TEST(BindDeathTest, NullFunctionPointer) {
+  void (*null_function)(int) = nullptr;
+  EXPECT_DCHECK_DEATH(base::BindRepeating(null_function, 42));
+}
+
+TEST(BindDeathTest, NullCallbackWithoutBoundArgs) {
+  base::OnceCallback<void(int)> null_cb;
+  ASSERT_TRUE(null_cb.is_null());
+  EXPECT_CHECK_DEATH(base::BindOnce(std::move(null_cb)));
 }
 
 TEST(BindDeathTest, BanFirstOwnerOfRefCountedType) {

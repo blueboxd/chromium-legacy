@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"

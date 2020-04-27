@@ -66,7 +66,6 @@ crbug.com/860713 virtual/web-bluetooth-new-permissions-backend/external/wpt/blue
 # These two are left over from crbug.com/881040, I rebaselined them twice and
 # they continue to fail.
 crbug.com/881040 media/controls/lazy-loaded-style.html [ Failure Pass ]
-crbug.com/881040 virtual/audio-service/media/controls/lazy-loaded-style.html [ Failure Pass ]
 
 # With --enable-display-compositor-pixel-dump enabled by default, these three
 # tests fail. See crbug.com/887140 for more info.
@@ -104,10 +103,8 @@ crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-opti
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
 crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
 crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
-crbug.com/872952 virtual/audio-service/http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
 crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
 crbug.com/895001 http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
-crbug.com/895001 virtual/audio-service/http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
 crbug.com/901502 http/tests/devtools/oopif/oopif-storage.js [ Pass Failure ]
 crbug.com/906879 http/tests/inspector-protocol/network/navigation-blocking-xorigin-iframe.js [ Pass Failure ]
 crbug.com/949003 http/tests/printing/cross-site-frame-scrolled.html [ Pass Failure ]
@@ -608,13 +605,11 @@ crbug.com/949909 external/wpt/css/css-text-decor/text-decoration-040-manual.html
 crbug.com/1054656 external/wpt/css/css-text-decor/text-decoration-skip-ink-005.html [ Skip ]
 
 crbug.com/722825 media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
-crbug.com/722825 virtual/audio-service/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass ]
 
 #### crbug.com/783229 overflow
 crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
 
 crbug.com/846753 [ Mac ] http/tests/media/reload-after-dialog.html [ Failure Pass Timeout ]
-crbug.com/846753 [ Mac ] virtual/audio-service/http/tests/media/reload-after-dialog.html [ Failure Pass Timeout ]
 
 ### external/wpt/css/css-tables/
 crbug.com/598134 external/wpt/css/css-tables/table-has-box-sizing-border-box-002.html [ Failure ]
@@ -1779,7 +1774,6 @@ crbug.com/1053725 [ Mac ] virtual/layout_ng_block_frag/external/wpt/css/css-mult
 crbug.com/1053725 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/targeted-frame-submission.html [ Skip ]
 crbug.com/1053725 [ Mac ] virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-basic-006.xht [ Skip ]
 crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Skip ]
-crbug.com/1053725 [ Mac ] virtual/audio-service/media/picture-in-picture/v2/request-picture-in-picture.html [ Skip ]
 crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/bugs/bug45621.html [ Skip ]
 crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ Skip ]
 crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/bugs/bug92647-1.html [ Skip ]
@@ -1886,15 +1880,11 @@ crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/bidi-isolate-002.htm
 crbug.com/280342 [ Mac ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 crbug.com/280342 [ Linux ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 crbug.com/280342 [ Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
-crbug.com/280342 [ Mac ] virtual/audio-service/http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
-crbug.com/280342 [ Linux ] virtual/audio-service/http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
-crbug.com/280342 [ Win ] virtual/audio-service/http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 crbug.com/520736 [ Win10 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 crbug.com/520736 [ Linux ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 crbug.com/909095 [ Mac ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
-crbug.com/909095 virtual/audio-service/media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
 # gpuBenchmarking.pinchBy is busted on desktops for touchscreen pinch
 crbug.com/787615 [ Win ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure Pass ]
@@ -1945,7 +1935,6 @@ crbug.com/1051143 external/wpt/css/css-transforms/transform-input-015.html [ Pas
 
 crbug.com/432129 html/marquee/marquee-scroll.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
-crbug.com/326139 crbug.com/390125 virtual/audio-service/media/video-frame-accurate-seek.html [ Failure Pass ]
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
@@ -2037,7 +2026,6 @@ crbug.com/821455 editing/pasteboard/drag-files-to-editable-element.html [ Failur
 
 crbug.com/688613 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 crbug.com/688613 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
-crbug.com/688613 virtual/audio-service/external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 
 crbug.com/766135 fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
 
@@ -2270,7 +2258,6 @@ crbug.com/381684 [ Mac ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/381684 [ Win ] fonts/family-fallback-gardiner.html [ Skip ]
 
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
-crbug.com/636239 [ Win7 ] virtual/audio-service/media/video-zoom-controls.html [ Failure ]
 
 crbug.com/377696 printing/setPrinting.html [ Failure ]
 
@@ -2278,13 +2265,11 @@ crbug.com/1051044 external/wpt/css/filter-effects/effect-reference-feimage-001.h
 crbug.com/1051044 external/wpt/css/filter-effects/effect-reference-feimage-003.html [ Pass Failure ]
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
-crbug.com/524160 [ Debug ] virtual/audio-service/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
 
 # Run the tests with the default MSE buffer sizes in the main test suite and the tests for 1MB buffers set via command line in a virtual test suite
 # with the --mse-audio-buffer-size-limit=1048576 and --mse-video-buffer-size-limit=1048576 command-line parameters.
 crbug.com/630342 virtual/mse-1mb-buffers/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Skip ]
 crbug.com/630342 http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Skip ]
-crbug.com/630342 virtual/audio-service/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Skip ]
 
 # On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
 # benefit to running them again with gpu acceleration enabled.
@@ -2296,9 +2281,7 @@ crbug.com/555703 [ Fuchsia ] virtual/media-gpu-accelerated/* [ Skip ]
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
 crbug.com/400841 media/video-canvas-draw.html [ Failure ]
-crbug.com/400841 virtual/audio-service/media/video-canvas-draw.html [ Failure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ Failure ]
-crbug.com/400829 virtual/audio-service/media/stable/video-object-fit-stable.html [ Failure ]
 
 # Source map asyncification requires some 3-way changes with the DevTools frontend.
 crbug.com/1032016 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-shifted-breakpoint.js [ Pass Failure Timeout ]
@@ -2308,12 +2291,6 @@ crbug.com/1011811 http/tests/devtools/inspector-backend-commands.js [ Pass Failu
 crbug.com/1011811 http/tests/devtools/report-protocol-errors.js [ Pass Failure ]
 crbug.com/1047760 http/tests/devtools/screen-orientation-override.js [ Pass Failure Timeout ]
 crbug.com/1011811 http/tests/devtools/elements/styles-1/cached-sync-computed-styles.js [ Pass Failure ]
-
-# We only want to run one of the web-animations-api tests in stable mode.
-crbug.com/441553 virtual/stable/web-animations-api/* [ Skip ]
-# These tests *only* run in stable, to verify that these features are unsupported and throw exceptions.
-crbug.com/441559 virtual/stable/web-animations-api/partial-keyframes-unsupported.html [ Pass ]
-crbug.com/437696 virtual/stable/web-animations-api/additive-animations-unsupported.html [ Pass ]
 
 # switching to apache-win32: needs triaging.
 crbug.com/528062 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ Failure ]
@@ -2608,10 +2585,8 @@ crbug.com/654477 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/654477 fast/layers/video-layer.html [ Failure ]
 # These could likely be removed - see https://chromium-review.googlesource.com/c/chromium/src/+/1252141
 crbug.com/654477 media/controls-focus-ring.html [ Failure ]
-crbug.com/654477 virtual/audio-service/media/controls-focus-ring.html [ Failure ]
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
-crbug.com/637930 virtual/audio-service/http/tests/media/video-buffered.html [ Pass Failure ]
 
 crbug.com/613659 external/wpt/quirks/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 external/wpt/quirks/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
@@ -3365,7 +3340,6 @@ crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media
 crbug.com/1004760 [ Mac ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
-crbug.com/626703 virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
 crbug.com/626703 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
 crbug.com/699040 external/wpt/svg/text/reftests/text-xml-space-001.svg [ Failure ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
@@ -4225,7 +4199,6 @@ crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple
 #crbug.com/765738 [ Linux Win Mac ] http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Timeout ]
 crbug.com/892212 http/tests/wasm/wasm_remote_postMessage_test.https.html [ Pass Failure Timeout ]
 
-crbug.com/990331 virtual/audio-service/http/tests/media/media-source/mediasource-play.html [ Pass Timeout ]
 
 # ====== Random order flaky tests from here ======
 # These tests are flaky when run in random order, which is the default on Linux & Mac since since 2016-12-16.
@@ -4532,9 +4505,6 @@ crbug.com/747751 http/tests/devtools/application-panel/storage-view-reports-quot
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 crbug.com/689781 [ Win ] http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
 crbug.com/689781 [ Mac ] http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
-crbug.com/689781 [ Win ] virtual/audio-service/http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
-crbug.com/689781 [ Mac ] virtual/audio-service/http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
-crbug.com/1043450 [ Linux ] virtual/audio-service/http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
 
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom125.html [ Failure Pass ]
 crbug.com/681468 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass ]
@@ -4572,7 +4542,6 @@ crbug.com/571722 virtual/omt-worker-fetch/external/wpt/xhr/preserve-ua-header-on
 
 # Sheriff failures 2017-02-21
 crbug.com/73609 http/tests/media/video-play-stall.html [ Pass Timeout ]
-crbug.com/73609 virtual/audio-service/http/tests/media/video-play-stall.html [ Pass Timeout ]
 
 # Sheriff failures 2017-03-10
 crbug.com/741210 [ Mac ] inspector-protocol/emulation/device-emulation-restore.js [ Failure ]
@@ -4590,7 +4559,6 @@ crbug.com/724027 http/tests/security/contentSecurityPolicy/source-list-parsing-0
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
 # Crashes on win
 crbug.com/722943 [ Win ] media/audio-repaint.html [ Crash ]
-crbug.com/722943 [ Win ] virtual/audio-service/media/audio-repaint.html [ Crash ]
 
 # Sheriff failures 2018-08-15
 crbug.com/874567 [ Mac ] svg/custom/getscreenctm-in-scrollable-div-area-nested.xhtml [ Pass Failure ]
@@ -4679,22 +4647,15 @@ crbug.com/1052642 virtual/cache-storage-high-priority-match/external/wpt/service
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
 crbug.com/746128 [ Mac ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure Pass ]
-crbug.com/746128 [ Mac ] virtual/audio-service/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure Pass ]
 
 # Tests failing when enabling new modern media controls
 crbug.com/831942 media/webkit-media-controls-webkit-appearance.html [ Failure Pass ]
-crbug.com/831942 virtual/audio-service/media/webkit-media-controls-webkit-appearance.html [ Failure Pass ]
 crbug.com/831957 compositing/video/video-controls-layer-creation-squashing.html [ Failure Pass ]
 crbug.com/832157 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-rendering-after-controls-added.html [ Skip ]
 crbug.com/832169 media/media-controls-fit-properly-while-zoomed.html [ Failure Pass ]
-crbug.com/832169 virtual/audio-service/media/media-controls-fit-properly-while-zoomed.html [ Failure Pass ]
 crbug.com/832447 media/controls/controls-page-zoom-in.html [ Failure Pass ]
 crbug.com/832447 media/controls/controls-page-zoom-out.html [ Failure Pass ]
-crbug.com/832447 virtual/audio-service/media/controls/controls-page-zoom-in.html [ Failure Pass ]
-crbug.com/832447 virtual/audio-service/media/controls/controls-page-zoom-out.html [ Failure Pass ]
 crbug.com/849694 [ Mac ] http/tests/media/controls/toggle-class-with-state-source-buffer.html [ Failure Pass ]
-crbug.com/849694 [ Mac ] virtual/audio-service/http/tests/media/controls/toggle-class-with-state-source-buffer.html [ Failure Pass ]
-crbug.com/832447 virtual/audio-service/media/video-played-reset.html [ Failure Pass ]
 
 # ContentSecurityPolicy modifies the SchemeRegistry before some initialization.
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]
@@ -4840,7 +4801,6 @@ crbug.com/774463 [ Win7 Debug ] fast/events/autoscroll-should-not-stop-on-keypre
 
 # Sheriff failures 2017-10-23
 crbug.com/772411 http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
-crbug.com/772411 virtual/audio-service/http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
 crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
 
 # Sheriff failures 2017-10-24
@@ -4920,12 +4880,6 @@ crbug.com/783154 [ Mac ] media/controls/doubletap-to-jump-forwards-too-short.htm
 crbug.com/783154 [ Mac ] media/controls/doubletap-on-play-button.html [ Skip ]
 crbug.com/783154 [ Mac ] media/controls/doubletap-to-toggle-fullscreen.html [ Skip ]
 crbug.com/783154 [ Mac ] media/controls/click-anywhere-to-play-pause.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/audio-service/media/controls/doubletap-to-jump-forwards.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/audio-service/media/controls/doubletap-to-jump-forwards-too-short.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/audio-service/media/controls/doubletap-on-play-button.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/audio-service/media/controls/doubletap-to-toggle-fullscreen.html [ Skip ]
-crbug.com/783154 [ Mac ] virtual/audio-service/media/controls/click-anywhere-to-play-pause.html [ Skip ]
 
 # Seen flaky on Linux, suppressing on Windows as well
 crbug.com/831720 [ Win ] media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
@@ -4933,11 +4887,6 @@ crbug.com/831720 [ Linux ] media/controls/doubletap-to-jump-forwards-too-short.h
 crbug.com/831720 [ Mac ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Win ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Linux ] media/controls/tap-to-hide-controls.html [ Pass Failure ]
-crbug.com/831720 [ Win ] virtual/audio-service/media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
-crbug.com/831720 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
-crbug.com/831720 [ Mac ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
-crbug.com/831720 [ Win ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
-crbug.com/831720 [ Linux ] virtual/audio-service/media/controls/tap-to-hide-controls.html [ Pass Failure ]
 
 crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Failure ]
 
@@ -4948,8 +4897,6 @@ crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/aut
 
 # Does not work on Mac
 crbug.com/793771 [ Mac ] media/controls/scrubbing.html [ Skip ]
-crbug.com/793771 [ Mac ] virtual/audio-service/media/controls/scrubbing.html [ Skip ]
-crbug.com/793771 [ Win ] virtual/audio-service/media/controls/scrubbing.html [ Skip ]
 
 # Different paths may have different anti-aliasing pixels 2018-02-21
 skbug.com/7641 external/wpt/css/css-paint-api/paint2d-paths.https.html [ Failure Pass ]
@@ -4964,7 +4911,6 @@ crbug.com/809152 netinfo/estimate-multiple-frames.html [ Pass Failure ]
 
 # Sheriff failures 2018-02-20
 crbug.com/789921 media/controls/repaint-on-resize.html [ Failure Pass ]
-crbug.com/789921 virtual/audio-service/media/controls/repaint-on-resize.html [ Failure Pass ]
 
 # Sheriff failures 2018-02-21
 crbug.com/814585 [ Linux ] fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-cjk.html [ Pass Failure ]
@@ -4991,9 +4937,7 @@ crbug.com/807110 external/wpt/media-source/mediasource-is-type-supported.html [ 
 crbug.com/807110 external/wpt/media-source/mediasource-sequencemode-append-buffer.html [ Failure Pass ]
 crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timestamps.html [ Failure Pass ]
 crbug.com/794338 media/video-rotation.html [ Failure Pass ]
-crbug.com/794338 virtual/audio-service/media/video-rotation.html [ Failure Pass ]
 crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
-crbug.com/811605 virtual/audio-service/media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
 crbug.com/806645 [ Win7 ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 crbug.com/806645 [ Mac ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
@@ -5031,6 +4975,7 @@ crbug.com/1067477 [ Fuchsia ] editing/selection/leave-requested-block.html [ Ski
 crbug.com/1067477 [ Fuchsia ] editing/selection/previous-line-position.html [ Skip ]
 crbug.com/1067477 [ Fuchsia ] editing/style/block-styles-007.html [ Skip ]
 crbug.com/1067477 [ Fuchsia ] external/wpt/bluetooth/requestDevice/canonicalizeFilter/no-arguments.https.html [ Skip ]
+crbug.com/1067477 [ Fuchsia ] external/wpt/css/filter-effects/crashtests/multiple-references-id-crash-001.html [ Skip ]
 crbug.com/1067477 [ Fuchsia ] fast/backgrounds/background-clip-text.html [ Skip ]
 crbug.com/1067477 [ Fuchsia ] fast/block/basic/018.html [ Skip ]
 crbug.com/1067477 [ Fuchsia ] fast/block/float/002.html [ Skip ]
@@ -5139,17 +5084,13 @@ crbug.com/851363 http/tests/devtools/sxg/sxg-prefetch.js [ Pass Failure ]
 # Sheriff 2018-03-22
 crbug.com/824775 [ Win ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
 crbug.com/824775 [ Mac ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
-crbug.com/824775 [ Win ] virtual/audio-service/media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
-crbug.com/824775 [ Mac ] virtual/audio-service/media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
 crbug.com/824848 [ Linux ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 crbug.com/824848 [ Mac ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 crbug.com/824848 [ Win ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 
 # Sheriff 2018-03-26
 crbug.com/825733 [ Win ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
-crbug.com/825733 [ Win ] virtual/audio-service/media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
 crbug.com/754986 media/video-transformed.html [ Pass Failure ]
-crbug.com/754986 virtual/audio-service/media/video-transformed.html [ Pass Failure ]
 
 # Sheriff 2018-03-29
 crbug.com/827209 [ Win ] fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
@@ -5171,10 +5112,6 @@ crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ 
 crbug.com/833658 [ Linux ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833658 [ Win ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833658 [ Mac ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
-crbug.com/833655 [ Linux ] virtual/audio-service/media/controls/closed-captions-dynamic-update.html [ Skip ]
-crbug.com/833658 [ Linux ] virtual/audio-service/media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
-crbug.com/833658 [ Win ] virtual/audio-service/media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
-crbug.com/833658 [ Mac ] virtual/audio-service/media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 
 # Sheriff 2018-04-23
 crbug.com/833331 [ Win10 ] inspector-protocol/page/pageNavigateToFragment.js [ Pass Failure ]
@@ -5376,7 +5313,6 @@ crbug.com/907862 [ Mac10.13 ] gamepad/multiple-event-listeners.html [ Pass Failu
 
 # Sheriff 2018-11-26
 crbug.com/908347 media/autoplay/webaudio-audio-context-resume.html [ Failure Pass ]
-crbug.com/908347 virtual/audio-service/media/autoplay/webaudio-audio-context-resume.html [ Failure Pass ]
 
 # Sheriff 2018-11-29
 crbug.com/910139 custom-elements/form-submission-file.html [ Crash Pass ]
@@ -5396,7 +5332,6 @@ crbug.com/913173 fast/backgrounds/background-svg-scaling-zoom.html [ Failure Pas
 
 # Sheriff 2018-12-13
 crbug.com/910452 media/controls/buttons-after-reset.html [ Pass Failure ]
-crbug.com/910452 virtual/audio-service/media/controls/buttons-after-reset.html [ Pass Failure ]
 crbug.com/914782 [ Linux ] fast/scrolling/no-hover-during-scroll.html [ Pass Failure ]
 
 # Sheriff 2018-12-14
@@ -5455,9 +5390,6 @@ crbug.com/922951 http/tests/webaudio/autoplay-crossorigin.html [ Failure Pass Ti
 crbug.com/922951 media/controls/overflow-menu-hide-on-click-outside-stoppropagation.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 media/controls/overflow-menu-hide-on-click-outside.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 media/controls/overflow-menu-toggle-class-for-animation.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-hide-on-click-outside-stoppropagation.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-hide-on-click-outside.html [ Failure Pass Timeout Crash ]
-crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-toggle-class-for-animation.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/prefer_compositing_to_lcd_text/scrollbars/resize-scales-with-dpi-150.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html [ Failure Pass Timeout Crash ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure Pass Timeout Crash ]
@@ -5492,7 +5424,6 @@ crbug.com/927769 fast/webgl/OffscreenCanvas-webgl-preserveDrawingBuffer.html [ S
 
 # Sheriff 2019-02-12
 crbug.com/1072768 media/video-played-ranges-1.html [ Failure Timeout Pass ]
-crbug.com/931533 [ Debug ] virtual/audio-service/media/video-played-ranges-1.html [ Failure Timeout Pass ]
 
 # Sheriff 2019-02-13
 crbug.com/931646 [ Win7 ] http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Failure Pass ]
@@ -5524,7 +5455,6 @@ crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 
 # Sheriff 2019-02-26
 crbug.com/936165 media/autoplay-muted.html [ Timeout Pass ]
-crbug.com/936165 virtual/audio-service/media/autoplay-muted.html [ Timeout Pass ]
 
 # Sheriff 2019-02-28
 crbug.com/936827 external/wpt/fullscreen/api/element-request-fullscreen-and-remove-manual.html [ Failure Pass ]
@@ -5558,7 +5488,6 @@ crbug.com/938200 http/tests/devtools/network/network-blocked-reason.js [ Timeout
 
 # Caused a revert of a good change.
 crbug.com/931533 media/video-played-collapse.html [ Pass Failure ]
-crbug.com/931533 virtual/audio-service/media/video-played-collapse.html [ Pass Failure ]
 
 # Sheriff 2019-03-14
 crbug.com/806357 virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure Crash Timeout ]
@@ -5607,7 +5536,6 @@ crbug.com/919789 images/image-click-scale-restore-zoomed-image.html [ Pass Timeo
 crbug.com/919789 images/image-zoom-to-25.html [ Pass Timeout ]
 crbug.com/919789 images/image-zoom-to-500.html [ Pass Timeout ]
 crbug.com/919789 media/controls/overflow-menu-hide-on-resize.html [ Pass Timeout ]
-crbug.com/919789 virtual/audio-service/media/controls/overflow-menu-hide-on-resize.html [ Pass Timeout ]
 crbug.com/919789 [ Linux ] paint/invalidation/resize-iframe-text.html [ Pass Timeout ]
 crbug.com/919789 [ Mac10.13 ] paint/invalidation/resize-iframe-text.html [ Pass Timeout ]
 crbug.com/919789 paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Pass Timeout ]
@@ -5712,24 +5640,15 @@ crbug.com/963141 media/video-object-fit-change.html [ Pass Failure ]
 crbug.com/963141 [ Mac ] media/controls/video-overlay-cast-light-rendering.html [ Pass Failure ]
 crbug.com/963141 [ Win ] media/controls/video-overlay-cast-light-rendering.html [ Pass Failure ]
 crbug.com/963141 [ Mac ] media/video-aspect-ratio.html [ Pass Failure ]
-crbug.com/963141 [ Mac ] virtual/audio-service/media/video-object-fit.html [ Pass Failure ]
-crbug.com/963141 [ Win ] virtual/audio-service/media/video-object-fit.html [ Pass Failure ]
-crbug.com/963141 virtual/audio-service/media/video-object-fit-change.html [ Pass Failure ]
-crbug.com/963141 [ Mac ] virtual/audio-service/media/controls/video-overlay-cast-light-rendering.html [ Pass Failure ]
-crbug.com/963141 [ Win ] virtual/audio-service/media/controls/video-overlay-cast-light-rendering.html [ Pass Failure ]
-crbug.com/963141 [ Mac ] virtual/audio-service/media/video-aspect-ratio.html [ Pass Failure ]
 
 # Sheriff 2019-05-16
 crbug.com/963141 [ Linux ] media/video-object-fit.html [ Pass Failure ]
-crbug.com/963141 [ Linux ] virtual/audio-service/media/video-object-fit.html [ Pass Failure ]
 
 # Sheriff 2019-05-20
 crbug.com/965389 [ Mac ] media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
-crbug.com/965389 [ Mac ] virtual/audio-service/media/track/track-cue-rendering-position-auto.html [ Pass Failure ]
 
 # Flaky test on all platforms.
 crbug.com/979323 media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
-crbug.com/979323 virtual/audio-service/media/track/track-cue-rendering-position-auto-rtl.html [ Pass Failure ]
 
 # Failing because of revert of If931c1faff528a87d8a78808f30225ebe2377072.
 crbug.com/966345 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_tracks.html [ Failure ]
@@ -5744,10 +5663,8 @@ crbug.com/970142 http/tests/security/mixedContent/insecure-css-resources.html [ 
 
 # Sheriff 2019-06-05
 crbug.com/971259 media/controls/volumechange-stopimmediatepropagation.html [ Pass Failure ]
-crbug.com/971259 virtual/audio-service/media/controls/volumechange-stopimmediatepropagation.html [ Pass Failure ]
 crbug.com/971262 http/tests/devtools/profiler/live-line-level-heap-profile.js [ Pass Timeout ]
 crbug.com/971319 [ Mac ] media/audio-garbage-collect.html [ Pass Timeout ]
-crbug.com/971319 [ Mac ] virtual/audio-service/media/audio-garbage-collect.html [ Pass Timeout ]
 
 # Sheriff 2019-06-13
 crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html [ Failure ]
@@ -5800,7 +5717,6 @@ crbug.com/979593 [ Win ] virtual/omt-worker-fetch/external/wpt/service-workers/s
 # Sheriff 2019-07-04
 crbug.com/981267 [ Linux ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
 crbug.com/981303 [ Mac ] http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
-crbug.com/981303 [ Mac ] virtual/audio-service/http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
 crbug.com/981331 fast/forms/form-submission-create-crash.xhtml [ Pass Timeout ]
 # TODO(crbug.com/980588): reenable once WPT is fixed
 crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]
@@ -5824,14 +5740,10 @@ crbug.com/985869 [ Win7 ] http/tests/security/contentSecurityPolicy/object-src-n
 # ecosystem-infra sheriff 2019-07-22
 crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Pass Timeout ]
 
-crbug.com/987269 [ Linux ] virtual/audio-service/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Pass Failure ]
-crbug.com/987269 [ Linux ] virtual/audio-service/http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Pass Failure ]
 # Sheriff 2019-07-24
 crbug.com/986282 external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
 crbug.com/987138 [ Linux ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
 crbug.com/987138 [ Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
-crbug.com/987138 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
-crbug.com/987138 [ Win ] virtual/audio-service/media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]
 
 # Sheriff 2019-07-26
 crbug.com/835943 [ Debug ] http/tests/appcache/non-html.xhtml [ Crash Pass ]
@@ -5888,10 +5800,8 @@ crbug.com/970285 [ Mac ] virtual/forced-high-contrast-colors/* [ Failure ]
 
 # Sheriff 2019-08-14
 crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
-crbug.com/993671 [ Win ] virtual/audio-service/http/tests/media/video-frame-size-change.html [ Pass Failure ]
 
 #Sheriff 2019-08-12
-crbug.com/783154 [ Linux Debug ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Failure ]
 
 #Sherrif 2019-08-16
 crbug.com/994692 [ Linux ] compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
@@ -5904,12 +5814,6 @@ crbug.com/979298 [ Mac ] media/controls/volumechange-muted-attribute.html [ Pass
 crbug.com/988248 [ Mac ] media/video-persistence.html [ Pass Failure ]
 crbug.com/988248 [ Linux ] media/video-persistence.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] media/video-zoom.html [ Pass Failure ]
-crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/captions-menu-always-visible.html [ Pass Failure ]
-crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/overflow-menu-always-visible.html [ Pass Failure ]
-crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/volumechange-muted-attribute.html [ Pass Failure ]
-crbug.com/988248 [ Mac ] virtual/audio-service/media/video-persistence.html [ Pass Failure ]
-crbug.com/988248 [ Linux ] virtual/audio-service/media/video-persistence.html [ Pass Failure ]
-crbug.com/979298 [ Mac ] virtual/audio-service/media/video-zoom.html [ Pass Failure ]
 
 crbug.com/996219 [ Win ] virtual/text-antialias/emoji-vertical-origin-visual.html [ Failure ]
 
@@ -5925,7 +5829,6 @@ crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-resi
 crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html [ Pass Failure ]
 
 crbug.com/995669 [ Win ] http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
-crbug.com/995669 [ Win ] virtual/audio-service/http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
 
 # Sheriff 2019-08-26
 crbug.com/997669 [ Win ] http/tests/devtools/search/sources-search-scope-in-files.js [ Pass Crash ]
@@ -5940,14 +5843,12 @@ crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/in
 crbug.com/957674 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Failure ]
 
 crbug.com/1000051 media/controls/volume-slider.html [ Failure Timeout Pass ]
-crbug.com/1000051 virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
 
 # Sheriff 2019-09-03
 crbug.com/999799 [ Mac ] external/wpt/html/rendering/dimension-attributes.html [ Pass Timeout ]
 crbug.com/999799 [ Linux ] external/wpt/html/rendering/dimension-attributes.html [ Pass Timeout ]
 
 # Sheriff 2019-09-04
-crbug.com/1000396 [ Win ] virtual/audio-service/media/video-remove-insert-repaints.html [ Pass Failure ]
 crbug.com/1000396 [ Win ] media/video-remove-insert-repaints.html [ Pass Failure ]
 
 # Sheriff 2019-09-09
@@ -6022,7 +5923,6 @@ crbug.com/1014950 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-
 # Sheriff 2019-10-18
 crbug.com/1015859 [ Linux ] http/tests/devtools/a11y-axe-core/performance/landing-page-a11y-test.js [ Pass Failure ]
 crbug.com/1015975 media/video-currentTime.html [ Pass Failure ]
-crbug.com/1015975 virtual/audio-service/media/video-currentTime.html [ Pass Failure ]
 
 # Sheriff 2019-10-21
 crbug.com/1016364 [ Linux Debug ] http/tests/devtools/console/console-search.js [ Pass Timeout ]
@@ -6049,9 +5949,6 @@ crbug.com/1019613 http/tests/devtools/sources/debugger/debug-inlined-scripts.js 
 crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none.html [ Pass Failure ]
 crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Pass Failure ]
 crbug.com/1024976 media/video-no-audio.html [ Pass Failure ]
-crbug.com/1024976 virtual/audio-service/media/controls/paint-controls-webkit-appearance-none.html [ Pass Failure ]
-crbug.com/1024976 virtual/audio-service/media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Pass Failure ]
-crbug.com/1024976 virtual/audio-service/media/video-no-audio.html [ Pass Failure ]
 
 # Sheriff 2019-10-31
 crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
@@ -6062,8 +5959,6 @@ crbug.com/967018 virtual/streaming-preload/external/wpt/html/semantics/scripting
 crbug.com/967018 virtual/web-components-v0-disabled/external/wpt/html/semantics/scripting-1/the-script-element/json-module/json-module-service-worker-test.https.tentative.html [ Failure ]
 
 # Sheriff 2019-11-04
-crbug.com/1021407 [ Retina Release ] virtual/audio-service/media/video-controls-rendering.html [ Pass Failure ]
-crbug.com/1021407 [ Mac10.11 ] virtual/audio-service/media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
 crbug.com/1021407 [ Mac10.11 ] media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
 
 crbug.com/892983 external/wpt/css/css-pseudo/first-line-with-before-after.html [ Failure ]
@@ -6240,7 +6135,6 @@ crbug.com/1043774 [ Linux ] virtual/web-components-v0-disabled/external/wpt/html
 
 # Sheriff 2020-01-22
 crbug.com/1044567 [ Mac10.10 ] media/video-colorspace-yuv420.html [ Pass Failure ]
-crbug.com/1044567 [ Mac10.10 ] virtual/audio-service/media/video-colorspace-yuv420.html [ Pass Failure ]
 crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
 crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
 crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-locale-hebrew.html [ Pass Failure ]
@@ -6341,7 +6235,6 @@ crbug.com/1044829 [ Release Win ] http/tests/devtools/cache-storage/cache-deleti
 crbug.com/1044829 [ Release Mac ] http/tests/devtools/cache-storage/cache-deletion.js [ Pass Timeout ]
 crbug.com/1043847 [ Release Win ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Pass Timeout ]
 crbug.com/1043901 [ Release Win ] external/wpt/preload/preload-with-type.html [ Pass Timeout ]
-crbug.com/1044569 [ Release Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Pass Failure ]
 crbug.com/1044418 [ Release Mac ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Timeout ]
 
 crbug.com/1045472 external/wpt/WebCryptoAPI/wrapKey_unwrapKey/test_wrapKey_unwrapKey.https.html [ Pass Failure ]

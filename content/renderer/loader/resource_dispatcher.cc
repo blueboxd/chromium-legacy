@@ -252,8 +252,9 @@ void ResourceDispatcher::FollowPendingRedirect(
     if (request_info->redirect_requires_loader_restart) {
       request_info->url_loader->FollowRedirectForcingRestart();
     } else {
-      request_info->url_loader->FollowRedirect({} /* removed_headers */,
-                                               {} /* modified_headers */);
+      request_info->url_loader->FollowRedirect(
+          {} /* removed_headers */, {} /* modified_headers */,
+          {} /* modified_cors_exempt_headers */);
     }
   }
 }

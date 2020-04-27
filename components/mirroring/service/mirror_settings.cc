@@ -5,8 +5,9 @@
 #include "components/mirroring/service/mirror_settings.h"
 
 #include <algorithm>
+#include <string>
 
-#include "base/command_line.h"
+#include "base/environment.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/audio_parameters.h"
 
@@ -48,31 +49,36 @@ constexpr int kMaxHeight = 1080;   // Maximum video height in pixels.
 constexpr int kMinWidth = 180;     // Minimum video frame width in pixels.
 constexpr int kMinHeight = 180;    // Minimum video frame height in pixels.
 
-base::TimeDelta GetPlayoutDelayFromCommandLine() {
-  // Currently max and min playout delay are the same.
-  constexpr base::TimeDelta kDefaultPlayoutDelay = kMaxPlayoutDelay;
-  auto* command_line = base::CommandLine::ForCurrentProcess();
+base::TimeDelta GetPlayoutDelayImpl() {
+  // Currently min, max, and animated playout delay are the same.
+  constexpr char kPlayoutDelayVariable[] = "CHROME_MIRRORING_PLAYOUT_DELAY";
 
-  constexpr char kPlayoutDelaySwitch[] = "mirroring-playout-delay";
-  if (!command_line->HasSwitch(kPlayoutDelaySwitch)) {
+  auto environment = base::Environment::Create();
+  if (!environment->HasVar(kPlayoutDelayVariable)) {
     return kDefaultPlayoutDelay;
   }
 
-  const std::string playout_delay_arg =
-      command_line->GetSwitchValueASCII(kPlayoutDelaySwitch);
-  if (playout_delay_arg.empty()) {
+  std::string playout_delay_arg;
+  if (!environment->GetVar(kPlayoutDelayVariable, &playout_delay_arg) ||
+      playout_delay_arg.empty()) {
     return kDefaultPlayoutDelay;
   }
 
   int playout_delay;
-  if (!base::StringToInt(playout_delay_arg, &playout_delay)) {
+  if (!base::StringToInt(playout_delay_arg, &playout_delay) ||
+      playout_delay < 1 || playout_delay > 65535) {
+    VLOG(1) << "Invalid custom mirroring playout delay passed, must be between "
+               "1 and 65535 milliseconds. Using default value instead.";
     return kDefaultPlayoutDelay;
   }
+
+  VLOG(1) << "Using custom mirroring playout delay value of: " << playout_delay
+          << "ms...";
   return base::TimeDelta::FromMilliseconds(playout_delay);
 }
 
 base::TimeDelta GetPlayoutDelay() {
-  static base::TimeDelta playout_delay = GetPlayoutDelayFromCommandLine();
+  static base::TimeDelta playout_delay = GetPlayoutDelayImpl();
   return playout_delay;
 }
 

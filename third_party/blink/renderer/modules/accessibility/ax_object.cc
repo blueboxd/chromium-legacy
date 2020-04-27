@@ -1470,7 +1470,7 @@ bool AXObject::CanSetFocusAttribute() const {
   // to accessibility in any way, so they are not focusable. Note that for
   // subtree-visibility: auto cases, `ShouldIgnoreNodeDueToDisplayLock()` would
   // return false, since we're not ignoring the element in that case.
-  if (!GetNode() ||
+  if (GetNode() &&
       DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
           *GetNode(), DisplayLockActivationReason::kAccessibility)) {
     return false;

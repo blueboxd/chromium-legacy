@@ -180,10 +180,12 @@ class CastMessageHandler : public CastSocket::Observer {
   // Requests a session launch for |app_id| on the device given by |channel_id|.
   // |callback| will be invoked with the response or with a timed out result if
   // no response comes back before |launch_timeout|.
-  virtual void LaunchSession(int channel_id,
-                             const std::string& app_id,
-                             base::TimeDelta launch_timeout,
-                             LaunchSessionCallback callback);
+  virtual void LaunchSession(
+      int channel_id,
+      const std::string& app_id,
+      base::TimeDelta launch_timeout,
+      const std::vector<std::string>& supported_app_types,
+      LaunchSessionCallback callback);
 
   // Stops the session given by |session_id| on the device given by
   // |channel_id|. |callback| will be invoked with the result of the stop

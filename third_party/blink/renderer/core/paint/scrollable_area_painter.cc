@@ -172,12 +172,12 @@ void ScrollableAreaPainter::PaintOverflowControls(
   if (GetScrollableArea().HorizontalScrollbar() &&
       !GetScrollableArea().GraphicsLayerForHorizontalScrollbar()) {
     PaintScrollbar(context, *GetScrollableArea().HorizontalScrollbar(),
-                   paint_info.GetCullRect(), paint_offset);
+                   paint_offset, paint_info.GetCullRect());
   }
   if (GetScrollableArea().VerticalScrollbar() &&
       !GetScrollableArea().GraphicsLayerForVerticalScrollbar()) {
     PaintScrollbar(context, *GetScrollableArea().VerticalScrollbar(),
-                   paint_info.GetCullRect(), paint_offset);
+                   paint_offset, paint_info.GetCullRect());
   }
 
   if (!GetScrollableArea().GraphicsLayerForScrollCorner()) {
@@ -192,19 +192,14 @@ void ScrollableAreaPainter::PaintOverflowControls(
 
 void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
                                            Scrollbar& scrollbar,
-                                           const CullRect& cull_rect,
-                                           const IntPoint& paint_offset) {
+                                           const IntPoint& paint_offset,
+                                           const CullRect& cull_rect) {
   // TODO(crbug.com/1020913): We should not round paint_offset but should
   // consider subpixel accumulation when painting scrollbars.
   IntRect rect = scrollbar.FrameRect();
   rect.MoveBy(paint_offset);
   if (!cull_rect.Intersects(rect))
     return;
-
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    scrollbar.Paint(context, paint_offset);
-    return;
-  }
 
   if (scrollbar.IsCustomScrollbar()) {
     scrollbar.Paint(context, paint_offset);
@@ -213,6 +208,11 @@ void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
     // need main thread scrolling.
     context.GetPaintController().RecordScrollHitTestData(
         scrollbar, DisplayItem::kCustomScrollbarHitTest, nullptr, rect);
+    return;
+  }
+
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    scrollbar.Paint(context, paint_offset);
     return;
   }
 

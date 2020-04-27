@@ -6,8 +6,9 @@
 
 #include <array>
 #include <limits>
+#include <ostream>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/no_destructor.h"
 
 namespace remoting {

@@ -90,6 +90,15 @@ java_group("com_android_support_support_v4_java") {
   ]
 }
 
+java_group("com_android_appcompat_v7_java_double_group") {
+  deps = [
+    ":androidx_appcompat_appcompat_java",
+    ":com_android_support_appcompat_v7_java__unpack_aar",
+  ]
+  input_jars_paths =
+      [ "${target_out_dir}/com_android_support_appcompat_v7_java/classes.jar" ]
+}
+
 # The dependencies below are used by chromecast internal.
 java_group("android_support_v7_preference_java") {
   deps = [ ":androidx_preference_preference_java" ]

@@ -12,10 +12,10 @@
 #include <string>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"

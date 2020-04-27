@@ -4,7 +4,7 @@
 
 #include "services/proxy_resolver/public/cpp/proxy_resolver_mojom_traits.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/proxy_server.h"
 #include "net/proxy_resolution/proxy_info.h"

@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/policy/remote_commands/crd_host_delegate.h"
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/task/post_task.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
-#include "chrome/common/chrome_features.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -149,15 +147,9 @@ void CRDHostDelegate::FetchOAuthToken(
   DeviceOAuth2TokenService* oauth_service =
       DeviceOAuth2TokenServiceFactory::Get();
 
-  OAuth2AccessTokenManager::ScopeSet scopes;
-  scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
-  scopes.insert(kCloudDevicesOAuth2Scope);
-
-  if (base::FeatureList::IsEnabled(
-          features::kUseFtlSignalingForCrdHostDelegate)) {
-    scopes.insert(kChromotingRemoteSupportOAuth2Scope);
-    scopes.insert(kTachyonOAuth2Scope);
-  }
+  OAuth2AccessTokenManager::ScopeSet scopes{
+      GaiaConstants::kGoogleUserInfoEmail, kCloudDevicesOAuth2Scope,
+      kChromotingRemoteSupportOAuth2Scope, kTachyonOAuth2Scope};
 
   oauth_success_callback_ = std::move(success_callback);
   error_callback_ = std::move(error_callback);

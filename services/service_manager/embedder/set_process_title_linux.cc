@@ -49,7 +49,6 @@
 #include <string>
 
 #include "base/files/file_util.h"
-#include "base/logging.h"
 
 extern char** environ;
 

@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"

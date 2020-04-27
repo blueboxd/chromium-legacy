@@ -13,6 +13,7 @@
 #include "testing/libfuzzer/libfuzzer_exports.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -72,7 +73,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t data_size) {
     MessagePortArray* message_ports = MakeGarbageCollected<MessagePortArray>(3);
     std::generate(message_ports->begin(), message_ports->end(), []() {
       auto* port = MakeGarbageCollected<MessagePort>(
-          *g_page_holder->GetDocument().ToExecutionContext());
+          *g_page_holder->GetFrame().DomWindow());
       port->Entangle(mojo::MessagePipe().handle0);
       return port;
     });

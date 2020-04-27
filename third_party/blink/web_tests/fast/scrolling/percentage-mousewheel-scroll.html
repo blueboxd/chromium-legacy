@@ -14,12 +14,7 @@ const WHEEL_DELTA = 100;
 const SCROLL_PERCENTAGE = 0.6;
 
 function scrollAt(x, y) {
-  return smoothScroll(SCROLL_PERCENTAGE, x, y, GestureSourceType.MOUSE_INPUT,
-                      'down', SPEED_INSTANT /* speed_in_pixels_s */,
-                      false /* precise_scrolling_deltas */,
-                      false /* scroll_by_page */, 
-                      true /* cursor_visible */,
-                      true /* scroll_by_percentage */);
+  return percentScroll(0, SCROLL_PERCENTAGE, x, y, GestureSourceType.MOUSE_INPUT);
 }
 
 async function test_scroller(scrollElement, x, y) {
@@ -29,14 +24,14 @@ async function test_scroller(scrollElement, x, y) {
   await scrollAt(x, y);
 
   function isCorrectOffset() {
-    return Math.abs(scrollElement.scrollTop - 
+    return Math.abs(scrollElement.scrollTop -
         scrollElement.clientHeight * SCROLL_PERCENTAGE) <= 0.5;
   }
   await waitFor(isCorrectOffset,
                 "Scrolling by 10% must scroll the correct amount.");
-  await conditionHolds(isCorrectOffset, 
+  await conditionHolds(isCorrectOffset,
                 "Scrolling 10% must not scroll past the correct ammount");
-  
+
   assert_equals(deltaY, WHEEL_DELTA,
                 "Wheel scrolling must report a constant delta value.");
 }

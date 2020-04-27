@@ -714,7 +714,9 @@ UserMediaProcessor::DetermineExistingAudioSessionId() {
                std::back_inserter(matching_sources),
                [&device_id](const blink::WebMediaStreamSource& web_source) {
                  DCHECK(!web_source.IsNull());
-                 return web_source.Id().Utf8() == device_id;
+                 return web_source.GetType() ==
+                            WebMediaStreamSource::kTypeAudio &&
+                        web_source.Id().Utf8() == device_id;
                });
 
   // Return the session ID associated to the source that has the same settings

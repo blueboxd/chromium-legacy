@@ -180,20 +180,22 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
     // call having the time of the last frame before AddAnimationObserver.
     // Please see comment in |FlingController::ProgressFling|. This leaves the
     // last_sent_gesture as a GSE. We therefore don't accrue delta in this case
-    if (last_sent_gesture_.GetType() != WebInputEvent::kGestureScrollEnd) {
+    if (last_sent_gesture_.GetType() !=
+        WebInputEvent::Type::kGestureScrollEnd) {
       DCHECK(last_sent_gesture_.GetType() ==
-             WebInputEvent::kGestureScrollUpdate);
+             WebInputEvent::Type::kGestureScrollUpdate);
       total_scroll_delta += last_sent_gesture_.data.scroll_update.delta_x;
     }
 
     while (true) {
       AdvanceTime();
       ProgressFling(NowTicks());
-      if (last_sent_gesture_.GetType() == WebInputEvent::kGestureScrollEnd) {
+      if (last_sent_gesture_.GetType() ==
+          WebInputEvent::Type::kGestureScrollEnd) {
         break;
       } else {
         DCHECK(last_sent_gesture_.GetType() ==
-               WebInputEvent::kGestureScrollUpdate);
+               WebInputEvent::Type::kGestureScrollUpdate);
         total_scroll_delta += last_sent_gesture_.data.scroll_update.delta_x;
       }
     }
@@ -791,7 +793,8 @@ TEST_P(FlingControllerWithPhysicsBasedFlingTest,
   // Fling progress must send GSU events.
   AdvanceTime();
   ProgressFling(NowTicks());
-  ASSERT_EQ(WebInputEvent::kGestureScrollUpdate, last_sent_gesture_.GetType());
+  ASSERT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
+            last_sent_gesture_.GetType());
   EXPECT_EQ(WebGestureEvent::InertialPhaseState::kMomentum,
             last_sent_gesture_.data.scroll_update.inertial_phase);
   EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
@@ -840,7 +843,8 @@ TEST_P(FlingControllerWithPhysicsBasedFlingTest,
   double time_to_advance_ms = 1000.0;
   AdvanceTime(time_to_advance_ms);
   ProgressFling(NowTicks());
-  ASSERT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType())
+  ASSERT_EQ(WebInputEvent::Type::kGestureScrollEnd,
+            last_sent_gesture_.GetType())
       << "Unexpected Last Sent Gesture: "
       << WebInputEvent::GetName(last_sent_gesture_.GetType());
   EXPECT_EQ(fling_controller_->CurrentFlingVelocity().x(), 0);

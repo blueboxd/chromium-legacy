@@ -9,7 +9,7 @@
 #include <sddl.h>
 #include <stdlib.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/rand_util.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/win_utils.h"

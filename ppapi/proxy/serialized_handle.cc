@@ -4,8 +4,9 @@
 
 #include "ppapi/proxy/serialized_handle.h"
 
+#include "base/check_op.h"
 #include "base/files/file.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/pickle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_platform_file.h"

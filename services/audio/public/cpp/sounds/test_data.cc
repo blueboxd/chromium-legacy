@@ -4,7 +4,6 @@
 
 #include "services/audio/public/cpp/sounds/test_data.h"
 
-#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace audio {

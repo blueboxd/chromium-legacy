@@ -996,14 +996,6 @@ const Document& Document::From(const ExecutionContext& context) {
   return *static_cast<const LocalDOMWindow&>(context).document();
 }
 
-ExecutionContext* Document::ToExecutionContext() {
-  return GetExecutionContext();
-}
-
-const ExecutionContext* Document::ToExecutionContext() const {
-  return GetExecutionContext();
-}
-
 bool Document::FeatureEnabled(OriginTrialFeature feature) const {
   return GetOriginTrialContext()->IsFeatureEnabled(feature);
 }

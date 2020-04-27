@@ -14,6 +14,7 @@ PhotoController* g_photo_controller = nullptr;
 
 }  // namespace
 
+// Topic-----------------------------------------------------------------------
 PhotoController::Topic::Topic() = default;
 
 PhotoController::Topic::Topic(const Topic&) = default;
@@ -22,6 +23,26 @@ PhotoController::Topic& PhotoController::Topic::operator=(const Topic&) =
     default;
 
 PhotoController::Topic::~Topic() = default;
+
+// WeatherInfo-----------------------------------------------------------------
+PhotoController::WeatherInfo::WeatherInfo() = default;
+
+PhotoController::WeatherInfo::WeatherInfo(const WeatherInfo&) = default;
+
+PhotoController::WeatherInfo& PhotoController::WeatherInfo::operator=(
+    const WeatherInfo&) = default;
+
+PhotoController::WeatherInfo::~WeatherInfo() = default;
+
+// ScreenUpdate----------------------------------------------------------------
+PhotoController::ScreenUpdate::ScreenUpdate() = default;
+
+PhotoController::ScreenUpdate::ScreenUpdate(const ScreenUpdate&) = default;
+
+PhotoController::ScreenUpdate& PhotoController::ScreenUpdate::operator=(
+    const ScreenUpdate&) = default;
+
+PhotoController::ScreenUpdate::~ScreenUpdate() = default;
 
 // static
 PhotoController* PhotoController::Get() {

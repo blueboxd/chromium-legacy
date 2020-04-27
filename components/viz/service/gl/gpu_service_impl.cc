@@ -270,7 +270,6 @@ GpuServiceImpl::GpuServiceImpl(
     const base::Optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu,
     const gpu::GpuExtraInfo& gpu_extra_info,
-    const base::Optional<gpu::DevicePerfInfo>& device_perf_info,
     gpu::VulkanImplementation* vulkan_implementation,
     base::OnceCallback<void(bool /*immediately*/)> exit_callback)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -282,7 +281,6 @@ GpuServiceImpl::GpuServiceImpl(
       gpu_info_for_hardware_gpu_(gpu_info_for_hardware_gpu),
       gpu_feature_info_for_hardware_gpu_(gpu_feature_info_for_hardware_gpu),
       gpu_extra_info_(gpu_extra_info),
-      device_perf_info_(device_perf_info),
 #if BUILDFLAG(ENABLE_VULKAN)
       vulkan_implementation_(vulkan_implementation),
 #endif
@@ -698,54 +696,6 @@ void GpuServiceImpl::GetPeakMemoryUsage(uint32_t sequence_num,
                                 weak_ptr_, sequence_num, std::move(callback)));
 }
 
-#if defined(OS_WIN)
-void GpuServiceImpl::GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
-    GetGpuSupportedRuntimeVersionAndDevicePerfInfoCallback callback) {
-  if (io_runner_->BelongsToCurrentThread()) {
-    auto wrap_callback = WrapCallback(io_runner_, std::move(callback));
-    main_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &GpuServiceImpl::GetGpuSupportedRuntimeVersionAndDevicePerfInfo,
-            weak_ptr_, std::move(wrap_callback)));
-    return;
-  }
-  DCHECK(main_runner_->BelongsToCurrentThread());
-
-  // GPU full info collection should only happen on un-sandboxed GPU process
-  // or single process/in-process gpu mode on Windows.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  DCHECK(command_line->HasSwitch("disable-gpu-sandbox") || in_host_process());
-
-  gpu::RecordGpuSupportedRuntimeVersionHistograms(
-      &gpu_info_.dx12_vulkan_version_info);
-  DCHECK(device_perf_info_.has_value());
-  std::move(callback).Run(gpu_info_.dx12_vulkan_version_info,
-                          device_perf_info_.value());
-}
-
-void GpuServiceImpl::RequestCompleteGpuInfo(
-    RequestCompleteGpuInfoCallback callback) {
-  if (io_runner_->BelongsToCurrentThread()) {
-    auto wrap_callback = WrapCallback(io_runner_, std::move(callback));
-    main_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&GpuServiceImpl::RequestCompleteGpuInfo,
-                                  weak_ptr_, std::move(wrap_callback)));
-    return;
-  }
-  DCHECK(main_runner_->BelongsToCurrentThread());
-
-  UpdateGpuInfoPlatform(base::BindOnce(
-      IgnoreResult(&base::TaskRunner::PostTask), main_runner_, FROM_HERE,
-      base::BindOnce(
-          [](GpuServiceImpl* gpu_service,
-             RequestCompleteGpuInfoCallback callback) {
-            std::move(callback).Run(gpu_service->gpu_info_.dx_diagnostics);
-          },
-          this, std::move(callback))));
-}
-#endif
-
 void GpuServiceImpl::RequestHDRStatus(RequestHDRStatusCallback callback) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   main_runner_->PostTask(
@@ -763,42 +713,6 @@ void GpuServiceImpl::RequestHDRStatusOnMainThread(
   io_runner_->PostTask(FROM_HERE,
                        base::BindOnce(std::move(callback), hdr_enabled));
 }
-
-#if defined(OS_WIN)
-void GpuServiceImpl::UpdateGpuInfoPlatform(
-    base::OnceClosure on_gpu_info_updated) {
-  DCHECK(main_runner_->BelongsToCurrentThread());
-  // GPU full info collection should only happen on un-sandboxed GPU process
-  // or single process/in-process gpu mode on Windows.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  DCHECK(command_line->HasSwitch("disable-gpu-sandbox") || in_host_process());
-
-  // We can continue on shutdown here because we're not writing any critical
-  // state in this task.
-  base::PostTaskAndReplyWithResult(
-      base::ThreadPool::CreateCOMSTATaskRunner(
-          {base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
-          .get(),
-      FROM_HERE, base::BindOnce([]() {
-        gpu::DxDiagNode dx_diag_node;
-        gpu::GetDxDiagnostics(&dx_diag_node);
-        return dx_diag_node;
-      }),
-      base::BindOnce(
-          [](GpuServiceImpl* gpu_service, base::OnceClosure on_gpu_info_updated,
-             const gpu::DxDiagNode& dx_diag_node) {
-            gpu_service->gpu_info_.dx_diagnostics = dx_diag_node;
-            std::move(on_gpu_info_updated).Run();
-          },
-          this, std::move(on_gpu_info_updated)));
-}
-#else
-void GpuServiceImpl::UpdateGpuInfoPlatform(
-    base::OnceClosure on_gpu_info_updated) {
-  std::move(on_gpu_info_updated).Run();
-}
-#endif
 
 void GpuServiceImpl::RegisterDisplayContext(
     gpu::DisplayContext* display_context) {

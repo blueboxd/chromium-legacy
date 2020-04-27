@@ -39,9 +39,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::ContentSecurityPolicyType,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::mojom::CursorType,
                               ui::mojom::CursorType::kNull,
                               ui::mojom::CursorType::kMaxValue)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
-                              blink::WebInputEvent::kTypeFirst,
-                              blink::WebInputEvent::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebImeTextSpan::Type,
                           blink::WebImeTextSpan::Type::kMisspellingSuggestion)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::mojom::ImeTextSpanThickness,

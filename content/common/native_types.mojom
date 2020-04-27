@@ -47,12 +47,6 @@ enum PointerType;
 struct EditCommand;
 
 [Native]
-enum EventType;
-
-[Native]
-enum TouchState;
-
-[Native]
 struct DidOverscrollParams;
 
 [Native]

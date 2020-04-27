@@ -5,7 +5,10 @@
 import("//build/config/android/rules.gni")
 
 android_library("java") {
-  sources = [ "android/java/src/org/chromium/chrome/browser/settings/ChromeManagedPreferenceDelegate.java" ]
+  sources = [
+    "android/java/src/org/chromium/chrome/browser/settings/ChromeManagedPreferenceDelegate.java",
+    "android/java/src/org/chromium/chrome/browser/settings/SettingsLauncher.java",
+  ]
   deps = [
     "//chrome/browser/preferences:java",
     "//components/browser_ui/settings/android:java",

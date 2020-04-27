@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using cast_channel::CastDeviceCapability;
+using cast_channel::ReceiverAppType;
 
 namespace media_router {
 
@@ -28,6 +29,7 @@ TEST(CastMediaSourceTest, FromCastURLWithDefaults) {
   EXPECT_EQ(AutoJoinPolicy::kPageScoped, source->auto_join_policy());
   EXPECT_EQ(DefaultActionPolicy::kCreateSession,
             source->default_action_policy());
+  EXPECT_EQ(ReceiverAppType::kWeb, source->supported_app_types()[0]);
 }
 
 TEST(CastMediaSourceTest, FromCastURL) {
@@ -38,7 +40,8 @@ TEST(CastMediaSourceTest, FromCastURL) {
       "&clientId=12345"
       "&launchTimeout=30000"
       "&autoJoinPolicy=tab_and_origin_scoped"
-      "&defaultActionPolicy=cast_this_tab");
+      "&defaultActionPolicy=cast_this_tab"
+      "&supportedAppTypes=ANDROID_TV,WEB");
   std::unique_ptr<CastMediaSource> source =
       CastMediaSource::FromMediaSourceId(source_id);
   ASSERT_TRUE(source);
@@ -57,6 +60,8 @@ TEST(CastMediaSourceTest, FromCastURL) {
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(30000), source->launch_timeout());
   EXPECT_EQ(AutoJoinPolicy::kTabAndOriginScoped, source->auto_join_policy());
   EXPECT_EQ(DefaultActionPolicy::kCastThisTab, source->default_action_policy());
+  EXPECT_EQ(ReceiverAppType::kAndroidTv, source->supported_app_types()[0]);
+  EXPECT_EQ(ReceiverAppType::kWeb, source->supported_app_types()[1]);
 }
 
 TEST(CastMediaSourceTest, FromLegacyCastURL) {
@@ -89,6 +94,7 @@ TEST(CastMediaSourceTest, FromLegacyCastURL) {
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(30000), source->launch_timeout());
   EXPECT_EQ(AutoJoinPolicy::kOriginScoped, source->auto_join_policy());
   EXPECT_EQ(DefaultActionPolicy::kCastThisTab, source->default_action_policy());
+  EXPECT_EQ(ReceiverAppType::kWeb, source->supported_app_types()[0]);
 }
 
 TEST(CastMediaSourceTest, FromPresentationURL) {
@@ -105,6 +111,7 @@ TEST(CastMediaSourceTest, FromPresentationURL) {
   EXPECT_EQ(AutoJoinPolicy::kPageScoped, source->auto_join_policy());
   EXPECT_EQ(DefaultActionPolicy::kCreateSession,
             source->default_action_policy());
+  EXPECT_EQ(ReceiverAppType::kWeb, source->supported_app_types()[0]);
 }
 
 TEST(CastMediaSourceTest, FromMirroringURN) {
@@ -121,6 +128,7 @@ TEST(CastMediaSourceTest, FromMirroringURN) {
   EXPECT_EQ(AutoJoinPolicy::kPageScoped, source->auto_join_policy());
   EXPECT_EQ(DefaultActionPolicy::kCreateSession,
             source->default_action_policy());
+  EXPECT_EQ(ReceiverAppType::kWeb, source->supported_app_types()[0]);
 }
 
 TEST(CastMediaSourceTest, FromDesktopUrn) {
@@ -136,6 +144,7 @@ TEST(CastMediaSourceTest, FromDesktopUrn) {
   EXPECT_EQ(AutoJoinPolicy::kPageScoped, source->auto_join_policy());
   EXPECT_EQ(DefaultActionPolicy::kCreateSession,
             source->default_action_policy());
+  EXPECT_EQ(ReceiverAppType::kWeb, source->supported_app_types()[0]);
 }
 
 TEST(CastMediaSourceTest, FromInvalidSource) {

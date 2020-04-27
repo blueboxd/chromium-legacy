@@ -276,24 +276,30 @@ Bind(Functor&& functor, Args&&... args) {
 }
 
 // Special cases for binding to a base::Callback without extra bound arguments.
+// We CHECK() the validity of callback to guard against null pointers
+// accidentally ending up in posted tasks, causing hard-to-debug crashes.
 template <typename Signature>
 OnceCallback<Signature> BindOnce(OnceCallback<Signature> callback) {
+  CHECK(callback);
   return callback;
 }
 
 template <typename Signature>
 OnceCallback<Signature> BindOnce(RepeatingCallback<Signature> callback) {
+  CHECK(callback);
   return callback;
 }
 
 template <typename Signature>
 RepeatingCallback<Signature> BindRepeating(
     RepeatingCallback<Signature> callback) {
+  CHECK(callback);
   return callback;
 }
 
 template <typename Signature>
 Callback<Signature> Bind(Callback<Signature> callback) {
+  CHECK(callback);
   return callback;
 }
 

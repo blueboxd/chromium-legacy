@@ -4,7 +4,7 @@
 
 #include "remoting/host/forward_process_stats_agent.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace remoting {
 

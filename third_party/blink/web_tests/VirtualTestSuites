@@ -628,13 +628,6 @@
     "args": ["--enable-features=VerifyHTMLFetchedFromAppCacheBeforeDelay"]
   },
   {
-    "prefix": "audio-service",
-    "bases": ["external/wpt/mediacapture-streams",
-              "media",
-              "http/tests/media"],
-    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox,WebRtcApmInAudioService"]
-  },
-  {
     "prefix": "json-modules",
     "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/json-module"],
     "args": ["--enable-features=JSONModules"]

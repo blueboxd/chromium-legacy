@@ -8,8 +8,9 @@
 #include <stdint.h>
 
 #include <limits>
+#include <ostream>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
 #include "sandbox/linux/bpf_dsl/errorcode.h"

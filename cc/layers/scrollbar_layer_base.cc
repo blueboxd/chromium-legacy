@@ -14,9 +14,7 @@ namespace cc {
 ScrollbarLayerBase::ScrollbarLayerBase(ScrollbarOrientation orientation,
                                        bool is_left_side_vertical_scrollbar)
     : orientation_(orientation),
-      is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar) {
-  SetIsScrollbar(true);
-}
+      is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar) {}
 
 ScrollbarLayerBase::~ScrollbarLayerBase() = default;
 
@@ -76,6 +74,10 @@ void ScrollbarLayerBase::PushPropertiesTo(LayerImpl* layer) {
   DCHECK_EQ(scrollbar_layer_impl->is_left_side_vertical_scrollbar(),
             is_left_side_vertical_scrollbar_);
   scrollbar_layer_impl->SetScrollElementId(scroll_element_id_);
+}
+
+bool ScrollbarLayerBase::IsScrollbarLayerForTesting() const {
+  return true;
 }
 
 }  // namespace cc

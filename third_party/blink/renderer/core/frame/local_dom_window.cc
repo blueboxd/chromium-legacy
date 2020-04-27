@@ -747,8 +747,7 @@ FrameConsole* LocalDOMWindow::GetFrameConsole() const {
 }
 
 ApplicationCache* LocalDOMWindow::applicationCache() const {
-  DCHECK(RuntimeEnabledFeatures::AppCacheEnabled(
-      document()->ToExecutionContext()));
+  DCHECK(RuntimeEnabledFeatures::AppCacheEnabled(this));
   if (!IsCurrentlyDisplayedInFrame())
     return nullptr;
   if (!isSecureContext()) {

@@ -4,9 +4,9 @@
 
 #include "storage/browser/file_system/sandbox_prioritized_origin_database.h"
 
+#include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/pickle.h"
 #include "storage/browser/file_system/sandbox_isolated_origin_database.h"
 #include "storage/browser/file_system/sandbox_origin_database.h"

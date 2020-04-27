@@ -648,8 +648,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // let the loader just follow the redirect.
     if (url_loader_) {
       DCHECK(!redirect_info_.new_url.is_empty());
-      url_loader_->FollowRedirect(std::move(url_loader_removed_headers_),
-                                  std::move(url_loader_modified_headers_));
+      url_loader_->FollowRedirect(
+          std::move(url_loader_removed_headers_),
+          std::move(url_loader_modified_headers_),
+          std::move(url_loader_modified_cors_exempt_headers_));
       return;
     }
 
@@ -772,10 +774,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     return factory;
   }
 
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers,
-                      PreviewsState new_previews_state,
-                      base::Time ui_post_time) {
+  void FollowRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_headers,
+      PreviewsState new_previews_state,
+      base::Time ui_post_time) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!redirect_info_.new_url.is_empty());
     ui_to_io_time_ += (base::Time::Now() - ui_post_time);
@@ -817,6 +821,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // |resource_request_| during redirect.
     url_loader_removed_headers_ = removed_headers;
     url_loader_modified_headers_ = modified_headers;
+    url_loader_modified_cors_exempt_headers_ = modified_cors_exempt_headers;
 
     // Don't send Accept: application/signed-exchange for fallback redirects.
     if (redirect_info_.is_signed_exchange_fallback_redirect) {
@@ -1194,6 +1199,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // will be consumed by next |url_loader_->FollowRedirect()|.
   std::vector<std::string> url_loader_removed_headers_;
   net::HttpRequestHeaders url_loader_modified_headers_;
+  net::HttpRequestHeaders url_loader_modified_cors_exempt_headers_;
 
   std::vector<GURL> url_chain_;
 
@@ -1475,8 +1481,10 @@ NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
 void NavigationURLLoaderImpl::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
+    const net::HttpRequestHeaders& modified_cors_exempt_headers,
     PreviewsState new_previews_state) {
   request_controller_->FollowRedirect(removed_headers, modified_headers,
+                                      modified_cors_exempt_headers,
                                       new_previews_state, base::Time::Now());
 }
 

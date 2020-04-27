@@ -13,7 +13,8 @@
 #include <set>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/scoped_native_library.h"
 #include "base/win/pe_image.h"
 #include "base/win/windows_version.h"

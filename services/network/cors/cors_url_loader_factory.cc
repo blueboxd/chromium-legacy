@@ -174,7 +174,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   debug::ScopedRequestCrashKeys request_crash_keys(resource_request);
 
-  if (!IsSane(context_, resource_request, options)) {
+  if (!IsSane(resource_request, options)) {
     mojo::Remote<mojom::URLLoaderClient>(std::move(client))
         ->OnComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
     return;
@@ -194,7 +194,8 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
             factory_override_->ShouldSkipCorsEnabledSchemeCheck(),
         std::move(client), traffic_annotation, inner_url_loader_factory,
         origin_access_list_, factory_bound_origin_access_list_.get(),
-        context_->cors_preflight_controller());
+        context_->cors_preflight_controller(),
+        context_->cors_exempt_header_list());
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));
     raw_loader->Start();
@@ -223,8 +224,23 @@ void CorsURLLoaderFactory::DeleteIfNeeded() {
     context_->DestroyURLLoaderFactory(this);
 }
 
-bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
-                                  const ResourceRequest& request,
+// static
+bool CorsURLLoaderFactory::IsCorsExemptHeadersSane(
+    const std::unordered_set<std::string>& allowed_exempt_headers,
+    const net::HttpRequestHeaders& headers) {
+  for (const auto& header : headers.GetHeaderVector()) {
+    if (allowed_exempt_headers.find(header.key) !=
+        allowed_exempt_headers.end()) {
+      continue;
+    }
+    LOG(WARNING) << "|cors_exempt_headers| contains unexpected key: "
+                 << header.value;
+    return false;
+  }
+  return true;
+}
+
+bool CorsURLLoaderFactory::IsSane(const ResourceRequest& request,
                                   uint32_t options) {
   // CORS needs a proper origin (including a unique opaque origin). If the
   // request doesn't have one, CORS cannot work.
@@ -325,20 +341,12 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
       break;
   }
 
-  if (context && (process_id_ != mojom::kBrowserProcessId ||
-                  !context->allow_any_cors_exempt_header_for_browser())) {
-    net::HttpRequestHeaders::Iterator header_iterator(
-        request.cors_exempt_headers);
-    const auto& allowed_exempt_headers = context->cors_exempt_header_list();
-    while (header_iterator.GetNext()) {
-      if (allowed_exempt_headers.find(header_iterator.name()) !=
-          allowed_exempt_headers.end()) {
-        continue;
-      }
-      LOG(WARNING) << "|cors_exempt_headers| contains unexpected key: "
-                   << header_iterator.name();
-      return false;
-    }
+  if (context_ &&
+      (process_id_ != mojom::kBrowserProcessId ||
+       !context_->allow_any_cors_exempt_header_for_browser()) &&
+      !IsCorsExemptHeadersSane(*context_->cors_exempt_header_list(),
+                               request.cors_exempt_headers)) {
+    return false;
   }
 
   if (!AreRequestHeadersSafe(request.headers) ||

@@ -36,8 +36,8 @@ public class AwDebugTest {
     private static final String TAG = "AwDebugTest";
 
     // These constants must match android_webview/browser/aw_debug.cc.
-    private static final String WHITELISTED_DEBUG_KEY = "AW_WHITELISTED_DEBUG_KEY";
-    private static final String NON_WHITELISTED_DEBUG_KEY = "AW_NONWHITELISTED_DEBUG_KEY";
+    private static final String ALLOWED_DEBUG_KEY = "AW_ALLOWED_DEBUG_KEY";
+    private static final String DENIED_DEBUG_KEY = "AW_DENIED_DEBUG_KEY";
     private static final String DEBUG_VALUE = "AW_DEBUG_VALUE";
 
     @Test
@@ -59,13 +59,13 @@ public class AwDebugTest {
     @SmallTest
     @Feature({"AndroidWebView", "Debug"})
     @DisabledTest(message = "crbug.com/913515")
-    public void testDumpContainsWhitelistedKey() throws Throwable {
+    public void testDumpContainsAlloweddKey() throws Throwable {
         File f = File.createTempFile("dump", ".dmp");
         try {
             AwDebug.initCrashKeysForTesting();
-            AwDebug.setWhiteListedKeyForTesting();
+            AwDebug.setAllowedKeyForTesting();
             Assert.assertTrue(AwDebug.dumpWithoutCrashing(f));
-            assertContainsCrashKeyValue(f, WHITELISTED_DEBUG_KEY, DEBUG_VALUE);
+            assertContainsCrashKeyValue(f, ALLOWED_DEBUG_KEY, DEBUG_VALUE);
         } finally {
             Assert.assertTrue(f.delete());
         }
@@ -75,13 +75,13 @@ public class AwDebugTest {
     @SmallTest
     @Feature({"AndroidWebView", "Debug"})
     @DisabledTest(message = "crbug.com/913515")
-    public void testDumpDoesNotContainNonWhitelistedKey() throws Throwable {
+    public void testDumpDoesNotContainDeniedKey() throws Throwable {
         File f = File.createTempFile("dump", ".dmp");
         try {
             AwDebug.initCrashKeysForTesting();
-            AwDebug.setNonWhiteListedKeyForTesting();
+            AwDebug.setDeniedKeyForTesting();
             Assert.assertTrue(AwDebug.dumpWithoutCrashing(f));
-            assertNotContainsCrashKeyValue(f, NON_WHITELISTED_DEBUG_KEY);
+            assertNotContainsCrashKeyValue(f, DENIED_DEBUG_KEY);
         } finally {
             Assert.assertTrue(f.delete());
         }

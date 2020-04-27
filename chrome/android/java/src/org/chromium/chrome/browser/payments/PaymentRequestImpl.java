@@ -2879,11 +2879,6 @@ public class PaymentRequestImpl
         mPaymentResponseHelper.onPaymentDetailsReceived(methodName, stringifiedDetails, payerData);
     }
 
-    /** Stub method to get removed after resolving clank dependencies. */
-    @Override
-    public void onInstrumentDetailsReady(String methodName, String stringifiedDetails,
-            org.chromium.chrome.browser.payments.PayerData payerData) {}
-
     @Override
     public void onPaymentResponseReady(PaymentResponse response) {
         if (mSkipToGPayHelper != null && !mSkipToGPayHelper.patchPaymentResponse(response)) {

@@ -13,6 +13,7 @@
 #include "cc/base/switches.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -25,6 +26,7 @@
 #include "weblayer/browser/cookie_settings_factory.h"
 #include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
+#include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/permissions/weblayer_permissions_client.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 #include "weblayer/browser/translate_accept_languages_factory.h"
@@ -129,6 +131,13 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
 #endif
+
+  translate::TranslateDownloadManager* download_manager =
+      translate::TranslateDownloadManager::GetInstance();
+  download_manager->set_url_loader_factory(
+      BrowserProcess::GetInstance()->GetSharedURLLoaderFactory());
+  download_manager->set_application_locale(i18n::GetApplicationLocale());
+
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
 

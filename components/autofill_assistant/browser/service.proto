@@ -454,6 +454,7 @@ message ActionProto {
     WaitForDocumentProto wait_for_document = 45;
     ShowGenericUiProto show_generic_ui = 49;
     GeneratePasswordForFormFieldProto generate_password_for_form_field = 52;
+    SaveGeneratedPasswordProto save_generated_password = 53;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -1615,6 +1616,13 @@ message GeneratePasswordForFormFieldProto {
   optional ElementReferenceProto element = 1;
   // The client memory key to store the generated password.
   optional string memory_key = 2;
+}
+
+// Asks the password save manager to save generated password after successful
+// submission.
+message SaveGeneratedPasswordProto {
+  // The client memory key of stored password.
+  optional string memory_key = 1;
 }
 
 // Set an element attribute to a specific value.

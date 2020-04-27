@@ -57,6 +57,12 @@ class CONTENT_EXPORT ConversionPolicy {
       const base::Optional<base::TimeDelta>& declared_expiry,
       base::Time impression_time) const;
 
+  // Delays reports that should have been sent while the browser was not open by
+  // given them a noisy report time to help disassociate them from other
+  // reports.
+  virtual base::Time GetReportTimeForExpiredReportAtStartup(
+      base::Time now) const;
+
  private:
   // For testing only.
   explicit ConversionPolicy(std::unique_ptr<NoiseProvider> noise_provider);

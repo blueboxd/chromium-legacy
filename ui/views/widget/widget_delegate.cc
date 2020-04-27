@@ -80,7 +80,7 @@ base::string16 WidgetDelegate::GetAccessibleWindowTitle() const {
 }
 
 base::string16 WidgetDelegate::GetWindowTitle() const {
-  return base::string16();
+  return params_.title;
 }
 
 bool WidgetDelegate::ShouldShowWindowTitle() const {
@@ -183,6 +183,14 @@ bool WidgetDelegate::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {
   return true;
+}
+
+void WidgetDelegate::SetWindowTitle(const base::string16& title) {
+  if (params_.title == title)
+    return;
+  params_.title = title;
+  if (GetWidget())
+    GetWidget()->UpdateWindowTitle();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

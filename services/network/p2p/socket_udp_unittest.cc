@@ -9,8 +9,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/containers/circular_deque.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/sys_byteorder.h"
 #include "base/test/task_environment.h"

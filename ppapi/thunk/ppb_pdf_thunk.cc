@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/thunk/enter.h"

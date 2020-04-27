@@ -283,7 +283,7 @@ void WebContentsViewMac::ShowContextMenu(
 
 void WebContentsViewMac::ShowPopupMenu(
     RenderFrameHost* render_frame_host,
-    mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
+    mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
     const gfx::Rect& bounds,
     int item_height,
     double item_font_size,
@@ -292,7 +292,7 @@ void WebContentsViewMac::ShowPopupMenu(
     bool right_aligned,
     bool allow_multiple_selection) {
   popup_menu_helper_.reset(
-      new PopupMenuHelper(this, render_frame_host, std::move(popup)));
+      new PopupMenuHelper(this, render_frame_host, std::move(popup_client)));
   popup_menu_helper_->ShowPopupMenu(bounds, item_height, item_font_size,
                                     selected_item, std::move(menu_items),
                                     right_aligned, allow_multiple_selection);

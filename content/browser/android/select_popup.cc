@@ -52,11 +52,11 @@ SelectPopup::~SelectPopup() {
   if (j_obj.is_null())
     return;
   Java_SelectPopup_onNativeDestroyed(env, j_obj);
-  popup_.reset();
+  popup_client_.reset();
 }
 
 void SelectPopup::ShowMenu(
-    mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
+    mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
     const gfx::Rect& bounds,
     std::vector<blink::mojom::MenuItemPtr> items,
     int selected_item,
@@ -109,8 +109,8 @@ void SelectPopup::ShowMenu(
   if (popup_view.is_null())
     return;
 
-  popup_.Bind(std::move(popup));
-  popup_.set_disconnect_handler(
+  popup_client_.Bind(std::move(popup_client));
+  popup_client_.set_disconnect_handler(
       base::BindOnce(&SelectPopup::HideMenu, base::Unretained(this)));
 
   // |bounds| is in physical pixels if --use-zoom-for-dsf is enabled.
@@ -119,9 +119,9 @@ void SelectPopup::ShowMenu(
   if (IsUseZoomForDSFEnabled())
     bounds_dip.Scale(1 / web_contents_->GetNativeView()->GetDipScale());
   view->SetAnchorRect(popup_view, bounds_dip);
-  Java_SelectPopup_show(env, j_obj, popup_view,
-                        reinterpret_cast<jlong>(popup_.get()), items_array,
-                        enabled_array, multiple, selected_array, right_aligned);
+  Java_SelectPopup_show(
+      env, j_obj, popup_view, reinterpret_cast<jlong>(popup_client_.get()),
+      items_array, enabled_array, multiple, selected_array, right_aligned);
 }
 
 void SelectPopup::HideMenu() {
@@ -130,25 +130,25 @@ void SelectPopup::HideMenu() {
   if (!j_obj.is_null())
     Java_SelectPopup_hideWithoutCancel(env, j_obj);
   popup_view_.Reset();
-  popup_.reset();
+  popup_client_.reset();
 }
 
 void SelectPopup::SelectMenuItems(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj,
                                   jlong selectPopupDelegate,
                                   const JavaParamRef<jintArray>& indices) {
-  blink::mojom::ExternalPopup* popup_raw_ptr =
-      reinterpret_cast<blink::mojom::ExternalPopup*>(selectPopupDelegate);
-  DCHECK(popup_raw_ptr && popup_.get() == popup_raw_ptr);
+  blink::mojom::PopupMenuClient* popup_client_raw_ptr =
+      reinterpret_cast<blink::mojom::PopupMenuClient*>(selectPopupDelegate);
+  DCHECK(popup_client_raw_ptr && popup_client_.get() == popup_client_raw_ptr);
 
   if (indices == NULL) {
-    popup_->DidCancel();
+    popup_client_->DidCancel();
     return;
   }
 
   std::vector<int> selected_indices;
   base::android::JavaIntArrayToIntVector(env, indices, &selected_indices);
-  popup_->DidAcceptIndices(selected_indices);
+  popup_client_->DidAcceptIndices(selected_indices);
 }
 
 }  // namespace content

@@ -5,6 +5,7 @@
 import argparse
 import sys
 from css_generator import CSSStyleGenerator
+from views_generator import ViewsStyleGenerator
 
 
 def main():
@@ -13,7 +14,7 @@ def main():
 
     parser.add_argument(
         '--generator',
-        choices=['CSS'],
+        choices=['CSS', 'Views'],
         required=True,
         help='type of file to generate')
     parser.add_argument('--out-file', help='file to write output to')
@@ -24,8 +25,13 @@ def main():
     if args.generator == 'CSS':
         style_generator = CSSStyleGenerator()
 
+    if args.generator == 'Views':
+        style_generator = ViewsStyleGenerator()
+
     for t in args.targets:
         style_generator.AddJSONFileToModel(t)
+
+    style_generator.out_file_path = args.out_file
 
     if args.out_file:
         with open(args.out_file, 'w') as f:

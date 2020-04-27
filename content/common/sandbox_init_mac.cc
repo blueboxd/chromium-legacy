@@ -92,7 +92,7 @@ bool GetSandboxTypeFromCommandLine(service_manager::SandboxType* sandbox_type) {
     return false;
   }
 
-  return true;
+  return *sandbox_type != service_manager::SandboxType::kInvalid;
 }
 
 }  // namespace
@@ -105,7 +105,7 @@ bool InitializeSandbox(service_manager::SandboxType sandbox_type) {
 
 bool InitializeSandbox(base::OnceClosure post_warmup_hook) {
   service_manager::SandboxType sandbox_type =
-      service_manager::SandboxType::kNoSandbox;
+      service_manager::SandboxType::kInvalid;
   return !GetSandboxTypeFromCommandLine(&sandbox_type) ||
          service_manager::Sandbox::Initialize(
              sandbox_type, MaybeWrapWithGPUSandboxHook(

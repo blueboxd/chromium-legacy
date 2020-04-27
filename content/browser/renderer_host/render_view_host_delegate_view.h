@@ -12,8 +12,8 @@
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
+#include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
-#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 
 namespace blink {
@@ -99,11 +99,12 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // Shows a popup menu with the specified items.
-  // This method should call blink::mojom::ExternalPopup::DidAcceptIndices() or
-  // blink::mojom::ExternalPopup::DidCancel() based on the user action.
+  // This method should call
+  // blink::mojom::PopupMenuClient::DidAcceptIndices() or
+  // blink::mojom::PopupMenuClient::DidCancel() based on the user action.
   virtual void ShowPopupMenu(
       RenderFrameHost* render_frame_host,
-      mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
+      mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
       const gfx::Rect& bounds,
       int item_height,
       double item_font_size,

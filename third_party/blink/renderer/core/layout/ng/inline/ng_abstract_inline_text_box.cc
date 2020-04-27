@@ -170,7 +170,7 @@ bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
     return false;
   NGInlineCursor line_box = cursor;
   line_box.MoveToContainingLine();
-  if (!line_box.HasSoftWrapToNextLine())
+  if (!line_box.Current().HasSoftWrapToNextLine())
     return false;
   const String text_content = GetTextContent();
   const unsigned end_offset = cursor.Current().TextEndOffset();

@@ -5,6 +5,7 @@
 #include "media/base/container_names.h"
 
 #include <stddef.h>
+#include <string.h>
 
 #include <cctype>
 #include <limits>

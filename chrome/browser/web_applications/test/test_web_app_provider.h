@@ -71,7 +71,7 @@ class TestWebAppProvider : public WebAppProvider {
   // If true, when Start()ed the TestWebAppProvider will call
   // WebAppProvider::StartImpl() and fire startup tasks like a real
   // WebAppProvider.
-  bool run_subsystem_startup_tasks_;
+  const bool run_subsystem_startup_tasks_;
 };
 
 // Used in BrowserTests to ensure that the WebAppProvider that is create on

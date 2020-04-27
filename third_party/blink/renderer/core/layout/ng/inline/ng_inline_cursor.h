@@ -112,6 +112,12 @@ class CORE_EXPORT NGInlineCursorPosition {
   const Node* GetNode() const;
   const DisplayItemClient* GetDisplayItemClient() const;
 
+  // True if fragment at the current position can have children.
+  bool CanHaveChildren() const;
+
+  // True if fragment at the current position has children.
+  bool HasChildren() const;
+
   // Returns break token for line box. It is error to call other than line box.
   const NGInlineBreakToken* InlineBreakToken() const;
 
@@ -150,11 +156,29 @@ class CORE_EXPORT NGInlineCursorPosition {
   // line.
   TextDirection BaseDirection() const;
 
+  // True if the current position is text or atomic inline box.
+  // Note: Because of this function is used for caret rect, hit testing, etc,
+  // this function returns false for hidden for paint, text overflow ellipsis,
+  // and line break hyphen.
+  bool IsInlineLeaf() const;
+
+  // True if current position has soft wrap to next line. It is error to call
+  // other than line.
+  bool HasSoftWrapToNextLine() const;
+
+  // Returns a point at the visual start/end of the line.
+  // Encapsulates the handling of text direction and writing mode.
+  PhysicalOffset LineStartPoint() const;
+  PhysicalOffset LineEndPoint() const;
+
  private:
   void Clear() {
     paint_fragment_ = nullptr;
     item_ = nullptr;
   }
+
+  // True if current position is part of culled inline box |layout_inline|.
+  bool IsPartOfCulledInlineBox(const LayoutInline& layout_inline) const;
 
   const NGPaintFragment* paint_fragment_ = nullptr;
   const NGFragmentItem* item_ = nullptr;
@@ -224,12 +248,6 @@ class CORE_EXPORT NGInlineCursor {
   // True if |Current()| is at the first fragment. See |MoveToFirst()|.
   bool IsAtFirst() const;
 
-  // True if fragment at the current position can have children.
-  bool CanHaveChildren() const;
-
-  // True if fragment at the current position has children.
-  bool HasChildren() const;
-
   // Returns a new |NGInlineCursor| whose root is the current item. The returned
   // cursor can traverse descendants of the current item. If the current item
   // has no children, returns an empty cursor.
@@ -241,19 +259,9 @@ class CORE_EXPORT NGInlineCursor {
   // context.
   void ExpandRootToContainingBlock();
 
-  // True if current position has soft wrap to next line. It is error to call
-  // other than line.
-  bool HasSoftWrapToNextLine() const;
-
   // True if the current position is before soft line break. It is error to call
   // at end.
   bool IsBeforeSoftLineBreak() const;
-
-  // True if the current position is text or atomic inline box.
-  // Note: Because of this function is used for caret rect, hit testing, etc,
-  // this function returns false for hidden for paint, text overflow ellipsis,
-  // and line break hyphen.
-  bool IsInlineLeaf() const;
 
   // |Current*| functions return an object for the current position.
   const NGFragmentItem* CurrentItem() const { return Current().Item(); }
@@ -277,11 +285,6 @@ class CORE_EXPORT NGInlineCursor {
   // Relative to fragment of the current position. It is error to call other
   // than text.
   LayoutUnit InlinePositionForOffset(unsigned offset) const;
-
-  // Returns a point at the visual start/end of the line.
-  // Encapsulates the handling of text direction and writing mode.
-  PhysicalOffset LineStartPoint() const;
-  PhysicalOffset LineEndPoint() const;
 
   // Converts the given point, relative to the fragment itself, into a position
   // in DOM tree within the range of |this|. This variation ignores the inline
@@ -395,9 +398,6 @@ class CORE_EXPORT NGInlineCursor {
 #endif
 
  private:
-  // True if current position is part of culled inline box |layout_inline|.
-  bool IsPartOfCulledInlineBox(const LayoutInline& layout_inline) const;
-
   // True if the current position is a last line in inline block. It is error
   // to call at end or the current position is not line.
   bool IsLastLineInInlineBlock() const;
@@ -420,7 +420,6 @@ class CORE_EXPORT NGInlineCursor {
   void MoveToItem(const ItemsSpan::iterator& iter);
   void MoveToNextItem();
   void MoveToNextItemSkippingChildren();
-  void MoveToNextSiblingItem();
   void MoveToPreviousItem();
 
   void MoveToParentPaintFragment();

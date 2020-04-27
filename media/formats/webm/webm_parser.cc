@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 
+#include <cstring>
 #include <iomanip>
 #include <limits>
 

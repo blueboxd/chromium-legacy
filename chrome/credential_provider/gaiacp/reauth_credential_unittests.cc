@@ -173,9 +173,10 @@ INSTANTIATE_TEST_SUITE_P(All,
 // 1. Is enrolled with mdm.
 // 2. Is encrypted data missing in lsa store.
 // 3. Is online login stale.
+// 4. Is online login enforced.
 class GcpReauthCredentialEnforceAuthReasonGetStringValueTest
     : public GcpReauthCredentialTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {
+      public ::testing::WithParamInterface<std::tuple<bool, bool, bool, bool>> {
  protected:
   FakeAssociatedUserValidator* fake_associated_user_validator() {
     return &fake_associated_user_validator_;
@@ -195,6 +196,7 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
   const bool enrolled_mdm = std::get<0>(GetParam());
   const bool store_encrypted_data = std::get<1>(GetParam());
   const bool is_stale_login = std::get<2>(GetParam());
+  const bool is_online_login_enforced = std::get<3>(GetParam());
 
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegDisablePasswordSync, 0));
@@ -240,6 +242,12 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
                   (DWORD)0));
   }
 
+  if (is_online_login_enforced)
+    ASSERT_EQ(S_OK,
+              SetGlobalFlagForTesting(
+                  base::UTF8ToUTF16(std::string("enforce_online_login")),
+                  (DWORD)1));
+
   // Populate the associated users list. The created user's token handle
   // should be valid so that no reauth credential is created.
   fake_associated_user_validator()->StartRefreshingTokenHandleValidity();
@@ -272,6 +280,11 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
     ASSERT_STREQ(
         string_value,
         W2COLE(GetStringResource(IDS_REAUTH_FID_DESCRIPTION_BASE).c_str()));
+  } else if (is_online_login_enforced) {
+    ASSERT_STREQ(
+        string_value,
+        W2COLE(GetStringResource(
+          IDS_REAUTH_ONLINE_LOGIN_ENFORCED_DESCRIPTION_BASE).c_str()));
   } else {
     ASSERT_STREQ(
         string_value,
@@ -282,6 +295,7 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
 INSTANTIATE_TEST_SUITE_P(All,
                          GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool()));
 

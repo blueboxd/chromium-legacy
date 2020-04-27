@@ -3586,6 +3586,7 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case service_manager::SandboxType::kPpapi:
       return base::string16(install_static::GetSandboxSidPrefix()) +
              L"129201925";
+    case service_manager::SandboxType::kInvalid:
     case service_manager::SandboxType::kNoSandbox:
     case service_manager::SandboxType::kNoSandboxAndElevatedPrivileges:
     case service_manager::SandboxType::kXrCompositing:

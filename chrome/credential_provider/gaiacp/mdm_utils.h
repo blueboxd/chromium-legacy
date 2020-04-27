@@ -101,6 +101,10 @@ bool PasswordRecoveryEnabled();
 // Returns true if the |kKeyEnableGemFeatures| is set to 1.
 bool IsGemEnabled();
 
+// Checks if online login is enforced. Returns true if
+// |kRegMdmEnforceOnlineLogin| is set to true at global or user level.
+bool IsOnlineLoginEnforced(const base::string16& sid);
+
 // Gets the escrow service URL as defined in the registry or a default value if
 // nothing is set.
 GURL EscrowServiceUrl();

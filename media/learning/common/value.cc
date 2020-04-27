@@ -4,6 +4,8 @@
 
 #include "media/learning/common/value.h"
 
+#include <cstring>
+
 #include "base/hash/hash.h"
 
 namespace media {

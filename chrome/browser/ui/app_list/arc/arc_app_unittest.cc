@@ -24,6 +24,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -60,6 +61,9 @@
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/cpp/stub_icon_loader.h"
@@ -181,14 +185,27 @@ enum class ArcState {
   ARC_WITHOUT_PLAY_STORE,
 };
 
-constexpr ArcState kManagedArcStates[] = {
-    ArcState::ARC_PLAY_STORE_MANAGED_AND_ENABLED,
-    ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED,
+struct ArcAppModelBuilderParam {
+  const ArcState arc_state;
+  const web_app::ProviderType provider_type;
 };
 
-constexpr ArcState kUnmanagedArcStates[] = {
-    ArcState::ARC_PLAY_STORE_UNMANAGED,
-    ArcState::ARC_WITHOUT_PLAY_STORE,
+constexpr ArcAppModelBuilderParam kManagedArcStates[] = {
+    {ArcState::ARC_PLAY_STORE_MANAGED_AND_ENABLED,
+     web_app::ProviderType::kBookmarkApps},
+    {ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED,
+     web_app::ProviderType::kBookmarkApps},
+    {ArcState::ARC_PLAY_STORE_MANAGED_AND_ENABLED,
+     web_app::ProviderType::kWebApps},
+    {ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED,
+     web_app::ProviderType::kWebApps},
+};
+
+constexpr ArcAppModelBuilderParam kUnmanagedArcStates[] = {
+    {ArcState::ARC_PLAY_STORE_UNMANAGED, web_app::ProviderType::kBookmarkApps},
+    {ArcState::ARC_WITHOUT_PLAY_STORE, web_app::ProviderType::kBookmarkApps},
+    {ArcState::ARC_PLAY_STORE_UNMANAGED, web_app::ProviderType::kWebApps},
+    {ArcState::ARC_WITHOUT_PLAY_STORE, web_app::ProviderType::kWebApps},
 };
 
 void OnPaiStartedCallback(bool* started_flag) {
@@ -241,17 +258,26 @@ void RemoveNonArcApps(Profile* profile,
 
 }  // namespace
 
-class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
-                               public ::testing::WithParamInterface<ArcState> {
+class ArcAppModelBuilderTest
+    : public extensions::ExtensionServiceTestBase,
+      public ::testing::WithParamInterface<ArcAppModelBuilderParam> {
  public:
-  ArcAppModelBuilderTest() = default;
+  ArcAppModelBuilderTest() {
+    if (GetProviderType() == web_app::ProviderType::kWebApps) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    } else if (GetProviderType() == web_app::ProviderType::kBookmarkApps) {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kDesktopPWAsWithoutExtensions);
+    }
+  }
   ~ArcAppModelBuilderTest() override {
     // Release profile file in order to keep right sequence.
     profile_.reset();
   }
 
   void SetUp() override {
-    if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE) {
+    if (GetArcState() == ArcState::ARC_WITHOUT_PLAY_STORE) {
       arc::SetArcAlwaysStartWithoutPlayStoreForTesting();
     }
 
@@ -263,6 +289,8 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
     OnBeforeArcTestSetup();
     arc_test_.SetUp(profile_.get());
+
+    web_app::TestWebAppProvider::Get(profile_.get())->Start();
     CreateBuilder();
 
     CreateLauncherController();
@@ -276,6 +304,12 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     arc_test_.TearDown();
     ResetBuilder();
     extensions::ExtensionServiceTestBase::TearDown();
+  }
+
+  ArcState GetArcState() const { return GetParam().arc_state; }
+
+  web_app::ProviderType GetProviderType() const {
+    return GetParam().provider_type;
   }
 
   ChromeLauncherController* CreateLauncherController() {
@@ -626,6 +660,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   FakeAppListModelUpdater* model_updater() { return model_updater_.get(); }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   ArcAppTest arc_test_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<test::TestAppListControllerDelegate> controller_;
@@ -816,7 +851,7 @@ class ArcPlayStoreAppTest : public ArcDefaultAppTest {
     app.name = "Play Store";
     app.package_name = arc::kPlayStorePackage;
     app.activity = arc::kPlayStoreActivity;
-    app.sticky = GetParam() != ArcState::ARC_WITHOUT_PLAY_STORE;
+    app.sticky = GetArcState() != ArcState::ARC_WITHOUT_PLAY_STORE;
 
     SendRefreshAppList({app});
   }
@@ -834,7 +869,7 @@ class ArcDefaultAppForManagedUserTest : public ArcPlayStoreAppTest {
 
  protected:
   bool IsEnabledByPolicy() const {
-    switch (GetParam()) {
+    switch (GetArcState()) {
       case ArcState::ARC_PLAY_STORE_MANAGED_AND_ENABLED:
       case ArcState::ARC_PLAY_STORE_MANAGED_AND_DISABLED:
       case ArcState::ARC_WITHOUT_PLAY_STORE:
@@ -1662,7 +1697,7 @@ TEST_P(ArcPlayStoreAppTest, PlayStore) {
 
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       prefs->GetApp(arc::kPlayStoreAppId);
-  if (GetParam() != ArcState::ARC_WITHOUT_PLAY_STORE) {
+  if (GetArcState() != ArcState::ARC_WITHOUT_PLAY_STORE) {
     // Make sure PlayStore is available.
     ASSERT_TRUE(app_info);
     EXPECT_FALSE(app_info->ready);
@@ -1715,7 +1750,7 @@ TEST_P(ArcPlayStoreAppTest, PaiStarter) {
   ASSERT_TRUE(session_manager);
 
   // PAI starter is not expected for ARC without the Play Store.
-  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE) {
+  if (GetArcState() == ArcState::ARC_WITHOUT_PLAY_STORE) {
     EXPECT_FALSE(session_manager->pai_starter());
     return;
   }
@@ -1752,7 +1787,7 @@ TEST_P(ArcPlayStoreAppTest, PaiStarter) {
 // Validates that PAI is started on the next session start if it was not started
 // during the previous sessions for some reason.
 TEST_P(ArcPlayStoreAppTest, StartPaiOnNextRun) {
-  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE)
+  if (GetArcState() == ArcState::ARC_WITHOUT_PLAY_STORE)
     return;
 
   arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
@@ -1793,7 +1828,7 @@ TEST_P(ArcPlayStoreAppTest, StartPaiOnNextRun) {
 
 // Validates that PAI is not started in case it is explicitly disabled.
 TEST_P(ArcPlayStoreAppTest, StartPaiDisabled) {
-  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE)
+  if (GetArcState() == ArcState::ARC_WITHOUT_PLAY_STORE)
     return;
 
   base::test::ScopedCommandLine command_line;
@@ -1812,7 +1847,7 @@ TEST_P(ArcPlayStoreAppTest, StartPaiDisabled) {
 
 TEST_P(ArcPlayStoreAppTest, PaiStarterOnError) {
   // No PAI starter without Play Store.
-  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE)
+  if (GetArcState() == ArcState::ARC_WITHOUT_PLAY_STORE)
     return;
 
   arc::ArcSessionManager* const session_manager = arc::ArcSessionManager::Get();
@@ -1864,7 +1899,7 @@ TEST_P(ArcPlayStoreAppTest,
   ASSERT_TRUE(session_manager);
 
   // Fast App Reinstall starter is not expected for ARC without the Play Store.
-  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE) {
+  if (GetArcState() == ArcState::ARC_WITHOUT_PLAY_STORE) {
     EXPECT_FALSE(session_manager->fast_app_resintall_starter());
     return;
   }
@@ -1910,7 +1945,7 @@ TEST_P(ArcPlayStoreAppTest,
   ASSERT_TRUE(session_manager);
 
   // Fast App Reinstall starter is not expected for ARC without the Play Store.
-  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE) {
+  if (GetArcState() == ArcState::ARC_WITHOUT_PLAY_STORE) {
     EXPECT_FALSE(session_manager->fast_app_resintall_starter());
     return;
   }
@@ -2861,7 +2896,7 @@ TEST_P(ArcDefaultAppTest, DefaultAppsNotAvailable) {
   std::vector<arc::mojom::AppInfo> expected_apps(fake_default_apps());
   ValidateHaveApps(expected_apps);
 
-  if (GetParam() == ArcState::ARC_WITHOUT_PLAY_STORE) {
+  if (GetArcState() == ArcState::ARC_WITHOUT_PLAY_STORE) {
     SimulateDefaultAppAvailabilityTimeoutForTesting(prefs);
     ValidateHaveApps(std::vector<arc::mojom::AppInfo>());
     return;

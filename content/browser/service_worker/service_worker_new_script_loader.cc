@@ -193,11 +193,9 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
       blink::ServiceWorkerStatusCode::kOk;
   network::URLLoaderCompletionStatus completion_status;
   std::string error_message;
-  std::unique_ptr<net::HttpResponseInfo> response_info =
-      service_worker_loader_helpers::CreateHttpResponseInfoAndCheckHeaders(
+  if (!service_worker_loader_helpers::CheckResponseHead(
           *response_head, &service_worker_state, &completion_status,
-          &error_message);
-  if (!response_info) {
+          &error_message)) {
     DCHECK_NE(net::OK, completion_status.error_code);
     CommitCompleted(completion_status, error_message);
     return;
@@ -232,8 +230,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
 
   network_loader_state_ = LoaderState::kWaitingForBody;
 
-  WriteHeaders(
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(response_info)));
+  WriteHeaders(response_head.Clone());
 
   // Don't pass SSLInfo to the client when the original request doesn't ask
   // to send it.
@@ -333,11 +330,11 @@ void ServiceWorkerNewScriptLoader::OnComplete(
 // End of URLLoaderClient ------------------------------------------------------
 
 void ServiceWorkerNewScriptLoader::WriteHeaders(
-    scoped_refptr<HttpResponseInfoIOBuffer> info_buffer) {
+    network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_EQ(WriterState::kNotStarted, header_writer_state_);
   header_writer_state_ = WriterState::kWriting;
   net::Error error = cache_writer_->MaybeWriteHeaders(
-      info_buffer.get(),
+      std::move(response_head),
       base::BindOnce(&ServiceWorkerNewScriptLoader::OnWriteHeadersComplete,
                      weak_factory_.GetWeakPtr()));
   if (error == net::ERR_IO_PENDING) {

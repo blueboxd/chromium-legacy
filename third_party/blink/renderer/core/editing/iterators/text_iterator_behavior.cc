@@ -17,12 +17,6 @@ TextIteratorBehavior TextIteratorBehavior::Builder::Build() {
 }
 
 TextIteratorBehavior::Builder&
-TextIteratorBehavior::Builder::SetCollapseTrailingSpace(bool value) {
-  behavior_.values_.bits.collapse_trailing_space = value;
-  return *this;
-}
-
-TextIteratorBehavior::Builder&
 TextIteratorBehavior::Builder::SetDoesNotBreakAtReplacedElement(bool value) {
   behavior_.values_.bits.does_not_break_at_replaced_element = value;
   return *this;

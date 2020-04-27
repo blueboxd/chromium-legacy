@@ -28,16 +28,16 @@ bool g_allow_showing_popup_menus = true;
 PopupMenuHelper::PopupMenuHelper(
     Delegate* delegate,
     RenderFrameHost* render_frame_host,
-    mojo::PendingRemote<blink::mojom::ExternalPopup> popup)
+    mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client)
     : delegate_(delegate),
       render_frame_host_(
           static_cast<RenderFrameHostImpl*>(render_frame_host)->GetWeakPtr()),
-      popup_(std::move(popup)) {
+      popup_client_(std::move(popup_client)) {
   RenderWidgetHost* widget_host =
       render_frame_host->GetRenderViewHost()->GetWidget();
   observer_.Add(widget_host);
 
-  popup_.set_disconnect_handler(
+  popup_client_.set_disconnect_handler(
       base::BindOnce(&PopupMenuHelper::Hide, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -107,15 +107,15 @@ void PopupMenuHelper::ShowPopupMenu(
 
   // The RenderFrameHost may be deleted while running the menu, or it may have
   // requested the close. Don't notify in these cases.
-  if (popup_ && !popup_was_hidden_) {
+  if (popup_client_ && !popup_was_hidden_) {
     if ([runner menuItemWasChosen]) {
       int index = [runner indexOfSelectedItem];
       if (index < 0)
-        popup_->DidCancel();
+        popup_client_->DidCancel();
       else
-        popup_->DidAcceptIndices({index});
+        popup_client_->DidAcceptIndices({index});
     } else {
-      popup_->DidCancel();
+      popup_client_->DidCancel();
     }
   }
 
@@ -134,7 +134,7 @@ void PopupMenuHelper::Hide() {
   if (menu_runner_)
     [menu_runner_ hide];
   popup_was_hidden_ = true;
-  popup_.reset();
+  popup_client_.reset();
 }
 
 // static

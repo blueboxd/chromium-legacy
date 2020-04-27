@@ -29,7 +29,7 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom-forward.h"
-#include "third_party/blink/public/mojom/popup/popup.mojom.h"
+#include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -224,15 +224,16 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter,
 
   // WebContentsObserver:
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
-  bool ShowPopup(RenderFrameHost* render_frame_host,
-                 mojo::PendingRemote<blink::mojom::ExternalPopup>* popup,
-                 const gfx::Rect& bounds,
-                 int32_t item_height,
-                 double font_size,
-                 int32_t selected_item,
-                 std::vector<blink::mojom::MenuItemPtr>* menu_items,
-                 bool right_aligned,
-                 bool allow_multiple_selection) override;
+  bool ShowPopupMenu(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingRemote<blink::mojom::PopupMenuClient>* popup_client,
+      const gfx::Rect& bounds,
+      int32_t item_height,
+      double font_size,
+      int32_t selected_item,
+      std::vector<blink::mojom::MenuItemPtr>* menu_items,
+      bool right_aligned,
+      bool allow_multiple_selection) override;
 #endif
 
   void OnShowWidgetOnUI(int route_id, const gfx::Rect& initial_rect);

@@ -70,6 +70,15 @@ void WebViewTranslateClient::RevertTranslation() {
   translate_manager_.RevertTranslation();
 }
 
+bool WebViewTranslateClient::RequestTranslationOffer() {
+  if (translate_manager_.CanManuallyTranslate()) {
+    translate_manager_.InitiateManualTranslation();
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // TranslateClient implementation:
 
 std::unique_ptr<infobars::InfoBar> WebViewTranslateClient::CreateInfoBar(

@@ -33,7 +33,7 @@
 
 #include <memory>
 #include "cc/paint/paint_canvas.h"
-#include "third_party/blink/public/mojom/popup/popup.mojom-blink.h"
+#include "third_party/blink/public/mojom/choosers/popup_menu.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
@@ -48,8 +48,9 @@ class WebMouseEvent;
 
 // The ExternalPopupMenu is a PopupMenu implementation for macOS and Android.
 // It uses a OS-native menu implementation.
-class CORE_EXPORT ExternalPopupMenu final : public PopupMenu,
-                                            public mojom::blink::ExternalPopup {
+class CORE_EXPORT ExternalPopupMenu final
+    : public PopupMenu,
+      public mojom::blink::PopupMenuClient {
  public:
   ExternalPopupMenu(LocalFrame&, HTMLSelectElement&);
   ~ExternalPopupMenu() override;
@@ -77,7 +78,7 @@ class CORE_EXPORT ExternalPopupMenu final : public PopupMenu,
   void UpdateFromElement(UpdateReason) override;
   void DisconnectClient() override;
 
-  // mojom::blink::ExternalPopup methods:
+  // mojom::blink::PopupMenuClient methods:
   void DidAcceptIndices(const Vector<int32_t>& indices) override;
   void DidCancel() override;
 
@@ -91,7 +92,7 @@ class CORE_EXPORT ExternalPopupMenu final : public PopupMenu,
   std::unique_ptr<WebMouseEvent> synthetic_event_;
   TaskRunnerTimer<ExternalPopupMenu> dispatch_event_timer_;
   // The actual implementor of the show menu.
-  HeapMojoReceiver<mojom::blink::ExternalPopup,
+  HeapMojoReceiver<mojom::blink::PopupMenuClient,
                    ExternalPopupMenu,
                    HeapMojoWrapperMode::kWithoutContextObserver>
       receiver_;

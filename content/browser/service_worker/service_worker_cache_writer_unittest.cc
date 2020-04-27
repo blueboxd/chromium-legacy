@@ -146,12 +146,13 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
   }
 
   net::Error WriteHeaders(size_t len) {
-    auto buf = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
-    buf->response_data_size = len;
-    buf->http_info = std::make_unique<net::HttpResponseInfo>();
-    buf->http_info->headers =
-        base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.0 200 OK\0\0");
-    return cache_writer_->MaybeWriteHeaders(buf.get(), CreateWriteCallback());
+    auto response_head = network::mojom::URLResponseHead::New();
+    const char data[] = "HTTP/1.1 200 OK\0\0";
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        std::string(data, base::size(data)));
+    response_head->content_length = len;
+    return cache_writer_->MaybeWriteHeaders(std::move(response_head),
+                                            CreateWriteCallback());
   }
 
   net::Error WriteData(const std::string& data) {
@@ -479,7 +480,10 @@ TEST_F(ServiceWorkerCacheWriterTest, CompareDataOkAsync) {
 
 TEST_F(ServiceWorkerCacheWriterTest, CompareDataManyOkAsync) {
   const std::string expected_data[] = {
-      "abcdef", "ghijkl", "mnopqr", "stuvwxyz",
+      "abcdef",
+      "ghijkl",
+      "mnopqr",
+      "stuvwxyz",
   };
   size_t response_size = 0;
   for (size_t i = 0; i < base::size(expected_data); ++i)

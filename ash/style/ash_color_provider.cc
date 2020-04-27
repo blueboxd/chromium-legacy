@@ -14,8 +14,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/webui/resources/css/cros_colors.h"
 
 namespace ash {
+
+using ColorName = cros_colors::ColorName;
 
 namespace {
 
@@ -231,17 +234,14 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       dark_color = SkColorSetA(SK_ColorWHITE, 0x24);
       break;
     case ContentLayerType::kTextPrimary:
-      light_color = gfx::kGoogleGrey900;
-      dark_color = gfx::kGoogleGrey200;
-      break;
+      return cros_colors::ResolveColor(ColorName::kCrosDefaultTextColor,
+                                       color_mode);
     case ContentLayerType::kTextSecondary:
-      light_color = gfx::kGoogleGrey700;
-      dark_color = gfx::kGoogleGrey400;
-      break;
+      return cros_colors::ResolveColor(
+          ColorName::kCrosDefaultTextColorSecondary, color_mode);
     case ContentLayerType::kIconPrimary:
-      light_color = gfx::kGoogleGrey700;
-      dark_color = gfx::kGoogleGrey200;
-      break;
+      return cros_colors::ResolveColor(ColorName::kCrosDefaultIconColorPrimary,
+                                       color_mode);
     case ContentLayerType::kIconSecondary:
       light_color = dark_color = gfx::kGoogleGrey500;
       break;
@@ -251,9 +251,8 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       break;
     case ContentLayerType::kProminentIconButton:
     case ContentLayerType::kSliderThumbEnabled:
-      light_color = gfx::kGoogleBlue600;
-      dark_color = gfx::kGoogleBlue300;
-      break;
+      return cros_colors::ResolveColor(
+          ColorName::kCrosDefaultIconColorProminent, color_mode);
     case ContentLayerType::kSliderThumbDisabled:
       light_color = gfx::kGoogleGrey600;
       dark_color = gfx::kGoogleGrey600;

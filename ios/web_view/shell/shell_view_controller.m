@@ -21,12 +21,13 @@ NSString* const kWebViewShellAddressFieldAccessibilityLabel = @"Address field";
 NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
     @"WebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier";
 
-@interface ShellViewController ()<CWVDownloadTaskDelegate,
-                                  CWVNavigationDelegate,
-                                  CWVUIDelegate,
-                                  CWVScriptCommandHandler,
-                                  CWVSyncControllerDelegate,
-                                  UITextFieldDelegate>
+@interface ShellViewController () <CWVDownloadTaskDelegate,
+                                   CWVNavigationDelegate,
+                                   CWVUIDelegate,
+                                   CWVScriptCommandHandler,
+                                   CWVSyncControllerDelegate,
+                                   UIScrollViewDelegate,
+                                   UITextFieldDelegate>
 // Header containing navigation buttons and |field|.
 @property(nonatomic, strong) UIView* headerBackgroundView;
 // Header containing navigation buttons and |field|.
@@ -266,6 +267,14 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
       [CWVWebViewConfiguration defaultConfiguration];
   configuration.syncController.delegate = self;
   self.webView = [self createWebViewWithConfiguration:configuration];
+}
+
+- (void)applicationFinishedRestoringState {
+  [super applicationFinishedRestoringState];
+
+  // The scroll view is reset on state restoration. So the delegate must be
+  // reassigned.
+  self.webView.scrollView.delegate = self;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -631,6 +640,13 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
                                          [weakSelf resetTranslateSettings];
                                        }]];
 
+  [alertController
+      addAction:[UIAlertAction actionWithTitle:@"Request translation offer"
+                                         style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction* action) {
+                                         [weakSelf requestTranslationOffer];
+                                       }]];
+
   // Shows sync menu.
   [alertController
       addAction:[UIAlertAction actionWithTitle:@"Sync menu"
@@ -655,6 +671,11 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
   CWVWebViewConfiguration* configuration =
       [CWVWebViewConfiguration defaultConfiguration];
   [configuration.preferences resetTranslationSettings];
+}
+
+- (void)requestTranslationOffer {
+  BOOL offered = [_webView.translationController requestTranslationOffer];
+  NSLog(@"Manual translation was offered: %d", offered);
 }
 
 - (void)toggleIncognito {
@@ -682,6 +703,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
   webView.translationController.delegate = _translationDelegate;
   _autofillDelegate = [[ShellAutofillDelegate alloc] init];
   webView.autofillController.delegate = _autofillDelegate;
+  webView.scrollView.delegate = self;
 
   // Constraints.
   webView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -1122,6 +1144,12 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
 }
 
 - (void)syncControllerDidStopSync:(CWVSyncController*)syncController {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+}
+
+#pragma mark UIScrollViewDelegate
+
+- (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
   NSLog(@"%@", NSStringFromSelector(_cmd));
 }
 

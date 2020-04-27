@@ -131,7 +131,8 @@ class WebRtcAudioRendererTest : public testing::Test {
   void SetupRenderer(const String& device_id) {
     renderer_ = new blink::WebRtcAudioRenderer(
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(), stream_,
-        nullptr, base::UnguessableToken::Create(), device_id.Utf8());
+        nullptr, base::UnguessableToken::Create(), device_id.Utf8(),
+        base::RepeatingCallback<void()>());
 
     media::AudioSinkParameters params;
     EXPECT_CALL(
@@ -351,7 +352,7 @@ TEST_F(WebRtcAudioRendererTest, InitializeWithInvalidDevice) {
   renderer_ = new blink::WebRtcAudioRenderer(
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(), stream_,
       nullptr /*blink::WebLocalFrame*/, base::UnguessableToken::Create(),
-      kInvalidOutputDeviceId);
+      kInvalidOutputDeviceId, base::RepeatingCallback<void()>());
 
   media::AudioSinkParameters params;
   EXPECT_CALL(

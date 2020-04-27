@@ -2541,12 +2541,12 @@ void LayoutBox::AddLayoutResult(scoped_refptr<const NGLayoutResult> result,
     ReplaceLayoutResult(std::move(result), index);
     return;
   }
-  if (!index) {
-    if (const NGFragmentItems* items =
-            To<NGPhysicalBoxFragment>(result->PhysicalFragment()).Items())
-      items->AssociateWithLayoutObject();
-  }
+  const auto& fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
   layout_results_.push_back(std::move(result));
+  // If this is the last fragment for the node, and its node establishes an
+  // inline formatting context, we have some finalization to do.
+  if (!fragment.BreakToken() && fragment.Items())
+    NGFragmentItems::FinalizeAfterLayout(layout_results_);
 }
 
 void LayoutBox::ReplaceLayoutResult(scoped_refptr<const NGLayoutResult> result,
@@ -2555,18 +2555,31 @@ void LayoutBox::ReplaceLayoutResult(scoped_refptr<const NGLayoutResult> result,
   const NGLayoutResult* old_result = layout_results_[index].get();
   if (old_result == result.get())
     return;
-  if (!index &&
-      &old_result->PhysicalFragment() != &result->PhysicalFragment()) {
+  const auto& fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+  bool got_new_fragment = &old_result->PhysicalFragment() != &fragment;
+  if (got_new_fragment) {
+    // Clear associations with the LayoutObjects and the items in the *first*
+    // box fragment. We only ever associate LayoutObjects with the items in the
+    // first box fragment, but this doesn't take place until we have added all
+    // the fragments for the node. Therefore we need to clean up this now,
+    // regardless of which index we're at. This means that we're potentially
+    // doing duplicate work here (for each fragment we replace), but only if
+    // we're split into multiple box fragments.
+    // TODO(layout-dev): Make this work for multiple box fragments (block
+    // fragmentation).
     if (const NGFragmentItems* old_items =
-            To<NGPhysicalBoxFragment>(old_result->PhysicalFragment()).Items()) {
-      InvalidateItems(*old_result);
+            To<NGPhysicalBoxFragment>(layout_results_[0]->PhysicalFragment())
+                .Items()) {
+      if (!index)
+        InvalidateItems(*old_result);
       old_items->ClearAssociatedFragments();
     }
-    if (const NGFragmentItems* new_items =
-            To<NGPhysicalBoxFragment>(result->PhysicalFragment()).Items())
-      new_items->AssociateWithLayoutObject();
   }
   layout_results_[index] = std::move(result);
+  // If this is the last fragment for the node, and its node establishes an
+  // inline formatting context, we have some finalization to do.
+  if (!fragment.BreakToken() && fragment.Items() && (index || got_new_fragment))
+    NGFragmentItems::FinalizeAfterLayout(layout_results_);
 }
 
 void LayoutBox::ClearLayoutResults() {
@@ -2598,8 +2611,13 @@ void LayoutBox::InvalidateItems(const NGLayoutResult& result) {
       To<NGPhysicalBoxFragment>(result.PhysicalFragment());
   if (!box_fragment.HasItems())
     return;
-
-  DCHECK_EQ(this, box_fragment.GetLayoutObject());
+#if DCHECK_IS_ON()
+  // Column fragments are not really associated with a layout object.
+  if (IsLayoutFlowThread())
+    DCHECK(box_fragment.IsColumnBox());
+  else
+    DCHECK_EQ(this, box_fragment.GetLayoutObject());
+#endif
   ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
 }
 

@@ -11,7 +11,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "content/public/common/menu_item.h"
-#include "third_party/blink/public/mojom/popup/popup.mojom.h"
+#include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 
 // WebMenuRunner ---------------------------------------------------------------
 // A class for determining whether an item was selected from an HTML select

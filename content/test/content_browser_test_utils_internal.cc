@@ -408,9 +408,9 @@ void ShowWidgetMessageFilter::OnShowWidget(int route_id,
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
-bool ShowWidgetMessageFilter::ShowPopup(
+bool ShowWidgetMessageFilter::ShowPopupMenu(
     RenderFrameHost* render_frame_host,
-    mojo::PendingRemote<blink::mojom::ExternalPopup>* popup,
+    mojo::PendingRemote<blink::mojom::PopupMenuClient>* popup_client,
     const gfx::Rect& bounds,
     int32_t item_height,
     double font_size,

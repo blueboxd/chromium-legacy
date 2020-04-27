@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol CWVTranslationControllerDelegate<NSObject>
 
 @optional
+
 // Called if the current page is not automatically translated, but may need
 // translation according to its language and the user's locale.
 // |pageLanguage| is given as the detected language of the page and

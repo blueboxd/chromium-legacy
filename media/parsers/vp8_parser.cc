@@ -7,6 +7,8 @@
 
 #include "media/parsers/vp8_parser.h"
 
+#include <cstring>
+
 #include "base/logging.h"
 
 namespace media {

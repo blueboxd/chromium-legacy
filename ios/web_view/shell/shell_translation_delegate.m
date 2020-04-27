@@ -29,6 +29,7 @@
 - (void)translationController:(CWVTranslationController*)controller
     canOfferTranslationFromLanguage:(CWVTranslationLanguage*)pageLanguage
                          toLanguage:(CWVTranslationLanguage*)userLanguage {
+  NSLog(@"%@:%@:%@", NSStringFromSelector(_cmd), pageLanguage, userLanguage);
   __weak ShellTranslationDelegate* weakSelf = self;
 
   self.beforeTranslateActionSheet = [UIAlertController
@@ -100,6 +101,22 @@
       presentViewController:_beforeTranslateActionSheet
                    animated:YES
                  completion:nil];
+}
+
+- (void)translationController:(CWVTranslationController*)controller
+    didStartTranslationFromLanguage:(CWVTranslationLanguage*)sourceLanguage
+                         toLanguage:(CWVTranslationLanguage*)targetLanguage
+                      userInitiated:(BOOL)userInitiated {
+  NSLog(@"%@:%@:%@:%@", NSStringFromSelector(_cmd), sourceLanguage,
+        targetLanguage, @(userInitiated));
+}
+
+- (void)translationController:(CWVTranslationController*)controller
+    didFinishTranslationFromLanguage:(CWVTranslationLanguage*)sourceLanguage
+                          toLanguage:(CWVTranslationLanguage*)targetLanguage
+                               error:(nullable NSError*)error {
+  NSLog(@"%@:%@:%@:%@", NSStringFromSelector(_cmd), sourceLanguage,
+        targetLanguage, error);
 }
 
 @end

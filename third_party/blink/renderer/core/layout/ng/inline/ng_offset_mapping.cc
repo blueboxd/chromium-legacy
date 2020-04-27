@@ -138,7 +138,7 @@ const Node& NGOffsetMappingUnit::GetOwner() const {
 bool NGOffsetMappingUnit::Concatenate(const NGOffsetMappingUnit& other) {
   if (layout_object_ != other.layout_object_)
     return false;
-  if (type_ != other.type_ || type_ == NGOffsetMappingUnitType::kExpanded)
+  if (type_ != other.type_)
     return false;
   if (dom_end_ != other.dom_start_)
     return false;

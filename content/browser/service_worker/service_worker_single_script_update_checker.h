@@ -22,7 +22,6 @@ class SharedURLLoaderFactory;
 
 namespace content {
 
-struct HttpResponseInfoIOBuffer;
 class ServiceWorkerCacheWriter;
 
 // Executes byte-for-byte update check of one script. This loads the script from
@@ -155,7 +154,7 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
  private:
   class WrappedIOBuffer;
 
-  void WriteHeaders(scoped_refptr<HttpResponseInfoIOBuffer> info_buffer);
+  void WriteHeaders(network::mojom::URLResponseHeadPtr response_head);
   void OnWriteHeadersComplete(net::Error error);
 
   void MaybeStartNetworkConsumerHandleWatcher();

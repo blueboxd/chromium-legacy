@@ -21,7 +21,7 @@ namespace blink {
 class LayoutBlockFlow;
 class LayoutObject;
 
-enum class NGOffsetMappingUnitType { kIdentity, kCollapsed, kExpanded };
+enum class NGOffsetMappingUnitType { kIdentity, kCollapsed };
 
 // An NGOffsetMappingUnit indicates a "simple" offset mapping between dom offset
 // range [dom_start, dom_end] on node |owner| and text content offset range

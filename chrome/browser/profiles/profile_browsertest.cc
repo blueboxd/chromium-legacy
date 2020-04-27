@@ -816,3 +816,22 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestGetAllOffTheRecordProfiles) {
   EXPECT_TRUE(base::Contains(all_otrs, otr_profile2));
   EXPECT_TRUE(base::Contains(all_otrs, incognito_profile));
 }
+
+// Tests Profile::IsSameProfile
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestIsSameProfile) {
+  Profile::OTRProfileID otr_profile_id("profile::otr");
+
+  Profile* regular_profile = browser()->profile();
+  Profile* otr_profile =
+      regular_profile->GetOffTheRecordProfile(otr_profile_id);
+  Profile* incognito_profile = regular_profile->GetPrimaryOTRProfile();
+
+  EXPECT_TRUE(regular_profile->IsSameProfile(otr_profile));
+  EXPECT_TRUE(otr_profile->IsSameProfile(regular_profile));
+
+  EXPECT_TRUE(regular_profile->IsSameProfile(incognito_profile));
+  EXPECT_TRUE(incognito_profile->IsSameProfile(regular_profile));
+
+  EXPECT_FALSE(incognito_profile->IsSameProfile(otr_profile));
+  EXPECT_FALSE(otr_profile->IsSameProfile(incognito_profile));
+}

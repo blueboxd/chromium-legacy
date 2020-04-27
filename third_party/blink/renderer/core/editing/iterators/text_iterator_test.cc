@@ -43,10 +43,6 @@
 namespace blink {
 namespace text_iterator_test {
 
-TextIteratorBehavior CollapseTrailingSpaceBehavior() {
-  return TextIteratorBehavior::Builder().SetCollapseTrailingSpace(true).Build();
-}
-
 TextIteratorBehavior EmitsImageAltTextBehavior() {
   return TextIteratorBehavior::Builder().SetEmitsImageAltText(true).Build();
 }
@@ -544,16 +540,41 @@ TEST_P(TextIteratorTest, RangeLengthWithFirstLetterMultipleLeadingSpaces) {
   EXPECT_EQ(3, TestRangeLength("<p>^   foo|</p>"));
 }
 
+TEST_P(TextIteratorTest, TrainlingSpace) {
+  // text_content = "ab\ncd"
+  // offset mapping units:
+  //   [0] I DOM:0-2 TC:0-2 "ab"
+  //   [1] C DOM:2-4 TC:2-2 " " spaces after "ab"
+  //   [2] I DOM:0-1 TC:2-3 <br>
+  //   [3] I DOM:0-2 TC:3-5 "cd"
+  // Note: InlineTextBox has trailing spaces which we should get rid from
+  // inline layout tree as LayoutNG.
+  SetBodyContent("ab  <br>  cd");
+  EXPECT_EQ(LayoutNGEnabled() ? "[ab][\n][cd]" : "[ab ][\n][cd]",
+            Iterate<DOMTree>());
+}
+
 TEST_P(TextIteratorTest, WhitespaceCollapseForReplacedElements) {
   static const char* body_content =
       "<span>Some text </span> <input type='button' value='Button "
       "text'/><span>Some more text</span>";
   SetBodyContent(body_content);
-  EXPECT_EQ("[Some text ][][Some more text]",
-            Iterate<DOMTree>(CollapseTrailingSpaceBehavior()));
+  // text_content = "Some text \uFFFCSome more text"
+  // offset mapping units:
+  //   [0] I DOM:0-10 TC:0-10 "Some text "
+  //   [1] C DOM:0-1  TC:10-10 " " (A space between </span> and <input>
+  //   [2] I DOM:0-1  TC:10-11 <input> as U+FFFC (ORC)
+  //   [3] I DOM:0-14 TC:11-25 "Some more text"
+  // Note: InlineTextBox has a collapsed space which we should get rid from
+  // inline layout tree as LayoutNG.
+  EXPECT_EQ(LayoutNGEnabled() ? "[Some text ][][Some more text]"
+                              : "[Some text ][ ][][Some more text]",
+            Iterate<DOMTree>());
   // <input type=button> is not text control element
-  EXPECT_EQ("[Some text ][][Button text][Some more text]",
-            Iterate<FlatTree>(CollapseTrailingSpaceBehavior()));
+  EXPECT_EQ(LayoutNGEnabled()
+                ? "[Some text ][][Button text][Some more text]"
+                : "[Some text ][ ][][Button text][Some more text]",
+            Iterate<FlatTree>());
 }
 
 TEST_P(TextIteratorTest, characterAt) {

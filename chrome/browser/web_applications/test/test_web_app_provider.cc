@@ -117,6 +117,8 @@ void TestWebAppProvider::CheckNotStarted() const {
 void TestWebAppProvider::StartImpl() {
   if (run_subsystem_startup_tasks_)
     WebAppProvider::StartImpl();
+  else
+    on_registry_ready_.Signal();
 }
 
 TestWebAppProviderCreator::TestWebAppProviderCreator(

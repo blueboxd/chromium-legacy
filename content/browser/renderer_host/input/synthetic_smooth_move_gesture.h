@@ -40,8 +40,6 @@ class CONTENT_EXPORT SyntheticSmoothMoveGestureParams {
   bool prevent_fling;
   bool add_slop;
   ui::ScrollGranularity granularity;
-  // A bitfield of values from blink::WebInputEvent::Modifiers.
-  int key_modifiers;
 };
 
 // This class is used as helper class for simulation of scroll and drag.
@@ -81,8 +79,7 @@ class CONTENT_EXPORT SyntheticSmoothMoveGesture : public SyntheticGesture {
   void ForwardMouseWheelEvent(SyntheticGestureTarget* target,
                               const gfx::Vector2dF& delta,
                               const blink::WebMouseWheelEvent::Phase phase,
-                              const base::TimeTicks& timestamp,
-                              int key_modifiers) const;
+                              const base::TimeTicks& timestamp) const;
 
   void ForwardFlingGestureEvent(SyntheticGestureTarget* target,
                                 const blink::WebInputEvent::Type type) const;

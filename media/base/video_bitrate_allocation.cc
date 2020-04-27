@@ -4,6 +4,7 @@
 
 #include "video_bitrate_allocation.h"
 
+#include <cstring>
 #include <limits>
 #include <numeric>
 

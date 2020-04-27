@@ -11,7 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/blink/public/mojom/popup/popup.mojom.h"
+#include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "ui/android/view_android.h"
 
 namespace gfx {
@@ -31,7 +31,7 @@ class SelectPopup {
   // |multiple| defines if it should support multi-select.
   // If not |multiple|, |selected_item| sets the initially selected item.
   // Otherwise, item's "checked" flag selects it.
-  void ShowMenu(mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
+  void ShowMenu(mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
                 const gfx::Rect& bounds,
                 std::vector<blink::mojom::MenuItemPtr> items,
                 int selected_item,
@@ -52,7 +52,7 @@ class SelectPopup {
 
   // Select popup view
   ui::ViewAndroid::ScopedAnchorView popup_view_;
-  mojo::Remote<blink::mojom::ExternalPopup> popup_;
+  mojo::Remote<blink::mojom::PopupMenuClient> popup_client_;
 };
 
 }  // namespace content

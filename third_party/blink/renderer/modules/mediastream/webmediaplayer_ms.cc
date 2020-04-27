@@ -376,6 +376,18 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   delegate_->RemoveObserver(delegate_id_);
 }
 
+void WebMediaPlayerMS::OnAudioRenderErrorCallback() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (ready_state_ == WebMediaPlayer::kReadyStateHaveNothing) {
+    // Any error that occurs before reaching ReadyStateHaveMetadata should
+    // be considered a format error.
+    SetNetworkState(WebMediaPlayer::kNetworkStateFormatError);
+  } else {
+    SetNetworkState(WebMediaPlayer::kNetworkStateDecodeError);
+  }
+}
+
 WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
     LoadType load_type,
     const WebMediaPlayerSource& source,
@@ -430,7 +442,9 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
   audio_renderer_ = renderer_factory_->GetAudioRenderer(
       web_stream_, internal_frame_->web_frame(),
-      initial_audio_output_device_id_);
+      initial_audio_output_device_id_,
+      WTF::BindRepeating(&WebMediaPlayerMS::OnAudioRenderErrorCallback,
+                         weak_factory_.GetWeakPtr()));
 
   if (!video_frame_provider_ && !audio_renderer_) {
     SetNetworkState(WebMediaPlayer::kNetworkStateNetworkError);
@@ -634,7 +648,9 @@ void WebMediaPlayerMS::ReloadAudio() {
       SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
       audio_renderer_ = renderer_factory_->GetAudioRenderer(
           web_stream_, internal_frame_->web_frame(),
-          initial_audio_output_device_id_);
+          initial_audio_output_device_id_,
+          WTF::BindRepeating(&WebMediaPlayerMS::OnAudioRenderErrorCallback,
+                             weak_factory_.GetWeakPtr()));
 
       // |audio_renderer_| can be null in tests.
       if (!audio_renderer_)

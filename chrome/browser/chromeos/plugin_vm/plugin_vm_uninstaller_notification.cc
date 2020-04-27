@@ -15,6 +15,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 
+namespace {
+
 constexpr char kNotifierPluginVmUninstallOperation[] =
     "plugin_vm.uninstall_operation";
 
@@ -25,6 +27,12 @@ std::string GetUniqueNotificationId() {
                             next_notification_id_++);
 }
 
+base::string16 PluginVmAppName() {
+  return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME);
+}
+
+}  // namespace
+
 PluginVmUninstallerNotification::PluginVmUninstallerNotification(
     Profile* profile)
     : profile_(profile) {
@@ -34,13 +42,15 @@ PluginVmUninstallerNotification::PluginVmUninstallerNotification(
   rich_notification_data.pinned = true;
   rich_notification_data.never_timeout = true;
 
+  base::string16 app_name = PluginVmAppName();
   notification_ = std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_PROGRESS, GetUniqueNotificationId(),
-      l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_REMOVING_NOTIFICATION_IN_PROGRESS_MESSAGE),  // title
-      base::string16(),                                              // message
-      gfx::Image(),                                                  // icon
-      l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME),
+      l10n_util::GetStringFUTF16(
+          IDS_PLUGIN_VM_REMOVING_NOTIFICATION_IN_PROGRESS_MESSAGE,
+          app_name),     // title
+      base::string16(),  // message
+      gfx::Image(),      // icon
+      app_name,
       GURL(),  // origin_url
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierPluginVmUninstallOperation),
@@ -55,8 +65,8 @@ PluginVmUninstallerNotification::~PluginVmUninstallerNotification() = default;
 
 void PluginVmUninstallerNotification::SetFailed() {
   notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
-  notification_->set_title(l10n_util::GetStringUTF16(
-      IDS_PLUGIN_VM_REMOVING_NOTIFICATION_FAILED_MESSAGE));
+  notification_->set_title(l10n_util::GetStringFUTF16(
+      IDS_PLUGIN_VM_REMOVING_NOTIFICATION_FAILED_MESSAGE, PluginVmAppName()));
   notification_->set_pinned(false);
   notification_->set_never_timeout(false);
   notification_->set_accent_color(ash::kSystemNotificationColorCriticalWarning);
@@ -66,8 +76,8 @@ void PluginVmUninstallerNotification::SetFailed() {
 
 void PluginVmUninstallerNotification::SetCompleted() {
   notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
-  notification_->set_title(l10n_util::GetStringUTF16(
-      IDS_PLUGIN_VM_REMOVING_NOTIFICATION_COMPLETE_MESSAGE));
+  notification_->set_title(l10n_util::GetStringFUTF16(
+      IDS_PLUGIN_VM_REMOVING_NOTIFICATION_COMPLETE_MESSAGE, PluginVmAppName()));
   notification_->set_pinned(false);
   notification_->set_never_timeout(false);
 

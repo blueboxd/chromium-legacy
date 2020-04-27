@@ -1152,8 +1152,9 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 }
 
 // Test that iframes not translated.
+// TODO(https://crbug.com/1075446) disabled due to flakiness
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
-                       TranslateIframeNotTranslated) {
+                       DISABLED_TranslateIframeNotTranslated) {
   SetTranslateScript(kTestValidScript);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();

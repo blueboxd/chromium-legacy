@@ -171,12 +171,12 @@ ServiceWorkerCacheWriter::CreateForComparison(
 }
 
 net::Error ServiceWorkerCacheWriter::MaybeWriteHeaders(
-    HttpResponseInfoIOBuffer* headers,
+    network::mojom::URLResponseHeadPtr response_head,
     OnWriteCompleteCallback callback) {
   DCHECK(!io_pending_);
   DCHECK(!IsCopying());
 
-  headers_to_write_ = headers;
+  response_head_to_write_ = std::move(response_head);
   pending_callback_ = std::move(callback);
   DCHECK_EQ(STATE_START, state_);
   int result = DoLoop(net::OK);
@@ -324,7 +324,7 @@ int ServiceWorkerCacheWriter::DoStart(int result) {
 
 int ServiceWorkerCacheWriter::DoReadHeadersForCompare(int result) {
   DCHECK_GE(result, 0);
-  DCHECK(headers_to_write_);
+  DCHECK(response_head_to_write_);
 
   headers_to_read_ = new HttpResponseInfoIOBuffer;
   state_ = STATE_READ_HEADERS_FOR_COMPARE_DONE;
@@ -446,7 +446,12 @@ int ServiceWorkerCacheWriter::DoWriteHeadersForCopy(int result) {
   DCHECK_GE(result, 0);
   DCHECK(writer_);
   state_ = STATE_WRITE_HEADERS_FOR_COPY_DONE;
-  return WriteInfo(IsCopying() ? headers_to_read_ : headers_to_write_);
+  if (IsCopying()) {
+    return WriteInfo(headers_to_read_);
+  } else {
+    DCHECK(response_head_to_write_);
+    return WriteResponseHead(*response_head_to_write_);
+  }
 }
 
 int ServiceWorkerCacheWriter::DoWriteHeadersForCopyDone(int result) {
@@ -511,8 +516,9 @@ int ServiceWorkerCacheWriter::DoWriteDataForCopyDone(int result) {
 int ServiceWorkerCacheWriter::DoWriteHeadersForPassthrough(int result) {
   DCHECK_GE(result, 0);
   DCHECK(writer_);
+  DCHECK(response_head_to_write_);
   state_ = STATE_WRITE_HEADERS_FOR_PASSTHROUGH_DONE;
-  return WriteInfo(headers_to_write_);
+  return WriteResponseHead(*response_head_to_write_);
 }
 
 int ServiceWorkerCacheWriter::DoWriteHeadersForPassthroughDone(int result) {
@@ -609,17 +615,21 @@ int ServiceWorkerCacheWriter::WriteInfo(
       response_info->response_data_size);
   // There should be no metadata when writing response headers.
   DCHECK(response.metadata.empty());
+  return WriteResponseHead(*response.head);
+}
 
+int ServiceWorkerCacheWriter::WriteResponseHead(
+    const network::mojom::URLResponseHead& response_head) {
   if (write_observer_) {
-    int result = write_observer_->WillWriteResponseHead(*response.head);
+    int result = write_observer_->WillWriteResponseHead(response_head);
     if (result != net::OK) {
       DCHECK_NE(result, net::ERR_IO_PENDING);
       state_ = STATE_DONE;
       return result;
     }
   }
-  return WriteResponseHeadToResponseWriter(*response.head,
-                                           response_info->response_data_size);
+  return WriteResponseHeadToResponseWriter(response_head,
+                                           response_head.content_length);
 }
 
 int ServiceWorkerCacheWriter::WriteDataToResponseWriter(

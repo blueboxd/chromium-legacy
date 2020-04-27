@@ -195,7 +195,7 @@ class AbstractLineBox {
     for (cursor.MoveToNext(); cursor; cursor.MoveToNext()) {
       if (!cursor.Current().GetLayoutObject())
         continue;
-      if (!cursor.IsInlineLeaf())
+      if (!cursor.Current().IsInlineLeaf())
         continue;
       if (only_editable_leaves && !IsEditable(cursor))
         continue;

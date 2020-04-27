@@ -70,9 +70,7 @@ GamepadHapticActuator::GamepadHapticActuator(
     device::GamepadHapticActuatorType type)
     : ExecutionContextClient(context),
       pad_index_(pad_index),
-      // See https://bit.ly/2S0zRAS for task types
-      gamepad_dispatcher_(MakeGarbageCollected<GamepadDispatcher>(
-          context->GetTaskRunner(TaskType::kMiscPlatformAPI))) {
+      gamepad_dispatcher_(MakeGarbageCollected<GamepadDispatcher>(context)) {
   SetType(type);
 }
 

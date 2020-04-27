@@ -22,6 +22,8 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
 
@@ -217,5 +219,6 @@ public class AccessibilityUtil {
     @VisibleForTesting
     public static void setAccessibilityEnabledForTesting(@Nullable Boolean isEnabled) {
         sIsAccessibilityEnabled = isEnabled;
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, AccessibilityUtil::notifyModeChange);
     }
 }

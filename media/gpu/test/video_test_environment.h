@@ -13,12 +13,6 @@
 #include "base/files/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_OZONE)
-namespace ui {
-class OzoneGpuTestHelper;
-}  // namespace ui
-#endif
-
 namespace base {
 namespace test {
 class TaskEnvironment;
@@ -45,10 +39,6 @@ class VideoTestEnvironment : public ::testing::Environment {
   base::AtExitManager at_exit_manager;
 
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
-
-#if defined(USE_OZONE)
-  std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper_;
-#endif
 };
 
 }  // namespace test

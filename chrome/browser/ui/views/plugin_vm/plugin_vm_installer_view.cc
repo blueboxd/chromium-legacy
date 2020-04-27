@@ -52,6 +52,7 @@ void plugin_vm::ShowPluginVmInstallerView(Profile* profile) {
 
 PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
     : profile_(profile),
+      app_name_(l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME)),
       plugin_vm_installer_(
           plugin_vm::PluginVmInstallerFactory::GetForProfile(profile)) {
   // Layout constants from the spec.
@@ -336,8 +337,8 @@ base::string16 PluginVmInstallerView::GetBigMessage() const {
     case State::CHECKING_VMS:
     case State::DOWNLOADING:
     case State::IMPORTING:
-      return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_INSTALLER_ENVIRONMENT_SETTING_TITLE);
+      return l10n_util::GetStringFUTF16(
+          IDS_PLUGIN_VM_INSTALLER_ENVIRONMENT_SETTING_TITLE, app_name_);
     case State::CREATED:
     case State::IMPORTED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_FINISHED_TITLE);
@@ -345,8 +346,8 @@ base::string16 PluginVmInstallerView::GetBigMessage() const {
       DCHECK(reason_);
       switch (*reason_) {
         case plugin_vm::PluginVmInstaller::FailureReason::NOT_ALLOWED:
-          return l10n_util::GetStringUTF16(
-              IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_TITLE);
+          return l10n_util::GetStringFUTF16(
+              IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_TITLE, app_name_);
         default:
           return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_ERROR_TITLE);
       }
@@ -361,7 +362,8 @@ base::string16 PluginVmInstallerView::GetMessage() const {
           ui::FormatBytesWithUnits(
               plugin_vm::PluginVmInstaller::kRecommendedFreeDiskSpace,
               ui::DATA_UNITS_GIBIBYTE,
-              /*show_units=*/true));
+              /*show_units=*/true),
+          app_name_);
     case State::STARTING:
     case State::CHECKING_DISK_SPACE:
     case State::DOWNLOADING_DLC:
@@ -375,8 +377,8 @@ base::string16 PluginVmInstallerView::GetMessage() const {
       return l10n_util::GetStringUTF16(
           IDS_PLUGIN_VM_INSTALLER_IMPORTING_MESSAGE);
     case State::IMPORTED:
-      return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_INSTALLER_IMPORTED_MESSAGE);
+      return l10n_util::GetStringFUTF16(
+          IDS_PLUGIN_VM_INSTALLER_IMPORTED_MESSAGE, app_name_);
     case State::CREATED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_CREATED_MESSAGE);
     case State::ERROR:
@@ -391,19 +393,19 @@ base::string16 PluginVmInstallerView::GetMessage() const {
         case Reason::DISPATCHER_NOT_AVAILABLE:
         case Reason::CONCIERGE_NOT_AVAILABLE:
           return l10n_util::GetStringFUTF16(
-              IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_LOGIC_ERROR,
+              IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_LOGIC_ERROR, app_name_,
               base::NumberToString16(
                   static_cast<std::underlying_type_t<Reason>>(*reason_)));
         case Reason::NOT_ALLOWED:
         case Reason::DLC_UNSUPPORTED:
           return l10n_util::GetStringFUTF16(
-              IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE,
+              IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE, app_name_,
               base::NumberToString16(
                   static_cast<std::underlying_type_t<Reason>>(*reason_)));
         case Reason::INVALID_IMAGE_URL:
         case Reason::HASH_MISMATCH:
           return l10n_util::GetStringFUTF16(
-              IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_CONFIG_ERROR,
+              IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_CONFIG_ERROR, app_name_,
               base::NumberToString16(
                   static_cast<std::underlying_type_t<Reason>>(*reason_)));
         case Reason::DOWNLOAD_FAILED_UNKNOWN:
@@ -422,14 +424,14 @@ base::string16 PluginVmInstallerView::GetMessage() const {
                   static_cast<std::underlying_type_t<Reason>>(*reason_)));
         // DLC Failure Reasons.
         case Reason::DLC_INTERNAL:
-          return l10n_util::GetStringUTF16(
-              IDS_PLUGIN_VM_DLC_INTERNAL_FAILED_MESSAGE);
+          return l10n_util::GetStringFUTF16(
+              IDS_PLUGIN_VM_DLC_INTERNAL_FAILED_MESSAGE, app_name_);
         case Reason::DLC_BUSY:
-          return l10n_util::GetStringUTF16(
-              IDS_PLUGIN_VM_DLC_BUSY_FAILED_MESSAGE);
+          return l10n_util::GetStringFUTF16(
+              IDS_PLUGIN_VM_DLC_BUSY_FAILED_MESSAGE, app_name_);
         case Reason::DLC_NEED_REBOOT:
-          return l10n_util::GetStringUTF16(
-              IDS_PLUGIN_VM_DLC_NEED_REBOOT_FAILED_MESSAGE);
+          return l10n_util::GetStringFUTF16(
+              IDS_PLUGIN_VM_DLC_NEED_REBOOT_FAILED_MESSAGE, app_name_);
         case Reason::INSUFFICIENT_DISK_SPACE:
         case Reason::DLC_NEED_SPACE:
           return l10n_util::GetStringFUTF16(
@@ -438,6 +440,7 @@ base::string16 PluginVmInstallerView::GetMessage() const {
                   plugin_vm::PluginVmInstaller::kMinimumFreeDiskSpace,
                   ui::DATA_UNITS_GIBIBYTE,
                   /*show_units=*/true),
+              app_name_,
               ui::FormatBytesWithUnits(
                   plugin_vm::PluginVmInstaller::kRecommendedFreeDiskSpace,
                   ui::DATA_UNITS_GIBIBYTE,

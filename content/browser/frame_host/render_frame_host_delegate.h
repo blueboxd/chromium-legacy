@@ -35,12 +35,12 @@
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
-#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/window_open_disposition.h"
@@ -593,9 +593,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Return true if the popup is shown through WebContentsObserver.
   // BrowserPluginGuest for the guest WebContents will show the popup on Mac,
   // then, we should skip to show the popup at RenderViewHostDelegateView.
-  virtual bool ShowPopup(
+  virtual bool ShowPopupMenu(
       RenderFrameHostImpl* render_frame_host,
-      mojo::PendingRemote<blink::mojom::ExternalPopup>* popup,
+      mojo::PendingRemote<blink::mojom::PopupMenuClient>* popup_client,
       const gfx::Rect& bounds,
       int32_t item_height,
       double font_size,

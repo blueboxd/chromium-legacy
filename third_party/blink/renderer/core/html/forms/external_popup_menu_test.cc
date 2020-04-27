@@ -8,7 +8,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/mojom/popup/popup.mojom-blink.h"
+#include "third_party/blink/public/mojom/choosers/popup_menu.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_popup_menu_info.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -77,26 +77,27 @@ TEST_F(ExternalPopupMenuDisplayNoneItemsTest, IndexMappingTest) {
 
 class TestLocalFrameExternalPopupClient : public FakeLocalFrameHost {
  public:
-  void ShowExternalPopup(mojo::PendingRemote<mojom::blink::ExternalPopup> popup,
-                         const gfx::Rect& bounds,
-                         int32_t item_height,
-                         double font_size,
-                         int32_t selected_item,
-                         Vector<mojom::blink::MenuItemPtr> menu_items,
-                         bool right_aligned,
-                         bool allow_multiple_selection) override {
+  void ShowPopupMenu(
+      mojo::PendingRemote<mojom::blink::PopupMenuClient> popup_client,
+      const gfx::Rect& bounds,
+      int32_t item_height,
+      double font_size,
+      int32_t selected_item,
+      Vector<mojom::blink::MenuItemPtr> menu_items,
+      bool right_aligned,
+      bool allow_multiple_selection) override {
     Reset();
 
     bounds_ = bounds;
     selected_item_ = selected_item;
     menu_items_ = std::move(menu_items);
-    popup_.Bind(std::move(popup));
-    popup_.set_disconnect_handler(base::BindOnce(
+    popup_client_.Bind(std::move(popup_client));
+    popup_client_.set_disconnect_handler(base::BindOnce(
         &TestLocalFrameExternalPopupClient::Reset, base::Unretained(this)));
     std::move(showed_callback_).Run();
   }
 
-  void Reset() { popup_.reset(); }
+  void Reset() { popup_client_.reset(); }
 
   void WaitUntilShowedPopup() {
     base::RunLoop run_loop;
@@ -104,12 +105,12 @@ class TestLocalFrameExternalPopupClient : public FakeLocalFrameHost {
     run_loop.Run();
   }
 
-  mojom::blink::ExternalPopup* Popup() {
-    DCHECK(popup_);
-    return popup_.get();
+  mojom::blink::PopupMenuClient* PopupClient() {
+    DCHECK(popup_client_);
+    return popup_client_.get();
   }
 
-  bool IsBound() const { return popup_.is_bound(); }
+  bool IsBound() const { return popup_client_.is_bound(); }
 
   const Vector<mojom::blink::MenuItemPtr>& MenuItems() const {
     return menu_items_;
@@ -121,7 +122,7 @@ class TestLocalFrameExternalPopupClient : public FakeLocalFrameHost {
 
  private:
   base::OnceClosure showed_callback_;
-  mojo::Remote<mojom::blink::ExternalPopup> popup_;
+  mojo::Remote<mojom::blink::PopupMenuClient> popup_client_;
   int32_t selected_item_;
   Vector<mojom::blink::MenuItemPtr> menu_items_;
   gfx::Rect bounds_;
@@ -169,7 +170,9 @@ class ExternalPopupMenuTest : public testing::Test {
 
   const gfx::Rect& ShownBounds() const { return frame_host_.ShownBounds(); }
 
-  mojom::blink::ExternalPopup* Popup() { return frame_host_.Popup(); }
+  mojom::blink::PopupMenuClient* PopupClient() {
+    return frame_host_.PopupClient();
+  }
 
   void WaitUntilShowedPopup() { frame_host_.WaitUntilShowedPopup(); }
 
@@ -230,7 +233,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndex) {
 
   ASSERT_TRUE(select->PopupIsVisible());
 
-  Popup()->DidAcceptIndices({2});
+  PopupClient()->DidAcceptIndices({2});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(select->PopupIsVisible());
@@ -252,7 +255,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndices) {
 
   ASSERT_TRUE(select->PopupIsVisible());
 
-  Popup()->DidAcceptIndices({2});
+  PopupClient()->DidAcceptIndices({2});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(select->PopupIsVisible());
@@ -273,7 +276,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndicesClearSelect) {
   WaitUntilShowedPopup();
 
   ASSERT_TRUE(select->PopupIsVisible());
-  Popup()->DidAcceptIndices({});
+  PopupClient()->DidAcceptIndices({});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(select->PopupIsVisible());
@@ -299,7 +302,7 @@ TEST_F(ExternalPopupMenuTest, NormalCase) {
   EXPECT_EQ(1, SelectedItem());
 
   // Simulate the user canceling the popup; the index should not have changed.
-  Popup()->DidCancel();
+  PopupClient()->DidCancel();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, select->selectedIndex());
 
@@ -307,7 +310,7 @@ TEST_F(ExternalPopupMenuTest, NormalCase) {
   select->ShowPopup();
   WaitUntilShowedPopup();
 
-  Popup()->DidAcceptIndices({0});
+  PopupClient()->DidAcceptIndices({0});
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, select->selectedIndex());
 
@@ -372,7 +375,7 @@ TEST_F(ExternalPopupMenuTest, RemoveOnChange) {
   WaitUntilShowedPopup();
 
   // Select something, it causes the select to be removed from the page.
-  Popup()->DidAcceptIndices({1});
+  PopupClient()->DidAcceptIndices({1});
   base::RunLoop().RunUntilIdle();
 
   // Just to check the soundness of the test.

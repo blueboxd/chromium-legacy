@@ -163,12 +163,11 @@ TEST(SandboxTypeTest, PPAPIPlugin) {
 TEST(SandboxTypeTest, Nonesuch) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kProcessType, "nonesuch");
-  // If tested here would CHECK.
+  EXPECT_EQ(SandboxType::kInvalid, SandboxTypeFromCommandLine(command_line));
 
   command_line.AppendSwitchASCII(switches::kServiceSandboxType, "network");
-  // If tested here would CHECK.
+  EXPECT_EQ(SandboxType::kInvalid, SandboxTypeFromCommandLine(command_line));
 
-  // With kNoSandbox will parse the command line correctly.
   command_line.AppendSwitch(switches::kNoSandbox);
   EXPECT_EQ(SandboxType::kNoSandbox, SandboxTypeFromCommandLine(command_line));
 }

@@ -17,7 +17,6 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -57,13 +56,6 @@ VideoTestEnvironment::VideoTestEnvironment() {
   params.single_process = true;
   ui::OzonePlatform::InitializeForUI(params);
   ui::OzonePlatform::InitializeForGPU(params);
-
-  // Initialize the Ozone GPU helper. If this is not done an error will occur:
-  // "Check failed: drm. No devices available for buffer allocation."
-  // Note: If a task environment is not set up initialization will hang
-  // indefinitely here.
-  gpu_helper_.reset(new ui::OzoneGpuTestHelper());
-  gpu_helper_->Initialize(base::ThreadTaskRunnerHandle::Get());
 #endif
 }
 

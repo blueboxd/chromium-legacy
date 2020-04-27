@@ -19,79 +19,39 @@
 namespace ui {
 
 namespace {
-
 const int kGpuProcessHostId = 1;
-
-void DispatchToGpuPlatformSupportHostTask(IPC::Message* msg) {
-  ui::OzonePlatform::GetInstance()
-      ->GetGpuPlatformSupportHost()
-      ->OnMessageReceived(*msg);
-  delete msg;
-}
-
-void DispatchToGpuPlatformSupportTaskOnIO(IPC::Message* msg) {
-  IPC::MessageFilter* filter =
-      ui::OzonePlatform::GetInstance()->GetGpuMessageFilter();
-  if (filter)
-    filter->OnMessageReceived(*msg);
-  delete msg;
-}
-
 }  // namespace
 
-class FakeGpuProcess : public IPC::Channel {
+class FakeGpuConnection {
  public:
-  FakeGpuProcess(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
-      : ui_task_runner_(ui_task_runner) {}
-  ~FakeGpuProcess() override {}
-
-  void InitOnIO() {
-    IPC::MessageFilter* filter =
-        ui::OzonePlatform::GetInstance()->GetGpuMessageFilter();
-
-    if (filter)
-      filter->OnFilterAdded(this);
-  }
-
-  // IPC::Channel implementation:
-  bool Send(IPC::Message* msg) override {
-    ui_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&DispatchToGpuPlatformSupportHostTask, msg));
-    return true;
-  }
-
-  bool Connect() override {
-    NOTREACHED();
-    return false;
-  }
-
-  void Close() override { NOTREACHED(); }
-
- private:
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-};
-
-class FakeGpuProcessHost {
- public:
-  FakeGpuProcessHost(
+  FakeGpuConnection(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& gpu_io_task_runner)
       : ui_task_runner_(ui_task_runner),
         gpu_io_task_runner_(gpu_io_task_runner) {}
-  ~FakeGpuProcessHost() {}
+  ~FakeGpuConnection() {}
+
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe) {
+    mojo::GenericPendingReceiver receiver =
+        mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe));
+    DCHECK(binders_.Bind(&receiver))
+        << "Unable to find mojo interface " << interface_name;
+  }
 
   void InitOnIO() {
-    base::RepeatingCallback<void(IPC::Message*)> sender =
-        base::BindRepeating(&DispatchToGpuPlatformSupportTaskOnIO);
-
+    ui::OzonePlatform::GetInstance()->AddInterfaces(&binders_);
+    auto interface_binder = base::BindRepeating(
+        &FakeGpuConnection::BindInterface, base::Unretained(this));
     ui::OzonePlatform::GetInstance()
         ->GetGpuPlatformSupportHost()
-        ->OnGpuProcessLaunched(kGpuProcessHostId, ui_task_runner_,
-                               gpu_io_task_runner_, std::move(sender));
+        ->OnGpuServiceLaunched(kGpuProcessHostId, ui_task_runner_,
+                               gpu_io_task_runner_, interface_binder,
+                               base::DoNothing());
   }
 
  private:
+  mojo::BinderMap binders_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_io_task_runner_;
 };
@@ -109,17 +69,11 @@ bool OzoneGpuTestHelper::Initialize(
           base::Thread::Options(base::MessagePumpType::IO, 0)))
     return false;
 
-  fake_gpu_process_ = std::make_unique<FakeGpuProcess>(ui_task_runner);
-  io_helper_thread_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeGpuProcess::InitOnIO,
-                                base::Unretained(fake_gpu_process_.get())));
-
-  fake_gpu_process_host_ = std::make_unique<FakeGpuProcessHost>(
+  fake_gpu_connection_ = std::make_unique<FakeGpuConnection>(
       ui_task_runner, io_helper_thread_->task_runner());
   io_helper_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&FakeGpuProcessHost::InitOnIO,
-                     base::Unretained(fake_gpu_process_host_.get())));
+      FROM_HERE, base::BindOnce(&FakeGpuConnection::InitOnIO,
+                                base::Unretained(fake_gpu_connection_.get())));
   io_helper_thread_->FlushForTesting();
 
   // Give the UI thread a chance to run any tasks posted from the IO thread

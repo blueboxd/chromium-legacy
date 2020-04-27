@@ -39,12 +39,10 @@ const char* kDistilledPagePath = "/distilled_page.html";
 void SetUpTestServerWithoutStarting(EmbeddedTestServer* server) {
   FilePath root_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &root_dir);
-
-  server->ServeFilesFromDirectory(
-      root_dir.AppendASCII("components/dom_distiller/core/javascript"));
   server->ServeFilesFromDirectory(
       root_dir.AppendASCII("components/test/data/dom_distiller"));
-  server->ServeFilesFromDirectory(root_dir.AppendASCII("third_party/mocha"));
+  server->ServeFilesFromDirectory(
+      root_dir.AppendASCII("components/dom_distiller/core/javascript"));
 }
 
 }  // namespace
@@ -60,8 +58,6 @@ FakeDistilledPage::FakeDistilledPage(EmbeddedTestServer* server)
   // DomDistillerRequestViewBase::SendCommonJavaScript(); however, this method
   // is impractical to use in testing.
   AppendScriptFile("dom_distiller_viewer.js");
-  AppendScriptFile("mocha.js");
-  AppendScriptFile("test_util.js");
 }
 
 FakeDistilledPage::~FakeDistilledPage() = default;

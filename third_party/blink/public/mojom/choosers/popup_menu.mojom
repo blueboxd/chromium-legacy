@@ -23,7 +23,7 @@ struct MenuItem {
 };
 
 // Interface to be sent the action of the popup menu.
-interface ExternalPopup {
+interface PopupMenuClient {
   // Should be called when a set of indices have been selected.
   DidAcceptIndices(array<int32> indices);
 

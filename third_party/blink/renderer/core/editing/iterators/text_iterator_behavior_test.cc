@@ -11,33 +11,25 @@ namespace blink {
 TEST(TextIteratorBehaviorTest, Basic) {
   EXPECT_TRUE(TextIteratorBehavior() == TextIteratorBehavior());
   EXPECT_FALSE(TextIteratorBehavior() != TextIteratorBehavior());
-  EXPECT_NE(
-      TextIteratorBehavior(),
-      TextIteratorBehavior::Builder().SetCollapseTrailingSpace(true).Build());
-  EXPECT_NE(
-      TextIteratorBehavior::Builder().SetCollapseTrailingSpace(true).Build(),
-      TextIteratorBehavior());
-  EXPECT_NE(
-      TextIteratorBehavior::Builder().SetCollapseTrailingSpace(true).Build(),
-      TextIteratorBehavior::Builder().SetEmitsImageAltText(true).Build());
-  EXPECT_NE(
-      TextIteratorBehavior::Builder().SetEmitsImageAltText(true).Build(),
-      TextIteratorBehavior::Builder().SetCollapseTrailingSpace(true).Build());
+  EXPECT_NE(TextIteratorBehavior(),
+            TextIteratorBehavior::Builder().SetForInnerText(true).Build());
+  EXPECT_NE(TextIteratorBehavior::Builder().SetForInnerText(true).Build(),
+            TextIteratorBehavior());
+  EXPECT_NE(TextIteratorBehavior::Builder().SetForInnerText(true).Build(),
+            TextIteratorBehavior::Builder().SetEmitsImageAltText(true).Build());
+  EXPECT_NE(TextIteratorBehavior::Builder().SetEmitsImageAltText(true).Build(),
+            TextIteratorBehavior::Builder().SetForInnerText(true).Build());
   EXPECT_EQ(TextIteratorBehavior::Builder()
-                .SetCollapseTrailingSpace(true)
+                .SetForInnerText(true)
                 .SetEmitsImageAltText(true)
                 .Build(),
             TextIteratorBehavior::Builder()
                 .SetEmitsImageAltText(true)
-                .SetCollapseTrailingSpace(true)
+                .SetForInnerText(true)
                 .Build());
 }
 
 TEST(TextIteratorBehaviorTest, Values) {
-  EXPECT_TRUE(TextIteratorBehavior::Builder()
-                  .SetCollapseTrailingSpace(true)
-                  .Build()
-                  .CollapseTrailingSpace());
   EXPECT_TRUE(TextIteratorBehavior::Builder()
                   .SetDoesNotBreakAtReplacedElement(true)
                   .Build()

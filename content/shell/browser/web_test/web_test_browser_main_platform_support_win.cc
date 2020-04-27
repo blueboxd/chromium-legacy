@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/shell/common/shell_switches.h"
 #include "ui/gfx/win/direct_write.h"
 
 namespace content {
@@ -41,6 +42,12 @@ void SetupFonts() {
 }  // namespace
 
 bool WebTestBrowserCheckLayoutSystemDeps() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDisableSystemFontCheck)) {
+    return true;
+  }
+
   std::list<std::string> errors;
 
   // This metric will be 17 when font size is "Normal".

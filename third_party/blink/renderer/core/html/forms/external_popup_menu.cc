@@ -111,7 +111,7 @@ bool ExternalPopupMenu::ShowInternal() {
         gfx::Rect(rect_in_viewport.X() * scale_for_emulation,
                   rect_in_viewport.Y() * scale_for_emulation,
                   rect_in_viewport.Width(), rect_in_viewport.Height());
-    local_frame_->GetLocalFrameHostRemote().ShowExternalPopup(
+    local_frame_->GetLocalFrameHostRemote().ShowPopupMenu(
         receiver_.BindNewPipeAndPassRemote(execution_context->GetTaskRunner(
             TaskType::kInternalUserInteraction)),
         bounds, item_height, font_size, selected_item, std::move(menu_items),

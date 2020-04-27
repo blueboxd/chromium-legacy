@@ -91,6 +91,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
+#include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
@@ -111,7 +112,6 @@
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
-#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-forward.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
@@ -1431,14 +1431,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DownloadURL(blink::mojom::DownloadURLParamsPtr params) override;
   void FocusedElementChanged(bool is_editable_element,
                              const gfx::Rect& bounds_in_frame_widget) override;
-  void ShowExternalPopup(mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
-                         const gfx::Rect& bounds,
-                         int32_t item_height,
-                         double font_size,
-                         int32_t selected_item,
-                         std::vector<blink::mojom::MenuItemPtr> menu_items,
-                         bool right_aligned,
-                         bool allow_multiple_selection) override;
+  void ShowPopupMenu(
+      mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
+      const gfx::Rect& bounds,
+      int32_t item_height,
+      double font_size,
+      int32_t selected_item,
+      std::vector<blink::mojom::MenuItemPtr> menu_items,
+      bool right_aligned,
+      bool allow_multiple_selection) override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;

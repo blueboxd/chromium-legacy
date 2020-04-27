@@ -193,9 +193,9 @@ bool RenderFrameHostDelegate::HasSeenRecentScreenOrientationChange() {
   return false;
 }
 
-bool RenderFrameHostDelegate::ShowPopup(
+bool RenderFrameHostDelegate::ShowPopupMenu(
     RenderFrameHostImpl* render_frame_host,
-    mojo::PendingRemote<blink::mojom::ExternalPopup>* popup,
+    mojo::PendingRemote<blink::mojom::PopupMenuClient>* popup_client,
     const gfx::Rect& bounds,
     int32_t item_height,
     double font_size,

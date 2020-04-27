@@ -64,7 +64,7 @@ bool CanResolveCaretPositionBeforeFragment(const NGInlineCursor& cursor,
     return true;
   NGInlineCursor last_line(current_line);
   last_line.MoveToPreviousLine();
-  return !last_line || !last_line.HasSoftWrapToNextLine();
+  return !last_line || !last_line.Current().HasSoftWrapToNextLine();
 }
 
 bool CanResolveCaretPositionAfterFragment(const NGInlineCursor& cursor,
@@ -80,7 +80,7 @@ bool CanResolveCaretPositionAfterFragment(const NGInlineCursor& cursor,
   last_logical_leaf.MoveToLastLogicalLeaf();
   if (cursor != last_logical_leaf)
     return true;
-  return !current_line.HasSoftWrapToNextLine();
+  return !current_line.Current().HasSoftWrapToNextLine();
 }
 
 // Returns a |kFailed| resolution if |offset| doesn't belong to the text

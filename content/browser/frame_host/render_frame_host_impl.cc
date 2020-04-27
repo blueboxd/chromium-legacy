@@ -208,6 +208,7 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
+#include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
@@ -217,7 +218,6 @@
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
-#include "third_party/blink/public/mojom/popup/popup.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
@@ -4222,8 +4222,8 @@ void RenderFrameHostImpl::RenderFallbackContentInParentProcess() {
   }
 }
 
-void RenderFrameHostImpl::ShowExternalPopup(
-    mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
+void RenderFrameHostImpl::ShowPopupMenu(
+    mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
     const gfx::Rect& bounds,
     int32_t item_height,
     double font_size,
@@ -4232,9 +4232,9 @@ void RenderFrameHostImpl::ShowExternalPopup(
     bool right_aligned,
     bool allow_multiple_selection) {
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-  if (delegate()->ShowPopup(this, &popup, bounds, item_height, font_size,
-                            selected_item, &menu_items, right_aligned,
-                            allow_multiple_selection)) {
+  if (delegate()->ShowPopupMenu(this, &popup_client, bounds, item_height,
+                                font_size, selected_item, &menu_items,
+                                right_aligned, allow_multiple_selection)) {
     return;
   }
 
@@ -4248,9 +4248,10 @@ void RenderFrameHostImpl::ShowExternalPopup(
           ->TransformPointToRootCoordSpace(original_point);
   gfx::Rect transformed_bounds(transformed_point.x(), transformed_point.y(),
                                bounds.width(), bounds.height());
-  view->ShowPopupMenu(this, std::move(popup), transformed_bounds, item_height,
-                      font_size, selected_item, std::move(menu_items),
-                      right_aligned, allow_multiple_selection);
+  view->ShowPopupMenu(this, std::move(popup_client), transformed_bounds,
+                      item_height, font_size, selected_item,
+                      std::move(menu_items), right_aligned,
+                      allow_multiple_selection);
 #endif
 }
 

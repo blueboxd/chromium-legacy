@@ -277,6 +277,9 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   // Callback used to fulfill video.requestAnimationFrame() requests.
   void OnNewFramePresentedCallback();
 
+  // Callback used to detect and propagate a render error.
+  void OnAudioRenderErrorCallback();
+
   void SendLogMessage(const WTF::String& message) const;
 
   std::unique_ptr<MediaStreamInternalFrameWrapper> internal_frame_;

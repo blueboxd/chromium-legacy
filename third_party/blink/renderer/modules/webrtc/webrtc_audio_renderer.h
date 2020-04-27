@@ -99,7 +99,8 @@ class MODULES_EXPORT WebRtcAudioRenderer
       const blink::WebMediaStream& media_stream,
       WebLocalFrame* web_frame,
       const base::UnguessableToken& session_id,
-      const std::string& device_id);
+      const std::string& device_id,
+      base::RepeatingCallback<void()> on_render_error_callback);
 
   // Initialize function called by clients like WebRtcAudioDeviceImpl.
   // Stop() has to be called before |source| is deleted.
@@ -252,6 +253,8 @@ class MODULES_EXPORT WebRtcAudioRenderer
              media::AudioBus* audio_bus) override;
   void OnRenderError() override;
 
+  void OnRenderErrorCrossThread();
+
   // Called by AudioPullFifo when more data is necessary.
   // This method is called on the AudioOutputDevice worker thread.
   void SourceCallback(int fifo_frame_delay, media::AudioBus* audio_bus);
@@ -363,6 +366,8 @@ class MODULES_EXPORT WebRtcAudioRenderer
   // Created when a stream starts and destroyed when a stream stops.
   // See comments for AudioStreamTracker for more details.
   base::Optional<AudioStreamTracker> audio_stream_tracker_;
+
+  base::RepeatingCallback<void()> on_render_error_callback_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebRtcAudioRenderer);
 };

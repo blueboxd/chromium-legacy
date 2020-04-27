@@ -70,7 +70,7 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
     NGInlineCursor line_box = caret_position.cursor;
     line_box.MoveToContainingLine();
     DCHECK(line_box.Current().IsLineBox()) << line_box;
-    const PhysicalOffset start_point = line_box.LineStartPoint();
+    const PhysicalOffset start_point = line_box.Current().LineStartPoint();
     return FromPositionInDOMTree<Strategy>(
         line_box.PositionForPointInInlineBox(start_point));
   }
@@ -252,7 +252,7 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
     }
     NGInlineCursor line_box = caret_position.cursor;
     line_box.MoveToContainingLine();
-    const PhysicalOffset end_point = line_box.LineEndPoint();
+    const PhysicalOffset end_point = line_box.Current().LineEndPoint();
     return FromPositionInDOMTree<Strategy>(
         line_box.PositionForPointInInlineBox(end_point));
   }

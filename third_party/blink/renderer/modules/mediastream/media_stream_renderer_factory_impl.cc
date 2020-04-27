@@ -80,7 +80,8 @@ scoped_refptr<WebMediaStreamAudioRenderer>
 MediaStreamRendererFactoryImpl::GetAudioRenderer(
     const WebMediaStream& web_stream,
     WebLocalFrame* web_frame,
-    const WebString& device_id) {
+    const WebString& device_id,
+    base::RepeatingCallback<void()> on_render_error_callback) {
   DCHECK(!web_stream.IsNull());
   SendLogMessage(String::Format("%s({web_stream_id=%s}, {device_id=%s})",
                                 __func__, web_stream.Id().Utf8().c_str(),
@@ -127,7 +128,8 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
 
     return new TrackAudioRenderer(audio_tracks[0], web_frame,
                                   /*session_id=*/base::UnguessableToken(),
-                                  String(device_id));
+                                  String(device_id),
+                                  std::move(on_render_error_callback));
   }
 
   // This is a remote WebRTC media stream.
@@ -152,7 +154,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
         PeerConnectionDependencyFactory::GetInstance()
             ->GetWebRtcSignalingTaskRunner(),
         web_stream, web_frame, GetSessionIdForWebRtcAudioRenderer(),
-        device_id.Utf8());
+        device_id.Utf8(), std::move(on_render_error_callback));
 
     if (!audio_device->SetAudioRenderer(renderer.get())) {
       SendLogMessage(String::Format(

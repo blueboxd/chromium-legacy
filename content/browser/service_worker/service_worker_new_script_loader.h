@@ -22,7 +22,6 @@
 namespace content {
 
 class ServiceWorkerVersion;
-struct HttpResponseInfoIOBuffer;
 
 // This is the URLLoader used for loading scripts for a new (installing) service
 // worker. It fetches the script (the main script or imported script) and
@@ -122,7 +121,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
       int64_t cache_resource_id);
 
   // Writes the given headers into the service worker script storage.
-  void WriteHeaders(scoped_refptr<HttpResponseInfoIOBuffer> info_buffer);
+  void WriteHeaders(network::mojom::URLResponseHeadPtr response_head);
   void OnWriteHeadersComplete(net::Error error);
 
   // Starts watching the data pipe for the network load (i.e.,

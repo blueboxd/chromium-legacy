@@ -92,7 +92,6 @@ class NGOffsetMappingTest : public NGLayoutTest {
  protected:
   static const auto kCollapsed = NGOffsetMappingUnitType::kCollapsed;
   static const auto kIdentity = NGOffsetMappingUnitType::kIdentity;
-  static const auto kExpanded = NGOffsetMappingUnitType::kExpanded;
 
   void SetUp() override {
     NGLayoutTest::SetUp();

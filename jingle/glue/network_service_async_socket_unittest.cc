@@ -11,10 +11,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/containers/circular_deque.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_default.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"

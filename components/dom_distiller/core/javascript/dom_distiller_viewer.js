@@ -454,13 +454,9 @@ $('close-settings-button').addEventListener('click', (e) => {
 });
 
 $('theme-selection').addEventListener('change', (e) => {
-  const newTheme = e.target.value;
-  useTheme(newTheme);
-  distiller.storeThemePref(themeClasses.indexOf(newTheme));
+  useTheme(e.target.value);
 });
 
 $('font-family-selection').addEventListener('change', (e) => {
-  const newFontFamily = e.target.value;
-  useFontFamily(newFontFamily);
-  distiller.storeFontFamilyPref(fontFamilyClasses.indexOf(newFontFamily));
+  useFontFamily(e.target.value);
 });

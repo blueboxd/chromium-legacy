@@ -66,8 +66,7 @@ bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
 
-  sandbox_policy_ = std::make_unique<service_manager::SandboxPolicyFuchsia>(
-      delegate_->GetSandboxType());
+  sandbox_policy_.Initialize(delegate_->GetSandboxType());
 }
 
 std::unique_ptr<FileMappedForLaunch>
@@ -83,7 +82,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
 
   mojo_channel_->PrepareToPassRemoteEndpoint(&options->handles_to_transfer,
                                              command_line());
-  sandbox_policy_->UpdateLaunchOptionsForSandbox(options);
+  sandbox_policy_.UpdateLaunchOptionsForSandbox(options);
 
   // Set process name suffix to make it easier to identify the process.
   const char* process_type =

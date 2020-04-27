@@ -178,12 +178,9 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
 
   if (last_text_node_ended_with_collapsed_space_ &&
       HasVisibleTextNode(layout_object)) {
-    if (!behavior_.CollapseTrailingSpace() ||
-        (offset_ > 0 && str[offset_ - 1] == ' ')) {
-      EmitChar16Before(kSpaceCharacter, offset_);
-      needs_handle_pre_formatted_text_node_ = true;
-      return;
-    }
+    EmitChar16Before(kSpaceCharacter, offset_);
+    needs_handle_pre_formatted_text_node_ = true;
+    return;
   }
   if (ShouldHandleFirstLetter(*layout_object)) {
     LayoutTextFragment* remaining_text = ToLayoutTextFragment(layout_object);
@@ -545,12 +542,7 @@ bool TextIteratorTextNodeHandler::ShouldFixLeadingWhiteSpaceForReplacedElement()
     return false;
   if (!last_text_node_ended_with_collapsed_space_)
     return false;
-  if (!behavior_.CollapseTrailingSpace())
-    return true;
-  if (!text_node_)
-    return false;
-  const String str = text_node_->GetLayoutObject()->GetText();
-  return offset_ > 0 && str[offset_ - 1] == ' ';
+  return true;
 }
 
 bool TextIteratorTextNodeHandler::FixLeadingWhiteSpaceForReplacedElement() {

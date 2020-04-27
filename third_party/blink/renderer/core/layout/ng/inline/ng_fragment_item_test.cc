@@ -16,10 +16,15 @@ using testing::ElementsAre;
 
 namespace blink {
 
+// We enable LayoutNGFragmentTraversal here, so that we get the "first/last for
+// node" bits set as appropriate.
 class NGFragmentItemTest : public NGLayoutTest,
-                           ScopedLayoutNGFragmentItemForTest {
+                           ScopedLayoutNGFragmentItemForTest,
+                           ScopedLayoutNGFragmentTraversalForTest {
  public:
-  NGFragmentItemTest() : ScopedLayoutNGFragmentItemForTest(true) {}
+  NGFragmentItemTest()
+      : ScopedLayoutNGFragmentItemForTest(true),
+        ScopedLayoutNGFragmentTraversalForTest(true) {}
 
   Vector<const NGFragmentItem*> ItemsForAsVector(
       const LayoutObject& layout_object) {
@@ -72,14 +77,80 @@ TEST_F(NGFragmentItemTest, BasicText) {
   EXPECT_EQ(text1.Type(), NGFragmentItem::kText);
   EXPECT_EQ(text1.GetLayoutObject(), layout_text);
   EXPECT_EQ(text1.OffsetInContainerBlock(), PhysicalOffset());
+  EXPECT_TRUE(text1.IsFirstForNode());
+  EXPECT_FALSE(text1.IsLastForNode());
 
   const NGFragmentItem& text2 = *items_for_text[1];
   EXPECT_EQ(text2.Type(), NGFragmentItem::kText);
   EXPECT_EQ(text2.GetLayoutObject(), layout_text);
   EXPECT_EQ(text2.OffsetInContainerBlock(), PhysicalOffset(0, 10));
+  EXPECT_FALSE(text2.IsFirstForNode());
+  EXPECT_TRUE(text2.IsLastForNode());
 
   EXPECT_EQ(IntRect(0, 0, 70, 20),
             layout_text->FragmentsVisualRectBoundingBox());
+}
+
+TEST_F(NGFragmentItemTest, RtlText) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font-family: Ahem;
+      font-size: 10px;
+      width: 10ch;
+      direction: rtl;
+    }
+    </style>
+    <div id="container">
+      <span id="span" style="background:hotpink;">
+        11111. 22222.
+      </span>
+    </div>
+  )HTML");
+
+  LayoutBlockFlow* container =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
+  LayoutObject* span = GetLayoutObjectByElementId("span");
+  LayoutText* layout_text = ToLayoutText(span->SlowFirstChild());
+  const NGPhysicalBoxFragment* box = container->CurrentFragment();
+  EXPECT_NE(box, nullptr);
+  const NGFragmentItems* items = box->Items();
+  EXPECT_NE(items, nullptr);
+  EXPECT_EQ(items->Items().size(), 8u);
+
+  Vector<const NGFragmentItem*> items_for_span = ItemsForAsVector(*span);
+  EXPECT_EQ(items_for_span.size(), 2u);
+  const NGFragmentItem* item = items_for_span[0];
+  EXPECT_TRUE(item->IsFirstForNode());
+  EXPECT_FALSE(item->IsLastForNode());
+
+  item = items_for_span[1];
+  EXPECT_FALSE(item->IsFirstForNode());
+  EXPECT_TRUE(item->IsLastForNode());
+
+  Vector<const NGFragmentItem*> items_for_text = ItemsForAsVector(*layout_text);
+  EXPECT_EQ(items_for_text.size(), 4u);
+
+  item = items_for_text[0];
+  EXPECT_EQ(item->Text(*items).ToString(), String("."));
+  EXPECT_TRUE(item->IsFirstForNode());
+  EXPECT_FALSE(item->IsLastForNode());
+
+  item = items_for_text[1];
+  EXPECT_EQ(item->Text(*items).ToString(), String("11111"));
+  EXPECT_FALSE(item->IsFirstForNode());
+  EXPECT_FALSE(item->IsLastForNode());
+
+  item = items_for_text[2];
+  EXPECT_EQ(item->Text(*items).ToString(), String("."));
+  EXPECT_FALSE(item->IsFirstForNode());
+  EXPECT_FALSE(item->IsLastForNode());
+
+  item = items_for_text[3];
+  EXPECT_EQ(item->Text(*items).ToString(), String("22222"));
+  EXPECT_FALSE(item->IsFirstForNode());
+  EXPECT_TRUE(item->IsLastForNode());
 }
 
 TEST_F(NGFragmentItemTest, BasicInlineBox) {
@@ -113,6 +184,10 @@ TEST_F(NGFragmentItemTest, BasicInlineBox) {
   Vector<const NGFragmentItem*> items_for_span1 = ItemsForAsVector(*span1);
   EXPECT_EQ(items_for_span1.size(), 2u);
   EXPECT_EQ(IntRect(0, 0, 80, 20), span1->FragmentsVisualRectBoundingBox());
+  EXPECT_TRUE(items_for_span1[0]->IsFirstForNode());
+  EXPECT_FALSE(items_for_span1[0]->IsLastForNode());
+  EXPECT_FALSE(items_for_span1[1]->IsFirstForNode());
+  EXPECT_TRUE(items_for_span1[1]->IsLastForNode());
 
   // "span2" doesn't wrap, produces only one fragment.
   const LayoutObject* span2 = GetLayoutObjectByElementId("span2");
@@ -120,6 +195,8 @@ TEST_F(NGFragmentItemTest, BasicInlineBox) {
   Vector<const NGFragmentItem*> items_for_span2 = ItemsForAsVector(*span2);
   EXPECT_EQ(items_for_span2.size(), 1u);
   EXPECT_EQ(IntRect(0, 20, 80, 10), span2->FragmentsVisualRectBoundingBox());
+  EXPECT_TRUE(items_for_span2[0]->IsFirstForNode());
+  EXPECT_TRUE(items_for_span2[0]->IsLastForNode());
 }
 
 // Same as |BasicInlineBox| but `<span>`s do not have background.
@@ -152,6 +229,10 @@ TEST_F(NGFragmentItemTest, CulledInlineBox) {
   Vector<const NGFragmentItem*> items_for_span1 = ItemsForAsVector(*span1);
   EXPECT_EQ(items_for_span1.size(), 2u);
   EXPECT_EQ(IntRect(0, 0, 80, 20), span1->FragmentsVisualRectBoundingBox());
+  EXPECT_TRUE(items_for_span1[0]->IsFirstForNode());
+  EXPECT_FALSE(items_for_span1[0]->IsLastForNode());
+  EXPECT_FALSE(items_for_span1[1]->IsFirstForNode());
+  EXPECT_TRUE(items_for_span1[1]->IsLastForNode());
 
   // "span2" doesn't wrap, produces only one fragment.
   const LayoutObject* span2 = GetLayoutObjectByElementId("span2");
@@ -159,6 +240,8 @@ TEST_F(NGFragmentItemTest, CulledInlineBox) {
   Vector<const NGFragmentItem*> items_for_span2 = ItemsForAsVector(*span2);
   EXPECT_EQ(items_for_span2.size(), 1u);
   EXPECT_EQ(IntRect(0, 20, 80, 10), span2->FragmentsVisualRectBoundingBox());
+  EXPECT_TRUE(items_for_span2[0]->IsFirstForNode());
+  EXPECT_TRUE(items_for_span2[0]->IsLastForNode());
 
   // Except that they do not produce box fragments.
   for (const NGFragmentItem* item : items_for_span1)

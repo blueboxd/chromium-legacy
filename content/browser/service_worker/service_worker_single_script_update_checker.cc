@@ -248,11 +248,9 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
   blink::ServiceWorkerStatusCode service_worker_status;
   network::URLLoaderCompletionStatus completion_status;
   std::string error_message;
-  std::unique_ptr<net::HttpResponseInfo> response_info =
-      service_worker_loader_helpers::CreateHttpResponseInfoAndCheckHeaders(
+  if (!service_worker_loader_helpers::CheckResponseHead(
           *response_head, &service_worker_status, &completion_status,
-          &error_message);
-  if (!response_info) {
+          &error_message)) {
     DCHECK_NE(net::OK, completion_status.error_code);
     Fail(service_worker_status, error_message, completion_status);
     return;
@@ -280,8 +278,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
       ServiceWorkerUpdatedScriptLoader::LoaderState::kWaitingForBody;
   network_accessed_ = response_head->network_accessed;
 
-  WriteHeaders(
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(response_info)));
+  WriteHeaders(std::move(response_head));
 }
 
 void ServiceWorkerSingleScriptUpdateChecker::OnReceiveRedirect(
@@ -423,7 +420,7 @@ const char* ServiceWorkerSingleScriptUpdateChecker::ResultToString(
 //------------------------------------------------------------------------------
 
 void ServiceWorkerSingleScriptUpdateChecker::WriteHeaders(
-    scoped_refptr<HttpResponseInfoIOBuffer> info_buffer) {
+    network::mojom::URLResponseHeadPtr response_head) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerSingleScriptUpdateChecker::WriteHeaders",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
@@ -436,7 +433,7 @@ void ServiceWorkerSingleScriptUpdateChecker::WriteHeaders(
   // Pass the header to the cache_writer_. This is written to the storage when
   // the body had changes.
   net::Error error = cache_writer_->MaybeWriteHeaders(
-      info_buffer.get(),
+      std::move(response_head),
       base::BindOnce(
           &ServiceWorkerSingleScriptUpdateChecker::OnWriteHeadersComplete,
           weak_factory_.GetWeakPtr()));

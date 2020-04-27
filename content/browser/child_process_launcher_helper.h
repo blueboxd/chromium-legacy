@@ -250,7 +250,7 @@ class ChildProcessLauncherHelper :
 #endif
 
 #if defined(OS_FUCHSIA)
-  std::unique_ptr<service_manager::SandboxPolicyFuchsia> sandbox_policy_;
+  service_manager::SandboxPolicyFuchsia sandbox_policy_;
 #endif
 };
 

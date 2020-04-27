@@ -739,13 +739,12 @@ ServiceWorkerUpdateCheckTestUtils::CreatePausedCacheWriter(
       worker_test_helper->context()->storage()->CreateResponseWriter(
           new_resource_id),
       true /* pause_when_not_identical */);
-  auto info = std::make_unique<net::HttpResponseInfo>();
-  info->request_time = base::Time::Now();
-  info->response_time = base::Time::Now();
-  info->was_cached = false;
-  info->headers = base::MakeRefCounted<net::HttpResponseHeaders>(new_headers);
-  cache_writer->headers_to_write_ =
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(info));
+  cache_writer->response_head_to_write_ =
+      network::mojom::URLResponseHead::New();
+  cache_writer->response_head_to_write_->request_time = base::Time::Now();
+  cache_writer->response_head_to_write_->response_time = base::Time::Now();
+  cache_writer->response_head_to_write_->headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>(new_headers);
   cache_writer->bytes_compared_ = bytes_compared;
   cache_writer->data_to_write_ = base::MakeRefCounted<net::WrappedIOBuffer>(
       pending_network_buffer ? pending_network_buffer->buffer() : nullptr);

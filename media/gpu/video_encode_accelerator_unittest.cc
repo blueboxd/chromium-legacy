@@ -691,7 +691,7 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
 #if defined(USE_OZONE)
     // Initialize Ozone so that DMABuf can be created through Ozone DRM.
     ui::OzonePlatform::InitParams params;
-    params.single_process = false;
+    params.single_process = true;
     ui::OzonePlatform::InitializeForUI(params);
 
     base::Thread::Options options;

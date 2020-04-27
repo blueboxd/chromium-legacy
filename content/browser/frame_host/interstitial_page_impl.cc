@@ -78,15 +78,16 @@ class InterstitialPageImpl::InterstitialPageRVHDelegateView
 
   // RenderViewHostDelegateView implementation:
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
-  void ShowPopupMenu(RenderFrameHost* render_frame_host,
-                     mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
-                     const gfx::Rect& bounds,
-                     int item_height,
-                     double item_font_size,
-                     int selected_item,
-                     std::vector<blink::mojom::MenuItemPtr> menu_items,
-                     bool right_aligned,
-                     bool allow_multiple_selection) override;
+  void ShowPopupMenu(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
+      const gfx::Rect& bounds,
+      int item_height,
+      double item_font_size,
+      int selected_item,
+      std::vector<blink::mojom::MenuItemPtr> menu_items,
+      bool right_aligned,
+      bool allow_multiple_selection) override;
 #endif
   void StartDragging(const DropData& drop_data,
                      WebDragOperationsMask operations_allowed,
@@ -957,7 +958,7 @@ InterstitialPageImpl::InterstitialPageRVHDelegateView::
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::ShowPopupMenu(
     RenderFrameHost* render_frame_host,
-    mojo::PendingRemote<blink::mojom::ExternalPopup> popup,
+    mojo::PendingRemote<blink::mojom::PopupMenuClient> popup_client,
     const gfx::Rect& bounds,
     int item_height,
     double item_font_size,

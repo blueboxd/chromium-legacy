@@ -509,6 +509,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
       if (result->ColumnSpanner())
         break;
 
+      Node().AddColumnResult(result, column_break_token.get());
+
       column_break_token = To<NGBlockBreakToken>(column.BreakToken());
 
       // If we're participating in an outer fragmentation context, we'll only

@@ -14,6 +14,9 @@ const char kContentShellDataPath[] = "data-path";
 // The directory breakpad should store minidumps in.
 const char kCrashDumpsDir[] = "crash-dumps-dir";
 
+// Disables the check for the system font when specified.
+const char kDisableSystemFontCheck[] = "disable-system-font-check";
+
 // Exposes the window.internals object to JavaScript for interactive development
 // and debugging of web tests that rely on it.
 const char kExposeInternalsForTesting[] = "expose-internals-for-testing";

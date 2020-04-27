@@ -1602,6 +1602,7 @@ component("ash") {
     "//ui/platform_window/stub",
     "//ui/snapshot",
     "//ui/views/window/vector_icons",
+    "//ui/webui/resources/css:cros_colors_views",
     "//ui/wm/public",
     "//url",
   ]

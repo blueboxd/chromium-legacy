@@ -188,6 +188,10 @@ CWVTranslationError CWVConvertTranslateError(
   _translateClient->RevertTranslation();
 }
 
+- (BOOL)requestTranslationOffer {
+  return _translateClient->RequestTranslationOffer();
+}
+
 - (void)setTranslationPolicy:(CWVTranslationPolicy*)policy
              forPageLanguage:(CWVTranslationLanguage*)pageLanguage {
   std::string languageCode = base::SysNSStringToUTF8(pageLanguage.languageCode);

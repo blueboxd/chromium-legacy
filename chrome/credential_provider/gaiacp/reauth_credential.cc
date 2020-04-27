@@ -172,6 +172,11 @@ HRESULT CReauthCredential::GetStringValueImpl(DWORD field_id, wchar_t** value) {
           description_label_id =
               IDS_REAUTH_FAILED_UPLOAD_DEVICE_DETAILS_DESCRIPTION_BASE;
           break;
+        case AssociatedUserValidator::EnforceAuthReason::
+            ONLINE_LOGIN_ENFORCED:
+          description_label_id =
+              IDS_REAUTH_ONLINE_LOGIN_ENFORCED_DESCRIPTION_BASE;
+          break;
         default:
           description_label_id = IDS_REAUTH_FID_DESCRIPTION_BASE;
           break;

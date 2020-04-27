@@ -2,12 +2,16 @@
 
 ## TL;DR
 
-RenderDocument stops us reusing RenderFrames and RenderFrameHosts,
-simplifying decisions,
-eliminating logic for reuse
-and making RenderFrameHost a browser-side object
-that corresponds to the renderer-side document
-(hence RenderDocument).
+Chrome currently switches to a new RenderFrameHost
+when loading a new document
+if the render process is different to the  previous one.
+The RenderDocument project is about making the switch to happen unconditionally.
+This:
+
+* Eliminates the logic for navigating inside the same RenderFrameHost
+* Makes RenderFrameHost in the browser process 1:1 with the Document.
+* Prevents security bugs,
+  e.g. reusing the data/capabilities from the wrong document.
 
 ## Details
 
@@ -30,24 +34,22 @@ for crashed frames.
 
 https://crbug.com/936696
 
+[design doc](https://docs.google.com/document/d/1C2VKkFRSc0kdmqjKan1G4NlNlxWZqE4Wam41FNMgnmA)
+
 [high-level view of the work needed](https://docs.google.com/document/d/1UzVOmTj2IJ0ecz7CZicTK6ow2rr9wgLTGfY5hjyLmT4)
 
 [discussion of how we can land it safely](https://docs.google.com/document/d/1ZHWWEYT1L5Zgh2lpC7DHXXZjKcptI877KKOqjqxE2Ns)
 
 # Stages
 
-We have 3 stages that are behind flags
+We have 3 stages that are behind flags.
 
 1. crashed-frames:
-  With this enabled we get a new RenderFrameHost when reloading a crashed frame.
+  A new RenderFrameHost is used for reloading a crashed document.
 2. subframes:
-  With this enabled,
-  when a subframe navigates
-  we get a new RenderFrame and RenderFrameHost.
+  A new RenderFrameHost is used for every nested document.
 3. main frames:
-  With this enabled,
-  when the main frame navigates
-  we get a new RenderFrame and RenderFrameHost.
+  A new RenderFrameHost is used for every document.
 
 # Test changes
 

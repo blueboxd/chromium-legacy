@@ -190,6 +190,12 @@ message ClientSettingsProto {
 
   // Optional settings intended for integration tests.
   optional IntegrationTestSettings integration_test_settings = 17;
+
+  // Optional setting defining the size of the bottom sheet when Talkback is
+  // enabled as a fraction of the available height. When set, the bottomsheet
+  // will stop resizing automatically in talkback mode. It will always have the
+  // specified size instead.
+  optional float talkback_sheet_size_fraction = 18;
 }
 
 message ScriptTimeoutError {
@@ -1635,7 +1641,9 @@ message ShowInfoBoxProto {
 }
 
 // Allow scripts to configure the peek height of the sheet and whether we should
-// resize the viewport by this peek height.
+// resize the viewport by this peek height. If talkback is enabled, the mode is
+// set to RESIZE_VISUAL_VIEWPORT. Changes to the mode are only applied after
+// talkback is disabled.
 message ConfigureBottomSheetProto {
   enum ViewportResizing {
     // Don't change resizing configuration.

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/pref_names.h"
@@ -18,6 +19,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "url/gurl.h"
@@ -91,4 +93,12 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
                      arc::IsArcPlayStoreEnabledForProfile(profile));
   source->AddBoolean("pinEnabled",
                      chromeos::quick_unlock::IsPinEnabled(pref_service));
+
+  // Data about what type of account/login this is.
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  source->AddBoolean("isManagedDevice",
+                     profile->GetProfilePolicyConnector()->IsManaged());
+  source->AddInteger("userType", user_manager->GetActiveUser()->GetType());
+  source->AddBoolean("isEphemeralUser",
+                     user_manager->IsCurrentUserNonCryptohomeDataEphemeral());
 }

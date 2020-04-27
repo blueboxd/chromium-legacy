@@ -111,7 +111,17 @@ CWV_EXPORT
 @property(nonatomic, readonly) double estimatedProgress;
 
 // The scroll view associated with the web view.
-@property(nonatomic, readonly) CWVScrollView* scrollView;
+//
+// It is reset on state restoration.
+@property(nonatomic, readonly) UIScrollView* scrollView;
+
+// DEPRECATED: Use |scrollView| instead.
+//
+// The old implementation of the scroll view associated with the web view.
+//
+// TODO(crbug.com/1023250): Delete this once clients migrate to the new
+// |scrollView|.
+@property(nonatomic, readonly) CWVScrollView* legacyScrollView;
 
 // A Boolean value indicating whether horizontal swipe gestures will trigger
 // back-forward list navigations.

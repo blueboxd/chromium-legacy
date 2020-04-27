@@ -1462,10 +1462,11 @@ void UiControllerAndroid::OnClientSettingsChanged(
   Java_AssistantOverlayModel_setTapTracking(
       env, GetOverlayModel(), settings.tap_count,
       settings.tap_tracking_duration.InMilliseconds());
+
   if (settings.overlay_image.has_value()) {
-    const auto& image = *(settings.overlay_image);
     auto jcontext =
         Java_AutofillAssistantUiController_getContext(env, java_object_);
+    const auto& image = *(settings.overlay_image);
     int image_size = ui_controller_android_utils::GetPixelSizeOrDefault(
         env, jcontext, image.image_size(), 0);
     int top_margin = ui_controller_android_utils::GetPixelSizeOrDefault(
@@ -1494,6 +1495,8 @@ void UiControllerAndroid::OnClientSettingsChanged(
         settings.integration_test_settings
             ->disable_carousel_change_animations());
   }
+  Java_AssistantModel_setTalkbackSheetSizeFraction(
+      env, GetModel(), settings.talkback_sheet_size_fraction);
 }
 
 void UiControllerAndroid::OnGenericUserInterfaceChanged(

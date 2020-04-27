@@ -15,6 +15,9 @@ namespace service_manager {
 
 // Defines the sandbox types known within the servicemanager.
 enum class SandboxType {
+  // Not a valid sandbox type.
+  kInvalid = -1,
+
   // Do not apply any sandboxing to the process.
   kNoSandbox,
 
@@ -70,11 +73,6 @@ enum class SandboxType {
 #if defined(OS_CHROMEOS)
   kIme,
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_LINUX)
-  // Indicates that a process is a zygote and will get a real sandbox later.
-  kZygoteIntermediateSandbox,
-#endif
 
 #if !defined(OS_MACOSX)
   // Hosts WebRTC for Sharing Service, uses kUtility on OS_MACOSX.

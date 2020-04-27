@@ -85,8 +85,19 @@ int TrackAudioRenderer::Render(base::TimeDelta delay,
   return audio_bus->frames();
 }
 
+void TrackAudioRenderer::OnRenderErrorCrossThread() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  on_render_error_callback_.Run();
+}
+
 void TrackAudioRenderer::OnRenderError() {
-  NOTIMPLEMENTED();
+  DCHECK(on_render_error_callback_);
+
+  PostCrossThreadTask(
+      *task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&TrackAudioRenderer::OnRenderErrorCrossThread,
+                          WrapRefCounted(this)));
 }
 
 // WebMediaStreamAudioSink implementation
@@ -134,10 +145,12 @@ void TrackAudioRenderer::OnSetFormat(const media::AudioParameters& params) {
                                           WrapRefCounted(this), params));
 }
 
-TrackAudioRenderer::TrackAudioRenderer(const WebMediaStreamTrack& audio_track,
-                                       WebLocalFrame* playout_web_frame,
-                                       const base::UnguessableToken& session_id,
-                                       const String& device_id)
+TrackAudioRenderer::TrackAudioRenderer(
+    const WebMediaStreamTrack& audio_track,
+    WebLocalFrame* playout_web_frame,
+    const base::UnguessableToken& session_id,
+    const String& device_id,
+    base::RepeatingCallback<void()> on_render_error_callback)
     : audio_track_(audio_track),
       internal_playout_frame_(
           std::make_unique<MediaStreamInternalFrameWrapper>(playout_web_frame)),
@@ -145,6 +158,7 @@ TrackAudioRenderer::TrackAudioRenderer(const WebMediaStreamTrack& audio_track,
       task_runner_(
           playout_web_frame->GetTaskRunner(blink::TaskType::kInternalMedia)),
       num_samples_rendered_(0),
+      on_render_error_callback_(std::move(on_render_error_callback)),
       playing_(false),
       output_device_id_(device_id),
       volume_(0.0),

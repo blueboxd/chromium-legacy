@@ -23,9 +23,6 @@ class CORE_EXPORT TextIteratorBehavior final {
   bool operator==(const TextIteratorBehavior& other) const;
   bool operator!=(const TextIteratorBehavior& other) const;
 
-  bool CollapseTrailingSpace() const {
-    return values_.bits.collapse_trailing_space;
-  }
   bool DoesNotBreakAtReplacedElement() const {
     return values_.bits.does_not_break_at_replaced_element;
   }
@@ -83,7 +80,6 @@ class CORE_EXPORT TextIteratorBehavior final {
   union {
     unsigned all;
     struct {
-      bool collapse_trailing_space : 1;
       bool does_not_break_at_replaced_element : 1;
       bool emits_characters_between_all_visible_positions : 1;
       bool emits_image_alt_text : 1;
@@ -117,7 +113,6 @@ class CORE_EXPORT TextIteratorBehavior::Builder final {
 
   TextIteratorBehavior Build();
 
-  Builder& SetCollapseTrailingSpace(bool);
   Builder& SetDoesNotBreakAtReplacedElement(bool);
   Builder& SetEmitsCharactersBetweenAllVisiblePositions(bool);
   Builder& SetEmitsImageAltText(bool);

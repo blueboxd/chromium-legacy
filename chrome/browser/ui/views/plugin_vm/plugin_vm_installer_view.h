@@ -85,6 +85,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   void StartInstallation();
 
   Profile* profile_ = nullptr;
+  base::string16 app_name_;
   plugin_vm::PluginVmInstaller* plugin_vm_installer_ = nullptr;
   views::Label* big_message_label_ = nullptr;
   views::Label* message_label_ = nullptr;

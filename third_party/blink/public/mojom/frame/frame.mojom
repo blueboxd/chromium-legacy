@@ -15,6 +15,7 @@ import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/web_sandbox_flags.mojom";
 import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom";
+import "third_party/blink/public/mojom/choosers/popup_menu.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/devtools/inspector_issue.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
@@ -30,7 +31,6 @@ import "third_party/blink/public/mojom/frame/user_activation_update_types.mojom"
 import "third_party/blink/public/mojom/frame/frame_owner_properties.mojom";
 import "third_party/blink/public/mojom/input/focus_type.mojom";
 import "third_party/blink/public/mojom/input/scroll_direction.mojom";
-import "third_party/blink/public/mojom/popup/popup.mojom";
 import "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom";
 import "third_party/blink/public/mojom/referrer.mojom";
 import "third_party/blink/public/mojom/timing/resource_timing.mojom";
@@ -335,14 +335,14 @@ interface LocalFrameHost {
 
   // Show a popup menu using native controls on Mac or Android.
   // The popup menu is hidden when the mojo channel is closed.
-  ShowExternalPopup(pending_remote<ExternalPopup> popup,
-                    gfx.mojom.Rect bounds,
-                    int32 item_height,
-                    double font_size,
-                    int32 selected_item,
-                    array<MenuItem> menu_items,
-                    bool right_aligned,
-                    bool allow_multiple_selection);
+  ShowPopupMenu(pending_remote<PopupMenuClient> popup_client,
+                gfx.mojom.Rect bounds,
+                int32 item_height,
+                double font_size,
+                int32 selected_item,
+                array<MenuItem> menu_items,
+                bool right_aligned,
+                bool allow_multiple_selection);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

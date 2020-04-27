@@ -17,6 +17,11 @@
 #      CSS Variables
 template("style_variable_generator") {
   original_target_name = target_name
+  common_inputs = [
+    "//tools/style_variable_generator/base_generator.py",
+    "//tools/style_variable_generator/color.py",
+  ]
+
   action("${target_name}_css") {
     script = "//tools/style_variable_generator/style_variable_generator.py"
 
@@ -26,11 +31,10 @@ template("style_variable_generator") {
                              "sources",
                            ])
 
-    inputs = [
-      "//tools/style_variable_generator/base_generator.py",
-      "//tools/style_variable_generator/css_generator.py",
-      "//tools/style_variable_generator/css_generator.tmpl",
-    ]
+    inputs = common_inputs + [
+               "//tools/style_variable_generator/css_generator.py",
+               "//tools/style_variable_generator/css_generator.tmpl",
+             ]
     out_file = "$target_gen_dir/${original_target_name}.generated.css"
     outputs = [ out_file ]
 
@@ -39,5 +43,33 @@ template("style_variable_generator") {
              "--out-file",
              rebase_path("$out_file", root_build_dir),
            ] + rebase_path(sources, root_build_dir)
+  }
+
+  action("${target_name}_views_generator") {
+    script = "//tools/style_variable_generator/style_variable_generator.py"
+
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "sources",
+                           ])
+
+    inputs = common_inputs + [
+               "//tools/style_variable_generator/views_generator.py",
+               "//tools/style_variable_generator/views_generator_h.tmpl",
+             ]
+    out_file = "$target_gen_dir/${original_target_name}.h"
+    outputs = [ out_file ]
+
+    args = [
+             "--generator=Views",
+             "--out-file",
+             rebase_path("$out_file", root_build_dir),
+           ] + rebase_path(sources, root_build_dir)
+  }
+
+  source_set("${target_name}_views") {
+    sources = [ "$target_gen_dir/${original_target_name}.h" ]
+    deps = [ ":${original_target_name}_views_generator" ]
   }
 }

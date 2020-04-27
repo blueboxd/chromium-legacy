@@ -50,6 +50,10 @@ class Color:
         if not (0 <= self.a <= 1):
             raise ValueError('Alpha expected to be between 0 and 1')
 
+    def RGBVarToVar(self):
+        assert (self.rgb_var)
+        return self.rgb_var.replace('_rgb', '')
+
     def Parse(self, value):
         def ParseHex(value):
             match = re.match('^#([0-9a-f]*)$', value)

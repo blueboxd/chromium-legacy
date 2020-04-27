@@ -39,7 +39,8 @@ class BLINK_MODULES_EXPORT WebMediaStreamRendererFactory {
   virtual scoped_refptr<WebMediaStreamAudioRenderer> GetAudioRenderer(
       const WebMediaStream& web_stream,
       WebLocalFrame* web_frame,
-      const WebString& device_id) = 0;
+      const WebString& device_id,
+      base::RepeatingCallback<void()> on_render_error_callback) = 0;
 };
 
 BLINK_MODULES_EXPORT std::unique_ptr<WebMediaStreamRendererFactory>

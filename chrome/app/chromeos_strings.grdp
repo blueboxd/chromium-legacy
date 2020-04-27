@@ -4909,7 +4909,7 @@
     Plugin VM
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ENVIRONMENT_SETTING_TITLE" desc="Title of the Plugin VM installer during installation.">
-    Setting up Plugin VM...
+    Setting up <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>...
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_FINISHED_TITLE" desc="Title of the Plugin VM installer after successful installation.">
     Setup complete
@@ -4918,10 +4918,10 @@
     Setup couldn't complete
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_TITLE" desc="Title of the Plugin VM installer if Plugin VM is disallowed.">
-    Plugin VM needs permission to run
+    <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> needs permission to run
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_LOW_DISK_SPACE_MESSAGE" desc="Text of the Plugin VM installer that warns them of low disk space.">
-    Your device is low on storage space. At least <ph name="RECOMMENDED_SPACE">$1<ex>32GB</ex></ph> of free space is recommended to use Plugin VM. To free up space, delete files from device storage.
+    Your device is low on storage. At least <ph name="RECOMMENDED_SPACE">$1<ex>32GB</ex></ph> of free space is recommended to use <ph name="APP_NAME">$2<ex>Plugin VM</ex></ph>. To increase free space, delete files from your device.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_START_DOWNLOADING_MESSAGE" desc="Text of the Plugin VM installer that informs the user that setup may take a while.">
     This may take awhile
@@ -4933,16 +4933,16 @@
     Configuring the virtual machine. This may take a few minutes.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_IMPORTED_MESSAGE" desc="Text of the Plugin VM installer after successful installation.">
-    Plugin VM is ready to use.
+    <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> is ready to use.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_CREATED_MESSAGE" desc="Text of the Plugin VM installer after new VM creation.">
     Please launch Plugin VM to install the Guest Operating System.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_LOGIC_ERROR" desc="Text of the Plugin VM installer if the installation failed due to an internal error.">
-    Couldn't install Plugin VM. Please try again, or contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+    Couldn't install <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>. Please try again, or contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_CONFIG_ERROR" desc="Text of the Plugin VM installer if the installation failed because there was an error in the configuration.">
-    Couldn't set up Plugin VM because of a configuration problem. Please contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+    Couldn't set up <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> because of a configuration problem. Please contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_DOWNLOAD_FAILED" desc="Text of the Plugin VM installer if the installation failed because something went wrong while downloading the virtual machine.">
     Couldn't install the virtual machine because of a network error. Please try again, or contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
@@ -4951,7 +4951,7 @@
     Couldn't install the virtual machine. Please try again, or contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE" desc="Error message to be shown if a setup/launch is attempted although Plugin VM is disallowed.">
-    Plugin VM isn't allowed on this device. Contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+    <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> isn't allowed on this device. Contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text of the Plugin VM installer during downloading Plugin VM image, showing download progress.">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2</ex></ph>/<ph name="DOWNLOAD_SIZE">$2<ex>3.4 GB</ex></ph>
@@ -4972,16 +4972,16 @@
     Shut down
   </message>
   <message name="IDS_PLUGIN_VM_INVALID_LICENSE_TITLE" desc="Title in the notification shown when launching the 'Plugin VM' app failed due to an invalid or missing license.">
-    Plugin VM requires a license
+    <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> requires a license
   </message>
   <message name="IDS_PLUGIN_VM_EXPIRED_LICENSE_TITLE" desc="Title in the notification shown when launching the 'Plugin VM' app failed due to an expired license.">
-    Plugin VM license has expired
+    <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> license has expired
   </message>
   <message name="IDS_PLUGIN_VM_INVALID_LICENSE_MESSAGE" desc="Message in the notification shown when launching the 'Plugin VM' app failed due to an invalid, missing, or expired license.">
     Contact your organization's device administrator
   </message>
   <message name="IDS_PLUGIN_VM_START_VM_ERROR_TITLE" desc="Title in the notification shown when launching the 'Plugin VM' app failed due to a network or unknown error.">
-    Couldn't open Plugin VM
+    Couldn't open <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>
   </message>
   <message name="IDS_PLUGIN_VM_NETWORK_ERROR_MESSAGE" desc="Message in the notification shown when launching the 'Plugin VM' app failed due to a network error.">
     Connect to the internet and try again
@@ -4990,25 +4990,25 @@
     Something went wrong. Please try again.
   </message>
   <message name="IDS_PLUGIN_VM_REMOVING_NOTIFICATION_IN_PROGRESS_MESSAGE" desc="Message in the notification shown when removing the 'Plugin VM' app.">
-    Uninstalling Plugin VM...
+    Uninstalling <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>...
   </message>
   <message name="IDS_PLUGIN_VM_REMOVING_NOTIFICATION_COMPLETE_MESSAGE" desc="Message in the notification shown when removing the 'Plugin VM' app has completed successfully.">
-    Plugin VM has been uninstalled
+    <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> has been uninstalled
   </message>
   <message name="IDS_PLUGIN_VM_REMOVING_NOTIFICATION_FAILED_MESSAGE" desc="Message in the notification shown when removing the 'Plugin VM' app failed.">
-    Couldn't uninstall Plugin VM
+    Couldn't uninstall <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>
   </message>
   <message name="IDS_PLUGIN_VM_DLC_INTERNAL_FAILED_MESSAGE" desc="Error message shown if Plugin VM installation fails because an internal error indicates the device needs to be updated.">
-    Your device needs to be updated before you can use Plugin VM.
+    Your device needs to be updated before you can use <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_DLC_BUSY_FAILED_MESSAGE" desc="Error message shown if Plugin VM installation fails because dlcservice and update_engine are busy.">
-    Something went wrong. Please wait a few minutes and run Plugin VM again.
+    Something went wrong. Please wait a few minutes and run <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> again.
   </message>
   <message name="IDS_PLUGIN_VM_DLC_NEED_REBOOT_FAILED_MESSAGE" desc="Error message shown if Plugin VM installation fails because a pending update requires the device to be restarted.">
-    Please restart your device to use Plugin VM.
+    Please restart your device to use <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSUFFICIENT_DISK_SPACE_MESSAGE" desc="Error message shown if Plugin VM installation fails because there is not enough free space on the device.">
-    Your device is low on storage space. At least <ph name="MINIMUM_SPACE">$1<ex>16GB</ex></ph> of free space is required to use Plugin VM, and over <ph name="RECOMMENDED_SPACE">$2<ex>32GB</ex></ph> of free space is recommended. To free up space, delete files from device storage.
+      Your device is low on storage. At least <ph name="MINIMUM_SPACE">$1<ex>16GB</ex></ph> of free space is required to use <ph name="APP_NAME">$2<ex>Plugin VM</ex></ph>, and over <ph name="RECOMMENDED_SPACE">$3<ex>32GB</ex></ph> of free space is recommended. To increase free space, delete files from device.
   </message>
 
   <!-- Strings for Account Manager error screen -->

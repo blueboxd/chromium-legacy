@@ -188,6 +188,54 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle) {
   EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
 }
 
+TEST_F(AssociatedUserValidatorTest, EnforceOnlineLoginGlobalFlag) {
+  GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
+
+  FakeAssociatedUserValidator validator;
+
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"password", L"fullname", L"comment",
+                      L"gaia-id", base::string16(), &sid));
+
+  // Valid token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(), "{\"expires_in\":1}");
+
+  // Set global flag to enforce online login.
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"enforce_online_login", 1));
+
+  validator.StartRefreshingTokenHandleValidity();
+
+  EXPECT_TRUE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
+}
+
+TEST_F(AssociatedUserValidatorTest, EnforceOnlineLoginUserFlag) {
+  GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
+
+  FakeAssociatedUserValidator validator;
+
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username", L"password", L"fullname", L"comment",
+                      L"gaia-id", base::string16(), &sid));
+
+  // Valid token fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(), "{\"expires_in\":1}");
+
+  // Set global flag to enforce online login.
+  ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, L"enforce_online_login", 1));
+
+  validator.StartRefreshingTokenHandleValidity();
+
+  EXPECT_TRUE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_EQ(1u, fake_http_url_fetcher_factory()->requests_created());
+}
+
 TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle) {
   FakeAssociatedUserValidator validator;
 

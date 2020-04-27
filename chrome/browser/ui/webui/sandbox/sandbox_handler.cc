@@ -30,6 +30,8 @@ namespace {
 // This only includes OS_WIN included SandboxType values.
 std::string GetSandboxTypeInEnglish(content::SandboxType sandbox_type) {
   switch (sandbox_type) {
+    case content::SandboxType::kInvalid:
+      return "Invalid";
     case content::SandboxType::kNoSandbox:
       return "Unsandboxed";
     case content::SandboxType::kNoSandboxAndElevatedPrivileges:

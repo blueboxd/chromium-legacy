@@ -65,7 +65,8 @@ class TrackAudioRenderer : public WebMediaStreamAudioRenderer,
   TrackAudioRenderer(const WebMediaStreamTrack& audio_track,
                      WebLocalFrame* playout_web_frame,
                      const base::UnguessableToken& session_id,
-                     const String& device_id);
+                     const String& device_id,
+                     base::RepeatingCallback<void()> on_render_error_callback);
 
   // WebMediaStreamAudioRenderer implementation.
   // Called on the main thread.
@@ -100,6 +101,8 @@ class TrackAudioRenderer : public WebMediaStreamAudioRenderer,
              int prior_frames_skipped,
              media::AudioBus* audio_bus) override;
   void OnRenderError() override;
+
+  void OnRenderErrorCrossThread();
 
   // Initializes and starts the |sink_| if
   //  we have received valid |source_params_| &&
@@ -150,6 +153,8 @@ class TrackAudioRenderer : public WebMediaStreamAudioRenderer,
   // The audio parameters of the track's source.
   // Must only be touched on the main thread.
   media::AudioParameters source_params_;
+
+  base::RepeatingCallback<void()> on_render_error_callback_;
 
   // Set when playing, cleared when paused.
   bool playing_;

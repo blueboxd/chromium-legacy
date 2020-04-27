@@ -195,11 +195,8 @@ NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
       ExecutionContextClient(navigator.DomWindow()),
       PlatformEventController(
           navigator.GetFrame() ? navigator.GetFrame()->GetDocument() : nullptr),
-      // See https://bit.ly/2S0zRAS for task types
-      gamepad_dispatcher_(MakeGarbageCollected<GamepadDispatcher>(
-          navigator.GetFrame() ? navigator.GetFrame()->GetTaskRunner(
-                                     blink::TaskType::kMiscPlatformAPI)
-                               : nullptr)) {
+      gamepad_dispatcher_(
+          MakeGarbageCollected<GamepadDispatcher>(navigator.DomWindow())) {
   if (navigator.DomWindow())
     navigator.DomWindow()->RegisterEventListenerObserver(this);
 

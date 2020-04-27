@@ -301,7 +301,8 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
     const WebMediaStream& media_stream,
     WebLocalFrame* web_frame,
     const base::UnguessableToken& session_id,
-    const std::string& device_id)
+    const std::string& device_id,
+    base::RepeatingCallback<void()> on_render_error_callback)
     : task_runner_(Thread::Current()->GetTaskRunner()),
       state_(UNINITIALIZED),
       source_internal_frame_(std::make_unique<InternalFrame>(web_frame)),
@@ -313,7 +314,8 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       play_ref_count_(0),
       start_ref_count_(0),
       sink_params_(kFormat, media::CHANNEL_LAYOUT_STEREO, 0, 0),
-      output_device_id_(device_id) {
+      output_device_id_(device_id),
+      on_render_error_callback_(std::move(on_render_error_callback)) {
   SendLogMessage(
       String::Format("%s({session_id=%s}, {device_id=%s})", __func__,
                      session_id.is_empty() ? "" : session_id.ToString().c_str(),
@@ -636,8 +638,17 @@ int WebRtcAudioRenderer::Render(base::TimeDelta delay,
 }
 
 void WebRtcAudioRenderer::OnRenderError() {
-  NOTIMPLEMENTED();
-  LOG(ERROR) << "OnRenderError()";
+  DCHECK(on_render_error_callback_);
+  PostCrossThreadTask(
+      *task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&WebRtcAudioRenderer::OnRenderErrorCrossThread,
+                          WrapRefCounted(this)));
+}
+
+void WebRtcAudioRenderer::OnRenderErrorCrossThread() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  on_render_error_callback_.Run();
 }
 
 // Called by AudioPullFifo when more data is necessary.

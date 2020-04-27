@@ -35,7 +35,7 @@ constexpr wchar_t kRegEnableVerboseLogging[] = L"enable_verbose_logging";
 constexpr wchar_t kRegInitializeCrashReporting[] = L"enable_crash_reporting";
 constexpr wchar_t kRegMdmUrl[] = L"mdm";
 constexpr wchar_t kRegEnableDmEnrollment[] = L"enable_dm_enrollment";
-
+constexpr wchar_t kRegMdmEnforceOnlineLogin[] = L"enforce_online_login";
 constexpr wchar_t kRegMdmEnableForcePasswordReset[] =
     L"enable_force_reset_password_option";
 constexpr wchar_t kRegDisablePasswordSync[] = L"disable_password_sync";
@@ -420,6 +420,30 @@ bool PasswordRecoveryEnabled() {
 bool IsGemEnabled() {
   // The gem features are enabled by default.
   return GetGlobalFlagOrDefault(kKeyEnableGemFeatures, 1);
+}
+
+bool IsOnlineLoginEnforced(const base::string16& sid) {
+  DWORD global_flag = GetGlobalFlagOrDefault(kRegMdmEnforceOnlineLogin, 0);
+
+  // Return true if global flag is set. If it is not set check for
+  // the user flag.
+  if (global_flag)
+    return true;
+
+
+  DWORD is_online_login_enforced_for_user = 0;
+  HRESULT hr = GetUserProperty(sid, kRegMdmEnforceOnlineLogin,
+                       &is_online_login_enforced_for_user);
+
+  if (FAILED(hr)) {
+    LOGFN(VERBOSE) << "GetUserProperty for " << kRegMdmEnforceOnlineLogin
+                << " failed. hr=" << putHR(hr);
+    // Fallback to the less obstructive option to not enforce login via google
+    // when fetching the registry entry fails.
+    return false;
+  }
+
+  return is_online_login_enforced_for_user;
 }
 
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {

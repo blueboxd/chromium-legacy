@@ -4,6 +4,8 @@
 
 #include "media/formats/webm/tracks_builder.h"
 
+#include <cstring>
+
 #include "base/check_op.h"
 #include "media/formats/webm/webm_constants.h"
 

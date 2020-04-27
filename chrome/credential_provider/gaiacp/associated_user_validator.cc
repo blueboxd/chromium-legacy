@@ -498,6 +498,10 @@ AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
   if (!IsUserAssociated(sid))
     return AssociatedUserValidator::EnforceAuthReason::NOT_ENFORCED;
 
+  // Check if online sign in is enforced.
+  if (IsOnlineLoginEnforced(sid))
+    return AssociatedUserValidator::EnforceAuthReason::ONLINE_LOGIN_ENFORCED;
+
   // All token handles are valid when no internet connection is available.
   if (!HasInternetConnection()) {
     if (!IsOnlineLoginStale(sid)) {

@@ -25,6 +25,10 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
 
   AppId AwaitNextInstall();
 
+  using WebAppInstalledDelegate =
+      base::RepeatingCallback<void(const AppId& app_id)>;
+  void SetWebAppInstalledDelegate(WebAppInstalledDelegate delegate);
+
   using WebAppUninstalledDelegate =
       base::RepeatingCallback<void(const AppId& app_id)>;
   void SetWebAppWillBeUninstalledDelegate(WebAppUninstalledDelegate delegate);
@@ -38,6 +42,8 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
  private:
   base::RunLoop run_loop_;
   AppId app_id_;
+
+  WebAppUninstalledDelegate app_installed_delegate_;
 
   WebAppUninstalledDelegate app_will_be_uninstalled_delegate_;
   WebAppUninstalledDelegate app_uninstalled_delegate_;

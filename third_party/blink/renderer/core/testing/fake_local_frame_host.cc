@@ -163,8 +163,8 @@ void FakeLocalFrameHost::FocusedElementChanged(
     bool is_editable_element,
     const gfx::Rect& bounds_in_frame_widget) {}
 
-void FakeLocalFrameHost::ShowExternalPopup(
-    mojo::PendingRemote<mojom::blink::ExternalPopup> popup,
+void FakeLocalFrameHost::ShowPopupMenu(
+    mojo::PendingRemote<mojom::blink::PopupMenuClient> popup_client,
     const gfx::Rect& bounds,
     int32_t item_height,
     double font_size,

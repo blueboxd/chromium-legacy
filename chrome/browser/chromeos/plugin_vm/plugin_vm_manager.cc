@@ -78,35 +78,37 @@ void ShowStartVmFailedNotification(Profile* profile,
                                    PluginVmLaunchResult result) {
   LOG(ERROR) << "Failed to start VM with launch result "
              << static_cast<int>(result);
-  int title_id;
+  base::string16 app_name = l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME);
+  base::string16 title;
   int message_id;
   switch (result) {
     default:
       NOTREACHED();
       FALLTHROUGH;
     case PluginVmLaunchResult::kError:
-      title_id = IDS_PLUGIN_VM_START_VM_ERROR_TITLE;
+      title = l10n_util::GetStringUTF16(IDS_PLUGIN_VM_START_VM_ERROR_TITLE);
       message_id = IDS_PLUGIN_VM_START_VM_ERROR_MESSAGE;
       break;
     case PluginVmLaunchResult::kInvalidLicense:
-      title_id = IDS_PLUGIN_VM_INVALID_LICENSE_TITLE;
+      title = l10n_util::GetStringFUTF16(IDS_PLUGIN_VM_INVALID_LICENSE_TITLE,
+                                         app_name);
       message_id = IDS_PLUGIN_VM_INVALID_LICENSE_MESSAGE;
       break;
     case PluginVmLaunchResult::kExpiredLicense:
-      title_id = IDS_PLUGIN_VM_EXPIRED_LICENSE_TITLE;
+      title = l10n_util::GetStringFUTF16(IDS_PLUGIN_VM_EXPIRED_LICENSE_TITLE,
+                                         app_name);
       message_id = IDS_PLUGIN_VM_INVALID_LICENSE_MESSAGE;
       break;
     case PluginVmLaunchResult::kNetworkError:
-      title_id = IDS_PLUGIN_VM_START_VM_ERROR_TITLE;
+      title = l10n_util::GetStringUTF16(IDS_PLUGIN_VM_START_VM_ERROR_TITLE);
       message_id = IDS_PLUGIN_VM_NETWORK_ERROR_MESSAGE;
       break;
   }
   std::unique_ptr<message_center::Notification> notification =
       ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
-          kStartVmFailedNotificationId, l10n_util::GetStringUTF16(title_id),
-          l10n_util::GetStringUTF16(message_id),
-          l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME), GURL(),
+          kStartVmFailedNotificationId, std::move(title),
+          l10n_util::GetStringUTF16(message_id), std::move(app_name), GURL(),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
               kStartVmFailedNotifierId),

@@ -177,7 +177,7 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
 @synthesize title = _title;
 @synthesize translationController = _translationController;
 @synthesize UIDelegate = _UIDelegate;
-@synthesize scrollView = _scrollView;
+@synthesize legacyScrollView = _legacyScrollView;
 @synthesize visibleURL = _visibleURL;
 @synthesize visibleSSLStatus = _visibleSSLStatus;
 
@@ -243,13 +243,17 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
   if (self) {
     _configuration = configuration;
     [_configuration registerWebView:self];
-    _scrollView = [[CWVScrollView alloc] init];
+    _legacyScrollView = [[CWVScrollView alloc] init];
 
     [self resetWebStateWithSessionStorage:nil
                           WKConfiguration:wkConfiguration
                          createdWKWebView:createdWebView];
   }
   return self;
+}
+
+- (UIScrollView*)scrollView {
+  return [_webState->GetWebViewProxy().scrollViewProxy asUIScrollView];
 }
 
 - (BOOL)allowsBackForwardNavigationGestures {
@@ -809,7 +813,7 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
   _webState->GetWebViewProxy().allowsBackForwardNavigationGestures =
       allowsBackForwardNavigationGestures;
 
-  _scrollView.proxy = _webState.get()->GetWebViewProxy().scrollViewProxy;
+  _legacyScrollView.proxy = _webState.get()->GetWebViewProxy().scrollViewProxy;
 
   if (_translationController) {
     id<CWVTranslationControllerDelegate> delegate =

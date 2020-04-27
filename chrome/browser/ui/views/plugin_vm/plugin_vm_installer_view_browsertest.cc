@@ -94,15 +94,16 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
 
   void CheckSetupNotAllowed(
       plugin_vm::PluginVmInstaller::FailureReason reason) {
+    base::string16 app_name = l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME);
     EXPECT_FALSE(HasAcceptButton());
     EXPECT_TRUE(HasCancelButton());
-    EXPECT_EQ(
-        view_->GetBigMessage(),
-        l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_TITLE));
+    EXPECT_EQ(view_->GetBigMessage(),
+              l10n_util::GetStringFUTF16(
+                  IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_TITLE, app_name));
     EXPECT_EQ(
         view_->GetMessage(),
         l10n_util::GetStringFUTF16(
-            IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE,
+            IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE, app_name,
             base::NumberToString16(
                 static_cast<std::underlying_type_t<
                     plugin_vm::PluginVmInstaller::FailureReason>>(reason))));

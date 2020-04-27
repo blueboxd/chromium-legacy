@@ -52,6 +52,7 @@ class BaseGenerator:
     '''
 
     def __init__(self):
+        self.out_file_path = None
         self._mode_variables = dict()
         # The mode that colors will fallback to when not specified in a
         # non-default mode. An error will be raised if a color in any mode is

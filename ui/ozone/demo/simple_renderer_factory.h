@@ -9,7 +9,6 @@
 
 #include "gpu/vulkan/buildflags.h"
 #include "ui/ozone/demo/renderer_factory.h"
-#include "ui/ozone/public/ozone_gpu_test_helper.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/vulkan_implementation.h"

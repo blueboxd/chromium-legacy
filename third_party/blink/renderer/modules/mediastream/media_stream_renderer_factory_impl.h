@@ -25,7 +25,8 @@ class MediaStreamRendererFactoryImpl : public WebMediaStreamRendererFactory {
   scoped_refptr<WebMediaStreamAudioRenderer> GetAudioRenderer(
       const WebMediaStream& web_stream,
       WebLocalFrame* web_frame,
-      const WebString& device_id) override;
+      const WebString& device_id,
+      base::RepeatingCallback<void()> on_render_error_callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaStreamRendererFactoryImpl);

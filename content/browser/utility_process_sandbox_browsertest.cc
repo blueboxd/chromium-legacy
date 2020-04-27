@@ -38,10 +38,6 @@ std::vector<SandboxType> GetSandboxTypesToTest() {
     // These sandbox types can't be spawned in a utility process.
     if (t == SandboxType::kRenderer || t == SandboxType::kGpu)
       continue;
-#if defined(OS_LINUX)
-    if (t == SandboxType::kZygoteIntermediateSandbox)
-      continue;
-#endif
 
     types.push_back(t);
   }
@@ -129,8 +125,8 @@ class UtilityProcessSandboxBrowserTest
       }
 
       case SandboxType::kGpu:
+      case SandboxType::kInvalid:
       case SandboxType::kRenderer:
-      case SandboxType::kZygoteIntermediateSandbox:
         NOTREACHED();
         break;
     }

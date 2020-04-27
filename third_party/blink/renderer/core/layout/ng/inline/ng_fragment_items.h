@@ -32,8 +32,12 @@ class CORE_EXPORT NGFragmentItems {
     return UNLIKELY(first_line) ? first_line_text_content_ : text_content_;
   }
 
-  // Associate/disassociate |NGFragmentItem|s with |LayoutObject|s.
-  void AssociateWithLayoutObject() const;
+  // Associate |NGFragmentItem|s with |LayoutObject|s and finalize the items
+  // (set which ones are the first / last for the LayoutObject).
+  static void FinalizeAfterLayout(
+      const Vector<scoped_refptr<const NGLayoutResult>, 1>&);
+
+  // Disassociate |NGFragmentItem|s with |LayoutObject|s. And more.
   void ClearAssociatedFragments() const;
 
   // Notify when |LayoutObject| will be destroyed/moved.

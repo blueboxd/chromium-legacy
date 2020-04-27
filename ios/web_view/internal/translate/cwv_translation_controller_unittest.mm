@@ -18,6 +18,7 @@
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
+#include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
@@ -33,12 +34,17 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#include "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace ios_web_view {
+
+using testing::_;
+using testing::Invoke;
+using testing::Return;
 
 namespace {
 NSString* const kTestFromLangCode = @"ja";
@@ -62,6 +68,7 @@ class MockWebViewTranslateClient : public WebViewTranslateClient {
   MOCK_METHOD3(TranslatePage,
                void(const std::string&, const std::string&, bool));
   MOCK_METHOD0(RevertTranslation, void());
+  MOCK_METHOD0(RequestTranslationOffer, bool());
 };
 
 class TestLanguageModel : public language::LanguageModel {
@@ -73,6 +80,8 @@ class CWVTranslationControllerTest : public TestWithLocaleAndResources {
   CWVTranslationControllerTest() {
     auto test_navigation_manager =
         std::make_unique<web::TestNavigationManager>();
+    test_navigation_manager->SetBrowserState(&browser_state_);
+    web_state_.SetBrowserState(&browser_state_);
     web_state_.SetNavigationManager(std::move(test_navigation_manager));
     CRWTestJSInjectionReceiver* injection_receiver =
         [[CRWTestJSInjectionReceiver alloc] init];
@@ -107,6 +116,10 @@ class CWVTranslationControllerTest : public TestWithLocaleAndResources {
         translate::TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage);
     pref_service_.registry()->RegisterStringPref(
         translate::TranslatePrefs::kPrefTranslateRecentTarget, "");
+    // Using string literal here because kForceTriggerTranslateCount is private
+    // in translate::TranslatePrefs.
+    pref_service_.registry()->RegisterIntegerPref(
+        "translate_force_trigger_on_english_count_for_backoff_1", 0);
     pref_service_.registry()->RegisterDictionaryPref(
         translate::TranslatePrefs::kPrefTranslateAutoAlwaysCount);
     pref_service_.registry()->RegisterDictionaryPref(
@@ -144,6 +157,7 @@ class CWVTranslationControllerTest : public TestWithLocaleAndResources {
   TestLanguageModel language_model_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<translate::TranslateAcceptLanguages> accept_languages_;
+  web::TestBrowserState browser_state_;
   web::TestWebState web_state_;
   MockWebViewTranslateClient* translate_client_;
   CWVTranslationController* translation_controller_;
@@ -155,16 +169,17 @@ TEST_F(CWVTranslationControllerTest, CanOfferCallback) {
   id delegate = OCMProtocolMock(@protocol(CWVTranslationControllerDelegate));
   translation_controller_.delegate = delegate;
 
-  [[delegate expect] translationController:translation_controller_
-           canOfferTranslationFromLanguage:CheckLanguageCode(kTestFromLangCode)
-                                toLanguage:CheckLanguageCode(kTestToLangCode)];
+  OCMExpect([delegate
+                translationController:translation_controller_
+      canOfferTranslationFromLanguage:CheckLanguageCode(kTestFromLangCode)
+                           toLanguage:CheckLanguageCode(kTestToLangCode)]);
   translate_client_->ShowTranslateUI(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
                                      base::SysNSStringToUTF8(kTestFromLangCode),
                                      base::SysNSStringToUTF8(kTestToLangCode),
                                      translate::TranslateErrors::NONE,
                                      /*triggered_from_menu=*/false);
 
-  [delegate verify];
+  EXPECT_OCMOCK_VERIFY(delegate);
 }
 
 // Tests CWVTranslationController invokes did start delegate method.
@@ -172,17 +187,17 @@ TEST_F(CWVTranslationControllerTest, DidStartCallback) {
   id delegate = OCMProtocolMock(@protocol(CWVTranslationControllerDelegate));
   translation_controller_.delegate = delegate;
 
-  [[delegate expect] translationController:translation_controller_
-           didStartTranslationFromLanguage:CheckLanguageCode(kTestFromLangCode)
-                                toLanguage:CheckLanguageCode(kTestToLangCode)
-                             userInitiated:YES];
+  OCMExpect([delegate translationController:translation_controller_
+            didStartTranslationFromLanguage:CheckLanguageCode(kTestFromLangCode)
+                                 toLanguage:CheckLanguageCode(kTestToLangCode)
+                              userInitiated:YES]);
   translate_client_->ShowTranslateUI(translate::TRANSLATE_STEP_TRANSLATING,
                                      base::SysNSStringToUTF8(kTestFromLangCode),
                                      base::SysNSStringToUTF8(kTestToLangCode),
                                      translate::TranslateErrors::NONE,
                                      /*triggered_from_menu=*/true);
 
-  [delegate verify];
+  EXPECT_OCMOCK_VERIFY(delegate);
 }
 
 // Tests CWVTranslationController invokes did finish delegate method.
@@ -193,10 +208,10 @@ TEST_F(CWVTranslationControllerTest, DidFinishCallback) {
   id check_error_code = [OCMArg checkWithBlock:^BOOL(NSError* error) {
     return error.code == CWVTranslationErrorInitializationError;
   }];
-  [[delegate expect] translationController:translation_controller_
-          didFinishTranslationFromLanguage:CheckLanguageCode(kTestFromLangCode)
-                                toLanguage:CheckLanguageCode(kTestToLangCode)
-                                     error:check_error_code];
+  OCMExpect([delegate translationController:translation_controller_
+           didFinishTranslationFromLanguage:CheckLanguageCode(kTestFromLangCode)
+                                 toLanguage:CheckLanguageCode(kTestToLangCode)
+                                      error:check_error_code]);
   translate_client_->ShowTranslateUI(
       translate::TRANSLATE_STEP_AFTER_TRANSLATE,
       base::SysNSStringToUTF8(kTestFromLangCode),
@@ -204,7 +219,7 @@ TEST_F(CWVTranslationControllerTest, DidFinishCallback) {
       translate::TranslateErrors::INITIALIZATION_ERROR,
       /*triggered_from_menu=*/false);
 
-  [delegate verify];
+  EXPECT_OCMOCK_VERIFY(delegate);
 }
 
 // Tests CWVTranslationController has at least one supported language.
@@ -252,8 +267,8 @@ TEST_F(CWVTranslationControllerTest, ReadPageHostPolicy) {
   EXPECT_NSEQ(nil, policy.language);
 }
 
-// Tests CWVTranslationController translate page and revert methods.
-TEST_F(CWVTranslationControllerTest, TranslatePageAndRevert) {
+// Tests CWVTranslationController translate page method.
+TEST_F(CWVTranslationControllerTest, TranslatePage) {
   NSArray* langs = translation_controller_.supportedLanguages.allObjects;
   CWVTranslationLanguage* from_lang = langs.firstObject;
   CWVTranslationLanguage* to_lang = langs.lastObject;
@@ -265,9 +280,19 @@ TEST_F(CWVTranslationControllerTest, TranslatePageAndRevert) {
   [translation_controller_ translatePageFromLanguage:from_lang
                                           toLanguage:to_lang
                                        userInitiated:YES];
+}
 
+// Tests CWVTranslationController revert method.
+TEST_F(CWVTranslationControllerTest, Revert) {
   EXPECT_CALL(*translate_client_, RevertTranslation);
   [translation_controller_ revertTranslation];
+}
+
+// Tests CWVTranslationController request translation offer method.
+TEST_F(CWVTranslationControllerTest, RequestTranslationOffer) {
+  EXPECT_CALL(*translate_client_, RequestTranslationOffer)
+      .WillOnce(Return(true));
+  EXPECT_TRUE([translation_controller_ requestTranslationOffer]);
 }
 
 }  // namespace ios_web_view

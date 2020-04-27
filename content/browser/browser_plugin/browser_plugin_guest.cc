@@ -598,9 +598,9 @@ void BrowserPluginGuest::OnSynchronizeVisualProperties(
 }
 
 #if defined(OS_MACOSX)
-bool BrowserPluginGuest::ShowPopup(
+bool BrowserPluginGuest::ShowPopupMenu(
     RenderFrameHost* render_frame_host,
-    mojo::PendingRemote<blink::mojom::ExternalPopup>* popup,
+    mojo::PendingRemote<blink::mojom::PopupMenuClient>* popup_client,
     const gfx::Rect& bounds,
     int32_t item_height,
     double font_size,
@@ -615,7 +615,7 @@ bool BrowserPluginGuest::ShowPopup(
           translated_bounds.origin()));
   BrowserPluginPopupMenuHelper popup_menu_helper(
       owner_web_contents_->GetMainFrame(), render_frame_host,
-      std::move(*popup));
+      std::move(*popup_client));
   popup_menu_helper.ShowPopupMenu(translated_bounds, item_height, font_size,
                                   selected_item, std::move(*menu_items),
                                   right_aligned, allow_multiple_selection);

@@ -98,18 +98,17 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   // Return true if this is the first fragment generated from a node.
   bool IsFirstForNode() const {
     DCHECK(Type() != kLine);
-    DCHECK(!IsInlineBox() || BoxFragment());
     return is_first_for_node_;
   }
 
   // Return true if this is the last fragment generated from a node.
   bool IsLastForNode() const {
-    // TODO(layout-dev): This doesn't work if the LayoutObject continues in a
-    // next fragmentainer (we get a false negative here then).
     DCHECK(Type() != kLine);
-    DCHECK(!IsInlineBox() || BoxFragment());
-    return !DeltaToNextForSameLayoutObject();
+    return is_last_for_node_;
   }
+
+  void SetIsFirstForNode(bool is_first) const { is_first_for_node_ = is_first; }
+  void SetIsLastForNode(bool is_last) const { is_last_for_node_ = is_last; }
 
   NGStyleVariant StyleVariant() const {
     return static_cast<NGStyleVariant>(style_variant_);
@@ -384,7 +383,8 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   // Used only when |IsText()| to avoid re-computing ink overflow.
   unsigned ink_overflow_computed_ : 1;
 
-  unsigned is_first_for_node_ : 1;
+  mutable unsigned is_first_for_node_ : 1;
+  mutable unsigned is_last_for_node_ : 1;
 };
 
 }  // namespace blink

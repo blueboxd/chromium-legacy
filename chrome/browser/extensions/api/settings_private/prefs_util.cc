@@ -633,11 +633,11 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageSendFunctionKeys] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kLanguageXkbAutoRepeatEnabled] =
+  (*s_whitelist)[::ash::prefs::kXkbAutoRepeatEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kLanguageXkbAutoRepeatDelay] =
+  (*s_whitelist)[::ash::prefs::kXkbAutoRepeatDelay] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)[::prefs::kLanguageXkbAutoRepeatInterval] =
+  (*s_whitelist)[::ash::prefs::kXkbAutoRepeatInterval] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[chromeos::kDeviceDisplayResolution] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;

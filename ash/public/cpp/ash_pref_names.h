@@ -187,6 +187,10 @@ ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoDismissedInLauncher[];
 
 ASH_PUBLIC_EXPORT extern const char kLockScreenMediaControlsEnabled[];
 
+ASH_PUBLIC_EXPORT extern const char kXkbAutoRepeatDelay[];
+ASH_PUBLIC_EXPORT extern const char kXkbAutoRepeatEnabled[];
+ASH_PUBLIC_EXPORT extern const char kXkbAutoRepeatInterval[];
+
 ASH_PUBLIC_EXPORT extern const char kNaturalScroll[];
 ASH_PUBLIC_EXPORT extern const char kMouseReverseScroll[];
 

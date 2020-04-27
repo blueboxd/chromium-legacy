@@ -9,6 +9,8 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
+#include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -19,6 +21,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/optional.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ui_base_features.h"
@@ -58,6 +61,22 @@ KeyboardControllerImpl::~KeyboardControllerImpl() {
   keyboard_ui_controller_->RemoveObserver(this);
   if (session_controller_)  // May be null in tests.
     session_controller_->RemoveObserver(this);
+}
+
+// static
+void KeyboardControllerImpl::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(
+      ash::prefs::kXkbAutoRepeatEnabled, ash::kDefaultKeyAutoRepeatEnabled,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      ash::prefs::kXkbAutoRepeatDelay,
+      ash::kDefaultKeyAutoRepeatDelay.InMilliseconds(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      ash::prefs::kXkbAutoRepeatInterval,
+      ash::kDefaultKeyAutoRepeatInterval.InMilliseconds(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
 void KeyboardControllerImpl::CreateVirtualKeyboard(

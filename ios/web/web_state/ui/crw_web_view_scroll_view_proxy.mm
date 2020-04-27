@@ -93,11 +93,32 @@ static int gAnyContext = 0;
 // This exists for compatibility with UIScrollView (see -asUIScrollView).
 @property(nonatomic, weak) id<UIScrollViewDelegate> delegate;
 
-// Wrappers of key-value observers against this instance, keyed by the key
-// path (the outer dictionary) and the observer (the inner map table).
+// Wrappers of key-value observers against this instance, keyed by:
+//   - the key path (the outer dictionary)
+//   - NSValue representation of an unretained pointer to the observer (the
+//     inner dictionary).
+//
+// This dictionary must hold an *unretained* pointer to the observer, neither a
+// strong or weak pointer.
+//   - An object should not retain its key-value observer. So it must not be a
+//     strong pointer.
+//   - The dictionary may be accessed during -dealloc of an observer. This is
+//     quite possible because it is common that an observer calls
+//     -removeObserver:forKeyPath: during its -dealloc, and this dictionary is
+//     accessed in -removeObserver:forKeyPath:. And a weak pointer to an object
+//     is not available during its -dealloc.
+//
+// And holding NSValue wrapping the pointer is the only way to use an unretained
+// pointer as a key of a dictionary. NSMapTable supports using a weak pointer
+// for its keys, but not an unretained pointer.
+//
+// Use of an unretained pointer here is safe because it is never dereferenced,
+// and the observer must call -removeObserver:forKeyPath: before it is
+// deallocated.
 @property(nonatomic, strong) NSMutableDictionary<
     NSString*,
-    NSMapTable<id, NSMutableArray<CRWKeyValueObserverForwarder*>*>*>*
+    NSMutableDictionary<NSValue*,
+                        NSMutableArray<CRWKeyValueObserverForwarder*>*>*>*
     keyValueObserverForwarders;
 
 // Returns the key paths that need to be observed for UIScrollView.
@@ -302,13 +323,12 @@ static int gAnyContext = 0;
 
   // Restore observers which were added to the past underlying scroll views.
   for (NSString* keyPath in proxy.keyValueObserverForwarders) {
-    NSMapTable<id, NSMutableArray<CRWKeyValueObserverForwarder*>*>* map =
+    NSMutableDictionary<NSValue*,
+                        NSMutableArray<CRWKeyValueObserverForwarder*>*>* map =
         proxy.keyValueObserverForwarders[keyPath];
-    for (id observer in map) {
-      NSMutableArray<CRWKeyValueObserverForwarder*>* observerForwarders =
-          [map objectForKey:observer];
-      for (CRWKeyValueObserverForwarder* observerForwarder :
-           observerForwarders) {
+    for (NSValue* observerValue in map) {
+      for (CRWKeyValueObserverForwarder* observerForwarder in
+               map[observerValue]) {
         [scrollView addObserver:observerForwarder
                      forKeyPath:keyPath
                         options:observerForwarder.options
@@ -327,13 +347,12 @@ static int gAnyContext = 0;
 
   // Remove observations added externally.
   for (NSString* keyPath in proxy.keyValueObserverForwarders) {
-    NSMapTable<id, NSMutableArray<CRWKeyValueObserverForwarder*>*>* map =
+    NSMutableDictionary<NSValue*,
+                        NSMutableArray<CRWKeyValueObserverForwarder*>*>* map =
         proxy.keyValueObserverForwarders[keyPath];
-    for (id observer in map) {
-      NSMutableArray<CRWKeyValueObserverForwarder*>* observerForwarders =
-          [map objectForKey:observer];
-      for (CRWKeyValueObserverForwarder* observerForwarder :
-           observerForwarders) {
+    for (NSValue* observerValue in map) {
+      for (CRWKeyValueObserverForwarder* observerForwarder in
+               map[observerValue]) {
         [scrollView removeObserver:observerForwarder
                         forKeyPath:keyPath
                            context:observerForwarder.context];
@@ -400,20 +419,21 @@ static int gAnyContext = 0;
   // scroll view, except that |object| parameter of the notification points to
   // CRWWebViewScrollViewProxy, not the undelying scroll view. This is achieved
   // by CRWKeyValueObserverForwarder.
-  NSMapTable<id, NSMutableArray<CRWKeyValueObserverForwarder*>*>* map =
-      [_keyValueObserverForwarders objectForKey:keyPath];
+  NSMutableDictionary<NSValue*, NSMutableArray<CRWKeyValueObserverForwarder*>*>*
+      map = _keyValueObserverForwarders[keyPath];
   if (!map) {
-    map =
-        [NSMapTable mapTableWithKeyOptions:NSMapTableObjectPointerPersonality |
-                                           NSMapTableWeakMemory
-                              valueOptions:NSMapTableStrongMemory];
-    [_keyValueObserverForwarders setObject:map forKey:keyPath];
+    map = [[NSMutableDictionary alloc] init];
+    _keyValueObserverForwarders[keyPath] = map;
   }
+
+  // See the comment of the definition of _keyValueObserverForwarders for why
+  // NSValue with an unretained pointer is used here.
+  NSValue* observerValue = [NSValue valueWithNonretainedObject:observer];
   NSMutableArray<CRWKeyValueObserverForwarder*>* observerForwarders =
-      [map objectForKey:observer];
+      map[observerValue];
   if (!observerForwarders) {
     observerForwarders = [[NSMutableArray alloc] init];
-    [map setObject:observerForwarders forKey:observer];
+    map[observerValue] = observerForwarders;
   }
 
   CRWKeyValueObserverForwarder* observerForwarder =
@@ -436,10 +456,14 @@ static int gAnyContext = 0;
 - (void)removeObserver:(NSObject*)observer
             forKeyPath:(NSString*)keyPath
                context:(void*)context {
-  NSMapTable<id, NSMutableArray<CRWKeyValueObserverForwarder*>*>* map =
-      [_keyValueObserverForwarders objectForKey:keyPath];
+  NSMutableDictionary<NSValue*, NSMutableArray<CRWKeyValueObserverForwarder*>*>*
+      map = _keyValueObserverForwarders[keyPath];
+
+  // See the comment of the definition of _keyValueObserverForwarders for why
+  // NSValue with an unretained pointer is used here.
+  NSValue* observerValue = [NSValue valueWithNonretainedObject:observer];
   NSMutableArray<CRWKeyValueObserverForwarder*>* observerForwarders =
-      [map objectForKey:observer];
+      map[observerValue];
 
   // It is technically allowed to call -addObserver:forKeypath:options:context:
   // multiple times with the same |observer| and same |keyPath|. And

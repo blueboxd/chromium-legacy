@@ -510,6 +510,11 @@ void ArcBluetoothBridge::AdapterPoweredChanged(BluetoothAdapter* adapter,
 void ArcBluetoothBridge::DeviceAdded(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
   DeviceChanged(adapter, device);
+
+  // We need to trigger this manually if the device is connected when it is
+  // added. This may happen for a incoming connection from an unknown device.
+  if (device->IsConnected())
+    DeviceConnectedStateChanged(adapter, device, /*is_now_connected=*/true);
 }
 
 void ArcBluetoothBridge::DeviceChanged(BluetoothAdapter* adapter,
@@ -534,27 +539,6 @@ void ArcBluetoothBridge::DeviceChanged(BluetoothAdapter* adapter,
           GetDeviceProperties(mojom::BluetoothPropertyType::ALL, device));
     }
   }
-
-  if (!(device->GetType() & device::BLUETOOTH_TRANSPORT_LE))
-    return;
-
-  auto it = gatt_connections_.find(addr);
-  bool was_connected =
-      (it != gatt_connections_.end() &&
-       it->second.state == GattConnection::ConnectionState::CONNECTED);
-  bool is_connected = device->IsConnected();
-  if (was_connected == is_connected)
-    return;
-
-  if (!is_connected) {
-    OnGattDisconnected(mojom::BluetoothAddress::From(addr));
-    return;
-  }
-
-  // Only process connection from remote device. Connection to remote device is
-  // processed in the callback of ConnectLEDevice().
-  if (it == gatt_connections_.end())
-    OnGattConnected(mojom::BluetoothAddress::From(addr), nullptr);
 }
 
 void ArcBluetoothBridge::DeviceAddressChanged(BluetoothAdapter* adapter,
@@ -647,6 +631,31 @@ void ArcBluetoothBridge::DeviceAdvertisementReceived(
   if (bluetooth_instance)
     bluetooth_instance->OnLEDeviceFoundForN(std::move(addr), rssi,
                                             GetAdvertisingData(device));
+}
+
+void ArcBluetoothBridge::DeviceConnectedStateChanged(BluetoothAdapter* adapter,
+                                                     BluetoothDevice* device,
+                                                     bool is_now_connected) {
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
+    return;
+
+  const std::string addr = device->GetAddress();
+
+  // If this event is about 1) an device supports LE becomes disconnected and 2)
+  // we are holding the connection object for this device, we need to remove
+  // this object and notify Android.
+  bool support_le = device->GetType() & device::BLUETOOTH_TRANSPORT_LE;
+  auto it = gatt_connections_.find(addr);
+  if (support_le && it != gatt_connections_.end() && !is_now_connected)
+    OnGattDisconnected(mojom::BluetoothAddress::From(addr));
+
+  auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->bluetooth(), OnConnectionStateChanged);
+  if (!bluetooth_instance)
+    return;
+
+  bluetooth_instance->OnConnectionStateChanged(
+      mojom::BluetoothAddress::From(addr), device->GetType(), is_now_connected);
 }
 
 void ArcBluetoothBridge::DeviceRemoved(BluetoothAdapter* adapter,

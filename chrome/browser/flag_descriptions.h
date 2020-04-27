@@ -243,6 +243,9 @@ extern const char kForceColorProfileHDR10[];
 extern const char kForceColorProfileName[];
 extern const char kForceColorProfileDescription[];
 
+extern const char kDynamicColorGamutName[];
+extern const char kDynamicColorGamutDescription[];
+
 extern const char kCompositedLayerBordersName[];
 extern const char kCompositedLayerBordersDescription[];
 

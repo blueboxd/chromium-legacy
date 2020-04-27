@@ -2866,7 +2866,12 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:30-'],
+      'supported_on': [
+        'chrome.*:8-',
+        'chrome_os:11-',
+        'android:30-',
+        'ios:84-',
+      ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -2920,7 +2925,11 @@
           'caption': '''Safe Browsing is active in the enhanced mode. This mode provides better security, but requires sharing more browsing information with Google.''',
         },
       ],
-      'supported_on': ['chrome.*:83-', 'chrome_os:83-'],
+      'supported_on': [
+        'chrome.*:83-',
+        'chrome_os:83-',
+        'ios:84-'
+      ],
       'future': True,
       'features': {
         'can_be_recommended': True,

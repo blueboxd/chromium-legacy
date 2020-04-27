@@ -18,6 +18,8 @@
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
+#include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_policy_handler.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -50,6 +52,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { policy::key::kPopupsBlockedForUrls,
     prefs::kManagedPopupsBlockedForUrls,
     base::Value::Type::LIST },
+  { policy::key::kSafeBrowsingEnabled,
+    prefs::kSafeBrowsingEnabled,
+    base::Value::Type::BOOLEAN },
   { policy::key::kSavingBrowserHistoryDisabled,
     prefs::kSavingBrowserHistoryDisabled,
     base::Value::Type::BOOLEAN },
@@ -91,6 +96,8 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildPolicyHandlerList(
   handlers->AddHandler(
       std::make_unique<autofill::AutofillCreditCardPolicyHandler>());
   handlers->AddHandler(std::make_unique<policy::DefaultSearchPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<safe_browsing::SafeBrowsingPolicyHandler>());
 
   if (ShouldInstallManagedBookmarksPolicyHandler()) {
     handlers->AddHandler(

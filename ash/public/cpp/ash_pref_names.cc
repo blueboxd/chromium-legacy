@@ -518,6 +518,21 @@ const char kAssistantPrivacyInfoDismissedInLauncher[] =
 const char kLockScreenMediaControlsEnabled[] =
     "ash.lock_screen_media_controls_enabled";
 
+// Boolean pref which determines whether key repeat is enabled.
+const char kXkbAutoRepeatEnabled[] =
+    "settings.language.xkb_auto_repeat_enabled_r2";
+
+// Integer pref which determines key repeat delay (in ms).
+const char kXkbAutoRepeatDelay[] = "settings.language.xkb_auto_repeat_delay_r2";
+
+// Integer pref which determines key repeat interval (in ms).
+const char kXkbAutoRepeatInterval[] =
+    "settings.language.xkb_auto_repeat_interval_r2";
+// "_r2" suffixes were added to the three prefs above when we changed the
+// preferences to not be user-configurable or sync with the cloud. The prefs are
+// now user-configurable and syncable again, but we don't want to overwrite the
+// current values with the old synced values, so we continue to use this suffix.
+
 // A boolean pref which is true if touchpad reverse scroll is enabled.
 const char kNaturalScroll[] = "settings.touchpad.natural_scroll";
 // A boolean pref which is true if mouse reverse scroll is enabled.

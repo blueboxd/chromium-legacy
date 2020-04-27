@@ -385,6 +385,11 @@ const char kForceColorProfileDescription[] =
     "Forces Chrome to use a specific color profile instead of the color "
     "of the window's current monitor, as specified by the operating system.";
 
+const char kDynamicColorGamutName[] = "Dynamic color gamut";
+const char kDynamicColorGamutDescription[] =
+    "Displays in wide color when the content is wide. When the content is "
+    "not wide, displays sRGB";
+
 const char kCompositedLayerBordersName[] = "Composited render layer borders";
 const char kCompositedLayerBordersDescription[] =
     "Renders a border around composited Render Layers to help debug and study "

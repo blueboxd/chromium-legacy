@@ -148,6 +148,10 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase,
   // Hides the input view window (from API call).
   void HideInputView();
 
+  // Determine if the key event should be processed by the key
+  // event handler.
+  bool IsValidKeyEvent(const ui::KeyEvent* ui_event) override;
+
  private:
   // input_method::InputMethodEngineBase:
   void UpdateComposition(const ui::CompositionText& composition_text,

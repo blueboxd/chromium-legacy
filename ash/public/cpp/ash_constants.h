@@ -67,6 +67,17 @@ constexpr FloatingMenuPosition kDefaultFloatingMenuPosition =
 // The default frame color.
 constexpr SkColor kDefaultFrameColor = SkColorSetRGB(0xFD, 0xFE, 0xFF);
 
+// Whether keyboard auto repeat is enabled by default.
+constexpr bool kDefaultKeyAutoRepeatEnabled = true;
+
+// The default delay before a held keypress will start to auto repeat.
+constexpr base::TimeDelta kDefaultKeyAutoRepeatDelay =
+    base::TimeDelta::FromMilliseconds(500);
+
+// The default interval between auto-repeated key events.
+constexpr base::TimeDelta kDefaultKeyAutoRepeatInterval =
+    base::TimeDelta::FromMilliseconds(50);
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_ASH_CONSTANTS_H_

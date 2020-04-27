@@ -301,6 +301,35 @@
       {
         "policies": { "PopupsBlockedForUrls": ["[*.]google.com"]},
         "prefs": { "profile.managed_popups_blocked_for_urls": {} }
+       }
+     ]
+   },
+
+  "SafeBrowsingEnabled": {
+    "os": [ "ios" ],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "SafeBrowsingEnabled": false },
+        "prefs": { "safebrowsing.enabled": {} }
+      },
+      {
+        "policies": { "SafeBrowsingEnabled": true },
+        "prefs": { "safebrowsing.enabled": {} }
+      }
+    ]
+  },
+
+  "SafeBrowsingProtectionLevel": {
+    "os": [ "ios" ],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "SafeBrowsingProtectionLevel": 2 },
+        "prefs": {
+          "safebrowsing.enabled": { "value": true },
+          "safebrowsing.enhanced": { "value": true }
+        }
       }
     ]
   },

@@ -44,12 +44,6 @@ void TestAppShortcutManager::CreateShortcuts(const AppId& app_id,
                                 std::move(callback), success));
 }
 
-std::unique_ptr<ShortcutInfo> TestAppShortcutManager::BuildShortcutInfo(
-    const AppId& app_id) {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 void TestAppShortcutManager::GetShortcutInfoForApp(
     const AppId& app_id,
     GetShortcutInfoCallback callback) {

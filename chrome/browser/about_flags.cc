@@ -3342,6 +3342,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForcedColorsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kForcedColors)},
 
+#if defined(OS_ANDROID)
+    {"dynamic-color-gamut", flag_descriptions::kDynamicColorGamutName,
+     flag_descriptions::kDynamicColorGamutDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kDynamicColorGamut)},
+#endif
+
     {"memlog", flag_descriptions::kMemlogName,
      flag_descriptions::kMemlogDescription, kOsAll,
      MULTI_VALUE_TYPE(kMemlogModeChoices)},

@@ -618,10 +618,16 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindow) {
   event->source_id = 1;
   event->task_id = 1;
   event->event_type = AXEventType::VIEW_FOCUSED;
+
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* node = event->node_data.back().get();
+  node->id = 10;
+
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
   event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root = event->window_data->back().get();
   root->window_id = 1;
+  root->root_node_id = node->id;
 
   // Live edit name related attributes.
 
@@ -670,12 +676,16 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindowWithChildren) {
   AXNodeInfoData* node = event->node_data.back().get();
   node->id = 3;
   SetProperty(node, AXStringProperty::TEXT, "node text");
+  SetProperty(node, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(node, AXBooleanProperty::VISIBLE_TO_USER, true);
 
   // Add a child node to the child window as well.
   event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* child_node = event->node_data.back().get();
   child_node->id = 4;
   SetProperty(child_node, AXStringProperty::TEXT, "child node text");
+  SetProperty(child_node, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(child_node, AXBooleanProperty::VISIBLE_TO_USER, true);
 
   // Add a child window with no children as well.
   event->window_data->push_back(AXWindowInfoData::New());
@@ -705,12 +715,14 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindowWithChildren) {
       data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   EXPECT_EQ("node text", name);
   EXPECT_EQ(ax::mojom::Role::kStaticText, data.role);
+  ASSERT_FALSE(data.IsIgnored());
 
   GetSerializedNode(child_node, data);
   ASSERT_TRUE(
       data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   EXPECT_EQ("child node text", name);
   EXPECT_NE(ax::mojom::Role::kRootWebArea, data.role);
+  ASSERT_FALSE(data.IsIgnored());
 
   GetSerializedWindow(child2, data);
   ASSERT_TRUE(

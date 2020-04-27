@@ -65,16 +65,6 @@ void AppShortcutManager::OnWebAppInstalled(const AppId& app_id) {
 #endif
 }
 
-void AppShortcutManager::OnWebAppWillBeUninstalled(const AppId& app_id) {
-  std::unique_ptr<ShortcutInfo> shortcut_info = BuildShortcutInfo(app_id);
-  base::FilePath shortcut_data_dir =
-      internals::GetShortcutDataDir(*shortcut_info);
-
-  internals::PostShortcutIOTask(
-      base::BindOnce(&internals::DeletePlatformShortcuts, shortcut_data_dir),
-      std::move(shortcut_info));
-}
-
 void AppShortcutManager::OnWebAppUninstalled(const AppId& app_id) {
   DeleteSharedAppShims(app_id);
 }

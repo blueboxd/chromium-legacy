@@ -70,9 +70,9 @@ class PreferencesTest : public LoginManagerTest {
     prefs->SetInteger(prefs::kMouseScrollSensitivity, variant ? 1 : 4);
     prefs->SetInteger(prefs::kTouchpadSensitivity, variant);
     prefs->SetInteger(prefs::kTouchpadScrollSensitivity, variant ? 1 : 4);
-    prefs->SetBoolean(prefs::kLanguageXkbAutoRepeatEnabled, variant);
-    prefs->SetInteger(prefs::kLanguageXkbAutoRepeatDelay, variant ? 100 : 500);
-    prefs->SetInteger(prefs::kLanguageXkbAutoRepeatInterval, variant ? 1 : 4);
+    prefs->SetBoolean(ash::prefs::kXkbAutoRepeatEnabled, variant);
+    prefs->SetInteger(ash::prefs::kXkbAutoRepeatDelay, variant ? 100 : 500);
+    prefs->SetInteger(ash::prefs::kXkbAutoRepeatInterval, variant ? 1 : 4);
     prefs->SetString(prefs::kLanguagePreloadEngines,
                      variant ? "xkb:us::eng,xkb:us:dvorak:eng"
                              : "xkb:us::eng,xkb:ru::rus");
@@ -108,12 +108,12 @@ class PreferencesTest : public LoginManagerTest {
     EXPECT_EQ(
         prefs->GetInteger(prefs::kTouchpadScrollSensitivity),
         input_settings_->current_touchpad_settings().GetScrollSensitivity());
-    EXPECT_EQ(prefs->GetBoolean(prefs::kLanguageXkbAutoRepeatEnabled),
+    EXPECT_EQ(prefs->GetBoolean(ash::prefs::kXkbAutoRepeatEnabled),
               keyboard_->auto_repeat_is_enabled_);
     input_method::AutoRepeatRate rate = keyboard_->last_auto_repeat_rate_;
-    EXPECT_EQ(prefs->GetInteger(prefs::kLanguageXkbAutoRepeatDelay),
+    EXPECT_EQ(prefs->GetInteger(ash::prefs::kXkbAutoRepeatDelay),
               (int)rate.initial_delay_in_ms);
-    EXPECT_EQ(prefs->GetInteger(prefs::kLanguageXkbAutoRepeatInterval),
+    EXPECT_EQ(prefs->GetInteger(ash::prefs::kXkbAutoRepeatInterval),
               (int)rate.repeat_interval_in_ms);
     EXPECT_EQ(prefs->GetString(prefs::kLanguageCurrentInputMethod),
               input_method::InputMethodManager::Get()

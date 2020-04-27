@@ -600,20 +600,6 @@ const char kLanguageShouldMergeInputMethods[] =
 const char kLanguageSendFunctionKeys[] =
     "settings.language.send_function_keys";
 
-// A boolean pref which determines whether key repeat is enabled.
-const char kLanguageXkbAutoRepeatEnabled[] =
-    "settings.language.xkb_auto_repeat_enabled_r2";
-// A integer pref which determines key repeat delay (in ms).
-const char kLanguageXkbAutoRepeatDelay[] =
-    "settings.language.xkb_auto_repeat_delay_r2";
-// A integer pref which determines key repeat interval (in ms).
-const char kLanguageXkbAutoRepeatInterval[] =
-    "settings.language.xkb_auto_repeat_interval_r2";
-// "_r2" suffixes were added to the three prefs above when we changed the
-// preferences to not be user-configurable or sync with the cloud. The prefs are
-// now user-configurable and syncable again, but we don't want to overwrite the
-// current values with the old synced values, so we continue to use this suffix.
-
 // A boolean pref which turns on Advanced Filesystem
 // (USB support, SD card, etc).
 const char kLabsAdvancedFilesystemEnabled[] =

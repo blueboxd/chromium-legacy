@@ -40549,6 +40549,7 @@ from previous Chrome versions.
   <int value="1059007599" label="enable-gpu-appcontainer"/>
   <int value="1059698271" label="EnableZeroStateSuggestions:disabled"/>
   <int value="1060319397" label="enable-data-reduction-proxy-carrier-test"/>
+  <int value="1060780557" label="DynamicColorGamut:disabled"/>
   <int value="1061947013" label="OmniboxDeferredKeyboardPopup:disabled"/>
   <int value="1062357243" label="remember-cert-error-decisions"/>
   <int value="1064288458" label="OfflineRecentPages:enabled"/>
@@ -41338,6 +41339,7 @@ from previous Chrome versions.
   <int value="1966730288" label="disable-threaded-compositing"/>
   <int value="1968199744" label="PrintJobManagementApp:disabled"/>
   <int value="1969604362" label="enable-pinch-virtual-viewport"/>
+  <int value="1969860311" label="DynamicColorGamut:enabled"/>
   <int value="1971964569" label="NewEncodeCpuLoadEstimator:disabled"/>
   <int value="1972232935" label="DisplayMoveWindowAccels:enabled"/>
   <int value="1972720114" label="WebPaymentsJustInTimePaymentApp:enabled"/>

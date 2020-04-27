@@ -104,6 +104,10 @@ class ArcBluetoothBridge
                                    int16_t rssi,
                                    const std::vector<uint8_t>& eir) override;
 
+  void DeviceConnectedStateChanged(device::BluetoothAdapter* adapter,
+                                   device::BluetoothDevice* device,
+                                   bool is_now_connected) override;
+
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
 

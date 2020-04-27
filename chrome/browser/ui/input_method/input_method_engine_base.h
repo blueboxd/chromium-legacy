@@ -232,6 +232,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
     ~PendingKeyEvent();
 
     std::string component_id;
+    KeyboardEvent key_event;
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback;
 
    private:
@@ -266,6 +267,10 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   virtual bool SendKeyEvent(ui::KeyEvent* ui_event,
                             const std::string& code,
                             std::string* error) = 0;
+
+  // Used to verify that a key event is valid before precessing it in the
+  // current context.
+  virtual bool IsValidKeyEvent(const ui::KeyEvent* ui_event) = 0;
 
   ui::TextInputType current_input_type_;
 
@@ -304,6 +309,9 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   // Indicates whether the IME extension is currently handling a physical key
   // event. This is used in CommitText/UpdateCompositionText/etc.
   bool handling_key_event_;
+
+ private:
+  ui::KeyEvent ConvertKeyboardEventToUIKeyEvent(const KeyboardEvent& event);
 };
 
 }  // namespace input_method

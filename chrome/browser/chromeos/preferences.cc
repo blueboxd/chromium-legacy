@@ -312,18 +312,6 @@ void Preferences::RegisterProfilePrefs(
   // depending on whether an external keyboard is attached to a particular
   // device.
   registry->RegisterBooleanPref(prefs::kLanguageSendFunctionKeys, false);
-  registry->RegisterBooleanPref(
-      prefs::kLanguageXkbAutoRepeatEnabled,
-      language_prefs::kXkbAutoRepeatEnabled,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kLanguageXkbAutoRepeatDelay,
-      language_prefs::kXkbAutoRepeatDelayInMs,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kLanguageXkbAutoRepeatInterval,
-      language_prefs::kXkbAutoRepeatIntervalInMs,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
   // Don't sync the note-taking app; it may not be installed on other devices.
   registry->RegisterStringPref(prefs::kNoteTakingAppId, std::string());
@@ -503,12 +491,12 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   if (ime_menu_activated_.GetValue())
     input_method::InputMethodManager::Get()->ImeMenuActivationChanged(true);
 
-  xkb_auto_repeat_enabled_.Init(
-      prefs::kLanguageXkbAutoRepeatEnabled, prefs, callback);
-  xkb_auto_repeat_delay_pref_.Init(
-      prefs::kLanguageXkbAutoRepeatDelay, prefs, callback);
-  xkb_auto_repeat_interval_pref_.Init(
-      prefs::kLanguageXkbAutoRepeatInterval, prefs, callback);
+  xkb_auto_repeat_enabled_.Init(ash::prefs::kXkbAutoRepeatEnabled, prefs,
+                                callback);
+  xkb_auto_repeat_delay_pref_.Init(ash::prefs::kXkbAutoRepeatDelay, prefs,
+                                   callback);
+  xkb_auto_repeat_interval_pref_.Init(ash::prefs::kXkbAutoRepeatInterval, prefs,
+                                      callback);
 
   wake_on_wifi_darkconnect_.Init(prefs::kWakeOnWifiDarkConnect, prefs,
                                  callback);
@@ -827,7 +815,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
   }
 
   if (reason != REASON_PREF_CHANGED ||
-      pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {
+      pref_name == ash::prefs::kXkbAutoRepeatEnabled) {
     if (user_is_active) {
       const bool enabled = xkb_auto_repeat_enabled_.GetValue();
       input_method::InputMethodManager::Get()
@@ -835,12 +823,12 @@ void Preferences::ApplyPreferences(ApplyReason reason,
           ->SetAutoRepeatEnabled(enabled);
 
       user_manager::known_user::SetBooleanPref(
-          user_->GetAccountId(), prefs::kLanguageXkbAutoRepeatEnabled, enabled);
+          user_->GetAccountId(), ash::prefs::kXkbAutoRepeatEnabled, enabled);
     }
   }
   if (reason != REASON_PREF_CHANGED ||
-      pref_name == prefs::kLanguageXkbAutoRepeatDelay ||
-      pref_name == prefs::kLanguageXkbAutoRepeatInterval) {
+      pref_name == ash::prefs::kXkbAutoRepeatDelay ||
+      pref_name == ash::prefs::kXkbAutoRepeatInterval) {
     if (user_is_active)
       UpdateAutoRepeatRate();
   }
@@ -1071,11 +1059,11 @@ void Preferences::UpdateAutoRepeatRate() {
       ->SetAutoRepeatRate(rate);
 
   user_manager::known_user::SetIntegerPref(user_->GetAccountId(),
-                                           prefs::kLanguageXkbAutoRepeatDelay,
+                                           ash::prefs::kXkbAutoRepeatDelay,
                                            rate.initial_delay_in_ms);
-  user_manager::known_user::SetIntegerPref(
-      user_->GetAccountId(), prefs::kLanguageXkbAutoRepeatInterval,
-      rate.repeat_interval_in_ms);
+  user_manager::known_user::SetIntegerPref(user_->GetAccountId(),
+                                           ash::prefs::kXkbAutoRepeatInterval,
+                                           rate.repeat_interval_in_ms);
 }
 
 void Preferences::ActiveUserChanged(user_manager::User* active_user) {

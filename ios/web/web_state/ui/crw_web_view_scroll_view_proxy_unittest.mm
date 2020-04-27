@@ -39,6 +39,36 @@
 
 @end
 
+@interface CRWTestObserver : NSObject
+
+- (instancetype)initWithProxy:(CRWWebViewScrollViewProxy*)proxy
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
+@end
+
+@implementation CRWTestObserver {
+  CRWWebViewScrollViewProxy* _proxy;
+}
+
+- (instancetype)initWithProxy:(CRWWebViewScrollViewProxy*)proxy {
+  self = [super init];
+  if (self) {
+    _proxy = proxy;
+    [_proxy addObserver:self
+             forKeyPath:@"contentSize"
+                options:NSKeyValueObservingOptionNew
+                context:nullptr];
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [_proxy removeObserver:self forKeyPath:@"contentSize"];
+}
+
+@end
+
 namespace {
 
 class CRWWebViewScrollViewProxyTest : public PlatformTest {
@@ -728,6 +758,16 @@ TEST_F(CRWWebViewScrollViewProxyTest, RemoveKVObserverWithContext) {
   [web_view_scroll_view_proxy_ removeObserver:observer
                                    forKeyPath:@"contentOffset"
                                       context:&context2];
+}
+
+// Verifies that it is safe to call -removeObserver:forKeyPath: against the
+// proxy during -dealloc of the observer.
+TEST_F(CRWWebViewScrollViewProxyTest,
+       RemoveKVObserverWhileDeallocatingObserver) {
+  // CRWTestObserver adds itself as a key-value observer of the proxy in its
+  // initializer, and removes itself as a observer during its -dealloc.
+  CRWTestObserver* observer __attribute__((unused)) =
+      [[CRWTestObserver alloc] initWithProxy:web_view_scroll_view_proxy_];
 }
 
 // Verifies that properties registered to |propertiesStore| are preserved if:

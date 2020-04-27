@@ -40,7 +40,6 @@ class TestAppShortcutManager : public AppShortcutManager {
   void CreateShortcuts(const AppId& app_id,
                        bool on_desktop,
                        CreateShortcutsCallback callback) override;
-  std::unique_ptr<ShortcutInfo> BuildShortcutInfo(const AppId& app_id) override;
   void GetShortcutInfoForApp(const AppId& app_id,
                              GetShortcutInfoCallback callback) override;
 

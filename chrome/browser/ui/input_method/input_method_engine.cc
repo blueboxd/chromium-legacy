@@ -149,15 +149,28 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
   }
 
   // ENTER et al. keys are allowed to work only on http:, https: etc.
-  if (!IsValidKeyForAllPages(event)) {
-    if (IsSpecialPage(input_context->GetInputMethod())) {
-      *error = kErrorSpecialKeysNotAllowed;
-      return false;
-    }
+  if (!IsValidKeyEvent(event)) {
+    *error = kErrorSpecialKeysNotAllowed;
+    return false;
   }
 
   input_context->SendKeyEvent(event);
   return true;
+}
+
+bool InputMethodEngine::IsValidKeyEvent(const ui::KeyEvent* ui_event) {
+  // Disable shortcut keys for Windows and Linux.
+  if (ui_event->IsControlDown() || ui_event->IsCommandDown()) {
+    return false;
+  }
+  // Disable the enter key for Windows and Linux.
+  if (ui_event->key_code() == ui::VKEY_RETURN) {
+    return false;
+  }
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  return input_context && (IsValidKeyForAllPages(ui_event) ||
+                           !IsSpecialPage(input_context->GetInputMethod()));
 }
 
 bool InputMethodEngine::IsActive() const {
@@ -291,7 +304,7 @@ bool InputMethodEngine::IsSpecialPage(ui::InputMethod* input_method) {
   return true;
 }
 
-bool InputMethodEngine::IsValidKeyForAllPages(ui::KeyEvent* ui_event) {
+bool InputMethodEngine::IsValidKeyForAllPages(const ui::KeyEvent* ui_event) {
   // Whitelists all character keys except for Enter and Tab keys.
   std::vector<ui::KeyboardCode> invalid_character_keycodes{ui::VKEY_TAB,
                                                            ui::VKEY_RETURN};
@@ -305,5 +318,4 @@ bool InputMethodEngine::IsValidKeyForAllPages(ui::KeyEvent* ui_event) {
       ui::VKEY_BACK, ui::VKEY_LEFT, ui::VKEY_RIGHT, ui::VKEY_UP, ui::VKEY_DOWN};
   return base::Contains(whitelist_keycodes, ui_event->key_code());
 }
-
 }  // namespace input_method

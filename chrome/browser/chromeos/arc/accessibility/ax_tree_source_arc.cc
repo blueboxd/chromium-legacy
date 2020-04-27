@@ -32,6 +32,7 @@ using AXNodeInfoData = mojom::AccessibilityNodeInfoData;
 using AXNodeInfoDataPtr = mojom::AccessibilityNodeInfoDataPtr;
 using AXStringProperty = mojom::AccessibilityStringProperty;
 using AXWindowInfoData = mojom::AccessibilityWindowInfoData;
+using AXWindowInfoDataPtr = mojom::AccessibilityWindowInfoDataPtr;
 using AXWindowIntListProperty = mojom::AccessibilityWindowIntListProperty;
 
 namespace {
@@ -107,8 +108,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     }
   }
   std::vector<bool> is_important(event_data->node_data.size());
-  BuildImportanceTable(event_data->node_data, node_data_index_map,
-                       is_important);
+  BuildImportanceTable(event_data, node_data_index_map, is_important);
   for (int i = event_data->node_data.size() - 1; i >= 0; --i) {
     int32_t id = event_data->node_data[i]->id;
     AXNodeInfoData* node = event_data->node_data[i].get();
@@ -413,23 +413,28 @@ bool AXTreeSourceArc::ComputeIsClickableLeaf(
 }
 
 void AXTreeSourceArc::BuildImportanceTable(
-    const std::vector<AXNodeInfoDataPtr>& nodes,
+    AXEventData* event_data,
     const std::map<int32_t, int32_t>& node_id_to_nodes_index,
     std::vector<bool>& out_values) const {
-  DCHECK(out_values.size() == nodes.size());
-  // nodes can be empty only in tests.
-  if (nodes.size() == 0)
-    return;
+  DCHECK(out_values.size() == event_data->node_data.size());
 
-  // First, compute whether each node has important properties.
-  // Giving 0 as a index, assuming it's the root node.
-  BuildHasImportantProperty(0 /* nodes_index */, nodes, node_id_to_nodes_index,
-                            out_values);
+  // First, compute whether each node has important properties in its subtree.
+  for (size_t i = 0; i < event_data->window_data->size(); ++i) {
+    auto itr = node_id_to_nodes_index.find(
+        event_data->window_data->at(i)->root_node_id);
+    if (itr == node_id_to_nodes_index.end())
+      continue;
+
+    int32_t root_node_index = itr->second;
+    BuildHasImportantProperty(root_node_index, event_data->node_data,
+                              node_id_to_nodes_index, out_values);
+  }
 
   // Second, node is important in Chrome if it's important in Android and has
   // any important property.
-  for (size_t i = 0; i < nodes.size(); ++i)
-    out_values[i] = out_values[i] & IsImportantInAndroid(nodes[i].get());
+  for (size_t i = 0; i < event_data->node_data.size(); ++i)
+    out_values[i] =
+        out_values[i] & IsImportantInAndroid(event_data->node_data[i].get());
 }
 
 bool AXTreeSourceArc::BuildHasImportantProperty(

@@ -18,6 +18,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 
+class PrefRegistrySimple;
+
 namespace gfx {
 class Rect;
 }
@@ -44,6 +46,8 @@ class ASH_EXPORT KeyboardControllerImpl
   // |session_controller| is expected to outlive KeyboardControllerImpl.
   explicit KeyboardControllerImpl(SessionControllerImpl* session_controller);
   ~KeyboardControllerImpl() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Create or destroy the virtual keyboard. Called from Shell. TODO(stevenjb):
   // Fix dependencies so that the virtual keyboard can be created with the

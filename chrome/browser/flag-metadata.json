@@ -966,6 +966,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "dynamic-color-gamut",
+    "owners": [ "cblume", "khushalsagar", "ccameron" ],
+    "expiry_milestone": 90
+  },
+  {
     // See: https://crbug.com/993569.
     "name": "dynamic-tcmalloc-tuning",
     "owners": [ "bgeffon", "sonnyrao" ],

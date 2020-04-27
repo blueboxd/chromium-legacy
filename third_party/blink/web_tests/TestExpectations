@@ -6584,7 +6584,6 @@ crbug.com/1058785 external/wpt/html/cross-origin-embedder-policy/cache-storage-r
 
 # Sheriff 2020-03-12
 crbug.com/1061131 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/middle-click-autoscroll-latching-clicked-node.html [ Pass Failure Timeout ]
-crbug.com/1060974 [ Debug ] virtual/threaded/external/wpt/scroll-animations/two-animations-attach-to-same-scroll-timeline-cancel-one.html [ Pass Failure ]
 
 # Failing on Fuchsia due to dependency on FuchsiaMediaResourceProvider, which is not implemented in content_shell.
 crbug.com/1061226 [ Fuchsia ] fast/mediastream/MediaStream-onactive-oninactive.html [ Crash ]

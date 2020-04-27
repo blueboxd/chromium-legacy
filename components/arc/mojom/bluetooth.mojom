@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 17
+// Next MinVersion: 18
 
 module arc.mojom;
 
@@ -443,7 +443,7 @@ interface BluetoothHost {
       => (BluetoothStatus status, RfcommConnectingSocketClient&? client);
 };
 
-// Next Method ID: 23
+// Next Method ID: 24
 // Deprecated Method ID: 2, 6, 11, 12
 interface BluetoothInstance {
   // DEPRECATED: Please use Init@18 instead.
@@ -462,6 +462,14 @@ interface BluetoothInstance {
                        BluetoothAddress remote_addr,
                        BluetoothBondState state);
 
+  // When the underlying BT link state changed, OnConnectionStateChanged() will
+  // always be invoked, while OnLEConnectionStateChange() will be invoked only
+  // when Chrome is holding a BluetoothGattConnection object for this address
+  // (i.e., this is a GATT connection which started by LEConnect() from ARC).
+  [MinVersion=17] OnConnectionStateChanged@23(BluetoothAddress remote_addr,
+                                              BluetoothDeviceType device_type,
+                                              bool connected);
+
   // Bluetooth Gatt Client callbacks
   // TODO(b/111367421): Remove this when no active device running Android N.
   [MinVersion=1] OnLEDeviceFoundForN@7(
@@ -471,6 +479,9 @@ interface BluetoothInstance {
   [MinVersion=13] OnLEDeviceFound@21(BluetoothAddress addr,
                                      int32 rssi,
                                      array<uint8> eir);
+  // Used to notfiy the state of BluetoothGattConnection held by Chrome, called
+  // when that object becomes connected / disconnected or the LE connect request
+  // from ARC failed.
   [MinVersion=1] OnLEConnectionStateChange@8(BluetoothAddress remote_addr,
                                              bool connected);
   [MinVersion=4] OnLEDeviceAddressChange@16(BluetoothAddress old_addr,

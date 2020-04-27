@@ -46,7 +46,6 @@ class AppShortcutManager : public AppRegistrarObserver {
 
   // AppRegistrarObserver:
   void OnWebAppInstalled(const AppId& app_id) override;
-  void OnWebAppWillBeUninstalled(const AppId& app_id) override;
   void OnWebAppUninstalled(const AppId& app_id) override;
   void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;
 
@@ -60,10 +59,6 @@ class AppShortcutManager : public AppRegistrarObserver {
   virtual void CreateShortcuts(const AppId& app_id,
                                bool add_to_desktop,
                                CreateShortcutsCallback callback);
-
-  // Builds initial ShortcutInfo without |ShortcutInfo::favicon| being read.
-  virtual std::unique_ptr<ShortcutInfo> BuildShortcutInfo(
-      const AppId& app_id) = 0;
 
   // The result of a call to GetShortcutInfo.
   using GetShortcutInfoCallback =

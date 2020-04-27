@@ -249,12 +249,17 @@ void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,
     observer_->OnKeyEvent(
         active_component_id_, ext_event,
         base::BindOnce(
-            [](base::Time start, KeyEventDoneCallback callback, bool handled) {
-              std::move(callback).Run(handled);
+            [](base::Time start, int context_id, int* context_id_ptr,
+               KeyEventDoneCallback callback, bool handled) {
+              // If the input_context has changed, assume the key event is
+              // invalid as a precaution.
+              if (context_id == *context_id_ptr) {
+                std::move(callback).Run(handled);
+              }
               UMA_HISTOGRAM_TIMES("InputMethod.KeyEventLatency",
                                   base::Time::Now() - start);
             },
-            base::Time::Now(), std::move(callback)));
+            base::Time::Now(), context_id_, &context_id_, std::move(callback)));
   }
 }
 
@@ -347,6 +352,25 @@ bool InputMethodEngineBase::DeleteSurroundingText(int context_id,
   return true;
 }
 
+ui::KeyEvent InputMethodEngineBase::ConvertKeyboardEventToUIKeyEvent(
+    const KeyboardEvent& event) {
+  const ui::EventType type =
+      (event.type == "keyup") ? ui::ET_KEY_RELEASED : ui::ET_KEY_PRESSED;
+  ui::KeyboardCode key_code = static_cast<ui::KeyboardCode>(event.key_code);
+
+  int flags = ui::EF_NONE;
+  flags |= event.alt_key ? ui::EF_ALT_DOWN : ui::EF_NONE;
+  flags |= event.altgr_key ? ui::EF_ALTGR_DOWN : ui::EF_NONE;
+  flags |= event.ctrl_key ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
+  flags |= event.shift_key ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
+  flags |= event.caps_lock ? ui::EF_CAPS_LOCK_ON : ui::EF_NONE;
+
+  return ui::KeyEvent(type, key_code,
+                      ui::KeycodeConverter::CodeStringToDomCode(event.code),
+                      flags, ui::KeycodeConverter::KeyStringToDomKey(event.key),
+                      ui::EventTimeForNow());
+}
+
 bool InputMethodEngineBase::SendKeyEvents(
     int context_id,
     const std::vector<KeyboardEvent>& events,
@@ -366,21 +390,7 @@ bool InputMethodEngineBase::SendKeyEvents(
 
   for (size_t i = 0; i < events.size(); ++i) {
     const KeyboardEvent& event = events[i];
-    const ui::EventType type =
-        (event.type == "keyup") ? ui::ET_KEY_RELEASED : ui::ET_KEY_PRESSED;
-    ui::KeyboardCode key_code = static_cast<ui::KeyboardCode>(event.key_code);
-
-    int flags = ui::EF_NONE;
-    flags |= event.alt_key ? ui::EF_ALT_DOWN : ui::EF_NONE;
-    flags |= event.altgr_key ? ui::EF_ALTGR_DOWN : ui::EF_NONE;
-    flags |= event.ctrl_key ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
-    flags |= event.shift_key ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
-    flags |= event.caps_lock ? ui::EF_CAPS_LOCK_ON : ui::EF_NONE;
-
-    ui::KeyEvent ui_event(
-        type, key_code, ui::KeycodeConverter::CodeStringToDomCode(event.code),
-        flags, ui::KeycodeConverter::KeyStringToDomKey(event.key),
-        ui::EventTimeForNow());
+    ui::KeyEvent ui_event = ConvertKeyboardEventToUIKeyEvent(event);
     if (!SendKeyEvent(&ui_event, event.code, error))
       return false;
   }

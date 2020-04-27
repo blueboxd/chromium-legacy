@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"

@@ -10,9 +10,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"

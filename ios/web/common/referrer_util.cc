@@ -4,7 +4,7 @@
 
 #include "ios/web/common/referrer_util.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ios/web/public/navigation/referrer.h"
 #include "url/gurl.h"
 

@@ -4,9 +4,10 @@
 
 #include "base/json/json_file_value_serializer.h"
 
+#include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 
 using base::FilePath;

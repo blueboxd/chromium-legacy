@@ -179,12 +179,7 @@ bool PasswordFormManager::DoesManage(
   // All unowned input elements are considered as one synthetic form.
   if (!observed_form_.is_form_tag && !form.is_form_tag)
     return true;
-#if defined(OS_IOS)
-  // On iOS form name is used as the form identifier.
-  return observed_form_.name == form.name;
-#else
   return observed_form_.unique_renderer_id == form.unique_renderer_id;
-#endif
 }
 
 bool PasswordFormManager::DoesManageAccordingToRendererId(

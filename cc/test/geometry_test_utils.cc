@@ -4,7 +4,7 @@
 
 #include "cc/test/geometry_test_utils.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"

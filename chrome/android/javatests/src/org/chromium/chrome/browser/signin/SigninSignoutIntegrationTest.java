@@ -46,6 +46,7 @@ import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.GAIAServiceType;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -113,7 +114,9 @@ public class SigninSignoutIntegrationTest {
         assertSignedIn();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(account.name,
-                    mSigninManager.getIdentityManager().getPrimaryAccountInfo().getEmail());
+                    mSigninManager.getIdentityManager()
+                            .getPrimaryAccountInfo(ConsentLevel.SYNC)
+                            .getEmail());
         });
     }
 
@@ -231,7 +234,8 @@ public class SigninSignoutIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertFalse("Account should be signed out!",
                     mSigninManager.getIdentityManager().hasPrimaryAccount());
-            Assert.assertNull(mSigninManager.getIdentityManager().getPrimaryAccountInfo());
+            Assert.assertNull(
+                    mSigninManager.getIdentityManager().getPrimaryAccountInfo(ConsentLevel.SYNC));
         });
     }
 }

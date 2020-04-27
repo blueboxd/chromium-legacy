@@ -11,8 +11,8 @@
 #include <limits>
 #include <set>
 
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
-#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"

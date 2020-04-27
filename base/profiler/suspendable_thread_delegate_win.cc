@@ -7,8 +7,8 @@
 #include <windows.h>
 #include <winternl.h>
 
+#include "base/check.h"
 #include "base/debug/alias.h"
-#include "base/logging.h"
 #include "base/profiler/native_unwinder_win.h"
 #include "build/build_config.h"
 

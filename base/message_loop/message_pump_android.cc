@@ -17,8 +17,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 

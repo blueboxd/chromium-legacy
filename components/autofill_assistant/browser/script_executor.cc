@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/script_executor.h"
 
+#include <cstdio>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -335,6 +336,11 @@ void ScriptExecutor::CleanUpAfterPrompt() {
   delegate_->ClearTouchableElementArea();
   delegate_->SetExpandSheetForPromptAction(true);
   delegate_->EnterState(AutofillAssistantState::RUNNING);
+}
+
+void ScriptExecutor::SetBrowseDomainsWhitelist(
+    std::vector<std::string> domains) {
+  delegate_->SetBrowseDomainsWhitelist(std::move(domains));
 }
 
 void ScriptExecutor::OnChosen(UserAction::Callback callback,

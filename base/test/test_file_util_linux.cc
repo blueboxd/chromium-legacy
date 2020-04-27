@@ -18,7 +18,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace base {
 

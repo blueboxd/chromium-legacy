@@ -446,15 +446,13 @@ TEST_F(InputEventPredictionTest, TouchPointStates) {
     HandleEvents(touch_event);
   }
 
-  for (size_t state =
-           static_cast<size_t>(blink::WebTouchPoint::State::kStateUndefined);
-       state <= static_cast<size_t>(blink::WebTouchPoint::State::kStateMax);
-       state++) {
+  for (int state = blink::WebTouchPoint::State::kStateUndefined;
+       state <= blink::WebTouchPoint::State::kStateMax; state++) {
     touch_event.touches[0].state =
         static_cast<blink::WebTouchPoint::State>(state);
     blink::WebCoalescedInputEvent coalesced_event(touch_event);
     event_predictor_->HandleEvents(coalesced_event, ui::EventTimeForNow());
-    if (state == static_cast<size_t>(blink::WebTouchPoint::State::kStateMoved))
+    if (state == blink::WebTouchPoint::State::kStateMoved)
       EXPECT_GT(coalesced_event.PredictedEventSize(), 0u);
     else
       EXPECT_EQ(coalesced_event.PredictedEventSize(), 0u);

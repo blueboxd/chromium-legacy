@@ -205,11 +205,6 @@ const base::Feature kOmniboxSearchEngineLogo{"OmniboxSearchEngineLogo",
 const base::Feature kOmniboxRemoveSuggestionsFromClipboard{
     "OmniboxRemoveSuggestionsFromClipboard", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature to provide non personalized head search suggestion from a compact
-// on device model.
-const base::Feature kOnDeviceHeadProvider{"OmniboxOnDeviceHeadProvider",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature to debounce drive requests from the document provider.
 const base::Feature kDebounceDocumentProvider{
     "OmniboxDebounceDocumentProvider", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -253,6 +248,16 @@ const base::Feature kZeroSuggestionsOnNTPRealbox{
 // Allow on-focus query refinements to be shown on the default SERP.
 const base::Feature kZeroSuggestionsOnSERP{"OmniboxZeroSuggestionsOnSERP",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Features to provide non personalized head search suggestion from a compact
+// on device model. More specifically, feature name with suffix Incognito /
+// NonIncognito will only controls behaviors under incognito / non-incognito
+// mode respectively.
+const base::Feature kOnDeviceHeadProviderIncognito{
+    "OmniboxOnDeviceHeadProviderIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOnDeviceHeadProviderNonIncognito{
+    "OmniboxOnDeviceHeadProviderNonIncognito",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, changes the way Google-provided search suggestions are scored by
 // the backend. Note that this Feature is only used for triggering a server-

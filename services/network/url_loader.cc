@@ -49,8 +49,6 @@
 #include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/public/cpp/constants.h"
-#include "services/network/public/cpp/cross_origin_embedder_policy_parser.h"
-#include "services/network/public/cpp/cross_origin_opener_policy_parser.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -120,13 +118,6 @@ void PopulateResourceResponse(net::URLRequest* request,
 
     if (include_ssl_info)
       response->ssl_info = request->ssl_info();
-  }
-
-  if (response->headers) {
-    response->cross_origin_embedder_policy =
-        ParseCrossOriginEmbedderPolicy(*(response->headers));
-    response->cross_origin_opener_policy =
-        ParseCrossOriginOpenerPolicy(*(response->headers));
   }
 
   response->request_start = request->creation_time();

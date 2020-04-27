@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -177,6 +178,7 @@ public class QueryTileSectionTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "See https://crbug.com/1075471")
     public void testFocusOmniboxWithFirstLevelQueryText() throws Exception {
         UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
         LocationBarLayout locationBar =

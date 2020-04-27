@@ -8,7 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace base {
 namespace android {

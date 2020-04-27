@@ -1424,11 +1424,17 @@ const char kOmniboxMaxURLMatchesDescription[] =
     "The maximum number of URL matches to show, unless there are no "
     "replacements.";
 
-const char kOmniboxOnDeviceHeadSuggestionsName[] =
-    "Omnibox on device head suggestions";
-const char kOmniboxOnDeviceHeadSuggestionsDescription[] =
+const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[] =
+    "Omnibox on device head suggestions (incognito only)";
+const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[] =
     "Google head non personalized search suggestions provided by a compact on "
-    "device model";
+    "device model for incognito";
+
+const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[] =
+    "Omnibox on device head suggestions (non-incognito only)";
+const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[] =
+    "Google head non personalized search suggestions provided by a compact on "
+    "device model for non-incognito";
 
 const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[] =
     "Omnibox Preserve Default Match Against Async Update";

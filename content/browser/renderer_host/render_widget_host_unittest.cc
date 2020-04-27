@@ -163,7 +163,7 @@ class TestView : public TestRenderWidgetHostView {
   int unhandled_wheel_event_count() const {
     return unhandled_wheel_event_count_;
   }
-  WebInputEvent::Type gesture_event_type() const { return gesture_event_type_; }
+  int gesture_event_type() const { return gesture_event_type_; }
   blink::mojom::InputEventResultState ack_result() const { return ack_result_; }
 
   void SetMockCompositorViewportPixelSize(

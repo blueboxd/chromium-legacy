@@ -9,9 +9,9 @@
 #include <list>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"

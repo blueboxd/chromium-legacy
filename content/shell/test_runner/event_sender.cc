@@ -126,15 +126,15 @@ bool GetPointerType(gin::Arguments* args,
 WebInputEvent::Type PointerEventTypeForTouchPointState(
     WebTouchPoint::State state) {
   switch (state) {
-    case WebTouchPoint::State::kStateReleased:
+    case WebTouchPoint::kStateReleased:
       return WebInputEvent::Type::kPointerUp;
-    case WebTouchPoint::State::kStateCancelled:
+    case WebTouchPoint::kStateCancelled:
       return WebInputEvent::Type::kPointerCancel;
-    case WebTouchPoint::State::kStatePressed:
+    case WebTouchPoint::kStatePressed:
       return WebInputEvent::Type::kPointerDown;
-    case WebTouchPoint::State::kStateMoved:
+    case WebTouchPoint::kStateMoved:
       return WebInputEvent::Type::kPointerMove;
-    case WebTouchPoint::State::kStateStationary:
+    case WebTouchPoint::kStateStationary:
     default:
       NOTREACHED();
       return WebInputEvent::Type::kUndefined;
@@ -1875,7 +1875,7 @@ void EventSender::ReleaseTouchPoint(unsigned index) {
   }
 
   WebTouchPoint* touch_point = &touch_points_[index];
-  touch_point->state = WebTouchPoint::State::kStateReleased;
+  touch_point->state = WebTouchPoint::kStateReleased;
 }
 
 void EventSender::UpdateTouchPoint(unsigned index,
@@ -1888,7 +1888,7 @@ void EventSender::UpdateTouchPoint(unsigned index,
   }
 
   WebTouchPoint* touch_point = &touch_points_[index];
-  touch_point->state = WebTouchPoint::State::kStateMoved;
+  touch_point->state = WebTouchPoint::kStateMoved;
   touch_point->SetPositionInWidget(x, y);
   touch_point->SetPositionInScreen(x, y);
 
@@ -1903,7 +1903,7 @@ void EventSender::CancelTouchPoint(unsigned index) {
   }
 
   WebTouchPoint* touch_point = &touch_points_[index];
-  touch_point->state = WebTouchPoint::State::kStateCancelled;
+  touch_point->state = WebTouchPoint::kStateCancelled;
 }
 
 void EventSender::SetTouchModifier(const std::string& key_name, bool set_mask) {
@@ -2064,7 +2064,7 @@ void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
   }
   WebTouchPoint touch_point;
   touch_point.pointer_type = WebPointerProperties::PointerType::kTouch;
-  touch_point.state = WebTouchPoint::State::kStatePressed;
+  touch_point.state = WebTouchPoint::kStatePressed;
   touch_point.SetPositionInWidget(x, y);
   touch_point.SetPositionInScreen(x, y);
 
@@ -2298,7 +2298,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
 
   for (unsigned i = 0; i < touch_points_.size(); ++i) {
     const WebTouchPoint& touch_point = touch_points_[i];
-    if (touch_point.state != blink::WebTouchPoint::State::kStateStationary) {
+    if (touch_point.state != blink::WebTouchPoint::kStateStationary) {
       WebPointerEvent pointer_event = WebPointerEvent(
           PointerEventTypeForTouchPointState(touch_point.state), touch_point,
           touch_point.radius_x * 2, touch_point.radius_y * 2);
@@ -2325,12 +2325,12 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
 
   for (size_t i = 0; i < touch_points_.size(); ++i) {
     WebTouchPoint* touch_point = &touch_points_[i];
-    if (touch_point->state == WebTouchPoint::State::kStateReleased ||
-        touch_point->state == WebTouchPoint::State::kStateCancelled) {
+    if (touch_point->state == WebTouchPoint::kStateReleased ||
+        touch_point->state == WebTouchPoint::kStateCancelled) {
       touch_points_.erase(touch_points_.begin() + i);
       --i;
     } else {
-      touch_point->state = WebTouchPoint::State::kStateStationary;
+      touch_point->state = WebTouchPoint::kStateStationary;
     }
   }
 }

@@ -18,11 +18,6 @@
 // to perform cleanup after the UI is gone.
 - (void)activityServiceDidEndPresenting;
 
-// Asks the implementor to show an error alert with the given |title| and
-// |message|.
-- (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title
-                                             message:(NSString*)message;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_REQUIREMENTS_ACTIVITY_SERVICE_PRESENTATION_H_

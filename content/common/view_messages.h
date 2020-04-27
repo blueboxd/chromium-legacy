@@ -146,13 +146,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateTargetURL,
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 
-// Get the list of proxies to use for |url|, as a semicolon delimited list
-// of "<TYPE> <HOST>:<PORT>" | "DIRECT".
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,
-                            GURL /* url */,
-                            bool /* result */,
-                            std::string /* proxy list */)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // A renderer sends this to the browser process when it wants to access a PPAPI
 // broker. In contrast to FrameHostMsg_OpenChannelToPpapiBroker, this is called

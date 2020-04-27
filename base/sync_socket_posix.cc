@@ -18,8 +18,8 @@
 #include <sys/filio.h>
 #endif
 
+#include "base/check_op.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 

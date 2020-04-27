@@ -23,10 +23,13 @@
 #import "ios/chrome/app/spotlight/actions_spotlight_manager.h"
 #import "ios/chrome/app/spotlight/spotlight_util.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
@@ -58,7 +61,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
         startupInformation:(id<StartupInformation>)startupInformation;
 // Routes Universal 2nd Factor (U2F) callback to the correct Tab.
 + (void)routeU2FURL:(const GURL&)URL
-    interfaceProvider:(id<BrowserInterfaceProvider>)interfaceProvider;
+       browserState:(ChromeBrowserState*)browserState;
 @end
 
 @implementation UserActivityHandler
@@ -233,7 +236,8 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     [UserActivityHandler
         handleStartupParametersWithTabOpener:tabOpener
                           startupInformation:startupInformation
-                           interfaceProvider:interfaceProvider];
+                                browserState:interfaceProvider.currentInterface
+                                                 .browserState];
   }
   completionHandler(handledShortcutItem);
 }
@@ -248,8 +252,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
 + (void)handleStartupParametersWithTabOpener:(id<TabOpening>)tabOpener
                           startupInformation:
                               (id<StartupInformation>)startupInformation
-                           interfaceProvider:
-                               (id<BrowserInterfaceProvider>)interfaceProvider {
+                                browserState:(ChromeBrowserState*)browserState {
   DCHECK([startupInformation startupParameters]);
   // Do not load the external URL if the user has not accepted the terms of
   // service. This corresponds to the case when the user installed Chrome,
@@ -261,8 +264,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
   // Check if it's an U2F call. If so, route it to correct tab.
   // If not, open or reuse tab in main BVC.
   if (U2FTabHelper::IsU2FUrl(externalURL)) {
-    [UserActivityHandler routeU2FURL:externalURL
-                   interfaceProvider:interfaceProvider];
+    [UserActivityHandler routeU2FURL:externalURL browserState:browserState];
     // It's OK to clear startup parameters here because routeU2FURL works
     // synchronously.
     [startupInformation setStartupParameters:nil];
@@ -295,8 +297,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
 
     if (startupInformation.startupParameters.imageSearchData) {
       TemplateURLService* templateURLService =
-          ios::TemplateURLServiceFactory::GetForBrowserState(
-              interfaceProvider.mainInterface.browserState);
+          ios::TemplateURLServiceFactory::GetForBrowserState(browserState);
 
       NSData* imageData = startupInformation.startupParameters.imageSearchData;
       web::NavigationManager::WebLoadParams webLoadParams =
@@ -308,8 +309,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
       NSString* query = startupInformation.startupParameters.textQuery;
 
       TemplateURLService* templateURLService =
-          ios::TemplateURLServiceFactory::GetForBrowserState(
-              interfaceProvider.mainInterface.browserState);
+          ios::TemplateURLServiceFactory::GetForBrowserState(browserState);
 
       const TemplateURL* defaultURL =
           templateURLService->GetDefaultSearchProvider();
@@ -388,25 +388,31 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
 }
 
 + (void)routeU2FURL:(const GURL&)URL
-    interfaceProvider:(id<BrowserInterfaceProvider>)interfaceProvider {
+       browserState:(ChromeBrowserState*)browserState {
+  DCHECK(browserState);
   // Retrieve the designated TabID from U2F URL.
   NSString* tabID = U2FTabHelper::GetTabIdFromU2FUrl(URL);
   if (!tabID) {
     return;
   }
 
-  // Iterate through mainTabModel and OTRTabModel to find the corresponding tab.
-  NSArray* tabModels = @[
-    interfaceProvider.mainInterface.tabModel,
-    interfaceProvider.incognitoInterface.tabModel
-  ];
-  for (TabModel* tabModel in tabModels) {
-    WebStateList* webStateList = tabModel.webStateList;
+  // Iterate through regular Browser and OTR Browser to find the corresponding
+  // tab.
+  BrowserList* browserList =
+      BrowserListFactory::GetForBrowserState(browserState);
+  std::set<Browser*> regularBrowsers = browserList->AllRegularBrowsers();
+  std::set<Browser*> otrBrowsers = browserList->AllIncognitoBrowsers();
+  std::set<Browser*> browsers(regularBrowsers);
+  browsers.insert(otrBrowsers.begin(), otrBrowsers.end());
+
+  for (Browser* browser : browsers) {
+    WebStateList* webStateList = browser->GetWebStateList();
     for (int index = 0; index < webStateList->count(); ++index) {
       web::WebState* webState = webStateList->GetWebStateAt(index);
       NSString* currentTabID = TabIdTabHelper::FromWebState(webState)->tab_id();
       if ([currentTabID isEqualToString:tabID]) {
         U2FTabHelper::FromWebState(webState)->EvaluateU2FResult(URL);
+        return;
       }
     }
   }

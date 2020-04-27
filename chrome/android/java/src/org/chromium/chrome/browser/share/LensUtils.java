@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 
 /**
  * This class provides utilities for intenting into Google Lens.
@@ -149,7 +150,8 @@ public class LensUtils {
     public static Intent getShareWithGoogleLensIntent(
             Uri imageUri, boolean isIncognito, long currentTimeNanos) {
         CoreAccountInfo coreAccountInfo =
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                        ConsentLevel.SYNC);
         // If incognito do not send the account name to avoid leaking session information to Lens.
         String signedInAccountName =
                 (coreAccountInfo == null || isIncognito) ? "" : coreAccountInfo.getEmail();

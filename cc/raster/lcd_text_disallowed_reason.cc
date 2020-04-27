@@ -5,7 +5,7 @@
 #include "cc/raster/lcd_text_disallowed_reason.h"
 
 #include <iostream>
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace cc {
 

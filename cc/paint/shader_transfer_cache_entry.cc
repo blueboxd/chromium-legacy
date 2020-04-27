@@ -4,7 +4,7 @@
 
 #include "cc/paint/shader_transfer_cache_entry.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace cc {
 

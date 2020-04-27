@@ -27,7 +27,6 @@ import androidx.core.view.ViewCompat;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListProperties.SuggestionListObserver;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -36,19 +35,21 @@ import org.chromium.ui.base.ViewUtils;
 import java.util.ArrayList;
 
 /**
- * A widget for showing a list of omnibox suggestions.
+ * A ListView based implementation of {@link OmniboxSuggestionsDropdown} for showing a list of
+ * omnibox suggestions.
  */
 @VisibleForTesting
-public class OmniboxSuggestionsList extends ListView implements OnScrollListener {
+public class OmniboxSuggestionsList
+        extends ListView implements OmniboxSuggestionsDropdown, OnScrollListener {
     private final int[] mTempPosition = new int[2];
     private final Rect mTempRect = new Rect();
     private final int mStandardBgColor;
     private final int mIncognitoBgColor;
 
-    private OmniboxSuggestionListEmbedder mEmbedder;
+    private OmniboxSuggestionsDropdown.Embedder mEmbedder;
     private View mAnchorView;
     private View mAlignmentView;
-    private SuggestionListObserver mObserver;
+    private OmniboxSuggestionsDropdown.Observer mObserver;
     private OnGlobalLayoutListener mAnchorViewLayoutListener;
     private OnLayoutChangeListener mAlignmentViewLayoutListener;
     private int mListViewMaxHeight;
@@ -72,8 +73,13 @@ public class OmniboxSuggestionsList extends ListView implements OnScrollListener
         ViewCompat.setPaddingRelative(this, 0, 0, 0, paddingBottom);
     }
 
-    /** Set the embedder for the list view. */
-    void setEmbedder(OmniboxSuggestionListEmbedder embedder) {
+    @Override
+    public View getView() {
+        return this;
+    }
+
+    @Override
+    public void setEmbedder(OmniboxSuggestionsDropdown.Embedder embedder) {
         assert mEmbedder == null;
         mEmbedder = embedder;
         mAnchorView = mEmbedder.getAnchorView();
@@ -116,8 +122,19 @@ public class OmniboxSuggestionsList extends ListView implements OnScrollListener
         setOnScrollListener(this);
     }
 
-    void setObserver(SuggestionListObserver observer) {
+    @Override
+    public void setObserver(OmniboxSuggestionsDropdown.Observer observer) {
         mObserver = observer;
+    }
+
+    @Override
+    public void resetSelection() {
+        setSelection(0);
+    }
+
+    @Override
+    public int getItemCount() {
+        return getCount();
     }
 
     private void adjustSidePadding() {
@@ -129,20 +146,16 @@ public class OmniboxSuggestionsList extends ListView implements OnScrollListener
                 getPaddingBottom());
     }
 
-    /**
-     * Show (and properly size) the suggestions list.
-     */
-    void show() {
+    @Override
+    public void show() {
         if (getVisibility() != VISIBLE) {
             setVisibility(VISIBLE);
             if (getSelectedItemPosition() != 0) setSelection(0);
         }
     }
 
-    /**
-     * Update the suggestion popup background to reflect the current state.
-     */
-    void refreshPopupBackground(boolean isIncognito) {
+    @Override
+    public void refreshPopupBackground(boolean isIncognito) {
         int color = isIncognito ? mIncognitoBgColor : mStandardBgColor;
         if (!isHardwareAccelerated()) {
             // When HW acceleration is disabled, changing mSuggestionList' items somehow erases
@@ -188,7 +201,7 @@ public class OmniboxSuggestionsList extends ListView implements OnScrollListener
                         // A->B->A transitions and suppress the broadcasts.
                         if (mLastBroadcastedListViewMaxHeight == availableViewportHeight) return;
                         if (mObserver == null) return;
-                        mObserver.onSuggestionListHeightChanged(availableViewportHeight);
+                        mObserver.onSuggestionDropdownHeightChanged(availableViewportHeight);
                         mLastBroadcastedListViewMaxHeight = availableViewportHeight;
                     });
                 }
@@ -291,7 +304,7 @@ public class OmniboxSuggestionsList extends ListView implements OnScrollListener
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
         if (scrollState == SCROLL_STATE_TOUCH_SCROLL && mObserver != null) {
-            mObserver.onSuggestionListScroll();
+            mObserver.onSuggestionDropdownScroll();
         }
     }
 }

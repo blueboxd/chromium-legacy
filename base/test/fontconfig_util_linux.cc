@@ -9,9 +9,9 @@
 #include <memory>
 
 #include "base/base_paths.h"
+#include "base/check.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 
 namespace base {

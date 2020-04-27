@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/timer/lap_timer.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace base {
 

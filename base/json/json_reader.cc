@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/json/json_parser.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 
 namespace base {

@@ -225,7 +225,7 @@ TEST_F(PasswordFormHelperTest, FindPasswordFormsInView) {
     __block std::vector<FormData> forms;
     __block BOOL block_was_called = NO;
     [helper_ findPasswordFormsWithCompletionHandler:^(
-                 const std::vector<FormData>& result) {
+                 const std::vector<FormData>& result, uint32_t maxID) {
       block_was_called = YES;
       forms = result;
     }];

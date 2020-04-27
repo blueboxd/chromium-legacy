@@ -153,7 +153,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kV8MediaSession_Metadata_AttributeSetter,
           WebFeature::kV8MediaSession_SetActionHandler_Method,
           WebFeature::kLargeStickyAd,
-          WebFeature::kOverlayInterstitialAd,
           WebFeature::
               kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive,
           WebFeature::kThirdPartyFileSystem,
@@ -161,6 +160,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kThirdPartyCacheStorage,
           WebFeature::kThirdPartyLocalStorage,
           WebFeature::kThirdPartySessionStorage,
+          WebFeature::kOverlayPopupAd,
       }));
   return *opt_in_features;
 }

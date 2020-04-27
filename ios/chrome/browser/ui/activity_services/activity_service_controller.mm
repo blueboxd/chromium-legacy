@@ -206,18 +206,14 @@ NSString* const kActivityServicesSnackbarCategory =
   DCHECK(_presentationProvider);
 
   if (activityType) {
-    ShareTo::ShareResult shareResult = completed
-                                           ? ShareTo::ShareResult::SHARE_SUCCESS
-                                           : ShareTo::ShareResult::SHARE_CANCEL;
     activity_type_util::ActivityType type =
         activity_type_util::TypeFromString(activityType);
     activity_type_util::RecordMetricForActivity(type);
     NSString* completionMessage =
         activity_type_util::CompletionMessageForActivity(type);
-    [self shareDidComplete:shareResult completionMessage:completionMessage];
+    [self shareDidComplete:completed completionMessage:completionMessage];
   } else {
-    [self shareDidComplete:ShareTo::ShareResult::SHARE_CANCEL
-         completionMessage:nil];
+    [self shareDidComplete:NO completionMessage:nil];
   }
 
   [self resetUserInterface];
@@ -317,45 +313,21 @@ NSString* const kActivityServicesSnackbarCategory =
   return applicationActivities;
 }
 
-- (void)shareDidComplete:(ShareTo::ShareResult)shareStatus
-       completionMessage:(NSString*)message {
-  switch (shareStatus) {
-    case ShareTo::SHARE_SUCCESS:
-      if ([message length]) {
-        TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-        [self showSnackbar:message];
-      }
-      break;
-    case ShareTo::SHARE_ERROR:
-      [self showErrorAlert:IDS_IOS_SHARE_TO_ERROR_ALERT_TITLE
-                   message:IDS_IOS_SHARE_TO_ERROR_ALERT];
-      break;
-    case ShareTo::SHARE_NETWORK_FAILURE:
-      [self showErrorAlert:IDS_IOS_SHARE_TO_NETWORK_ERROR_ALERT_TITLE
-                   message:IDS_IOS_SHARE_TO_NETWORK_ERROR_ALERT];
-      break;
-    case ShareTo::SHARE_SIGN_IN_FAILURE:
-      [self showErrorAlert:IDS_IOS_SHARE_TO_SIGN_IN_ERROR_ALERT_TITLE
-                   message:IDS_IOS_SHARE_TO_SIGN_IN_ERROR_ALERT];
-      break;
-    case ShareTo::SHARE_CANCEL:
-      base::RecordAction(base::UserMetricsAction("MobileShareMenuCancel"));
-      break;
-    case ShareTo::SHARE_UNKNOWN_RESULT:
-      break;
+- (void)shareDidComplete:(BOOL)isSuccess completionMessage:(NSString*)message {
+  if (isSuccess) {
+    if ([message length]) {
+      TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
+      [self showSnackbar:message];
+    }
+  } else {
+    // Share action was cancelled.
+    base::RecordAction(base::UserMetricsAction("MobileShareMenuCancel"));
   }
 
   // The shareTo dialog dismisses itself instead of through
   // |-dismissViewControllerAnimated:completion:| so we must notify the
   // presentation provider here so that it can clear its presenting state.
   [_presentationProvider activityServiceDidEndPresenting];
-}
-
-- (void)showErrorAlert:(int)titleMessageId message:(int)messageId {
-  NSString* title = l10n_util::GetNSString(titleMessageId);
-  NSString* message = l10n_util::GetNSString(messageId);
-  [_presentationProvider showActivityServiceErrorAlertWithStringTitle:title
-                                                              message:message];
 }
 
 - (void)showSnackbar:(NSString*)text {

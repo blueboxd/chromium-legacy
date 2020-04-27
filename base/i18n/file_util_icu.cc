@@ -10,10 +10,10 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/string_compare.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"

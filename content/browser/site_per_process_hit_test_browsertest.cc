@@ -1299,8 +1299,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
     touch_start_event.touches_length = 1;
-    touch_start_event.touches[0].state =
-        blink::WebTouchPoint::State::kStatePressed;
+    touch_start_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
     touch_start_event.touches[0].SetPositionInWidget(touch_start_point);
     touch_start_event.unique_touch_event_id = 1;
 
@@ -1340,8 +1339,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
     touch_move_event.touches_length = 1;
-    touch_move_event.touches[0].state =
-        blink::WebTouchPoint::State::kStateMoved;
+    touch_move_event.touches[0].state = blink::WebTouchPoint::kStateMoved;
     touch_move_event.touches[0].SetPositionInWidget(touch_move_point);
     touch_move_event.unique_touch_event_id = 2;
     InputEventAckWaiter await_move_in_child(
@@ -1415,8 +1413,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
     touch_end_event.touches_length = 1;
-    touch_end_event.touches[0].state =
-        blink::WebTouchPoint::State::kStateReleased;
+    touch_end_event.touches[0].state = blink::WebTouchPoint::kStateReleased;
     touch_end_event.touches[0].SetPositionInWidget(touch_move_point);
     touch_end_event.unique_touch_event_id = 3;
     InputEventAckWaiter await_end_in_child(
@@ -1567,8 +1564,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   touch_start_event.touches_length = 1;
-  touch_start_event.touches[0].state =
-      blink::WebTouchPoint::State::kStatePressed;
+  touch_start_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
   SetWebEventPositions(&touch_start_event.touches[0], touch_start_point,
                        root_rwhv);
   touch_start_event.unique_touch_event_id = 1;
@@ -1594,7 +1590,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   touch_move_event.touches_length = 1;
-  touch_move_event.touches[0].state = blink::WebTouchPoint::State::kStateMoved;
+  touch_move_event.touches[0].state = blink::WebTouchPoint::kStateMoved;
   SetWebEventPositions(&touch_move_event.touches[0], touch_move_point,
                        root_rwhv);
   touch_move_event.unique_touch_event_id = 2;
@@ -1619,8 +1615,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::Type::kTouchEnd, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   touch_end_event.touches_length = 1;
-  touch_end_event.touches[0].state =
-      blink::WebTouchPoint::State::kStateReleased;
+  touch_end_event.touches[0].state = blink::WebTouchPoint::kStateReleased;
   SetWebEventPositions(&touch_end_event.touches[0], touch_move_point,
                        root_rwhv);
   touch_end_event.unique_touch_event_id = 3;
@@ -1862,7 +1857,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   touch_event.touches_length = 1;
-  touch_event.touches[0].state = blink::WebTouchPoint::State::kStatePressed;
+  touch_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
   SetWebEventPositions(&touch_event.touches[0], point_in_root, root_rwhv);
   touch_event.unique_touch_event_id = 1;
   InputEventAckWaiter root_touch_waiter(
@@ -2218,7 +2213,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
     touch_event.touches_length = 1;
-    touch_event.touches[0].state = blink::WebTouchPoint::State::kStatePressed;
+    touch_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
     SetWebEventPositions(&touch_event.touches[0], point_in_root, rwhv_root);
     touch_event.unique_touch_event_id = 1;
     InputEventAckWaiter waiter(rwhv_child->GetRenderWidgetHost(),

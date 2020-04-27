@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/tick_clock.h"
 #include "cc/debug/rendering_stats_instrumentation.h"

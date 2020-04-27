@@ -57,8 +57,8 @@ class WebState;
 // extracted information used for matching and saving passwords. Calls
 // |completionHandler| with an empty vector if no password forms are found.
 - (void)findPasswordFormsWithCompletionHandler:
-    (nullable void (^)(const std::vector<autofill::FormData>&))
-        completionHandler;
+    (nullable void (^)(const std::vector<autofill::FormData>&,
+                       uint32_t))completionHandler;
 
 // Autofills credentials into the page. Credentials and input fields are
 // specified by |formData|. Invokes |completionHandler| when finished with YES
@@ -96,6 +96,8 @@ class WebState;
               completionHandler:
                   (void (^)(BOOL found,
                             const autofill::FormData& form))completionHandler;
+
+- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID;
 
 // Creates a instance with the given WebState, observer and delegate.
 - (instancetype)initWithWebState:(web::WebState*)webState

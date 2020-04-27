@@ -18,16 +18,14 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Handles property updates to the suggestion list component.
  */
 class SuggestionListViewBinder {
-    /**
-     * Holds the view components needed to renderer the suggestion list.
-     */
+    /** Holds the view components needed to renderer the suggestion list. */
     public static class SuggestionListViewHolder {
         public final ViewGroup container;
-        public final OmniboxSuggestionsList listView;
+        public final OmniboxSuggestionsDropdown dropdown;
 
-        public SuggestionListViewHolder(ViewGroup container, OmniboxSuggestionsList list) {
+        public SuggestionListViewHolder(ViewGroup container, OmniboxSuggestionsDropdown dropdown) {
             this.container = container;
-            this.listView = list;
+            this.dropdown = dropdown;
         }
     }
 
@@ -40,19 +38,21 @@ class SuggestionListViewBinder {
             PropertyModel model, SuggestionListViewHolder view, PropertyKey propertyKey) {
         if (SuggestionListProperties.VISIBLE.equals(propertyKey)) {
             boolean visible = model.get(SuggestionListProperties.VISIBLE);
+            // Actual View showing the dropdown.
+            View dropdownView = view.dropdown.getView();
             if (visible) {
                 view.container.setVisibility(View.VISIBLE);
-                if (view.listView.getParent() == null) view.container.addView(view.listView);
-                view.listView.show();
+                if (dropdownView.getParent() == null) view.container.addView(dropdownView);
+                view.dropdown.show();
             } else {
-                view.listView.setVisibility(View.GONE);
-                UiUtils.removeViewFromParent(view.listView);
+                dropdownView.setVisibility(View.GONE);
+                UiUtils.removeViewFromParent(dropdownView);
                 view.container.setVisibility(View.INVISIBLE);
             }
         } else if (SuggestionListProperties.EMBEDDER.equals(propertyKey)) {
-            view.listView.setEmbedder(model.get(SuggestionListProperties.EMBEDDER));
+            view.dropdown.setEmbedder(model.get(SuggestionListProperties.EMBEDDER));
         } else if (SuggestionListProperties.OBSERVER.equals(propertyKey)) {
-            view.listView.setObserver(model.get(SuggestionListProperties.OBSERVER));
+            view.dropdown.setObserver(model.get(SuggestionListProperties.OBSERVER));
         } else if (SuggestionListProperties.SUGGESTION_MODELS.equals(propertyKey)) {
             // This should only ever be bound once.
             model.get(SuggestionListProperties.SUGGESTION_MODELS)
@@ -60,11 +60,11 @@ class SuggestionListViewBinder {
                         @Override
                         public void onItemRangeChanged(ListObservable<Void> source, int index,
                                 int count, @Nullable Void payload) {
-                            view.listView.setSelection(0);
+                            view.dropdown.resetSelection();
                         }
                     });
         } else if (SuggestionListProperties.IS_INCOGNITO.equals(propertyKey)) {
-            view.listView.refreshPopupBackground(model.get(SuggestionListProperties.IS_INCOGNITO));
+            view.dropdown.refreshPopupBackground(model.get(SuggestionListProperties.IS_INCOGNITO));
         }
     }
 }

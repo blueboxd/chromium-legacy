@@ -8,7 +8,7 @@
 #include <cstring>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_packetizer.h"

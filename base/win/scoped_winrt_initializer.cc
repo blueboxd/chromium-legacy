@@ -4,7 +4,7 @@
 
 #include "base/win/scoped_winrt_initializer.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/win/com_init_util.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/windows_version.h"

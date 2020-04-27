@@ -5,7 +5,7 @@
 #include "base/allocator/winheap_stubs_win.h"
 
 #include "base/bits.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

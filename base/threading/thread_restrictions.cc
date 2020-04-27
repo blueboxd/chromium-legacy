@@ -8,9 +8,9 @@
 
 #if DCHECK_IS_ON()
 
+#include "base/check_op.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
 

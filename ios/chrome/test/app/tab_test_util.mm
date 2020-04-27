@@ -83,6 +83,15 @@ void SimulateExternalAppURLOpening() {
   [applicationDelegate application:application openURL:url options:@{}];
 }
 
+void SimulateAddAccountFromWeb() {
+  id<ApplicationCommands, BrowserCommands> handler =
+      chrome_test_util::HandlerForActiveBrowser();
+  [handler showAddAccountFromViewController:(UIViewController*)
+                                                GetForegroundActiveScene()
+                                                    .interfaceProvider
+                                                    .mainInterface.bvc];
+}
+
 void OpenNewIncognitoTab() {
   @autoreleasepool {  // Make sure that all internals are deallocated.
     OpenNewTabCommand* command = [OpenNewTabCommand incognitoTabCommand];

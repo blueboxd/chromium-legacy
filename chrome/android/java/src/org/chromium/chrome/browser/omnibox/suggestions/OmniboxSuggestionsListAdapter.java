@@ -12,7 +12,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.ui.modelutil.ModelListAdapter;
 
 /**
- * ModelListAdapter for SuggestionList.
+ * ModelListAdapter for ListView based OmniboxSuggestionsDropdown.
  */
 class OmniboxSuggestionsListAdapter extends ModelListAdapter {
     OmniboxSuggestionsListAdapter(ModelList data) {

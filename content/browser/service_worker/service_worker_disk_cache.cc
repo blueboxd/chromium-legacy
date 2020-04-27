@@ -6,7 +6,38 @@
 
 #include <utility>
 
+#include "content/common/service_worker/service_worker_utils.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
+
 namespace content {
+
+namespace {
+
+void DidReadInfo(base::WeakPtr<AppCacheResponseIO> reader,
+                 scoped_refptr<HttpResponseInfoIOBuffer> io_buffer,
+                 ServiceWorkerResponseReader::ReadResponseHeadCallback callback,
+                 int result) {
+  DCHECK(io_buffer);
+  if (!io_buffer->http_info) {
+    DCHECK_LT(result, 0);
+    std::move(callback).Run(result, /*response_head=*/nullptr,
+                            /*metadata=*/nullptr);
+    return;
+  }
+
+  DCHECK_GE(result, 0);
+  auto response_and_metadata =
+      ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
+          io_buffer->http_info.get(),
+          /*options=*/network::mojom::kURLLoadOptionSendSSLInfoWithResponse,
+          /*request_start_time=*/base::TimeTicks(),
+          /*response_start_time=*/base::TimeTicks::Now(),
+          io_buffer->response_data_size);
+  std::move(callback).Run(result, std::move(response_and_metadata.head),
+                          std::move(response_and_metadata.metadata));
+}
+
+}  // namespace
 
 ServiceWorkerDiskCache::ServiceWorkerDiskCache()
     : AppCacheDiskCache(/*use_simple_cache=*/true) {}
@@ -15,6 +46,13 @@ ServiceWorkerResponseReader::ServiceWorkerResponseReader(
     int64_t resource_id,
     base::WeakPtr<AppCacheDiskCache> disk_cache)
     : AppCacheResponseReader(resource_id, std::move(disk_cache)) {}
+
+void ServiceWorkerResponseReader::ReadResponseHead(
+    ReadResponseHeadCallback callback) {
+  auto io_buffer = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
+  ReadInfo(io_buffer.get(), base::BindOnce(&DidReadInfo, GetWeakPtr(),
+                                           io_buffer, std::move(callback)));
+}
 
 ServiceWorkerResponseWriter::ServiceWorkerResponseWriter(
     int64_t resource_id,

@@ -10,14 +10,15 @@
 #include <set>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/process/process_handle.h"

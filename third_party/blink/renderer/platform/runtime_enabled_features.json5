@@ -758,12 +758,6 @@
       name: "FileSystem",
       status: "stable",
     },
-    // Perform style recalc traversal in the flat tree order, including marking
-    // flat-tree instead of shadow-including ancestors for child dirtiness.
-    {
-      name: "FlatTreeStyleRecalc",
-      status: "stable",
-    },
     {
       name: "FocuslessSpatialNavigation",
       settable_from_internals: true,

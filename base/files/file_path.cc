@@ -7,7 +7,7 @@
 #include <string.h>
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/pickle.h"
 #include "base/strings/strcat.h"

@@ -4,7 +4,7 @@
 
 #include "base/allocator/allocator_extension.h"
 #include "base/allocator/buildflags.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 #if BUILDFLAG(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"

@@ -67,6 +67,8 @@ InputMethodEngine::CandidateWindowProperty::CandidateWindowProperty()
 
 InputMethodEngine::CandidateWindowProperty::~CandidateWindowProperty() =
     default;
+InputMethodEngine::CandidateWindowProperty::CandidateWindowProperty(
+    const CandidateWindowProperty& other) = default;
 
 InputMethodEngine::InputMethodEngine() = default;
 
@@ -128,6 +130,8 @@ void InputMethodEngine::SetCandidateWindowProperty(
       candidate_window_.GetProperty().cursor_position;
   dest_property.auxiliary_text = property.auxiliary_text;
   dest_property.is_auxiliary_text_visible = property.is_auxiliary_text_visible;
+  dest_property.current_candidate_index = property.current_candidate_index;
+  dest_property.total_candidates = property.total_candidates;
 
   candidate_window_.SetProperty(dest_property);
   candidate_window_property_ = property;

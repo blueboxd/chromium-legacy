@@ -4,7 +4,7 @@
 
 #include "cc/layers/viewport.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/trees/layer_tree_host_impl.h"

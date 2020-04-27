@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 

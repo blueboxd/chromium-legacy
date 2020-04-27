@@ -1399,6 +1399,13 @@ void ContentSecurityPolicy::ReportInvalidSourceExpression(
   LogToConsole(message);
 }
 
+void ContentSecurityPolicy::ReportMultipleReportToEndpoints() {
+  LogToConsole(
+      "The Content Security Policy directive 'report-to' contains more than "
+      "one endpoint. Only the first one will be used, the other ones will be "
+      "ignored.");
+}
+
 void ContentSecurityPolicy::LogToConsole(const String& message,
                                          mojom::ConsoleMessageLevel level) {
   LogToConsole(MakeGarbageCollected<ConsoleMessage>(

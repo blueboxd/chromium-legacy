@@ -4,7 +4,6 @@
 
 #include "google_apis/drive/drive_api_error_codes.h"
 
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace google_apis {

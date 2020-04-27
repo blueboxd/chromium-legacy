@@ -6,7 +6,8 @@
 
 #include <winnt.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/profiler/native_unwinder.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
 

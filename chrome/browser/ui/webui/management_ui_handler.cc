@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
+#include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -227,85 +228,6 @@ void AddDeviceReportingElement(base::Value* report_sources,
   data.SetKey("messageId", base::Value(message_id));
   data.SetKey("reportingType", base::Value(ToJSDeviceReportingType(type)));
   report_sources->Append(std::move(data));
-}
-
-void AddDeviceReportingInfo(base::Value* report_sources, Profile* profile) {
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-
-  // Only check for report status in managed environment.
-  if (!connector->IsEnterpriseManaged())
-    return;
-
-  policy::DeviceCloudPolicyManagerChromeOS* manager =
-      connector->GetDeviceCloudPolicyManager();
-
-  if (!manager)
-    return;
-
-  const policy::StatusCollector* collector =
-      manager->GetStatusUploader()->status_collector();
-
-  // Elements appear on the page in the order they are added.
-  if (collector->ShouldReportActivityTimes()) {
-    AddDeviceReportingElement(report_sources, kManagementReportActivityTimes,
-                              DeviceReportingType::kDeviceActivity);
-  } else {
-    if (collector->ShouldReportUsers()) {
-      AddDeviceReportingElement(report_sources, kManagementReportUsers,
-                                DeviceReportingType::kSupervisedUser);
-    }
-  }
-  if (collector->ShouldReportHardwareStatus()) {
-    AddDeviceReportingElement(report_sources, kManagementReportHardwareStatus,
-                              DeviceReportingType::kDeviceStatistics);
-  }
-  if (collector->ShouldReportNetworkInterfaces()) {
-    AddDeviceReportingElement(report_sources,
-                              kManagementReportNetworkInterfaces,
-                              DeviceReportingType::kDevice);
-  }
-  if (collector->ShouldReportCrashReportInfo()) {
-    AddDeviceReportingElement(report_sources, kManagementReportCrashReports,
-                              DeviceReportingType::kCrashReport);
-  }
-  if (manager->GetSystemLogUploader()->upload_enabled()) {
-    AddDeviceReportingElement(report_sources, kManagementLogUploadEnabled,
-                              DeviceReportingType::kLogs);
-  }
-
-  if (profile->GetPrefs()->GetBoolean(
-          prefs::kPrintingSendUsernameAndFilenameEnabled)) {
-    AddDeviceReportingElement(report_sources, kManagementPrinting,
-                              DeviceReportingType::kPrint);
-  }
-
-  if (crostini::CrostiniFeatures::Get()->IsAllowed(profile)) {
-    if (!profile->GetPrefs()
-             ->GetFilePath(crostini::prefs::kCrostiniAnsiblePlaybookFilePath)
-             .empty()) {
-      AddDeviceReportingElement(report_sources,
-                                kManagementCrostiniContainerConfiguration,
-                                DeviceReportingType::kCrostini);
-    } else if (profile->GetPrefs()->GetBoolean(
-                   crostini::prefs::kReportCrostiniUsageEnabled)) {
-      AddDeviceReportingElement(report_sources, kManagementCrostini,
-                                DeviceReportingType::kCrostini);
-    }
-  }
-
-  if (g_browser_process->local_state()->GetBoolean(
-          prefs::kCloudReportingEnabled) &&
-      base::FeatureList::IsEnabled(features::kEnterpriseReportingInChromeOS)) {
-    AddDeviceReportingElement(report_sources,
-                              kManagementExtensionReportUsername,
-                              DeviceReportingType::kUsername);
-    AddDeviceReportingElement(report_sources, kManagementReportExtensions,
-                              DeviceReportingType::kExtensions);
-    AddDeviceReportingElement(report_sources,
-                              kManagementReportAndroidApplications,
-                              DeviceReportingType::kAndroidApplication);
-  }
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -565,6 +487,64 @@ void ManagementUIHandler::AddReportingInfo(base::Value* report_sources) {
     report_sources->Append(std::move(data));
   }
 }
+
+#if defined(OS_CHROMEOS)
+const policy::DeviceCloudPolicyManagerChromeOS*
+ManagementUIHandler::GetDeviceCloudPolicyManager() const {
+  // Only check for report status in managed environment.
+  if (!device_managed_)
+    return nullptr;
+
+  const policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetDeviceCloudPolicyManager();
+}
+
+void ManagementUIHandler::AddDeviceReportingInfo(
+    base::Value* report_sources,
+    const policy::StatusCollector* collector,
+    const policy::SystemLogUploader* uploader,
+    const Profile* profile) const {
+  if (!collector || !profile || !uploader)
+    return;
+
+  // Elements appear on the page in the order they are added.
+  if (collector->ShouldReportActivityTimes()) {
+    AddDeviceReportingElement(report_sources, kManagementReportActivityTimes,
+                              DeviceReportingType::kDeviceActivity);
+  } else {
+    if (collector->ShouldReportUsers()) {
+      AddDeviceReportingElement(report_sources, kManagementReportUsers,
+                                DeviceReportingType::kSupervisedUser);
+    }
+  }
+  if (collector->ShouldReportHardwareStatus()) {
+    AddDeviceReportingElement(report_sources, kManagementReportHardwareStatus,
+                              DeviceReportingType::kDeviceStatistics);
+  }
+  if (collector->ShouldReportNetworkInterfaces()) {
+    AddDeviceReportingElement(report_sources,
+                              kManagementReportNetworkInterfaces,
+                              DeviceReportingType::kDevice);
+  }
+  if (uploader->upload_enabled()) {
+    AddDeviceReportingElement(report_sources, kManagementLogUploadEnabled,
+                              DeviceReportingType::kLogs);
+  }
+
+  if (profile->GetPrefs()->GetBoolean(
+          prefs::kPrintingSendUsernameAndFilenameEnabled)) {
+    AddDeviceReportingElement(report_sources, kManagementPrinting,
+                              DeviceReportingType::kPrint);
+  }
+
+  if (profile->GetPrefs()->GetBoolean(
+          crostini::prefs::kReportCrostiniUsageEnabled)) {
+    AddDeviceReportingElement(report_sources, kManagementCrostini,
+                              DeviceReportingType::kCrostini);
+  }
+}
+#endif
 
 base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
   base::Value response(base::Value::Type::DICTIONARY);
@@ -861,7 +841,19 @@ void ManagementUIHandler::HandleGetDeviceReportingInfo(
   base::Value report_sources(base::Value::Type::LIST);
   AllowJavascript();
 
-  AddDeviceReportingInfo(&report_sources, Profile::FromWebUI(web_ui()));
+  const policy::DeviceCloudPolicyManagerChromeOS* manager =
+      GetDeviceCloudPolicyManager();
+  policy::StatusUploader* uploader = nullptr;
+  policy::SystemLogUploader* syslog_uploader = nullptr;
+  policy::StatusCollector* collector = nullptr;
+  if (manager) {
+    uploader = manager->GetStatusUploader();
+    syslog_uploader = manager->GetSystemLogUploader();
+    if (uploader)
+      collector = uploader->status_collector();
+  }
+  AddDeviceReportingInfo(&report_sources, collector, syslog_uploader,
+                         Profile::FromWebUI(web_ui()));
 
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             report_sources);

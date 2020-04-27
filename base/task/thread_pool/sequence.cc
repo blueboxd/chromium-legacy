@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/critical_closure.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_features.h"
 #include "base/time/time.h"

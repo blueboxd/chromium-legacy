@@ -45,6 +45,24 @@ class MockWebsiteLoginFetcher : public WebsiteLoginFetcher {
   }
 
   MOCK_METHOD0(GetGeneratedPassword, std::string());
+
+  void PresaveGeneratedPassword(const Login& login,
+                                const std::string& password,
+                                const autofill::FormData& form_data,
+                                base::OnceCallback<void()> callback) override {
+    OnPresaveGeneratedPassword(login, password, form_data, callback);
+  }
+
+  MOCK_METHOD4(OnPresaveGeneratedPassword,
+               void(const Login& login,
+                    const std::string& password,
+                    const autofill::FormData& form_data,
+                    base::OnceCallback<void()>&));
+
+  void CommitGeneratedPassword() override { OnCommitGeneratedPassword(); }
+
+  MOCK_METHOD0(OnCommitGeneratedPassword, void());
+
   DISALLOW_COPY_AND_ASSIGN(MockWebsiteLoginFetcher);
 };
 

@@ -8,7 +8,7 @@
 #include <mach/thread_act.h>
 #include <pthread.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/mach_logging.h"
 #include "base/profiler/profile_builder.h"
 

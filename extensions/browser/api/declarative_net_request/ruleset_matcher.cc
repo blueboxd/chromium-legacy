@@ -6,9 +6,9 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"

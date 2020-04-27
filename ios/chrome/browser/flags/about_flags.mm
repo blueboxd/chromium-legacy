@@ -119,62 +119,68 @@ const FeatureEntry::Choice kAutofillIOSDelayBetweenFieldsChoices[] = {
     {"1000", autofill::switches::kAutofillIOSDelayBetweenFields, "1000"},
 };
 
-const FeatureEntry::FeatureParam kOmniboxOnDeviceHeadSuggestAlwaysServe[] = {
-    {OmniboxFieldTrial::kOnDeviceHeadSuggestIncognitoServeMode,
-     "always-serve"}};
-const FeatureEntry::FeatureParam kOmniboxOnDeviceHeadSuggestIncognitoOnly[] = {
-    {OmniboxFieldTrial::kOnDeviceHeadSuggestIncognitoServeMode,
-     "incognito-only"}};
-const FeatureEntry::FeatureParam kOmniboxOnDeviceHeadSuggestRelevance1000[] = {
-    {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput, "1000"},
-    {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode, "decrease-relevances"}};
-const FeatureEntry::FeatureParam
-    kOmniboxOnDeviceHeadSuggestIncognitoOnlyRelevance1000[] = {
-        {OmniboxFieldTrial::kOnDeviceHeadSuggestIncognitoServeMode,
-         "incognito-only"},
-        {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
-         "1000"}};
-const FeatureEntry::FeatureParam kOmniboxOnDeviceHeadSuggestDelay200Ms[] = {
-    {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "200"}};
-const FeatureEntry::FeatureParam kOmniboxOnDeviceHeadSuggestDelay350Ms[] = {
-    {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "350"}};
-const FeatureEntry::FeatureParam
-    kOmniboxOnDeviceHeadSuggestDelay200MsAndRelevance1000[] = {
-        {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "200"},
-        {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput, "1000"},
-        {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
-         "decrease-relevances"}};
-const FeatureEntry::FeatureParam
-    kOmniboxOnDeviceHeadSuggestDelay350MsAndRelevance1000[] = {
-        {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "350"},
-        {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput, "1000"},
-        {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
-         "decrease-relevances"}};
+const FeatureEntry::FeatureVariation
+    kOmniboxOnDeviceHeadSuggestIncognitoExperimentVariations[] = {{
+        "relevance-1000",
+        (FeatureEntry::FeatureParam[]){
+            {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
+             "1000"}},
+        1,
+        nullptr,
+    }};
 
 const FeatureEntry::FeatureVariation
-    kOmniboxOnDeviceHeadSuggestExperimentVariations[] = {
-        {"both-normal-and-incognito", kOmniboxOnDeviceHeadSuggestAlwaysServe,
-         base::size(kOmniboxOnDeviceHeadSuggestAlwaysServe), nullptr},
-        {"incognito-only", kOmniboxOnDeviceHeadSuggestIncognitoOnly,
-         base::size(kOmniboxOnDeviceHeadSuggestIncognitoOnly), nullptr},
-        {"relevance-1000", kOmniboxOnDeviceHeadSuggestRelevance1000,
-         base::size(kOmniboxOnDeviceHeadSuggestRelevance1000), nullptr},
-        {"incognito-only-relevance-1000",
-         kOmniboxOnDeviceHeadSuggestIncognitoOnlyRelevance1000,
-         base::size(kOmniboxOnDeviceHeadSuggestIncognitoOnlyRelevance1000),
-         nullptr},
-        {"request-delay-200ms", kOmniboxOnDeviceHeadSuggestDelay200Ms,
-         base::size(kOmniboxOnDeviceHeadSuggestDelay200Ms), nullptr},
-        {"request-delay-350ms", kOmniboxOnDeviceHeadSuggestDelay350Ms,
-         base::size(kOmniboxOnDeviceHeadSuggestDelay350Ms), nullptr},
-        {"delay-200ms-relevance-1000",
-         kOmniboxOnDeviceHeadSuggestDelay200MsAndRelevance1000,
-         base::size(kOmniboxOnDeviceHeadSuggestDelay200MsAndRelevance1000),
-         nullptr},
-        {"delay-350ms-relevance-1000",
-         kOmniboxOnDeviceHeadSuggestDelay350MsAndRelevance1000,
-         base::size(kOmniboxOnDeviceHeadSuggestDelay350MsAndRelevance1000),
-         nullptr}};
+    kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations[] = {
+        {
+            "relevance-1000",
+            (FeatureEntry::FeatureParam[]){
+                {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
+                 "1000"},
+                {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
+                 "decrease-relevances"}},
+            2,
+            nullptr,
+        },
+        {
+            "request-delay-100ms",
+            (FeatureEntry::FeatureParam[]){
+                {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs,
+                 "100"}},
+            1,
+            nullptr,
+        },
+        {
+            "delay-100ms-relevance-1000",
+            (FeatureEntry::FeatureParam[]){
+                {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs,
+                 "100"},
+                {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
+                 "1000"},
+                {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
+                 "decrease-relevances"}},
+            3,
+            nullptr,
+        },
+        {
+            "request-delay-200ms",
+            (FeatureEntry::FeatureParam[]){
+                {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs,
+                 "200"}},
+            1,
+            nullptr,
+        },
+        {
+            "delay-200ms-relevance-1000",
+            (FeatureEntry::FeatureParam[]){
+                {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs,
+                 "200"},
+                {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
+                 "1000"},
+                {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
+                 "decrease-relevances"}},
+            3,
+            nullptr,
+        }};
 
 const FeatureEntry::FeatureParam kOmniboxNTPZPSRemote[] = {
     {"ZeroSuggestVariant:1:*", "RemoteNoUrl"},
@@ -369,14 +375,22 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"toolbar-container", flag_descriptions::kToolbarContainerName,
      flag_descriptions::kToolbarContainerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerEnabled)},
-    {"omnibox-on-device-head-suggestions",
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription,
+    {"omnibox-on-device-head-suggestions-incognito",
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoName,
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoDescription,
      flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
-         omnibox::kOnDeviceHeadProvider,
-         kOmniboxOnDeviceHeadSuggestExperimentVariations,
-         "OmniboxOnDeviceHeadSuggestIOS")},
+         omnibox::kOnDeviceHeadProviderIncognito,
+         kOmniboxOnDeviceHeadSuggestIncognitoExperimentVariations,
+         "OmniboxOnDeviceHeadSuggestIncognitoIOS")},
+    {"omnibox-on-device-head-suggestions-non-incognito",
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoName,
+     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         omnibox::kOnDeviceHeadProviderNonIncognito,
+         kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations,
+         "OmniboxOnDeviceHeadSuggestNonIncognitoIOS")},
     {"omnibox-on-focus-suggestions",
      flag_descriptions::kOmniboxOnFocusSuggestionsName,
      flag_descriptions::kOmniboxOnFocusSuggestionsDescription, flags_ui::kOsIos,

@@ -819,7 +819,7 @@ void LayoutInline::CollectLineBoxRects(
       return;
     }
     NGInlineCursor cursor;
-    cursor.MoveTo(*this);
+    cursor.MoveToIncludingCulledInline(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject())
       yield(cursor.Current().RectInContainerBlock());
     return;
@@ -966,7 +966,7 @@ base::Optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
     const {
   if (IsInLayoutNGInlineFormattingContext()) {
     NGInlineCursor cursor;
-    cursor.MoveTo(*this);
+    cursor.MoveToIncludingCulledInline(*this);
     if (!cursor)
       return base::nullopt;
     return cursor.Current().OffsetInContainerBlock();
@@ -1126,7 +1126,8 @@ bool LayoutInline::HitTestCulledInline(HitTestResult& result,
   if (parent_cursor) {
     DCHECK(ContainingNGBlockFlow());
     NGInlineCursor cursor(*parent_cursor);
-    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
+    cursor.MoveToIncludingCulledInline(*this);
+    for (; cursor; cursor.MoveToNextForSameLayoutObject())
       yield(cursor.Current().RectInContainerBlock());
   } else {
     DCHECK(!ContainingNGBlockFlow());
@@ -1176,7 +1177,7 @@ PositionWithAffinity LayoutInline::PositionForPoint(
 PhysicalRect LayoutInline::PhysicalLinesBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
     NGInlineCursor cursor;
-    cursor.MoveTo(*this);
+    cursor.MoveToIncludingCulledInline(*this);
     PhysicalRect bounding_box;
     for (; cursor; cursor.MoveToNextForSameLayoutObject())
       bounding_box.UniteIfNonZero(cursor.Current().RectInContainerBlock());
@@ -1325,7 +1326,7 @@ PhysicalRect LayoutInline::LinesVisualOverflowBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
     PhysicalRect result;
     NGInlineCursor cursor;
-    cursor.MoveTo(*this);
+    cursor.MoveToIncludingCulledInline(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
       PhysicalRect child_rect = cursor.Current().InkOverflow();
       child_rect.offset += cursor.Current().OffsetInContainerBlock();

@@ -1215,6 +1215,11 @@ TEST_F(CSPDirectiveListTest, ReportEndpointsProperlyParsed) {
        ContentSecurityPolicySource::kMeta,
        {"group"},
        true},
+      {"script-src 'self'; report-to group group2",
+       ContentSecurityPolicySource::kHTTP,
+       // Only the first report-to endpoint is used. The other ones are ignored.
+       {"group"},
+       true},
       {"script-src 'self'; report-to group; report-to group2;",
        ContentSecurityPolicySource::kHTTP,
        {"group"},

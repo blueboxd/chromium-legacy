@@ -27,6 +27,7 @@ import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ClearAccountsAction;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.identitymanager.IdentityMutator;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -285,7 +286,8 @@ public class SigninManager
      */
     public boolean isSignInAllowed() {
         return !mFirstRunCheckIsPending && mSignInState == null && mSigninAllowedByPolicy
-                && mIdentityManager.getPrimaryAccountInfo() == null && isSigninSupported();
+                && mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SYNC) == null
+                && isSigninSupported();
     }
 
     /**
@@ -589,8 +591,8 @@ public class SigninManager
      * Reloads accounts from system within IdentityManager.
      */
     void reloadAllAccountsFromSystem() {
-        mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(
-                CoreAccountInfo.getIdFrom(mIdentityManager.getPrimaryAccountInfo()));
+        mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(CoreAccountInfo.getIdFrom(
+                mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SYNC)));
     }
 
     /**

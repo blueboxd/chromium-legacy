@@ -5,8 +5,9 @@
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_manager.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"

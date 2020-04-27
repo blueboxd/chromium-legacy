@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/threading/thread_local.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"

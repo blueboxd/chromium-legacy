@@ -62,6 +62,28 @@
 
 namespace blink {
 
+namespace {
+
+#if defined(OS_MACOSX)
+void DetermineTrakSbix(SkTypeface* typeface, bool* has_trak, bool* has_sbix) {
+  int num_tags = typeface->countTables();
+
+  SkFontTableTag tags[num_tags];
+
+  int returned_tags = typeface->getTableTags(tags);
+  DCHECK_EQ(num_tags, returned_tags);
+
+  for (auto& tag : tags) {
+    if (tag == SkSetFourByteTag('t', 'r', 'a', 'k'))
+      *has_trak = true;
+    if (tag == SkSetFourByteTag('s', 'b', 'i', 'x'))
+      *has_sbix = true;
+  }
+}
+#endif
+
+}  // namespace
+
 static scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(
     hb_face_t*,
     SkTypeface* typefaces);
@@ -268,31 +290,43 @@ bool HarfBuzzFace::ShouldSubpixelPosition() {
   return harfbuzz_font_data_->font_.isSubpixel();
 }
 
-static hb_font_funcs_t* HarfBuzzSkiaGetFontFuncs() {
-  hb_font_funcs_t* funcs = FontGlobalContext::GetHarfBuzzFontFuncs();
+static hb_font_funcs_t* create_populated_hb_font_funcs(
+    FontGlobalContext::HorizontalAdvanceSource horizontal_advance_source) {
+  hb_font_funcs_t* funcs = hb_font_funcs_create();
 
-  // We don't set callback functions which we can't support.
-  // HarfBuzz will use the fallback implementation if they aren't set.
-  if (!funcs) {
-    funcs = hb_font_funcs_create();
-    hb_font_funcs_set_variation_glyph_func(funcs, HarfBuzzGetGlyph, nullptr,
-                                           nullptr);
-    hb_font_funcs_set_nominal_glyph_func(funcs, HarfBuzzGetNominalGlyph,
-                                         nullptr, nullptr);
+  if (horizontal_advance_source == FontGlobalContext::kSkiaHorizontalAdvances) {
     hb_font_funcs_set_glyph_h_advance_func(
         funcs, HarfBuzzGetGlyphHorizontalAdvance, nullptr, nullptr);
     hb_font_funcs_set_glyph_h_advances_func(
         funcs, HarfBuzzGetGlyphHorizontalAdvances, nullptr, nullptr);
-    // TODO(https://crbug.com/899718): Replace vertical metrics callbacks with
-    // HarfBuzz VORG/VMTX internal implementation by deregistering those.
-    hb_font_funcs_set_glyph_v_advance_func(
-        funcs, HarfBuzzGetGlyphVerticalAdvance, nullptr, nullptr);
-    hb_font_funcs_set_glyph_v_origin_func(funcs, HarfBuzzGetGlyphVerticalOrigin,
-                                          nullptr, nullptr);
-    hb_font_funcs_set_glyph_extents_func(funcs, HarfBuzzGetGlyphExtents,
+  }
+  hb_font_funcs_set_variation_glyph_func(funcs, HarfBuzzGetGlyph, nullptr,
+                                         nullptr);
+  hb_font_funcs_set_nominal_glyph_func(funcs, HarfBuzzGetNominalGlyph, nullptr,
+                                       nullptr);
+  // TODO(https://crbug.com/899718): Replace vertical metrics callbacks with
+  // HarfBuzz VORG/VMTX internal implementation by deregistering those.
+  hb_font_funcs_set_glyph_v_advance_func(funcs, HarfBuzzGetGlyphVerticalAdvance,
                                          nullptr, nullptr);
-    hb_font_funcs_make_immutable(funcs);
-    FontGlobalContext::SetHarfBuzzFontFuncs(funcs);
+  hb_font_funcs_set_glyph_v_origin_func(funcs, HarfBuzzGetGlyphVerticalOrigin,
+                                        nullptr, nullptr);
+  hb_font_funcs_set_glyph_extents_func(funcs, HarfBuzzGetGlyphExtents, nullptr,
+                                       nullptr);
+
+  hb_font_funcs_make_immutable(funcs);
+  return funcs;
+}
+
+static hb_font_funcs_t* HarfBuzzSkiaGetFontFuncs(
+    FontGlobalContext::HorizontalAdvanceSource advance_source) {
+  hb_font_funcs_t* funcs =
+      FontGlobalContext::GetHarfBuzzFontFuncs(advance_source);
+
+  // We don't set callback functions which we can't support.
+  // HarfBuzz will use the fallback implementation if they aren't set.
+  if (!funcs) {
+    funcs = create_populated_hb_font_funcs(advance_source);
+    FontGlobalContext::SetHarfBuzzFontFuncs(advance_source, funcs);
   }
   DCHECK(funcs);
   return funcs;
@@ -391,7 +425,17 @@ scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t* face,
   hb_font_t* unscaled_font = hb_font_create_sub_font(ot_font.get());
   scoped_refptr<HbFontCacheEntry> cache_entry =
       HbFontCacheEntry::Create(unscaled_font);
-  hb_font_set_funcs(unscaled_font, HarfBuzzSkiaGetFontFuncs(),
+
+  FontGlobalContext::HorizontalAdvanceSource advance_source =
+      FontGlobalContext::kSkiaHorizontalAdvances;
+#if defined(OS_MACOSX)
+  bool has_trak = false;
+  bool has_sbix = false;
+  DetermineTrakSbix(typeface, &has_trak, &has_sbix);
+  if (has_trak && !has_sbix)
+    advance_source = FontGlobalContext::kHarfBuzzHorizontalAdvances;
+#endif
+  hb_font_set_funcs(unscaled_font, HarfBuzzSkiaGetFontFuncs(advance_source),
                     cache_entry->HbFontData(), nullptr);
   return cache_entry;
 }

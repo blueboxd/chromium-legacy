@@ -58,8 +58,7 @@
                      prefService:(PrefService*)prefService
                 canSendTabToSelf:(BOOL)canSendTabToSelf;
 
-- (void)shareDidComplete:(ShareTo::ShareResult)shareStatus
-       completionMessage:(NSString*)message;
+- (void)shareDidComplete:(BOOL)isSuccess completionMessage:(NSString*)message;
 
 // Setter function for mocking during testing
 - (void)setProvidersForTesting:(id<ActivityServicePresentation>)provider
@@ -80,8 +79,6 @@
     BOOL activityServiceDidEndPresentingWasCalled;
 
 // Stores the latest values that were passed to the associated provider methods.
-@property(nonatomic, readonly, copy) NSString* latestErrorAlertTitle;
-@property(nonatomic, readonly, copy) NSString* latestErrorAlertMessage;
 @property(nonatomic, readonly, copy) NSString* latestSnackbarMessage;
 @property(nonatomic, readonly, copy) NSString* latestContextMenuTitle;
 
@@ -111,12 +108,6 @@
 
 - (void)activityServiceDidEndPresenting {
   _activityServiceDidEndPresentingWasCalled = YES;
-}
-
-- (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title
-                                             message:(NSString*)message {
-  _latestErrorAlertTitle = [title copy];
-  _latestErrorAlertMessage = [message copy];
 }
 
 #pragma mark - ActivityServicePositioner
@@ -521,15 +512,13 @@ TEST_F(ActivityServiceControllerTest, TestShareDidCompleteWithSuccess) {
   [controller setProvidersForTesting:provider dispatcher:provider];
 
   NSString* completion_message = @"Completion!";
-  [controller shareDidComplete:ShareTo::SHARE_SUCCESS
-             completionMessage:completion_message];
+  [controller shareDidComplete:YES completionMessage:completion_message];
 
   EXPECT_TRUE(provider.activityServiceDidEndPresentingWasCalled);
   EXPECT_NSEQ(completion_message, provider.latestSnackbarMessage);
 }
 
-// Verifies that the snackbar and error alert providers are not invoked for a
-// cancelled share.
+// Verifies that the snackbar is not invoked for a cancelled share.
 TEST_F(ActivityServiceControllerTest, TestShareDidCompleteWithCancellation) {
   ActivityServiceController* controller =
       [[ActivityServiceController alloc] init];
@@ -538,32 +527,8 @@ TEST_F(ActivityServiceControllerTest, TestShareDidCompleteWithCancellation) {
           initWithParentViewController:nil];
   [controller setProvidersForTesting:provider dispatcher:provider];
 
-  [controller shareDidComplete:ShareTo::SHARE_CANCEL
-             completionMessage:@"dummy"];
+  [controller shareDidComplete:NO completionMessage:@"dummy"];
   EXPECT_TRUE(provider.activityServiceDidEndPresentingWasCalled);
-  EXPECT_FALSE(provider.latestErrorAlertTitle);
-  EXPECT_FALSE(provider.latestErrorAlertMessage);
-  EXPECT_FALSE(provider.latestSnackbarMessage);
-}
-
-// Verifies that the error alert provider is invoked with the proper error
-// message upon receiving a -shareDidComplete callback for a failed share.
-TEST_F(ActivityServiceControllerTest, TestShareDidCompleteWithError) {
-  ActivityServiceController* controller =
-      [[ActivityServiceController alloc] init];
-  FakeActivityServiceControllerTestProvider* provider =
-      [[FakeActivityServiceControllerTestProvider alloc]
-          initWithParentViewController:nil];
-  [controller setProvidersForTesting:provider dispatcher:provider];
-
-  [controller shareDidComplete:ShareTo::SHARE_ERROR completionMessage:@"dummy"];
-
-  NSString* error_title =
-      l10n_util::GetNSString(IDS_IOS_SHARE_TO_ERROR_ALERT_TITLE);
-  NSString* error_message =
-      l10n_util::GetNSString(IDS_IOS_SHARE_TO_ERROR_ALERT);
-  EXPECT_NSEQ(error_title, provider.latestErrorAlertTitle);
-  EXPECT_NSEQ(error_message, provider.latestErrorAlertMessage);
   EXPECT_FALSE(provider.latestSnackbarMessage);
 }
 

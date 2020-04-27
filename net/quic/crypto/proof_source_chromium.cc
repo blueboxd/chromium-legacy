@@ -188,4 +188,8 @@ void ProofSourceChromium::ComputeTlsSignature(
   callback->Run(true, sig, nullptr);
 }
 
+quic::ProofSource::TicketCrypter* ProofSourceChromium::SessionTicketCrypter() {
+  return nullptr;
+}
+
 }  // namespace net

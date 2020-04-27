@@ -845,6 +845,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
           kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Provider", 1, 1);
 }
 
 // Tests the sign-in flow when the credentials passing API is used w/o 'confirm'
@@ -880,6 +881,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPIWithoutConfirm) {
           kFirstSAMLUserGaiaId)));
 
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Provider", 1, 1);
 }
 
 // Tests the single password scraped flow.

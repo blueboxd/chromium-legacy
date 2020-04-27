@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
 
 namespace extensions {

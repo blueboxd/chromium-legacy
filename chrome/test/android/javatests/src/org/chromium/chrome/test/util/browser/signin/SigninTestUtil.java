@@ -24,6 +24,7 @@ import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -86,7 +87,8 @@ public final class SigninTestUtil {
     public static Account getCurrentAccount() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             return CoreAccountInfo.getAndroidAccountFrom(
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                            ConsentLevel.SYNC));
         });
     }
 
@@ -161,7 +163,7 @@ public final class SigninTestUtil {
             Assert.assertEquals(account.name,
                     IdentityServicesProvider.get()
                             .getIdentityManager()
-                            .getPrimaryAccountInfo()
+                            .getPrimaryAccountInfo(ConsentLevel.SYNC)
                             .getEmail());
         });
     }

@@ -16,7 +16,6 @@
 
 #include "base/allocator/buildflags.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/memory/free_deleter.h"
 #include "base/sanitizer_buildflags.h"
 #include "build/build_config.h"

@@ -6,8 +6,8 @@
 #include <stdio.h>
 
 #include "base/allocator/buildflags.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/process/process_metrics.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"

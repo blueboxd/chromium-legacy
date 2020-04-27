@@ -38,7 +38,6 @@ blink::mojom::FetchAPIResponsePtr BackgroundFetchSettledFetch::CloneResponse(
       CloneSerializedBlob(response->side_data_blob),
       CloneSerializedBlob(response->side_data_blob_for_cache_put),
       mojo::Clone(response->parsed_headers),
-      response->cross_origin_embedder_policy,
       response->loaded_with_credentials);
 }
 

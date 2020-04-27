@@ -5,7 +5,8 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/math_constants.h"
 #include "base/numerics/ranges.h"
 #include "cc/animation/transform_operation.h"

@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -99,15 +100,8 @@ bool FakeNetwork::HandleRequest(URLLoaderInterceptor::RequestParams* params) {
   response->headers = info.headers;
   response->headers->GetMimeType(&response->mime_type);
   response->network_accessed = response_info.network_accessed;
-
-  if (base::FeatureList::IsEnabled(
-          network::features::kCrossOriginEmbedderPolicy) &&
-      info.headers->HasHeaderValue("Cross-Origin-Embedder-Policy",
-                                   "require-corp")) {
-    response->cross_origin_embedder_policy.value =
-        network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
-  }
-
+  response->parsed_headers =
+      network::PopulateParsedHeaders(info.headers, url_request.url);
   mojo::Remote<network::mojom::URLLoaderClient>& client = params->client;
   client->OnReceiveResponse(std::move(response));
 

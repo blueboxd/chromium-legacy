@@ -4,7 +4,7 @@
 
 #include "base/memory/platform_shared_memory_region.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/process/process_metrics.h"
 #include "base/system/sys_info.h"

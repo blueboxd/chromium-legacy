@@ -4,7 +4,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/values.h"
 #include "extensions/browser/value_store/value_store_change.h"
 #include "extensions/common/value_builder.h"

@@ -110,6 +110,9 @@
 // Simulates opening http://www.example.com/ from another application.
 + (void)simulateExternalAppURLOpening;
 
+// Simulates opening the add account sign-in flow from the web.
++ (void)simulateAddAccountFromWeb;
+
 // Closes current tab.
 + (void)closeCurrentTab;
 

@@ -8,8 +8,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task/common/checked_lock.h"
 #include "base/threading/platform_thread.h"

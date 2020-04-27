@@ -4,7 +4,7 @@
 
 #include "cc/animation/animation_curve.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 
 namespace cc {

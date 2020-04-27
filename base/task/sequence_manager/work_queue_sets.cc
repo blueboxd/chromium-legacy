@@ -4,7 +4,7 @@
 
 #include "base/task/sequence_manager/work_queue_sets.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace base {
 namespace sequence_manager {

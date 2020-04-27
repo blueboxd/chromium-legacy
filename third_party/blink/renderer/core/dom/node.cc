@@ -1295,8 +1295,6 @@ bool Node::ShouldSkipMarkingStyleDirty() const {
       parent = parent->GetStyleRecalcParent();
     return !parent || !parent->GetComputedStyle();
   }
-  if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
-    return false;
   // If this is the root element, and it does not have a computed style, we
   // still need to mark it for style recalc since it may change from
   // display:none. Otherwise, the node is not in the flat tree, and we can
@@ -1333,21 +1331,18 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   // early return here is a performance optimization.
   if (parent_dirty)
     return;
-  // If we are outside the flat tree and FlatTreeStyleRecalc is enabled, we
-  // should not update the recalc root because we should not traverse those
-  // nodes from StyleEngine::RecalcStyle().
-  if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
-    if (const ComputedStyle* current_style = GetComputedStyle()) {
-      if (current_style->IsEnsuredOutsideFlatTree())
-        return;
-    } else {
-      while (style_parent && !style_parent->CanParticipateInFlatTree())
-        style_parent = style_parent->GetStyleRecalcParent();
-      if (style_parent) {
-        if (const auto* parent_style = style_parent->GetComputedStyle()) {
-          if (parent_style->IsEnsuredOutsideFlatTree())
-            return;
-        }
+  // If we are outside the flat tree we should not update the recalc root
+  // because we should not traverse those nodes from StyleEngine::RecalcStyle().
+  if (const ComputedStyle* current_style = GetComputedStyle()) {
+    if (current_style->IsEnsuredOutsideFlatTree())
+      return;
+  } else {
+    while (style_parent && !style_parent->CanParticipateInFlatTree())
+      style_parent = style_parent->GetStyleRecalcParent();
+    if (style_parent) {
+      if (const auto* parent_style = style_parent->GetComputedStyle()) {
+        if (parent_style->IsEnsuredOutsideFlatTree())
+          return;
       }
     }
   }
@@ -1393,12 +1388,6 @@ Element* Node::FlatTreeParentForChildDirty() const {
   return ParentOrShadowHostElement();
 }
 
-ContainerNode* Node::GetStyleRecalcParent() const {
-  if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled())
-    return FlatTreeParentForChildDirty();
-  return ParentOrShadowHostNode();
-}
-
 void Node::MarkAncestorsWithChildNeedsReattachLayoutTree() {
   DCHECK(isConnected());
   Element* ancestor = GetReattachParent();
@@ -1429,13 +1418,7 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
                                const StyleChangeReasonForTracing& reason) {
   DCHECK(!GetDocument().GetStyleEngine().InRebuildLayoutTree());
   DCHECK(change_type != kNoStyleChange);
-  // TODO(crbug.com/972752): ShadowRoot can be marked kSubtreeStyleChange from
-  // RescheduleSiblingInvalidationsAsDescendants() for WholeSubtreeInvalid(). We
-  // should instead mark the shadow host for subtree recalc when we traverse the
-  // flat tree (and skip non-slotted host children).
-  DCHECK(IsElementNode() || IsTextNode() ||
-         (IsShadowRoot() &&
-          !RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()));
+  DCHECK(IsElementNode() || IsTextNode());
 
   if (!InActiveDocument())
     return;
@@ -3340,12 +3323,11 @@ void Node::FlatTreeParentChanged() {
   // The node changed the flat tree position by being slotted to a new slot or
   // slotted for the first time. We need to recalc style since the inheritance
   // parent may have changed.
-  if (NeedsStyleRecalc() &&
-      RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
-    // For flat tree style recalc, the ancestor chain may have changed. We need
-    // make sure that the child-dirty flags are updated, but the
-    // SetNeedsStyleRecalc() call below will skip
-    // MarkAncestorsWithChildNeedsStyleRecalc() if the node was already dirty.
+  if (NeedsStyleRecalc()) {
+    // The ancestor chain may have changed. We need to make sure that the
+    // child-dirty flags are updated, but the SetNeedsStyleRecalc() call below
+    // will skip MarkAncestorsWithChildNeedsStyleRecalc() if the node was
+    // already dirty.
     MarkAncestorsWithChildNeedsStyleRecalc();
   }
   SetNeedsStyleRecalc(kLocalStyleChange,

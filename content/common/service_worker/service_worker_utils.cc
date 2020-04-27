@@ -235,8 +235,9 @@ const char* ServiceWorkerUtils::FetchResponseSourceToSuffix(
 }
 
 ServiceWorkerUtils::ResourceResponseHeadAndMetadata::
-    ResourceResponseHeadAndMetadata(network::mojom::URLResponseHeadPtr head,
-                                    std::vector<uint8_t> metadata)
+    ResourceResponseHeadAndMetadata(
+        network::mojom::URLResponseHeadPtr head,
+        scoped_refptr<net::IOBufferWithSize> metadata)
     : head(std::move(head)), metadata(std::move(metadata)) {}
 
 ServiceWorkerUtils::ResourceResponseHeadAndMetadata::
@@ -275,13 +276,7 @@ ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
   if (options & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)
     head->ssl_info = http_info->ssl_info;
 
-  std::vector<uint8_t> metadata;
-  if (http_info->metadata) {
-    const uint8_t* data =
-        reinterpret_cast<const uint8_t*>(http_info->metadata->data());
-    metadata = {data, data + http_info->metadata->size()};
-  }
-  return {std::move(head), std::move(metadata)};
+  return {std::move(head), std::move(http_info->metadata)};
 }
 
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {

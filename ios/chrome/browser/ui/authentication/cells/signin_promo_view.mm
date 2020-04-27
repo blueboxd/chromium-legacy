@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "build/branding_buildflags.h"
@@ -11,6 +12,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -110,6 +112,13 @@ const CGFloat kImageViewWidthHeight = 32;
                        action:@selector(onPrimaryButtonAction:)
              forControlEvents:UIControlEventTouchUpInside];
     _primaryButton.contentEdgeInsets = primaryButtonInsets;
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _primaryButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
 
     // Create and setup seconday button.
     UIButton* secondaryButton;
@@ -125,6 +134,13 @@ const CGFloat kImageViewWidthHeight = 32;
     [_secondaryButton addTarget:self
                          action:@selector(onSecondaryButtonAction:)
                forControlEvents:UIControlEventTouchUpInside];
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _secondaryButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
 
     // Vertical stackView containing all previous view.
     UIStackView* verticalStackView =
@@ -147,6 +163,13 @@ const CGFloat kImageViewWidthHeight = 32;
     [_closeButton setImage:[UIImage imageNamed:@"signin_promo_close_gray"]
                   forState:UIControlStateNormal];
     _closeButton.hidden = YES;
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        _closeButton.pointerInteractionEnabled = YES;
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
     [self addSubview:_closeButton];
 
     [NSLayoutConstraint activateConstraints:@[

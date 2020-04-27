@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "extensions/browser/api/web_request/form_data_parser.h"

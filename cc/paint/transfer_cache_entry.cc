@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/paint/raw_memory_transfer_cache_entry.h"
 #include "cc/paint/shader_transfer_cache_entry.h"

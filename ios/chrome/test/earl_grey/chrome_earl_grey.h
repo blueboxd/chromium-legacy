@@ -250,6 +250,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Simulates opening http://www.example.com/ from another application.
 - (void)simulateExternalAppURLOpening;
 
+// Simulates opening the add account sign-in flow from the web.
+- (void)simulateAddAccountFromWeb;
+
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;
 

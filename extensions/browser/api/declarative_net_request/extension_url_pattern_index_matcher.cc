@@ -10,7 +10,8 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
 #include "extensions/common/api/declarative_net_request.h"

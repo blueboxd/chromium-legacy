@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -310,7 +311,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
      */
     private void updateSyncPreferences() {
         String signedInAccountName = CoreAccountInfo.getEmailFrom(
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                        ConsentLevel.SYNC));
         if (signedInAccountName == null) {
             // May happen if account is removed from the device while this screen is shown.
             getActivity().finish();
@@ -510,7 +512,8 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
             displayPassphraseDialog();
         } else if (mProfileSyncService.isTrustedVaultKeyRequired()) {
             CoreAccountInfo primaryAccountInfo =
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                            ConsentLevel.SYNC);
             if (primaryAccountInfo != null) {
                 SyncSettingsUtils.openTrustedVaultKeyRetrievalDialog(
                         this, primaryAccountInfo, REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL);

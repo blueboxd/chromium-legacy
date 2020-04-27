@@ -16,6 +16,7 @@
 #include "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/password_form_helper.h"
 #import "components/password_manager/ios/password_suggestion_helper.h"
+#include "components/password_manager/ios/unique_id_tab_helper.h"
 #include "ios/web/common/url_scheme_util.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
@@ -65,7 +66,8 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
 
 // Informs the |_passwordManager| of the password forms (if any were present)
 // that have been found on the page.
-- (void)didFinishPasswordFormExtraction:(const std::vector<FormData>&)forms;
+- (void)didFinishPasswordFormExtraction:(const std::vector<FormData>&)forms
+                        withMaxUniqueID:(uint32_t)maxID;
 
 // Finds all password forms in DOM and sends them to the password manager for
 // further processing.
@@ -135,6 +137,8 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
                name:CWVPasswordStoreSyncToggledNotification
              object:nil];
 
+    UniqueIDTabHelper::CreateForWebState(_webState);
+
     // TODO(crbug.com/865114): Credential manager related logic
   }
   return self;
@@ -172,9 +176,24 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   if (webState->ContentIsHTML()) {
     [self findPasswordFormsAndSendThemToPasswordManager];
   } else {
+    UniqueIDTabHelper* uniqueIDTabHelper =
+        UniqueIDTabHelper::FromWebState(webState);
+    uint32_t maxUniqueID = uniqueIDTabHelper->GetNextAvailableRendererID();
     // If the current page is not HTML, it does not contain any HTML forms.
-    [self didFinishPasswordFormExtraction:std::vector<FormData>()];
+    [self didFinishPasswordFormExtraction:std::vector<autofill::FormData>()
+                          withMaxUniqueID:maxUniqueID];
   }
+}
+
+- (void)webState:(web::WebState*)webState
+    frameDidBecomeAvailable:(web::WebFrame*)web_frame {
+  DCHECK_EQ(_webState, webState);
+  DCHECK(web_frame);
+  UniqueIDTabHelper* uniqueIDTabHelper =
+      UniqueIDTabHelper::FromWebState(_webState);
+  uint32_t nextAvailableRendererID =
+      uniqueIDTabHelper->GetNextAvailableRendererID();
+  [self.formHelper setUpForUniqueIDsWithInitialState:nextAvailableRendererID];
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
@@ -308,7 +327,8 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   }
 }
 
-- (void)didFinishPasswordFormExtraction:(const std::vector<FormData>&)forms {
+- (void)didFinishPasswordFormExtraction:(const std::vector<FormData>&)forms
+                        withMaxUniqueID:(uint32_t)maxID {
   // Do nothing if |self| has been detached.
   if (!_passwordManager) {
     return;
@@ -320,6 +340,10 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
     // account for the security state.
 
     [self.suggestionHelper updateStateOnPasswordFormExtracted];
+    UniqueIDTabHelper* uniqueIDTabHelper =
+        UniqueIDTabHelper::FromWebState(_webState);
+    if (uniqueIDTabHelper->GetNextAvailableRendererID() < maxID)
+      uniqueIDTabHelper->SetNextAvailableRendererID(++maxID);
     // Invoke the password manager callback to autofill password forms
     // on the loaded page.
     _passwordManager->OnPasswordFormsParsed(self.passwordManagerDriver, forms);
@@ -337,8 +361,8 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   // manager.
   __weak CWVPasswordController* weakSelf = self;
   [self.formHelper findPasswordFormsWithCompletionHandler:^(
-                       const std::vector<FormData>& forms) {
-    [weakSelf didFinishPasswordFormExtraction:forms];
+                       const std::vector<FormData>& forms, uint32_t maxID) {
+    [weakSelf didFinishPasswordFormExtraction:forms withMaxUniqueID:maxID];
   }];
 }
 

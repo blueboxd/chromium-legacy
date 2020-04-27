@@ -218,6 +218,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Handles SAML/GAIA login flow metrics
   // is_third_party_idp == false means GAIA-based authentication
   void HandleUsingSAMLAPI(bool is_third_party_idp);
+  void HandleRecordSAMLProvider(const std::string& x509certificate);
   void HandleScrapedPasswordCount(int password_count);
   void HandleScrapedPasswordVerificationFailed();
   void HandleSamlChallengeMachineKey(const std::string& callback_id,

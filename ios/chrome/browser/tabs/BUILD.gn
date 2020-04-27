@@ -52,6 +52,7 @@ source_set("tabs_internal") {
     "//components/keyed_service/core",
     "//components/language/ios/browser",
     "//components/navigation_metrics",
+    "//components/password_manager/ios",
     "//components/profile_metrics",
     "//components/safe_browsing/core:features",
     "//components/security_state/ios",

@@ -71,8 +71,8 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Info(
-   emails=['mythria@chromium.org','ulan@chromium.org'],
-   component='Blink>JavaScript')
+    emails=['mythria@chromium.org', 'tmrts@chromium.org'],
+    component='Blink>JavaScript')
 class V8DesktopBrowsingBenchmark(
     _V8BrowsingBenchmark):
   PLATFORM = 'desktop'
@@ -92,8 +92,8 @@ class V8DesktopBrowsingBenchmark(
 
 
 @benchmark.Info(
-   emails=['mythria@chromium.org','ulan@chromium.org'],
-   component='Blink>JavaScript')
+    emails=['mythria@chromium.org', 'tmrts@chromium.org'],
+    component='Blink>JavaScript')
 class V8MobileBrowsingBenchmark(
     _V8BrowsingBenchmark):
   PLATFORM = 'mobile'
@@ -113,8 +113,8 @@ class V8MobileBrowsingBenchmark(
 
 
 @benchmark.Info(
-   emails=['mythria@chromium.org','ulan@chromium.org'],
-   component='Blink>JavaScript')
+    emails=['mythria@chromium.org', 'tmrts@chromium.org'],
+    component='Blink>JavaScript')
 class V8FutureDesktopBrowsingBenchmark(
     _V8BrowsingBenchmark):
   PLATFORM = 'desktop'
@@ -135,8 +135,8 @@ class V8FutureDesktopBrowsingBenchmark(
 
 
 @benchmark.Info(
-   emails=['mythria@chromium.org','ulan@chromium.org'],
-   component='Blink>JavaScript')
+    emails=['mythria@chromium.org', 'tmrts@chromium.org'],
+    component='Blink>JavaScript')
 class V8FutureMobileBrowsingBenchmark(
     _V8BrowsingBenchmark):
   PLATFORM = 'mobile'

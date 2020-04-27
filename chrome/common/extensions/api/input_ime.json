@@ -355,6 +355,16 @@
                     "optional": true,
                     "description": "True to display the auxiliary text, false to hide it."
                   },
+                  "totalCandidates": {
+                    "type": "integer",
+                    "optional": true,
+                    "description": "The total number of candidates for the candidate window."
+                  },
+                  "currentCandidateIndex": {
+                    "type": "integer",
+                    "optional": true,
+                    "description": "The index of the current chosen candidate out of total candidates."
+                  },
                   "windowPosition": {
                     "$ref": "WindowPosition",
                     "description": "Where to display the candidate window.",

@@ -122,6 +122,9 @@ fast/harness/results.html [ Skip ]
 [ Linux ] virtual/text-antialias/aat-morx.html [ Skip ]
 [ Win ] virtual/text-antialias/aat-morx.html [ Skip ]
 
+[ Linux ] virtual/text-antialias/mac-system-ui-weight.html [ Skip ]
+[ Win ] virtual/text-antialias/mac-system-ui-weight.html [ Skip ]
+
 # AAT Small Caps test not supported on platforms other than Mac 10.13.
 [ Linux ] virtual/text-antialias/small-caps-aat.html [ Skip ]
 [ Win ] virtual/text-antialias/small-caps-aat.html [ Skip ]

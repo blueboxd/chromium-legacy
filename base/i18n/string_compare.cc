@@ -4,7 +4,7 @@
 
 #include "base/i18n/string_compare.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RESOLVE_PROXY_MSG_HELPER_H_
-#define CONTENT_BROWSER_RESOLVE_PROXY_MSG_HELPER_H_
+#ifndef CONTENT_BROWSER_RESOLVE_PROXY_HELPER_H_
+#define CONTENT_BROWSER_RESOLVE_PROXY_HELPER_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@
 #include "base/optional.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/browser_message_filter.h"
+#include "content/common/renderer_host.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
@@ -25,12 +25,12 @@ class ProxyInfo;
 
 namespace content {
 
-// Responds to ChildProcessHostMsg_ResolveProxy, kicking off a proxy lookup
-// request on the UI thread using the specified proxy service.  Completion is
-// notified through the delegate.  If multiple requests are started at the same
-// time, they will run in FIFO order, with only 1 being outstanding at a time.
+// Responds to ResolveProxyCallback, kicking off a proxy lookup request on the
+// UI thread using the specified proxy service.  Completion is notified through
+// the delegate.  If multiple requests are started at the same time, they will
+// run in FIFO order, with only 1 being outstanding at a time.
 //
-// When an instance of ResolveProxyMsgHelper is destroyed, it cancels any
+// When an instance of ResolveProxyHelper is destroyed, it cancels any
 // outstanding proxy resolve requests with the proxy service. It also deletes
 // the stored IPC::Message pointers for pending requests.
 //
@@ -38,26 +38,24 @@ namespace content {
 // self-reference as long as there's a pending Mojo call, as losing its last
 // reference on the IO thread with an open mojo pipe that lives on the UI
 // thread leads to problems.
-class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter,
-                                             network::mojom::ProxyLookupClient {
+class CONTENT_EXPORT ResolveProxyHelper
+    : public base::RefCounted<ResolveProxyHelper>,
+      public network::mojom::ProxyLookupClient {
  public:
-  explicit ResolveProxyMsgHelper(int render_process_host_id);
+  explicit ResolveProxyHelper(int render_process_host_id);
 
-  // BrowserMessageFilter implementation
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                BrowserThread::ID* thread) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
+  using ResolveProxyCallback = mojom::RendererHost::ResolveProxyCallback;
+  void ResolveProxy(const GURL& url, ResolveProxyCallback callback);
 
  protected:
   // Destruction cancels the current outstanding request, and clears the
   // pending queue.
-  ~ResolveProxyMsgHelper() override;
+  ~ResolveProxyHelper() override;
 
  private:
-  // Used to destroy the |ResolveProxyMsgHelper| on the UI thread.
-  friend class base::DeleteHelper<ResolveProxyMsgHelper>;
+  // Used to destroy the |ResolveProxyHelper| on the UI thread.
+  friend class base::DeleteHelper<ResolveProxyHelper>;
+  friend class base::RefCounted<ResolveProxyHelper>;
 
   // Starts the first pending request.
   void StartPendingRequest();
@@ -77,7 +75,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter,
   // A PendingRequest is a resolve request that is in progress, or queued.
   struct PendingRequest {
    public:
-    PendingRequest(const GURL& url, IPC::Message* reply_msg);
+    PendingRequest(const GURL& url, ResolveProxyCallback callback);
     PendingRequest(PendingRequest&& pending_request) noexcept;
     ~PendingRequest();
 
@@ -87,7 +85,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter,
     GURL url;
 
     // Data to pass back to the delegate on completion (we own it until then).
-    std::unique_ptr<IPC::Message> reply_msg;
+    ResolveProxyCallback callback;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(PendingRequest);
@@ -103,14 +101,14 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter,
   // Needed to shut down safely, since this class is refcounted, with some
   // references owned on multiple threads, while |receiver_| lives on the UI
   // thread, and may receive callbacks there whenever there's a pending request.
-  scoped_refptr<ResolveProxyMsgHelper> owned_self_;
+  scoped_refptr<ResolveProxyHelper> owned_self_;
 
   // Receiver for the currently in-progress request, if any.
   mojo::Receiver<network::mojom::ProxyLookupClient> receiver_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(ResolveProxyMsgHelper);
+  DISALLOW_COPY_AND_ASSIGN(ResolveProxyHelper);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RESOLVE_PROXY_MSG_HELPER_H_
+#endif  // CONTENT_BROWSER_RESOLVE_PROXY_HELPER_H_

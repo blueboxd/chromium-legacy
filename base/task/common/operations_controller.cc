@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/task/common/operations_controller.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace base {
 namespace internal {

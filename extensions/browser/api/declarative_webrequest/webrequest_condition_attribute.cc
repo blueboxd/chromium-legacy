@@ -9,10 +9,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

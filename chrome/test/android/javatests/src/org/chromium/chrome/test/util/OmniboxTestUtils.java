@@ -8,7 +8,6 @@ import android.content.Context;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ListView;
 
 import org.junit.Assert;
 
@@ -20,6 +19,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.On
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorTestUtils;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdown;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -136,9 +136,7 @@ public class OmniboxTestUtils {
         private int mZeroSuggestCalledCount;
         private boolean mStartAutocompleteCalled;
 
-        public TestAutocompleteController(
-                View view,
-                OnSuggestionsReceivedListener listener,
+        public TestAutocompleteController(View view, OnSuggestionsReceivedListener listener,
                 Map<String, List<SuggestionsResult>> suggestions) {
             mView = view;
             mSuggestions = suggestions;
@@ -251,9 +249,8 @@ public class OmniboxTestUtils {
         return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                InputMethodManager imm =
-                        (InputMethodManager) view.getContext().getSystemService(
-                                Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(
+                        Context.INPUT_METHOD_SERVICE);
                 return imm.isActive(view);
             }
         });
@@ -327,17 +324,18 @@ public class OmniboxTestUtils {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                ListView suggestionsList = AutocompleteCoordinatorTestUtils.getSuggestionList(
-                        locationBar.getAutocompleteCoordinator());
-                if (suggestionsList == null) {
+                OmniboxSuggestionsDropdown suggestionsDropdown =
+                        AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
+                                locationBar.getAutocompleteCoordinator());
+                if (suggestionsDropdown == null) {
                     updateFailureReason("suggestionList is null");
                     return false;
                 }
-                if (!suggestionsList.isShown()) {
+                if (!suggestionsDropdown.getView().isShown()) {
                     updateFailureReason("suggestionList is not shown");
                     return false;
                 }
-                if (suggestionsList.getCount() == 0) {
+                if (suggestionsDropdown.getItemCount() == 0) {
                     updateFailureReason("suggestionList has no entries");
                     return false;
                 }
@@ -356,11 +354,11 @@ public class OmniboxTestUtils {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                ListView suggestionsList = AutocompleteCoordinatorTestUtils.getSuggestionList(
-                        locationBar.getAutocompleteCoordinator());
-                return suggestionsList != null
-                        && suggestionsList.isShown()
-                        && suggestionsList.getCount() == expectedCount;
+                OmniboxSuggestionsDropdown suggestionsDropdown =
+                        AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
+                                locationBar.getAutocompleteCoordinator());
+                return suggestionsDropdown != null && suggestionsDropdown.getView().isShown()
+                        && suggestionsDropdown.getItemCount() == expectedCount;
             }
         });
     }

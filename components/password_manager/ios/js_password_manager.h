@@ -75,6 +75,9 @@ NSString* SerializePasswordFormFillData(
             generatedPassword:(NSString*)generatedPassword
             completionHandler:(void (^)(BOOL))completionHandler;
 
+// Sets up the next available unique ID value in a document.
+- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID;
+
 // Designated initializer. |receiver| should not be nil.
 - (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
     NS_DESIGNATED_INITIALIZER;

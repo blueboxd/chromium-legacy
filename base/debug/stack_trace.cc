@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <sstream>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 
 #if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)

@@ -669,7 +669,6 @@ class CacheStorageManagerTest : public testing::Test {
         nullptr /* side_data_blob */,
         nullptr /* side_data_blob_for_cache_put */,
         network::mojom::ParsedHeaders::New(),
-        network::CrossOriginEmbedderPolicy(),
         false /* loaded_with_credentials */);
 
     blink::mojom::BatchOperationPtr operation =

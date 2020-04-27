@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "extensions/browser/api/declarative_net_request/web_contents_helper.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"

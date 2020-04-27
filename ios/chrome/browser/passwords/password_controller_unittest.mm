@@ -30,6 +30,7 @@
 #import "components/password_manager/ios/js_password_manager.h"
 #import "components/password_manager/ios/password_form_helper.h"
 #include "components/password_manager/ios/test_helpers.h"
+#include "components/password_manager/ios/unique_id_tab_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
@@ -240,6 +241,8 @@ class PasswordControllerTest : public ChromeWebTest {
     ON_CALL(*weak_client_, IsSavingAndFillingEnabled)
         .WillByDefault(Return(true));
 
+    UniqueIDTabHelper::CreateForWebState(web_state());
+
     @autoreleasepool {
       // Make sure the temporary array is released after SetUp finishes,
       // otherwise [passwordController_ suggestionProvider] will be retained
@@ -376,6 +379,7 @@ struct FindPasswordFormTestData {
   const size_t expected_number_of_fields;
   // Expected form name.
   const char* expected_form_name;
+  const uint32_t maxID;
 };
 
 FormData MakeSimpleFormData() {
@@ -428,7 +432,7 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
       "<input type='text' name='user0'>"
       "<input type='password' name='pass0'>"
       "</form>",
-      true, 2, "form1"
+      true, 2, "form1", 2
     },
     // User name is captured as an email address (HTML5).
     {
@@ -436,12 +440,12 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
       "<input type='email' name='email1'>"
       "<input type='password' name='pass1'>"
       "</form>",
-      true, 2, "form1"
+      true, 2, "form1", 5
     },
     // No form found.
     {
       @"<div>",
-      false, 0, nullptr
+      false, 0, nullptr, 0
     },
     // Disabled username element.
     {
@@ -449,14 +453,14 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
       "<input type='text' name='user2' disabled='disabled'>"
       "<input type='password' name='pass2'>"
       "</form>",
-      true, 2, "form1"
+      true, 2, "form1", 8
     },
     // No password element.
     {
       @"<form name='form1'>"
       "<input type='text' name='user3'>"
       "</form>",
-      false, 0, nullptr
+      false, 0, nullptr, 0
     },
   };
   // clang-format on
@@ -466,11 +470,14 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
     LoadHtml(data.html_string);
     __block std::vector<FormData> forms;
     __block BOOL block_was_called = NO;
-    [passwordController_.formHelper findPasswordFormsWithCompletionHandler:^(
-                                        const std::vector<FormData>& result) {
-      block_was_called = YES;
-      forms = result;
-    }];
+    __block uint32_t maxExtractedID;
+    [passwordController_.formHelper
+        findPasswordFormsWithCompletionHandler:^(
+            const std::vector<FormData>& result, uint32_t maxID) {
+          block_was_called = YES;
+          forms = result;
+          maxExtractedID = maxID;
+        }];
     EXPECT_TRUE(
         WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
           return block_was_called;
@@ -482,6 +489,7 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
     } else {
       ASSERT_TRUE(forms.empty());
     }
+    EXPECT_EQ(data.maxID, maxExtractedID);
   }
 }
 
@@ -1175,6 +1183,7 @@ class PasswordControllerTestSimple : public PlatformTest {
     web_state_.SetJSInjectionReceiver(mock_js_injection_receiver);
     ON_CALL(web_state_, GetBrowserState)
         .WillByDefault(testing::Return(browser_state.get()));
+    UniqueIDTabHelper::CreateForWebState(&web_state_);
 
     passwordController_ =
         CreatePasswordController(&web_state_, store_.get(), &weak_client_);

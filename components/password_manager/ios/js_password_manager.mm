@@ -139,4 +139,13 @@ NSString* JSONEscape(NSString* JSONString) {
              }];
 }
 
+- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID {
+  NSString* script = [NSString
+      stringWithFormat:@"__gCrWeb.fill.setUpForUniqueIDs(%d)", nextAvailableID];
+  [_receiver executeJavaScript:script
+             completionHandler:^(id result, NSError*) {
+               [result isEqual:@YES];
+             }];
+}
+
 @end

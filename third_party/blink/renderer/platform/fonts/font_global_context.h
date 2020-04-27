@@ -32,12 +32,25 @@ class PLATFORM_EXPORT FontGlobalContext {
 
   static HarfBuzzFontCache* GetHarfBuzzFontCache();
 
-  static hb_font_funcs_t* GetHarfBuzzFontFuncs() {
-    return Get()->harfbuzz_font_funcs_;
+  enum HorizontalAdvanceSource {
+    kSkiaHorizontalAdvances,
+    kHarfBuzzHorizontalAdvances
+  };
+
+  static hb_font_funcs_t* GetHarfBuzzFontFuncs(
+      HorizontalAdvanceSource advance_source) {
+    if (advance_source == kHarfBuzzHorizontalAdvances) {
+      return Get()->harfbuzz_font_funcs_harfbuzz_advances_;
+    }
+    return Get()->harfbuzz_font_funcs_skia_advances_;
   }
 
-  static void SetHarfBuzzFontFuncs(hb_font_funcs_t* funcs) {
-    Get()->harfbuzz_font_funcs_ = funcs;
+  static void SetHarfBuzzFontFuncs(HorizontalAdvanceSource advance_source,
+                                   hb_font_funcs_t* funcs) {
+    if (advance_source == kHarfBuzzHorizontalAdvances) {
+      Get()->harfbuzz_font_funcs_harfbuzz_advances_ = funcs;
+    }
+    Get()->harfbuzz_font_funcs_skia_advances_ = funcs;
   }
 
   static FontUniqueNameLookup* GetFontUniqueNameLookup();
@@ -53,7 +66,8 @@ class PLATFORM_EXPORT FontGlobalContext {
 
   FontCache font_cache_;
   std::unique_ptr<HarfBuzzFontCache> harfbuzz_font_cache_;
-  hb_font_funcs_t* harfbuzz_font_funcs_;
+  hb_font_funcs_t* harfbuzz_font_funcs_skia_advances_;
+  hb_font_funcs_t* harfbuzz_font_funcs_harfbuzz_advances_;
   std::unique_ptr<FontUniqueNameLookup> font_unique_name_lookup_;
 
   DISALLOW_COPY_AND_ASSIGN(FontGlobalContext);

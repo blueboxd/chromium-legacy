@@ -51,6 +51,7 @@ import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.GAIAServiceType;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SignoutReason;
 
 import java.util.List;
@@ -158,7 +159,8 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         if (getPreferenceScreen() != null) getPreferenceScreen().removeAll();
 
         mSignedInAccountName = CoreAccountInfo.getEmailFrom(
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                        ConsentLevel.SYNC));
         if (mSignedInAccountName == null) {
             // The AccountManagementFragment can only be shown when the user is signed in. If the
             // user is signed out, exit the fragment.

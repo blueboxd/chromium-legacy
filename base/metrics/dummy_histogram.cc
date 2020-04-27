@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/notreached.h"
 
 namespace base {
 

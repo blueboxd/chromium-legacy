@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"

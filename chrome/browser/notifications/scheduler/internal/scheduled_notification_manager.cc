@@ -34,7 +34,7 @@ namespace {
 bool CreateTimeCompare(const NotificationEntry* lhs,
                        const NotificationEntry* rhs) {
   DCHECK(lhs && rhs);
-  return lhs->create_time <= rhs->create_time;
+  return lhs->create_time < rhs->create_time;
 }
 
 // Vailidates notification entry. Returns false if the entry should be deleted.

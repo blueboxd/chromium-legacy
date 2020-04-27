@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #include "ios/chrome/browser/overlays/public/overlay_dispatch_callback.h"
 #include "ios/chrome/browser/overlays/public/overlay_response_support.h"

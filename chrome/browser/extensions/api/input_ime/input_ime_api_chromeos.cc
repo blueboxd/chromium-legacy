@@ -651,6 +651,17 @@ InputImeSetCandidateWindowPropertiesFunction::Run() {
     modified = true;
   }
 
+  if (properties.current_candidate_index) {
+    properties_out.current_candidate_index =
+        *properties.current_candidate_index;
+    modified = true;
+  }
+
+  if (properties.total_candidates) {
+    properties_out.total_candidates = *properties.total_candidates;
+    modified = true;
+  }
+
   if (modified) {
     engine->SetCandidateWindowProperty(properties_out);
   }

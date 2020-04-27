@@ -2247,8 +2247,6 @@ TEST_F(StyleEngineTest, RecalcPropagatedWritingMode) {
 }
 
 TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTree) {
-  ScopedFlatTreeStyleRecalcForTest feature_scope(true);
-
   GetDocument().body()->setInnerHTML(
       R"HTML(<div id="host"><div id="outer"><div id="inner"><div id="innermost"></div></div></div></div>)HTML");
 
@@ -2314,8 +2312,6 @@ TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTree) {
 }
 
 TEST_F(StyleEngineTest, MoveSlottedOutsideFlatTree) {
-  ScopedFlatTreeStyleRecalcForTest feature_scope(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <div id="host1"><span></span></div>
     <div id="host2"></div>
@@ -2340,8 +2336,6 @@ TEST_F(StyleEngineTest, MoveSlottedOutsideFlatTree) {
 }
 
 TEST_F(StyleEngineTest, StyleRecalcRootInShadowTree) {
-  ScopedFlatTreeStyleRecalcForTest feature_scope(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <div id="host"></div>
   )HTML");
@@ -2359,8 +2353,6 @@ TEST_F(StyleEngineTest, StyleRecalcRootInShadowTree) {
 }
 
 TEST_F(StyleEngineTest, StyleRecalcRootOutsideFlatTree) {
-  ScopedFlatTreeStyleRecalcForTest feature_scope(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <div id="host"><div id="ensured"><span></span></div></div>
     <div id="dirty"></div>
@@ -2392,8 +2384,6 @@ TEST_F(StyleEngineTest, StyleRecalcRootOutsideFlatTree) {
 }
 
 TEST_F(StyleEngineTest, RemoveStyleRecalcRootFromFlatTree) {
-  ScopedFlatTreeStyleRecalcForTest scope(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <div id=host><span></span></div>
   )HTML");
@@ -2428,8 +2418,6 @@ TEST_F(StyleEngineTest, RemoveStyleRecalcRootFromFlatTree) {
 }
 
 TEST_F(StyleEngineTest, SlottedWithEnsuredStyleOutsideFlatTree) {
-  ScopedFlatTreeStyleRecalcForTest scope(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <div id="host"><span></span></div>
   )HTML");
@@ -2457,8 +2445,6 @@ TEST_F(StyleEngineTest, SlottedWithEnsuredStyleOutsideFlatTree) {
 }
 
 TEST_F(StyleEngineTest, RecalcEnsuredStyleOutsideFlatTreeV0) {
-  ScopedFlatTreeStyleRecalcForTest scope(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <div id="host"><span></span></div>
   )HTML");
@@ -2483,8 +2469,6 @@ TEST_F(StyleEngineTest, RecalcEnsuredStyleOutsideFlatTreeV0) {
 }
 
 TEST_F(StyleEngineTest, ForceReattachRecalcRootAttachShadow) {
-  ScopedFlatTreeStyleRecalcForTest scope(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <div id="reattach"></div><div id="host"><span></span></div>
   )HTML");

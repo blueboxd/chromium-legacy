@@ -4,8 +4,9 @@
 
 #include "base/memory/memory_pressure_monitor.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 
 namespace base {
 namespace {

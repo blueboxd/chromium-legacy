@@ -4,7 +4,7 @@
 
 #include "base/debug/dump_without_crashing.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace {
 

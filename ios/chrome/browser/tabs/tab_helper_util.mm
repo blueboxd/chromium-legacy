@@ -14,6 +14,7 @@
 #import "components/history/ios/browser/web_state_top_sites_observer.h"
 #include "components/keyed_service/core/service_access_type.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
+#import "components/password_manager/ios/unique_id_tab_helper.h"
 #include "components/safe_browsing/core/features.h"
 #import "components/security_state/ios/insecure_input_tab_helper.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
@@ -140,6 +141,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   history::WebStateTopSitesObserver::CreateForWebState(
       web_state,
       ios::TopSitesFactory::GetForBrowserState(original_browser_state).get());
+
+  UniqueIDTabHelper::CreateForWebState(web_state);
 
   PasswordTabHelper::CreateForWebState(web_state);
 

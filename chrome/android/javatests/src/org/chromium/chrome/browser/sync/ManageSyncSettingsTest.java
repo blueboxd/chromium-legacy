@@ -449,6 +449,7 @@ public class ManageSyncSettingsTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "Flaky. See https://crbug.com/1075530")
     @Feature({"Sync"})
     @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
     public void testAdvancedSyncFlowPreferencesAndBottomBarShown() {

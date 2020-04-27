@@ -378,3 +378,14 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_break_session_stream_close_loop,
           false)
+
+// Replace the usage of ConnectionData::encryption_level in
+// quic_time_wait_list_manager with a new TimeWaitAction.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_replace_time_wait_list_encryption_level,
+          false)
+
+// If true, move Goolge QUIC stream accounting to LegacyQuicStreamIdManager.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_stream_id_manager_handles_accounting,
+          false)

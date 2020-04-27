@@ -4,8 +4,8 @@
 
 #include "extensions/common/permissions/permissions_info.h"
 
+#include "base/check.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

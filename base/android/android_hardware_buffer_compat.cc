@@ -7,7 +7,7 @@
 #include <dlfcn.h>
 
 #include "base/android/build_info.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace base {
 

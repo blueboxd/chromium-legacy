@@ -17,8 +17,9 @@
 #include <memory>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/clang_profiling_buildflags.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"

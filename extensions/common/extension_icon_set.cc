@@ -4,8 +4,8 @@
 
 #include "extensions/common/extension_icon_set.h"
 
+#include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 
 ExtensionIconSet::ExtensionIconSet() {}

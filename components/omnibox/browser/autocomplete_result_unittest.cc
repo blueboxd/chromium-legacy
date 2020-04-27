@@ -975,7 +975,7 @@ TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kOnDeviceHeadProvider,
+        omnibox::kOnDeviceHeadProviderNonIncognito,
         {{"DemoteOnDeviceSearchSuggestionsMode", "remove-suggestions"}});
     AutocompleteResult result;
     result.AppendMatches(input, matches);
@@ -1000,7 +1000,7 @@ TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kOnDeviceHeadProvider,
+        omnibox::kOnDeviceHeadProviderNonIncognito,
         {{"DemoteOnDeviceSearchSuggestionsMode", "decrease-relevances"}});
     AutocompleteResult result;
     result.AppendMatches(input, matches);
@@ -1025,7 +1025,7 @@ TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kOnDeviceHeadProvider,
+        omnibox::kOnDeviceHeadProviderNonIncognito,
         {{"DemoteOnDeviceSearchSuggestionsMode", "remove-suggestions"}});
 
     matches[0].type = AutocompleteMatchType::SEARCH_OTHER_ENGINE;

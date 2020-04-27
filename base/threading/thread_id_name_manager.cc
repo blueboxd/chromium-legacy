@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/singleton.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"

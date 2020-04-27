@@ -4,7 +4,7 @@
 
 #include "base/metrics/sample_map.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 

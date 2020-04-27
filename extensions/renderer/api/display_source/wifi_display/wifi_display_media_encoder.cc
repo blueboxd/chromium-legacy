@@ -4,7 +4,7 @@
 
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_encoder.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "media/base/bind_to_current_loop.h"
 
 namespace extensions {

@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 #include "base/task/thread_pool/worker_thread.h"
 

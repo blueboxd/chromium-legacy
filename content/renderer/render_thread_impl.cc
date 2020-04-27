@@ -1090,9 +1090,10 @@ int RenderThreadImpl::PostTaskToAllWebWorkers(base::RepeatingClosure closure) {
 }
 
 bool RenderThreadImpl::ResolveProxy(const GURL& url, std::string* proxy_list) {
-  bool result = false;
-  Send(new ViewHostMsg_ResolveProxy(url, &result, proxy_list));
-  return result;
+  base::Optional<std::string> result;
+  GetRendererHost()->ResolveProxy(url, &result);
+  *proxy_list = result.value_or(std::string());
+  return result.has_value();
 }
 
 media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {

@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 
 // static
 std::string ValueStoreChange::ToJson(

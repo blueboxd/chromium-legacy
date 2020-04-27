@@ -64,7 +64,16 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
                                    const std::vector<MediaImage>& images);
 
   void WaitForEmptyPosition();
+
+  // Blocks until notified about MediaPosition changing to one matching
+  // |position|.
   void WaitForExpectedPosition(const MediaPosition& position);
+
+  // Blocks until notified about MediaPosition changing to one matching
+  // |position|, where media time is required to be equal to or greater than
+  // the media time of |position|. Returns the media time actually reported
+  // with MediaPosition.
+  base::TimeDelta WaitForExpectedPositionAtLeast(const MediaPosition& position);
 
   const mojom::MediaSessionInfoPtr& session_info() const {
     return session_info_;
@@ -102,6 +111,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
       std::pair<mojom::MediaSessionImageType, std::vector<MediaImage>>>
       expected_images_of_type_;
   base::Optional<MediaPosition> expected_position_;
+  base::Optional<MediaPosition> minimum_expected_position_;
   bool waiting_for_empty_metadata_ = false;
 
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;

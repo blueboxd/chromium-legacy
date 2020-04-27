@@ -4,7 +4,8 @@
 
 #include "extensions/renderer/bindings/api_binding_util.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
 #include "build/build_config.h"

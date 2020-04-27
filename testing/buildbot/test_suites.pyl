@@ -819,15 +819,6 @@
 
     'chromium_swarm_android_gtests': {
       'base_unittests': {},
-      'chrome_public_test_apk': {
-        'swarming': {
-          'shards': 15,
-         },
-         'mixins': [
-          'chrome-gold-service-account',
-          'skia_gold_test',
-        ],
-      },
       'content_browsertests': {
         'swarming': {
           'shards': 10,

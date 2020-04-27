@@ -12,7 +12,7 @@
 #include "base/allocator/buildflags.h"
 #include "base/atomicops.h"
 #include "base/bits.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/process/process_metrics.h"
 #include "base/threading/platform_thread.h"

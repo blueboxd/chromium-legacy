@@ -7,7 +7,7 @@
 
 #include "base/files/file_path_watcher.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/build_config.h"
 
 namespace base {

@@ -64,6 +64,7 @@ import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -483,9 +484,10 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
 
         if (mCurrentSyncError == SyncError.AUTH_ERROR) {
             AccountManagerFacadeProvider.getInstance().updateCredentials(
-                    CoreAccountInfo.getAndroidAccountFrom(IdentityServicesProvider.get()
-                                                                  .getIdentityManager()
-                                                                  .getPrimaryAccountInfo()),
+                    CoreAccountInfo.getAndroidAccountFrom(
+                            IdentityServicesProvider.get()
+                                    .getIdentityManager()
+                                    .getPrimaryAccountInfo(ConsentLevel.SYNC)),
                     getActivity(), null);
             return;
         }
@@ -501,7 +503,8 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
 
         if (mCurrentSyncError == SyncError.OTHER_ERRORS) {
             final Account account = CoreAccountInfo.getAndroidAccountFrom(
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                            ConsentLevel.SYNC));
             // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
             IdentityServicesProvider.get().getSigninManager().signOut(
                     SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
@@ -520,7 +523,8 @@ public class SyncAndServicesSettings extends PreferenceFragmentCompat
         if (mCurrentSyncError == SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING
                 || mCurrentSyncError == SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS) {
             CoreAccountInfo primaryAccountInfo =
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                            ConsentLevel.SYNC);
             if (primaryAccountInfo != null) {
                 SyncSettingsUtils.openTrustedVaultKeyRetrievalDialog(
                         this, primaryAccountInfo, REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL);

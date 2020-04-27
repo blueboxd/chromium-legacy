@@ -13,29 +13,11 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
  * The properties controlling the state of the list of suggestion items.
  */
 public class SuggestionListProperties {
-    /**
-     * Interface that will receive notifications and callbacks from OmniboxSuggestionList.
-     */
-    public interface SuggestionListObserver {
-        /**
-         * Invoked whenever the height of suggestion list changes.
-         * The height may change as a result of eg. soft keyboard popping up.
-         *
-         * @param newHeightPx New height of the suggestion list in pixels.
-         */
-        void onSuggestionListHeightChanged(int newHeightPx);
-
-        /**
-         * Invoked whenever the User scrolls the list.
-         */
-        void onSuggestionListScroll();
-    }
-
     /** Whether the suggestion list is visible. */
     public static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
 
     /** The embedder for the suggestion list. */
-    public static final WritableObjectPropertyKey<OmniboxSuggestionListEmbedder> EMBEDDER =
+    public static final WritableObjectPropertyKey<OmniboxSuggestionsDropdown.Embedder> EMBEDDER =
             new WritableObjectPropertyKey<>();
 
     /**
@@ -49,7 +31,7 @@ public class SuggestionListProperties {
     public static final WritableBooleanPropertyKey IS_INCOGNITO = new WritableBooleanPropertyKey();
 
     /** Observer that will receive notifications and callbacks from Suggestion List. */
-    public static final WritableObjectPropertyKey<SuggestionListObserver> OBSERVER =
+    public static final WritableObjectPropertyKey<OmniboxSuggestionsDropdown.Observer> OBSERVER =
             new WritableObjectPropertyKey<>();
 
     public static final PropertyKey[] ALL_KEYS =

@@ -1612,6 +1612,48 @@ TEST_F(WebMediaPlayerImplTest, MediaPositionState_PlayPauseSetRate) {
   Play();
 }
 
+TEST_F(WebMediaPlayerImplTest, MediaPositionState_Underflow) {
+  InitializeWebMediaPlayerImpl();
+
+  testing::Sequence sequence;
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(delegate_.player_id(), _))
+      .InSequence(sequence)
+      .WillOnce([](auto id, auto position) {
+        EXPECT_EQ(0.0, position.playback_rate());
+      });
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(delegate_.player_id(), _))
+      .InSequence(sequence)
+      .WillOnce([](auto id, auto position) {
+        EXPECT_EQ(1.0, position.playback_rate());
+      });
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(delegate_.player_id(), _))
+      .InSequence(sequence)
+      .WillOnce([](auto id, auto position) {
+        EXPECT_EQ(0.0, position.playback_rate());
+      });
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(delegate_.player_id(), _))
+      .InSequence(sequence)
+      .WillOnce([](auto id, auto position) {
+        EXPECT_EQ(1.0, position.playback_rate());
+      });
+
+  wmpi_->SetRate(1.0);
+  LoadAndWaitForReadyState(kAudioOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveCurrentData);
+  // Play will set the playback rate to 1.0.
+  Play();
+
+  // Underflow will set the playback rate to 0.0.
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveCurrentData);
+
+  // Leaving the underflow state will restore the playback rate of 1.0.
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
+}
+
 TEST_F(WebMediaPlayerImplTest, MediaPositionState_Seeking) {
   InitializeWebMediaPlayerImpl();
 
@@ -1635,9 +1677,9 @@ TEST_F(WebMediaPlayerImplTest, MediaPositionState_Seeking) {
               DidPlayerMediaPositionStateChange(delegate_.player_id(), _))
       .InSequence(s)
       .WillOnce([](auto id, auto position) {
-        EXPECT_EQ(1.0, position.playback_rate());
+        EXPECT_EQ(0.0, position.playback_rate());
         EXPECT_EQ(kAudioOnlyTestFileDuration, position.duration());
-        EXPECT_EQ(base::TimeDelta::FromMilliseconds(100),
+        EXPECT_EQ(base::TimeDelta(),
                   position.GetPositionAtTime(position.last_updated_time()));
       });
   EXPECT_CALL(delegate_, DidPlayerMediaPositionStateChange(

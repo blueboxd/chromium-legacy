@@ -2807,41 +2807,50 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     ASSERT_TRUE(ExecuteScript(
         main_frame, "document.getElementById('video').currentTime = 1"));
 
-    observer.WaitForExpectedPosition(media_session::MediaPosition(
+    // We might only learn about the rate going back to 1.0 when the media time
+    // has already progressed a bit.
+    observer.WaitForExpectedPositionAtLeast(media_session::MediaPosition(
         1.0, duration, base::TimeDelta::FromSeconds(1)));
   }
 
+  base::TimeDelta paused_position;
   {
-    // If we pause the player then the position should be updated.
+    // If we pause the player then the rate should be updated.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     ASSERT_TRUE(
         ExecuteScript(main_frame, "document.getElementById('video').pause()"));
 
-    observer.WaitForExpectedPosition(media_session::MediaPosition(
-        0.0, duration, base::TimeDelta::FromSeconds(1)));
+    // Media time may have progressed since the time we seeked to 1s.
+    paused_position =
+        observer.WaitForExpectedPositionAtLeast(media_session::MediaPosition(
+            0.0, duration, base::TimeDelta::FromSeconds(1)));
   }
 
+  base::TimeDelta resumed_position;
   {
-    // If we resume the player then the position should be updated.
+    // If we resume the player then the rate should be updated.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     ASSERT_TRUE(
         ExecuteScript(main_frame, "document.getElementById('video').play()"));
 
-    observer.WaitForExpectedPosition(media_session::MediaPosition(
-        1.0, duration, base::TimeDelta::FromSeconds(1)));
+    // We might only learn about the rate going back to 1.0 when the media time
+    // has already progressed a bit.
+    resumed_position = observer.WaitForExpectedPositionAtLeast(
+        media_session::MediaPosition(1.0, duration, paused_position));
   }
 
   {
-    // If we change the playback rate then the position should be updated.
+    // If we change the playback rate then the MediaPosition should be updated.
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
 
     ASSERT_TRUE(ExecuteScript(
         main_frame, "document.getElementById('video').playbackRate = 2"));
 
-    observer.WaitForExpectedPosition(media_session::MediaPosition(
-        2.0, duration, base::TimeDelta::FromSeconds(1)));
+    // Media time may have progressed since the time we resumed playback.
+    observer.WaitForExpectedPositionAtLeast(
+        media_session::MediaPosition(2.0, duration, resumed_position));
   }
 
   {

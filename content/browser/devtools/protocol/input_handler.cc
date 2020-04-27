@@ -219,21 +219,21 @@ bool GenerateTouchPoints(
     event->touches[event->touches_length] = it.second;
     event->touches[event->touches_length].state =
         type == blink::WebInputEvent::Type::kTouchCancel
-            ? blink::WebTouchPoint::State::kStateCancelled
-            : blink::WebTouchPoint::State::kStateStationary;
+            ? blink::WebTouchPoint::kStateCancelled
+            : blink::WebTouchPoint::kStateStationary;
     event->touches_length++;
   }
   if (type == blink::WebInputEvent::Type::kTouchCancel ||
       type == blink::WebInputEvent::Type::kTouchEnd) {
     event->touches[0].state = type == blink::WebInputEvent::Type::kTouchCancel
-                                  ? blink::WebTouchPoint::State::kStateCancelled
-                                  : blink::WebTouchPoint::State::kStateReleased;
+                                  ? blink::WebTouchPoint::kStateCancelled
+                                  : blink::WebTouchPoint::kStateReleased;
     event->SetType(type);
   } else if (points.find(changing.id) == points.end()) {
-    event->touches[0].state = blink::WebTouchPoint::State::kStatePressed;
+    event->touches[0].state = blink::WebTouchPoint::kStatePressed;
     event->SetType(blink::WebInputEvent::Type::kTouchStart);
   } else {
-    event->touches[0].state = blink::WebTouchPoint::State::kStateMoved;
+    event->touches[0].state = blink::WebTouchPoint::kStateMoved;
     event->SetType(blink::WebInputEvent::Type::kTouchMove);
   }
   return true;

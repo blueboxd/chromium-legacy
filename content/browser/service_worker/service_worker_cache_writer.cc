@@ -614,7 +614,7 @@ int ServiceWorkerCacheWriter::WriteInfo(
       /*response_start_time=*/base::TimeTicks::Now(),
       response_info->response_data_size);
   // There should be no metadata when writing response headers.
-  DCHECK(response.metadata.empty());
+  DCHECK(!response.metadata);
   return WriteResponseHead(*response.head);
 }
 

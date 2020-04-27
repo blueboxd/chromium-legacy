@@ -53,13 +53,35 @@ void GeneratePasswordForFormFieldAction::OnGetFormAndFieldDataForGeneration(
   if (!status.ok()) {
     EndAction(status);
   }
+
+  if (!delegate_->GetUserData()->selected_login_.has_value()) {
+    VLOG(1) << "GeneratePasswordForFormFieldAction: requested login details "
+               "not available in client memory.";
+    EndAction(ClientStatus(PRECONDITION_FAILED));
+    return;
+  }
+
   uint64_t max_length = field_data.max_length;
   std::string password = delegate_->GetWebsiteLoginFetcher()->GeneratePassword(
       autofill::CalculateFormSignature(form_data),
       autofill::CalculateFieldSignatureForField(field_data), max_length);
+
   delegate_->WriteUserData(base::BindOnce(
       &GeneratePasswordForFormFieldAction::StoreGeneratedPasswordToUserData,
       weak_ptr_factory_.GetWeakPtr(), memory_key, password));
+
+  // Presaving stores a generated password with empty username for the cases
+  // when Chrome misses or misclassifies a successful submission. Thus, even if
+  // a site saves/updates the password and Chrome doesn't, the generated
+  // password will be in the password store.
+  // Ideally, a generated password should be presaved after form filling.
+  // Otherwise, if filling fails and submission cannot happen for sure, the
+  // presaved password is pointless.
+  delegate_->GetWebsiteLoginFetcher()->PresaveGeneratedPassword(
+      *delegate_->GetUserData()->selected_login_, password, form_data,
+      base::BindOnce(&GeneratePasswordForFormFieldAction::EndAction,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ClientStatus(ACTION_APPLIED)));
 }
 
 void GeneratePasswordForFormFieldAction::StoreGeneratedPasswordToUserData(
@@ -69,8 +91,6 @@ void GeneratePasswordForFormFieldAction::StoreGeneratedPasswordToUserData(
     UserData::FieldChange* field_change) {
   DCHECK(user_data);
   user_data->additional_values_[memory_key] = SimpleValue(generated_password);
-
-  EndAction(ClientStatus(ACTION_APPLIED));
 }
 
 void GeneratePasswordForFormFieldAction::EndAction(const ClientStatus& status) {

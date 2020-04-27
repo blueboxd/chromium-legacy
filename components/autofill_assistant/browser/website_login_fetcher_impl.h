@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/autofill_assistant/browser/website_login_fetcher.h"
 
 namespace password_manager {
@@ -20,7 +21,7 @@ namespace autofill_assistant {
 // wraps access to the Chrome password manager.
 class WebsiteLoginFetcherImpl : public WebsiteLoginFetcher {
  public:
-  WebsiteLoginFetcherImpl(const password_manager::PasswordManagerClient* client,
+  WebsiteLoginFetcherImpl(password_manager::PasswordManagerClient* client,
                           password_manager::PasswordManagerDriver* driver);
   ~WebsiteLoginFetcherImpl() override;
 
@@ -35,16 +36,29 @@ class WebsiteLoginFetcherImpl : public WebsiteLoginFetcher {
                                autofill::FieldSignature field_signature,
                                uint64_t max_length) override;
 
+  void PresaveGeneratedPassword(const Login& login,
+                                const std::string& password,
+                                const autofill::FormData& form_data,
+                                base::OnceCallback<void()> callback) override;
+
+  void CommitGeneratedPassword() override;
+
  private:
   class PendingRequest;
   class PendingFetchLoginsRequest;
   class PendingFetchPasswordRequest;
+  class UpdatePasswordRequest;
 
   void OnRequestFinished(const PendingRequest* request);
 
-  const password_manager::PasswordManagerClient* client_;
+  password_manager::PasswordManagerClient* const client_;
 
-  password_manager::PasswordManagerDriver* driver_;
+  password_manager::PasswordManagerDriver* const driver_;
+
+  // Update password request will be created in PresaveGeneratedPassword and
+  // released in CommitGeneratedPassword after committing presaved password to
+  // password store.
+  std::unique_ptr<UpdatePasswordRequest> update_password_request_;
 
   // Fetch requests owned by the password manager, released when they are
   // finished.

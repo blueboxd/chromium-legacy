@@ -10,8 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"

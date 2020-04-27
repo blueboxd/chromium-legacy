@@ -16,6 +16,7 @@
 namespace autofill {
 class FormStructure;
 class LogManager;
+struct PasswordForm;
 }
 
 namespace password_manager {
@@ -46,6 +47,8 @@ class BrowserSavePasswordProgressLogger
   // Log a password successful submission event.
   void LogSuccessfulSubmissionIndicatorEvent(
       autofill::mojom::SubmissionIndicatorEvent event);
+
+  void LogPasswordForm(StringID label, const autofill::PasswordForm& form);
 
  protected:
   // autofill::SavePasswordProgressLogger:

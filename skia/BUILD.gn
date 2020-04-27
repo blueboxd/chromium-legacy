@@ -83,6 +83,7 @@ config("skia_config") {
     defines += [
       "SK_VULKAN_HEADER=\"../../skia/config/SkVulkanConfig.h\"",
       "SK_VULKAN=1",
+      "SK_USE_VMA",
     ]
   }
   if (skia_use_dawn) {
@@ -139,10 +140,7 @@ config("skia_library_config") {
     defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) * 0x01000000) | ((FREETYPE_MINOR) * 0x00010000) | ((FREETYPE_PATCH) * 0x00000100))" ]
   }
 
-  defines += [
-    "SKIA_IMPLEMENTATION=1",
-    "SK_IGNORE_MAC_OPSZ_FORCE",
-  ]
+  defines += [ "SKIA_IMPLEMENTATION=1" ]
 
   if (current_cpu == "arm") {
     if (arm_use_neon) {

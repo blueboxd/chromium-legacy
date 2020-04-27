@@ -153,12 +153,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void StoreMargins(const NGConstraintSpace&, const NGBoxStrut& margins);
   void StoreMargins(const NGPhysicalBoxStrut& margins);
 
-  // Add a column layout result to a list. Columns are essentially
-  // LayoutObject-less, but we still need to keep the fragments generated
-  // somewhere.
-  void AddColumnResult(scoped_refptr<const NGLayoutResult>,
-                       const NGBlockBreakToken* incoming_break_token);
-
   static bool CanUseNewLayout(const LayoutBox&);
   bool CanUseNewLayout() const;
 

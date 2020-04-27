@@ -74,6 +74,7 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase,
   struct CandidateWindowProperty {
     CandidateWindowProperty();
     virtual ~CandidateWindowProperty();
+    CandidateWindowProperty(const CandidateWindowProperty& other);
     int page_size;
     bool is_cursor_visible;
     bool is_vertical;
@@ -83,6 +84,11 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase,
     // window.
     std::string auxiliary_text;
     bool is_auxiliary_text_visible;
+
+    // The index of the current chosen candidate out of total candidates.
+    // value is -1 if there is no current chosen candidate.
+    int current_candidate_index = -1;
+    int total_candidates = 0;
   };
 
   InputMethodEngine();

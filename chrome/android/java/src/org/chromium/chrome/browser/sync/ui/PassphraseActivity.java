@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 
 /**
  * This activity is used for requesting a sync passphrase from the user. Typically,
@@ -49,7 +50,8 @@ public class PassphraseActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         Account account = CoreAccountInfo.getAndroidAccountFrom(
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                        ConsentLevel.SYNC));
         if (account == null) {
             finish();
             return;

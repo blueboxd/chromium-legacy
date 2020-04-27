@@ -7,7 +7,7 @@
 #include "apps/saved_files_service.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "extensions/browser/api/file_system/saved_files_service_interface.h"
 
 namespace extensions {

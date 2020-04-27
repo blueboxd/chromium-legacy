@@ -4,8 +4,10 @@
 
 #include "base/allocator/allocator_shim.h"
 
+#include <ostream>
+
 #include "base/allocator/winheap_stubs_win.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace {
 

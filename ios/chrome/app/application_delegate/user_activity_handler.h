@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @protocol BrowserInterfaceProvider;
+class ChromeBrowserState;
 @protocol StartupInformation;
 @protocol TabOpening;
 
@@ -42,8 +43,7 @@
 + (void)handleStartupParametersWithTabOpener:(id<TabOpening>)tabOpener
                           startupInformation:
                               (id<StartupInformation>)startupInformation
-                           interfaceProvider:
-                               (id<BrowserInterfaceProvider>)interfaceProvider;
+                                browserState:(ChromeBrowserState*)browserState;
 
 @end
 

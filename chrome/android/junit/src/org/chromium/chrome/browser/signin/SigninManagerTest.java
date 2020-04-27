@@ -81,7 +81,7 @@ public class SigninManagerTest {
         // Pretend Google Play services are available as it is required for the sign-in
         doReturn(false).when(externalAuthUtils).isGooglePlayServicesMissing(any());
 
-        doReturn(null).when(mIdentityManager).getPrimaryAccountInfo();
+        doReturn(null).when(mIdentityManager).getPrimaryAccountInfo(anyInt());
         mSigninManager =
                 new SigninManager(0 /* nativeSigninManagerAndroid */, mAccountTrackerService,
                         mIdentityManager, mIdentityMutator, androidSyncSettings, externalAuthUtils);
@@ -240,10 +240,10 @@ public class SigninManagerTest {
         doReturn(account)
                 .when(mIdentityManager)
                 .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(any());
-        doReturn(null).when(mIdentityManager).getPrimaryAccountInfo();
+        doReturn(null).when(mIdentityManager).getPrimaryAccountInfo(anyInt());
         Answer<Boolean> setPrimaryAccountAnswer = invocation -> {
             // From now on getPrimaryAccountInfo should return account.
-            doReturn(account).when(mIdentityManager).getPrimaryAccountInfo();
+            doReturn(account).when(mIdentityManager).getPrimaryAccountInfo(anyInt());
             return true;
         };
         doAnswer(setPrimaryAccountAnswer).when(mIdentityMutator).setPrimaryAccount(account.getId());

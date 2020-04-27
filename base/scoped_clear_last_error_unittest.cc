@@ -4,12 +4,12 @@
 
 #include "base/scoped_clear_last_error.h"
 
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
+#include "base/logging.h"
 #endif  // defined(OS_WIN)
 
 namespace base {

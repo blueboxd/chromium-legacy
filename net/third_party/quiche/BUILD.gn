@@ -959,6 +959,8 @@ source_set("quic_test_tools_core") {
     "src/quic/test_tools/simulator/switch.h",
     "src/quic/test_tools/simulator/traffic_policer.cc",
     "src/quic/test_tools/simulator/traffic_policer.h",
+    "src/quic/test_tools/test_certificates.cc",
+    "src/quic/test_tools/test_certificates.h",
     "src/quic/tools/quic_tcp_like_trace_converter.cc",
     "src/quic/tools/quic_tcp_like_trace_converter.h",
   ]

@@ -10,7 +10,7 @@
 #include <sys/shm.h>
 #include <sys/sysctl.h>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 
 namespace {

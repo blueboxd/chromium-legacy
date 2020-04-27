@@ -53,8 +53,7 @@ class OnDeviceHeadProvider : public AutocompleteProvider {
                        AutocompleteProviderListener* listener);
   ~OnDeviceHeadProvider() override;
 
-  bool IsOnDeviceHeadProviderAllowed(const AutocompleteInput& input,
-                                     const std::string& incognito_serve_mode);
+  bool IsOnDeviceHeadProviderAllowed(const AutocompleteInput& input);
 
   // Helper functions used for asynchronous search to the on device head model.
   // The Autocomplete input and output from the model will be passed from

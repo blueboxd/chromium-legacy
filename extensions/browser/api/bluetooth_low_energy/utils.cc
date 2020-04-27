@@ -8,7 +8,7 @@
 #include <iterator>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace extensions {
 namespace api {

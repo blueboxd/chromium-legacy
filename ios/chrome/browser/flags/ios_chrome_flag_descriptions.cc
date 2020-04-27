@@ -332,11 +332,17 @@ const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
     "Changes the maximum number of autocomplete matches displayed in the "
     "Omnibox UI.";
 
-const char kOmniboxOnDeviceHeadSuggestionsName[] =
-    "Omnibox on device head suggestions";
-const char kOmniboxOnDeviceHeadSuggestionsDescription[] =
+const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[] =
+    "Omnibox on device head suggestions (incognito only)";
+const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[] =
     "Shows Google head non personalized search suggestions provided by a "
-    "compact on device model";
+    "compact on device model for incognito";
+
+const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[] =
+    "Omnibox on device head suggestions (non-incognito only)";
+const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[] =
+    "Shows Google head non personalized search suggestions provided by a "
+    "compact on device model for non-incognito";
 
 const char kOmniboxOnFocusSuggestionsName[] = "Omnibox on-focus suggestions";
 const char kOmniboxOnFocusSuggestionsDescription[] =

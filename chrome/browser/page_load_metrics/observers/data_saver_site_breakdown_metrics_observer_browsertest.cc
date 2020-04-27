@@ -38,6 +38,7 @@
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -132,7 +133,14 @@ class LazyLoadWithoutLiteModeBrowserTest
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kLazyImageLoading,
           {{"automatic-lazy-load-images-enabled", "true"},
-           {"lazy_image_first_k_fully_load", "4G:0"}}},
+           {"lazy_image_first_k_fully_load",
+            base::StringPrintf("%s:0,%s:0,%s:0,%s:0,%s:0,%s:0",
+                               net::kEffectiveConnectionTypeUnknown,
+                               net::kEffectiveConnectionTypeOffline,
+                               net::kEffectiveConnectionTypeSlow2G,
+                               net::kEffectiveConnectionType2G,
+                               net::kEffectiveConnectionType3G,
+                               net::kEffectiveConnectionType4G)}}},
          {features::kLazyFrameLoading,
           {{"automatic-lazy-load-frames-enabled", "true"}}}},
         {});
@@ -150,7 +158,14 @@ class LazyLoadWithLiteModeBrowserTest
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kLazyImageLoading,
           {{"automatic-lazy-load-images-enabled", "true"},
-           {"lazy_image_first_k_fully_load", "4G:0"}}},
+           {"lazy_image_first_k_fully_load",
+            base::StringPrintf("%s:0,%s:0,%s:0,%s:0,%s:0,%s:0",
+                               net::kEffectiveConnectionTypeUnknown,
+                               net::kEffectiveConnectionTypeOffline,
+                               net::kEffectiveConnectionTypeSlow2G,
+                               net::kEffectiveConnectionType2G,
+                               net::kEffectiveConnectionType3G,
+                               net::kEffectiveConnectionType4G)}}},
          {features::kLazyFrameLoading,
           {{"automatic-lazy-load-frames-enabled", "true"}}}},
         {});
@@ -209,7 +224,9 @@ class LazyLoadWithLiteModeBrowserTest
     waiter->Wait();
 
     // Scroll to remove data savings by loading the images.
-    ScrollToAndWaitForScroll(10000);
+    EXPECT_EQ(nullptr, content::EvalJs(
+                           browser()->tab_strip_model()->GetActiveWebContents(),
+                           "document.body.scrollIntoView({block: 'end'});"));
 
     waiter->AddMinimumCompleteResourcesExpectation(
         expected_initial_resources + expected_resources_post_scroll);
@@ -223,15 +240,6 @@ class LazyLoadWithLiteModeBrowserTest
   }
 
  private:
-  void ScrollToAndWaitForScroll(unsigned int scroll_offset) {
-    ASSERT_TRUE(content::ExecuteScript(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        base::StringPrintf("window.scrollTo(0, %d);", scroll_offset)));
-    content::RenderFrameSubmissionObserver observer(
-        browser()->tab_strip_model()->GetActiveWebContents());
-    observer.WaitForScrollOffset(gfx::Vector2dF(0, scroll_offset));
-  }
-
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

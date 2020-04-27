@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/manifest_permission.h"

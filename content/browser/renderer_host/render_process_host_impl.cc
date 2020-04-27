@@ -135,7 +135,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/browser/renderer_host/web_database_host_impl.h"
-#include "content/browser/resolve_proxy_msg_helper.h"
+#include "content/browser/resolve_proxy_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -1557,6 +1557,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       frame_sink_provider_(id_),
       shutdown_exit_code_(-1) {
   widget_helper_ = new RenderWidgetHelper();
+  resolve_proxy_helper_ = new ResolveProxyHelper(GetID());
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID(), browser_context);
 
@@ -1957,8 +1958,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
   p2p_socket_dispatcher_host_ =
       std::make_unique<P2PSocketDispatcherHost>(GetID());
-
-  AddFilter(new ResolveProxyMsgHelper(GetID()));
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context(
       static_cast<ServiceWorkerContextWrapper*>(
@@ -4617,6 +4616,12 @@ void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
 
 void RenderProcessHostImpl::RecordUserMetricsAction(const std::string& action) {
   base::RecordComputedAction(action);
+}
+
+void RenderProcessHostImpl::ResolveProxy(
+    const GURL& url,
+    mojom::RendererHost::ResolveProxyCallback callback) {
+  resolve_proxy_helper_->ResolveProxy(url, std::move(callback));
 }
 
 void RenderProcessHostImpl::UpdateProcessPriorityInputs() {

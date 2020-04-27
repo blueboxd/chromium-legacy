@@ -115,7 +115,7 @@ public class IdentityManager {
      * Returns whether the user's primary account is available.
      */
     public boolean hasPrimaryAccount() {
-        return getPrimaryAccountInfo() != null;
+        return getPrimaryAccountInfo(ConsentLevel.SYNC) != null;
     }
 
     /**
@@ -126,14 +126,23 @@ public class IdentityManager {
         return IdentityManagerJni.get().getAccountsWithRefreshTokens(mNativeIdentityManager);
     }
 
+    // TODO(https://crbug.com/1046746): Remove this after migrating internal usages.
+    /** @deprecated Use {@link #getPrimaryAccountInfo(int)} instead. */
+    @Deprecated
+    public @Nullable CoreAccountInfo getPrimaryAccountInfo() {
+        return getPrimaryAccountInfo(ConsentLevel.SYNC);
+    }
+
     /**
      * Provides access to the core information of the user's primary account.
-     * Returns null if no such info is available, either because there
-     * is no primary account yet or because the user signed out.
+     * Returns non-null if the primary account was set AND the required consent level was granted,
+     * null otherwise.
+     *
+     * @param consentLevel {@link ConsentLevel} necessary for the caller. Most features should use
+     *         {@link ConsentLevel.SYNC}.
      */
-    public @Nullable CoreAccountInfo getPrimaryAccountInfo() {
-        return IdentityManagerJni.get().getPrimaryAccountInfo(
-                mNativeIdentityManager, ConsentLevel.SYNC);
+    public @Nullable CoreAccountInfo getPrimaryAccountInfo(@ConsentLevel int consentLevel) {
+        return IdentityManagerJni.get().getPrimaryAccountInfo(mNativeIdentityManager, consentLevel);
     }
 
     /**

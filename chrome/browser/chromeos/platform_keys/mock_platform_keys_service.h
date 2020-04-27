@@ -92,12 +92,41 @@ class MockPlatformKeysService : public PlatformKeysService {
                const RemoveCertificateCallback& callback),
               (override));
 
+  MOCK_METHOD(void,
+              RemoveKey,
+              (const std::string& token_id,
+               const std::string& public_key_spki_der,
+               RemoveKeyCallback callback),
+              (override));
+
   MOCK_METHOD(void, GetTokens, (const GetTokensCallback& callback), (override));
 
   MOCK_METHOD(void,
               GetKeyLocations,
               (const std::string& public_key_spki_der,
                const GetKeyLocationsCallback& callback),
+              (override));
+
+  MOCK_METHOD(void,
+              SetAttributeForKey,
+              (const std::string& token_id,
+               const std::string& public_key_spki_der,
+               KeyAttributeType attribute_type,
+               const std::string& attribute_value,
+               SetAttributeForKeyCallback callback),
+              (override));
+
+  MOCK_METHOD(void,
+              GetAttributeForKey,
+              (const std::string& token_id,
+               const std::string& public_key_spki_der,
+               KeyAttributeType attribute_type,
+               GetAttributeForKeyCallback callback),
+              (override));
+
+  MOCK_METHOD(void,
+              SetMapToSoftokenAttrsForTesting,
+              (bool map_to_softoken_attrs_for_testing),
               (override));
 };
 

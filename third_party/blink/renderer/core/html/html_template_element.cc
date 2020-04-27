@@ -70,7 +70,7 @@ void HTMLTemplateElement::CloneNonAttributePropertiesFrom(
     return;
 
   auto& html_template_element = To<HTMLTemplateElement>(source);
-  if (html_template_element.content_)
+  if (html_template_element.content())
     content()->CloneChildNodesFrom(*html_template_element.content());
 }
 

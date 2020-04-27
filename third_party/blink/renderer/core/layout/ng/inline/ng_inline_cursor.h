@@ -319,6 +319,7 @@ class CORE_EXPORT NGInlineCursor {
   // |layout_object|. When |layout_object| has no associated fragments, this
   // cursor points nothing.
   void MoveTo(const LayoutObject& layout_object);
+  void MoveToIncludingCulledInline(const LayoutObject& layout_object);
 
   // Move to containing line box. It is error if the current position is line.
   void MoveToContainingLine();
@@ -408,9 +409,6 @@ class CORE_EXPORT NGInlineCursor {
 
   // Move the cursor position to the first fragment in tree.
   void MoveToFirst();
-
-  // Same as |MoveTo()| but not support culled inline.
-  void InternalMoveTo(const LayoutObject& layout_object);
 
   void SetRoot(const NGFragmentItems& items);
   void SetRoot(const NGFragmentItems& fragment_items, ItemsSpan items);

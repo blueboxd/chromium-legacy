@@ -8,7 +8,6 @@
 #include <iterator>
 #include <memory>
 
-#include "base/logging.h"
 #include "content/public/common/child_process_host.h"
 #include "extensions/browser/service_worker/worker_id.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"

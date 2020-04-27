@@ -799,6 +799,46 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     EXPECT_EQ("AUXILIARY_TEXT", table.auxiliary_text());
   }
   {
+    SCOPED_TRACE("setCandidateWindowProperties:currentCandidateIndex test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+
+    const char set_candidate_window_properties_test_script[] =
+        "chrome.input.ime.setCandidateWindowProperties({"
+        "  engineID: engineBridge.getActiveEngineID(),"
+        "  properties: {"
+        "    currentCandidateIndex: 1"
+        "  }"
+        "});";
+    ASSERT_TRUE(content::ExecuteScript(
+        host->host_contents(), set_candidate_window_properties_test_script));
+    EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
+
+    const ui::CandidateWindow& table =
+        mock_candidate_window->last_update_lookup_table_arg().lookup_table;
+    EXPECT_EQ(1, table.current_candidate_index());
+  }
+  {
+    SCOPED_TRACE("setCandidateWindowProperties:totalCandidates test");
+    mock_input_context->Reset();
+    mock_candidate_window->Reset();
+
+    const char set_candidate_window_properties_test_script[] =
+        "chrome.input.ime.setCandidateWindowProperties({"
+        "  engineID: engineBridge.getActiveEngineID(),"
+        "  properties: {"
+        "    totalCandidates: 100"
+        "  }"
+        "});";
+    ASSERT_TRUE(content::ExecuteScript(
+        host->host_contents(), set_candidate_window_properties_test_script));
+    EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
+
+    const ui::CandidateWindow& table =
+        mock_candidate_window->last_update_lookup_table_arg().lookup_table;
+    EXPECT_EQ(100, table.total_candidates());
+  }
+  {
     SCOPED_TRACE("setCandidates test");
     mock_input_context->Reset();
     mock_candidate_window->Reset();

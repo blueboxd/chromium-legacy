@@ -4,7 +4,7 @@
 
 #include "base/allocator/partition_allocator/oom_callback.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace base {
 

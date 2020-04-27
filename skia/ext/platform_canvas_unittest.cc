@@ -8,7 +8,6 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"

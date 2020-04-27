@@ -341,13 +341,10 @@ TEST_F(NodeTest, MutationOutsideFlatTreeStyleDirty) {
   GetDocument()
       .getElementById("nonslotted")
       ->setAttribute("style", "color:green");
-  EXPECT_EQ(!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled(),
-            GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
 }
 
 TEST_F(NodeTest, SkipStyleDirtyHostChild) {
-  ScopedFlatTreeStyleRecalcForTest scope(true);
-
   SetBodyContent("<div id=host><span></span></div>");
   Element* host = GetDocument().getElementById("host");
   ShadowRoot& shadow_root =
@@ -406,8 +403,6 @@ TEST_F(NodeTest, SkipForceReattachDisplayNone) {
 }
 
 TEST_F(NodeTest, UpdateChildDirtyAncestorsOnSlotAssignment) {
-  ScopedFlatTreeStyleRecalcForTest scope(true);
-
   SetBodyContent("<div id=host><span></span></div>");
   Element* host = GetDocument().getElementById("host");
   ShadowRoot& shadow_root =
@@ -432,8 +427,6 @@ TEST_F(NodeTest, UpdateChildDirtyAncestorsOnSlotAssignment) {
 }
 
 TEST_F(NodeTest, UpdateChildDirtySlotAfterRemoval) {
-  ScopedFlatTreeStyleRecalcForTest scope(true);
-
   SetBodyContent("<div id=host><span></span></div>");
   Element* host = GetDocument().getElementById("host");
   ShadowRoot& shadow_root =
@@ -464,8 +457,6 @@ TEST_F(NodeTest, UpdateChildDirtySlotAfterRemoval) {
 }
 
 TEST_F(NodeTest, UpdateChildDirtyAfterSlotRemoval) {
-  ScopedFlatTreeStyleRecalcForTest scope(true);
-
   SetBodyContent("<div id=host><span></span></div>");
   Element* host = GetDocument().getElementById("host");
   ShadowRoot& shadow_root =
@@ -503,8 +494,6 @@ TEST_F(NodeTest, UpdateChildDirtyAfterSlotRemoval) {
 }
 
 TEST_F(NodeTest, UpdateChildDirtyAfterSlottingDirtyNode) {
-  ScopedFlatTreeStyleRecalcForTest scope(true);
-
   SetBodyContent("<div id=host><span></span></div>");
 
   auto* host = GetDocument().getElementById("host");
@@ -534,8 +523,6 @@ TEST_F(NodeTest, UpdateChildDirtyAfterSlottingDirtyNode) {
 }
 
 TEST_F(NodeTest, ChildDirtyNeedsV0Distribution) {
-  ScopedFlatTreeStyleRecalcForTest scope(true);
-
   SetBodyContent("<div id=host><span></span> </div>");
   ShadowRoot* shadow_root = CreateShadowRootForElementWithIDAndSetInnerHTML(
       GetDocument(), "host", "<content />");

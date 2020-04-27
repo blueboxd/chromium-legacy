@@ -10,7 +10,7 @@
 #include "base/atomicops.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"

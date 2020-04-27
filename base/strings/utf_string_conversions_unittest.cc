@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

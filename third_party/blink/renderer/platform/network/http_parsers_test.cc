@@ -711,9 +711,10 @@ TEST(HTTPParsersTest, ParseContentSecurityPolicyReportTo) {
   auto policies =
       ParseContentSecurityPolicy("Content-Security-Policy: report-to a b\r\n");
   EXPECT_TRUE(policies[0]->use_reporting_api);
-  ASSERT_EQ(2u, policies[0]->report_endpoints.size());
+  // The specification https://w3c.github.io/webappsec-csp/#directive-report-to
+  // only allows for one endpoints to be defined. The other ones are ignored.
+  ASSERT_EQ(1u, policies[0]->report_endpoints.size());
   EXPECT_EQ("a", policies[0]->report_endpoints[0]);
-  EXPECT_EQ("b", policies[0]->report_endpoints[1]);
 }
 
 TEST(HTTPParsersTest, ParseContentSecurityPolicyReportUri) {

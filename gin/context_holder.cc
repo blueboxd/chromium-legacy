@@ -4,7 +4,7 @@
 
 #include "gin/public/context_holder.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "gin/per_context_data.h"
 
 namespace gin {

@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -32,22 +31,6 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
     public void onReceive(Context context, final Intent intent) {
         if (!AccountManager.LOGIN_ACCOUNTS_CHANGED_ACTION.equals(intent.getAction())) return;
 
-        AsyncTask<Void> task = new AsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                SigninHelper.updateAccountRenameData();
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                continueHandleAccountChangeIfNeeded();
-            }
-        };
-        task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-    }
-
-    private void continueHandleAccountChangeIfNeeded() {
         boolean isChromeVisible = ApplicationStatus.hasVisibleActivities();
         if (isChromeVisible) {
             startBrowserIfNeededAndValidateAccounts();

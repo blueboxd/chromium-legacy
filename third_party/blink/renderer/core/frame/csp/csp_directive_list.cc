@@ -1114,6 +1114,12 @@ void CSPDirectiveList::ParseReportTo(const String& name, const String& value) {
   }
 
   ParseAndAppendReportEndpoints(value);
+
+  if (report_endpoints_.size() > 1) {
+    // The directive "report-to" only accepts one endpoint.
+    report_endpoints_.Shrink(1);
+    policy_->ReportMultipleReportToEndpoints();
+  }
 }
 
 void CSPDirectiveList::ParseReportURI(const String& name, const String& value) {
@@ -1143,10 +1149,9 @@ void CSPDirectiveList::ParseReportURI(const String& name, const String& value) {
 
 // For "report-to" directive, the spec says |value| is a single token
 // but we use the same logic as "report-uri" and thus we split |value| by
-// ASCII whitespaces.
+// ASCII whitespaces. The tokens after the first one are discarded in
+// CSPDirectiveList::ParseReportTo.
 // https://w3c.github.io/webappsec-csp/#directive-report-to
-//
-// TODO(https://crbug.com/916265): Fix this inconsistency.
 void CSPDirectiveList::ParseAndAppendReportEndpoints(const String& value) {
   Vector<UChar> characters;
   value.AppendTo(characters);

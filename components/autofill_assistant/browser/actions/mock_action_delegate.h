@@ -74,6 +74,8 @@ class MockActionDelegate : public ActionDelegate {
                     base::OnceCallback<void()> end_on_navigation_callback,
                     bool browse_mode));
   MOCK_METHOD0(CleanUpAfterPrompt, void());
+  MOCK_METHOD1(SetBrowseDomainsWhitelist,
+               void(std::vector<std::string> domains));
 
   void FillAddressForm(
       const autofill::AutofillProfile* profile,

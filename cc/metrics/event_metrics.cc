@@ -6,7 +6,8 @@
 
 #include <tuple>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 
 namespace cc {

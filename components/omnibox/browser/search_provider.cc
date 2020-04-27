@@ -619,9 +619,9 @@ void SearchProvider::Run(bool query_is_private) {
     // Consider explicitly setting a timeout for requests sent to Google when
     // On Device Head provider is enabled.
     if (IsSearchEngineGoogle(providers_.GetDefaultProviderURL(), client())) {
-      timeout_ms = base::GetFieldTrialParamByFeatureAsInt(
-          omnibox::kOnDeviceHeadProvider,
-          "SearchProviderDefaultLoaderTimeoutMs", 0);
+      timeout_ms =
+          OmniboxFieldTrial::OnDeviceSearchProviderDefaultLoaderTimeoutMs(
+              client()->IsOffTheRecord());
     }
     default_loader_ = CreateSuggestLoader(
         providers_.GetDefaultProviderURL(), input_,

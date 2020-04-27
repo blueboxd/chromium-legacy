@@ -6,8 +6,8 @@
 
 #include <string>
 
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/url_formatter/url_fixer.h"
 #include "ios/chrome/browser/chrome_url_constants.h"

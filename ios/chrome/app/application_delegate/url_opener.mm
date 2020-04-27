@@ -66,7 +66,7 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
 
       // TODO(crbug.com/935019): Exacly the same copy of this code is present in
       // +[UserAcrtivityHandler
-      // handleStartupParametersWithTabOpener:startupInformation:interfaceProvider:]
+      // handleStartupParametersWithTabOpener:startupInformation:browserState:]
 
       GURL URL;
       GURL virtualURL;

@@ -4,8 +4,8 @@
 
 #include "cc/test/transfer_cache_test_helper.h"
 
+#include "base/check.h"
 #include "base/containers/span.h"
-#include "base/logging.h"
 
 namespace cc {
 

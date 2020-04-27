@@ -84,12 +84,6 @@ inline LayoutMultiColumnFlowThread* GetFlowThread(const LayoutBox& box) {
   return GetFlowThread(DynamicTo<LayoutBlockFlow>(box));
 }
 
-inline wtf_size_t FragmentIndex(const NGBlockBreakToken* incoming_break_token) {
-  if (incoming_break_token && !incoming_break_token->IsBreakBefore())
-    return incoming_break_token->SequenceNumber() + 1;
-  return 0;
-}
-
 // The entire purpose of this function is to avoid allocating space on the stack
 // for all layout algorithms for each node we lay out. Therefore it must not be
 // inline.
@@ -645,9 +639,12 @@ void NGBlockNode::FinishLayout(
   // layout box at higher indices than that of the one we're writing back.
   const auto& physical_fragment =
       To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
+  wtf_size_t fragment_index = 0;
+  if (break_token && !break_token->IsBreakBefore())
+    fragment_index = break_token->SequenceNumber() + 1;
 
   if (layout_result->IsSingleUse())
-    box_->AddLayoutResult(layout_result, FragmentIndex(break_token));
+    box_->AddLayoutResult(layout_result, fragment_index);
   else
     box_->SetCachedLayoutResult(layout_result);
 
@@ -1510,13 +1507,6 @@ void NGBlockNode::StoreMargins(const NGConstraintSpace& constraint_space,
 
 void NGBlockNode::StoreMargins(const NGPhysicalBoxStrut& physical_margins) {
   box_->SetMargin(physical_margins);
-}
-
-void NGBlockNode::AddColumnResult(
-    scoped_refptr<const NGLayoutResult> result,
-    const NGBlockBreakToken* incoming_break_token) {
-  wtf_size_t index = FragmentIndex(incoming_break_token);
-  GetFlowThread(To<LayoutBlockFlow>(box_))->AddLayoutResult(result, index);
 }
 
 }  // namespace blink

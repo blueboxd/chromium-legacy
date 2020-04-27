@@ -40,7 +40,8 @@ class ServiceWorkerInstalledScriptReader {
   class Client {
    public:
     virtual void OnStarted(
-        scoped_refptr<HttpResponseInfoIOBuffer> http_info,
+        network::mojom::URLResponseHeadPtr response_head,
+        scoped_refptr<net::IOBufferWithSize> metadata,
         mojo::ScopedDataPipeConsumerHandle body_handle,
         mojo::ScopedDataPipeConsumerHandle meta_data_handle) = 0;
     // Called after both body and metadata have finished being written to the
@@ -60,8 +61,10 @@ class ServiceWorkerInstalledScriptReader {
 
  private:
   class MetaDataSender;
-  void OnReadInfoComplete(scoped_refptr<HttpResponseInfoIOBuffer> http_info,
-                          int result);
+  void OnReadResponseHeadComplete(
+      int result,
+      network::mojom::URLResponseHeadPtr response_head,
+      scoped_refptr<net::IOBufferWithSize> metadata);
   void OnWritableBody(MojoResult);
   void OnResponseDataRead(int read_bytes);
   void OnMetaDataSent(bool success);

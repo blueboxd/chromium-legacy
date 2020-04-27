@@ -15,26 +15,6 @@ class ChromeBrowserState;
 @class ShareToData;
 @protocol SnackbarCommands;
 
-namespace ShareTo {
-
-// Provides the result of a sharing event.
-enum ShareResult {
-  // The share was successful.
-  SHARE_SUCCESS,
-  // The share was cancelled by either the user or by the service.
-  SHARE_CANCEL,
-  // The share was attempted, but failed due to a network-related error.
-  SHARE_NETWORK_FAILURE,
-  // The share was attempted, but failed because of user authentication error.
-  SHARE_SIGN_IN_FAILURE,
-  // The share was attempted, but failed with an unspecified error.
-  SHARE_ERROR,
-  // The share was attempted, and the result is unknown.
-  SHARE_UNKNOWN_RESULT,
-};
-
-}  // namespace ShareTo
-
 // Snackbar ID for any services that wish to show snackbars.
 extern NSString* const kActivityServicesSnackbarCategory;
 

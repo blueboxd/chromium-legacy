@@ -240,20 +240,22 @@ class CrossOriginPolicyHeadersObserver : public WebContentsObserver {
     // Verify that the COOP/COEP headers were parsed.
     NavigationRequest* navigation_request =
         static_cast<NavigationRequest*>(navigation_handle);
-    CHECK(navigation_request->response()->cross_origin_embedder_policy.value ==
+    CHECK(navigation_request->response()
+              ->parsed_headers->cross_origin_embedder_policy.value ==
           expected_coep_);
-    CHECK(navigation_request->response()->cross_origin_opener_policy ==
-          expected_coop_);
+    CHECK(navigation_request->response()
+              ->parsed_headers->cross_origin_opener_policy == expected_coop_);
   }
 
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {
     // Verify that the COOP/COEP headers were parsed.
     NavigationRequest* navigation_request =
         static_cast<NavigationRequest*>(navigation_handle);
-    CHECK(navigation_request->response()->cross_origin_embedder_policy.value ==
+    CHECK(navigation_request->response()
+              ->parsed_headers->cross_origin_embedder_policy.value ==
           expected_coep_);
-    CHECK(navigation_request->response()->cross_origin_opener_policy ==
-          expected_coop_);
+    CHECK(navigation_request->response()
+              ->parsed_headers->cross_origin_opener_policy == expected_coop_);
   }
 
  private:

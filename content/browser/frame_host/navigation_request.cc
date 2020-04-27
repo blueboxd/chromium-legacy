@@ -1867,7 +1867,7 @@ void NavigationRequest::OnResponseStarted(
   }
 
   auto cross_origin_embedder_policy =
-      response_head_->cross_origin_embedder_policy;
+      response_head_->parsed_headers->cross_origin_embedder_policy;
   if (base::FeatureList::IsEnabled(
           network::features::kCrossOriginEmbedderPolicy)) {
     // https://mikewest.github.io/corpp/#process-navigation-response
@@ -1918,7 +1918,7 @@ void NavigationRequest::OnResponseStarted(
     // The Cross-Origin-Opener-Policy header should be ignored if delivered in
     // insecure contexts.
     if (!IsOriginSecure(common_params_->url)) {
-      response_head_->cross_origin_opener_policy =
+      response_head_->parsed_headers->cross_origin_opener_policy =
           network::mojom::CrossOriginOpenerPolicy::kUnsafeNone;
     }
 
@@ -1927,7 +1927,7 @@ void NavigationRequest::OnResponseStarted(
     // is not "unsafe-none". This ensures a COOP document does not inherit any
     // property from an opener.
     // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-    if (response_head_->cross_origin_opener_policy !=
+    if (response_head_->parsed_headers->cross_origin_opener_policy !=
             network::mojom::CrossOriginOpenerPolicy::kUnsafeNone &&
         (frame_tree_node_->pending_frame_policy().sandbox_flags !=
          network::mojom::WebSandboxFlags::kNone)) {
@@ -1986,7 +1986,7 @@ void NavigationRequest::OnResponseStarted(
     render_frame_host_->set_cross_origin_embedder_policy(
         cross_origin_embedder_policy);
     render_frame_host_->set_cross_origin_opener_policy(
-        response_head_->cross_origin_opener_policy);
+        response_head_->parsed_headers->cross_origin_opener_policy);
   }
   client_security_state_->cross_origin_embedder_policy =
       cross_origin_embedder_policy;

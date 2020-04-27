@@ -831,8 +831,11 @@ extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 extern const char kOmniboxMaxURLMatchesName[];
 extern const char kOmniboxMaxURLMatchesDescription[];
 
-extern const char kOmniboxOnDeviceHeadSuggestionsName[];
-extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
+extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[];
+extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[];
+
+extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[];
+extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[];
 
 extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[];
 extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[];

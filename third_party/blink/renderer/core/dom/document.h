@@ -2234,7 +2234,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
 #if DCHECK_IS_ON()
   // Allow traversal of Shadow DOM V0 traversal with dirty distribution.
-  // Required for marking ancestors style-child-dirty for FlatTreeStyleRecalc.
+  // Required for marking ancestors style-child-dirty.
   bool allow_dirty_shadow_v0_traversal_ = false;
 #endif
 

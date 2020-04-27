@@ -4,7 +4,7 @@
 
 #include "skia/ext/platform_canvas.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkTypes.h"

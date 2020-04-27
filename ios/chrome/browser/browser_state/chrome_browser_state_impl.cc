@@ -6,9 +6,9 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/bookmarks/browser/bookmark_model.h"

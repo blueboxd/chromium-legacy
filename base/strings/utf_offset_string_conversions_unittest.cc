@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_offset_string_conversions.h"

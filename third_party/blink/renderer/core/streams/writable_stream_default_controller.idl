@@ -5,9 +5,6 @@
 // This is only used when the new C++ implementation is enabled.
 
 // https://streams.spec.whatwg.org/#ws-default-controller-class-definition
-[
-    Exposed=(Window,Worker,Worklet),
-    NoInterfaceObject
-] interface WritableStreamDefaultController {
+interface WritableStreamDefaultController {
     [CallWith=ScriptState, NotEnumerable] void error(optional any e);
 };

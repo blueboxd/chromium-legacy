@@ -940,6 +940,7 @@ void AXObjectCacheImpl::DocumentTitleChanged() {
 }
 
 void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttached(Node* node) {
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(node->GetDocument());
   // Calling get() will update the AX object if we had an AXNodeObject but now
   // we need an AXLayoutObject, because it was reparented to a location outside
   // of a canvas.

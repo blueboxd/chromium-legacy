@@ -4,7 +4,6 @@
 
 #include "extensions/browser/updater/extension_downloader_delegate.h"
 
-#include "base/logging.h"
 #include "base/version.h"
 
 namespace extensions {

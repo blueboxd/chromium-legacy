@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "url/gurl.h"
 
@@ -51,6 +52,17 @@ class WebsiteLoginFetcher {
   virtual std::string GeneratePassword(autofill::FormSignature form_signature,
                                        autofill::FieldSignature field_signature,
                                        uint64_t max_length) = 0;
+
+  // Presaves generated passwod for the form. Password will be saved after
+  // successful form submission.
+  virtual void PresaveGeneratedPassword(
+      const Login& login,
+      const std::string& password,
+      const autofill::FormData& form_data,
+      base::OnceCallback<void()> callback) = 0;
+
+  // Commits the presaved passwod to the store.
+  virtual void CommitGeneratedPassword() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteLoginFetcher);
 };

@@ -3100,20 +3100,14 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
       To<V0InsertionPoint>(this)->RecalcStyleForInsertionPointChildren(
           child_change);
     } else if (ShadowRoot* root = GetShadowRoot()) {
-      if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
-        root->RecalcDescendantStyles(child_change);
-        // Sad panda. This is only to clear ensured ComputedStyles for elements
-        // outside the flat tree for getComputedStyle() in the cases where we
-        // kSubtreeStyleChange. Style invalidation and kLocalStyleChange will
-        // make sure we clear out-of-date ComputedStyles outside the flat tree
-        // in Element::EnsureComputedStyle().
-        if (child_change.RecalcDescendants())
-          RecalcDescendantStyles(StyleRecalcChange::kClearEnsured);
-      } else {
-        if (child_change.TraverseChild(*root))
-          root->RecalcStyle(child_change);
+      root->RecalcDescendantStyles(child_change);
+      // Sad panda. This is only to clear ensured ComputedStyles for elements
+      // outside the flat tree for getComputedStyle() in the cases where we
+      // kSubtreeStyleChange. Style invalidation and kLocalStyleChange will
+      // make sure we clear out-of-date ComputedStyles outside the flat tree
+      // in Element::EnsureComputedStyle().
+      if (child_change.RecalcDescendants())
         RecalcDescendantStyles(StyleRecalcChange::kClearEnsured);
-      }
     } else if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(this)) {
       slot->RecalcStyleForSlotChildren(child_change);
     } else {
@@ -5079,21 +5073,19 @@ const ComputedStyle* Element::EnsureComputedStyle(
         if (element_style)
           element_style = GetComputedStyle();
       }
-      if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
-        if (element_style && NeedsStyleRecalc()) {
-          // RecalcStyle() will not traverse into connected elements outside the
-          // flat tree and we may have a dirty element or ancestors if this
-          // element is not in the flat tree. If we don't need a style recalc,
-          // we can just re-use the ComputedStyle from the last
-          // getComputedStyle(). Otherwise, we need to clear the ensured styles
-          // for the uppermost dirty ancestor and all of its descendants. If
-          // this element was not the uppermost dirty element, we would not end
-          // up here because a dirty ancestor would have cleared the
-          // ComputedStyle in the recursive call above and element_style would
-          // have been null.
-          GetDocument().GetStyleEngine().ClearEnsuredDescendantStyles(*this);
-          element_style = nullptr;
-        }
+      if (element_style && NeedsStyleRecalc()) {
+        // RecalcStyle() will not traverse into connected elements outside the
+        // flat tree and we may have a dirty element or ancestors if this
+        // element is not in the flat tree. If we don't need a style recalc,
+        // we can just re-use the ComputedStyle from the last
+        // getComputedStyle(). Otherwise, we need to clear the ensured styles
+        // for the uppermost dirty ancestor and all of its descendants. If
+        // this element was not the uppermost dirty element, we would not end
+        // up here because a dirty ancestor would have cleared the
+        // ComputedStyle in the recursive call above and element_style would
+        // have been null.
+        GetDocument().GetStyleEngine().ClearEnsuredDescendantStyles(*this);
+        element_style = nullptr;
       }
     } else {
       element_style = nullptr;

@@ -508,13 +508,9 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   }
 }
 
-// Tests the "ADD ACCOUNT" button in the identity chooser view controller.
-- (void)testAddAccountAutomatically {
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  // Tap on "ADD ACCOUNT".
-  [SigninEarlGreyUI tapAddAccountButton];
+// Checks that the fake SSO screen shown on adding an account is visible
+// onscreen.
+- (void)assertFakeSSOScreenIsVisible {
   // Check for the fake SSO screen.
   WaitForMatcher(grey_accessibilityID(kFakeAddAccountViewIdentifier));
   // Close the SSO view controller.
@@ -526,6 +522,25 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // The tear down needs to remove other view controllers, and it cannot be done
   // during the animation of the SSO view controler.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
+// Tests the "ADD ACCOUNT" button in the identity chooser view controller.
+- (void)testAddAccountAutomatically {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  // Tap on "ADD ACCOUNT".
+  [SigninEarlGreyUI tapAddAccountButton];
+
+  [self assertFakeSSOScreenIsVisible];
+}
+
+// Tests that an add account operation triggered from the web is handled.
+// Regression test for crbug.com/1054861.
+- (void)testSigninAddAccountFromWeb {
+  [ChromeEarlGrey simulateAddAccountFromWeb];
+
+  [self assertFakeSSOScreenIsVisible];
 }
 
 // Tests to remove the last identity in the identity chooser.

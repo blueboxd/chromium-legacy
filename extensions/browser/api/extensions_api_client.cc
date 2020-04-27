@@ -4,7 +4,6 @@
 
 #include "extensions/browser/api/extensions_api_client.h"
 
-#include "base/logging.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/browser/api/management/supervised_user_service_delegate.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"

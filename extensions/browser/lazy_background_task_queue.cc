@@ -5,7 +5,8 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"

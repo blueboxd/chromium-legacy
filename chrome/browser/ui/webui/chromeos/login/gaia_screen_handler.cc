@@ -37,6 +37,7 @@
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/saml/public_saml_url_fetcher.h"
+#include "chrome/browser/chromeos/login/saml/saml_metric_utils.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -712,6 +713,8 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("completeAuthentication",
               &GaiaScreenHandler::HandleCompleteAuthentication);
   AddCallback("usingSAMLAPI", &GaiaScreenHandler::HandleUsingSAMLAPI);
+  AddCallback("recordSAMLProvider",
+              &GaiaScreenHandler::HandleRecordSAMLProvider);
   AddCallback("scrapedPasswordCount",
               &GaiaScreenHandler::HandleScrapedPasswordCount);
   AddCallback("scrapedPasswordVerificationFailed",
@@ -1013,6 +1016,11 @@ void GaiaScreenHandler::HandleCompleteLogin(const std::string& gaia_id,
 
 void GaiaScreenHandler::HandleUsingSAMLAPI(bool is_third_party_idp) {
   SetSAMLPrincipalsAPIUsed(is_third_party_idp, /*is_api_used=*/true);
+}
+
+void GaiaScreenHandler::HandleRecordSAMLProvider(
+    const std::string& x509certificate) {
+  metrics::RecordSAMLProvider(x509certificate);
 }
 
 void GaiaScreenHandler::HandleScrapedPasswordCount(int password_count) {

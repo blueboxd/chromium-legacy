@@ -15,7 +15,7 @@
 
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info_internal.h"
 #include "base/threading/scoped_blocking_call.h"

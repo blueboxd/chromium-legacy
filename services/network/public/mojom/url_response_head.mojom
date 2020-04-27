@@ -6,8 +6,6 @@ module network.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "services/network/public/mojom/cross_origin_embedder_policy.mojom";
-import "services/network/public/mojom/cross_origin_opener_policy.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/http_raw_request_response_info.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";
@@ -207,12 +205,4 @@ struct URLResponseHead {
   // is propagated to the renderer and set on recursive prefetch requests
   // (see corresponding documentation in url_loader.mojom).
   mojo_base.mojom.UnguessableToken? recursive_prefetch_token;
-
-  // The parsed representation of Cross-Origin-Embedder-Policy and
-  // Cross-Origin-Embedder-Policy-Report-Only headers.
-  CrossOriginEmbedderPolicy cross_origin_embedder_policy;
-
-  // The parsed value of the Cross-Origin-Opener-Policy (COOP) header.
-  CrossOriginOpenerPolicy cross_origin_opener_policy =
-      CrossOriginOpenerPolicy.kUnsafeNone;
 };

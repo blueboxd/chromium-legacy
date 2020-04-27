@@ -5,7 +5,7 @@
 #include "base/task/sequence_manager/work_deduplicator.h"
 
 #include <utility>
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace base {
 namespace sequence_manager {

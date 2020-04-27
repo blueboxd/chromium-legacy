@@ -42,6 +42,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void ReportSwapTime(PaintEvent, WebSwapResult, base::TimeTicks);
   void NotifyFirstContentfulPaint(base::TimeTicks swap_stamp);
   void OnNetwork2Quiet();
+  bool SeenFirstMeaningfulPaint() const;
 
   // The caller owns the |clock| which must outlive the paint detector.
   static void SetTickClockForTesting(const base::TickClock* clock);

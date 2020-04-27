@@ -29,6 +29,8 @@
 namespace {
 // The timeout for any JavaScript call in this file.
 const int64_t kJavaScriptExecutionTimeoutInSeconds = 5;
+
+constexpr int kNotSetRendererID = -1;
 }
 
 namespace autofill {
@@ -120,6 +122,13 @@ bool ExtractFormData(const base::Value& form_value,
   // main_frame_origin is used for logging UKM.
   form_data->main_frame_origin = url::Origin::Create(main_frame_url);
 
+  int unique_renderer_id = kNotSetRendererID;
+  form_dictionary->GetInteger("unique_renderer_id", &unique_renderer_id);
+  form_data->unique_renderer_id =
+      (unique_renderer_id != kNotSetRendererID
+           ? FormRendererId(static_cast<uint32_t>(unique_renderer_id))
+           : FormRendererId());
+
   // Action is optional.
   base::string16 action;
   form_dictionary->GetString("action", &action);
@@ -156,6 +165,13 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
       !field.GetString("form_control_type", &field_data->form_control_type)) {
     return false;
   }
+
+  int unique_renderer_id = kNotSetRendererID;
+  field.GetInteger("unique_renderer_id", &unique_renderer_id);
+  field_data->unique_renderer_id =
+      (unique_renderer_id != kNotSetRendererID
+           ? FieldRendererId(static_cast<uint32_t>(unique_renderer_id))
+           : FieldRendererId());
 
   // Optional fields.
   field.GetString("name_attribute", &field_data->name_attribute);

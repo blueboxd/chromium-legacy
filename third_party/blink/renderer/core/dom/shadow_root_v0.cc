@@ -148,10 +148,10 @@ const V0InsertionPoint* ShadowRootV0::FinalDestinationInsertionPointFor(
 #if DCHECK_IS_ON()
   DCHECK(key);
   // Allow traversal without V0 distribution up-to-date for marking ancestors
-  // with ChildNeedsStyleRecalc() when FlatTreeStyleRecalc is enabled.
+  // with ChildNeedsStyleRecalc() for marking ancestors with child-needs-style-
+  // recalc on a tree with a dirty distribution.
   DCHECK(!key->NeedsDistributionRecalc() ||
-         RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled() &&
-             key->GetDocument().AllowDirtyShadowV0Traversal());
+         key->GetDocument().AllowDirtyShadowV0Traversal());
 #endif
   NodeToDestinationInsertionPoints::const_iterator it =
       node_to_insertion_points_.find(key);

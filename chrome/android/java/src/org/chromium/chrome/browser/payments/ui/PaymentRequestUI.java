@@ -53,6 +53,7 @@ import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
 import org.chromium.components.browser_ui.widget.animation.FocusAnimator;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -1119,7 +1120,8 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
             message = mContext.getString(R.string.payments_card_and_address_settings);
         } else {
             CoreAccountInfo coreAccountInfo =
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                            ConsentLevel.SYNC);
             if (coreAccountInfo != null) {
                 message = mContext.getString(R.string.payments_card_and_address_settings_signed_in,
                         coreAccountInfo.getEmail());

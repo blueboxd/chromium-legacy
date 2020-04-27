@@ -16,7 +16,6 @@
 
 namespace content {
 
-struct HttpResponseInfoIOBuffer;
 class ServiceWorkerVersion;
 
 // ServiceWorkerInstalledScriptsSender serves the service worker's installed
@@ -76,7 +75,8 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptsSender
       ServiceWorkerInstalledScriptReader::FinishedReason reason);
 
   // Implements ServiceWorkerInstalledScriptReader::Client.
-  void OnStarted(scoped_refptr<HttpResponseInfoIOBuffer> http_info,
+  void OnStarted(network::mojom::URLResponseHeadPtr response_head,
+                 scoped_refptr<net::IOBufferWithSize> metadata,
                  mojo::ScopedDataPipeConsumerHandle body_handle,
                  mojo::ScopedDataPipeConsumerHandle meta_data_handle) override;
   void OnFinished(

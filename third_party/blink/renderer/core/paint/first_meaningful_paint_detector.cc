@@ -144,6 +144,10 @@ void FirstMeaningfulPaintDetector::OnNetwork2Quiet() {
   }
 }
 
+bool FirstMeaningfulPaintDetector::SeenFirstMeaningfulPaint() const {
+  return !first_meaningful_paint_.is_null();
+}
+
 void FirstMeaningfulPaintDetector::RegisterNotifySwapTime(PaintEvent event) {
   ++outstanding_swap_promise_count_;
   paint_timing_->RegisterNotifySwapTime(

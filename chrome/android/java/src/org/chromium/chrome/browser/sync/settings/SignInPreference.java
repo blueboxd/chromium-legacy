@@ -32,6 +32,7 @@ import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.ui.base.ViewUtils;
@@ -163,7 +164,8 @@ public class SignInPreference
         }
 
         CoreAccountInfo accountInfo =
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                        ConsentLevel.SYNC);
         if (accountInfo != null) {
             setupSignedIn(accountInfo.getEmail());
             return;

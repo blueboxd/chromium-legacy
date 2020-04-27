@@ -1378,6 +1378,86 @@ TEST_F(ControllerTest, BrowseStateStopsOnDifferentDomain) {
   SimulateNavigateToUrl(GURL("http://other-example.com/"));
 }
 
+TEST_F(ControllerTest, BrowseStateWithDomainWhitelist) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "runnable")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  ActionsResponseProto runnable_script;
+  auto* prompt = runnable_script.add_actions()->mutable_prompt();
+  prompt->set_browse_mode(true);
+  *prompt->add_browse_domains_whitelist() = "example.com";
+  *prompt->add_browse_domains_whitelist() = "other-example.com";
+  prompt->add_choices()->mutable_chip()->set_text("continue");
+  SetupActionsForScript("runnable", runnable_script);
+  std::string response_str;
+  script_response.SerializeToString(&response_str);
+  EXPECT_CALL(*mock_service_,
+              OnGetScriptsForUrl(GURL("http://a.example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(true, response_str));
+
+  Start("http://a.example.com/");
+  EXPECT_EQ(AutofillAssistantState::BROWSE, controller_->GetState());
+
+  SimulateNavigateToUrl(GURL("http://b.example.com/"));
+  EXPECT_EQ(AutofillAssistantState::BROWSE, controller_->GetState());
+
+  SimulateNavigateToUrl(GURL("http://sub.other-example.com/"));
+  EXPECT_EQ(AutofillAssistantState::BROWSE, controller_->GetState());
+
+  // go back.
+  SetLastCommittedUrl(GURL("http://sub.other-example.com"));
+  content::NavigationSimulator::GoBack(web_contents());
+  EXPECT_EQ(AutofillAssistantState::BROWSE, controller_->GetState());
+
+  // Same domain navigations as one of the whitelisted domains should not
+  // shutdown AA.
+  SimulateNavigateToUrl(GURL("http://other-example.com/"));
+  EXPECT_EQ(AutofillAssistantState::BROWSE, controller_->GetState());
+}
+
+TEST_F(ControllerTest, BrowseStateWithDomainWhitelistCleanup) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "runnable")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  ActionsResponseProto runnable_script;
+  auto* prompt = runnable_script.add_actions()->mutable_prompt();
+  prompt->set_browse_mode(true);
+  *prompt->add_browse_domains_whitelist() = "example.com";
+  prompt->add_choices()->mutable_chip()->set_text("continue");
+
+  // Second browse action without a whitelist.
+  auto* prompt2 = runnable_script.add_actions()->mutable_prompt();
+  prompt2->set_browse_mode(true);
+  prompt2->add_choices()->mutable_chip()->set_text("done");
+
+  SetupActionsForScript("runnable", runnable_script);
+  std::string response_str;
+  script_response.SerializeToString(&response_str);
+  EXPECT_CALL(*mock_service_,
+              OnGetScriptsForUrl(GURL("http://a.example.com/"), _, _))
+      .WillOnce(RunOnceCallback<2>(true, response_str));
+
+  Start("http://a.example.com/");
+  EXPECT_EQ(AutofillAssistantState::BROWSE, controller_->GetState());
+
+  SimulateNavigateToUrl(GURL("http://b.example.com/"));
+  EXPECT_EQ(AutofillAssistantState::BROWSE, controller_->GetState());
+
+  // Click "continue".
+  EXPECT_EQ(controller_->GetUserActions()[0].chip().text, "continue");
+  controller_->PerformUserAction(0);
+
+  EXPECT_EQ(controller_->GetUserActions()[0].chip().text, "done");
+
+  // Make sure the whitelist got reset with the second prompt action.
+  EXPECT_CALL(
+      mock_client_,
+      Shutdown(Metrics::DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE));
+  SimulateNavigateToUrl(GURL("http://c.example.com/"));
+}
+
 TEST_F(ControllerTest, PromptStateStopsOnGoBack) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "runnable")

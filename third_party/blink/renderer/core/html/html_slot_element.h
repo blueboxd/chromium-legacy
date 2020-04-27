@@ -123,7 +123,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
  private:
   InsertionNotificationRequest InsertedInto(ContainerNode&) final;
   void RemovedFrom(ContainerNode&) final;
-  void DidRecalcStyle(const StyleRecalcChange) final;
 
   void EnqueueSlotChangeEvent();
 

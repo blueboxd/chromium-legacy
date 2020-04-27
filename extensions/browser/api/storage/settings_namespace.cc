@@ -4,7 +4,7 @@
 
 #include "extensions/browser/api/storage/settings_namespace.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace extensions {
 

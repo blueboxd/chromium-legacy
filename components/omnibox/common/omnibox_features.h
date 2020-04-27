@@ -38,7 +38,6 @@ extern const base::Feature kAutocompleteTitles;
 extern const base::Feature kOmniboxDisableInstantExtendedLimit;
 extern const base::Feature kOmniboxSearchEngineLogo;
 extern const base::Feature kOmniboxRemoveSuggestionsFromClipboard;
-extern const base::Feature kOnDeviceHeadProvider;
 extern const base::Feature kDebounceDocumentProvider;
 
 // Flags that affect the "twiddle" step of AutocompleteResult, i.e. SortAndCull.
@@ -55,6 +54,10 @@ extern const base::Feature kOnFocusSuggestions;
 extern const base::Feature kZeroSuggestionsOnNTP;
 extern const base::Feature kZeroSuggestionsOnNTPRealbox;
 extern const base::Feature kZeroSuggestionsOnSERP;
+
+// On Device Head Suggest.
+extern const base::Feature kOnDeviceHeadProviderIncognito;
+extern const base::Feature kOnDeviceHeadProviderNonIncognito;
 
 // Scoring - these affect how relevance scores are calculated for suggestions.
 extern const base::Feature kOmniboxExperimentalSuggestScoring;

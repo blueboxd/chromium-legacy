@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_CONTAINER_FRAGMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_CONTAINER_FRAGMENT_H_
 
+#include <iterator>
+
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
@@ -31,7 +33,8 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     PostLayoutChildLinkList(wtf_size_t count, const NGLink* buffer)
         : count_(count), buffer_(buffer) {}
 
-    class ConstIterator {
+    class ConstIterator
+        : public std::iterator<std::input_iterator_tag, NGLink> {
       STACK_ALLOCATED();
 
      public:

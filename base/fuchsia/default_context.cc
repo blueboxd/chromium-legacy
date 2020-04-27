@@ -7,7 +7,6 @@
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/fuchsia/file_utils.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
 
 namespace base {

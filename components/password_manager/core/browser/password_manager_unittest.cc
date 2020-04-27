@@ -58,8 +58,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using autofill::FieldRendererId;
 using autofill::FormData;
 using autofill::FormFieldData;
+using autofill::FormRendererId;
 using autofill::FormStructure;
 using autofill::NO_SERVER_DATA;
 using autofill::NOT_USERNAME;
@@ -386,7 +388,7 @@ class PasswordManagerTest : public testing::Test {
     form_data.url = GURL("http://www.google.com/a/LoginAuth");
     form_data.action = GURL("http://www.google.com/a/Login");
     form_data.name = ASCIIToUTF16("the-form-name");
-    form_data.unique_renderer_id = autofill::FormRendererId(10);
+    form_data.unique_renderer_id = FormRendererId(10);
 
     FormFieldData field;
     field.name = ASCIIToUTF16("Email");
@@ -394,7 +396,7 @@ class PasswordManagerTest : public testing::Test {
     field.name_attribute = field.name;
     field.value = ASCIIToUTF16("googleuser");
     field.form_control_type = "text";
-    field.unique_renderer_id = autofill::FieldRendererId(2);
+    field.unique_renderer_id = FieldRendererId(2);
     form_data.fields.push_back(field);
 
     field.name = ASCIIToUTF16("Passwd");
@@ -402,7 +404,7 @@ class PasswordManagerTest : public testing::Test {
     field.name_attribute = field.name;
     field.value = ASCIIToUTF16("p4ssword");
     field.form_control_type = "password";
-    field.unique_renderer_id = autofill::FieldRendererId(3);
+    field.unique_renderer_id = FieldRendererId(3);
     form_data.fields.push_back(field);
 
     SetUniqueIdIfNeeded(&form_data);
@@ -494,14 +496,14 @@ class PasswordManagerTest : public testing::Test {
     form.signon_realm = "http://www.google.com/";
     form.form_data.name = ASCIIToUTF16("username_only_form");
     form.form_data.url = GURL("http://www.google.com/a/LoginAuth");
-    form.form_data.unique_renderer_id = autofill::FormRendererId(10);
+    form.form_data.unique_renderer_id = FormRendererId(30);
 
     FormFieldData field;
     field.name = ASCIIToUTF16("Email");
     field.id_attribute = field.name;
     field.name_attribute = field.name;
     field.form_control_type = "text";
-    field.unique_renderer_id = autofill::FieldRendererId(2);
+    field.unique_renderer_id = FieldRendererId(31);
     form.form_data.fields.push_back(field);
 
     return form;
@@ -531,7 +533,7 @@ class PasswordManagerTest : public testing::Test {
     field.id_attribute = field.name;
     field.value = form.username_value;
     field.form_control_type = "text";
-    field.unique_renderer_id = autofill::FieldRendererId(2);
+    field.unique_renderer_id = FieldRendererId(2);
     field.autocomplete_attribute = "cc-name";
     form.form_data.fields.push_back(field);
 
@@ -539,7 +541,7 @@ class PasswordManagerTest : public testing::Test {
     field.id_attribute = field.name;
     field.value = form.password_value;
     field.form_control_type = "password";
-    field.unique_renderer_id = autofill::FieldRendererId(3);
+    field.unique_renderer_id = FieldRendererId(3);
     field.autocomplete_attribute = "cc-number";
     form.form_data.fields.push_back(field);
 
@@ -1626,7 +1628,7 @@ TEST_F(PasswordManagerTest, DoNotSaveWithEmptyNewPasswordAndNonemptyPassword) {
   field.id_attribute = field.name;
   field.name_attribute = field.name;
   field.form_control_type = "password";
-  field.unique_renderer_id = autofill::FieldRendererId(4);
+  field.unique_renderer_id = FieldRendererId(4);
   form_data.fields.push_back(field);
 
   observed.push_back(form_data);
@@ -1714,11 +1716,11 @@ TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameId) {
   form_data.fields.resize(2);
   form_data.fields[0].name = ASCIIToUTF16("Email");
   form_data.fields[0].value = ASCIIToUTF16("googleuser");
-  form_data.fields[0].unique_renderer_id = autofill::FieldRendererId(1);
+  form_data.fields[0].unique_renderer_id = FieldRendererId(1);
   form_data.fields[0].form_control_type = "text";
   form_data.fields[1].name = ASCIIToUTF16("Passwd");
   form_data.fields[1].value = ASCIIToUTF16("p4ssword");
-  form_data.fields[1].unique_renderer_id = autofill::FieldRendererId(2);
+  form_data.fields[1].unique_renderer_id = FieldRendererId(2);
   form_data.fields[1].form_control_type = "password";
   PasswordForm first_form;
   first_form.form_data = form_data;
@@ -1727,16 +1729,16 @@ TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameId) {
   form_data.action = GURL("http://www.example.com/");
   form_data.fields[0].name = ASCIIToUTF16("User");
   form_data.fields[0].value = ASCIIToUTF16("exampleuser");
-  form_data.fields[0].unique_renderer_id = autofill::FieldRendererId(3);
+  form_data.fields[0].unique_renderer_id = FieldRendererId(3);
   form_data.fields[1].name = ASCIIToUTF16("Pwd");
   form_data.fields[1].value = ASCIIToUTF16("1234");
-  form_data.fields[1].unique_renderer_id = autofill::FieldRendererId(4);
+  form_data.fields[1].unique_renderer_id = FieldRendererId(4);
   PasswordForm second_form;
   second_form.form_data = form_data;
 
   // Make the forms be "similar".
-  first_form.form_data.unique_renderer_id = autofill::FormRendererId(7654);
-  second_form.form_data.unique_renderer_id = autofill::FormRendererId(7654);
+  first_form.form_data.unique_renderer_id = FormRendererId(7654);
+  second_form.form_data.unique_renderer_id = FormRendererId(7654);
 
   // Observe the form in the first frame.
   EXPECT_CALL(*store_,
@@ -3359,12 +3361,12 @@ TEST_F(PasswordManagerTest, FillSingleUsername) {
 
   // Create FormdData for a form with 1 text field.
   FormData form_data;
-  constexpr autofill::FormRendererId form_id(1001);
+  constexpr FormRendererId form_id(1001);
   form_data.unique_renderer_id = form_id;
   form_data.url = GURL("example.com");
   FormFieldData field;
   field.form_control_type = "text";
-  constexpr autofill::FieldRendererId field_id(10);
+  constexpr FieldRendererId field_id(10);
   field.unique_renderer_id = field_id;
   form_data.fields.push_back(field);
 
@@ -3403,19 +3405,19 @@ TEST_F(PasswordManagerTest,
 
   // Create FormdData for a form with 1 text field.
   FormData form_data;
-  constexpr autofill::FormRendererId form_id(1001);
+  constexpr FormRendererId form_id(1001);
   form_data.unique_renderer_id = form_id;
   form_data.url = GURL("example.com");
 
   FormFieldData username_field;
   username_field.form_control_type = "text";
-  constexpr autofill::FieldRendererId username_field_id(10);
+  constexpr FieldRendererId username_field_id(10);
   username_field.unique_renderer_id = username_field_id;
   form_data.fields.push_back(username_field);
 
   FormFieldData password_field;
   password_field.form_control_type = "text";
-  constexpr autofill::FieldRendererId password_field_id(11);
+  constexpr FieldRendererId password_field_id(11);
   password_field.unique_renderer_id = password_field_id;
   form_data.fields.push_back(password_field);
 
@@ -3443,8 +3445,8 @@ TEST_F(PasswordManagerTest, UsernameFirstFlow) {
   // Simulate the user typed a username in username form.
   const base::string16 username = ASCIIToUTF16("username1");
   EXPECT_CALL(driver_, GetLastCommittedURL()).WillOnce(ReturnRef(form.origin));
-  manager()->OnUserModifiedNonPasswordField(
-      &driver_, autofill::FieldRendererId(1001), username /* value */);
+  manager()->OnUserModifiedNonPasswordField(&driver_, FieldRendererId(1001),
+                                            username /* value */);
 
   // Simulate that a form which contains only 1 field which is password is added
   // to the page.
@@ -3492,7 +3494,7 @@ TEST_F(PasswordManagerTest, UsernameFirstFlowFillingServerAndLocalPredictions) {
       .WillRepeatedly(WithArg<1>(InvokeConsumer(MakeSavedForm())));
   EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
 
-  constexpr autofill::FieldRendererId kFieldRendererId(1);
+  constexpr FieldRendererId kFieldRendererId(1);
 
   FormData non_password_form;
   FormFieldData field;

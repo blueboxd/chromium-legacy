@@ -2432,8 +2432,9 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
           render_frame_host_->cross_origin_embedder_policy().value,
           render_frame_host_->GetLastCommittedOrigin(),
           !render_frame_host_->has_committed_any_navigation(),
-          request->response()->cross_origin_opener_policy,
-          request->response()->cross_origin_embedder_policy.value,
+          request->response()->parsed_headers->cross_origin_opener_policy,
+          request->response()
+              ->parsed_headers->cross_origin_embedder_policy.value,
           url::Origin::Create(request->common_params().url));
 
   if (cross_origin_policy_swap)

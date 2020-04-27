@@ -51,6 +51,8 @@ class NET_EXPORT_PRIVATE ProofSourceChromium : public quic::ProofSource {
       quiche::QuicheStringPiece in,
       std::unique_ptr<SignatureCallback> callback) override;
 
+  TicketCrypter* SessionTicketCrypter() override;
+
  private:
   bool GetProofInner(
       const quic::QuicSocketAddress& server_ip,

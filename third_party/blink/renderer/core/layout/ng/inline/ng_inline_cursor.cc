@@ -896,7 +896,7 @@ NGInlineCursor::ItemsSpan::iterator NGInlineCursor::SlowFirstItemIteratorFor(
   return items_.end();
 }
 
-void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
+void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
   // If this cursor is rootless, find the root of the inline formatting context.
   bool had_root = true;
@@ -941,9 +941,10 @@ void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
   }
 }
 
-void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
+void NGInlineCursor::MoveToIncludingCulledInline(
+    const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext()) << layout_object;
-  InternalMoveTo(layout_object);
+  MoveTo(layout_object);
   if (*this || !HasRoot() ||
       RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     layout_inline_ = nullptr;

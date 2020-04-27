@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/aligned_memory.h"
 
 namespace {

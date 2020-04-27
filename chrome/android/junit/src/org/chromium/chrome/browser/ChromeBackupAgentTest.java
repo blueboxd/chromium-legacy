@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.common.ContentProcessInfo;
 
@@ -108,7 +109,7 @@ public class ChromeBackupAgentTest {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE, true);
         editor.putBoolean(ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_SETUP, false);
-        when(mIdentityManagerMock.getPrimaryAccountInfo()).thenReturn(mAccountInfo);
+        doReturn(mAccountInfo).when(mIdentityManagerMock).getPrimaryAccountInfo(anyInt());
         editor.apply();
     }
 
@@ -135,7 +136,7 @@ public class ChromeBackupAgentTest {
         IdentityServicesProvider identityServicesProvider = mock(IdentityServicesProvider.class);
         IdentityServicesProvider.setInstanceForTests(identityServicesProvider);
         when(identityServicesProvider.getIdentityManager()).thenReturn(mIdentityManagerMock);
-        when(mIdentityManagerMock.getPrimaryAccountInfo()).thenReturn(null);
+        when(mIdentityManagerMock.getPrimaryAccountInfo(ConsentLevel.SYNC)).thenReturn(null);
 
         // Mock initializing the browser
         doReturn(true).when(mAgent).initializeBrowser();

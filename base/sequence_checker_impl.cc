@@ -4,7 +4,7 @@
 
 #include "base/sequence_checker_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequence_token.h"
 #include "base/threading/thread_checker_impl.h"

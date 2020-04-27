@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/overlays/overlay_callback_manager_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 OverlayCallbackManagerImpl::OverlayCallbackManagerImpl() = default;
 

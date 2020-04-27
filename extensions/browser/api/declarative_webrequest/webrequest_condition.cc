@@ -5,7 +5,6 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"

@@ -4,7 +4,6 @@
 
 #include "cc/trees/property_animation_state.h"
 
-#include "base/logging.h"
 
 namespace cc {
 

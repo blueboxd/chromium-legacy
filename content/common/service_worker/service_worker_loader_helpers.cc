@@ -14,8 +14,6 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
-#include "services/network/public/cpp/cross_origin_embedder_policy.h"
-#include "services/network/public/cpp/cross_origin_opener_policy_parser.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -88,13 +86,6 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
   // headers.
   if (out_head->content_length == -1)
     out_head->content_length = out_head->headers->GetContentLength();
-
-  // TODO(arthursonzogni): Move this to ParsedHeaders. Stop parsing in the
-  // browser process.
-  if (out_head->headers) {
-    out_head->cross_origin_opener_policy =
-        network::ParseCrossOriginOpenerPolicy(*(out_head->headers));
-  }
 }
 
 // static
@@ -116,8 +107,6 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
   out_head->cors_exposed_header_names = response.cors_exposed_header_names;
   out_head->did_service_worker_navigation_preload = false;
   out_head->parsed_headers = mojo::Clone(response.parsed_headers);
-  out_head->cross_origin_embedder_policy =
-      response.cross_origin_embedder_policy;
 }
 
 // static

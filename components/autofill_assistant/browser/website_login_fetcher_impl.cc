@@ -8,12 +8,34 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
+#include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_save_manager_impl.h"
+#include "components/password_manager/core/browser/votes_uploader.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace autofill_assistant {
+
+namespace {
+
+// Creates a |PasswordForm| with minimal initialization (origin, username,
+// password).
+autofill::PasswordForm CreatePasswordForm(
+    const WebsiteLoginFetcher::Login& login,
+    const std::string& password) {
+  autofill::PasswordForm form;
+  form.signon_realm = login.origin.spec();
+  form.origin = login.origin.GetOrigin();
+  form.username_value = base::UTF8ToUTF16(login.username);
+  form.password_value = base::UTF8ToUTF16(password);
+
+  return form;
+}
+
+}  // namespace
 
 // Represents a pending form fetcher request which will notify the
 // |WebsiteLoginFetcherImpl| when finished.
@@ -137,8 +159,76 @@ class WebsiteLoginFetcherImpl::PendingFetchPasswordRequest
   base::OnceCallback<void(bool, std::string)> callback_;
 };
 
+// A request to update store with new password for a login.
+class WebsiteLoginFetcherImpl::UpdatePasswordRequest
+    : public password_manager::FormFetcher::Consumer {
+ public:
+  UpdatePasswordRequest(const Login& login,
+                        const std::string& password,
+                        const autofill::FormData& form_data,
+                        password_manager::PasswordManagerClient* client,
+                        base::OnceCallback<void()> presaving_completed_callback)
+      : password_form_(CreatePasswordForm(login, password)),
+        form_data_(form_data),
+        client_(client),
+        presaving_completed_callback_(std::move(presaving_completed_callback)),
+        password_save_manager_(password_manager::PasswordSaveManagerImpl::
+                                   CreatePasswordSaveManagerImpl(client)),
+        metrics_recorder_(
+            base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
+                client->IsMainFrameSecure(),
+                client->GetUkmSourceId())),
+        votes_uploader_(client, true /* is_possible_change_password_form */) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    password_manager::PasswordStore::FormDigest digest(
+        autofill::PasswordForm::Scheme::kHtml, login.origin.spec(), GURL());
+    form_fetcher_ = std::make_unique<password_manager::FormFetcherImpl>(
+        digest, client, true);
+  }
+
+  // Password will be presaved when |form_fetcher_| completes fetching.
+  void FetchAndPresave() {
+    form_fetcher_->Fetch();
+    form_fetcher_->AddConsumer(this);
+  }
+
+  void CommitGeneratedPassword() {
+    password_save_manager_->Save(form_data_ /* observed_form */,
+                                 password_form_);
+  }
+
+  // password_manager::FormFetcher::Consumer
+  void OnFetchCompleted() override {
+    password_save_manager_->Init(client_, form_fetcher_.get(),
+                                 metrics_recorder_, &votes_uploader_);
+    password_save_manager_->PresaveGeneratedPassword(password_form_);
+    password_save_manager_->CreatePendingCredentials(
+        password_form_, form_data_ /* observed_form */,
+        form_data_ /* submitted_form */, false /* is_http_auth */,
+        false /* is_credential_api_save */);
+
+    if (presaving_completed_callback_) {
+      std::move(presaving_completed_callback_).Run();
+    }
+  }
+
+ private:
+  const autofill::PasswordForm password_form_;
+  const autofill::FormData form_data_;
+  password_manager::PasswordManagerClient* const client_ = nullptr;
+  // This callback will execute when presaving is completed.
+  base::OnceCallback<void()> presaving_completed_callback_;
+  const std::unique_ptr<password_manager::PasswordSaveManager>
+      password_save_manager_;
+  scoped_refptr<password_manager::PasswordFormMetricsRecorder>
+      metrics_recorder_;
+  password_manager::VotesUploader votes_uploader_;
+  std::unique_ptr<password_manager::FormFetcher> form_fetcher_;
+};
+
 WebsiteLoginFetcherImpl::WebsiteLoginFetcherImpl(
-    const password_manager::PasswordManagerClient* client,
+    password_manager::PasswordManagerClient* client,
     password_manager::PasswordManagerDriver* driver)
     : client_(client), driver_(driver), weak_ptr_factory_(this) {}
 
@@ -178,6 +268,26 @@ std::string WebsiteLoginFetcherImpl::GeneratePassword(
       driver_->GetPasswordGenerationHelper()->GeneratePassword(
           driver_->GetLastCommittedURL(), form_signature, field_signature,
           max_length));
+}
+
+void WebsiteLoginFetcherImpl::PresaveGeneratedPassword(
+    const Login& login,
+    const std::string& password,
+    const autofill::FormData& form_data,
+    base::OnceCallback<void()> callback) {
+  DCHECK(!update_password_request_);
+  update_password_request_ = std::make_unique<UpdatePasswordRequest>(
+      login, password, form_data, client_, std::move(callback));
+
+  update_password_request_->FetchAndPresave();
+}
+
+void WebsiteLoginFetcherImpl::CommitGeneratedPassword() {
+  DCHECK(update_password_request_);
+
+  update_password_request_->CommitGeneratedPassword();
+
+  update_password_request_.reset();
 }
 
 void WebsiteLoginFetcherImpl::OnRequestFinished(const PendingRequest* request) {

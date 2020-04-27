@@ -12,7 +12,7 @@
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/bits.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"

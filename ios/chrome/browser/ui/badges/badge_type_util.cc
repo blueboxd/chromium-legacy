@@ -4,7 +4,9 @@
 
 #include "ios/chrome/browser/ui/badges/badge_type_util.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/notreached.h"
 
 BadgeType BadgeTypeForInfobarType(InfobarType infobar_type) {
   switch (infobar_type) {

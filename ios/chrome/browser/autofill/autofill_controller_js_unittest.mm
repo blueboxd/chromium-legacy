@@ -1595,6 +1595,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
   html = [html stringByAppendingFormat:@"</body></html>"];
 
   LoadHtml(html);
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
 
   NSDictionary* expected = @{
     @"name" : @"TestForm",
@@ -1606,6 +1607,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"firstname",
         @"id_attribute" : @"firstname",
         @"identifier" : @"firstname",
+        @"unique_renderer_id" : @1,
         @"form_control_type" : @"text",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @true,
@@ -1621,6 +1623,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"vehicle",
         @"id_attribute" : @"vehicle1",
         @"identifier" : @"vehicle1",
+        @"unique_renderer_id" : @2,
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
@@ -1635,6 +1638,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"vehicle",
         @"id_attribute" : @"vehicle2",
         @"identifier" : @"vehicle2",
+        @"unique_renderer_id" : @3,
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
@@ -1649,6 +1653,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"vehicle",
         @"id_attribute" : @"vehicle3",
         @"identifier" : @"vehicle3",
+        @"unique_renderer_id" : @4,
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
@@ -1663,6 +1668,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"nameintableth",
         @"id_attribute" : @"nameintableth",
         @"identifier" : @"nameintableth",
+        @"unique_renderer_id" : @5,
         @"form_control_type" : @"text",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @true,
@@ -1678,6 +1684,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"",
         @"id_attribute" : @"emailtableth",
         @"identifier" : @"emailtableth",
+        @"unique_renderer_id" : @6,
         @"form_control_type" : @"email",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @true,
@@ -1693,6 +1700,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"pwd",
         @"id_attribute" : @"pwd",
         @"identifier" : @"pwd",
+        @"unique_renderer_id" : @7,
         @"form_control_type" : @"password",
         @"autocomplete_attribute" : @"off",
         @"max_length" : GetDefaultMaxLength(),
@@ -1709,6 +1717,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"name_attribute" : @"state",
         @"id_attribute" : @"state",
         @"identifier" : @"state",
+        @"unique_renderer_id" : @8,
         @"form_control_type" : @"select-one",
         @"is_focusable" : @1,
         @"option_values" : @[ @"CA", @"TX" ],

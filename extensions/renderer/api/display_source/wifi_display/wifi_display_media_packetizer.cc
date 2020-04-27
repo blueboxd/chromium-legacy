@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/rand_util.h"
 #include "crypto/random.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.h"

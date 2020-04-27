@@ -4,7 +4,7 @@
 
 #include "ios/web/history_state_util.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "url/gurl.h"
 
 namespace web {

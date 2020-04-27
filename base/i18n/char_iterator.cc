@@ -4,7 +4,7 @@
 
 #include "base/i18n/char_iterator.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/icu/source/common/unicode/utf8.h"
 

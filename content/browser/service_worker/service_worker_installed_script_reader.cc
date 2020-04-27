@@ -104,21 +104,20 @@ ServiceWorkerInstalledScriptReader::~ServiceWorkerInstalledScriptReader() {}
 
 void ServiceWorkerInstalledScriptReader::Start() {
   TRACE_EVENT0("ServiceWorker", "ServiceWorkerInstalledScriptReader::Start");
-  auto info_buf = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
-  reader_->ReadInfo(
-      info_buf.get(),
-      base::BindOnce(&ServiceWorkerInstalledScriptReader::OnReadInfoComplete,
-                     AsWeakPtr(), info_buf));
+  reader_->ReadResponseHead(base::BindOnce(
+      &ServiceWorkerInstalledScriptReader::OnReadResponseHeadComplete,
+      AsWeakPtr()));
 }
 
-void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
-    scoped_refptr<HttpResponseInfoIOBuffer> http_info,
-    int result) {
+void ServiceWorkerInstalledScriptReader::OnReadResponseHeadComplete(
+    int result,
+    network::mojom::URLResponseHeadPtr response_head,
+    scoped_refptr<net::IOBufferWithSize> metadata) {
   DCHECK(client_);
-  DCHECK(http_info);
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerInstalledScriptReader::OnReadInfoComplete");
-  if (!http_info->http_info) {
+  TRACE_EVENT0(
+      "ServiceWorker",
+      "ServiceWorkerInstalledScriptReader::OnReadResponseInfoComplete");
+  if (!response_head) {
     DCHECK_LT(result, 0);
     ServiceWorkerMetrics::CountReadResponseResult(
         ServiceWorkerMetrics::READ_HEADERS_ERROR);
@@ -128,8 +127,8 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
 
   DCHECK_GE(result, 0);
   mojo::ScopedDataPipeConsumerHandle meta_data_consumer;
-  DCHECK_GE(http_info->response_data_size, 0);
-  body_size_ = http_info->response_data_size;
+  DCHECK_GE(response_head->content_length, 0);
+  body_size_ = response_head->content_length;
   uint64_t meta_data_size = 0;
 
   MojoCreateDataPipeOptions options;
@@ -148,9 +147,9 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
   }
 
   // Start sending meta data (V8 code cache data).
-  if (http_info->http_info->metadata) {
-    DCHECK_GE(http_info->http_info->metadata->size(), 0);
-    meta_data_size = http_info->http_info->metadata->size();
+  if (metadata) {
+    DCHECK_GT(metadata->size(), 0);
+    meta_data_size = metadata->size();
 
     mojo::ScopedDataPipeProducerHandle meta_producer_handle;
     options.capacity_num_bytes =
@@ -163,7 +162,7 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
     }
 
     meta_data_sender_ = std::make_unique<MetaDataSender>(
-        http_info->http_info->metadata, std::move(meta_producer_handle));
+        metadata, std::move(meta_producer_handle));
     meta_data_sender_->Start(base::BindOnce(
         &ServiceWorkerInstalledScriptReader::OnMetaDataSent, AsWeakPtr()));
   }
@@ -175,7 +174,8 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
                           AsWeakPtr()));
   body_watcher_.ArmOrNotify();
 
-  client_->OnStarted(http_info, std::move(body_consumer_handle),
+  client_->OnStarted(std::move(response_head), std::move(metadata),
+                     std::move(body_consumer_handle),
                      std::move(meta_data_consumer));
 }
 

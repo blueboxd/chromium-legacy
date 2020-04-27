@@ -4,7 +4,7 @@
 //
 // Implementation of a Windows event trace controller class.
 #include "base/win/event_trace_controller.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace base {
 namespace win {

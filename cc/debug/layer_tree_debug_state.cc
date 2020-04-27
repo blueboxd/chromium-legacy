@@ -4,7 +4,6 @@
 
 #include "cc/debug/layer_tree_debug_state.h"
 
-#include "base/logging.h"
 
 namespace cc {
 

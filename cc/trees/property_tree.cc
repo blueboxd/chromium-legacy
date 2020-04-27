@@ -7,7 +7,7 @@
 #include <set>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
 #include "base/trace_event/traced_value.h"

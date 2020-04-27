@@ -10,8 +10,9 @@
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/base_jni_headers/BuildInfo_jni.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/singleton.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 
 namespace base {

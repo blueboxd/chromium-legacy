@@ -9,9 +9,9 @@
 #include <limits>
 #include <sstream>
 
+#include "base/check_op.h"
 #include "base/format_macros.h"
 #include "base/i18n/icu_string_conversions.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"

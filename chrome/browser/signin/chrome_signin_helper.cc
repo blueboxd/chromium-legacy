@@ -60,6 +60,7 @@
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -210,6 +211,11 @@ void ProcessMirrorHeader(
   // Record the service type.
   UMA_HISTOGRAM_ENUMERATION("AccountManager.ManageAccountsServiceType",
                             service_type);
+
+  // Ignore response to background request from another profile, so dialogs are
+  // not displayed in the wrong profile when using multiprofile mode.
+  if (profile != ProfileManager::GetActiveUserProfile())
+    return;
 
   // The only allowed operations are:
   // 1. Going Incognito.

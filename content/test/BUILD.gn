@@ -1840,7 +1840,7 @@ test("content_unittests") {
     "../browser/renderer_host/render_widget_host_view_mac_unittest.mm",
     "../browser/renderer_host/text_input_client_mac_unittest.mm",
     "../browser/renderer_host/web_database_host_impl_unittest.cc",
-    "../browser/resolve_proxy_msg_helper_unittest.cc",
+    "../browser/resolve_proxy_helper_unittest.cc",
     "../browser/sandbox_mac_unittest.mm",
     "../browser/scheduler/browser_io_thread_delegate_unittest.cc",
     "../browser/scheduler/browser_task_executor_unittest.cc",

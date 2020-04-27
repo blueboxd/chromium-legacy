@@ -6,7 +6,7 @@
 
 #include "base/android/library_loader/anchor_functions.h"
 #include "base/android/library_loader/anchor_functions_buildflags.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 
 namespace base {

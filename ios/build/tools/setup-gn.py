@@ -324,18 +324,6 @@ def Main(args):
         settings.getstring('build', 'arch'))
     sys.exit(1)
 
-  if settings.getboolean('goma', 'enabled'):
-    if settings.getint('xcode', 'jobs') < 0:
-      sys.stderr.write('ERROR: invalid value for xcode.jobs: %s\n' %
-          settings.get('xcode', 'jobs'))
-      sys.exit(1)
-    goma_install = os.path.expanduser(settings.getstring('goma', 'install'))
-    if not os.path.isdir(goma_install):
-      sys.stderr.write('WARNING: goma.install directory not found: %s\n' %
-          settings.get('goma', 'install'))
-      sys.stderr.write('WARNING: disabling goma\n')
-      settings.set('goma', 'enabled', 'false')
-
   # Find gn binary in PATH.
   gn_path = FindGn()
   if gn_path is None:

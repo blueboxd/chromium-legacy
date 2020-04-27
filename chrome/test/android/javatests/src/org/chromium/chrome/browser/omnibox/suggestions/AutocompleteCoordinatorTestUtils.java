@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
-import android.widget.ListView;
-
 /**
  * Utility methods providing access to package-private methods in {@link AutocompleteCoordinator}
  * for tests.
@@ -29,10 +27,11 @@ public class AutocompleteCoordinatorTestUtils {
     }
 
     /**
-     * @return The suggestion list popup containing the omnibox results (or null if it has not yet
+     * @return The suggestion dropdown containing the omnibox results (or null if it has not yet
      *         been created).
      */
-    public static ListView getSuggestionList(AutocompleteCoordinator coordinator) {
-        return ((AutocompleteCoordinatorImpl) coordinator).getSuggestionList();
+    public static OmniboxSuggestionsDropdown getSuggestionsDropdown(
+            AutocompleteCoordinator coordinator) {
+        return ((AutocompleteCoordinatorImpl) coordinator).getSuggestionsDropdown();
     }
 }

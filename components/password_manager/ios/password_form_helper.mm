@@ -263,7 +263,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
 #pragma mark - Public methods
 
 - (void)findPasswordFormsWithCompletionHandler:
-    (void (^)(const std::vector<FormData>&))completionHandler {
+    (void (^)(const std::vector<FormData>&, uint32_t))completionHandler {
   if (!_webState) {
     return;
   }
@@ -280,7 +280,17 @@ constexpr char kCommandPrefix[] = "passwordForm";
         [weakSelf getPasswordFormsFromJSON:jsonString
                                    pageURL:pageURL
                                      forms:&forms];
-        completionHandler(forms);
+        // Find the maximum extracted value.
+        uint32_t maxID = 0;
+        for (const auto& form : forms) {
+          if (form.unique_renderer_id)
+            maxID = std::max(maxID, form.unique_renderer_id.value());
+          for (const auto& field : form.fields) {
+            if (field.unique_renderer_id)
+              maxID = std::max(maxID, field.unique_renderer_id.value());
+          }
+        }
+        completionHandler(forms, maxID);
       }];
 }
 
@@ -337,7 +347,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
                                (nullable void (^)(BOOL))completionHandler {
   __weak PasswordFormHelper* weakSelf = self;
   [self findPasswordFormsWithCompletionHandler:^(
-            const std::vector<FormData>& forms) {
+            const std::vector<FormData>& forms, uint32_t maxID) {
     PasswordFormHelper* strongSelf = weakSelf;
     for (const auto& form : forms) {
       std::vector<const PasswordForm*> matches;
@@ -396,6 +406,10 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
   [self.jsPasswordManager extractForm:formName
                     completionHandler:extractFormDataCompletionHandler];
+}
+
+- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID {
+  [self.jsPasswordManager setUpForUniqueIDsWithInitialState:nextAvailableID];
 }
 
 @end

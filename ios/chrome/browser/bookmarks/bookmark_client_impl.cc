@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/bookmarks/bookmark_client_impl.h"
 
-#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/bookmark_node.h"

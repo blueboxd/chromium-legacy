@@ -332,10 +332,10 @@ public class AutocompleteMediatorUnitTest {
         mMediator.onSuggestionsReceived(mSuggestionsList, null, "");
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
         // Should request keyboard hide.
-        mMediator.onSuggestionListScroll();
+        mMediator.onSuggestionDropdownScroll();
         verify(mAutocompleteDelegate, times(2)).setKeyboardVisibility(eq(false));
         // Should also request keyboard hide.
-        mMediator.onSuggestionListScroll();
+        mMediator.onSuggestionDropdownScroll();
         verify(mAutocompleteDelegate, times(3)).setKeyboardVisibility(eq(false));
         verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(true));
     }
@@ -351,9 +351,9 @@ public class AutocompleteMediatorUnitTest {
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(true));
 
         // Should perform no action.
-        mMediator.onSuggestionListScroll();
+        mMediator.onSuggestionDropdownScroll();
         // Should perform no action.
-        mMediator.onSuggestionListScroll();
+        mMediator.onSuggestionDropdownScroll();
 
         verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(false));
     }

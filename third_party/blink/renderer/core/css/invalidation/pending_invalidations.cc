@@ -32,11 +32,8 @@ void PendingInvalidations::ScheduleInvalidationSetsForNode(
   if (node.GetStyleChangeType() < kSubtreeStyleChange) {
     for (auto& invalidation_set : invalidation_lists.descendants) {
       if (invalidation_set->WholeSubtreeInvalid()) {
-        ContainerNode* subtree_root = &node;
-        if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
-          if (auto* shadow_root = DynamicTo<ShadowRoot>(node))
-            subtree_root = &shadow_root->host();
-        }
+        auto* shadow_root = DynamicTo<ShadowRoot>(node);
+        auto* subtree_root = shadow_root ? &shadow_root->host() : &node;
         subtree_root->SetNeedsStyleRecalc(
             kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
                                      style_change_reason::kStyleInvalidator));
@@ -109,12 +106,9 @@ void PendingInvalidations::ScheduleSiblingInvalidationsAsDescendants(
 
   scheduling_parent.SetNeedsStyleInvalidation();
 
-  ContainerNode* subtree_root = &scheduling_parent;
-  if (RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
-    subtree_root = DynamicTo<Element>(scheduling_parent);
-    if (!subtree_root)
-      subtree_root = &To<ShadowRoot>(scheduling_parent).host();
-  }
+  Element* subtree_root = DynamicTo<Element>(scheduling_parent);
+  if (!subtree_root)
+    subtree_root = &To<ShadowRoot>(scheduling_parent).host();
 
   for (auto& invalidation_set : invalidation_lists.siblings) {
     DescendantInvalidationSet* descendants =

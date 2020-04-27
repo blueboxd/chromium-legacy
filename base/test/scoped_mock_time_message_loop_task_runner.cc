@@ -5,7 +5,7 @@
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/test/test_pending_task.h"

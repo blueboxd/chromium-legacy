@@ -1293,6 +1293,17 @@ void DocumentLoader::StartLoadingResponse() {
     return;
 
   CHECK_GE(state_, kCommitted);
+
+  // Let the browser process know about all the CSP applied to the document.
+  // The browser process is enforcing several directives. It needs to know about
+  // 'frame-src', 'child-src', 'navigate-to', 'upgrade-insecure-request', etc.
+  //
+  // It is important to forward all the CSP data before loading the response
+  // body, otherwise some loaded content might not be blocked.
+  frame_->GetSecurityContext()
+      ->GetContentSecurityPolicy()
+      ->ReportAccumulatedHeaders(frame_);
+
   CreateParserPostCommit();
 
   // Finish load of MHTML archives and empty documents.
@@ -1714,16 +1725,6 @@ void DocumentLoader::CreateParserPostCommit() {
   // This happens after the first chunk is parsed in HTMLDocumentParser.
   DispatchLinkHeaderPreloads(nullptr /* viewport */,
                              PreloadHelper::kOnlyLoadNonMedia);
-
-  if (commit_reason_ == CommitReason::kRegular) {
-    // When the embedder gets notified (above) that the new navigation has
-    // committed, the embedder will drop the old Content Security Policy and
-    // therefore now is a good time to report to the embedder the Content
-    // Security Policies that have accumulated so far for the new navigation.
-    frame_->GetSecurityContext()
-        ->GetContentSecurityPolicy()
-        ->ReportAccumulatedHeaders(frame_);
-  }
 
   // Initializing origin trials might force window proxy initialization,
   // which later triggers CHECK when swapping in via WebFrame::Swap().

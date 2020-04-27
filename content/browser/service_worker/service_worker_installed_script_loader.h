@@ -42,7 +42,8 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
   ~ServiceWorkerInstalledScriptLoader() override;
 
   // ServiceWorkerInstalledScriptReader::Client overrides:
-  void OnStarted(scoped_refptr<HttpResponseInfoIOBuffer> http_info,
+  void OnStarted(network::mojom::URLResponseHeadPtr response_head,
+                 scoped_refptr<net::IOBufferWithSize> metadata,
                  mojo::ScopedDataPipeConsumerHandle body_handle,
                  mojo::ScopedDataPipeConsumerHandle meta_data_handle) override;
   void OnFinished(
@@ -63,7 +64,6 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
   void OnDataAvailable(const void* data, size_t num_bytes) override {}
   void OnDataComplete() override {}
 
-  uint32_t options_ = network::mojom::kURLLoadOptionNone;
   mojo::Remote<network::mojom::URLLoaderClient> client_;
   scoped_refptr<ServiceWorkerVersion>
       version_for_main_script_http_response_info_;

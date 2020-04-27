@@ -74,6 +74,7 @@ class JsAutofillManagerTest : public ChromeWebTest {
     ChromeWebTest::LoadHtml(html);
     manager_ = [[JsAutofillManager alloc]
         initWithReceiver:web_state()->GetJSInjectionReceiver()];
+    ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
   }
 
   web::WebFrame* main_web_frame() {
@@ -121,7 +122,8 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
         @"is_checkable" : @false,
         @"is_focusable" : @true,
         @"value" : @"",
-        @"label" : @"First Name"
+        @"label" : @"First Name",
+        @"unique_renderer_id" : @1
       },
       @{
         @"aria_description" : @"",
@@ -136,7 +138,8 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
         @"is_checkable" : @false,
         @"is_focusable" : @true,
         @"value" : @"",
-        @"label" : @""
+        @"label" : @"",
+        @"unique_renderer_id" : @2
       },
       @{
         @"aria_description" : @"Email Address",
@@ -151,7 +154,8 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
         @"is_checkable" : @false,
         @"is_focusable" : @true,
         @"value" : @"",
-        @"label" : @""
+        @"label" : @"",
+        @"unique_renderer_id" : @3
       }
     ]
   };
@@ -212,7 +216,8 @@ TEST_F(JsAutofillManagerTest, ExtractForms2) {
         @"is_checkable" : @false,
         @"is_focusable" : @true,
         @"value" : @"",
-        @"label" : @"First Name"
+        @"label" : @"First Name",
+        @"unique_renderer_id" : @1
       },
       @{
         @"aria_description" : @"",
@@ -227,7 +232,8 @@ TEST_F(JsAutofillManagerTest, ExtractForms2) {
         @"is_checkable" : @false,
         @"is_focusable" : @true,
         @"value" : @"",
-        @"label" : @""
+        @"label" : @"",
+        @"unique_renderer_id" : @2
       },
       @{
         @"aria_description" : @"Email Address",
@@ -242,7 +248,8 @@ TEST_F(JsAutofillManagerTest, ExtractForms2) {
         @"is_checkable" : @false,
         @"is_focusable" : @true,
         @"value" : @"",
-        @"label" : @""
+        @"label" : @"",
+        @"unique_renderer_id" : @3
       }
     ]
   };

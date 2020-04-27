@@ -15,8 +15,9 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/check.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

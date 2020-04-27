@@ -5,9 +5,9 @@
 #include "base/test/gtest_xml_unittest_result_printer.h"
 
 #include "base/base64.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/test/test_switches.h"
 #include "base/time/time.h"
 

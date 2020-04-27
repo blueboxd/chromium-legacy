@@ -4,7 +4,8 @@
 
 #include "extensions/renderer/safe_builtins.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/renderer/script_context.h"

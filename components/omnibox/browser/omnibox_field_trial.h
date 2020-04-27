@@ -422,6 +422,19 @@ bool RichAutocompletionTwoLineOmnibox();
 bool RichAutocompletionShowTitles();
 bool RichAutocompletionAutocompleteNonPrefix();
 
+// On Device Head Suggestions feature and its helper functions.
+bool IsOnDeviceHeadSuggestEnabledForIncognito();
+bool IsOnDeviceHeadSuggestEnabledForNonIncognito();
+bool IsOnDeviceHeadSuggestEnabledForAnyMode();
+// Functions can be used in both non-incognito and incognito.
+std::string OnDeviceHeadModelLocaleConstraint(bool is_incognito);
+int OnDeviceHeadSuggestMaxScoreForNonUrlInput(bool is_incognito,
+                                              const int default_score);
+int OnDeviceSearchProviderDefaultLoaderTimeoutMs(bool is_incognito);
+int OnDeviceHeadSuggestDelaySuggestRequestMs(bool is_incognito);
+// Function only works in non-incognito when server suggestions are available.
+std::string OnDeviceHeadSuggestDemoteMode();
+
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
 
@@ -486,10 +499,13 @@ extern const char kUIMaxAutocompleteMatchesParam[];
 extern const char kUIMaxAutocompleteMatchesByProviderParam[];
 
 // Parameter names used by on device head provider.
-extern const char kOnDeviceHeadSuggestIncognitoServeMode[];
-extern const char kOnDeviceHeadSuggestDelaySuggestRequestMs[];
+// These four parameters are shared by both non-incognito and incognito.
+extern const char kOnDeviceHeadModelLocaleConstraint[];
 extern const char kOnDeviceHeadSuggestMaxScoreForNonUrlInput[];
-extern const char kOnDeviceHeadSuggestMaxScoreForNonUrlInputIncognito[];
+extern const char kOnDeviceHeadSuggestDelaySuggestRequestMs[];
+extern const char kOnDeviceSearchProviderDefaultLoaderTimeoutMs[];
+// This parameter is for non-incognito which are only useful when server
+// suggestions are available.
 extern const char kOnDeviceHeadSuggestDemoteMode[];
 
 // The amount of time to wait before sending a new suggest request after the

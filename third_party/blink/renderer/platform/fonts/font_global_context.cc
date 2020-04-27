@@ -20,7 +20,9 @@ FontGlobalContext* FontGlobalContext::Get(CreateIfNeeded create_if_needed) {
   return *font_persistent;
 }
 
-FontGlobalContext::FontGlobalContext() : harfbuzz_font_funcs_(nullptr) {}
+FontGlobalContext::FontGlobalContext()
+    : harfbuzz_font_funcs_skia_advances_(nullptr),
+      harfbuzz_font_funcs_harfbuzz_advances_(nullptr) {}
 
 FontGlobalContext::~FontGlobalContext() = default;
 

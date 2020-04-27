@@ -5,7 +5,7 @@
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_video_encoder.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "content/public/renderer/video_encode_accelerator.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.h"
 

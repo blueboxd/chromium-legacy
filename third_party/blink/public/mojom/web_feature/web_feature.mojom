@@ -2485,7 +2485,6 @@ enum WebFeature {
   // The above items are available in M81 branch.
 
   kLargeStickyAd = 3155,
-  kOverlayInterstitialAd = 3156,
   kCSSComparisonFunctions = 3157,
   // Triggered if the proposed change in
   // https://github.com/w3c/webappsec-feature-policy/issues/357 would cause the
@@ -2588,6 +2587,7 @@ enum WebFeature {
   kXRFrameCreateAnchor = 3250,
   kXRHitTestResultCreateAnchor = 3251,
   kCSSKeywordRevert = 3252,
+  kOverlayPopupAd = 3253,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

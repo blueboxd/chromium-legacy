@@ -814,6 +814,9 @@ void WebMediaPlayerImpl::Play() {
   MaybeUpdateBufferSizesForPlayback();
   UpdatePlayState();
 
+  // Paused changed so we should update media position state.
+  UpdateMediaPositionState();
+
   // Notify the learning task, if needed.
   will_play_helper_.CompleteObservationIfNeeded(learning::TargetValue(true));
 }
@@ -945,6 +948,10 @@ void WebMediaPlayerImpl::SetRate(double rate) {
     pipeline_controller_->SetPlaybackRate(rate);
 
   MaybeUpdateBufferSizesForPlayback();
+
+  // The playback rate has changed so we should rebuild the media position
+  // state.
+  UpdateMediaPositionState();
 }
 
 void WebMediaPlayerImpl::SetVolume(double volume) {
@@ -2851,6 +2858,10 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
 
   // Always notify to ensure client has the latest value.
   client_->ReadyStateChanged();
+
+  // The ready state affects the effective playback rate so we should update
+  // the media position state.
+  UpdateMediaPositionState();
 }
 
 scoped_refptr<blink::WebAudioSourceProviderImpl>
@@ -2920,8 +2931,12 @@ void WebMediaPlayerImpl::UpdateMediaPositionState() {
   if (current_time > duration)
     current_time = duration;
 
-  media_session::MediaPosition new_position(paused_ ? 0.0 : playback_rate_,
-                                            duration, current_time);
+  const double effective_playback_rate =
+      paused_ || ready_state_ < kReadyStateHaveFutureData ? 0.0
+                                                          : playback_rate_;
+
+  media_session::MediaPosition new_position(effective_playback_rate, duration,
+                                            current_time);
 
   if (media_position_state_ == new_position)
     return;
@@ -3767,10 +3782,6 @@ void WebMediaPlayerImpl::MaybeUpdateBufferSizesForPlayback() {
   mb_data_source_->MediaPlaybackRateChanged(playback_rate_);
   if (!paused_)
     mb_data_source_->MediaIsPlaying();
-
-  // The playback rate has changed so we should rebuild the media position
-  // state.
-  UpdateMediaPositionState();
 }
 
 void WebMediaPlayerImpl::OnSimpleWatchTimerTick() {

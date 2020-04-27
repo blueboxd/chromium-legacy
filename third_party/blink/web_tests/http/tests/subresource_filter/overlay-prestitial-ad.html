@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+iframe {
+  position: fixed;
+  margin-left: 25vw;
+  width: 50vw;
+  height: 100vh;
+  border: 0px;
+}
+p {
+  position: fixed;
+}
+</style>
+
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+</head>
+<body marginwidth="0" marginheight="0">
+
+<!-- To trigger the first contentful paint at the very start -->
+<p>some content</p>
+
+<script>
+if (window.testRunner) {
+  // Inject a subresource filter to mark 'overlay-interstitial-ad-testharness.js' as a would be disallowed resource.
+  testRunner.setDisallowedSubresourcePathSuffixes(["overlay-interstitial-ad-testharness.js"], false /* block_subresources */);
+}
+
+async_test(t => {
+  let ad_script = document.createElement("script");
+  ad_script.async = false;
+  ad_script.src = "resources/overlay-interstitial-ad-testharness.js";
+  ad_script.onload = t.step_func(() => {
+
+    // Create the overlay pop-up ad.
+    let ad_frame = appendAdFrameTo(document.body);
+
+    // After 1500ms, force a layout update so that the interstitial detector
+    // is aware of the overlay candidate. However, since it's the first time
+    // the detector is aware of first meaningful paint, the overlay will only be
+    // considered for prestitials rather than for pop-ups.
+    verifyOverlayPopupUseCounterAfter1500ms(t, false,
+      () => {
+        // Hide the pop-up.
+        document.getElementsByTagName('iframe')[0].style.display = 'none';
+
+        // After 1500ms, force a layout update so that the interstitial
+        // detector is aware of the overlay candidate's dismissal. Expect
+        // that the use counter kOverlayPopupAd is not recorded.
+        verifyOverlayPopupUseCounterAfter1500ms(t, false);
+      });
+  });
+  document.body.appendChild(ad_script);
+}, "Test overlay-prestitial-ad when the frame itself has a fixed position. In this case we expect no use counter for kOverlayPopupAd.");
+
+</script>
+</body>
+</html>

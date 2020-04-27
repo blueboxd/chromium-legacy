@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/build_time.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"

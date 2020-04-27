@@ -4,7 +4,7 @@
 
 #include "ios/chrome/common/x_callback_url.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/escape.h"

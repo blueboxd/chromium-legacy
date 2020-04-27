@@ -464,28 +464,16 @@ class PasswordFormManagerTest : public testing::Test,
 TEST_P(PasswordFormManagerTest, DoesManage) {
   EXPECT_TRUE(form_manager_->DoesManage(observed_form_, &driver_));
   // Forms on other drivers are not considered managed.
-  EXPECT_FALSE(form_manager_->DoesManage(observed_form_, nullptr));
+  MockPasswordManagerDriver another_driver;
+  EXPECT_FALSE(form_manager_->DoesManage(observed_form_, &another_driver));
   FormData another_form = observed_form_;
   another_form.is_form_tag = false;
   EXPECT_FALSE(form_manager_->DoesManage(another_form, &driver_));
 
-  // On non-iOS platforms unique_renderer_id is the form identifier.
+  // Unique_renderer_id is the form identifier.
   another_form = observed_form_;
   another_form.unique_renderer_id.value() += 1;
-#if defined(OS_IOS)
-  EXPECT_TRUE(form_manager_->DoesManage(another_form, &driver_));
-#else
   EXPECT_FALSE(form_manager_->DoesManage(another_form, &driver_));
-#endif
-
-  // On iOS platforms form name is the form identifier.
-  another_form = observed_form_;
-  another_form.name = observed_form_.name + ASCIIToUTF16("1");
-#if defined(OS_IOS)
-  EXPECT_FALSE(form_manager_->DoesManage(another_form, &driver_));
-#else
-  EXPECT_TRUE(form_manager_->DoesManage(another_form, &driver_));
-#endif
 }
 
 TEST_P(PasswordFormManagerTest, DoesManageNoFormTag) {

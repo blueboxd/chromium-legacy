@@ -8,8 +8,9 @@
 
 #include <type_traits>
 
+#include "base/check.h"
 #include "base/debug/leak_annotations.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 
 namespace base {

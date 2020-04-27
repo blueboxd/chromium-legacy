@@ -4,7 +4,7 @@
 
 #include "base/test/scoped_path_override.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/path_service.h"
 
 namespace base {

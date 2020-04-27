@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <ostream>
 
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace base {

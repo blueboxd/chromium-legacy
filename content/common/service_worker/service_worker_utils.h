@@ -75,15 +75,16 @@ class ServiceWorkerUtils {
       network::mojom::FetchResponseSource source);
 
   struct CONTENT_EXPORT ResourceResponseHeadAndMetadata {
-    ResourceResponseHeadAndMetadata(network::mojom::URLResponseHeadPtr head,
-                                    std::vector<uint8_t> metadata);
+    ResourceResponseHeadAndMetadata(
+        network::mojom::URLResponseHeadPtr head,
+        scoped_refptr<net::IOBufferWithSize> metadata);
     ResourceResponseHeadAndMetadata(ResourceResponseHeadAndMetadata&& other);
     ResourceResponseHeadAndMetadata(
         const ResourceResponseHeadAndMetadata& other) = delete;
     ~ResourceResponseHeadAndMetadata();
 
     network::mojom::URLResponseHeadPtr head;
-    std::vector<uint8_t> metadata;
+    scoped_refptr<net::IOBufferWithSize> metadata;
   };
 
   CONTENT_EXPORT static ResourceResponseHeadAndMetadata

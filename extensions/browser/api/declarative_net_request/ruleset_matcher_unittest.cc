@@ -7,9 +7,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"

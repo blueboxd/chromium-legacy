@@ -19,15 +19,15 @@ public class AutocompleteCoordinatorFactory {
      *
      * @param parent The UI parent component for the autocomplete UI.
      * @param delegate The delegate to fulfill additional autocomplete requirements.
-     * @param listEmbedder The embedder for controlling the display constraints of the suggestions
-     *                     list.
+     * @param dropdownEmbedder The embedder for controlling the display constraints of the
+     *         suggestions dropdown.
      * @param urlBarEditingTextProvider Provider of editing text state from the UrlBar.
      */
     public static AutocompleteCoordinator createAutocompleteCoordinator(ViewGroup parent,
-            AutocompleteDelegate delegate, OmniboxSuggestionListEmbedder listEmbedder,
+            AutocompleteDelegate delegate, OmniboxSuggestionsDropdown.Embedder dropdownEmbedder,
             UrlBarEditingTextStateProvider urlBarEditingTextProvider) {
         return new AutocompleteCoordinatorImpl(
-                parent, delegate, listEmbedder, urlBarEditingTextProvider);
+                parent, delegate, dropdownEmbedder, urlBarEditingTextProvider);
     }
 
     /**

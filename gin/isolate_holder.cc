@@ -11,7 +11,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/system/sys_info.h"

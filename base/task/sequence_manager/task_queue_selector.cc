@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bits.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue.h"

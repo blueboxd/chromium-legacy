@@ -4,7 +4,6 @@
 
 #include "services/network/public/cpp/cross_origin_opener_policy_parser.h"
 
-#include <string>
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "net/http/http_response_headers.h"

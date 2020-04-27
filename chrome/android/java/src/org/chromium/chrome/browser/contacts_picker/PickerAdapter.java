@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -441,7 +442,8 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         if (sTestOwnerEmail != null) return sTestOwnerEmail;
 
         CoreAccountInfo coreAccountInfo =
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                        ConsentLevel.SYNC);
         if (coreAccountInfo != null) {
             return coreAccountInfo.getEmail();
         }
@@ -507,7 +509,8 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         String name = profileData.getFullNameOrEmail();
         if (TextUtils.isEmpty(name) || TextUtils.equals(name, ownerEmail)) {
             name = CoreAccountInfo.getEmailFrom(
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                            ConsentLevel.SYNC));
         }
 
         ArrayList<String> telephones = new ArrayList<>();

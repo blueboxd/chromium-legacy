@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/read_only_shared_memory_region.h"
 
 namespace base {

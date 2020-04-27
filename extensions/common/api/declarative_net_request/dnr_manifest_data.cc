@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "extensions/common/manifest_constants.h"
 

@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/trace_event/trace_event.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"

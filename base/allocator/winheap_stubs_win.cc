@@ -16,7 +16,7 @@
 #include <limits>
 
 #include "base/bits.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace base {
 namespace allocator {

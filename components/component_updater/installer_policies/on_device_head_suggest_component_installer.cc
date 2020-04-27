@@ -15,8 +15,8 @@
 #include "base/strings/string_util.h"
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/on_device_model_update_listener.h"
-#include "components/omnibox/common/omnibox_features.h"
 
 namespace component_updater {
 
@@ -31,8 +31,14 @@ const uint8_t kOnDeviceHeadSuggestPublicKeySHA256[32] = {
 // letters and removes all hyphens and underscores in the locale string, e.g.
 // "en-US" -> "ENUS".
 std::string GetNormalizedLocale(const std::string& raw_locale) {
-  std::string locale = base::GetFieldTrialParamValueByFeature(
-      omnibox::kOnDeviceHeadProvider, "ForceModelLocaleConstraint");
+  std::string locale;
+  // Both incognito and non-incognito will use a same model so it's okay to
+  // fetch the param from either feature.
+  if (OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForIncognito())
+    locale = OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(true);
+  else if (OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForNonIncognito())
+    locale = OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(false);
+
   if (locale.empty())
     locale = raw_locale;
 
@@ -125,7 +131,10 @@ std::vector<std::string> OnDeviceHeadSuggestInstallerPolicy::GetMimeTypes()
 
 void RegisterOnDeviceHeadSuggestComponent(ComponentUpdateService* cus,
                                           const std::string& locale) {
-  if (base::FeatureList::IsEnabled(omnibox::kOnDeviceHeadProvider)) {
+  // Ideally we should only check if the feature is enabled for non-incognito or
+  // incognito, but whether the browser is currently on incognito or not is not
+  // available yet during component registration on iOS platform.
+  if (OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForAnyMode()) {
     auto installer = base::MakeRefCounted<ComponentInstaller>(
         std::make_unique<OnDeviceHeadSuggestInstallerPolicy>(locale));
     installer->Register(cus, base::OnceClosure());

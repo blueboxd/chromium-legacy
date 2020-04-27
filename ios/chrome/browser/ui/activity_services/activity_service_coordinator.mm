@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data_builder.h"
-#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -41,9 +40,6 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 // The time when the Share Page operation started.
 @property(nonatomic, assign) base::TimeTicks sharePageStartTime;
 
-// Coordinator used to display error messages when activities fail.
-@property(nonatomic, strong) AlertCoordinator* alertCoordinator;
-
 @end
 
 @implementation ActivityServiceCoordinator
@@ -65,9 +61,6 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 - (void)stop {
   [[ActivityServiceController sharedInstance] cancelShareAnimated:NO];
-
-  [self.alertCoordinator stop];
-  self.alertCoordinator = nil;
 }
 
 #pragma mark - ActivityServicePresentation
@@ -79,30 +72,7 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 }
 
 - (void)activityServiceDidEndPresenting {
-  if ([self.alertCoordinator isVisible]) {
-    return;
-  }
-
   [self.handler hideActivityView];
-}
-
-- (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title
-                                             message:(NSString*)message {
-  self.alertCoordinator = [[AlertCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
-                         browser:self.browser
-                           title:title
-                         message:message];
-
-  // Add OK button.
-  __weak __typeof(self) weakSelf = self;
-  ProceduralBlock action = ^{
-    [weakSelf alertDismissed];
-  };
-  [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_APP_OK)
-                                   action:action
-                                    style:UIAlertActionStyleDefault];
-  [self.alertCoordinator start];
 }
 
 #pragma mark - Private Methods
@@ -132,11 +102,6 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
                  dispatcher:self.handler
            positionProvider:self.positionProvider
        presentationProvider:self];
-}
-
-// Cleans up the alert's components.
-- (void)alertDismissed {
-  [self.handler hideActivityView];
 }
 
 @end

@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.Collections;
@@ -48,7 +49,8 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
         mProfileCache = new ProfileDataCache(context, imageSize);
         mProfileView = mView.findViewById(R.id.profile_image);
         mSignedInAccountName = CoreAccountInfo.getEmailFrom(
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo());
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                        ConsentLevel.SYNC));
         setupProfileImage();
 
         // Bind view and mediator through the model.

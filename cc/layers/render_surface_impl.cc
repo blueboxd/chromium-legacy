@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/stringprintf.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"

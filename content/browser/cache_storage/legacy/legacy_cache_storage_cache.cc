@@ -352,7 +352,6 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
           metadata.response().cors_exposed_header_names().end()),
       nullptr /* side_data_blob */, nullptr /* side_data_blob_for_cache_put */,
       network::mojom::ParsedHeaders::New(),
-      network::CrossOriginEmbedderPolicy(),
       metadata.response().loaded_with_credentials());
 }
 

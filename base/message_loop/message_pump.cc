@@ -4,10 +4,11 @@
 
 #include "base/message_loop/message_pump.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
+#include "base/notreached.h"
 
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"

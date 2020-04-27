@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
+#include "gin/wrappable.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
@@ -11,7 +12,6 @@
 #include "gin/public/isolate_holder.h"
 #include "gin/test/v8_test.h"
 #include "gin/try_catch.h"
-#include "gin/wrappable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gin {

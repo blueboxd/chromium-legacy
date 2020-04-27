@@ -4,7 +4,7 @@
 
 #include "base/trace_event/trace_event_filter_test_utils.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace base {
 namespace trace_event {

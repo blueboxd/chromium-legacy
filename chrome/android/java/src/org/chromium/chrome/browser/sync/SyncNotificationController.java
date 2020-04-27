@@ -31,6 +31,7 @@ import org.chromium.components.browser_ui.notifications.NotificationManagerProxy
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.PassphraseType;
 
@@ -90,7 +91,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         } else if (mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.isTrustedVaultKeyRequiredForPreferredDataTypes()) {
             CoreAccountInfo primaryAccountInfo =
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo();
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                            ConsentLevel.SYNC);
             if (primaryAccountInfo != null) {
                 int flags = Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP;
                 // TODO(crbug.com/1012659): Upon intent completion, the new keys should be fetched.

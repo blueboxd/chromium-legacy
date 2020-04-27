@@ -10,10 +10,11 @@
 #include <tuple>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"

@@ -4,8 +4,8 @@
 
 #include "extensions/renderer/renderer_extension_registry.h"
 
+#include "base/check.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 

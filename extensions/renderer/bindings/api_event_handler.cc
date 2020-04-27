@@ -11,7 +11,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"
 #include "base/values.h"

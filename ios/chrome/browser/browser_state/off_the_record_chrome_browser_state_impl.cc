@@ -4,8 +4,8 @@
 
 #include "ios/chrome/browser/browser_state/off_the_record_chrome_browser_state_impl.h"
 
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"

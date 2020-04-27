@@ -592,7 +592,7 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
     QuicChromiumClientSessionPeer::CreateOutgoingStream(session_.get());
   }
-  EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
+  EXPECT_EQ(kMaxOpenStreams, session_->GetNumActiveStreams());
 
   // Request a stream and verify that it's pending.
   std::unique_ptr<QuicChromiumClientSession::Handle> handle =
@@ -664,7 +664,7 @@ TEST_P(QuicChromiumClientSessionTest, ReadAfterConnectionClose) {
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
     QuicChromiumClientSessionPeer::CreateOutgoingStream(session_.get());
   }
-  EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
+  EXPECT_EQ(kMaxOpenStreams, session_->GetNumActiveStreams());
 
   // Request two streams which will both be pending.
   // In V99 each will generate a max stream id for each attempt.
@@ -727,7 +727,7 @@ TEST_P(QuicChromiumClientSessionTest, ClosedWithAsyncStreamRequest) {
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
     QuicChromiumClientSessionPeer::CreateOutgoingStream(session_.get());
   }
-  EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
+  EXPECT_EQ(kMaxOpenStreams, session_->GetNumActiveStreams());
 
   // Request two streams which will both be pending.
   // In V99 each will generate a max stream id for each attempt.
@@ -798,7 +798,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
     QuicChromiumClientSessionPeer::CreateOutgoingStream(session_.get());
   }
-  EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
+  EXPECT_EQ(kMaxOpenStreams, session_->GetNumActiveStreams());
 
   // Request a stream and verify that it's pending.
   std::unique_ptr<QuicChromiumClientSession::Handle> handle =
@@ -826,7 +826,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
         quic::QUIC_STREAM_CANCELLED);
     session_->OnStopSendingFrame(stop_sending);
   }
-  EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumOpenOutgoingStreams());
+  EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumActiveStreams());
 
   quic_data.Resume();
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
@@ -944,7 +944,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseWithPendingStreamRequest) {
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
     QuicChromiumClientSessionPeer::CreateOutgoingStream(session_.get());
   }
-  EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
+  EXPECT_EQ(kMaxOpenStreams, session_->GetNumActiveStreams());
 
   // Request a stream and verify that it's pending.
   std::unique_ptr<QuicChromiumClientSession::Handle> handle =
@@ -1013,7 +1013,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   EXPECT_FALSE(
       QuicChromiumClientSessionPeer::CreateOutgoingStream(session_.get()));
 
-  EXPECT_EQ(kMaxOpenStreams, session_->GetNumOpenOutgoingStreams());
+  EXPECT_EQ(kMaxOpenStreams, session_->GetNumActiveStreams());
 
   // Close a stream and ensure I can now open a new one.
   quic::QuicStreamId stream_id = streams[0]->id();
@@ -1027,7 +1027,7 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   quic::QuicRstStreamFrame rst1(quic::kInvalidControlFrameId, stream_id,
                                 quic::QUIC_STREAM_NO_ERROR, 0);
   session_->OnRstStream(rst1);
-  EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumOpenOutgoingStreams());
+  EXPECT_EQ(kMaxOpenStreams - 1, session_->GetNumActiveStreams());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
       QuicChromiumClientSessionPeer::CreateOutgoingStream(session_.get()));
@@ -1175,7 +1175,7 @@ TEST_P(QuicChromiumClientSessionTest, PendingStreamOnRst) {
   quic::QuicStreamFrame data(GetNthServerInitiatedUnidirectionalStreamId(0),
                              false, 1, quiche::QuicheStringPiece("SP"));
   session_->OnStreamFrame(data);
-  EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
+  EXPECT_EQ(0u, session_->GetNumActiveStreams());
   quic::QuicRstStreamFrame rst(quic::kInvalidControlFrameId,
                                GetNthServerInitiatedUnidirectionalStreamId(0),
                                quic::QUIC_STREAM_CANCELLED, 0);
@@ -1207,7 +1207,7 @@ TEST_P(QuicChromiumClientSessionTest, ClosePendingStream) {
   quic::QuicStreamId id = GetNthServerInitiatedUnidirectionalStreamId(0);
   quic::QuicStreamFrame data(id, false, 1, quiche::QuicheStringPiece("SP"));
   session_->OnStreamFrame(data);
-  EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
+  EXPECT_EQ(0u, session_->GetNumActiveStreams());
   session_->CloseStream(id);
 }
 

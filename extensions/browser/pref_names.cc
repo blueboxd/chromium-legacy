@@ -4,7 +4,7 @@
 
 #include "extensions/browser/pref_names.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace extensions {
 namespace pref_names {

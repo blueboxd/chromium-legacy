@@ -4,7 +4,7 @@
 
 #include "extensions/common/features/feature_session_type.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace extensions {
 

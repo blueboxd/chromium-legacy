@@ -4,7 +4,8 @@
 
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_audio_encoder.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace extensions {
 

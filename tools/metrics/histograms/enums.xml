@@ -8778,6 +8778,24 @@ histogram as enum -->
   <int value="2" label="SAML Chrome Credentials Passing API not used"/>
 </enum>
 
+<enum name="ChromeOSSamlProvider">
+  <summary>
+    Different SAML providers that uses SAML login flow in ChromeOS.
+  </summary>
+  <int value="0" label="unknown"/>
+  <int value="1" label="failure"/>
+  <int value="2" label="adfs"/>
+  <int value="3" label="azure"/>
+  <int value="4" label="okta"/>
+  <int value="5" label="ping"/>
+  <int value="6" label="onelogin"/>
+  <int value="7" label="microsoft"/>
+  <int value="8" label="clever"/>
+  <int value="9" label="cloudgate"/>
+  <int value="10" label="windows"/>
+  <int value="11" label="salesforce"/>
+</enum>
+
 <enum name="ChromeOSUICommands">
 <!-- Please put in checks to ensure Command IDs are stable before adding them to this enum. -->
 
@@ -26961,7 +26979,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3153" label="SameOriginIframeWindowPrompt"/>
   <int value="3154" label="SameOriginIframeWindowPrint"/>
   <int value="3155" label="LargeStickyAd"/>
-  <int value="3156" label="OverlayInterstitialAd"/>
+  <int value="3156" label="ObsoleteOverlayInterstitialAd"/>
   <int value="3157" label="CSSComparisonFunctions"/>
   <int value="3158" label="FeaturePolicyProposalWouldChangeBehaviour"/>
   <int value="3159" label="RTCLocalSdpModificationSimulcast"/>
@@ -27059,6 +27077,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3250" label="XRFrameCreateAnchor"/>
   <int value="3251" label="XRHitTestResultCreateAnchor"/>
   <int value="3252" label="CSSKeywordRevert"/>
+  <int value="3253" label="OverlayPopupAd"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -37884,6 +37903,8 @@ from previous Chrome versions.
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
   <int value="-2040471724" label="CrOSComponent:disabled"/>
   <int value="-2040115518" label="load-media-router-component-extension"/>
+  <int value="-2039439354"
+      label="OmniboxOnDeviceHeadProviderIncognito:disabled"/>
   <int value="-2039343702"
       label="KeepAliveRendererForKeepaliveRequests:enabled"/>
   <int value="-2036149591" label="FaviconsFromWebManifest:disabled"/>
@@ -38296,6 +38317,8 @@ from previous Chrome versions.
   <int value="-1571841513" label="enable-devtools-experiments"/>
   <int value="-1568559155" label="WebSocketHandshakeReuseConnection:enabled"/>
   <int value="-1567727398" label="DesktopPWAsWithoutExtensions:disabled"/>
+  <int value="-1564232131"
+      label="OmniboxOnDeviceHeadProviderNonIncognito:enabled"/>
   <int value="-1561360053" label="LauncherSettingsSearch:disabled"/>
   <int value="-1561252720" label="AutofillCreditCardUploadFeedback:disabled"/>
   <int value="-1560729847" label="AutofillCacheQueryResponses:enabled"/>
@@ -39220,6 +39243,7 @@ from previous Chrome versions.
   <int value="-536230323" label="SingleClickAutofill:disabled"/>
   <int value="-535662704" label="BundledConnectionHelp:enabled"/>
   <int value="-535208779" label="enable-native-cups"/>
+  <int value="-534470003" label="OmniboxOnDeviceHeadProviderIncognito:enabled"/>
   <int value="-534221085" label="LazyImageLoading:disabled"/>
   <int value="-533552313"
       label="AutofillUpstreamEditableCardholderName:enabled"/>
@@ -39456,7 +39480,6 @@ from previous Chrome versions.
   <int value="-250543540" label="DeferAllScript:enabled"/>
   <int value="-249415830" label="FilteringScrollPrediction:disabled"/>
   <int value="-248223420" label="AutofillKeyboardAccessory:disabled"/>
-  <int value="-243323793" label="OmniboxOnDeviceHeadProvider:enabled"/>
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
   <int value="-240531943" label="ContextualSearchRankerQuery:disabled"/>
   <int value="-239616243" label="HighDynamicRange:enabled"/>
@@ -39718,7 +39741,6 @@ from previous Chrome versions.
   <int value="44088203" label="ExpensiveBackgroundTimerThrottling:enabled"/>
   <int value="44240181" label="SharingQRCodeGenerator:disabled"/>
   <int value="48159177" label="reduced-referrer-granularity"/>
-  <int value="49113130" label="OmniboxOnDeviceHeadProvider:disabled"/>
   <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
   <int value="52368742" label="enable-pixel-canvas-recording:disabled"/>
   <int value="54258707" label="NewTabstripAnimation:enabled"/>
@@ -40987,6 +41009,8 @@ from previous Chrome versions.
   <int value="1563255033" label="memlog-stack-mode"/>
   <int value="1567839560"
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>
+  <int value="1568172566"
+      label="OmniboxOnDeviceHeadProviderNonIncognito:disabled"/>
   <int value="1570178909" label="NewOverviewLayout:enabled"/>
   <int value="1571998166" label="DetectingHeavyPages:disabled"/>
   <int value="1575978252" label="PasswordLeakDetection:enabled"/>

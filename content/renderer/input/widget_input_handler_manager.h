@@ -81,12 +81,6 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       const ui::LatencyInfo& latency_info,
       const blink::WebInputEventAttribution& attribution) override;
 
-  void DidOverscroll(
-      const gfx::Vector2dF& accumulated_overscroll,
-      const gfx::Vector2dF& latest_overscroll_delta,
-      const gfx::Vector2dF& current_fling_velocity,
-      const gfx::PointF& causal_event_viewport_point,
-      const cc::OverscrollBehavior& overscroll_behavior) override;
   void DidAnimateForInput() override;
   void DidStartScrollingViewport() override;
   void GenerateScrollBeginAndSendToMainThread(

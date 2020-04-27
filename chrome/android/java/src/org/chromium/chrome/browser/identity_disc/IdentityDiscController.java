@@ -35,6 +35,7 @@ import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 
 import java.lang.annotation.Retention;
@@ -169,7 +170,8 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
             return;
         }
 
-        String email = CoreAccountInfo.getEmailFrom(mIdentityManager.getPrimaryAccountInfo());
+        String email = CoreAccountInfo.getEmailFrom(
+                mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SYNC));
         boolean canShowIdentityDisc = email != null;
         boolean menuBottomOnBottom =
                 bottomToolbarVisible && BottomToolbarVariationManager.isMenuButtonOnBottom();

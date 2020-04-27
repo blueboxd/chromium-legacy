@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/icu/source/i18n/unicode/calendar.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"

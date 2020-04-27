@@ -147,6 +147,7 @@ class Controller : public ScriptExecutorDelegate,
   void RemoveListener(NavigationListener* listener) override;
 
   void SetExpandSheetForPromptAction(bool expand) override;
+  void SetBrowseDomainsWhitelist(std::vector<std::string> domains) override;
 
   bool EnterState(AutofillAssistantState state) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
@@ -450,6 +451,7 @@ class Controller : public ScriptExecutorDelegate,
   BasicInteractions basic_interactions_{this};
 
   bool expand_sheet_for_prompt_action_ = true;
+  std::vector<std::string> browse_domains_whitelist_;
 
   // Only set during a ShowGenericUiAction.
   std::unique_ptr<GenericUserInterfaceProto> generic_user_interface_;

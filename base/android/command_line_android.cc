@@ -6,7 +6,6 @@
 #include "base/android/jni_string.h"
 #include "base/base_jni_headers/CommandLine_jni.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;

@@ -10,7 +10,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"

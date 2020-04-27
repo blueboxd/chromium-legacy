@@ -3171,7 +3171,12 @@
     "expiry_milestone": 92
   },
   {
-    "name": "omnibox-on-device-head-suggestions",
+    "name": "omnibox-on-device-head-suggestions-incognito",
+    "owners": [ "cechen", "suggest-2g@google.com" ],
+    "expiry_milestone": 85
+  },
+  {
+    "name": "omnibox-on-device-head-suggestions-non-incognito",
     "owners": [ "cechen", "suggest-2g@google.com" ],
     "expiry_milestone": 85
   },

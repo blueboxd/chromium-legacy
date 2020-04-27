@@ -9,8 +9,9 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"

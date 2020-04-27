@@ -4,7 +4,6 @@
 
 #include "gin/per_context_data.h"
 
-#include "base/logging.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/wrapper_info.h"
 

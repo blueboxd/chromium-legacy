@@ -8,8 +8,8 @@
 #include <limits>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/debug/activity_tracker.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"

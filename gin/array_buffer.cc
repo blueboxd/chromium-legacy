@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 #include "base/allocator/partition_allocator/page_allocator.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
 #include "gin/per_isolate_data.h"

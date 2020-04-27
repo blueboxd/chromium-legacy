@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/hash/hash.h"
-#include "base/logging.h"
 #include "base/pickle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"

@@ -5,7 +5,7 @@
 #include "extensions/test/background_page_watcher.h"
 
 #include "base/auto_reset.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "content/public/browser/render_frame_host.h"

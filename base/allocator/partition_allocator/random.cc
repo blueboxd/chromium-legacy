@@ -5,7 +5,6 @@
 #include "base/allocator/partition_allocator/random.h"
 
 #include "base/allocator/partition_allocator/spin_lock.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/synchronization/lock.h"

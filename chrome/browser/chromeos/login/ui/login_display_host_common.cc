@@ -116,13 +116,13 @@ void LoginDisplayHostCommon::StartSignInScreen() {
   connector->ScheduleServiceInitialization(
       kPolicyServiceInitializationDelayMilliseconds);
 
-  // Run UI-specific logic.
-  OnStartSignInScreen();
-
   // Inform wizard controller that login screen has started.
   // TODO(crbug.com/1064271): Move this to OnStartSignInScreen().
   if (WizardController::default_controller())
     WizardController::default_controller()->LoginScreenStarted();
+
+  // Run UI-specific logic.
+  OnStartSignInScreen();
 
   // Enable status area after starting sign-in screen, as it may depend on the
   // UI being visible.

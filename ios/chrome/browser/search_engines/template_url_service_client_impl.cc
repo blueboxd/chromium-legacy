@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/search_engines/template_url_service_client_impl.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"

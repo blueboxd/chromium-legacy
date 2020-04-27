@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/task_executor.h"
 #include "base/task/thread_pool/thread_pool_impl.h"

@@ -1,0 +1,23 @@
+<html>
+<head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/gc.js"></script>
+</head>
+<body>
+<script>
+promise_test(async t => {
+  let iframe = document.createElement("iframe");
+  document.body.appendChild( iframe );
+  let iframe_pc = new iframe.contentWindow.RTCPeerConnection();
+  assert_equals(iframe_pc.signalingState, 'stable');
+  iframe.remove();
+  assert_equals(iframe_pc.signalingState, 'closed');
+  assert_equals(internals.peerConnectionCount(), 1);
+  iframe_pc = null;
+  await asyncGC();
+  assert_equals(internals.peerConnectionCount(), 0);
+}, 'PeerConnection in iframe is closed and garbage collected');
+</script>
+</body>
+</html>

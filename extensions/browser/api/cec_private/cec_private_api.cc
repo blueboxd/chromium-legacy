@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chromeos/dbus/cec_service_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "extensions/common/api/cec_private.h"

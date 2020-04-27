@@ -10,7 +10,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -53,7 +52,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     private final ViewGroup mParent;
     private AutocompleteMediator mMediator;
 
-    private ListView mListView;
+    private OmniboxSuggestionsDropdown mDropdown;
 
     /**
      * See {@link AutocompleteCoordinatorFactory#createAutocompleteCoordinator}.
@@ -62,7 +61,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
      */
     @VisibleForTesting
     protected AutocompleteCoordinatorImpl(ViewGroup parent, AutocompleteDelegate delegate,
-            OmniboxSuggestionListEmbedder listEmbedder,
+            OmniboxSuggestionsDropdown.Embedder dropdownEmbedder,
             UrlBarEditingTextStateProvider urlBarEditingTextProvider) {
         mParent = parent;
         Context context = parent.getContext();
@@ -73,14 +72,14 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                 new AutocompleteController(), listModel, new Handler());
         mMediator.initDefaultProcessors();
 
-        listModel.set(SuggestionListProperties.EMBEDDER, listEmbedder);
+        listModel.set(SuggestionListProperties.EMBEDDER, dropdownEmbedder);
         listModel.set(SuggestionListProperties.VISIBLE, false);
         listModel.set(SuggestionListProperties.OBSERVER, mMediator);
         listModel.set(SuggestionListProperties.SUGGESTION_MODELS, listItems);
 
         ViewProvider<SuggestionListViewHolder> viewProvider =
                 createViewProvider(context, listItems);
-        viewProvider.whenLoaded((holder) -> { mListView = holder.listView; });
+        viewProvider.whenLoaded((holder) -> { mDropdown = holder.dropdown; });
         LazyConstructionPropertyMcp.create(listModel, SuggestionListProperties.VISIBLE,
                 viewProvider, SuggestionListViewBinder::bind);
 
@@ -259,7 +258,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
 
     @Override
     public boolean handleKeyEvent(int keyCode, KeyEvent event) {
-        boolean isShowingList = mListView != null && mListView.isShown();
+        boolean isShowingList = mDropdown != null && mDropdown.getView().isShown();
 
         boolean isUpOrDown = KeyNavigationUtil.isGoUpOrDown(event);
         if (isShowingList && mMediator.getSuggestionCount() > 0 && isUpOrDown) {
@@ -267,7 +266,9 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
         }
         boolean isValidListKey = isUpOrDown || KeyNavigationUtil.isGoRight(event)
                 || KeyNavigationUtil.isEnter(event);
-        if (isShowingList && isValidListKey && mListView.onKeyDown(keyCode, event)) return true;
+        if (isShowingList && isValidListKey && mDropdown.getView().onKeyDown(keyCode, event)) {
+            return true;
+        }
         if (KeyNavigationUtil.isEnter(event) && mParent.getVisibility() == View.VISIBLE) {
             mMediator.loadTypedOmniboxText(event.getEventTime());
             return true;
@@ -296,8 +297,8 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     }
 
     @VisibleForTesting
-    ListView getSuggestionList() {
-        return mListView;
+    OmniboxSuggestionsDropdown getSuggestionsDropdown() {
+        return mDropdown;
     }
 
     @VisibleForTesting

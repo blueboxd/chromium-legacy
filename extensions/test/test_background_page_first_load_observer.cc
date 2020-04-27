@@ -4,7 +4,7 @@
 
 #include "extensions/test/test_background_page_first_load_observer.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace extensions {
 

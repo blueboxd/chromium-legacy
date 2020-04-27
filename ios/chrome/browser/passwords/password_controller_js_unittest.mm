@@ -144,20 +144,24 @@ TEST_F(PasswordControllerJsTest,
        "  <input type='submit' value='Submit'>"
        "</form>"
        "</body></html>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
 
   const std::string base_url = BaseUrl();
   NSString* result = [NSString
       stringWithFormat:
           @"[{\"name\":\"login_form\",\"origin\":\"%s\",\"action\":\"https://"
           @"chromium.test/generic_submit\",\"name_attribute\":\"login_form\","
-          @"\"id_attribute\":\"\",\"fields\":[{\"identifier\":\"name\","
+          @"\"id_attribute\":\"\",\"unique_renderer_id\":0,\"fields\":[{"
+          @"\"identifier\":\"name\","
           @"\"name\":\"name\",\"name_attribute\":\"name\",\"id_attribute\":"
-          @"\"\",\"form_control_type\":\"text\",\"aria_label\":\"\","
+          @"\"\",\"unique_renderer_id\":1,\"form_control_type\":\"text\","
+          @"\"aria_label\":\"\","
           @"\"aria_description\":\"\",\"should_autocomplete\":true,"
           @"\"is_focusable\":true,\"max_length\":524288,\"is_checkable\":false,"
           @"\"value\":\"\",\"label\":\"Name:\"},{\"identifier\":"
           @"\"password\",\"name\":\"password\",\"name_attribute\":\"password\","
-          @"\"id_attribute\":\"\",\"form_control_type\":\"password\","
+          @"\"id_attribute\":\"\",\"unique_renderer_id\":2,\"form_control_"
+          @"type\":\"password\","
           @"\"aria_label\":\"\",\"aria_description\":\"\","
           @"\"should_autocomplete\":true,\"is_focusable\":true,"
           @"\"max_length\":524288,\"is_checkable\":false,\"value\":\"\","
@@ -183,34 +187,41 @@ TEST_F(PasswordControllerJsTest,
        "  <input type='submit' value='Submit'>"
        "</form>"
        "</body></html>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
 
   const std::string base_url = BaseUrl();
   NSString* result = [NSString
       stringWithFormat:
           @"[{\"name\":\"login_form1\",\"origin\":\"%s\",\"action\":\"%s"
           @"generic_submit\",\"name_attribute\":\"\",\"id_attribute\":"
-          @"\"login_form1\",\"fields\":[{\"identifier\":\"name\","
+          @"\"login_form1\",\"unique_renderer_id\":0,\"fields\":[{"
+          @"\"identifier\":\"name\","
           @"\"name\":\"name\",\"name_attribute\":\"name\",\"id_attribute\":"
-          @"\"\",\"form_control_type\":\"text\",\"aria_label\":\"\","
+          @"\"\",\"unique_renderer_id\":1,\"form_control_type\":\"text\","
+          @"\"aria_label\":\"\","
           @"\"aria_description\":\"\",\"should_autocomplete\":"
           @"true,\"is_focusable\":true,\"max_length\":524288,\"is_checkable\":"
           @"false,\"value\":\"\",\"label\":\"Name:\"},{\"identifier\":"
           @"\"password\",\"name\":\"password\",\"name_attribute\":\"password\","
-          @"\"id_attribute\":\"\",\"form_control_type\":\"password\","
+          @"\"id_attribute\":\"\",\"unique_renderer_id\":2,\"form_control_"
+          @"type\":\"password\","
           @"\"aria_label\":\"\",\"aria_description\":\"\","
           @"\"should_autocomplete\":true,\"is_focusable\":true,"
           @"\"max_length\":524288,\"is_checkable\":false,\"value\":\"\","
           @"\"label\":\"Password:\"}]},{\"name\":\"login_form2\",\"origin\":"
           @"\"https://chromium.test/\",\"action\":\"https://chromium.test/"
           @"generic_s2\",\"name_attribute\":\"login_form2\","
-          @"\"id_attribute\":\"\",\"fields\":[{\"identifier\":\"name2\","
+          @"\"id_attribute\":\"\",\"unique_renderer_id\":3,\"fields\":[{"
+          @"\"identifier\":\"name2\","
           @"\"name\":\"name2\",\"name_attribute\":\"name2\",\"id_attribute\":"
-          @"\"\",\"form_control_type\":\"text\",\"aria_label\":\"\","
+          @"\"\",\"unique_renderer_id\":4,\"form_control_type\":\"text\","
+          @"\"aria_label\":\"\","
           @"\"aria_description\":\"\",\"should_autocomplete\":"
           @"true,\"is_focusable\":true,\"max_length\":524288,\"is_checkable\":"
           @"false,\"value\":\"\",\"label\":\"Name:\"},{\"identifier\":"
           @"\"password2\",\"name\":\"password2\",\"name_attribute\":"
-          @"\"password2\",\"id_attribute\":\"\",\"form_control_type\":"
+          @"\"password2\",\"id_attribute\":\"\",\"unique_renderer_id\":5,"
+          @"\"form_control_type\":"
           @"\"password\",\"aria_label\":\"\",\"aria_description\":\"\","
           @"\"should_autocomplete\":true,\"is_focusable\":true,"
           @"\"max_length\":524288,\"is_checkable\":false,"
@@ -232,6 +243,7 @@ TEST_F(PasswordControllerJsTest, GetPasswordFormData) {
        "  <input type='submit' value='Submit'>"
        "</form>"
        "</body></html>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
 
   const std::string base_url = BaseUrl();
   NSString* parameter = @"window.document.getElementsByTagName('form')[0]";
@@ -239,15 +251,18 @@ TEST_F(PasswordControllerJsTest, GetPasswordFormData) {
   NSString* result = [NSString
       stringWithFormat:
           @"{\"name\":\"np\",\"origin\":\"%s\",\"action\":\"%sgeneric_submit\","
-          @"\"name_attribute\":\"np\",\"id_attribute\":\"np1\","
+          @"\"name_attribute\":\"np\",\"id_attribute\":\"np1\",\"unique_"
+          @"renderer_id\":0,"
           @"\"fields\":[{\"identifier\":\"name\",\"name\":\"name\","
-          @"\"name_attribute\":\"name\",\"id_attribute\":\"\",\"form_"
+          @"\"name_attribute\":\"name\",\"id_attribute\":\"\",\"unique_"
+          @"renderer_id\":1,\"form_"
           @"control_type\":\"text\",\"aria_label\":\"\","
           @"\"aria_description\":\"\",\"should_autocomplete\":true,\"is_"
           @"focusable\":true,\"max_length\":524288,\"is_checkable\":false,"
           @"\"value\":\"\",\"label\":\"Name:\"},{\"identifier\":\"password\","
           @"\"name\":\"password\",\"name_attribute\":\"password\","
-          @"\"id_attribute\":\"\",\"form_control_type\":\"password\","
+          @"\"id_attribute\":\"\",\"unique_renderer_id\":2,\"form_control_"
+          @"type\":\"password\","
           @"\"aria_label\":\"\",\"aria_description\":\"\","
           @"\"should_autocomplete\":true,\"is_focusable\":true,"
           @"\"max_length\":524288,"
@@ -272,20 +287,24 @@ TEST_F(PasswordControllerJsTest, FormActionIsNotSet) {
        "  <input type='submit' value='Submit'>"
        "</form>"
        "</body></html>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
 
   const std::string base_url = BaseUrl();
   NSString* result = [NSString
       stringWithFormat:
           @"[{\"name\":\"login_form\",\"origin\":\"%s\",\"action\":\"%s\","
-          @"\"name_attribute\":\"login_form\",\"id_attribute\":\"\","
+          @"\"name_attribute\":\"login_form\",\"id_attribute\":\"\",\"unique_"
+          @"renderer_id\":0,"
           @"\"fields\":[{\"identifier\":\"name\",\"name\":\"name\","
-          @"\"name_attribute\":\"name\",\"id_attribute\":\"\",\"form_"
+          @"\"name_attribute\":\"name\",\"id_attribute\":\"\",\"unique_"
+          @"renderer_id\":1,\"form_"
           @"control_type\":\"text\",\"aria_label\":\"\","
           @"\"aria_description\":\"\",\"should_autocomplete\":true,\"is_"
           @"focusable\":true,\"max_length\":524288,\"is_checkable\":false,"
           @"\"value\":\"\",\"label\":\"Name:\"},{\"identifier\":\"password\","
           @"\"name\":\"password\",\"name_attribute\":\"password\","
-          @"\"id_attribute\":\"\",\"form_control_type\":\"password\","
+          @"\"id_attribute\":\"\",\"unique_renderer_id\":2,\"form_control_"
+          @"type\":\"password\","
           @"\"aria_label\":\"\",\"aria_description\":\"\","
           @"\"should_autocomplete\":true,\"is_focusable\":true,"
           @"\"max_length\":524288,"
@@ -306,6 +325,7 @@ TEST_F(PasswordControllerJsTest, TouchendAsSubmissionIndicator) {
        "  <button id='submit_button' value='Submit'>"
        "</form>"
        "</body></html>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
 
   // Call __gCrWeb.passwords.findPasswordForms in order to set an event handler
   // on the button touchend event.
@@ -335,16 +355,19 @@ TEST_F(PasswordControllerJsTest, TouchendAsSubmissionIndicator) {
       stringWithFormat:
           @"{\"name\":\"login_form\",\"origin\":\"https://chromium.test/"
           @"\",\"action\":\"%s\",\"name_attribute\":\"login_form\","
-          @"\"id_attribute\":\"login_form\",\"fields\":"
+          @"\"id_attribute\":\"login_form\",\"unique_renderer_id\":0,"
+          @"\"fields\":"
           @"[{\"identifier\":\"username\","
           @"\"name\":\"username\",\"name_attribute\":\"username\","
-          @"\"id_attribute\":\"\",\"form_control_type\":\"text\","
+          @"\"id_attribute\":\"\",\"unique_renderer_id\":1,\"form_control_"
+          @"type\":\"text\","
           @"\"aria_label\":\"\",\"aria_description\":\"\","
           @"\"should_autocomplete\":true,\"is_focusable\":true,"
           @"\"max_length\":524288,"
           @"\"is_checkable\":false,\"value\":\"user1\",\"label\":\"Name:\"},{"
           @"\"identifier\":\"password\",\"name\":\"password\","
-          @"\"name_attribute\":\"password\",\"id_attribute\":\"\","
+          @"\"name_attribute\":\"password\",\"id_attribute\":\"\",\"unique_"
+          @"renderer_id\":2,"
           @"\"form_control_type\":\"password\","
           @"\"aria_label\":\"\",\"aria_description\":\"\","
           @"\"should_autocomplete\":true,"

@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/lazy_instance_helpers.h"
-#include "base/logging.h"
 #include "base/task/thread_pool.h"
 
 namespace base {

@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include "base/i18n/string_search.h"
-#include "base/logging.h"
 
 #include "third_party/icu/source/i18n/unicode/usearch.h"
 

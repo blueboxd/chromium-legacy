@@ -8,7 +8,6 @@
 #include <cmath>
 #include <memory>
 
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "cc/input/browser_controls_offset_manager_client.h"
 #include "cc/layers/layer_impl.h"

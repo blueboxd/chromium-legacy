@@ -26,8 +26,19 @@ class CONTENT_EXPORT ServiceWorkerDiskCache : public AppCacheDiskCache {
   ServiceWorkerDiskCache();
 };
 
+// TODO(crbug.com/1060076): Migrate to
+// storage::mojom::ServiceWorkerResourceReader.
 class CONTENT_EXPORT ServiceWorkerResponseReader
     : public AppCacheResponseReader {
+ public:
+  // Reads response headers and metadata associated with this reader from
+  // storage. This is an adaptor method of ReadInfo().
+  using ReadResponseHeadCallback =
+      base::OnceCallback<void(int result,
+                              network::mojom::URLResponseHeadPtr response_head,
+                              scoped_refptr<net::IOBufferWithSize> metadata)>;
+  void ReadResponseHead(ReadResponseHeadCallback callback);
+
  protected:
   // Should only be constructed by the storage class.
   friend class ServiceWorkerStorage;
@@ -36,6 +47,8 @@ class CONTENT_EXPORT ServiceWorkerResponseReader
                               base::WeakPtr<AppCacheDiskCache> disk_cache);
 };
 
+// TODO(crbug.com/1060076): Migrate to
+// storage::mojom::ServiceWorkerResourceWriter.
 class CONTENT_EXPORT ServiceWorkerResponseWriter
     : public AppCacheResponseWriter {
  public:

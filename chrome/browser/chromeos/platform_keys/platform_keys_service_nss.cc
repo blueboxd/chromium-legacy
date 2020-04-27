@@ -5,9 +5,11 @@
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 
 #include <cert.h>
+#include <certdb.h>
 #include <cryptohi.h>
 #include <keyhi.h>
 #include <pk11pub.h>
+#include <pkcs11t.h>
 #include <secder.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -55,6 +57,7 @@
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
+#include "third_party/cros_system_api/constants/pkcs11_custom_attributes.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -281,16 +284,6 @@ class SignState : public NSSOperationState {
                              std::move(bound_callback), service_weak_ptr_));
   }
 
-  crypto::ScopedSECKEYPrivateKey GetPrivateKey() {
-    auto public_key_bytes =
-        base::as_bytes(base::make_span(public_key_spki_der_));
-    if (slot_) {
-      return crypto::FindNSSKeyFromPublicKeyInfoInSlot(public_key_bytes,
-                                                       slot_.get());
-    }
-    return crypto::FindNSSKeyFromPublicKeyInfo(public_key_bytes);
-  }
-
   // The data that will be signed.
   const std::string data_;
 
@@ -459,6 +452,33 @@ class RemoveCertificateState : public NSSOperationState {
   RemoveCertificateCallback callback_;
 };
 
+class RemoveKeyState : public NSSOperationState {
+ public:
+  RemoveKeyState(ServiceWeakPtr weak_ptr,
+                 const std::string& public_key_spki_der,
+                 RemoveKeyCallback callback);
+  ~RemoveKeyState() override = default;
+
+  void OnError(const base::Location& from,
+               const std::string& error_message) override {
+    CallBack(from, error_message);
+  }
+
+  void CallBack(const base::Location& from, const std::string& error_message) {
+    auto bound_callback = base::BindOnce(std::move(callback_), error_message);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
+  // Must be a DER encoding of a SubjectPublicKeyInfo.
+  const std::string public_key_spki_der_;
+
+ private:
+  // Must be called on origin thread, therefore use CallBack().
+  RemoveKeyCallback callback_;
+};
+
 class GetTokensState : public NSSOperationState {
  public:
   explicit GetTokensState(ServiceWeakPtr weak_ptr,
@@ -514,6 +534,69 @@ class GetKeyLocationsState : public NSSOperationState {
  private:
   // Must be called on origin thread, therefore use CallBack().
   GetKeyLocationsCallback callback_;
+};
+
+class SetAttributeForKeyState : public NSSOperationState {
+ public:
+  SetAttributeForKeyState(ServiceWeakPtr weak_ptr,
+                          const std::string& public_key_spki_der,
+                          CK_ATTRIBUTE_TYPE attribute_type,
+                          const std::string& attribute_value,
+                          SetAttributeForKeyCallback callback);
+  ~SetAttributeForKeyState() override = default;
+
+  void OnError(const base::Location& from,
+               const std::string& error_message) override {
+    CallBack(from, error_message);
+  }
+
+  void CallBack(const base::Location& from, const std::string& error_message) {
+    auto bound_callback = base::BindOnce(std::move(callback_), error_message);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
+  // Must be a DER encoding of a SubjectPublicKeyInfo.
+  const std::string public_key_spki_der_;
+  const CK_ATTRIBUTE_TYPE attribute_type_;
+  const std::string attribute_value_;
+
+ private:
+  // Must be called on origin thread, therefore use CallBack().
+  SetAttributeForKeyCallback callback_;
+};
+
+class GetAttributeForKeyState : public NSSOperationState {
+ public:
+  GetAttributeForKeyState(ServiceWeakPtr weak_ptr,
+                          const std::string& public_key_spki_der,
+                          CK_ATTRIBUTE_TYPE attribute_type,
+                          GetAttributeForKeyCallback callback);
+  ~GetAttributeForKeyState() override = default;
+
+  void OnError(const base::Location& from,
+               const std::string& error_message) override {
+    CallBack(from, std::string() /* no attribute value */, error_message);
+  }
+
+  void CallBack(const base::Location& from,
+                const std::string& attribute_value,
+                const std::string& error_message) {
+    auto bound_callback =
+        base::BindOnce(std::move(callback_), attribute_value, error_message);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
+  // Must be a DER encoding of a SubjectPublicKeyInfo.
+  const std::string public_key_spki_der_;
+  const CK_ATTRIBUTE_TYPE attribute_type_;
+
+ private:
+  // Must be called on origin thread, therefore use CallBack().
+  GetAttributeForKeyCallback callback_;
 };
 
 NSSOperationState::NSSOperationState(ServiceWeakPtr weak_ptr)
@@ -582,6 +665,13 @@ RemoveCertificateState::RemoveCertificateState(
       certificate_(certificate),
       callback_(callback) {}
 
+RemoveKeyState::RemoveKeyState(ServiceWeakPtr weak_ptr,
+                               const std::string& public_key_spki_der,
+                               RemoveKeyCallback callback)
+    : NSSOperationState(weak_ptr),
+      public_key_spki_der_(public_key_spki_der),
+      callback_(std::move(callback)) {}
+
 GetTokensState::GetTokensState(ServiceWeakPtr weak_ptr,
                                const GetTokensCallback& callback)
     : NSSOperationState(weak_ptr), callback_(callback) {}
@@ -593,6 +683,42 @@ GetKeyLocationsState::GetKeyLocationsState(
     : NSSOperationState(weak_ptr),
       public_key_spki_der_(public_key_spki_der),
       callback_(callback) {}
+
+SetAttributeForKeyState::SetAttributeForKeyState(
+    ServiceWeakPtr weak_ptr,
+    const std::string& public_key_spki_der,
+    CK_ATTRIBUTE_TYPE attribute_type,
+    const std::string& attribute_value,
+    SetAttributeForKeyCallback callback)
+    : NSSOperationState(weak_ptr),
+      public_key_spki_der_(public_key_spki_der),
+      attribute_type_(attribute_type),
+      attribute_value_(attribute_value),
+      callback_(std::move(callback)) {}
+
+GetAttributeForKeyState::GetAttributeForKeyState(
+    ServiceWeakPtr weak_ptr,
+    const std::string& public_key_spki_der,
+    CK_ATTRIBUTE_TYPE attribute_type,
+    GetAttributeForKeyCallback callback)
+    : NSSOperationState(weak_ptr),
+      public_key_spki_der_(public_key_spki_der),
+      attribute_type_(attribute_type),
+      callback_(std::move(callback)) {}
+
+// Returns the private key corresponding to the der-encoded
+// |public_key_spki_der| if found in |slot|. If |slot| is nullptr, the
+// private key will be searched in all slots.
+crypto::ScopedSECKEYPrivateKey GetPrivateKey(
+    const std::string& public_key_spki_der,
+    const crypto::ScopedPK11Slot& slot) {
+  auto public_key_bytes = base::as_bytes(base::make_span(public_key_spki_der));
+  if (slot) {
+    return crypto::FindNSSKeyFromPublicKeyInfoInSlot(public_key_bytes,
+                                                     slot.get());
+  }
+  return crypto::FindNSSKeyFromPublicKeyInfo(public_key_bytes);
+}
 
 // Does the actual RSA key generation on a worker thread. Used by
 // GenerateRSAKeyWithDB().
@@ -699,7 +825,8 @@ void GenerateECKeyWithDB(std::unique_ptr<GenerateECKeyState> state,
 
 // Does the actual RSA signing on a worker thread.
 void SignRSAOnWorkerThread(std::unique_ptr<SignState> state) {
-  crypto::ScopedSECKEYPrivateKey rsa_key = state->GetPrivateKey();
+  crypto::ScopedSECKEYPrivateKey rsa_key =
+      GetPrivateKey(state->public_key_spki_der_, state->slot_);
 
   // Fail if the key was not found or is of the wrong type.
   if (!rsa_key || SECKEY_GetPrivateKeyType(rsa_key.get()) != rsaKey) {
@@ -769,7 +896,8 @@ void SignRSAOnWorkerThread(std::unique_ptr<SignState> state) {
 
 // Does the actual EC Signing on a worker thread.
 void SignECOnWorkerThread(std::unique_ptr<SignState> state) {
-  crypto::ScopedSECKEYPrivateKey ec_key = state->GetPrivateKey();
+  crypto::ScopedSECKEYPrivateKey ec_key =
+      GetPrivateKey(state->public_key_spki_der_, state->slot_);
 
   // Fail if the key was not found or is of the wrong type.
   if (!ec_key || SECKEY_GetPrivateKeyType(ec_key.get()) != ecKey) {
@@ -815,7 +943,8 @@ void SignECOnWorkerThread(std::unique_ptr<SignState> state) {
 
 // Decides which signing algorithm will be used. Used by SignWithDB().
 void SignOnWorkerThread(std::unique_ptr<SignState> state) {
-  crypto::ScopedSECKEYPrivateKey key = state->GetPrivateKey();
+  crypto::ScopedSECKEYPrivateKey key =
+      GetPrivateKey(state->public_key_spki_der_, state->slot_);
 
   if (!key) {
     state->OnError(FROM_HERE, kErrorKeyNotFound);
@@ -953,9 +1082,12 @@ void GetAllKeysOnWorkerThread(std::unique_ptr<GetAllKeysState> state) {
       LOG(WARNING) << "Could not encode subject public key info.";
       continue;
     }
-    public_key_spki_der_list.push_back(std::string(
-        subject_public_key_info->data,
-        subject_public_key_info->data + subject_public_key_info->len));
+
+    if (subject_public_key_info->len > 0) {
+      public_key_spki_der_list.push_back(std::string(
+          subject_public_key_info->data,
+          subject_public_key_info->data + subject_public_key_info->len));
+    }
   }
 
   SECKEY_DestroyPublicKeyList(public_keys);
@@ -1057,6 +1189,58 @@ void RemoveCertificateWithDB(std::unique_ptr<RemoveCertificateState> state,
                      certificate_found));
 }
 
+// Does the actual key pair removal on a worker thread. Used by
+// RemoveKeyWithDb().
+void RemoveKeyOnWorkerThread(std::unique_ptr<RemoveKeyState> state) {
+  DCHECK(state->slot_.get());
+
+  crypto::ScopedSECKEYPrivateKey private_key =
+      GetPrivateKey(state->public_key_spki_der_, state->slot_);
+
+  if (!private_key) {
+    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    return;
+  }
+
+  crypto::ScopedSECKEYPublicKey public_key(
+      SECKEY_ConvertToPublicKey(private_key.get()));
+
+  // PK11_DeleteTokenPrivateKey function frees the privKey structure
+  // unconditionally, and thus releasing the ownership of the passed private
+  // key.
+  // |force| is set to false so as not to delete the key if there are any
+  // matching certificates.
+  if (PK11_DeleteTokenPrivateKey(/*privKey=*/private_key.release(),
+                                 /*force=*/false) != SECSuccess) {
+    LOG(ERROR) << "Cannot delete private key";
+    state->OnError(FROM_HERE, kErrorInternal);
+    return;
+  }
+
+  // PK11_DeleteTokenPublicKey function frees the pubKey structure
+  // unconditionally, and thus releasing the ownership of the passed private
+  // key.
+  if (PK11_DeleteTokenPublicKey(/*pubKey=*/public_key.release()) !=
+      SECSuccess) {
+    LOG(WARNING) << "Cannot delete public key";
+  }
+
+  state->CallBack(FROM_HERE, std::string() /* no error */);
+}
+
+// Continues removing the key pair with the obtained |cert_db|. Called by
+// RemoveKey().
+void RemoveKeyWithDb(std::unique_ptr<RemoveKeyState> state,
+                     net::NSSCertDatabase* cert_db) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&RemoveKeyOnWorkerThread, std::move(state)));
+}
+
 // Does the actual work to determine which tokens are available.
 void GetTokensWithDB(std::unique_ptr<GetTokensState> state,
                      net::NSSCertDatabase* cert_db) {
@@ -1115,6 +1299,98 @@ void GetKeyLocationsWithDB(std::unique_ptr<GetKeyLocationsState> state,
 
   state->CallBack(FROM_HERE, std::move(token_ids),
                   std::string() /* no error */);
+}
+
+// Translates |type| to one of the NSS softoken module's predefined key
+// attributes which are used in tests.
+CK_ATTRIBUTE_TYPE TranslateKeyAttributeTypeForSoftoken(KeyAttributeType type) {
+  switch (type) {
+    case KeyAttributeType::CertificateProvisioningId:
+      return CKA_START_DATE;
+  }
+}
+
+// If |map_to_softoken_attrs| is true, translates |type| to one of the softoken
+// module predefined key attributes. Otherwise, applies normal translation.
+CK_ATTRIBUTE_TYPE TranslateKeyAttributeType(KeyAttributeType type,
+                                            bool map_to_softoken_attrs) {
+  if (map_to_softoken_attrs) {
+    return TranslateKeyAttributeTypeForSoftoken(type);
+  }
+
+  switch (type) {
+    case KeyAttributeType::CertificateProvisioningId:
+      return pkcs11_custom_attributes::kCkaChromeOsBuiltinProvisioningProfileId;
+  }
+}
+
+// Does the actual attribute value setting with the obtained |cert_db|.
+// Called by SetAttributeForKey().
+void SetAttributeForKeyWithDb(std::unique_ptr<SetAttributeForKeyState> state,
+                              net::NSSCertDatabase* cert_db) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(state->slot_.get());
+
+  crypto::ScopedSECKEYPrivateKey private_key =
+      GetPrivateKey(state->public_key_spki_der_, state->slot_);
+
+  if (!private_key) {
+    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    return;
+  }
+
+  // This SECItem will point to data owned by |state| so it is not necessary to
+  // use ScopedSECItem.
+  SECItem attribute_value;
+
+  attribute_value.data = reinterpret_cast<unsigned char*>(
+      const_cast<char*>(state->attribute_value_.data()));
+  attribute_value.len = state->attribute_value_.size();
+
+  if (PK11_WriteRawAttribute(
+          /*objType=*/PK11_TypePrivKey, private_key.get(),
+          state->attribute_type_, &attribute_value) != SECSuccess) {
+    state->OnError(FROM_HERE, kErrorInternal);
+    return;
+  }
+
+  state->CallBack(FROM_HERE, std::string() /* no error */);
+}
+
+// Does the actual attribute value retrieval with the obtained |cert_db|.
+// Called by GetAttributeForKey().
+void GetAttributeForKeyWithDb(std::unique_ptr<GetAttributeForKeyState> state,
+                              net::NSSCertDatabase* cert_db) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(state->slot_.get());
+
+  crypto::ScopedSECKEYPrivateKey private_key =
+      GetPrivateKey(state->public_key_spki_der_, state->slot_);
+
+  if (!private_key) {
+    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    return;
+  }
+
+  crypto::ScopedSECItem attribute_value(SECITEM_AllocItem(/*arena=*/nullptr,
+                                                          /*item=*/nullptr,
+                                                          /*len=*/0));
+  DCHECK(attribute_value.get());
+
+  if (PK11_ReadRawAttribute(
+          /*objType=*/PK11_TypePrivKey, private_key.get(),
+          state->attribute_type_, attribute_value.get()) != SECSuccess) {
+    state->OnError(FROM_HERE, kErrorInternal);
+    return;
+  }
+
+  std::string attribute_value_str;
+  if (attribute_value->len > 0) {
+    attribute_value_str.assign(attribute_value->data,
+                               attribute_value->data + attribute_value->len);
+  }
+
+  state->CallBack(FROM_HERE, attribute_value_str, std::string() /* no error */);
 }
 
 }  // namespace
@@ -1371,6 +1647,23 @@ void PlatformKeysServiceImpl::RemoveCertificate(
                   browser_context_, state_ptr);
 }
 
+void PlatformKeysServiceImpl::RemoveKey(const std::string& token_id,
+                                        const std::string& public_key_spki_der,
+                                        RemoveKeyCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto state = std::make_unique<RemoveKeyState>(
+      weak_factory_.GetWeakPtr(), public_key_spki_der, std::move(callback));
+
+  // Get the pointer to |state| before base::Passed releases |state|.
+  NSSOperationState* state_ptr = state.get();
+
+  // The NSSCertDatabase object is not required. But in case it's not available
+  // we would get more informative error messages.
+  GetCertDatabase(token_id, base::Bind(&RemoveKeyWithDb, base::Passed(&state)),
+                  browser_context_, state_ptr);
+}
+
 void PlatformKeysServiceImpl::GetTokens(const GetTokensCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto state =
@@ -1394,6 +1687,68 @@ void PlatformKeysServiceImpl::GetKeyLocations(
       std::string() /* don't get any specific slot - we need all slots */,
       base::BindRepeating(&GetKeyLocationsWithDB, base::Passed(&state)),
       browser_context_, state_ptr);
+}
+
+void PlatformKeysServiceImpl::SetAttributeForKey(
+    const std::string& token_id,
+    const std::string& public_key_spki_der,
+    KeyAttributeType attribute_type,
+    const std::string& attribute_value,
+    SetAttributeForKeyCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  CK_ATTRIBUTE_TYPE ck_attribute_type = TranslateKeyAttributeType(
+      attribute_type,
+      /*map_to_softoken_attrs=*/IsSetMapToSoftokenAttrsForTesting());
+
+  auto state = std::make_unique<SetAttributeForKeyState>(
+      weak_factory_.GetWeakPtr(), public_key_spki_der, ck_attribute_type,
+      attribute_value, std::move(callback));
+
+  // Get the pointer to |state| before base::Passed releases |state|.
+  NSSOperationState* state_ptr = state.get();
+
+  // The NSSCertDatabase object is not required. Only setting the state slot is
+  // required.
+  GetCertDatabase(
+      token_id,
+      base::BindRepeating(&SetAttributeForKeyWithDb, base::Passed(&state)),
+      browser_context_, state_ptr);
+}
+
+void PlatformKeysServiceImpl::GetAttributeForKey(
+    const std::string& token_id,
+    const std::string& public_key_spki_der,
+    KeyAttributeType attribute_type,
+    GetAttributeForKeyCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  CK_ATTRIBUTE_TYPE ck_attribute_type = TranslateKeyAttributeType(
+      attribute_type,
+      /*map_to_softoken_attrs=*/IsSetMapToSoftokenAttrsForTesting());
+
+  auto state = std::make_unique<GetAttributeForKeyState>(
+      weak_factory_.GetWeakPtr(), public_key_spki_der, ck_attribute_type,
+      std::move(callback));
+
+  // Get the pointer to |state| before base::Passed releases |state|.
+  NSSOperationState* state_ptr = state.get();
+
+  // The NSSCertDatabase object is not required. Only setting the state slot is
+  // required.
+  GetCertDatabase(
+      token_id,
+      base::BindRepeating(&GetAttributeForKeyWithDb, base::Passed(&state)),
+      browser_context_, state_ptr);
+}
+
+void PlatformKeysServiceImpl::SetMapToSoftokenAttrsForTesting(
+    bool map_to_softoken_attrs_for_testing) {
+  map_to_softoken_attrs_for_testing_ = map_to_softoken_attrs_for_testing;
+}
+
+bool PlatformKeysServiceImpl::IsSetMapToSoftokenAttrsForTesting() {
+  return map_to_softoken_attrs_for_testing_;
 }
 
 }  // namespace platform_keys

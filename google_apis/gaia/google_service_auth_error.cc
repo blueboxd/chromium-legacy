@@ -8,7 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
 

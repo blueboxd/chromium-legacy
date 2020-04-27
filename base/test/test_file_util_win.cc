@@ -12,10 +12,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"

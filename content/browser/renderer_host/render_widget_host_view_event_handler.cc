@@ -88,7 +88,7 @@ void MarkUnchangedTouchPointsAsStationary(blink::WebTouchEvent* event,
       event->GetType() == blink::WebInputEvent::Type::kTouchCancel) {
     for (size_t i = 0; i < event->touches_length; ++i) {
       if (event->touches[i].id != changed_touch_id)
-        event->touches[i].state = blink::WebTouchPoint::State::kStateStationary;
+        event->touches[i].state = blink::WebTouchPoint::kStateStationary;
     }
   }
 }

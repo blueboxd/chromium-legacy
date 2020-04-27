@@ -12,7 +12,8 @@
 #endif
 #include <unistd.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "base/time/time_override.h"
 #include "build/build_config.h"

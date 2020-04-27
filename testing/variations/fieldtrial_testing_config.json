@@ -3760,7 +3760,7 @@
             ]
         }
     ],
-    "OmniboxOnDeviceHeadSuggest": [
+    "OmniboxOnDeviceHeadSuggestIncognito": [
         {
             "platforms": [
                 "android",
@@ -3771,24 +3771,58 @@
             ],
             "experiments": [
                 {
-                    "name": "Beta_OnDeviceHeadSuggest_Enabled",
+                    "name": "OnDeviceHeadSuggest_Incognito_Enabled",
                     "enable_features": [
-                        "OmniboxOnDeviceHeadProvider"
+                        "OmniboxOnDeviceHeadProviderIncognito"
                     ]
                 }
             ]
         }
     ],
-    "OmniboxOnDeviceHeadSuggestIOS": [
+    "OmniboxOnDeviceHeadSuggestIncognitoIOS": [
         {
             "platforms": [
                 "ios"
             ],
             "experiments": [
                 {
-                    "name": "Beta_OnDeviceHeadSuggest_Enabled",
+                    "name": "OnDeviceHeadSuggest_Incognito_Enabled",
                     "enable_features": [
-                        "OmniboxOnDeviceHeadProvider"
+                        "OmniboxOnDeviceHeadProviderIncognito"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxOnDeviceHeadSuggestNonIncognito": [
+        {
+            "platforms": [
+                "android",
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "OnDeviceHeadSuggest_NonIncognito_Enabled",
+                    "enable_features": [
+                        "OmniboxOnDeviceHeadProviderNonIncognito"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxOnDeviceHeadSuggestNonIncognitoIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "OnDeviceHeadSuggest_NonIncognito_Enabled",
+                    "enable_features": [
+                        "OmniboxOnDeviceHeadProviderNonIncognito"
                     ]
                 }
             ]

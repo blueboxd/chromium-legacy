@@ -40,9 +40,10 @@
 
 #include "base/atomicops.h"
 #include "base/bit_cast.h"
+#include "base/check_op.h"
 #include "base/cpu.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time_override.h"

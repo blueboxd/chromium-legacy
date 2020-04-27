@@ -70,6 +70,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void AddListener(NavigationListener* listener) override;
   void RemoveListener(NavigationListener* listener) override;
   void SetExpandSheetForPromptAction(bool expand) override;
+  void SetBrowseDomainsWhitelist(std::vector<std::string> domains) override;
+
   void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
       base::OnceCallback<void(bool,
@@ -144,6 +146,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   bool expand_or_collapse_updated_ = false;
   bool expand_or_collapse_value_ = false;
   bool expand_sheet_for_prompt_ = true;
+  std::vector<std::string> browse_domains_;
   UserModel* user_model_ = nullptr;
 
   bool require_ui_ = false;

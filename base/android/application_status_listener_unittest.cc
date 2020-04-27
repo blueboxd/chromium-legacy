@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/task_environment.h"

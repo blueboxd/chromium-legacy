@@ -15,6 +15,7 @@ import android.view.View;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.Px;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
@@ -38,7 +39,6 @@ import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListProperties.SuggestionListObserver;
 import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
@@ -74,7 +74,7 @@ import java.util.List;
  * Handles updating the model state for the currently visible omnibox suggestions.
  */
 class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWithNativeObserver,
-                                      SuggestionListObserver {
+                                      OmniboxSuggestionsDropdown.Observer {
     /** A struct containing information about the suggestion and its view type. */
     private static class SuggestionViewInfo extends MVCListAdapter.ListItem {
         /** Processor managing the suggestion. */
@@ -142,6 +142,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private AutocompleteController mAutocomplete;
     private long mUrlFocusTime;
     private boolean mEnableAdaptiveSuggestionsCount;
+    @Px
     private int mMaximumSuggestionsListHeight;
     private boolean mEnableDeferredKeyboardPopup;
     private boolean mPendingKeyboardShowDecision;
@@ -1314,14 +1315,14 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * @param newHeightPx New height of the suggestion list in pixels.
      */
     @Override
-    public void onSuggestionListHeightChanged(int newHeightPx) {
+    public void onSuggestionDropdownHeightChanged(@Px int newHeightPx) {
         if (!mEnableAdaptiveSuggestionsCount) return;
         mMaximumSuggestionsListHeight = newHeightPx;
         updateSuggestionsList(mMaximumSuggestionsListHeight);
     }
 
     @Override
-    public void onSuggestionListScroll() {
+    public void onSuggestionDropdownScroll() {
         if (!shouldShowSoftKeyboard()) {
             mDelegate.setKeyboardVisibility(false);
         }

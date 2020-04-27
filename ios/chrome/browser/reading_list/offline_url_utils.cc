@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

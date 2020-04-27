@@ -10,11 +10,12 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"

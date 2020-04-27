@@ -5,9 +5,10 @@
 #include "base/threading/thread_local_storage.h"
 
 #include "base/atomicops.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 

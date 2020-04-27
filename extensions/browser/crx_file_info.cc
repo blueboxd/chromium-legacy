@@ -4,7 +4,7 @@
 
 #include "extensions/browser/crx_file_info.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/crx_file/crx_verifier.h"
 
 namespace extensions {

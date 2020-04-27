@@ -66,11 +66,10 @@ namespace {
 typedef BOOL (^DecisionBlock)(id self);
 // A block that takes the arguments of UserActivityHandler's
 // +handleStartupParametersWithTabOpener.
-typedef void (^HandleStartupParam)(
-    id self,
-    id<TabOpening> tabOpener,
-    id<StartupInformation> startupInformation,
-    id<BrowserInterfaceProvider> interfaceProvider);
+typedef void (^HandleStartupParam)(id self,
+                                   id<TabOpening> tabOpener,
+                                   id<StartupInformation> startupInformation,
+                                   ChromeBrowserState* browserState);
 
 class FakeAppDistributionProvider : public AppDistributionProvider {
  public:
@@ -226,20 +225,19 @@ class AppStateTest : public BlockCleanupTest {
 
   void swizzleHandleStartupParameters(
       id<TabOpening> expectedTabOpener,
-      id<BrowserInterfaceProvider> expectedInterfaceProvider) {
-    handle_startup_swizzle_block_ =
-        ^(id self, id<TabOpening> tabOpener,
-          id<StartupInformation> startupInformation,
-          id<BrowserInterfaceProvider> interfaceProvider) {
-          ASSERT_EQ(startup_information_mock_, startupInformation);
-          ASSERT_EQ(expectedTabOpener, tabOpener);
-          ASSERT_EQ(expectedInterfaceProvider, interfaceProvider);
-        };
+      ChromeBrowserState* expectedBrowserState) {
+    handle_startup_swizzle_block_ = ^(id self, id<TabOpening> tabOpener,
+                                      id<StartupInformation> startupInformation,
+                                      ChromeBrowserState* browserState) {
+      ASSERT_EQ(startup_information_mock_, startupInformation);
+      ASSERT_EQ(expectedTabOpener, tabOpener);
+      ASSERT_EQ(expectedBrowserState, browserState);
+    };
 
     handle_startup_swizzler_.reset(new ScopedBlockSwizzler(
         [UserActivityHandler class],
         @selector(handleStartupParametersWithTabOpener:
-                                    startupInformation:interfaceProvider:),
+                                    startupInformation:browserState:),
         handle_startup_swizzle_block_));
   }
 
@@ -584,7 +582,7 @@ TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
   interfaceProvider.mainInterface.browserState = getBrowserState();
 
   // Swizzle Startup Parameters.
-  swizzleHandleStartupParameters(tabOpener, interfaceProvider);
+  swizzleHandleStartupParameters(tabOpener, getBrowserState());
 
   UIWindow* window = [[UIWindow alloc] init];
   AppState* appState = getAppStateWithOpenNTPAndIncognitoBlock(NO, window);

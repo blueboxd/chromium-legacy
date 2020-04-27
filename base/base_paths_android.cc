@@ -13,7 +13,7 @@
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/process/process_metrics.h"
 
 namespace base {

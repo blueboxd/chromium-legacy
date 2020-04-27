@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <windows.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/win/windows_version.h"
 
 namespace base {

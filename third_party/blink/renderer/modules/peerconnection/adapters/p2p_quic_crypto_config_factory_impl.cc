@@ -103,6 +103,8 @@ class DummyProofSource : public quic::ProofSource {
       std::unique_ptr<SignatureCallback> callback) override {
     callback->Run(true, "Dummy signature", nullptr);
   }
+
+  TicketCrypter* SessionTicketCrypter() override { return nullptr; }
 };
 
 P2PQuicCryptoConfigFactoryImpl::P2PQuicCryptoConfigFactoryImpl(

@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"

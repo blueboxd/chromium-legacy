@@ -4,7 +4,7 @@
 
 #include "base/synchronization/atomic_flag.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace base {
 

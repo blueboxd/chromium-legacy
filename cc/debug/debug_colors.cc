@@ -4,7 +4,8 @@
 
 #include "cc/debug/debug_colors.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace cc {
 

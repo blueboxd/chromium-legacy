@@ -1180,6 +1180,10 @@ message PromptProto {
   // action. The result sent back to the server will contain a Choice marked as
   // |navigation_ended|.
   optional bool end_on_navigation = 8;
+
+  // A list of domains and subdomains to allow users to navigate to when in
+  // browse mode.
+  repeated string browse_domains_whitelist = 9;
 }
 
 message ContactDetailsProto {
@@ -1604,7 +1608,8 @@ message SetFormFieldValueProto {
 
 // Asks the password manager to generate a suitable password for |element|. The
 // generated password can be filled in subsequent SetFormFieldValueProto
-// actions.
+// actions. Generated password will be presaved to password store,
+// login details need to be available in the client memory for this action.
 message GeneratePasswordForFormFieldProto {
   // A reference to the form element for which to generate a password.
   optional ElementReferenceProto element = 1;

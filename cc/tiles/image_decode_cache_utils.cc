@@ -7,7 +7,7 @@
 
 #include "cc/tiles/image_decode_cache_utils.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 

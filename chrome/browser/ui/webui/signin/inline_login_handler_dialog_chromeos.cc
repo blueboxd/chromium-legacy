@@ -19,6 +19,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -92,6 +93,13 @@ GURL GetInlineLoginUrl(const std::string& email,
 // static
 void InlineLoginHandlerDialogChromeOS::Show(const std::string& email,
                                             const Source& source) {
+  // If the dialog was triggered as a response to background request, it could
+  // get displayed on the lock screen. In this case it is safe to ignore it,
+  // since in this case user will get it again after a request to Google
+  // properties.
+  if (session_manager::SessionManager::Get()->IsUserSessionBlocked())
+    return;
+
   if (dialog) {
     dialog->dialog_window()->Focus();
     return;

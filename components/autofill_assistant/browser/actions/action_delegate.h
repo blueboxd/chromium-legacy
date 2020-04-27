@@ -120,6 +120,11 @@ class ActionDelegate {
   // Have the UI leave the prompt state and go back to its previous state.
   virtual void CleanUpAfterPrompt() = 0;
 
+  // Set the list of whitelisted domains to be used when we enter a browse
+  // state. This list is used to determine whether a user initiated navigation
+  // to a different domain or subdomain is allowed.
+  virtual void SetBrowseDomainsWhitelist(std::vector<std::string> domains) = 0;
+
   // Asks the user to provide the requested user data.
   virtual void CollectUserData(
       CollectUserDataOptions* collect_user_data_options) = 0;

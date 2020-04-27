@@ -6,7 +6,8 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/public/gin_embedders.h"

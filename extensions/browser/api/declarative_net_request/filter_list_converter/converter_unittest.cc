@@ -4,12 +4,12 @@
 
 #include "extensions/browser/api/declarative_net_request/filter_list_converter/converter.h"
 
+#include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

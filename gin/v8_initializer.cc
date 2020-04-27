@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
@@ -16,8 +17,8 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/sys_string_conversions.h"

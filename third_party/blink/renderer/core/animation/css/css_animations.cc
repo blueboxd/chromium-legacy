@@ -92,7 +92,7 @@ namespace {
 // properties.
 StringKeyframeVector ProcessKeyframesRule(
     const StyleRuleKeyframes* keyframes_rule,
-    const Element* element_for_scoping,
+    const Document& document,
     const ComputedStyle* parent_style,
     TimingFunction* default_timing_function) {
   StringKeyframeVector keyframes;
@@ -139,8 +139,7 @@ StringKeyframeVector ProcessKeyframesRule(
 
   for (const CSSProperty* property : specified_properties_for_use_counter) {
     DCHECK(isValidCSSPropertyID(property->PropertyID()));
-    element_for_scoping->GetDocument().CountAnimatedProperty(
-        property->PropertyID());
+    document.CountAnimatedProperty(property->PropertyID());
   }
 
   std::stable_sort(keyframes.begin(), keyframes.end(),
@@ -198,11 +197,8 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   //    abort this procedure. In this case no animation is generated, and any
   //    existing animation matching name is canceled.
 
-  // When the animating element is null, use its parent for scoping purposes.
-  const Element* element_for_scoping =
-      animating_element ? animating_element : &element;
   const StyleRuleKeyframes* keyframes_rule =
-      resolver->FindKeyframesRule(element_for_scoping, name);
+      resolver->FindKeyframesRule(&element, name);
   DCHECK(keyframes_rule);
 
   // 3. Let keyframes be an empty sequence of keyframe objects.
@@ -220,7 +216,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   //    the offset specified in the keyframe selector, and iterate over the
   //    result in reverse applying the following steps:
   StringKeyframeVector sorted_keyframes =
-      ProcessKeyframesRule(keyframes_rule, element_for_scoping, parent_style,
+      ProcessKeyframesRule(keyframes_rule, element.GetDocument(), parent_style,
                            default_timing_function);
 
   for (wtf_size_t i = sorted_keyframes.size(); i > 0; --i) {
@@ -350,7 +346,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   auto* model = MakeGarbageCollected<StringKeyframeEffectModel>(
       keyframes, EffectModel::kCompositeReplace, &start_keyframe->Easing());
   if (animation_index > 0 && model->HasSyntheticKeyframes()) {
-    UseCounter::Count(element_for_scoping->GetDocument(),
+    UseCounter::Count(element.GetDocument(),
                       WebFeature::kCSSAnimationsStackedNeutralKeyframe);
   }
   return model;
@@ -520,8 +516,6 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
   const CSSAnimationData* animation_data = style.Animations();
   const CSSAnimations* css_animations =
       element_animations ? &element_animations->CssAnimations() : nullptr;
-  const Element* element_for_scoping =
-      animating_element ? animating_element : &element;
 
   Vector<bool> cancel_running_animation_flags(
       css_animations ? css_animations->running_animations_.size() : 0);
@@ -553,7 +547,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
       timing.timing_function = Timing().timing_function;
 
       StyleRuleKeyframes* keyframes_rule =
-          resolver->FindKeyframesRule(element_for_scoping, name);
+          resolver->FindKeyframesRule(&element, name);
       if (!keyframes_rule)
         continue;  // Cancel the animation if there's no style rule for it.
 

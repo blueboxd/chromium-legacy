@@ -177,6 +177,11 @@ void FakeScriptExecutorDelegate::SetExpandSheetForPromptAction(bool expand) {
   expand_sheet_for_prompt_ = expand;
 }
 
+void FakeScriptExecutorDelegate::SetBrowseDomainsWhitelist(
+    std::vector<std::string> domains) {
+  browse_domains_ = std::move(domains);
+}
+
 bool FakeScriptExecutorDelegate::SetForm(
     std::unique_ptr<FormProto> form,
     base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,

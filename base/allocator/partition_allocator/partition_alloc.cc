@@ -13,7 +13,7 @@
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 

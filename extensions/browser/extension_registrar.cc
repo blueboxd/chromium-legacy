@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"

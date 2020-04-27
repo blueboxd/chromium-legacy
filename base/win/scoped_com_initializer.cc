@@ -4,7 +4,7 @@
 
 #include "base/win/scoped_com_initializer.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace base {
 namespace win {

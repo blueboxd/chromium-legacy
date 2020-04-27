@@ -236,7 +236,7 @@ public class SigninHelper {
         return name == null ? ChromeSigninController.get().getSignedInAccountName() : name;
     }
 
-    public static void updateAccountRenameData() {
+    private static void updateAccountRenameData() {
         updateAccountRenameData(new SystemAccountChangeEventChecker());
     }
 

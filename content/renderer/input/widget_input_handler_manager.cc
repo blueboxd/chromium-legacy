@@ -244,24 +244,6 @@ void WidgetInputHandlerManager::FindScrollTargetOnMainThread(
       FROM_HERE, base::BindOnce(std::move(callback), element_id));
 }
 
-void WidgetInputHandlerManager::DidOverscroll(
-    const gfx::Vector2dF& accumulated_overscroll,
-    const gfx::Vector2dF& latest_overscroll_delta,
-    const gfx::Vector2dF& current_fling_velocity,
-    const gfx::PointF& causal_event_viewport_point,
-    const cc::OverscrollBehavior& overscroll_behavior) {
-  mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost();
-  if (!host)
-    return;
-  ui::DidOverscrollParams params;
-  params.accumulated_overscroll = accumulated_overscroll;
-  params.latest_overscroll_delta = latest_overscroll_delta;
-  params.current_fling_velocity = current_fling_velocity;
-  params.causal_event_viewport_point = causal_event_viewport_point;
-  params.overscroll_behavior = overscroll_behavior;
-  host->DidOverscroll(params);
-}
-
 void WidgetInputHandlerManager::DidAnimateForInput() {
   main_thread_scheduler_->DidAnimateForInputOnCompositorThread();
 }

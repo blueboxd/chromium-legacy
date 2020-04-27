@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "components/feedback/feedback_uploader.h"
 #include "components/feedback/feedback_uploader_factory.h"

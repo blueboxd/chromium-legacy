@@ -6,7 +6,7 @@
 
 #include <cstring>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace extensions {
 namespace {

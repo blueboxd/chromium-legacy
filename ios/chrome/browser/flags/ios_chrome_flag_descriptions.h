@@ -288,9 +288,14 @@ extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 
 // Title and description for the flag to enable Omnibox On Device Head
-// suggestions.
-extern const char kOmniboxOnDeviceHeadSuggestionsName[];
-extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
+// suggestions (incognito).
+extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[];
+extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoDescription[];
+
+// Title and description for the flag to enable Omnibox On Device Head
+// suggestions (non incognito).
+extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoName[];
+extern const char kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription[];
 
 // Title and description for the flag to control Omnibox on-focus suggestions.
 extern const char kOmniboxOnFocusSuggestionsName[];

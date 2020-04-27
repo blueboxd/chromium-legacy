@@ -4,10 +4,11 @@
 
 #include "base/metrics/sample_vector.h"
 
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"

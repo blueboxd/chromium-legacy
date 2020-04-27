@@ -4,7 +4,7 @@
 
 #include "base/win/windows_version.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

@@ -4,7 +4,7 @@
 
 #include "extensions/renderer/resource_bundle_source_map.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "extensions/renderer/static_v8_external_one_byte_string_resource.h"

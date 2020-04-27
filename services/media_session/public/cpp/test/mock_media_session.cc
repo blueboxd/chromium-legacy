@@ -31,6 +31,24 @@ bool IsPositionEqual(const MediaPosition& p1, const MediaPosition& p2) {
          p2.GetPositionAtTime(p2.last_updated_time());
 }
 
+bool IsPositionGreaterOrEqual(const MediaPosition& p1,
+                              const MediaPosition& p2) {
+  if (p1.duration() != p2.duration() ||
+      p1.playback_rate() != p2.playback_rate()) {
+    return false;
+  }
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (p1.GetPositionAtTime(now) >= p2.GetPositionAtTime(now))
+    return true;
+
+  // To make testing easier we allow position at creation time to be greater or
+  // equal. If we did not do this then the position may advance if the playback
+  // rate is not zero.
+  return p1.GetPositionAtTime(p1.last_updated_time()) >=
+         p2.GetPositionAtTime(p2.last_updated_time());
+}
+
 }  // namespace
 
 MockMediaSessionMojoObserver::MockMediaSessionMojoObserver(
@@ -105,6 +123,10 @@ void MockMediaSessionMojoObserver::MediaSessionPositionChanged(
       IsPositionEqual(*position, *expected_position_)) {
     run_loop_->Quit();
     expected_position_.reset();
+  } else if (position.has_value() && minimum_expected_position_.has_value() &&
+             IsPositionGreaterOrEqual(*position, *minimum_expected_position_)) {
+    run_loop_->Quit();
+    minimum_expected_position_.reset();
   } else if (waiting_for_empty_position_ && !position.has_value()) {
     run_loop_->Quit();
     waiting_for_empty_position_ = false;
@@ -201,13 +223,27 @@ void MockMediaSessionMojoObserver::WaitForEmptyPosition() {
 
 void MockMediaSessionMojoObserver::WaitForExpectedPosition(
     const MediaPosition& position) {
-  if (session_position_.has_value() && session_position_->has_value()) {
-    if (IsPositionEqual(*session_position_.value(), position))
-      return;
+  if (session_position_.has_value() && session_position_->has_value() &&
+      IsPositionEqual(*session_position_.value(), position)) {
+    return;
   }
 
   expected_position_ = position;
   StartWaiting();
+}
+
+base::TimeDelta MockMediaSessionMojoObserver::WaitForExpectedPositionAtLeast(
+    const MediaPosition& position) {
+  if (session_position_.has_value() && session_position_->has_value() &&
+      IsPositionGreaterOrEqual(*session_position_.value(), position)) {
+    return position.GetPositionAtTime(position.last_updated_time());
+  }
+
+  minimum_expected_position_ = position;
+  StartWaiting();
+
+  return (*session_position_)
+      ->GetPositionAtTime((*session_position_)->last_updated_time());
 }
 
 void MockMediaSessionMojoObserver::StartWaiting() {

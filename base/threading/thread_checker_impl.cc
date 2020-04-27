@@ -4,7 +4,7 @@
 
 #include "base/threading/thread_checker_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 

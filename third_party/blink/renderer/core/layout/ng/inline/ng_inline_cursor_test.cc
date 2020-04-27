@@ -214,7 +214,7 @@ TEST_P(NGInlineCursorTest, CulledInlineWithAtomicInline) {
       "<b id=culled>abc<div style=display:inline>ABC<br>XYZ</div>xyz</b>"
       "</div>");
   NGInlineCursor cursor;
-  cursor.MoveTo(*GetLayoutObjectByElementId("culled"));
+  cursor.MoveToIncludingCulledInline(*GetLayoutObjectByElementId("culled"));
   Vector<String> list;
   while (cursor) {
     list.push_back(ToDebugString(cursor));
@@ -235,7 +235,7 @@ TEST_P(NGInlineCursorTest, CulledInlineWithFloat) {
       "<b id=culled>abc<div style=float:right></div>xyz</b>"
       "</div>");
   NGInlineCursor cursor;
-  cursor.MoveTo(*GetLayoutObjectByElementId("culled"));
+  cursor.MoveToIncludingCulledInline(*GetLayoutObjectByElementId("culled"));
   Vector<String> list;
   while (cursor) {
     list.push_back(ToDebugString(cursor));
@@ -252,7 +252,7 @@ TEST_P(NGInlineCursorTest, CulledInlineWithRoot) {
     <div id="root"><a id="a"><b>abc</b><br><i>xyz</i></a></div>
   )HTML");
   const LayoutObject* layout_inline_a = GetLayoutObjectByElementId("a");
-  cursor.MoveTo(*layout_inline_a);
+  cursor.MoveToIncludingCulledInline(*layout_inline_a);
   Vector<String> list;
   while (cursor) {
     list.push_back(ToDebugString(cursor));
@@ -270,7 +270,7 @@ TEST_P(NGInlineCursorTest, CulledInlineWithoutRoot) {
   )HTML");
   const LayoutObject* layout_inline_a = GetLayoutObjectByElementId("a");
   NGInlineCursor cursor;
-  cursor.MoveTo(*layout_inline_a);
+  cursor.MoveToIncludingCulledInline(*layout_inline_a);
   Vector<String> list;
   while (cursor) {
     list.push_back(ToDebugString(cursor));

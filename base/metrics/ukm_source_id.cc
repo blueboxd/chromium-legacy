@@ -5,7 +5,7 @@
 #include "base/metrics/ukm_source_id.h"
 
 #include "base/atomic_sequence_num.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/rand_util.h"
 
 namespace base {

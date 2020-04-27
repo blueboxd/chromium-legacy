@@ -4,7 +4,8 @@
 
 #include "cc/input/scroll_snap_data.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "cc/input/snap_selection_strategy.h"
 

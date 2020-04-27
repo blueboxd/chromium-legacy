@@ -15,6 +15,14 @@ struct ParsedHeaders {
   // The parsed Content-Security-Policy from the response headers.
   array<ContentSecurityPolicy> content_security_policy;
 
+  // The parsed representation of Cross-Origin-Embedder-Policy and
+  // Cross-Origin-Embedder-Policy-Report-Only headers.
+  CrossOriginEmbedderPolicy cross_origin_embedder_policy;
+
+  // The parsed value of the Cross-Origin-Opener-Policy (COOP) header.
+  CrossOriginOpenerPolicy cross_origin_opener_policy =
+      CrossOriginOpenerPolicy.kUnsafeNone;
+
   // The parsed Accept-CH from response headers.
   //
   // If this is missing, there is no valid accept-ch header, so client hints
@@ -23,6 +31,4 @@ struct ParsedHeaders {
   // If this is present and an empty array, this means that client hints should
   // be disabled (if updating client hint preference is valid in this context).
   array<WebClientHintsType>? accept_ch;
-
-  // TODO(arthursonzogni): Move COOP/COEP here.
 };

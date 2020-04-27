@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "chromeos/dbus/ip_peripheral/ip_peripheral_service_client.h"
 
 namespace extensions {

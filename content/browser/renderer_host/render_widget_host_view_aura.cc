@@ -1032,19 +1032,19 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
   blink::WebTouchPoint::State required_state;
   switch (touch.event.GetType()) {
     case blink::WebInputEvent::Type::kTouchStart:
-      required_state = blink::WebTouchPoint::State::kStatePressed;
+      required_state = blink::WebTouchPoint::kStatePressed;
       break;
     case blink::WebInputEvent::Type::kTouchEnd:
-      required_state = blink::WebTouchPoint::State::kStateReleased;
+      required_state = blink::WebTouchPoint::kStateReleased;
       break;
     case blink::WebInputEvent::Type::kTouchMove:
-      required_state = blink::WebTouchPoint::State::kStateMoved;
+      required_state = blink::WebTouchPoint::kStateMoved;
       break;
     case blink::WebInputEvent::Type::kTouchCancel:
-      required_state = blink::WebTouchPoint::State::kStateCancelled;
+      required_state = blink::WebTouchPoint::kStateCancelled;
       break;
     default:
-      required_state = blink::WebTouchPoint::State::kStateUndefined;
+      required_state = blink::WebTouchPoint::kStateUndefined;
       NOTREACHED();
       break;
   }

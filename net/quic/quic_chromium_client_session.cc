@@ -1128,7 +1128,7 @@ bool QuicChromiumClientSession::ShouldCreateOutgoingBidirectionalStream() {
   }
   if (!CanOpenNextOutgoingBidirectionalStream()) {
     DVLOG(1) << "Failed to create a new outgoing stream. "
-             << "Already " << GetNumOpenOutgoingStreams() << " open.";
+             << "Already " << GetNumActiveStreams() << " open.";
     return false;
   }
   if (goaway_received()) {
@@ -1175,11 +1175,11 @@ QuicChromiumClientSession::CreateOutgoingReliableStreamImpl(
   ActivateStream(base::WrapUnique(stream));
   ++num_total_streams_;
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.NumOpenStreams",
-                          GetNumOpenOutgoingStreams());
+                          GetNumActiveStreams());
   // The previous histogram puts 100 in a bucket betweeen 86-113 which does
   // not shed light on if chrome ever things it has more than 100 streams open.
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.TooManyOpenStreams",
-                        GetNumOpenOutgoingStreams() > 100);
+                        GetNumActiveStreams() > 100);
   return stream;
 }
 
@@ -1669,9 +1669,9 @@ void QuicChromiumClientSession::OnConnectionClosed(
   if (error == quic::QUIC_NETWORK_IDLE_TIMEOUT) {
     UMA_HISTOGRAM_COUNTS_1M(
         "Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut",
-        GetNumOpenOutgoingStreams());
+        GetNumActiveStreams());
     if (OneRttKeysAvailable()) {
-      if (GetNumOpenOutgoingStreams() > 0) {
+      if (GetNumActiveStreams() > 0) {
         UMA_HISTOGRAM_BOOLEAN(
             "Net.QuicSession.TimedOutWithOpenStreams.HasUnackedPackets",
             connection()->sent_packet_manager().HasInFlightPackets());
@@ -1688,7 +1688,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
     } else {
       UMA_HISTOGRAM_COUNTS_1M(
           "Net.QuicSession.ConnectionClose.NumOpenStreams.HandshakeTimedOut",
-          GetNumOpenOutgoingStreams());
+          GetNumActiveStreams());
       UMA_HISTOGRAM_COUNTS_1M(
           "Net.QuicSession.ConnectionClose.NumTotalStreams.HandshakeTimedOut",
           num_total_streams_);
@@ -1703,7 +1703,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
     // then QUIC traffic has become blackholed.
     if (stream_factory_ && (error == quic::QUIC_TOO_MANY_RTOS ||
                             (error == quic::QUIC_NETWORK_IDLE_TIMEOUT &&
-                             GetNumOpenOutgoingStreams() > 0))) {
+                             GetNumActiveStreams() > 0))) {
       stream_factory_->OnBlackholeAfterHandshakeConfirmed(this);
     }
   } else {
@@ -2841,7 +2841,7 @@ base::Value QuicChromiumClientSession::GetInfoAsValue(
   base::DictionaryValue dict;
   dict.SetString("version",
                  QuicVersionToString(connection()->transport_version()));
-  dict.SetInteger("open_streams", GetNumOpenOutgoingStreams());
+  dict.SetInteger("open_streams", GetNumActiveStreams());
   std::unique_ptr<base::ListValue> stream_list(new base::ListValue());
   for (StreamMap::const_iterator it = stream_map().begin();
        it != stream_map().end(); ++it) {

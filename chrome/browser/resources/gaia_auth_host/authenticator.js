@@ -319,6 +319,7 @@ cr.define('cr.login', function() {
       this.onePasswordCallback = null;
       this.insecureContentBlockedCallback = null;
       this.samlApiUsedCallback = null;
+      this.recordSAMLProviderCallback = null;
       this.missingGaiaInfoCallback = null;
       /**
        * Callback allowing to request whether the specified user which
@@ -935,6 +936,12 @@ cr.define('cr.login', function() {
             this.onGotIsSamlUserPasswordless_.bind(
                 this, this.email_, this.gaiaId_));
         return;
+      }
+
+      if (this.recordSAMLProviderCallback && this.authFlow == AuthFlow.SAML) {
+        // Makes distinction between different SAML providers
+        this.recordSAMLProviderCallback(
+            this.samlHandler_.x509certificate || '');
       }
 
       if (this.isSamlUserPasswordless_ && this.authFlow == AuthFlow.SAML &&

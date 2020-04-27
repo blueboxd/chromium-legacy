@@ -400,6 +400,10 @@ void ParseReportDirective(const GURL& request_url,
     //   the "Report-To" header. See https://w3c.github.io/reporting
     if (using_reporting_api) {
       report_endpoints->push_back(uri.as_string());
+
+      // 'report-to' only allows for a single token. The following ones are
+      // ignored. A console error warning is displayed from blink's CSP parser.
+      break;
     } else {
       GURL url = request_url.Resolve(uri);
 

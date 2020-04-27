@@ -12,7 +12,7 @@
 #include <limits>
 #include <type_traits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"

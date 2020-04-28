@@ -20,4 +20,14 @@
       use_base_dir="false"
       type="BINDATA"
       compress="gzip" />
+  <include name="IDR_NETWORK_CONFIG_TYPES_MOJOM_HTML"
+      file="${mojom_root}/chromeos/services/network_config/public/mojom/network_types.mojom.html"
+      use_base_dir="false"
+      type="BINDATA"
+      compress="gzip" />
+  <include name="IDR_NETWORK_CONFIG_TYPES_MOJOM_LITE_JS"
+      file="${mojom_root}/chromeos/services/network_config/public/mojom/network_types.mojom-lite.js"
+      use_base_dir="false"
+      type="BINDATA"
+      compress="gzip" />
 </grit-part>

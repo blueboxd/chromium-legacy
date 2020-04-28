@@ -78,13 +78,17 @@ enum CSPDirectiveName {
   ChildSrc,
   FrameSrc,
   FormAction,
-  UpgradeInsecureRequests,
   NavigateTo,
   FrameAncestors,
 };
 
 struct ContentSecurityPolicy {
   map<CSPDirectiveName, CSPSourceList> directives;
+
+  // Spec: https://www.w3.org/TR/upgrade-insecure-requests/
+  bool upgrade_insecure_requests = false;
+  // TODO(https://crbug.com/1042164) Add 'treat-as-public-address'.
+  // TODO(https://crbug.com/1041376) Add 'sandbox'.
 
   ContentSecurityPolicyHeader header;
 

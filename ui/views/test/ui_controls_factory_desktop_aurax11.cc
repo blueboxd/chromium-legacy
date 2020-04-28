@@ -44,6 +44,17 @@ using ui_controls::UP;
 // Mask of the buttons currently down.
 unsigned button_down_mask = 0;
 
+// Restore Xlib constants that were #undef'ed by gen/ui/gfx/x/xproto.h.
+constexpr int CopyFromParent = 0;
+constexpr int InputOnly = 1;
+constexpr int KeyPress = 2;
+constexpr int KeyRelease = 3;
+constexpr int ButtonPress = 4;
+constexpr int ButtonRelease = 5;
+constexpr int Button1 = 1;
+constexpr int Button2 = 2;
+constexpr int Button3 = 3;
+
 class UIControlsDesktopX11 : public UIControlsAura {
  public:
   UIControlsDesktopX11()
@@ -58,7 +69,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
                                 0,               // border width
                                 CopyFromParent,  // depth
                                 InputOnly,
-                                CopyFromParent,  // visual
+                                reinterpret_cast<Visual*>(CopyFromParent),
                                 0,
                                 nullptr)) {
     XStoreName(x_display_, x_window_, "Chromium UIControlsDesktopX11 Window");

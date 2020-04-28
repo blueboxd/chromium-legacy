@@ -258,7 +258,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   pane_columns->AddColumn(
       views::GridLayout::Alignment::FILL, views::GridLayout::Alignment::LEADING,
       views::GridLayout::kFixedSize, views::GridLayout::SizeType::FIXED,
-      GetActualDialogWidth(), GetActualDialogWidth());
+      dialog_->GetActualDialogWidth(), dialog_->GetActualDialogWidth());
   pane_layout->StartRow(views::GridLayout::kFixedSize, 0);
   // This is owned by its parent. It's the container passed to FillContentView.
   auto content_view = std::make_unique<views::View>();

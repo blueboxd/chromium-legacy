@@ -19,6 +19,7 @@
 #include "net/base/net_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_status.h"
 
 class GURL;
 
@@ -58,7 +59,6 @@ class HttpResponseHeaders;
 class URLFetcherDelegate;
 class URLFetcherResponseWriter;
 class URLRequestContextGetter;
-class URLRequestStatus;
 
 // NOTE:  This class should not be used by content embedders, as it requires an
 // in-process network stack. Content embedders should use

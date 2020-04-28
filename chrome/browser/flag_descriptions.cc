@@ -1380,6 +1380,13 @@ const char kOmniboxOnFocusSuggestionsDescription[] =
     "Configures Omnibox on-focus suggestions - suggestions displayed on-focus "
     "before the user has typed any input";
 
+const char kOmniboxOnFocusSuggestionsContextualWebName[] =
+    "Omnibox on-focus suggestions for the contextual Web";
+const char kOmniboxOnFocusSuggestionsContextualWebDescription[] =
+    "Enables on-focus suggestions on the Open Web, that are contextual to the "
+    "current URL. Will only work if user is signed-in and syncing, or is "
+    "otherwise eligible to send the current page URL to the suggest server.";
+
 const char kOmniboxRemoveSuggestionsFromClipboardName[] =
     "Omnibox remove suggestions from clipboard";
 const char kOmniboxRemoveSuggestionsFromClipboardDescription[] =
@@ -3507,6 +3514,11 @@ const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[] =
 const char kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[] =
     "Enable ChromeVox language switching, which changes ChromeVox's "
     "output language upon detection of new language.";
+
+const char kExperimentalAccessibilityChromeVoxTutorialName[] =
+    "Enable experimental ChromeVox interactive tutorial.";
+const char kExperimentalAccessibilityChromeVoxTutorialDescription[] =
+    "A comprehensive and interactive tutorial for the ChromeVox screen reader.";
 
 const char kExperimentalAccessibilityChromeVoxSearchMenusName[] =
     "Enable experimental ChromeVox search menus feature.";

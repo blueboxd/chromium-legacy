@@ -12,6 +12,7 @@
   </outputs>
   <release seq="1">
     <includes>
+      <part file="chromeos/os_settings_resources_v3.grdp" />
       <!-- App Management -->
       <include name="IDR_OS_SETTINGS_APP_MANAGEMENT_BITMAP_MOJO_LITE_JS"
                file="${root_gen_dir}\skia\public\mojom\bitmap.mojom-lite.js"

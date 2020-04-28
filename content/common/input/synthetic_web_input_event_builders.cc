@@ -4,7 +4,7 @@
 
 #include "content/common/input/synthetic_web_input_event_builders.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "content/common/input/web_mouse_wheel_event_traits.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "ui/events/base_event_utils.h"

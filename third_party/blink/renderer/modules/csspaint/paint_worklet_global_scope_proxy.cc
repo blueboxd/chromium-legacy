@@ -32,8 +32,7 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
     size_t global_scope_number) {
   DCHECK(IsMainThread());
   LocalDOMWindow* window = frame->DomWindow();
-  reporting_proxy_ =
-      std::make_unique<MainThreadWorkletReportingProxy>(window->document());
+  reporting_proxy_ = std::make_unique<MainThreadWorkletReportingProxy>(window);
 
   String global_scope_name =
       StringView("PaintWorklet #") + String::Number(global_scope_number);

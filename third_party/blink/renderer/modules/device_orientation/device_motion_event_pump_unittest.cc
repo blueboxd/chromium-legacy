@@ -11,7 +11,9 @@
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_acceleration.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_pump.h"
@@ -30,8 +32,9 @@ class MockDeviceMotionController final
   USING_GARBAGE_COLLECTED_MIXIN(MockDeviceMotionController);
 
  public:
-  explicit MockDeviceMotionController(DeviceMotionEventPump* motion_pump)
-      : PlatformEventController(nullptr),
+  explicit MockDeviceMotionController(DeviceMotionEventPump* motion_pump,
+                                      LocalDOMWindow& window)
+      : PlatformEventController(window),
         did_change_device_motion_(false),
         motion_pump_(motion_pump) {}
   ~MockDeviceMotionController() override {}
@@ -85,7 +88,10 @@ class DeviceMotionEventPumpTest : public testing::Test {
             sensor_provider.PassPipe(),
             device::mojom::SensorProvider::Version_));
 
-    controller_ = MakeGarbageCollected<MockDeviceMotionController>(motion_pump);
+    page_holder_ = std::make_unique<DummyPageHolder>();
+
+    controller_ = MakeGarbageCollected<MockDeviceMotionController>(
+        motion_pump, *page_holder_->GetFrame().DomWindow());
 
     ExpectAllThreeSensorsStateToBe(DeviceSensorEntry::State::NOT_INITIALIZED);
     EXPECT_EQ(DeviceMotionEventPump::PumpState::STOPPED,
@@ -125,6 +131,7 @@ class DeviceMotionEventPumpTest : public testing::Test {
 
  private:
   Persistent<MockDeviceMotionController> controller_;
+  std::unique_ptr<DummyPageHolder> page_holder_;
 
   FakeSensorProvider sensor_provider_;
 

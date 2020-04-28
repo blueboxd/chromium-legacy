@@ -836,6 +836,11 @@
     "expiry_milestone": 87
   },
   {
+    "name": "disable-experimental-accessibility-chromevox-language-switching",
+    "owners": [ "akihiroota", "dmazzoni", "dtseng" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "disable-explicit-dma-fences",
     "owners": [ "chromeos-gfx@google.com" ],
     // This flag is used for QA & debugging on ChromeOS, which has no way to
@@ -1439,14 +1444,14 @@
     "expiry_milestone": 86
   },
   {
-    "name": "enable-experimental-accessibility-chromevox-language-switching",
-    "owners": [ "akihiroota", "dmazzoni", "dtseng" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "enable-experimental-accessibility-chromevox-search-menus",
     "owners": ["akihiroota"],
     "expiry_milestone": 83
+  },
+  {
+    "name": "enable-experimental-accessibility-chromevox-tutorial",
+    "owners": ["akihiroota"],
+    "expiry_milestone": 88
   },
   {
     "name": "enable-experimental-accessibility-language-detection",
@@ -3189,6 +3194,11 @@
     "name": "omnibox-on-focus-suggestions",
     "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "omnibox-on-focus-suggestions-contextual-web",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 90
   },
   {
     "name": "omnibox-pedal-suggestions",

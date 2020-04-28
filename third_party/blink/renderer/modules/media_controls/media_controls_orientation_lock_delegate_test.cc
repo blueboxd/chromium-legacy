@@ -355,7 +355,7 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
     }
   }
   void RotateDeviceTo(double beta, double gamma) {
-    DeviceOrientationController::From(GetDocument())
+    DeviceOrientationController::From(*GetFrame().DomWindow())
         .SetOverride(DeviceOrientationData::Create(0.0 /* alpha */, beta, gamma,
                                                    false /* absolute */));
     test::RunPendingTasks();

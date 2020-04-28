@@ -23,7 +23,7 @@ void AppNotifications::RemoveNotification(const std::string& notification_id) {
 
   const std::string app_id = notification_id_to_app_id_[notification_id];
   app_id_to_notification_id_[app_id].erase(notification_id);
-  if (!app_id_to_notification_id_[app_id].empty()) {
+  if (app_id_to_notification_id_[app_id].empty()) {
     app_id_to_notification_id_.erase(app_id);
   }
 

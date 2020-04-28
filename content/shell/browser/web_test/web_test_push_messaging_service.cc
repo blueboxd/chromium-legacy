@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "content/public/browser/permission_type.h"
 #include "content/shell/browser/web_test/web_test_browser_context.h"

@@ -96,7 +96,7 @@ jumbo_component("gtk") {
 
   if (use_x11 || ozone_platform_x11) {
     # select_file_dialog_impl_kde.cc still refers to XID
-    configs += [ "//build/config/linux:x11" ]
+    deps += [ "//ui/gfx/x" ]
   }
 
   # TODO: This should be removed.

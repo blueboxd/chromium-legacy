@@ -15,10 +15,10 @@ class MODULES_EXPORT DeviceOrientationAbsoluteController final
  public:
   static const char kSupplementName[];
 
-  explicit DeviceOrientationAbsoluteController(Document&);
+  explicit DeviceOrientationAbsoluteController(LocalDOMWindow&);
   ~DeviceOrientationAbsoluteController() override;
 
-  static DeviceOrientationAbsoluteController& From(Document&);
+  static DeviceOrientationAbsoluteController& From(LocalDOMWindow&);
 
   // Inherited from DeviceSingleWindowEventController.
   void DidAddEventListener(LocalDOMWindow*,

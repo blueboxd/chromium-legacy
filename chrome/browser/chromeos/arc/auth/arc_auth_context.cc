@@ -70,6 +70,13 @@ ArcAuthContext::CreateAccessTokenFetcher(
       signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
+void ArcAuthContext::RemoveAccessTokenFromCache(
+    const signin::ScopeSet& scopes,
+    const std::string& access_token) {
+  identity_manager_->RemoveAccessTokenFromCache(account_id_, scopes,
+                                                access_token);
+}
+
 void ArcAuthContext::OnRefreshTokenUpdatedForAccount(
     const CoreAccountInfo& account_info) {
   // There is no need to check |is_valid| here. It is intended to avoid

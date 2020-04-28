@@ -5,7 +5,7 @@
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/task/post_task.h"
 #include "components/viz/host/gpu_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"

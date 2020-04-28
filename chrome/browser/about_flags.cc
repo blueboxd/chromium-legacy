@@ -2988,7 +2988,7 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityChromeVoxAnnotations)},
-    {"enable-experimental-accessibility-chromevox-language-switching",
+    {"disable-experimental-accessibility-chromevox-language-switching",
      flag_descriptions::
          kExperimentalAccessibilityChromeVoxLanguageSwitchingName,
      flag_descriptions::
@@ -2996,7 +2996,7 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::
-             kEnableExperimentalAccessibilityChromeVoxLanguageSwitching)},
+             kDisableExperimentalAccessibilityChromeVoxLanguageSwitching)},
     {"enable-experimental-kernel-vm-support",
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
@@ -3008,6 +3008,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityChromeVoxSearchMenus)},
+    {"enable-experimental-accessibility-chromevox-tutorial",
+     flag_descriptions::kExperimentalAccessibilityChromeVoxTutorialName,
+     flag_descriptions::kExperimentalAccessibilityChromeVoxTutorialDescription,
+     kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         ::switches::kEnableExperimentalAccessibilityChromeVoxTutorial)},
 #endif  // OS_CHROMEOS
 #if defined(OS_MACOSX)
     {"enable-immersive-fullscreen-toolbar",
@@ -3223,6 +3229,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kOnFocusSuggestions,
                                     kOmniboxOnFocusSuggestionsVariations,
                                     "OmniboxBundledExperimentV1")},
+
+    {"omnibox-on-focus-suggestions-contextual-web",
+     flag_descriptions::kOmniboxOnFocusSuggestionsContextualWebName,
+     flag_descriptions::kOmniboxOnFocusSuggestionsContextualWebDescription,
+     kOsAll, FEATURE_VALUE_TYPE(omnibox::kOnFocusSuggestionsContextualWeb)},
 
     {"omnibox-preserve-default-match-against-async-update",
      flag_descriptions::kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName,

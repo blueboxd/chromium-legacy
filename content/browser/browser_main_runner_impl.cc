@@ -5,11 +5,11 @@
 #include "content/browser/browser_main_runner_impl.h"
 
 #include "base/base_switches.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/leak_annotations.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/synchronization/atomic_flag.h"

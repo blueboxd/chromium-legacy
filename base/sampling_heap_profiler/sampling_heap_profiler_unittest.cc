@@ -116,7 +116,13 @@ TEST_F(SamplingHeapProfilerTest, IntervalRandomizationSanity) {
   EXPECT_NEAR(1000, mean_samples, 100);  // 10% tolerance.
 }
 
+#if defined(OS_IOS)
+// iOS devices generally have ~4GB of RAM with no swap and therefore need a
+// lower allocation limit here.
+const int kNumberOfAllocations = 1000;
+#else
 const int kNumberOfAllocations = 10000;
+#endif
 
 NOINLINE void Allocate1() {
   void* p = malloc(400);

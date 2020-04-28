@@ -22,6 +22,7 @@ extern const char kEnableLeakDetection[];
 extern const char kEncodeBinary[];
 extern const char kStableReleaseMode[];
 extern const char kDisableHeadlessMode[];
+extern const char kDisableAutoWPTOriginIsolation[];
 
 #if defined(OS_WIN)
 extern const char kRegisterFontFiles[];

@@ -1097,7 +1097,8 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
   Java_AssistantCollectUserDataModel_setInfoSectionText(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(
-          env, collect_user_data_options->info_section_text));
+          env, collect_user_data_options->info_section_text),
+      collect_user_data_options->info_section_text_center);
   Java_AssistantCollectUserDataModel_setPrivacyNoticeText(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(

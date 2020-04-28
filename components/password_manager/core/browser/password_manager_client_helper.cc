@@ -5,7 +5,9 @@
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 
@@ -25,19 +27,24 @@ void PasswordManagerClientHelper::NotifyUserCouldBeAutoSignedIn(
 }
 
 void PasswordManagerClientHelper::NotifySuccessfulLoginWithExistingPassword(
-    const autofill::PasswordForm& form) {
-  if (!possible_auto_sign_in_)
-    return;
-
-  if (possible_auto_sign_in_->username_value == form.username_value &&
-      possible_auto_sign_in_->password_value == form.password_value &&
-      possible_auto_sign_in_->origin == form.origin) {
-    // Check if it is necessary to prompt user to enable auto sign-in.
-    if (ShouldPromptToEnableAutoSignIn()) {
-      delegate_->PromptUserToEnableAutosignin();
-    }
+    std::unique_ptr<PasswordFormManagerForUI> submitted_manager) {
+  const autofill::PasswordForm& form =
+      submitted_manager->GetPendingCredentials();
+  if (!possible_auto_sign_in_ ||
+      possible_auto_sign_in_->username_value != form.username_value ||
+      possible_auto_sign_in_->password_value != form.password_value ||
+      possible_auto_sign_in_->origin != form.origin ||
+      !ShouldPromptToEnableAutoSignIn()) {
+    possible_auto_sign_in_.reset();
   }
-  possible_auto_sign_in_.reset();
+  // Check if it is necessary to prompt user to enable auto sign-in.
+  if (possible_auto_sign_in_) {
+    delegate_->PromptUserToEnableAutosignin();
+  } else if (base::FeatureList::IsEnabled(
+                 password_manager::features::kEnablePasswordsAccountStorage) &&
+             submitted_manager->IsMovableToAccountStore()) {
+    delegate_->PromptUserToMovePasswordToAccount(std::move(submitted_manager));
+  }
 }
 
 void PasswordManagerClientHelper::OnCredentialsChosen(
@@ -69,13 +76,12 @@ void PasswordManagerClientHelper::NotifyUserAutoSignin() {
 }
 
 bool PasswordManagerClientHelper::ShouldPromptToEnableAutoSignIn() const {
-  if (!password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
-          delegate_->GetPrefs()) ||
-      !delegate_->GetPrefs()->GetBoolean(
-          password_manager::prefs::kCredentialsEnableAutosignin) ||
-      delegate_->IsIncognito())
-    return false;
-  return true;
+  return password_bubble_experiment::
+             ShouldShowAutoSignInPromptFirstRunExperience(
+                 delegate_->GetPrefs()) &&
+         delegate_->GetPrefs()->GetBoolean(
+             password_manager::prefs::kCredentialsEnableAutosignin) &&
+         !delegate_->IsIncognito();
 }
 
 }  // namespace password_manager

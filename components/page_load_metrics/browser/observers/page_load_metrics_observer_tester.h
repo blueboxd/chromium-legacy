@@ -14,6 +14,7 @@
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "components/page_load_metrics/common/test/weak_mock_timer.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "net/cookies/canonical_cookie.h"
 #include "ui/base/page_transition_types.h"
 
@@ -131,17 +132,8 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   // Simulate playing a media element.
   void SimulateMediaPlayed();
 
-  // Simulate reading cookies.
-  void SimulateCookiesRead(const GURL& url,
-                           const GURL& first_party_url,
-                           const net::CookieList& cookie_list,
-                           bool blocked_by_policy);
-
-  // Simulate writing a cookie.
-  void SimulateCookieChange(const GURL& url,
-                            const GURL& first_party_url,
-                            const net::CanonicalCookie& cookie,
-                            bool blocked_by_policy);
+  // Simulate accessingcookies.
+  void SimulateCookieAccess(const content::CookieAccessDetails& details);
 
   // Simulate accessing the local storage or session storage.
   void SimulateStorageAccess(const GURL& url,

@@ -39,7 +39,8 @@ ExtensionFunction::ResponseAction IdleQueryStateFunction::Run() {
   threshold = ClampThreshold(threshold);
 
   ui::IdleState state =
-      IdleManagerFactory::GetForBrowserContext(context_)->QueryState(threshold);
+      IdleManagerFactory::GetForBrowserContext(browser_context())
+          ->QueryState(threshold);
 
   return RespondNow(OneArgument(IdleManager::CreateIdleValue(state)));
 }
@@ -54,8 +55,8 @@ ExtensionFunction::ResponseAction IdleSetDetectionIntervalFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &threshold));
   threshold = ClampThreshold(threshold);
 
-  IdleManagerFactory::GetForBrowserContext(context_)->SetThreshold(
-      extension_id(), threshold);
+  IdleManagerFactory::GetForBrowserContext(browser_context())
+      ->SetThreshold(extension_id(), threshold);
 
   return RespondNow(NoArguments());
 }
@@ -63,7 +64,7 @@ ExtensionFunction::ResponseAction IdleSetDetectionIntervalFunction::Run() {
 IdleGetAutoLockDelayFunction::~IdleGetAutoLockDelayFunction() = default;
 
 ExtensionFunction::ResponseAction IdleGetAutoLockDelayFunction::Run() {
-  const int delay = IdleManagerFactory::GetForBrowserContext(context_)
+  const int delay = IdleManagerFactory::GetForBrowserContext(browser_context())
                         ->GetAutoLockDelay()
                         .InSeconds();
   return RespondNow(OneArgument(std::make_unique<base::Value>(delay)));

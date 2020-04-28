@@ -85,25 +85,13 @@ class TestSuspendableThreadDelegate : public SuspendableThreadDelegate {
 class TestStackCopierDelegate : public StackCopier::Delegate {
  public:
   void OnStackCopy() override {
-    // We can't EXPECT_FALSE(on_thread_resume_was_invoked_) here because that
-    // invocation is not reentrant.
     on_stack_copy_was_invoked_ = true;
-  }
-
-  void OnThreadResume() override {
-    EXPECT_TRUE(on_stack_copy_was_invoked_);
-    on_thread_resume_was_invoked_ = true;
   }
 
   bool on_stack_copy_was_invoked() const { return on_stack_copy_was_invoked_; }
 
-  bool on_thread_resume_was_invoked() const {
-    return on_thread_resume_was_invoked_;
-  }
-
  private:
   bool on_stack_copy_was_invoked_ = false;
-  bool on_thread_resume_was_invoked_ = false;
 };
 
 }  // namespace
@@ -218,7 +206,6 @@ TEST(StackCopierSuspendTest, CopyStackDelegateInvoked) {
                                  &register_context, &stack_copier_delegate);
 
   EXPECT_TRUE(stack_copier_delegate.on_stack_copy_was_invoked());
-  EXPECT_TRUE(stack_copier_delegate.on_thread_resume_was_invoked());
 }
 
 TEST(StackCopierSuspendTest, RewriteRegisters) {

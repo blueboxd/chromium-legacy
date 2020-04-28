@@ -78,4 +78,7 @@ interface IWebLayer {
 
   // Added in Version 83.
   void setClient(in IWebLayerClient client) = 13;
+
+  // Added in Version 84.
+  String getUserAgentString() = 14;
 }

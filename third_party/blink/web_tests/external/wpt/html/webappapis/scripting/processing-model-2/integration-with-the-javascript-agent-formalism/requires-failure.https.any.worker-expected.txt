@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL [[CanBlock]] in a DedicatedWorkerGlobalScope assert_throws_js: function "() => {
+    Atomics.wait(ta, 0, 0, 10);
+  }" did not throw
+Harness: the test ran to completion.
+

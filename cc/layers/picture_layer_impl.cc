@@ -1209,8 +1209,14 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
   }
 
   if (was_screen_space_transform_animating_ !=
-      draw_properties().screen_space_transform_is_animating)
-    return true;
+      draw_properties().screen_space_transform_is_animating) {
+    // Skip adjusting raster scale when animations finish if we have a
+    // will-change: transform hint to preserve maximum resolution tiles
+    // needed.
+    if (draw_properties().screen_space_transform_is_animating ||
+        !has_will_change_transform_hint())
+      return true;
+  }
 
   bool is_pinching = layer_tree_impl()->PinchGestureActive();
   if (is_pinching && raster_page_scale_) {
@@ -1319,6 +1325,9 @@ void PictureLayerImpl::RecalculateRasterScales() {
   float old_raster_contents_scale = raster_contents_scale_;
   float old_raster_page_scale = raster_page_scale_;
 
+  // The raster scale if previous tilings should be preserved.
+  float preserved_raster_contents_scale = old_raster_contents_scale;
+
   raster_device_scale_ = ideal_device_scale_;
   raster_page_scale_ = ideal_page_scale_;
   raster_source_scale_ = ideal_source_scale_;
@@ -1340,8 +1349,9 @@ void PictureLayerImpl::RecalculateRasterScales() {
       while (desired_contents_scale < ideal_contents_scale_)
         desired_contents_scale *= kMaxScaleRatioDuringPinch;
     }
-    raster_contents_scale_ = tilings_->GetSnappedContentsScaleKey(
-        desired_contents_scale, kSnapToExistingTilingRatio);
+    raster_contents_scale_ = preserved_raster_contents_scale =
+        tilings_->GetSnappedContentsScaleKey(desired_contents_scale,
+                                             kSnapToExistingTilingRatio);
     raster_page_scale_ =
         raster_contents_scale_ / raster_device_scale_ / raster_source_scale_;
   }
@@ -1391,15 +1401,27 @@ void PictureLayerImpl::RecalculateRasterScales() {
       if (start_area <= viewport_area)
         should_raster_at_starting_scale = true;
     }
+
     // Use the computed scales for the raster scale directly, do not try to use
     // the ideal scale here. The current ideal scale may be way too large in the
     // case of an animation with scale, and will be constantly changing.
+    float animation_desired_scale;
     if (should_raster_at_starting_scale)
-      raster_contents_scale_ = starting_scale;
+      animation_desired_scale = starting_scale;
     else if (can_raster_at_maximum_scale)
-      raster_contents_scale_ = maximum_scale;
+      animation_desired_scale = maximum_scale;
     else
-      raster_contents_scale_ = 1.f * ideal_page_scale_ * ideal_device_scale_;
+      animation_desired_scale = 1.f * ideal_page_scale_ * ideal_device_scale_;
+
+    if (has_will_change_transform_hint()) {
+      // If we have a will-change: transform hint, do not shrink the content
+      // raster scale, otherwise we will end up throwing away larger tiles we
+      // may need again.
+      raster_contents_scale_ =
+          std::max(preserved_raster_contents_scale, animation_desired_scale);
+    } else {
+      raster_contents_scale_ = animation_desired_scale;
+    }
   }
 
   // Clamp will-change: transform layers to be at least the native scale.

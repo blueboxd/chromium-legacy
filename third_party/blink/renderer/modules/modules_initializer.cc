@@ -243,10 +243,11 @@ void ModulesInitializer::InitInspectorAgentSession(
 void ModulesInitializer::OnClearWindowObjectInMainWorld(
     Document& document,
     const Settings& settings) const {
-  DeviceMotionController::From(document);
-  DeviceOrientationController::From(document);
-  DeviceOrientationAbsoluteController::From(document);
-  NavigatorGamepad::From(document);
+  LocalDOMWindow& window = *document.domWindow();
+  DeviceMotionController::From(window);
+  DeviceOrientationController::From(window);
+  DeviceOrientationAbsoluteController::From(window);
+  NavigatorGamepad::From(*window.navigator());
   NavigatorServiceWorker::From(document);
   DOMWindowStorageController::From(document);
   if (RuntimeEnabledFeatures::WebXREnabled(document.GetExecutionContext()))

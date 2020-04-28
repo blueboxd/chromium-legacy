@@ -5,7 +5,7 @@
 #include "content/renderer/input/input_target_client_impl.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 

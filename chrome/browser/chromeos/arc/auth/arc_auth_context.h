@@ -42,6 +42,9 @@ class ArcAuthContext : public signin::IdentityManager::Observer {
       const signin::ScopeSet& scopes,
       signin::AccessTokenFetcher::TokenCallback callback);
 
+  void RemoveAccessTokenFromCache(const signin::ScopeSet& scopes,
+                                  const std::string& access_token);
+
   // signin::IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/loader_factory_for_worker.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
@@ -265,6 +266,9 @@ void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
   if (used_features_[static_cast<size_t>(feature)])
     return;
   used_features_.set(static_cast<size_t>(feature));
+
+  ReportingContext::From(this)->QueueReport(
+      Deprecation::CreateReport(Url(), feature));
 
   // Adds a deprecation message to the console.
   DCHECK(!Deprecation::DeprecationMessage(feature).IsEmpty());

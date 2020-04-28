@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "chrome/browser/upboarding/query_tiles/internal/tile_store.h"
 
 namespace leveldb_proto {
 class ProtoDatabaseProvider;

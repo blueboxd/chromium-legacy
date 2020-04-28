@@ -47,10 +47,7 @@ source_set("power_save_blocker") {
       "//ui/gfx",
     ]
     if (use_x11) {
-      configs += [
-        "//build/config/linux:x11",
-        "//build/config/linux:xscrnsaver",
-      ]
+      configs += [ "//build/config/linux:xscrnsaver" ]
       deps += [ "//ui/gfx/x" ]
     }
   } else if (is_mac) {

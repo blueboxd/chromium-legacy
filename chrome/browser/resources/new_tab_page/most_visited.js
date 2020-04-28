@@ -461,14 +461,6 @@ class MostVisitedElement extends PolymerElement {
   }
 
   /**
-   * @return {string}
-   * @private
-   */
-  getTileIconButtonIcon_() {
-    return this.customLinksEnabled_ ? 'icon-more-vert' : 'icon-clear';
-  }
-
-  /**
    * @param {number} index
    * @return {boolean}
    * @private
@@ -641,15 +633,21 @@ class MostVisitedElement extends PolymerElement {
    * @param {!Event} e
    * @private
    */
-  onTileIconButtonClick_(e) {
+  onTileActionButtonClick_(e) {
     e.preventDefault();
     const {index} = this.$.tiles.modelForElement(e.target.parentElement);
-    if (this.customLinksEnabled_) {
-      this.actionMenuTargetIndex_ = index;
-      this.$.actionMenu.showAt(e.target);
-    } else {
-      this.tileRemove_(index);
-    }
+    this.actionMenuTargetIndex_ = index;
+    this.$.actionMenu.showAt(e.target);
+  }
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onTileRemoveButtonClick_(e) {
+    e.preventDefault();
+    const {index} = this.$.tiles.modelForElement(e.target.parentElement);
+    this.tileRemove_(index);
   }
 
   /**

@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "testing/gtest/include/gtest/gtest.h"

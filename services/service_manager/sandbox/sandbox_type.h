@@ -84,7 +84,11 @@ enum class SandboxType {
   // The speech recognition service process.
   kSpeechRecognition,
 
-  kMaxValue = kSpeechRecognition
+  // Equivalent to no sandbox on all non-Fuchsia platforms.
+  // Minimally privileged sandbox on Fuchsia.
+  kVideoCapture,
+
+  kMaxValue = kVideoCapture
 };
 
 SERVICE_MANAGER_SANDBOX_EXPORT bool IsUnsandboxedSandboxType(

@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
 
 using blink::WebInputEvent;

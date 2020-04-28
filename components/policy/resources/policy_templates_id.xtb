@@ -5075,6 +5075,11 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8665314828727504286">Tingkat Perlindungan Safe Browsing</translation>
 <translation id="8672321184841719703">Versi Update Otomatis Target</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8680488165461049026">Kebijakan ini memberikan izin kepada fitur Jawaban Cepat untuk mengakses konten yang dipilih dan mengirimkan info ke server.
+
+      Jika kebijakan ini diaktifkan, Jawaban Cepat akan diizinkan mengakses konten yang dipilih.
+      Jika kebijakan ini dinonaktifkan, Jawaban Cepat tidak akan diizinkan mengakses konten yang dipilih.
+      Jika kebijakan ini tidak ditetapkan, pengguna dapat memutuskan untuk mengizinkan Jawaban Cepat mengakses konten yang dipilih atau tidak.</translation>
 <translation id="8685024486845674965">Peringatan perlindungan sandi dipicu oleh penggunaan ulang sandi</translation>
 <translation id="8687958770985542440">Mengaktifkan ulang Web Components v0 API hingga M84.</translation>
 <translation id="8693243869659262736">Gunakan klien DNS di dalamnya</translation>
@@ -5415,6 +5420,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 
       Jika kebijakan ini ditetapkan ke True atau tidak dikonfigurasi, akun pengguna baru akan diizinkan untuk dibuat asalkan kebijakan <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> tidak mencegah pengguna untuk login.</translation>
 <translation id="974349541138387272">Menentukan template URI pada resolver DNS-over-HTTPS yang diinginkan</translation>
+<translation id="974479807614498635">"Izinkan Jawaban Cepat untuk mengakses konten yang dipilih"</translation>
 <translation id="981346395360763138">Layanan lokasi Google dinonaktifkan</translation>
 <translation id="982497069985795632">Aktifkan fitur pemeriksa ejaan</translation>
 <translation id="991560005425213776">Kirim nama pengguna dan nama file ke printer native</translation>

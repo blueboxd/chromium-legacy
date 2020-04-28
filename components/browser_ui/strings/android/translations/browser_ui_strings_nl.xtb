@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Geblokkeerd op bepaalde sites</translation>
 <translation id="3190152372525844641">Schakel rechten in voor Chrome via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> opgeslagen gegevens</translation>
-<translation id="3223655101706843289">Hiermee wis je alle gegevens en cookies die zijn opgeslagen door <ph name="ORIGIN" /> en de bijbehorende app op je startscherm.</translation>
 <translation id="3227137524299004712">Microfoon</translation>
 <translation id="3277252321222022663">Sites toegang geven tot sensoren (aanbevolen)</translation>
 <translation id="3295602654194328831">Informatie verbergen</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5335288049665977812">Sites toestaan JavaScript uit te voeren (aanbevolen)</translation>
 <translation id="534295439873310000">NFC-apparaten</translation>
+<translation id="5354152178998424783">Hiermee wis je <ph name="DATASIZE" /> aan gegevens en cookies die zijn opgeslagen door sites.</translation>
 <translation id="5391532827096253100">Je verbinding met deze site is niet beveiligd. Site-informatie</translation>
 <translation id="5494752089476963479">Advertenties blokkeren op sites die opdringerige of misleidende advertenties weergeven</translation>
 <translation id="5505264765875738116">Sites kunnen niet vragen of ze je meldingen mogen sturen</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Je wordt uitgelogd van deze site.</translation>
 <translation id="7828557259026017104">Cookies zijn bestanden die worden gemaakt door websites die je bezoekt. Sites gebruiken ze om je voorkeuren te onthouden. Cookies van derden worden gemaakt door andere sites. Deze sites zijn eigenaar van een deel van de content (zoals advertenties of afbeeldingen) die je ziet op de webpagina die je bezoekt.</translation>
 <translation id="7846076177841592234">Selectie opheffen</translation>
+<translation id="7846621471902887024">Je wordt uitgelogd van alle sites.</translation>
 <translation id="7882806643839505685">Geluid toestaan voor een specifieke site.</translation>
 <translation id="7993619969781047893">Functies op bepaalde sites werken mogelijk niet meer</translation>
 <translation id="7999064672810608036">Weet je zeker dat je alle gegevens, inclusief cookies, voor deze website wilt wissen en alle rechten opnieuw wilt instellen?</translation>

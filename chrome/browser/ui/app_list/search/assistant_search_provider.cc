@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/app_list/search/assistant_search_provider.h"
 
 #include "ash/assistant/model/assistant_suggestions_model.h"
+#include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -22,8 +23,10 @@ namespace app_list {
 namespace {
 
 // Aliases.
-using AssistantAllowedState = ash::mojom::AssistantAllowedState;
-using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+using ash::mojom::AssistantAllowedState;
+using chromeos::assistant::mojom::AssistantEntryPoint;
+using chromeos::assistant::mojom::AssistantQuerySource;
+using chromeos::assistant::mojom::AssistantSuggestion;
 
 // Constants.
 constexpr char kIdPrefix[] = "googleassistant://";
@@ -37,13 +40,37 @@ bool AreResultsAllowed() {
          assistant_state->settings_enabled() == true;
 }
 
+// Returns the action URL for the specified |conversation_starter|.
+// NOTE: Assistant deep links are modified to ensure that they accurately
+// reflect their being presented to the user as launcher chips.
+GURL GetActionUrl(const AssistantSuggestion* conversation_starter) {
+  GURL action_url = conversation_starter->action_url;
+
+  if (action_url.is_empty()) {
+    // When conversation starters do *not* specify an |action_url| explicitly it
+    // is implicitly understood that they should trigger an Assistant query
+    // composed of their display |text|.
+    action_url = ash::assistant::util::CreateAssistantQueryDeepLink(
+        conversation_starter->text);
+  }
+
+  if (ash::assistant::util::IsDeepLinkUrl(action_url)) {
+    action_url = ash::assistant::util::AppendOrReplaceEntryPointParam(
+        action_url, AssistantEntryPoint::kLauncherChip);
+    action_url = ash::assistant::util::AppendOrReplaceQuerySourceParam(
+        action_url, AssistantQuerySource::kLauncherChip);
+  }
+
+  return action_url;
+}
+
 // AssistantSearchResult -------------------------------------------------------
 
 class AssistantSearchResult : public ChromeSearchResult {
  public:
   explicit AssistantSearchResult(
       const AssistantSuggestion* conversation_starter)
-      : action_url_(conversation_starter->action_url) {
+      : action_url_(GetActionUrl(conversation_starter)) {
     set_id(kIdPrefix + conversation_starter->id.ToString());
     SetDisplayIndex(ash::SearchResultDisplayIndex::kFirstIndex);
     SetDisplayType(ash::SearchResultDisplayType::kChip);
@@ -66,7 +93,6 @@ class AssistantSearchResult : public ChromeSearchResult {
   }
 
   // TODO(b:154152631): Prevent eager dismissal of launcher when opening.
-  // TODO(b:154153233): Create and utilize new Assistant entry point.
   void Open(int event_flags) override {
     // Opening of |action_url_| is delegated to the Assistant controller as only
     // the Assistant controller knows how to handle Assistant deep links.

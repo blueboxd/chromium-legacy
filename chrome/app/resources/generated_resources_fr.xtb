@@ -673,6 +673,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> est prêt à terminer l'installation.</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">Autoriser l'accès au micro</translation>
+<translation id="1871534214638631766">Afficher des informations associées lorsque vous effectuez un clic droit ou que vous appuyez de manière prolongée sur un contenu</translation>
 <translation id="1871615898038944731">Votre <ph name="DEVICE_TYPE" /> est à jour</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Déplacer l'onglet vers une autre fenêtre}one{Move tabs to another window}other{Déplacer les onglets vers une autre fenêtre}}</translation>
 <translation id="1875386316419689002">Cet onglet est associé à un appareil HID.</translation>
@@ -729,6 +730,7 @@
 <translation id="1944528062465413897">Code d'association Bluetooth :</translation>
 <translation id="1944921356641260203">Mise à jour trouvée</translation>
 <translation id="1946577776959096882">Afficher les comptes</translation>
+<translation id="1949584741547056205">Réponses rapides</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">Erreur lors de l'installation du partage. Veuillez vérifier vos identifiants, puis réessayer.</translation>
 <translation id="1956050014111002555">Le fichier contenait plusieurs certificats, aucun d'eux n'a été importé :</translation>
@@ -1910,7 +1912,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3543597750097719865">Signature X9.62 ECDSA avec SHA-512</translation>
 <translation id="3544879808695557954">Nom d'utilisateur (facultatif)</translation>
 <translation id="354602065659584722">Logiciel malveillant supprimé</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3548162552723420559">Adapte la couleur de l'écran à l'environnement</translation>
 <translation id="3550915441744863158">Chrome se met à jour automatiquement afin que vous disposiez toujours de la version la plus récente.</translation>
@@ -5558,7 +5559,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8493236660459102203">Micro :</translation>
 <translation id="8496717697661868878">Exécuter ce plug-in</translation>
 <translation id="8497219075884839166">Utilitaires Windows</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Facilite la lecture à l'écran lorsque l'éclairage est faible</translation>
 <translation id="8498395510292172881">Poursuivre la lecture dans Chrome</translation>
 <translation id="8500234928660943538">Clé PUK incorrecte. Il vous reste <ph name="RETRIES" /> tentative(s).</translation>

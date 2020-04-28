@@ -874,6 +874,21 @@ def swangle_windows_builder(*, name, **kwargs):
   )
 
 
+def thin_tester(
+    *,
+    name,
+    mastername,
+    triggered_by,
+    **kwargs):
+  return ci.builder(
+      name = name,
+      mastername = mastername,
+      triggered_by = triggered_by,
+      goma_backend = None,
+      **kwargs
+  )
+
+
 def win_builder(*, name, os=builders.os.WINDOWS_DEFAULT, **kwargs):
   return ci.builder(
       name = name,
@@ -922,5 +937,6 @@ ci = struct(
     swangle_linux_builder = swangle_linux_builder,
     swangle_mac_builder = swangle_mac_builder,
     swangle_windows_builder = swangle_windows_builder,
+    thin_tester = thin_tester,
     win_builder = win_builder,
 )

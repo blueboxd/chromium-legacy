@@ -161,16 +161,27 @@ bool AreTilesIdentical(const Tile& lhs, const Tile& rhs) {
 }
 
 bool AreTilesIdentical(std::vector<Tile*> lhs, std::vector<Tile*> rhs) {
+  std::vector<Tile> lhs_copy, rhs_copy;
+  for (auto* tile : lhs)
+    lhs_copy.emplace_back(*tile);
+  for (auto* tile : rhs)
+    rhs_copy.emplace_back(*tile);
+  return AreTilesIdentical(std::move(lhs_copy), std::move(rhs_copy));
+}
+
+bool AreTilesIdentical(std::vector<Tile> lhs, std::vector<Tile> rhs) {
   if (lhs.size() != rhs.size())
     return false;
 
-  auto entry_comparator = [](Tile* a, Tile* b) { return a->id < b->id; };
+  auto entry_comparator = [](const Tile& a, const Tile& b) {
+    return a.id < b.id;
+  };
 
   std::sort(lhs.begin(), lhs.end(), entry_comparator);
   std::sort(rhs.begin(), rhs.end(), entry_comparator);
 
   for (size_t i = 0; i < lhs.size(); i++) {
-    if (*lhs[i] != *rhs[i])
+    if (!AreTilesIdentical(lhs[i], rhs[i]))
       return false;
   }
 

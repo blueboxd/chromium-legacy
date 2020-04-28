@@ -229,8 +229,6 @@ bool StackCopierSignal::CopyStack(StackBuffer* stack_buffer,
     }
   }
 
-  delegate->OnThreadResume();
-
   const uintptr_t bottom = RegisterContextStackPointer(params.context);
   for (uintptr_t* reg :
        thread_delegate_->GetRegistersToRewrite(thread_context)) {

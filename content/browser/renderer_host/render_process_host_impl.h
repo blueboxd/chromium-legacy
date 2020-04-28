@@ -266,6 +266,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void ForceCrash() override;
   void CleanupNetworkServicePluginExceptionsUponDestruction() override;
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  void DumpProfilingData(base::OnceClosure callback) override;
+#endif
 
   mojom::RouteProvider* GetRemoteRouteProvider();
 

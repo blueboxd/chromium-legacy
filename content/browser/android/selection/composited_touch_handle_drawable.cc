@@ -4,8 +4,8 @@
 
 #include "content/browser/android/selection/composited_touch_handle_drawable.h"
 
+#include "base/check.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/ranges.h"
 #include "cc/layers/ui_resource_layer.h"

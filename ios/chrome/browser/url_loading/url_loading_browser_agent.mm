@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -28,28 +29,39 @@
 BROWSER_USER_DATA_KEY_IMPL(UrlLoadingBrowserAgent)
 
 namespace {
-// Helper method for inducing intentional freezes and crashes, in a separate
-// function so it will show up in stack traces. If a delay parameter is present,
-// the main thread will be frozen for that number of seconds. If a crash
-// parameter is "true" (which is the default value), the browser will crash
-// after this delay. Any other value will not trigger a crash.
+
+// Rapidly starts leaking memory by 10MB blocks.
+void StartLeakingMemory() {
+  int* leak = new int[10 * 1024 * 1024];
+  ALLOW_UNUSED_LOCAL(leak);
+  base::PostTask(FROM_HERE, base::BindOnce(&StartLeakingMemory));
+}
+
+// Helper method for inducing intentional freezes, leaks and crashes, in a
+// separate function so it will show up in stack traces. If a delay parameter is
+// present, the main thread will be frozen for that number of seconds. If a
+// crash parameter is "true" (which is the default value), the browser will
+// crash after this delay. Any other value will not trigger a crash.
 void InduceBrowserCrash(const GURL& url) {
-  int delay = 0;
   std::string delay_string;
   if (net::GetValueForKeyInQuery(url, "delay", &delay_string)) {
-    base::StringToInt(delay_string, &delay);
-  }
-  if (delay > 0) {
-    sleep(delay);
+    int delay = 0;
+    if (base::StringToInt(delay_string, &delay) && delay > 0) {
+      sleep(delay);
+    }
   }
 
-  bool crash = true;
+#if !TARGET_IPHONE_SIMULATOR  // Leaking memory does not cause UTE on simulator.
+  std::string leak_string;
+  if (net::GetValueForKeyInQuery(url, "leak", &leak_string) &&
+      (leak_string == "" || leak_string == "true")) {
+    StartLeakingMemory();
+  }
+#endif
+
   std::string crash_string;
-  if (net::GetValueForKeyInQuery(url, "crash", &crash_string)) {
-    crash = crash_string == "" || crash_string == "true";
-  }
-
-  if (crash) {
+  if (!net::GetValueForKeyInQuery(url, "crash", &crash_string) ||
+      (crash_string == "" || crash_string == "true")) {
     // Induce an intentional crash in the browser process.
     CHECK(false);
     // Call another function, so that the above CHECK can't be tail-call

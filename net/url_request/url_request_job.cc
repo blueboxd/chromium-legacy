@@ -353,7 +353,7 @@ void URLRequestJob::NotifyHeadersComplete() {
   // The URLRequest status should still be IO_PENDING, which it was set to
   // before the URLRequestJob was started.  On error or cancellation, this
   // method should not be called.
-  DCHECK(request_->status().is_io_pending());
+  DCHECK_EQ(ERR_IO_PENDING, request_->status());
 
   // Initialize to the current time, and let the subclass optionally override
   // the time stamps if it has that information.  The default request_time is
@@ -401,7 +401,7 @@ void URLRequestJob::NotifyHeadersComplete() {
 
     // Ensure that the request wasn't detached, destroyed, or canceled in
     // NotifyReceivedRedirect.
-    if (!weak_this || !request_->status().is_success())
+    if (!weak_this || request_->failed())
       return;
 
     if (defer_redirect) {
@@ -437,11 +437,11 @@ void URLRequestJob::NotifyFinalHeadersReceived() {
   // While the request's status is normally updated in NotifyHeadersComplete(),
   // URLRequestHttpJob::CancelAuth() posts a task to invoke this method
   // directly, which bypasses that logic.
-  if (request_->status().is_io_pending())
-    request_->set_status(URLRequestStatus());
+  if (request_->status() == ERR_IO_PENDING)
+    request_->set_status(OK);
 
   has_handled_response_ = true;
-  if (request_->status().is_success()) {
+  if (request_->status() == OK) {
     DCHECK(!source_stream_);
     source_stream_ = SetUpSourceStream();
 
@@ -466,7 +466,7 @@ void URLRequestJob::NotifyFinalHeadersReceived() {
     }
   }
 
-  request_->NotifyResponseStarted(URLRequestStatus());
+  request_->NotifyResponseStarted(OK);
   // |this| may be destroyed at this point.
 }
 
@@ -481,7 +481,7 @@ void URLRequestJob::ConvertResultToError(int result, Error* error, int* count) {
 }
 
 void URLRequestJob::ReadRawDataComplete(int result) {
-  DCHECK(request_->status().is_io_pending());
+  DCHECK_EQ(ERR_IO_PENDING, request_->status());
   DCHECK_NE(ERR_IO_PENDING, result);
 
   // The headers should be complete before reads complete
@@ -498,14 +498,14 @@ void URLRequestJob::ReadRawDataComplete(int result) {
 
 void URLRequestJob::NotifyStartError(int net_error) {
   DCHECK(!has_handled_response_);
-  DCHECK(request_->status().is_io_pending());
+  DCHECK_EQ(ERR_IO_PENDING, request_->status());
 
   has_handled_response_ = true;
   // There may be relevant information in the response info even in the
   // error case.
   GetResponseInfo(&request_->response_info_);
 
-  request_->NotifyResponseStarted(URLRequestStatus::FromError(net_error));
+  request_->NotifyResponseStarted(net_error);
   // |this| may have been deleted here.
 }
 
@@ -527,12 +527,12 @@ void URLRequestJob::OnDone(int net_error, bool notify_done) {
   // an error, we do not change the status back to success.  To
   // enforce this, only set the status if the job is so far
   // successful.
-  if (request_->status().is_success()) {
+  if (!request_->failed()) {
     if (net_error != net::OK && net_error != ERR_ABORTED) {
       request_->net_log().AddEventWithNetErrorCode(NetLogEventType::FAILED,
                                                    net_error);
     }
-    request_->set_status(URLRequestStatus::FromError(net_error));
+    request_->set_status(net_error);
   }
 
   if (notify_done) {
@@ -547,7 +547,7 @@ void URLRequestJob::OnDone(int net_error, bool notify_done) {
 void URLRequestJob::NotifyDone() {
   // Check if we should notify the URLRequest that we're done because of an
   // error.
-  if (!request_->status().is_success()) {
+  if (request_->failed()) {
     // We report the error differently depending on whether we've called
     // OnResponseStarted yet.
     if (has_handled_response_) {
@@ -555,7 +555,9 @@ void URLRequestJob::NotifyDone() {
       request_->NotifyReadCompleted(-1);
     } else {
       has_handled_response_ = true;
-      request_->NotifyResponseStarted(URLRequestStatus());
+      // Error code doesn't actually matter here, since the status has already
+      // been updated.
+      request_->NotifyResponseStarted(request_->status());
     }
   }
 }

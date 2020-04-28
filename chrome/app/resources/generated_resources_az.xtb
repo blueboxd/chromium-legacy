@@ -669,6 +669,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> quraşdırmanız tamamlamaq üçün hazırdır</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">Mikrofona giriş icazəsi verin</translation>
+<translation id="1871534214638631766">Məzmuna sağ düymə ilə toxunduqda və ya basıb saxladıqda əlaqəli məlumat göstərilsin</translation>
 <translation id="1871615898038944731"><ph name="DEVICE_TYPE" /> cihazı güncəldir</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Tabı başqa pəncərəyə köçürün}other{Tabları başqa pəncərəyə köçürün}}</translation>
 <translation id="1875386316419689002">Bu tabel HID cihazına qoşuludur.</translation>
@@ -725,6 +726,7 @@
 <translation id="1944528062465413897">Bluetooth birləşdirmə kodu:</translation>
 <translation id="1944921356641260203">Güncəlləşmə tapıldı</translation>
 <translation id="1946577776959096882">Hesablara Baxın</translation>
+<translation id="1949584741547056205">Sürətli Cavablar</translation>
 <translation id="1951012854035635156">Assistent</translation>
 <translation id="1954813140452229842">Paylaşım xətası. Kredensiallarınızı yoxlayaraq yenidən cəhd edin.</translation>
 <translation id="1956050014111002555">Fayl heç biri import olunmayan çoxsaylı sertifikatlardan ibarətdir:</translation>
@@ -1905,7 +1907,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3543597750097719865">X9.62 ECDSA SHA-512 ilə imza</translation>
 <translation id="3544879808695557954">İstifadəçi adı (istəyə görə)</translation>
 <translation id="354602065659584722">Zərərli proqram təminatı silindi</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Proksi ayarları</translation>
 <translation id="3548162552723420559">Ekran rəngini mühitə uyğunlaşdırmaq üçün tənzimləyir</translation>
 <translation id="3550915441744863158">Chrome avtomatik güncəlləşdiyi üçün həmişə son versiyada olur.</translation>
@@ -5546,7 +5547,6 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="8493236660459102203">Mikrofon:</translation>
 <translation id="8496717697661868878">Bu plagini işə salın</translation>
 <translation id="8497219075884839166">Windows Vasitələri</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Zəif işıqda ekrana baxmağı və ya oxumağı asanlaşdırın</translation>
 <translation id="8498395510292172881">Chrome'da oxumağa davam edin</translation>
 <translation id="8500234928660943538">Yanlış PUK. <ph name="RETRIES" /> cəhdiniz qaldı.</translation>

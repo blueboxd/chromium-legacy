@@ -60,8 +60,8 @@ EmulationHandler::EmulationHandler()
     : DevToolsDomainHandler(Emulation::Metainfo::domainName),
       touch_emulation_enabled_(false),
       device_emulation_enabled_(false),
-      host_(nullptr) {
-}
+      focus_emulation_enabled_(false),
+      host_(nullptr) {}
 
 EmulationHandler::~EmulationHandler() {
 }
@@ -98,6 +98,8 @@ Response EmulationHandler::Disable() {
     device_emulation_enabled_ = false;
     UpdateDeviceEmulationState();
   }
+  if (focus_emulation_enabled_)
+    SetFocusEmulationEnabled(false);
   return Response::Success();
 }
 
@@ -326,6 +328,19 @@ Response EmulationHandler::SetUserAgentOverride(
 
   user_agent_ = user_agent;
   accept_language_ = accept_lang;
+  return Response::FallThrough();
+}
+
+Response EmulationHandler::SetFocusEmulationEnabled(bool enabled) {
+  if (enabled == focus_emulation_enabled_)
+    return Response::FallThrough();
+  focus_emulation_enabled_ = enabled;
+  if (enabled) {
+    GetWebContents()->IncrementCapturerCount(gfx::Size(),
+                                             /* stay_hidden */ false);
+  } else {
+    GetWebContents()->DecrementCapturerCount(/* stay_hidden */ false);
+  }
   return Response::FallThrough();
 }
 

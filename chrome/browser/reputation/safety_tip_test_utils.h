@@ -26,6 +26,10 @@ void SetSafetyTipBadRepPatterns(std::vector<std::string> pattern);
 
 // Sets allowlist patterns in the given proto for testing. This will replace any
 // allowlist patterns currently in the proto.
-void SetSafetyTipAllowlistPatterns(std::vector<std::string> patterns);
+// |patterns| is the list of hostnames allowed to be lookalikes.
+// |target_patterns| is the list of hostname regexes allowed to be targets of
+// lookalikes.
+void SetSafetyTipAllowlistPatterns(std::vector<std::string> patterns,
+                                   std::vector<std::string> target_patterns);
 
 #endif  // CHROME_BROWSER_REPUTATION_SAFETY_TIP_TEST_UTILS_H_

@@ -11,56 +11,24 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/base64.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/profile_sync_service.h"
-#include "components/sync/nigori/cryptographer_impl.h"
+#include "components/sync/nigori/nigori_test_utils.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_jni/FakeServerHelper_jni.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
+#include "components/sync/test/fake_server/fake_server_nigori_helper.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;
-
-namespace {
-
-// TODO(crbug.com/1046663): avoid duplicates with BuildTrustedVaultNigori() in
-// single_client_nigori_sync_test.cc (it likely means to move part of
-// encryption_helper.h/cc to components/sync/test).
-void SetTrustedVaultNigoriInFakeServer(
-    fake_server::FakeServer* fake_server,
-    const std::vector<uint8_t>& trusted_vault_key) {
-  sync_pb::NigoriSpecifics nigori;
-  nigori.set_passphrase_type(
-      sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE);
-  nigori.set_keybag_is_frozen(true);
-
-  std::unique_ptr<syncer::CryptographerImpl> cryptographer =
-      syncer::CryptographerImpl::FromSingleKeyForTesting(
-          base::Base64Encode(trusted_vault_key));
-
-  bool encrypt_result = cryptographer->Encrypt(
-      cryptographer->ToProto().key_bag(), nigori.mutable_encryption_keybag());
-  DCHECK(encrypt_result);
-
-  std::string nigori_entity_id =
-      fake_server->GetTopLevelPermanentItemId(syncer::NIGORI);
-  DCHECK_NE(nigori_entity_id, "");
-
-  sync_pb::EntitySpecifics entity_specifics;
-  *entity_specifics.mutable_nigori() = nigori;
-  fake_server->ModifyEntitySpecifics(nigori_entity_id, entity_specifics);
-}
-
-}  // namespace
 
 FakeServerHelperAndroid::FakeServerHelperAndroid(JNIEnv* env, jobject obj) {}
 
@@ -380,9 +348,9 @@ void FakeServerHelperAndroid::SetTrustedVaultNigori(
   std::vector<uint8_t> native_trusted_vault_key;
   base::android::JavaByteArrayToByteVector(env, trusted_vault_key,
                                            &native_trusted_vault_key);
-  SetTrustedVaultNigoriInFakeServer(
-      reinterpret_cast<fake_server::FakeServer*>(fake_server),
-      native_trusted_vault_key);
+  SetNigoriInFakeServer(
+      syncer::BuildTrustedVaultNigoriSpecifics({native_trusted_vault_key}),
+      reinterpret_cast<fake_server::FakeServer*>(fake_server));
 }
 
 void FakeServerHelperAndroid::ClearServerData(JNIEnv* env,

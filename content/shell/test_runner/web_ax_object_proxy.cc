@@ -2150,8 +2150,6 @@ void WebAXObjectProxyList::Clear() {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
-  std::vector<std::unique_ptr<WebAXObjectProxy>> proxies;
-
   for (auto& persistent : elements_) {
     auto local = v8::Local<v8::Object>::New(isolate, persistent);
 
@@ -2161,14 +2159,13 @@ void WebAXObjectProxyList::Clear() {
 
     // Because the v8::Persistent in this container uses
     // CopyablePersistentObject traits, it will not leak the Persistent objects
-    // on destruction. However this wrapper handle v8 object does not destroy
-    // the C++ object it is wrapping (the opposite is true actually), so we must
-    // destroy it explicitly.
-    proxies.emplace_back(proxy);
+    // on destruction. However, blink may be keeping a reference to the |proxy|.
+    // We Reset() it to drop the callback in the proxy object now that its not
+    // in the proxy list.
+    proxy->Reset();
   }
 
   elements_.clear();
-  proxies.clear();
 }
 
 v8::Local<v8::Object> WebAXObjectProxyList::GetOrCreate(

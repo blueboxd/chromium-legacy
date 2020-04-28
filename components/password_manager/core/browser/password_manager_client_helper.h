@@ -23,7 +23,7 @@ class PasswordManagerClientHelper {
   // Implementation of
   // PasswordManagerClient::NotifySuccessfulLoginWithExistingPassword.
   void NotifySuccessfulLoginWithExistingPassword(
-      const autofill::PasswordForm& form);
+      std::unique_ptr<PasswordFormManagerForUI> submitted_manager);
 
   // Called as a response to
   // PasswordManagerClient::PromptUserToChooseCredentials. nullptr in |form|

@@ -552,6 +552,28 @@ void FetchFakeFullCrosHealthdData(
   }
 }
 
+// Fake cros_healthd fetching function. Returns data with only the CPU and
+// battery probe categories populated if |mode| is kFull or only the
+// battery category if |mode| is kBattery.
+void FetchFakePartialCrosHealthdData(
+    policy::CrosHealthdCollectionMode mode,
+    policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+  switch (mode) {
+    case policy::CrosHealthdCollectionMode::kFull: {
+      cros_healthd::TelemetryInfo fake_info;
+      fake_info.battery_result = CreateBatteryResult();
+      fake_info.cpu_result = CreateCpuResult();
+      std::move(receiver).Run(fake_info.Clone(), CreateFakeSampleData());
+      return;
+    }
+
+    case policy::CrosHealthdCollectionMode::kBattery: {
+      GetFakeCrosHealthdBatteryData(std::move(receiver));
+      return;
+    }
+  }
+}
+
 void GetEmptyGraphicsStatus(
     policy::DeviceStatusCollector::GraphicsStatusReceiver receiver) {
   std::move(receiver).Run(em::GraphicsStatus());
@@ -3035,6 +3057,64 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   ASSERT_EQ(device_status_.fan_info_size(), 1);
   const auto& fan = device_status_.fan_info(0);
   EXPECT_EQ(fan.speed_rpm(), kFakeSpeedRpm);
+}
+
+TEST_F(DeviceStatusCollectorTest, TestPartialCrosHealthdInfo) {
+  // Create a fake partial response from cros_healthd and populate it with some
+  // arbitrary values.
+  auto options = CreateEmptyDeviceStatusCollectorOptions();
+  options->cros_healthd_data_fetcher =
+      base::BindRepeating(&FetchFakePartialCrosHealthdData);
+  RestartStatusCollector(std::move(options));
+
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceCpuInfo, true);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDevicePowerStatus, true);
+  GetStatus();
+
+  // Check that the CPU temperature samples are stored correctly.
+  ASSERT_EQ(device_status_.cpu_temp_infos_size(), 1);
+  const auto& cpu_sample = device_status_.cpu_temp_infos(0);
+  EXPECT_EQ(cpu_sample.cpu_label(), kFakeCpuLabel);
+  EXPECT_EQ(cpu_sample.cpu_temp(), kFakeCpuTemp);
+  EXPECT_EQ(cpu_sample.timestamp(), kFakeCpuTimestamp);
+
+  // Verify the CPU data.
+  ASSERT_EQ(device_status_.cpu_info_size(), 1);
+  const auto& cpu = device_status_.cpu_info(0);
+  EXPECT_EQ(cpu.model_name(), kFakeModelName);
+  EXPECT_EQ(cpu.architecture(), kFakeProtoArchitecture);
+  EXPECT_EQ(cpu.max_clock_speed_khz(), kFakeMaxClockSpeed);
+
+  // Verify the battery data.
+  ASSERT_TRUE(device_status_.has_power_status());
+  ASSERT_EQ(device_status_.power_status().batteries_size(), 1);
+  const auto& battery = device_status_.power_status().batteries(0);
+  EXPECT_EQ(battery.serial(), kFakeBatterySerial);
+  EXPECT_EQ(battery.manufacturer(), kFakeBatteryVendor);
+  EXPECT_EQ(battery.design_capacity(), kExpectedBatteryChargeFullDesign);
+  EXPECT_EQ(battery.full_charge_capacity(), kExpectedBatteryChargeFull);
+  EXPECT_EQ(battery.cycle_count(), kFakeBatteryCycleCount);
+  EXPECT_EQ(battery.design_min_voltage(), kExpectedBatteryVoltageMinDesign);
+  EXPECT_EQ(battery.manufacture_date(), kFakeSmartBatteryManufactureDate);
+  EXPECT_EQ(battery.technology(), kFakeBatteryTechnology);
+
+  // Verify the battery sample data.
+  ASSERT_EQ(battery.samples_size(), 1);
+  const auto& battery_sample = battery.samples(0);
+  EXPECT_EQ(battery_sample.voltage(), kExpectedBatteryVoltageNow);
+  EXPECT_EQ(battery_sample.remaining_capacity(), kExpectedBatteryChargeNow);
+  EXPECT_EQ(battery_sample.temperature(), kFakeSmartBatteryTemperature);
+  EXPECT_EQ(battery_sample.current(), kExpectedBatteryCurrentNow);
+  EXPECT_EQ(battery_sample.status(), kFakeBatteryStatus);
+
+  EXPECT_FALSE(device_status_.has_memory_info());
+  EXPECT_FALSE(device_status_.has_timezone_info());
+  EXPECT_FALSE(device_status_.has_system_status());
+  EXPECT_FALSE(device_status_.has_storage_status());
+  EXPECT_EQ(device_status_.backlight_info_size(), 0);
+  EXPECT_EQ(device_status_.fan_info_size(), 0);
 }
 
 // Fake device state.

@@ -15,6 +15,7 @@
 #include "components/viz/common/vertical_scroll_direction.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/allow_service_worker_result.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/visibility.h"
@@ -283,21 +284,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       const GlobalRequestID& request_id,
       const blink::mojom::ResourceLoadInfo& resource_load_info) {}
 
-  // This method is invoked when a document or resource reads a cookie. Note
-  // that this isn't tied to any particular navigation (e.g., it may be called
-  // after a subsequent navigation commits).
-  virtual void OnCookiesRead(const GURL& url,
-                             const GURL& first_party_url,
-                             const net::CookieList& cookie_list,
-                             bool blocked_by_policy) {}
-
-  // This method is invoked when an attempt has been made to set |cookie|. Note
-  // that this isn't tied to any particular navigation (e.g., it may be called
-  // after a subsequent navigation commits).
-  virtual void OnCookieChange(const GURL& url,
-                              const GURL& first_party_url,
-                              const net::CanonicalCookie& cookie,
-                              bool blocked_by_policy) {}
+  // This method is invoked when a document or resource reads or sets a cookie.
+  // Note that this isn't tied to any particular navigation (e.g., it may be
+  // called after a subsequent navigation commits).
+  virtual void OnCookiesAccessed(const CookieAccessDetails& details) {}
 
   // This method is invoked when a new non-pending navigation entry is created.
   // This corresponds to one NavigationController entry being created

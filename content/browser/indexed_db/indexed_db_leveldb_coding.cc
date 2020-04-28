@@ -10,8 +10,9 @@
 #include <utility>
 
 #include "base/big_endian.h"
+#include "base/check_op.h"
 #include "base/containers/span.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"

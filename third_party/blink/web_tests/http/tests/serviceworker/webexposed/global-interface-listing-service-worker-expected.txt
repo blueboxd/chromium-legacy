@@ -1273,6 +1273,12 @@ interface ReceiveStream
     getter readingAborted
     method abortReading
     method constructor
+interface ReportingObserver
+    attribute @@toStringTag
+    method constructor
+    method disconnect
+    method observe
+    method takeRecords
 interface Request
     attribute @@toStringTag
     getter bodyUsed

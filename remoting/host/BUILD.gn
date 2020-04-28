@@ -365,11 +365,10 @@ static_library("common") {
   }
 
   if (use_x11) {
-    configs += [
-      "//build/config/linux:x11",
-      "//build/config/linux:xrandr",
+    deps += [
+      "//remoting/host/linux:x11",
+      "//ui/gfx/x",
     ]
-    deps += [ "//remoting/host/linux:x11" ]
     if (is_desktop_linux) {
       deps += [ "//build/config/linux/gtk" ]
     }

@@ -1912,7 +1912,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3543597750097719865">SHA-512 ile X9.62 ECDSA İmzası</translation>
 <translation id="3544879808695557954">Kullanıcı adı (isteğe bağlı)</translation>
 <translation id="354602065659584722">Zararlı yazılım kaldırıldı</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
 <translation id="3548162552723420559">Ekran rengini ortama uygun şekilde ayarlar</translation>
 <translation id="3550915441744863158">Chrome otomatik olarak güncellenir, böylece her zaman en yeni sürüme sahip olursunuz.</translation>
@@ -5559,7 +5558,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8493236660459102203">Mikrofon:</translation>
 <translation id="8496717697661868878">Bu Eklentiyi Çalıştır</translation>
 <translation id="8497219075884839166">Windows Yardımcı Programları</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Loş ışıkta ekranınıza bakmayı veya okumayı kolaylaştır</translation>
 <translation id="8498395510292172881">Chrome'da okumaya devam et</translation>
 <translation id="8500234928660943538">Yanlış PUK. Kalan deneme sayısı: <ph name="RETRIES" />.</translation>

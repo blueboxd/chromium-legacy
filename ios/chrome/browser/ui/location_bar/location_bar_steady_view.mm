@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -186,18 +187,10 @@ const CGFloat kLocationLabelVerticalOffset = -1;
 #if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
       if (base::FeatureList::IsEnabled(kPointerSupport)) {
-        // Make the highlight of the trailing button fit in the corner of the
-        // location bar.
+        _trailingButton.pointerInteractionEnabled = YES;
+        // Make the pointer shape fit the location bar's semi-circle end shape.
         _trailingButton.pointerStyleProvider =
-            ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
-                             UIPointerShape* proposedShape) {
-          CGRect rect = button.frame;
-          return [UIPointerStyle
-              styleWithEffect:proposedEffect
-                        shape:[UIPointerShape
-                                  shapeWithRoundedRect:rect
-                                          cornerRadius:rect.size.height / 2]];
-        };
+            CreateLiftEffectCirclePointerStyleProvider();
       }
     }
 #endif  // defined(__IPHONE_13_4)

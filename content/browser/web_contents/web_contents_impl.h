@@ -46,6 +46,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/color_chooser.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/mhtml_generation_result.h"
@@ -405,14 +406,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void DidChangeVisibleSecurityState() override;
   void NotifyPreferencesChanged() override;
   void SyncRendererPrefs() override;
-  void OnCookiesRead(const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy) override;
-  void OnCookieChange(const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override;
 
   void Stop() override;
   void SetPageFrozen(bool frozen) override;
@@ -1203,6 +1196,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Returns the focused frame's input handler.
   mojom::FrameInputHandler* GetFocusedFrameInputHandler();
+
+  void OnCookiesAccessed(const CookieAccessDetails& details);
 
  private:
   friend class WebContentsObserver;

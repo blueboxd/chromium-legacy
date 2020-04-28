@@ -18,10 +18,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
-import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.sharing.SharingNotificationUtil;
 import org.chromium.chrome.browser.sharing.SharingSendMessageResult;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy;
+import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 
 /**
  * Handles Shared Clipboard messages and notifications for Android.

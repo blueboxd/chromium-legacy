@@ -53,11 +53,11 @@ namespace base {
 //        allows readers to preallocate the data structure that we pass back
 //        the metadata in.
 //
-// C) We shouldn't guard writes with a lock that also guards reads. It can take
-//    ~30us from the time that the sampling thread requests that a thread be
-//    suspended and the time that it actually happens. If all metadata writes
-//    block their thread during that time, we're very likely to block all Chrome
-//    threads for an additional 30us per sample.
+// C) We shouldn't guard writes with a lock that also guards reads, since the
+//    read lock is held from the time that the sampling thread requests that a
+//    thread be suspended up to the time that the thread is resumed. If all
+//    metadata writes block their thread during that time, we're very likely to
+//    block all Chrome threads.
 //
 //      Ramifications:
 //
@@ -93,8 +93,8 @@ namespace base {
 //
 // - No thread is using the recorder.
 //
-// - A single writer is writing into the recorder without a simultaneous
-//   read. The write will succeed.
+// - A single writer is writing into the recorder without a simultaneous read.
+//   The write will succeed.
 //
 // - A reader is reading from the recorder without a simultaneous write. The
 //   read will succeed.
@@ -154,16 +154,15 @@ class BASE_EXPORT MetadataRecorder {
   void Remove(uint64_t name_hash, Optional<int64_t> key);
 
   // An object that provides access to a MetadataRecorder's items and holds the
-  // necessary exclusive read lock until either GetItems() is called or the
-  // object is destroyed. Reclaiming of inactive slots in the recorder
-  // can't occur while this object lives, so it should be created as soon before
-  // it's needed as possible. Calling GetItems() releases the lock held by the
-  // object and can therefore only be called once during the object's lifetime.
+  // necessary exclusive read lock until the object is destroyed. Reclaiming of
+  // inactive slots in the recorder can't occur while this object lives, so it
+  // should be created as soon before it's needed as possible and released as
+  // soon as possible.
   //
-  // This object should be created *before* suspending the target
-  // thread. Otherwise, that thread might be suspended while reclaiming inactive
-  // slots and holding the read lock, which would cause the sampling thread to
-  // deadlock.
+  // This object should be created *before* suspending the target thread and
+  // destroyed after resuming the target thread. Otherwise, that thread might be
+  // suspended while reclaiming inactive slots and holding the read lock, which
+  // would cause the sampling thread to deadlock.
   //
   // Example usage:
   //
@@ -178,7 +177,7 @@ class BASE_EXPORT MetadataRecorder {
   class SCOPED_LOCKABLE BASE_EXPORT MetadataProvider {
    public:
     // Acquires an exclusive read lock on the metadata recorder which is held
-    // until either GetItems() is called or the object is destroyed.
+    // until the object is destroyed.
     explicit MetadataProvider(MetadataRecorder* metadata_recorder)
         EXCLUSIVE_LOCK_FUNCTION(metadata_recorder_->read_lock_);
     ~MetadataProvider() UNLOCK_FUNCTION();
@@ -189,20 +188,12 @@ class BASE_EXPORT MetadataRecorder {
     // copies them into |items|, returning the number of metadata items that
     // were copied. To ensure that all items can be copied, |available slots|
     // should be greater than or equal to |MAX_METADATA_COUNT|.
-    //
-    // This function releases the lock held by the object and can therefore only
-    // be called once during the object's lifetime.
-    size_t GetItems(ItemArray* items);
+    size_t GetItems(ItemArray* const items) const;
 
    private:
     const MetadataRecorder* const metadata_recorder_;
-    base::ReleasableAutoLock auto_lock_;
+    base::AutoLock auto_lock_;
   };
-
-  // Creates a MetadataProvider object for the recorder, which acquires the
-  // necessary exclusive read lock and provides access to the recorder's items
-  // via its GetItems() function.
-  std::unique_ptr<MetadataProvider> CreateMetadataProvider();
 
  private:
   // TODO(charliea): Support large quantities of metadata efficiently.

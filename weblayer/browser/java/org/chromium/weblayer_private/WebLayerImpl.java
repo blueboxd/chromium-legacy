@@ -331,6 +331,12 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         sClient = client;
     }
 
+    @Override
+    public String getUserAgentString() {
+        StrictModeWorkaround.apply();
+        return WebLayerImplJni.get().getUserAgentString();
+    }
+
     /**
      * Creates a remote context. This should only be used for backwards compatibility when the
      * client was not sending the remote context.
@@ -556,5 +562,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         void setRemoteDebuggingEnabled(boolean enabled);
         boolean isRemoteDebuggingEnabled();
         void setIsWebViewCompatMode(boolean value);
+        String getUserAgentString();
     }
 }

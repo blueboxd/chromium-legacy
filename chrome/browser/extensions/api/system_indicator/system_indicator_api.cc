@@ -7,8 +7,8 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager_factory.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/common/extensions/api/system_indicator/system_indicator_handler.h"
+#include "extensions/browser/extension_action.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 

@@ -102,9 +102,9 @@ OptionsPage = class {
     }
 
     chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-chromevox-language-switching',
-        function(enabled) {
-          if (!enabled) {
+        'disable-experimental-accessibility-chromevox-language-switching',
+        (enabled) => {
+          if (enabled) {
             $('languageSwitchingOption').hidden = true;
           }
         });

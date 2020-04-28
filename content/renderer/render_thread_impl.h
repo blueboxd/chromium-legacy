@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -493,7 +494,10 @@ class CONTENT_EXPORT RenderThreadImpl
   void SetSchedulerKeepActive(bool keep_active) override;
   void SetIsLockedToSite() override;
   void EnableV8LowMemoryMode() override;
-
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  void WriteClangProfilingProfile(
+      WriteClangProfilingProfileCallback callback) override;
+#endif
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 

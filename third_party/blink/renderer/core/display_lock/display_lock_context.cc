@@ -320,6 +320,11 @@ void DisplayLockContext::DidStyle(DisplayLockLifecycleTarget target) {
     if (ForceUnlockIfNeeded())
       return;
 
+    if (!IsLocked() && state_ != ESubtreeVisibility::kVisible) {
+      UpdateActivationObservationIfNeeded();
+      NotifyRenderAffectingStateChanged();
+    }
+
     if (blocked_style_traversal_type_ == kStyleUpdateSelf)
       blocked_style_traversal_type_ = kStyleUpdateNotRequired;
   } else {

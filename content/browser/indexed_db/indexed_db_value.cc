@@ -4,7 +4,7 @@
 
 #include "content/browser/indexed_db/indexed_db_value.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {

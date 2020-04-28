@@ -91,6 +91,24 @@ do_emcc() {
   emcc "${args[@]}"
 }
 
+do_add_header() {
+  mv ffmpeg.js ffmpeg.orig.js
+  cat <<'EOF' > ffmpeg.js
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @fileoverview
+ * @suppress {checkTypes|missingProperties|suspiciousCode}
+ * @suppress {undefinedVars|uselessCode}
+ */
+
+/* eslint-disable */
+EOF
+  cat ffmpeg.orig.js >> ffmpeg.js
+}
+
 main() {
   [[ -z "$EMSDK" ]] && die "emsdk is not setup properly"
 
@@ -118,6 +136,7 @@ main() {
   do_configure
   do_make
   do_emcc
+  do_add_header
 
   popd
 

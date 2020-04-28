@@ -42,9 +42,11 @@
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "net/base/net_errors.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/messaging/web_message_port.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
@@ -1081,4 +1083,15 @@ void FrameImpl::RenderViewReady() {
 
 void FrameImpl::DidFirstVisuallyNonEmptyPaint() {
   base::RecordComputedAction("AppFirstPaint");
+}
+
+void FrameImpl::ResourceLoadComplete(
+    content::RenderFrameHost* render_frame_host,
+    const content::GlobalRequestID& request_id,
+    const blink::mojom::ResourceLoadInfo& resource_load_info) {
+  int net_error = resource_load_info.net_error;
+  if (net_error != net::OK) {
+    base::RecordComputedAction(
+        base::StringPrintf("WebEngine.ResourceRequestError:%d", net_error));
+  }
 }

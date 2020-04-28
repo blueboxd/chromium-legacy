@@ -135,4 +135,17 @@ gpu::GpuChannelEstablishFactory* GetGpuChannelEstablishFactory() {
   return BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
 }
 
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+void DumpGpuProfilingData(base::OnceClosure callback) {
+  content::GpuProcessHost::CallOnIO(
+      content::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+      base::BindOnce(
+          [](base::OnceClosure callback, content::GpuProcessHost* host) {
+            host->gpu_service()->WriteClangProfilingProfile(
+                std::move(callback));
+          },
+          std::move(callback)));
+}
+#endif  // BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+
 }  // namespace content

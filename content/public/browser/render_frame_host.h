@@ -75,6 +75,8 @@ class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHostView;
 class SiteInstance;
+class BrowserContext;
+class StoragePartition;
 
 // The interface provides a communication conduit with a frame in the renderer.
 class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
@@ -126,10 +128,20 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns the SiteInstance grouping all RenderFrameHosts that have script
   // access to this RenderFrameHost, and must therefore live in the same
   // process.
+  // Associated SiteInstance never changes.
   virtual SiteInstance* GetSiteInstance() = 0;
 
   // Returns the process for this frame.
+  // Associated RenderProcessHost never changes.
   virtual RenderProcessHost* GetProcess() = 0;
+
+  // Returns a StoragePartition associated with this RenderFrameHost.
+  // Associated StoragePartition never changes.
+  virtual StoragePartition* GetStoragePartition() = 0;
+
+  // Returns the user browser context associated with this RenderFrameHost.
+  // Associated BrowserContext never changes.
+  virtual BrowserContext* GetBrowserContext() = 0;
 
   // Returns the RenderWidgetHostView that can be used to control focus and
   // visibility for this frame.
@@ -371,6 +383,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
                                 const std::string& value) = 0;
 
 #if defined(OS_ANDROID)
+  // Returns the Java object of this instance.
+  virtual base::android::ScopedJavaLocalRef<jobject>
+  GetJavaRenderFrameHost() = 0;
+
   // Returns an InterfaceProvider for Java-implemented interfaces that are
   // scoped to this RenderFrameHost. This provides access to interfaces
   // implemented in Java in the browser process to C++ code in the browser
@@ -519,12 +535,17 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Perform security checks on Web Authentication requests. These can be
   // called by other |Authenticator| mojo interface implementations in the
   // browser process so that they don't have to duplicate security policies.
+  // For requests originating from the render process, |effective_origin| will
+  // be the same as the last committed origin. However, for request originating
+  // from the browser process, this may be different.
   virtual blink::mojom::AuthenticatorStatus
   PerformGetAssertionWebAuthSecurityChecks(
-      const std::string& relying_party_id) = 0;
+      const std::string& relying_party_id,
+      const url::Origin& effective_origin) = 0;
   virtual blink::mojom::AuthenticatorStatus
   PerformMakeCredentialWebAuthSecurityChecks(
-      const std::string& relying_party_id) = 0;
+      const std::string& relying_party_id,
+      const url::Origin& effective_origin) = 0;
 
   // Tells the host that this is part of setting up a WebXR DOM Overlay. This
   // starts a short timer that permits entering fullscreen mode, similar to a

@@ -456,6 +456,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // call to CachingAsyncHitTest().
   void CacheHitTestResult(BrowserAccessibility* hit_test_result) const;
 
+  // Updates the page scale factor for this frame.
+  void SetPageScaleFactor(float page_scale_factor);
+
+  // Returns the current page scale factor for this frame.
+  float GetPageScaleFactor() const;
+
  protected:
   FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityManagerTest,
                            TestShouldFireEventForNode);
@@ -517,6 +523,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // The device scale factor for the view associated with this frame,
   // cached each time there's any update to the accessibility tree.
   float device_scale_factor_;
+
+  // The page scale factor for the view associated with this frame,
+  // cached when we get an update via SetPageScaleFactor().
+  float page_scale_factor_ = 1.0f;
 
   // For testing only: If true, the manually-set device scale factor will be
   // used and it won't be updated from the delegate.

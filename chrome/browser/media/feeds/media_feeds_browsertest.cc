@@ -21,12 +21,14 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/frame_load_waiter.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media_feeds {
@@ -292,6 +294,8 @@ INSTANTIATE_TEST_SUITE_P(
             false}));
 
 IN_PROC_BROWSER_TEST_P(MediaFeedsDiscoveryBrowserTest, Discover) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
   DiscoverFeed();
 
   // Check we discovered the feed.
@@ -300,6 +304,19 @@ IN_PROC_BROWSER_TEST_P(MediaFeedsDiscoveryBrowserTest, Discover) {
   if (GetParam().discovered)
     expected_urls.insert(GetServer()->GetURL("/test"));
   EXPECT_EQ(expected_urls, GetDiscoveredFeedURLs());
+
+  // Check that we did/didn't record this to UKM.
+  using Entry = ukm::builders::Media_Feed_Discover;
+  auto entries = ukm_recorder.GetEntriesByName(Entry::kEntryName);
+
+  if (GetParam().discovered) {
+    EXPECT_EQ(1u, entries.size());
+    ukm_recorder.ExpectEntrySourceHasUrl(
+        entries[0], GetServer()->GetURL(kMediaFeedsTestURL));
+    ukm_recorder.ExpectEntryMetric(entries[0], Entry::kHasMediaFeedName, 1);
+  } else {
+    EXPECT_TRUE(entries.empty());
+  }
 }
 
 }  // namespace media_feeds

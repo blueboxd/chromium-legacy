@@ -4,7 +4,7 @@
 
 #include "content/browser/web_package/signed_exchange_error.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace content {
 

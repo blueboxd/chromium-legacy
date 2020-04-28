@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
@@ -177,6 +178,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 #if defined(OS_MACOSX)
   void BeginCATransaction() override;
   void CommitCATransaction(CommitCATransactionCallback callback) override;
+#endif
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  void WriteClangProfilingProfile(
+      WriteClangProfilingProfileCallback callback) override;
 #endif
   void Crash() override;
   void Hang() override;

@@ -91,6 +91,21 @@ public class InstrumentationActivity extends FragmentActivity {
         return mBrowser;
     }
 
+    /**
+     * Explicitly destroys the fragment. There is normally no need to call this. It's useful for
+     * tests that want to verify destruction.
+     */
+    public void destroyFragment() {
+        removeCallbacks();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.remove(mFragment);
+        transaction.commitNow();
+        mFragment = null;
+        mBrowser = null;
+    }
+
     /** Interface used to intercept intents for testing. */
     public static interface IntentInterceptor {
         void interceptIntent(Fragment fragment, Intent intent, int requestCode, Bundle options);
@@ -194,12 +209,17 @@ public class InstrumentationActivity extends FragmentActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        removeCallbacks();
+    }
+
+    private void removeCallbacks() {
         if (mTabCallback != null) {
             mTab.unregisterTabCallback(mTabCallback);
             mTabCallback = null;
         }
         if (mTabListCallback != null) {
             mBrowser.unregisterTabListCallback(mTabListCallback);
+            mTabListCallback = null;
         }
     }
 

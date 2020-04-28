@@ -364,14 +364,7 @@ class TabSpecificContentSettings
       content::NavigationHandle* navigation_handle) override;
   void AppCacheAccessed(const GURL& manifest_url,
                         bool blocked_by_policy) override;
-  void OnCookiesRead(const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy) override;
-  void OnCookieChange(const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override;
+  void OnCookiesAccessed(const content::CookieAccessDetails& details) override;
   // Called when a specific Service Worker scope was accessed.
   // If access was blocked due to the user's content settings,
   // |blocked_by_policy_javascript| or/and |blocked_by_policy_cookie| should be

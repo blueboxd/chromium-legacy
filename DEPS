@@ -143,12 +143,12 @@ vars = {
 
   # Default to the empty board. Desktop Chrome OS builds don't need cros SDK
   # dependencies. Other Chrome OS builds should always define this explicitly.
-  'cros_board': '',
+  'cros_boards': '',
   # Building for CrOS is only supported on linux currently.
-  'checkout_simplechrome': '(checkout_chromeos and host_os == "linux") and ("{cros_board}" != "")',
+  'checkout_simplechrome': '(checkout_chromeos and host_os == "linux") and ("{cros_boards}" != "")',
   # Surround the board var in quotes so gclient doesn't try parsing the string
   # as an expression.
-  'cros_download_vm': '(("{cros_board}" == "amd64-generic") or ("{cros_board}" == "betty")) or ("{cros_board}" == "betty-pi-arc")',
+  'cros_download_vm': '(("{cros_boards}" == "amd64-generic") or ("{cros_boards}" == "betty")) or ("{cros_boards}" == "betty-pi-arc")',
   # Should we build and test for public (ie: full) CrOS images, or private
   # (ie: release) images.
   'use_public_cros_config': 'not checkout_src_internal',
@@ -178,11 +178,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'f5132a05c893a86f8bf26bcf3253985d9973fea2',
+  'skia_revision': '02b91385f58b84dc14cb6f81478b36d7fcb0d24b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '2e08eda894ed59c472c6e9baa868473e55dee6e0',
+  'v8_revision': 'c301c3707ebba04a160e7e3a76ecc49fb8736886',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -190,15 +190,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '80d3e268d2ec8f67f1a6882a6137c0a488f2cd75',
+  'angle_revision': '1f9e2a8feb5ae8e80340ab4654bbfbae4243270a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '587fbb9ef3a566de835f0dbd2f6b06b80adb5938',
+  'swiftshader_revision': '71c49f8eab3db5f14939361dcb1cbbcd69431eff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '784cc7b22b215da7decce549876c1671d335f0f0',
+  'pdfium_revision': '88040c56ba075a1fc63585d7e47807d656b4130c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '80e9d2ce1c172244a90d2d7e37c49e9d151f19d3',
+  'devtools_frontend_revision': '71c19006068975798f28a4ee5c476d668133cc3d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'c244f5392178290ec559d8d62a63038ad79309a8',
+  'dawn_revision': '2d79ef264eba950c255f62698b7fcb362b140495',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -851,7 +851,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '9c39e0c3432b0649728e4302223309216cb575ce',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '7b61d5985f4e502540faca99967d2c9d10542df5',
       'condition': 'checkout_linux',
   },
 
@@ -871,7 +871,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '7d66c798bb4948e1104445d096cf76f085055396',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd70aa16fd5af125fae7a397311b7ae1bee955c84',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1220,7 +1220,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '03fcfdd74f97bb8b055fa4e47cd03203568a238e',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9a90474af88f42c05a529bc1f4f3cbb403cb13a9',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1450,7 +1450,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '012aa375b177897c2aa28d9744ad36b2b95ca30f',
+    Var('webrtc_git') + '/src.git' + '@' + '4381af48b40bbbe775864a01917505249135b4ed',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1522,7 +1522,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3623f72383d9f8720ea4ca6c86d237a0a744ea9b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@06cce0bd8dabb1db260d4f36577b8109315cded2',
     'condition': 'checkout_src_internal',
   },
 
@@ -4337,7 +4337,7 @@ hooks = [
       '--fallback-versions=10',
       '--nogn-gen',
       '--download-vm',
-      '--board={cros_board}',
+      '--boards={cros_boards}',
       '--cache-dir=src/build/cros_cache/',
       # TODO(crbug.com/834134): Remove the cache clobber when the sdk is smart
       # enough to eject old toolchains from the cache.
@@ -4357,7 +4357,7 @@ hooks = [
       '--use-external-config',
       '--fallback-versions=10',
       '--nogn-gen',
-      '--board={cros_board}',
+      '--boards={cros_boards}',
       '--cache-dir=src/build/cros_cache/',
       '--log-level=error',
       '--no-shell',

@@ -295,7 +295,7 @@
 #endif
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
-#include "content/common/profiling_utils.h"
+#include "content/public/common/profiling_utils.h"
 #endif
 
 namespace content {
@@ -2174,6 +2174,13 @@ void RenderProcessHostImpl::
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   cleanup_network_service_plugin_exceptions_upon_destruction_ = true;
 }
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+void RenderProcessHostImpl::DumpProfilingData(base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetRendererInterface()->WriteClangProfilingProfile(std::move(callback));
+}
+#endif
 
 PeerConnectionTrackerHost*
 RenderProcessHostImpl::GetPeerConnectionTrackerHost() {

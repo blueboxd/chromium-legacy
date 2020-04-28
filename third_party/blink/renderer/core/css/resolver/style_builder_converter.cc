@@ -1507,6 +1507,12 @@ TextUnderlinePosition StyleBuilderConverter::ConvertTextUnderlinePosition(
   return flags;
 }
 
+Length StyleBuilderConverter::ConvertTextUnderlineOffset(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  return ConvertLengthOrAuto(state, value);
+}
+
 TransformOperations StyleBuilderConverter::ConvertTransformOperations(
     StyleResolverState& state,
     const CSSValue& value) {

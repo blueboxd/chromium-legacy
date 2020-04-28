@@ -4,7 +4,6 @@
 
 #include "content/common/cursors/webcursor.h"
 
-#include "base/logging.h"
 
 namespace content {
 

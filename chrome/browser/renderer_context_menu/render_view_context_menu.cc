@@ -2662,6 +2662,9 @@ bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
   if (!base::FeatureList::IsEnabled(kSharingQRCodeGenerator))
     return false;
 
+  if (browser_context_->IsOffTheRecord())
+    return false;
+
   NavigationEntry* entry =
       embedder_web_contents_->GetController().GetLastCommittedEntry();
   if (!entry || !content::IsSavableURL(entry->GetURL()))

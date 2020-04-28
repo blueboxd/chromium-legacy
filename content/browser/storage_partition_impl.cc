@@ -86,11 +86,13 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -102,6 +104,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -527,61 +530,24 @@ void DeprecateSameSiteCookies(
   }
 }
 
-void ReportCookiesChangedOnUI(
+void ReportCookiesAccessedOnUI(
+    CookieAccessDetails::Type access_type,
     std::vector<GlobalFrameRoutingId> destinations,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const std::vector<net::CookieWithStatus>& cookie_list,
     const base::Optional<std::string>& devtools_request_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const GlobalFrameRoutingId& id : destinations) {
     DeprecateSameSiteCookies(
         id.child_id, id.frame_routing_id, cookie_list, url, site_for_cookies,
-        blink::mojom::SameSiteCookieOperation::SetCookie, devtools_request_id);
-  }
-
-  for (const auto& cookie_and_status : cookie_list) {
-    if (cookie_and_status.status.HasExclusionReason(
-            net::CanonicalCookie::CookieInclusionStatus::
-                EXCLUDE_USER_PREFERENCES)) {
-      for (const GlobalFrameRoutingId& id : destinations) {
-        WebContents* web_contents =
-            GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
-        if (!web_contents)
-          continue;
-        web_contents->OnCookieChange(url, site_for_cookies.RepresentativeUrl(),
-                                     cookie_and_status.cookie,
-                                     /* blocked_by_policy =*/true);
-      }
-    } else if (cookie_and_status.status.IsInclude()) {
-      for (const GlobalFrameRoutingId& id : destinations) {
-        WebContents* web_contents =
-            GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
-        if (!web_contents)
-          continue;
-        web_contents->OnCookieChange(url, site_for_cookies.RepresentativeUrl(),
-                                     cookie_and_status.cookie,
-                                     /* blocked_by_policy =*/false);
-      }
-    }
-  }
-}
-
-void ReportCookiesReadOnUI(
-    std::vector<GlobalFrameRoutingId> destinations,
-    const GURL& url,
-    const net::SiteForCookies& site_for_cookies,
-    const std::vector<net::CookieWithStatus>& cookie_list,
-    const base::Optional<std::string>& devtools_request_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  for (const GlobalFrameRoutingId& id : destinations) {
-    DeprecateSameSiteCookies(
-        id.child_id, id.frame_routing_id, cookie_list, url, site_for_cookies,
-        blink::mojom::SameSiteCookieOperation::ReadCookie, devtools_request_id);
+        access_type == CookieAccessDetails::Type::kRead
+            ? blink::mojom::SameSiteCookieOperation::ReadCookie
+            : blink::mojom::SameSiteCookieOperation::SetCookie,
+        devtools_request_id);
   }
 
   net::CookieList accepted, blocked;
+  std::vector<net::CanonicalCookie::CookieInclusionStatus> accepted_status;
   for (auto& cookie_and_status : cookie_list) {
     if (cookie_and_status.status.HasExclusionReason(
             net::CanonicalCookie::CookieInclusionStatus::
@@ -589,6 +555,7 @@ void ReportCookiesReadOnUI(
       blocked.push_back(std::move(cookie_and_status.cookie));
     } else if (cookie_and_status.status.IsInclude()) {
       accepted.push_back(std::move(cookie_and_status.cookie));
+      accepted_status.push_back(std::move(cookie_and_status.status));
     }
   }
 
@@ -598,9 +565,10 @@ void ReportCookiesReadOnUI(
           GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
       if (!web_contents)
         continue;
-      web_contents->OnCookiesRead(url, site_for_cookies.RepresentativeUrl(),
-                                  accepted,
-                                  /* blocked_by_policy =*/false);
+      static_cast<WebContentsImpl*>(web_contents)
+          ->OnCookiesAccessed({access_type, url,
+                               site_for_cookies.RepresentativeUrl(), accepted,
+                               /* blocked_by_policy =*/false});
     }
   }
 
@@ -610,14 +578,16 @@ void ReportCookiesReadOnUI(
           GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
       if (!web_contents)
         continue;
-      web_contents->OnCookiesRead(url, site_for_cookies.RepresentativeUrl(),
-                                  blocked,
-                                  /* blocked_by_policy =*/true);
+      static_cast<WebContentsImpl*>(web_contents)
+          ->OnCookiesAccessed({access_type, url,
+                               site_for_cookies.RepresentativeUrl(), blocked,
+                               /* blocked_by_policy =*/true});
     }
   }
 }
 
-void OnServiceWorkerCookiesReadOnCoreThread(
+void OnServiceWorkerCookiesAccessedOnCoreThread(
+    CookieAccessDetails::Type access_type,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
@@ -631,27 +601,9 @@ void OnServiceWorkerCookiesReadOnCoreThread(
   if (!frame_routing_ids->empty()) {
     RunOrPostTaskOnThread(
         FROM_HERE, BrowserThread::UI,
-        base::BindOnce(ReportCookiesReadOnUI, *frame_routing_ids, url,
-                       site_for_cookies, cookie_list, devtools_request_id));
-  }
-}
-
-void OnServiceWorkerCookiesChangedOnCoreThread(
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    const GURL& url,
-    const net::SiteForCookies& site_for_cookies,
-    const std::vector<net::CookieWithStatus>& cookie_list,
-    const base::Optional<std::string>& devtools_request_id) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  // Notify all the frames associated with this service worker of its cookie
-  // activity.
-  std::unique_ptr<std::vector<GlobalFrameRoutingId>> frame_routing_ids =
-      service_worker_context->GetWindowClientFrameRoutingIds(url.GetOrigin());
-  if (!frame_routing_ids->empty()) {
-    RunOrPostTaskOnThread(
-        FROM_HERE, BrowserThread::UI,
-        base::BindOnce(ReportCookiesChangedOnUI, *frame_routing_ids, url,
-                       site_for_cookies, cookie_list, devtools_request_id));
+        base::BindOnce(ReportCookiesAccessedOnUI, access_type,
+                       *frame_routing_ids, url, site_for_cookies, cookie_list,
+                       devtools_request_id));
   }
 }
 
@@ -2015,14 +1967,16 @@ void StoragePartitionImpl::OnCookiesChanged(
   if (is_service_worker) {
     RunOrPostTaskOnThread(
         FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-        base::BindOnce(&OnServiceWorkerCookiesChangedOnCoreThread,
+        base::BindOnce(&OnServiceWorkerCookiesAccessedOnCoreThread,
+                       CookieAccessDetails::Type::kChange,
                        service_worker_context_, url, site_for_cookies,
                        cookie_list, devtools_request_id));
   } else {
     std::vector<GlobalFrameRoutingId> destination;
     destination.emplace_back(process_id, routing_id);
-    ReportCookiesChangedOnUI(destination, url, site_for_cookies, cookie_list,
-                             devtools_request_id);
+    ReportCookiesAccessedOnUI(CookieAccessDetails::Type::kChange, destination,
+                              url, site_for_cookies, cookie_list,
+                              devtools_request_id);
   }
 }
 
@@ -2039,14 +1993,16 @@ void StoragePartitionImpl::OnCookiesRead(
   if (is_service_worker) {
     RunOrPostTaskOnThread(
         FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-        base::BindOnce(&OnServiceWorkerCookiesReadOnCoreThread,
+        base::BindOnce(&OnServiceWorkerCookiesAccessedOnCoreThread,
+                       CookieAccessDetails::Type::kRead,
                        service_worker_context_, url, site_for_cookies,
                        std::move(cookie_list), devtools_request_id));
   } else {
     std::vector<GlobalFrameRoutingId> destination;
     destination.emplace_back(process_id, routing_id);
-    ReportCookiesReadOnUI(destination, url, site_for_cookies, cookie_list,
-                          devtools_request_id);
+    ReportCookiesAccessedOnUI(CookieAccessDetails::Type::kRead, destination,
+                              url, site_for_cookies, cookie_list,
+                              devtools_request_id);
   }
 }
 

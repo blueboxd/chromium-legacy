@@ -172,8 +172,10 @@ bool HitTestCulledInlineAncestors(
       physical_offset - item.OffsetInContainerBlock();
   return HitTestCulledInlineAncestors(
       result, parent_cursor, item.GetLayoutObject(),
-      container.GetLayoutObject(), previous_sibling, hit_test_location,
-      fallback_accumulated_offset);
+      // Limit the traversal up to the container fragment, or its container if
+      // the fragment is not a CSSBox.
+      container.GetSelfOrContainerLayoutObject(), previous_sibling,
+      hit_test_location, fallback_accumulated_offset);
 }
 
 // Returns if this fragment may not be laid out by LayoutNG.

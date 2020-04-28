@@ -5201,6 +5201,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8665314828727504286">Mức độ bảo vệ của tính năng Duyệt web an toàn</translation>
 <translation id="8672321184841719703">Phiên bản cập nhật tự động đích</translation>
 <translation id="867410340948518937">U2F (Hai yếu tố chung)</translation>
+<translation id="8680488165461049026">Chính sách này cấp cho tính năng Trả lời nhanh quyền truy cập vào nội dung đã chọn và gửi thông tin đó đến máy chủ.
+
+      Nếu bạn bật chính sách này, thì tính năng Trả lời nhanh sẽ được phép truy cập vào nội dung đã chọn.
+      Nếu bạn tắt chính sách này, thì tính năng Trả lời nhanh sẽ không được phép truy cập vào nội dung đã chọn.
+      Nếu bạn không đặt chính sách này, thì người dùng có thể quyết định liệu có cho phép tính năng Trả lời nhanh truy cập vào nội dung đã chọn hay không.</translation>
 <translation id="8685024486845674965">Cảnh báo bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu</translation>
 <translation id="8687958770985542440">Bật lại API Thành phần web phiên bản 0 cho đến M84.</translation>
 <translation id="8693243869659262736">Sử dụng máy khách DNS tích hợp</translation>
@@ -5572,6 +5577,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Nếu bạn không định cấu hình chính sách này hoặc nếu bạn đặt thành true, việc tạo tài khoản người dùng mới sẽ được phép miễn là <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> không ngăn người dùng đăng nhập.</translation>
 <translation id="974349541138387272">Chỉ định mẫu URI của trình phân giải DNS qua HTTPS mà bạn muốn</translation>
+<translation id="974479807614498635">"Cho phép tính năng Trả lời nhanh truy cập vào nội dung đã chọn"</translation>
 <translation id="981346395360763138">Đã tắt dịch vụ vị trí của Google</translation>
 <translation id="982497069985795632">Bật tính năng kiểm tra chính tả</translation>
 <translation id="991560005425213776">Gửi tên người dùng và tên tệp tới máy in gốc</translation>

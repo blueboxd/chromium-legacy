@@ -1045,33 +1045,34 @@ void ExtensionApps::OnArcAppListPrefsDestroyed() {
   arc_prefs_ = nullptr;
 }
 
-void ExtensionApps::OnDisplay(
-    const message_center::Notification& notification) {
+void ExtensionApps::OnNotificationDisplayed(
+    const message_center::Notification& notification,
+    const NotificationCommon::Metadata* const metadata) {
   switch (notification.notifier_id().type) {
     case message_center::NotifierType::APPLICATION:
       MaybeAddNotification(notification.notifier_id().id, notification.id());
       return;
     case message_center::NotifierType::WEB_PAGE:
-      // TODO(crbug.com/1068884): Handle web page notifications.
+      MaybeAddWebPageNotifications(notification, metadata);
       return;
     default:
       return;
   }
 }
 
-void ExtensionApps::OnClose(const std::string& notification_id) {
+void ExtensionApps::OnNotificationClosed(const std::string& notification_id) {
   const std::string& app_id =
       app_notifications_.GetAppIdForNotification(notification_id);
   if (app_id.empty() || MaybeGetExtension(app_id) == nullptr) {
     return;
   }
-
   app_notifications_.RemoveNotification(notification_id);
   Publish(app_notifications_.GetAppWithHasBadgeStatus(app_type_, app_id),
           subscribers_);
 }
 
-void ExtensionApps::OnWillBeDestroyed(NotificationDisplayService* service) {
+void ExtensionApps::OnNotificationDisplayServiceDestroyed(
+    NotificationDisplayService* service) {
   notification_display_service_.Remove(service);
 }
 
@@ -1084,6 +1085,49 @@ void ExtensionApps::MaybeAddNotification(const std::string& app_id,
   app_notifications_.AddNotification(app_id, notification_id);
   Publish(app_notifications_.GetAppWithHasBadgeStatus(app_type_, app_id),
           subscribers_);
+}
+
+void ExtensionApps::MaybeAddWebPageNotifications(
+    const message_center::Notification& notification,
+    const NotificationCommon::Metadata* const metadata) {
+  const GURL& url =
+      metadata
+          ? PersistentNotificationMetadata::From(metadata)->service_worker_scope
+          : notification.origin_url();
+
+  if (app_type_ == apps::mojom::AppType::kExtension) {
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile_);
+    DCHECK(registry);
+    const extensions::ExtensionSet& extensions = registry->enabled_extensions();
+    const extensions::Extension* extension = extensions.GetAppByURL(url);
+    if (extension) {
+      MaybeAddNotification(extension->id(), notification.id());
+    }
+    return;
+  }
+
+  if (metadata) {
+    // For persistent notifications, find the web app with the scope url.
+    base::Optional<web_app::AppId> app_id =
+        web_app::FindInstalledAppWithUrlInScope(profile_, url,
+                                                /*window_only=*/false);
+    if (app_id.has_value()) {
+      MaybeAddNotification(app_id.value(), notification.id());
+    }
+  } else {
+    // For non-persistent notifications, find all web apps that are installed
+    // under the origin url.
+    auto* web_app_provider = web_app::WebAppProvider::Get(profile_);
+    if (!web_app_provider) {
+      return;
+    }
+
+    auto app_ids = web_app_provider->registrar().FindAppsInScope(url);
+    for (const auto& app_id : app_ids) {
+      MaybeAddNotification(app_id, notification.id());
+    }
+  }
 }
 
 // static

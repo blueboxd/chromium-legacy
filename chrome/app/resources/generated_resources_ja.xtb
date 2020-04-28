@@ -673,6 +673,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> をインストールする準備ができました</translation>
 <translation id="1868193363684582383">「OK Google」</translation>
 <translation id="1870629042957780127">マイクへのアクセス許可</translation>
+<translation id="1871534214638631766">コンテンツを右クリックまたは長押ししたときに関連情報を表示します</translation>
 <translation id="1871615898038944731">お使いの <ph name="DEVICE_TYPE" /> は最新です</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{タブを別のウィンドウに移動}other{タブを別のウィンドウに移動}}</translation>
 <translation id="1875386316419689002">このタブは HID デバイスに接続されています。</translation>
@@ -729,6 +730,7 @@
 <translation id="1944528062465413897">Bluetooth ペア設定コード:</translation>
 <translation id="1944921356641260203">アップデートが見つかりました</translation>
 <translation id="1946577776959096882">アカウントを表示</translation>
+<translation id="1949584741547056205">スピード アンサー</translation>
 <translation id="1951012854035635156">アシスタント</translation>
 <translation id="1954813140452229842">共有フォルダのマウントエラー。認証情報を確認してもう一度お試しください。</translation>
 <translation id="1956050014111002555">ファイルに含まれる複数の証明書のうち、いずれもインポートできませんでした:</translation>
@@ -1910,7 +1912,6 @@
 <translation id="3543597750097719865">X9.62 ECDSA 署名（SHA-512）</translation>
 <translation id="3544879808695557954">ユーザー名（任意）</translation>
 <translation id="354602065659584722">有害なソフトウェアが削除されました</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">プロキシ設定</translation>
 <translation id="3548162552723420559">環境に合わせて画面の色を調整します</translation>
 <translation id="3550915441744863158">Chrome は自動更新されるため、常に最新版をご利用になれます</translation>
@@ -5557,7 +5558,6 @@
 <translation id="8493236660459102203">マイク:</translation>
 <translation id="8496717697661868878">このプラグインを実行する</translation>
 <translation id="8497219075884839166">Windows ユーティリティ</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">薄明かりの下でも画面を見やすくします</translation>
 <translation id="8498395510292172881">Chrome で続きを読む</translation>
 <translation id="8500234928660943538">PUK が正しくありません。入力できるのはあと <ph name="RETRIES" /> 回です。</translation>

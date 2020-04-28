@@ -225,11 +225,12 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
 
     case HeaderDisposition::SAMEORIGIN: {
       // Block the request when any ancestor is not same-origin.
-      FrameTreeNode* parent = request->frame_tree_node()->parent();
+      RenderFrameHostImpl* parent = request->GetParentFrame();
       url::Origin current_origin =
           url::Origin::Create(navigation_handle()->GetURL());
       while (parent) {
-        if (!parent->current_origin().IsSameOriginWith(current_origin)) {
+        if (!parent->GetLastCommittedOrigin().IsSameOriginWith(
+                current_origin)) {
           RecordXFrameOptionsUsage(XFrameOptionsHistogram::SAMEORIGIN_BLOCKED);
           if (logging == LoggingDisposition::LOG_TO_CONSOLE)
             ConsoleError(disposition);
@@ -238,7 +239,7 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
           // vendors to follow our lead with XFO: SAMEORIGIN processing.
           //
           // https://crbug.com/250309
-          if (parent->frame_tree()->root()->current_origin().IsSameOriginWith(
+          if (parent->GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(
                   current_origin)) {
             RecordXFrameOptionsUsage(
                 XFrameOptionsHistogram::SAMEORIGIN_WITH_BAD_ANCESTOR_CHAIN);
@@ -246,7 +247,7 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
 
           return NavigationThrottle::BLOCK_RESPONSE;
         }
-        parent = parent->parent();
+        parent = parent->GetParent();
       }
       RecordXFrameOptionsUsage(XFrameOptionsHistogram::SAMEORIGIN);
       break;

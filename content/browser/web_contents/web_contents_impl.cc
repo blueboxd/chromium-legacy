@@ -1980,22 +1980,9 @@ void WebContentsImpl::SyncRendererPrefs() {
       new PageMsg_SetRendererPrefs(MSG_ROUTING_NONE, renderer_preferences));
 }
 
-void WebContentsImpl::OnCookiesRead(const GURL& url,
-                                    const GURL& first_party_url,
-                                    const net::CookieList& cookie_list,
-                                    bool blocked_by_policy) {
+void WebContentsImpl::OnCookiesAccessed(const CookieAccessDetails& details) {
   for (auto& observer : observers_) {
-    observer.OnCookiesRead(url, first_party_url, cookie_list,
-                           blocked_by_policy);
-  }
-}
-
-void WebContentsImpl::OnCookieChange(const GURL& url,
-                                     const GURL& first_party_url,
-                                     const net::CanonicalCookie& cookie,
-                                     bool blocked_by_policy) {
-  for (auto& observer : observers_) {
-    observer.OnCookieChange(url, first_party_url, cookie, blocked_by_policy);
+    observer.OnCookiesAccessed(details);
   }
 }
 
@@ -5849,7 +5836,7 @@ RenderFrameHostImpl* WebContentsImpl::GetOuterWebContentsFrame() {
       FrameTreeNode::GloballyFindByID(GetOuterDelegateFrameTreeNodeId());
   // The outer node should be in the outer WebContents.
   DCHECK_EQ(outer_node->frame_tree(), GetOuterWebContents()->GetFrameTree());
-  return outer_node->parent()->current_frame_host();
+  return outer_node->parent();
 }
 
 WebContentsImpl* WebContentsImpl::GetOuterWebContents() {

@@ -7,7 +7,6 @@
 #include "base/android/build_info.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/system/sys_info.h"
 #include "cc/base/switches.h"
 #include "content/public/browser/android/compositor.h"

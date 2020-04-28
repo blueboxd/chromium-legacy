@@ -32,7 +32,6 @@ static CSPDirectiveName CSPFallback(CSPDirectiveName directive) {
   switch (directive) {
     case CSPDirectiveName::DefaultSrc:
     case CSPDirectiveName::FormAction:
-    case CSPDirectiveName::UpgradeInsecureRequests:
     case CSPDirectiveName::NavigateTo:
     case CSPDirectiveName::FrameAncestors:
       return CSPDirectiveName::Unknown;
@@ -78,7 +77,6 @@ const char* ErrorMessage(CSPDirectiveName directive) {
     case CSPDirectiveName::ChildSrc:
     case CSPDirectiveName::DefaultSrc:
     case CSPDirectiveName::Unknown:
-    case CSPDirectiveName::UpgradeInsecureRequests:
       NOTREACHED();
       return nullptr;
   };
@@ -554,7 +552,7 @@ bool CheckContentSecurityPolicy(const mojom::ContentSecurityPolicyPtr& policy,
 bool ShouldUpgradeInsecureRequest(
     const std::vector<mojom::ContentSecurityPolicyPtr>& policies) {
   for (const auto& policy : policies) {
-    if (policy->directives.count(CSPDirectiveName::UpgradeInsecureRequests))
+    if (policy->upgrade_insecure_requests)
       return true;
   }
 
@@ -587,8 +585,6 @@ CSPDirectiveName ToCSPDirectiveName(const std::string& name) {
     return CSPDirectiveName::FrameSrc;
   if (name == "form-action")
     return CSPDirectiveName::FormAction;
-  if (name == "upgrade-insecure-requests")
-    return CSPDirectiveName::UpgradeInsecureRequests;
   if (name == "navigate-to")
     return CSPDirectiveName::NavigateTo;
   if (name == "frame-ancestors")
@@ -606,8 +602,6 @@ std::string ToString(CSPDirectiveName name) {
       return "frame-src";
     case CSPDirectiveName::FormAction:
       return "form-action";
-    case CSPDirectiveName::UpgradeInsecureRequests:
-      return "upgrade-insecure-requests";
     case CSPDirectiveName::NavigateTo:
       return "navigate-to";
     case CSPDirectiveName::FrameAncestors:

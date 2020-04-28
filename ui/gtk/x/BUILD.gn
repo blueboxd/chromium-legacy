@@ -24,5 +24,4 @@ component("x") {
   ]
   public_deps = [ "//ui/gtk:gtk_ui_delegate" ]
   defines = [ "IS_UI_GTK_X_IMPL" ]
-  configs += [ "//build/config/linux:x11" ]
 }

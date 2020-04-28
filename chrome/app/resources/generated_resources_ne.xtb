@@ -669,6 +669,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> ले तपाइँको स्थापना पूर्ण गर्न तैयार छ</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">माइक्रोफोनमाथि पहुँच राख्न दिनुहोस्</translation>
+<translation id="1871534214638631766">प्रयोगकर्ताले राइट क्लिक गर्दा वा सामग्रीमा केही बेरसम्म थिचिरहँदा त्यससँग सम्बन्धित जानकारी देखाइयोस्</translation>
 <translation id="1871615898038944731">तपाईंको <ph name="DEVICE_TYPE" /> अद्यावधिक छ</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{ट्याब सारेर अर्को विन्डोमा लैजानुहोस्}other{ट्याबहरू सारेर अर्को विन्डोमा लैजानुहोस्}}</translation>
 <translation id="1875386316419689002">यो ट्याब कुनै HID यन्त्रमा जोडिएको छ।</translation>
@@ -725,6 +726,7 @@
 <translation id="1944528062465413897">ब्लुटुथबाट जोडा बनाउन प्रयोग गर्नु पर्ने कोड:</translation>
 <translation id="1944921356641260203">अपडेट फेला पर्‍यो</translation>
 <translation id="1946577776959096882">खाताहरू हेर्नुहोस्</translation>
+<translation id="1949584741547056205">तत्काल प्राप्त हुने जवाफहरू</translation>
 <translation id="1951012854035635156">सहायक</translation>
 <translation id="1954813140452229842">आदान प्रदान माउन्ट गर्ने क्रममा त्रुटि भयो। कृपया आफ्ना प्रमाणहरूको जाँच गरी फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="1956050014111002555">फाइलमा बहुविध प्रमाणपत्रहरू समावेश गरिएको थियो, जस मध्ये कुनै पनि आयात गरिएका थिएनन्:</translation>
@@ -1907,7 +1909,6 @@
 <translation id="3543597750097719865">SHA-512 सहितको X9.62 ECDSA हस्ताक्षर</translation>
 <translation id="3544879808695557954">प्रयोगकर्ताको नाम (ऐच्छिक)</translation>
 <translation id="354602065659584722">हानिकारक सफ्टवेयर हटाइयो</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">प्रोक्सी सेटिङहरू</translation>
 <translation id="3548162552723420559">स्क्रिनको रङ्ग समायोजन गरी वरिपरिको वातावरणसँग मिल्दो बनाउँछ</translation>
 <translation id="3550915441744863158">Chrome स्वत: अपडेट हुन्छ त्यसैले तपाईंसँग सधै ताजा संस्करण हुन्छ।</translation>
@@ -5551,7 +5552,6 @@
 <translation id="8493236660459102203">माइक्रोफोन:</translation>
 <translation id="8496717697661868878">यो प्लगइन चलाउनुहोस्</translation>
 <translation id="8497219075884839166">विन्डोका उपयोगिताहरू</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">आफ्नो स्क्रिनमा हेर्न अझ सजिलो बनाउनुहोस् वा मधुरो प्रकाशमा पढ्नुहोस्</translation>
 <translation id="8498395510292172881">Chrome मा पढिरहनुहोस्</translation>
 <translation id="8500234928660943538">PUK मिलेन। बाँकी प्रयास: <ph name="RETRIES" />।</translation>

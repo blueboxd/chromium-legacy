@@ -4,7 +4,7 @@
 
 #include "content/shell/test_runner/layout_dump.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/stringprintf.h"
 #include "content/shell/test_runner/web_frame_test_proxy.h"
 #include "third_party/blink/public/platform/web_size.h"

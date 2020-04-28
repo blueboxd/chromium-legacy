@@ -77,8 +77,4 @@ jumbo_component("views_content_client") {
       "//ui/wm:test_support",
     ]
   }
-
-  if (use_x11 || ozone_platform_x11) {
-    configs += [ "//build/config/linux:x11" ]
-  }
 }

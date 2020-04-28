@@ -98,6 +98,7 @@ if (use_x11) {
       "x_server_clipboard.cc",
       "x_server_clipboard.h",
     ]
+    public_deps = [ "//ui/gfx/x" ]
     deps = [ "//third_party/webrtc_overrides:webrtc_component" ]
   }
 }

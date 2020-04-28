@@ -182,6 +182,10 @@
 #include <malloc.h>
 #endif
 
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+#include "base/test/clang_profiling.h"
+#endif
+
 using base::ThreadRestrictions;
 using blink::WebDocument;
 using blink::WebFrame;
@@ -1483,6 +1487,16 @@ void RenderThreadImpl::EnableV8LowMemoryMode() {
   if (!low_memory_mode_controller_)
     low_memory_mode_controller_.reset(new LowMemoryModeController());
 }
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+void RenderThreadImpl::WriteClangProfilingProfile(
+    WriteClangProfilingProfileCallback callback) {
+  // This will write the profiling profile to the file that has been opened and
+  // passed to this renderer by the browser.
+  base::WriteClangProfilingProfile();
+  std::move(callback).Run();
+}
+#endif
 
 bool RenderThreadImpl::GetRendererMemoryMetrics(
     RendererMemoryMetrics* memory_metrics) const {

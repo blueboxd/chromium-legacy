@@ -61,7 +61,8 @@ class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
   Member<ReadableStreamBytesConsumer> consumer_;
   scoped_refptr<SharedBuffer> stream_buffer_;
 
-  // Construction parameters from ImageDecoderInit.
+  // Construction parameters.
+  Member<const ImageDecoderInit> init_data_;
   Member<ImageBitmapOptions> options_;
 
   bool data_complete_ = false;

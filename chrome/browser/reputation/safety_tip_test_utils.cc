@@ -53,15 +53,24 @@ void SetSafetyTipBadRepPatterns(std::vector<std::string> patterns) {
       patterns, chrome_browser_safety_tips::FlaggedPage::BAD_REP);
 }
 
-void SetSafetyTipAllowlistPatterns(std::vector<std::string> patterns) {
+void SetSafetyTipAllowlistPatterns(std::vector<std::string> patterns,
+                                   std::vector<std::string> target_patterns) {
   auto config_proto = GetConfig();
   config_proto->clear_allowed_pattern();
+  config_proto->clear_allowed_target_pattern();
 
   std::sort(patterns.begin(), patterns.end());
+  std::sort(target_patterns.begin(), target_patterns.end());
+
   for (const auto& pattern : patterns) {
     chrome_browser_safety_tips::UrlPattern* page =
         config_proto->add_allowed_pattern();
     page->set_pattern(pattern);
+  }
+  for (const auto& pattern : target_patterns) {
+    chrome_browser_safety_tips::HostPattern* page =
+        config_proto->add_allowed_target_pattern();
+    page->set_regex(pattern);
   }
   SetSafetyTipsRemoteConfigProto(std::move(config_proto));
 }

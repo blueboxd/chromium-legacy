@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/big_endian.h"
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 
 namespace {
 

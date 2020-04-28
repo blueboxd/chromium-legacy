@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "content/common/pepper_file_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "content/common/input/ime_text_span_conversions.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/renderer/ime_event_guard.h"

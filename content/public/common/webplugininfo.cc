@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

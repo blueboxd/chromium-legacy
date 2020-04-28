@@ -237,8 +237,8 @@ mojom::MediaFeedItemPtr MediaFeedsConverterTest::ExpectedFeedItem() {
   expected_item->type = mojom::MediaFeedItemType::kMovie;
   expected_item->name = base::ASCIIToUTF16("media feed");
 
-  media_session::MediaImage expected_image;
-  expected_image.src = GURL("https://www.example.com/image.jpg");
+  mojom::MediaImagePtr expected_image = mojom::MediaImage::New();
+  expected_image->src = GURL("https://www.example.com/image.jpg");
   expected_item->images.push_back(std::move(expected_image));
 
   base::Time time;
@@ -268,25 +268,26 @@ EntityPtr MediaFeedsConverterTest::AddItemToFeed(EntityPtr feed,
 base::Optional<std::vector<mojom::MediaFeedItemPtr>>
 MediaFeedsConverterTest::GetResults(
     const schema_org::improved::mojom::EntityPtr& schema_org_entity) {
-  std::vector<media_session::MediaImage> images;
+  std::vector<mojom::MediaImagePtr> images;
   std::string name;
   return GetMediaFeeds(std::move(schema_org_entity), &images, &name);
 }
 
 TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeed) {
-  std::vector<media_session::MediaImage> logos;
+  std::vector<mojom::MediaImagePtr> logos;
   std::string display_name;
 
   EntityPtr entity = ValidMediaFeed();
 
-  media_session::MediaImage expected_image;
-  expected_image.src = GURL("https://www.example.org/logo.jpg");
+  mojom::MediaImagePtr expected_image = mojom::MediaImage::New();
+  expected_image->src = GURL("https://www.example.org/logo.jpg");
 
   auto result = GetMediaFeeds(std::move(entity), &logos, &display_name);
 
   EXPECT_TRUE(result.has_value());
   EXPECT_TRUE(result.value().empty());
-  EXPECT_THAT(logos, testing::UnorderedElementsAre(expected_image));
+  EXPECT_EQ(1u, logos.size());
+  EXPECT_EQ(expected_image, logos[0]);
   EXPECT_EQ(display_name, "Media Site");
 }
 

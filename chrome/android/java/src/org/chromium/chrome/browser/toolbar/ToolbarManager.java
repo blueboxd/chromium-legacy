@@ -189,7 +189,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private SceneChangeObserver mSceneChangeObserver;
     private final ActionBarDelegate mActionBarDelegate;
     private ActionModeController mActionModeController;
-    private final ToolbarActionModeCallback mToolbarActionModeCallback;
     private final Callback<Boolean> mUrlFocusChangedCallback;
     private final Handler mHandler = new Handler();
     private final ChromeActivity mActivity;
@@ -252,6 +251,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      *         in the browsing mode toolbar, given in precedence order.
      * @param tabProvider The {@link ActivityTabProvider} for accessing current activity tab.
      * @param scrimCoordinator A means of showing the scrim.
+     * @param toolbarActionModeCallback Callback that communicates changes in the conceptual mode
+     *                                  of toolbar interaction.
+     * @param findToolbarManager The manager for the find in page function.
      */
     public ToolbarManager(ChromeActivity activity, ChromeFullscreenManager fullscreenManager,
             ToolbarControlContainer controlContainer, Invalidator invalidator,
@@ -261,7 +263,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             ObservableSupplierImpl<Boolean> bottomToolbarVisibilitySupplier,
             IdentityDiscController identityDiscController,
             List<ButtonDataProvider> buttonDataProviders, ActivityTabProvider tabProvider,
-            ScrimCoordinator scrimCoordinator) {
+            ScrimCoordinator scrimCoordinator, ToolbarActionModeCallback toolbarActionModeCallback,
+            FindToolbarManager findToolbarManager) {
         mActivity = activity;
         mFullscreenManager = fullscreenManager;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
@@ -275,7 +278,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         assert mControlContainer != null;
         mUrlFocusChangedCallback = urlFocusChangedCallback;
 
-        mToolbarActionModeCallback = new ToolbarActionModeCallback();
         mBookmarkBridgeSupplier = new ObservableSupplierImpl<>();
 
         mComponentCallbacks = new ComponentCallbacks() {
@@ -393,8 +395,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 identityDiscController, mLocationBarModel, this, new UserEducationHelper(mActivity),
                 buttonDataProviders);
 
-        mActionModeController = new ActionModeController(mActivity, mActionBarDelegate);
-        mActionModeController.setCustomSelectionActionModeCallback(mToolbarActionModeCallback);
+        mActionModeController =
+                new ActionModeController(mActivity, mActionBarDelegate, toolbarActionModeCallback);
 
         mToolbar.setPaintInvalidator(invalidator);
         mActionModeController.setTabStripHeight(mToolbar.getTabStripHeight());
@@ -725,6 +727,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 mActivity.isTablet() ? mAppThemeColorProvider : mTabThemeColorProvider);
 
         AccessibilityUtil.addObserver(this);
+
+        mFindToolbarManager = findToolbarManager;
+        mFindToolbarManager.addObserver(mFindToolbarObserver);
     }
 
     /**
@@ -753,7 +758,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * @param visible Whether the contextual action bar is now visible.
      */
     public void onActionBarVisibilityChanged(boolean visible) {
-        if (visible) RecordUserAction.record("MobileActionBarShown");
         ActionBar actionBar = mActionBarDelegate.getSupportActionBar();
         if (!visible && actionBar != null) actionBar.hide();
         if (mActivity.isTablet()) {
@@ -930,15 +934,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
-     * Set the {@link FindToolbarManager}.
-     * @param findToolbarManager The manager for find in page.
-     */
-    public void setFindToolbarManager(FindToolbarManager findToolbarManager) {
-        mFindToolbarManager = findToolbarManager;
-        mFindToolbarManager.addObserver(mFindToolbarObserver);
-    }
-
-    /**
      * Show the update badge in both the top and bottom toolbar.
      * TODO(amaralp): Only the top or bottom menu should be visible.
      */
@@ -981,13 +976,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     public Toolbar getToolbar() {
         return mToolbar;
-    }
-
-    /**
-     * @return The callback for toolbar action mode controller.
-     */
-    public ToolbarActionModeCallback getActionModeControllerCallback() {
-        return mToolbarActionModeCallback;
     }
 
     /**
@@ -1116,6 +1104,11 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         if (mActivityTabTabObserver != null) {
             mActivityTabTabObserver.destroy();
             mActivityTabTabObserver = null;
+        }
+
+        if (mFindToolbarManager != null) {
+            mFindToolbarManager.removeObserver(mFindToolbarObserver);
+            mFindToolbarManager = null;
         }
 
         mActivity.unregisterComponentCallbacks(mComponentCallbacks);

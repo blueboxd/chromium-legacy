@@ -876,7 +876,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   network_pref_state_observer_ = std::make_unique<NetworkPrefStateObserver>();
 
   // Initialize the NetworkHealth aggregator.
-  network_health_ = std::make_unique<NetworkHealth>();
+  network_health_ = std::make_unique<network_health::NetworkHealth>();
 
   // Initialize input methods.
   input_method::InputMethodManager* manager =

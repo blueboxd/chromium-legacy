@@ -72,6 +72,7 @@
 <translation id="310520048233152454">Sisestage URL.</translation>
 <translation id="3175736971608411871">taimer</translation>
 <translation id="3199563858620722075">liitkast</translation>
+<translation id="3329013043687509092">Küllastus</translation>
 <translation id="3450233048674729344">Väärtus peab olema väiksem või võrdne <ph name="MAXIMUM" />-ga.</translation>
 <translation id="3486220673238053218">definitsioon</translation>
 <translation id="3557673793733683882">päis <ph name="HEADING_LEVEL" /></translation>
@@ -260,6 +261,7 @@
 <translation id="8845239796550121995">Kantakse nüüd üle telerisse</translation>
 <translation id="8851136666856101339">pea</translation>
 <translation id="8875657656876809964">Video taasesituse viga</translation>
+<translation id="8889402386540077796">Värvitoon</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8987927404178983737">kuu</translation>
 <translation id="901493112792887934">praegune aeg sekundites</translation>

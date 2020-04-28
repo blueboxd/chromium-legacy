@@ -30,6 +30,7 @@ const char kPrintCompositorSandbox[] = "print_compositor";
 const char kAudioSandbox[] = "audio";
 const char kSharingServiceSandbox[] = "sharing_service";
 const char kSpeechRecognitionSandbox[] = "speech_recognition";
+const char kVideoCaptureSandbox[] = "video_capture";
 
 #if defined(OS_WIN)
 const char kPdfConversionSandbox[] = "pdf_conversion";

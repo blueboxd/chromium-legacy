@@ -258,6 +258,12 @@ void PaymentRequestBrowserTestBase::OnProcessingSpinnerHidden() {
     event_waiter_->OnEvent(DialogEvent::PROCESSING_SPINNER_HIDDEN);
 }
 
+void PaymentRequestBrowserTestBase::OnPaymentHandlerWindowOpened() {
+  if (event_waiter_) {
+    event_waiter_->OnEvent(DialogEvent::PAYMENT_HANDLER_WINDOW_OPENED);
+  }
+}
+
 void PaymentRequestBrowserTestBase::InvokePaymentRequestUI() {
   ResetEventWaiterForDialogOpened();
 
@@ -917,6 +923,9 @@ std::ostream& operator<<(
       break;
     case DialogEvent::PROCESSING_SPINNER_HIDDEN:
       out << "PROCESSING_SPINNER_HIDDEN";
+      break;
+    case DialogEvent::PAYMENT_HANDLER_WINDOW_OPENED:
+      out << "PAYMENT HANDLER WINDOW OPENED";
       break;
   }
   return out;

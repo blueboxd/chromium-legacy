@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

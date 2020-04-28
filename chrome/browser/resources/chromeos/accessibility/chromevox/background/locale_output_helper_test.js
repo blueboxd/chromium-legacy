@@ -25,8 +25,6 @@ ChromeVoxLocaleOutputHelperTest = class extends ChromeVoxNextE2ETest {
     GEN(`
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kEnableExperimentalAccessibilityChromeVoxLanguageSwitching);
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(::switches::kLang, "en-US");
       `);
     super.testGenPreamble();

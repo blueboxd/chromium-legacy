@@ -84,7 +84,6 @@ class TabModelTest : public PlatformTest {
 
   TabModel* CreateTabModel(SessionWindowIOS* session_window) {
     TabModel* tab_model([[TabModel alloc] initWithBrowser:browser_.get()]);
-    [tab_model setPrimary:YES];
     return tab_model;
   }
 

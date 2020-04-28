@@ -4,8 +4,8 @@
 
 #include "content/test/test_render_frame_host_factory.h"
 
+#include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "content/test/test_render_frame_host.h"
 
 namespace content {

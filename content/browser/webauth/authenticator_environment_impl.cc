@@ -64,7 +64,7 @@ VirtualFidoDiscoveryFactory* AuthenticatorEnvironmentImpl::GetVirtualFactoryFor(
     if (base::Contains(virtual_discovery_factories_, node)) {
       return virtual_discovery_factories_[node].get();
     }
-  } while ((node = node->parent()));
+  } while ((node = FrameTreeNode::From(node->parent())));
   return nullptr;
 }
 

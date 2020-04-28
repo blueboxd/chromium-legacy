@@ -15,7 +15,6 @@
 
 namespace password_manager {
 class PasswordManagerDriver;
-class PasswordManagerDriver;
 }  // namespace password_manager
 
 // Interface for the controller responsible for overseeing the UI flow for

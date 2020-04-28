@@ -346,13 +346,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     _webStateListMetricsObserver->RecordSessionMetrics();
 }
 
-- (void)setPrimary:(BOOL)primary {
-  if (_tabUsageRecorder) {
-    _tabUsageRecorder->RecordPrimaryTabModelChange(
-        primary, self.webStateList->GetActiveWebState());
-  }
-}
-
 // NOTE: This can be called multiple times, so must be robust against that.
 - (void)disconnect {
   if (!_browserState)

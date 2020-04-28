@@ -34,6 +34,7 @@ namespace ash {
 class DragDropTracker;
 class DragDropTrackerDelegate;
 class DragImageView;
+class SplitViewDragIndicators;
 
 class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
                                       public ui::EventHandler,
@@ -111,14 +112,16 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   // Helper method to reset everything.
   void Cleanup();
 
-  bool IsChromeTabDrag();
-
   bool enabled_ = false;
   std::unique_ptr<DragImageView> drag_image_;
   gfx::Vector2d drag_image_offset_;
   std::unique_ptr<ui::OSExchangeData> drag_data_;
   int drag_operation_;
   int current_drag_actions_ = 0;
+
+  // Tab drag specific members.
+  bool is_chrome_tab_drag_ = false;
+  std::unique_ptr<SplitViewDragIndicators> split_view_drag_indicators_;
 
   // Window that is currently under the drag cursor.
   aura::Window* drag_window_;

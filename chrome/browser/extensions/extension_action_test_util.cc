@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 

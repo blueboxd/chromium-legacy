@@ -1324,6 +1324,7 @@ void RTCPeerConnection::ReportSetSdpUsage(
 
 ScriptPromise RTCPeerConnection::setLocalDescription(
     ScriptState* script_state) {
+  DCHECK(script_state->ContextIsValid());
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   auto* request = MakeGarbageCollected<RTCVoidRequestPromiseImpl>(
@@ -1337,6 +1338,13 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit* session_description_init,
     ExceptionState& exception_state) {
+  if (closed_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSignalingStateClosedMessage);
+    return ScriptPromise();
+  }
+
+  DCHECK(script_state->ContextIsValid());
   if (session_description_init->type().IsNull() &&
       session_description_init->sdp().IsNull()) {
     return setLocalDescription(script_state);
@@ -1375,6 +1383,12 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
     const RTCSessionDescriptionInit* session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
+  if (CallErrorCallbackIfSignalingStateClosed(signaling_state_,
+                                              error_callback)) {
+    return ScriptPromise::CastUndefined(script_state);
+  }
+
+  DCHECK(script_state->ContextIsValid());
   if (session_description_init->type() != "rollback") {
     MaybeWarnAboutUnsafeSdp(session_description_init);
     ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription,
@@ -1449,6 +1463,13 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit* session_description_init,
     ExceptionState& exception_state) {
+  if (closed_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSignalingStateClosedMessage);
+    return ScriptPromise();
+  }
+
+  DCHECK(script_state->ContextIsValid());
   if (session_description_init->type() != "rollback") {
     MaybeWarnAboutUnsafeSdp(session_description_init);
     ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription,
@@ -1481,12 +1502,19 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
     const RTCSessionDescriptionInit* session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
+  if (CallErrorCallbackIfSignalingStateClosed(signaling_state_,
+                                              error_callback)) {
+    return ScriptPromise::CastUndefined(script_state);
+  }
+
+  DCHECK(script_state->ContextIsValid());
   if (session_description_init->type() != "rollback") {
     MaybeWarnAboutUnsafeSdp(session_description_init);
     ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription,
                       session_description_init);
   }
   ExecutionContext* context = ExecutionContext::From(script_state);
+  CHECK(context);
   if (success_callback && error_callback) {
     UseCounter::Count(
         context,
@@ -3214,6 +3242,9 @@ ExecutionContext* RTCPeerConnection::GetExecutionContext() const {
 }
 
 void RTCPeerConnection::ContextDestroyed() {
+  if (!closed_) {
+    CloseInternal();
+  }
   UnregisterPeerConnectionHandler();
 }
 

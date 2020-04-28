@@ -47,7 +47,5 @@ if (use_x11 || ozone_platform_x11) {
       "//ui/events:dom_keycode_converter",
       "//ui/gfx/x",
     ]
-
-    configs += [ "//build/config/linux:x11" ]
   }
 }

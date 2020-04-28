@@ -138,6 +138,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private boolean mIsCurrentlyExtendingSelection;
     private int mSelectionStart;
     private int mCursorIndex;
+    private String mSupportedHtmlElementTypes;
 
     // Whether or not the next selection event should be fired. We only want to sent one traverse
     // and one selection event per granularity move, this ensures no double events while still
@@ -183,8 +184,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 return new OWebContentsAccessibility(webContents);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 return new LollipopWebContentsAccessibility(webContents);
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                return new KitKatWebContentsAccessibility(webContents);
             } else {
                 return new WebContentsAccessibilityImpl(webContents);
             }
@@ -253,6 +252,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mSelectionNodeId = View.NO_ID;
         mIsHovering = false;
         mCurrentRootId = View.NO_ID;
+
+        mSupportedHtmlElementTypes =
+                WebContentsAccessibilityImplJni.get().getSupportedHtmlElementTypes(
+                        mNativeObj, WebContentsAccessibilityImpl.this);
     }
 
     @CalledByNative
@@ -1536,7 +1539,24 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             boolean isRoot, boolean isEditableText, String role, String roleDescription,
             String hint, int selectionStartIndex, int selectionEndIndex, boolean hasImage,
             boolean contentInvalid, String targetUrl) {
-        // Requires KitKat or higher.
+        Bundle bundle = node.getExtras();
+        bundle.putCharSequence("AccessibilityNodeInfo.chromeRole", role);
+        bundle.putCharSequence("AccessibilityNodeInfo.roleDescription", roleDescription);
+        bundle.putCharSequence("AccessibilityNodeInfo.hint", hint);
+        if (!targetUrl.isEmpty()) {
+            bundle.putCharSequence("AccessibilityNodeInfo.targetUrl", targetUrl);
+        }
+        if (hasImage) bundle.putCharSequence("AccessibilityNodeInfo.hasImage", "true");
+        if (isRoot) {
+            bundle.putCharSequence(
+                    "ACTION_ARGUMENT_HTML_ELEMENT_STRING_VALUES", mSupportedHtmlElementTypes);
+        }
+        if (isEditableText) {
+            node.setEditable(true);
+            node.setTextSelection(selectionStartIndex, selectionEndIndex);
+        }
+
+        node.setContentInvalid(contentInvalid);
     }
 
     @CalledByNative
@@ -1769,8 +1789,13 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
      */
     @CalledByNative
     protected int getAccessibilityServiceCapabilitiesMask() {
-        // Implemented in KitKatWebContentsAccessibility.
-        return 0;
+        int capabilitiesMask = 0;
+        for (AccessibilityServiceInfo service :
+                mAccessibilityManager.getEnabledAccessibilityServiceList(
+                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
+            capabilitiesMask |= service.getCapabilities();
+        }
+        return capabilitiesMask;
     }
 
     @NativeMethods

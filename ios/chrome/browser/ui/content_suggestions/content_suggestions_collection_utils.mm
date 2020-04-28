@@ -12,9 +12,11 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/components/ui_util/dynamic_type_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -140,6 +142,17 @@ void configureVoiceSearchButton(UIButton* voiceSearchButton,
   [voiceSearchButton setAccessibilityLabel:l10n_util::GetNSString(
                                                IDS_IOS_ACCNAME_VOICE_SEARCH)];
   [voiceSearchButton setAccessibilityIdentifier:@"Voice Search"];
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      voiceSearchButton.pointerInteractionEnabled = YES;
+      // Make the pointer shape fit the location bar's semi-circle end shape.
+      voiceSearchButton.pointerStyleProvider =
+          CreateLiftEffectCirclePointerStyleProvider();
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 }
 
 UIView* nearestAncestor(UIView* view, Class aClass) {

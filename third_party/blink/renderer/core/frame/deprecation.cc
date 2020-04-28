@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 
-#include <bitset>
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
@@ -27,7 +26,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 
-using blink::WebFeature;
+namespace blink {
 
 namespace {
 
@@ -534,12 +533,25 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
   }
 }
 
+Report* CreateReportInternal(const KURL& context_url,
+                             const DeprecationInfo& info) {
+  base::Optional<base::Time> optional_removal_date;
+  if (info.anticipated_removal != kUnknown) {
+    base::Time removal_date;
+    bool result = base::Time::FromUTCExploded(
+        MilestoneDate(info.anticipated_removal), &removal_date);
+    DCHECK(result);
+    optional_removal_date = removal_date;
+  }
+  DeprecationReportBody* body = MakeGarbageCollected<DeprecationReportBody>(
+      info.id, optional_removal_date, info.message);
+  return MakeGarbageCollected<Report>(ReportType::kDeprecation, context_url,
+                                      body);
+}
+
 }  // anonymous namespace
 
-namespace blink {
-
-Deprecation::Deprecation() : mute_count_(0) {
-}
+Deprecation::Deprecation() : mute_count_(0) {}
 
 void Deprecation::ClearSuppression() {
   css_property_deprecation_bits_.reset();
@@ -665,7 +677,7 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   if (!frame || !frame->Client())
     return;
 
-  DeprecationInfo info = GetDeprecationInfo(feature);
+  const DeprecationInfo info = GetDeprecationInfo(feature);
 
   // Send the deprecation message to the console as a warning.
   DCHECK(!info.message.IsEmpty());
@@ -675,24 +687,16 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   frame->Console().AddMessage(console_message);
 
   auto* window = frame->DomWindow();
-
-  // Construct the deprecation report.
-  base::Optional<base::Time> optional_removal_date;
-  if (info.anticipated_removal != kUnknown) {
-    base::Time removal_date;
-    bool result = base::Time::FromUTCExploded(
-        MilestoneDate(info.anticipated_removal), &removal_date);
-    DCHECK(result);
-    optional_removal_date = removal_date;
-  }
-  DeprecationReportBody* body = MakeGarbageCollected<DeprecationReportBody>(
-      info.id, optional_removal_date, info.message);
-  Report* report = MakeGarbageCollected<Report>(
-      ReportType::kDeprecation, window->document()->Url().GetString(), body);
+  Report* report = CreateReportInternal(window->Url(), info);
 
   // Send the deprecation report to the Reporting API and any
   // ReportingObservers.
   ReportingContext::From(window)->QueueReport(report);
+}
+
+// static
+Report* Deprecation::CreateReport(const KURL& context_url, WebFeature feature) {
+  return CreateReportInternal(context_url, GetDeprecationInfo(feature));
 }
 
 // static

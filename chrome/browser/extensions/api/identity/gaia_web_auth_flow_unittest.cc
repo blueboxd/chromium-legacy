@@ -7,21 +7,44 @@
 #include <vector>
 
 #include "base/run_loop.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_storage_partition.h"
+#include "services/network/test/test_cookie_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
+class DeleteCookiesTestCookieManager : public network::TestCookieManager {
+ public:
+  void DeleteCookies(network::mojom::CookieDeletionFilterPtr filter,
+                     DeleteCookiesCallback callback) override {
+    cookies_deleted_ = true;
+    std::move(callback).Run(0U);
+  }
+  bool cookies_deleted() { return cookies_deleted_; }
+
+ private:
+  bool cookies_deleted_ = false;
+};
+
 class FakeWebAuthFlow : public WebAuthFlow {
  public:
   explicit FakeWebAuthFlow(WebAuthFlow::Delegate* delegate)
-      : WebAuthFlow(delegate,
-                    NULL,
-                    GURL(),
-                    WebAuthFlow::INTERACTIVE) {}
+      : WebAuthFlow(delegate, nullptr, GURL(), WebAuthFlow::INTERACTIVE) {
+    storage_partition.set_cookie_manager_for_browser_process(&cookie_manager);
+  }
 
-  void Start() override {}
+  void Start() override { EXPECT_TRUE(cookie_manager.cookies_deleted()); }
+
+  content::StoragePartition* GetGuestPartition() override {
+    return &storage_partition;
+  }
+
+ private:
+  content::TestStoragePartition storage_partition;
+  DeleteCookiesTestCookieManager cookie_manager;
 };
 
 class TestGaiaWebAuthFlow : public GaiaWebAuthFlow {

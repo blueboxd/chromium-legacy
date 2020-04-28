@@ -174,7 +174,7 @@ FrameTree::NodeRange FrameTree::NodesExceptSubtree(FrameTreeNode* node) {
 }
 
 FrameTreeNode* FrameTree::AddFrame(
-    FrameTreeNode* parent,
+    RenderFrameHostImpl* parent,
     int process_id,
     int new_routing_id,
     mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
@@ -196,13 +196,13 @@ FrameTreeNode* FrameTree::AddFrame(
   // it is in the same SiteInstance as the parent frame. Ensure that the process
   // which requested a child frame to be added is the same as the process of the
   // parent node.
-  if (parent->current_frame_host()->GetProcess()->GetID() != process_id)
+  if (parent->GetProcess()->GetID() != process_id)
     return nullptr;
 
   std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
-      this, parent->navigator(), parent, scope, frame_name, frame_unique_name,
-      is_created_by_script, devtools_frame_token, frame_owner_properties,
-      owner_type));
+      this, parent->frame_tree_node()->navigator(), parent, scope, frame_name,
+      frame_unique_name, is_created_by_script, devtools_frame_token,
+      frame_owner_properties, owner_type));
 
   // Set sandbox flags and container policy and make them effective immediately,
   // since initial sandbox flags and feature policy should apply to the initial
@@ -219,8 +219,8 @@ FrameTreeNode* FrameTree::AddFrame(
     new_node->set_was_discarded();
 
   // Add the new node to the FrameTree, creating the RenderFrameHost.
-  FrameTreeNode* added_node = parent->current_frame_host()->AddChild(
-      std::move(new_node), process_id, new_routing_id);
+  FrameTreeNode* added_node =
+      parent->AddChild(std::move(new_node), process_id, new_routing_id);
 
   DCHECK(interface_provider_receiver.is_valid());
   added_node->current_frame_host()->BindInterfaceProviderReceiver(
@@ -234,8 +234,11 @@ FrameTreeNode* FrameTree::AddFrame(
   // same |frame_unique_name|, since we don't remove FrameNavigationEntries if
   // their frames are deleted.  If there is a stale one, remove it to avoid
   // conflicts on future updates.
-  NavigationEntryImpl* last_committed_entry = static_cast<NavigationEntryImpl*>(
-      parent->navigator()->GetController()->GetLastCommittedEntry());
+  NavigationEntryImpl* last_committed_entry =
+      static_cast<NavigationEntryImpl*>(parent->frame_tree_node()
+                                            ->navigator()
+                                            ->GetController()
+                                            ->GetLastCommittedEntry());
   if (last_committed_entry) {
     last_committed_entry->RemoveEntryForFrame(
         added_node, /* only_if_different_position = */ true);
@@ -253,13 +256,13 @@ FrameTreeNode* FrameTree::AddFrame(
 }
 
 void FrameTree::RemoveFrame(FrameTreeNode* child) {
-  FrameTreeNode* parent = child->parent();
+  RenderFrameHostImpl* parent = child->parent();
   if (!parent) {
     NOTREACHED() << "Unexpected RemoveFrame call for main frame.";
     return;
   }
 
-  parent->current_frame_host()->RemoveChild(child);
+  parent->RemoveChild(child);
 }
 
 void FrameTree::CreateProxiesForSiteInstance(FrameTreeNode* source,

@@ -28,7 +28,7 @@ class CallStackProfileMetadata {
 
   // Records the metadata for the next sample.
   void RecordMetadata(
-      base::MetadataRecorder::MetadataProvider* metadata_provider);
+      const base::MetadataRecorder::MetadataProvider& metadata_provider);
 
   // Creates MetadataItems for the currently active metadata, adding new name
   // hashes to |metadata_name_hashes| if necessary. The same

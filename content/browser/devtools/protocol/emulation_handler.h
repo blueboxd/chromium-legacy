@@ -68,6 +68,8 @@ class EmulationHandler : public DevToolsDomainHandler,
 
   Response SetVisibleSize(int width, int height) override;
 
+  Response SetFocusEmulationEnabled(bool) override;
+
   blink::WebDeviceEmulationParams GetDeviceEmulationParams();
   void SetDeviceEmulationParams(const blink::WebDeviceEmulationParams& params);
 
@@ -82,8 +84,8 @@ class EmulationHandler : public DevToolsDomainHandler,
 
   bool touch_emulation_enabled_;
   std::string touch_emulation_configuration_;
-
   bool device_emulation_enabled_;
+  bool focus_emulation_enabled_;
   blink::WebDeviceEmulationParams device_emulation_params_;
   std::string user_agent_;
   std::string accept_language_;

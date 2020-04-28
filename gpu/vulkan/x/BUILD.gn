@@ -25,7 +25,6 @@ component("x") {
   defines = [ "IS_VULKAN_X11_IMPL" ]
 
   public_configs = [ ":vulkan_x11" ]
-  configs += [ "//build/config/linux:x11" ]
 
   deps = [
     "//ui/events/platform/x11",

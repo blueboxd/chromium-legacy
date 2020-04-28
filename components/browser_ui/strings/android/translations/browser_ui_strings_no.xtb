@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Blokkert på enkelte nettsteder</translation>
 <translation id="3190152372525844641">Slå på tillatelsene for Chrome i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> lagrede data</translation>
-<translation id="3223655101706843289">Dette sletter alle data og informasjonskapsler som er lagret av <ph name="ORIGIN" /> og den tilhørende appen på startskjermen.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Gi nettsteder tilgang til sensorer (anbefalt)</translation>
 <translation id="3295602654194328831">Skjul informasjonen</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="5335288049665977812">Tillat nettsteder å kjøre JavaScript (anbefales)</translation>
 <translation id="534295439873310000">NFC-enheter</translation>
+<translation id="5354152178998424783">Dette sletter <ph name="DATASIZE" /> med data og informasjonskapsler som er lagret av nettsteder.</translation>
 <translation id="5391532827096253100">Tilkoblingen din til dette nettstedet er ikke sikker. Informasjon om nettstedet</translation>
 <translation id="5494752089476963479">Blokkér annonser på nettsteder som ofte viser forstyrrende eller villedende annonser</translation>
 <translation id="5505264765875738116">Nettsteder kan ikke be om å få sende deg varsler</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Du blir logget av dette nettstedet.</translation>
 <translation id="7828557259026017104">Informasjonskapsler er filer som opprettes av nettsteder du besøker. Nettsteder bruker dem til å huske preferansene dine. Informasjonskapsler fra tredjeparter opprettes av andre nettsteder. Disse nettstedene eier noe av innholdet, for eksempel annonser eller bilder, som du ser på nettsiden du besøker.</translation>
 <translation id="7846076177841592234">Opphev valget</translation>
+<translation id="7846621471902887024">Du blir logget av alle nettsteder.</translation>
 <translation id="7882806643839505685">Tillat lyd for et bestemt nettsted.</translation>
 <translation id="7993619969781047893">Det kan hende at funksjoner på enkelte nettsteder slutter å fungere</translation>
 <translation id="7999064672810608036">Er du sikker på at du vil slette alle lokale data, deriblant informasjonskapsler, og tilbakestille alle tillatelser for dette nettstedet?</translation>

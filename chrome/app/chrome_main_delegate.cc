@@ -136,12 +136,6 @@
 #include "chrome/browser/diagnostics/diagnostics_writer.h"
 #endif
 
-#if defined(USE_X11)
-#include <stdlib.h>
-#include <string.h>
-#include "ui/base/x/x11_util.h"  // nogncheck
-#endif
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include "components/crash/core/app/breakpad_linux.h"
 #include "v8/include/v8-wasm-trap-handler-posix.h"

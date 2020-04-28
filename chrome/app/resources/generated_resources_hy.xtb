@@ -1912,7 +1912,6 @@
 <translation id="3543597750097719865">X9.62 ECDSA ստորագրություն SHA-512-ով</translation>
 <translation id="3544879808695557954">Օգտանուն (պարտադիր չէ)</translation>
 <translation id="354602065659584722">Վնասարար ծրագիրը հեռացվեց</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Պրոքսի-սերվերի կարգավորումներ</translation>
 <translation id="3548162552723420559">Հարմարեցնում է էկրանի գույնը միջավայրին</translation>
 <translation id="3550915441744863158">Chrome-ը ինքնաթարմացվում է, որպեսզի դուք միշտ ունենաք ամենավերջին տարբերակը</translation>
@@ -5560,7 +5559,6 @@
 <translation id="8493236660459102203">Խոսափող`</translation>
 <translation id="8496717697661868878">Գործարկել այս փլագինը</translation>
 <translation id="8497219075884839166">Windows-ի օժանդակ ծրագրեր</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Թույլ է տալիս ավելի հանգիստ նայել էկրանին և կարդալ թույլ լուսավորության պայմաններում</translation>
 <translation id="8498395510292172881">Շարունակեք կարդալ Chrome-ում</translation>
 <translation id="8500234928660943538">PUK կոդը սխալ է: Մնաց <ph name="RETRIES" /> փորձ:</translation>

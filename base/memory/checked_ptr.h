@@ -80,13 +80,13 @@ class CheckedPtr {
   T* ptr_ = nullptr;
 };
 
-}  // namespace base
-
-using base::CheckedPtr;
-
 template <typename T>
 void swap(CheckedPtr<T>& lhs, CheckedPtr<T>& rhs) noexcept {
   lhs.swap(rhs);
 }
+
+}  // namespace base
+
+using base::CheckedPtr;
 
 #endif  // BASE_MEMORY_CHECKED_PTR_H_

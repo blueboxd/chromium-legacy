@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Blokované na niektorých weboch</translation>
 <translation id="3190152372525844641">Zapnite povolenia pre Chrome v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> uložených dát</translation>
-<translation id="3223655101706843289">Týmto vymažete všetky dáta a súbory cookie uložené zdrojom <ph name="ORIGIN" /> a jeho aplikáciou na svojej ploche.</translation>
 <translation id="3227137524299004712">Mikrofón</translation>
 <translation id="3277252321222022663">Povoliť webom prístup k senzorom (odporúčané)</translation>
 <translation id="3295602654194328831">Skryť informácie</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5335288049665977812">Povoliť webom spúšťať JavaScript (odporúča sa)</translation>
 <translation id="534295439873310000">Zariadenia NFC</translation>
+<translation id="5354152178998424783">Týmto vymažete <ph name="DATASIZE" /> dát a súborov cookie uložených webmi.</translation>
 <translation id="5391532827096253100">Spojenie s týmto webom nie je zabezpečené. Informácie o webe</translation>
 <translation id="5494752089476963479">Blokovať reklamy webov, ktoré zobrazujú obťažujúce alebo zavádzajúce reklamy</translation>
 <translation id="5505264765875738116">Weby nemôžu žiadať o odosielanie upozornení</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Systém vás z tohto webu odhlási.</translation>
 <translation id="7828557259026017104">Súbory cookie sú vytvárané webmi, ktoré navštívite. Pamätajú si pomocou nich vaše predvoľby. Súbory cookie tretích strán sú vytvárané ďalšími webmi. Tieto weby sú vlastníkmi prvkov obsahu, ktorý sa zobrazuje na navštívenej webovej stránke (napríklad reklamy alebo obrázky).</translation>
 <translation id="7846076177841592234">Zrušiť výber</translation>
+<translation id="7846621471902887024">Systém vás odhlási zo všetkých webov.</translation>
 <translation id="7882806643839505685">Povoliť zvuk pre konkrétny web.</translation>
 <translation id="7993619969781047893">Funkcie na niektorých weboch môžu zlyhávať</translation>
 <translation id="7999064672810608036">Naozaj chcete vymazať všetky miestne dáta tohto webu, vrátane súborov cookie, a resetovať všetky jeho povolenia?</translation>

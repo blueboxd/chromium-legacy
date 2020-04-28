@@ -4,7 +4,6 @@
 
 #include "rlz/lib/lib_values.h"
 
-#include "base/logging.h"
 #include "rlz/lib/assert.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -211,6 +211,7 @@
 <translation id="3495304270784461826">Hitilafu <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Unukuzi wa mfumo wa kuandika (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Kireno</translation>
+<translation id="3524311639100184459">Tahadhari: Faili hizi ni za muda na huenda zikafutwa kiotomatiki ili upate nafasi zaidi ya hifadhi kwenye diski.  <ph name="BEGIN_LINK" />Pata Maelezo Zaidi<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folda</translation>
 <translation id="3549797760399244642">Nenda kwenye drive.google.com...</translation>
 <translation id="357479282490346887">Kilithuania</translation>
@@ -500,6 +501,7 @@
 <translation id="6806699711453372963">Dhibiti kushiriki katika Linux</translation>
 <translation id="6808193438228982088">Mbweha</translation>
 <translation id="6820687829547641339">Gzip imebana kumbukumbu ya tar</translation>
+<translation id="6823166707458800069">Nakala za faili zote zilizohifadhiwa kwenye folda hii huhifadhiwa kiotomatiki mtandaoni.</translation>
 <translation id="6825883775269213504">Kirusi</translation>
 <translation id="6827236167376090743">Video hii itaendelea kucheza bila kukoma.</translation>
 <translation id="6847101934483209767">Umeondoa <ph name="ENTRY_NAME" /> kwenye vipengee ulivyochagua.</translation>

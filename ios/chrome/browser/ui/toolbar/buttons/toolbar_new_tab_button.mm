@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -60,20 +61,8 @@ const CGFloat kSpotlightHeight = 36.0f;
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {
       // Customize the pointer highlight tomatch the spotlight view.
-      self.pointerStyleProvider =
-          ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
-                           UIPointerShape* proposedShape) {
-        CGRect rect = button.frame;
-        UITargetedPreview* preview =
-            [[UITargetedPreview alloc] initWithView:button];
-        UIPointerLiftEffect* effect =
-            [UIPointerLiftEffect effectWithPreview:preview];
-        return [UIPointerStyle
-            styleWithEffect:effect
-                      shape:[UIPointerShape
-                                shapeWithRoundedRect:rect
-                                        cornerRadius:rect.size.width / 2]];
-      };
+      self.pointerInteractionEnabled = YES;
+      self.pointerStyleProvider = CreateLiftEffectCirclePointerStyleProvider();
     }
   }
 #endif  // defined(__IPHONE_13_4)

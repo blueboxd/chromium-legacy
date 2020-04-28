@@ -44,6 +44,8 @@ function loadAuthUrlAndShowWindow(url, win) {
       windowId = win.id;
       windowShown = true;
     }
+  });
+  webview.addEventListener('loadcommit', function() {
     webview.executeScript({file: 'inject.js'});
   });
 }

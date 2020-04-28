@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "third_party/blink/public/platform/web_string.h"

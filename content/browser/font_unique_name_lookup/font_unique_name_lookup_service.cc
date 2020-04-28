@@ -4,9 +4,9 @@
 
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup_service.h"
 
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"

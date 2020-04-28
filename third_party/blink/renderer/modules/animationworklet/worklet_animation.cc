@@ -691,7 +691,8 @@ void WorkletAnimation::DestroyCompositorAnimation() {
 
   if (compositor_animation_) {
     if (compositor_timeline &&
-        compositor_timeline->GetAnimationTimeline()->IsScrollTimeline()) {
+        compositor_timeline->GetAnimationTimeline()->IsScrollTimeline() &&
+        !compositor_timeline->GetAnimationTimeline()->HasAnimation()) {
       document_->DetachCompositorTimeline(compositor_timeline);
     }
 

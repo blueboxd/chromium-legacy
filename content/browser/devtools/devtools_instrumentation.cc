@@ -89,7 +89,7 @@ void OnResetNavigationRequest(NavigationRequest* navigation_request) {
   // Traverse frame chain all the way to the top and report to all
   // page handlers that the navigation completed.
   for (FrameTreeNode* node = navigation_request->frame_tree_node(); node;
-       node = node->parent()) {
+       node = FrameTreeNode::From(node->parent())) {
     DispatchToAgents(node, &protocol::PageHandler::NavigationReset,
                      navigation_request);
   }
@@ -213,7 +213,7 @@ std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
     NavigationHandle* navigation_handle) {
   FrameTreeNode* frame_tree_node =
       NavigationRequest::From(navigation_handle)->frame_tree_node();
-  FrameTreeNode* parent = frame_tree_node->parent();
+  FrameTreeNode* parent = FrameTreeNode::From(frame_tree_node->parent());
   if (!parent) {
     if (WebContentsImpl::FromFrameTreeNode(frame_tree_node)->IsPortal() &&
         WebContentsImpl::FromFrameTreeNode(frame_tree_node)

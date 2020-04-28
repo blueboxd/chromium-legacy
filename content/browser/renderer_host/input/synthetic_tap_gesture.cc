@@ -4,7 +4,8 @@
 
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/latency/latency_info.h"
 

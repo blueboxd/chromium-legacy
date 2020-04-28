@@ -59,10 +59,7 @@ jumbo_component("x") {
     ]
   }
 
-  configs += [
-    "//build/config/linux:x11",
-    "//build/config/linux:xrandr",
-  ]
+  public_configs = [ "//build/config/linux:xrandr" ]
 
   defines = [ "IS_UI_BASE_X_IMPL" ]
 

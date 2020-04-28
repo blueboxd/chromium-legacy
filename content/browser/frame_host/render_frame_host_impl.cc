@@ -779,10 +779,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       process_(site_instance->GetProcess()),
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
-      // If it has a parent, that parent must have a RFH.
-      parent_(frame_tree_node_->parent()
-                  ? frame_tree_node_->parent()->current_frame_host()
-                  : nullptr),
+      parent_(frame_tree_node_->parent()),
       routing_id_(routing_id),
       is_waiting_for_unload_ack_(false),
       render_frame_created_(false),
@@ -898,9 +895,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   // of the parent (in case of a new iframe) or the opener (in case of a new
   // window). This is necessary to correctly enforce CSP during the initial
   // navigation.
-  FrameTreeNode* frame_owner = frame_tree_node_->parent()
-                                   ? frame_tree_node_->parent()
-                                   : frame_tree_node_->opener();
+  FrameTreeNode* frame_owner =
+      frame_tree_node_->parent() ? frame_tree_node_->parent()->frame_tree_node()
+                                 : frame_tree_node_->opener();
   if (frame_owner)
     CSPContext::SetSelf(frame_owner->current_origin());
 }
@@ -2233,7 +2230,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   // |browser_interface_broker_receiver| and |devtools_frame_token| were
   // generated on the browser's IO thread and not taken from the renderer
   // process.
-  frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
+  frame_tree_->AddFrame(this, GetProcess()->GetID(), new_routing_id,
                         std::move(new_interface_provider_provider_receiver),
                         std::move(browser_interface_broker_receiver), scope,
                         frame_name, frame_unique_name, is_created_by_script,
@@ -3325,6 +3322,15 @@ ukm::SourceId RenderFrameHostImpl::GetPageUkmSourceId() {
                                 ukm::SourceIdType::NAVIGATION_ID);
 }
 
+BrowserContext* RenderFrameHostImpl::GetBrowserContext() {
+  return GetProcess()->GetBrowserContext();
+}
+
+StoragePartition* RenderFrameHostImpl::GetStoragePartition() {
+  return BrowserContext::GetStoragePartition(GetBrowserContext(),
+                                             GetSiteInstance());
+}
+
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
     blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback,
     int max_length) {
@@ -3606,7 +3612,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChild(
     // TODO(altimin, lfg): Reconsider what the correct behaviour here should be.
     return nullptr;
   }
-  if (child_frame_or_proxy.GetFrameTreeNode()->parent() != frame_tree_node()) {
+  if (child_frame_or_proxy.GetFrameTreeNode()->parent() != this) {
     bad_message::ReceivedBadMessage(GetProcess(), reason);
     return nullptr;
   }
@@ -8546,17 +8552,18 @@ void RenderFrameHostImpl::UpdateAdFrameType(
 
 blink::mojom::AuthenticatorStatus
 RenderFrameHostImpl::PerformGetAssertionWebAuthSecurityChecks(
-    const std::string& relying_party_id) {
+    const std::string& relying_party_id,
+    const url::Origin& effective_origin) {
   bool is_cross_origin;
   blink::mojom::AuthenticatorStatus status =
       GetWebAuthRequestSecurityChecker()->ValidateAncestorOrigins(
-          GetLastCommittedOrigin(), &is_cross_origin);
+          effective_origin, &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
   }
 
   status = GetWebAuthRequestSecurityChecker()->ValidateDomainAndRelyingPartyID(
-      GetLastCommittedOrigin(), relying_party_id);
+      effective_origin, relying_party_id);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
   }
@@ -8566,17 +8573,18 @@ RenderFrameHostImpl::PerformGetAssertionWebAuthSecurityChecks(
 
 blink::mojom::AuthenticatorStatus
 RenderFrameHostImpl::PerformMakeCredentialWebAuthSecurityChecks(
-    const std::string& relying_party_id) {
+    const std::string& relying_party_id,
+    const url::Origin& effective_origin) {
   bool is_cross_origin;
   blink::mojom::AuthenticatorStatus status =
       GetWebAuthRequestSecurityChecker()->ValidateAncestorOrigins(
-          GetLastCommittedOrigin(), &is_cross_origin);
+          effective_origin, &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
   }
 
   status = GetWebAuthRequestSecurityChecker()->ValidateDomainAndRelyingPartyID(
-      GetLastCommittedOrigin(), relying_party_id);
+      effective_origin, relying_party_id);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
   }

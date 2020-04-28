@@ -5,7 +5,6 @@
 #include "content/browser/conversions/conversion_policy.h"
 
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"

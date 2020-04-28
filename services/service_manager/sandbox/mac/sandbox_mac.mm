@@ -261,6 +261,7 @@ std::string SandboxMac::GetSandboxProfile(SandboxType sandbox_type) {
       profile += service_manager::kSeatbeltPolicyString_renderer;
       break;
     case service_manager::SandboxType::kNoSandbox:
+    case service_manager::SandboxType::kVideoCapture:
     case service_manager::SandboxType::kSpeechRecognition:
       CHECK(false);
       break;

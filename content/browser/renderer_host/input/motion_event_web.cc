@@ -4,7 +4,8 @@
 
 #include "content/browser/renderer_host/input/motion_event_web.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/math_constants.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "ui/events/blink/blink_event_util.h"

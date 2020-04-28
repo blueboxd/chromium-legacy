@@ -448,7 +448,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
       browser(), security_state::SafetyTipStatus::kBadReputation, GURL()));
 
   // ...but suppressed by the allowlist.
-  SetSafetyTipAllowlistPatterns({"site1.com/"});
+  SetSafetyTipAllowlistPatterns({"site1.com/"}, {});
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(IsUIShowing());
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
@@ -652,7 +652,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_TRUE(IsUIShowingOnlyIfFeaturesEnabled());
 
   // ...but suppressed by the allowlist.
-  SetSafetyTipAllowlistPatterns({"xn--googl-fsa.sk/"});
+  SetSafetyTipAllowlistPatterns({"xn--googl-fsa.sk/"}, {});
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(IsUIShowing());

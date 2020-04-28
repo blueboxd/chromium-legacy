@@ -211,6 +211,7 @@
 <translation id="3495304270784461826">දෝෂ <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">අක්ෂර පරිවර්තනය (shalom ← שלום)</translation>
 <translation id="3522708245912499433">පෘතුගීසි</translation>
+<translation id="3524311639100184459">අවවාදය: මෙම ගොනු තාවකාලික වන අතර, තැටි ඉඩ නිදහස් කිරීමට ස්වයංක්‍රීයව මකනු ලැබිය හැක.  <ph name="BEGIN_LINK" />තවත් දැන ගන්න<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ෆෝල්ඩරය</translation>
 <translation id="3549797760399244642">drive.google.com වෙත යන්න...</translation>
 <translation id="357479282490346887">ලිතුවේනියානු</translation>
@@ -499,6 +500,7 @@
 <translation id="6806699711453372963">ලිනක්ස් බෙදාගැනීම කළමනා කරන්න</translation>
 <translation id="6808193438228982088">නරියා</translation>
 <translation id="6820687829547641339">Gzip හැකිළූ tar සංරක්ෂකය</translation>
+<translation id="6823166707458800069">මෙම ෆෝල්ඩරයේ සියලු ගොනු ස්වයංක්‍රීයව සබැඳිව උපස්ථ කෙරේ.</translation>
 <translation id="6825883775269213504">රුසියානු</translation>
 <translation id="6827236167376090743">එළදෙනුන් නිවසට එන තෙක් මෙම වීඩියෝව වාදනය වනු ඇත.</translation>
 <translation id="6847101934483209767">තේරීමෙන් <ph name="ENTRY_NAME" /> ඉවත් කළා.</translation>

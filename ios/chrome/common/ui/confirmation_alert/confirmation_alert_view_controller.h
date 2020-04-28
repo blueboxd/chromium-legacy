@@ -62,6 +62,9 @@ extern NSString* const
 // The action handler for interactions in this View Controller.
 @property(nonatomic, weak) id<ConfirmationAlertActionHandler> actionHandler;
 
+// Returns an image generated from the content of this view controller.
+@property(nonatomic, readonly) UIImage* content;
+
 @end
 
 #endif  // IOS_CHROME_COMMON_UI_CONFIRMATION_ALERT_CONFIRMATION_ALERT_VIEW_CONTROLLER_H_

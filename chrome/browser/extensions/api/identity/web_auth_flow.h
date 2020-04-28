@@ -89,8 +89,8 @@ class WebAuthFlow : public content::NotificationObserver,
   void DetachDelegateAndDelete();
 
   // Returns a StoragePartition of the guest webview. Used to inject cookies
-  // into Gaia page.
-  content::StoragePartition* GetGuestPartition() const;
+  // into Gaia page. Can override for testing.
+  virtual content::StoragePartition* GetGuestPartition();
 
   // Returns an ID string attached to the window. Can override for testing.
   virtual const std::string& GetAppWindowKey() const;

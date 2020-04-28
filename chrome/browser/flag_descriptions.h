@@ -804,6 +804,9 @@ extern const char kOmniboxRichAutocompletionDescription[];
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];
 
+extern const char kOmniboxOnFocusSuggestionsContextualWebName[];
+extern const char kOmniboxOnFocusSuggestionsContextualWebDescription[];
+
 extern const char kOmniboxRemoveSuggestionsFromClipboardName[];
 extern const char kOmniboxRemoveSuggestionsFromClipboardDescription[];
 
@@ -2040,6 +2043,9 @@ extern const char
 
 extern const char kExperimentalAccessibilityChromeVoxSearchMenusName[];
 extern const char kExperimentalAccessibilityChromeVoxSearchMenusDescription[];
+
+extern const char kExperimentalAccessibilityChromeVoxTutorialName[];
+extern const char kExperimentalAccessibilityChromeVoxTutorialDescription[];
 
 extern const char kExperimentalAccessibilitySwitchAccessName[];
 extern const char kExperimentalAccessibilitySwitchAccessDescription[];

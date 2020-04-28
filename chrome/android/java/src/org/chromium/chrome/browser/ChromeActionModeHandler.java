@@ -122,6 +122,7 @@ public class ChromeActionModeHandler {
 
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            recordUserAction();
             notifyContextualActionBarVisibilityChanged(true);
             boolean res = mHelper.onPrepareActionMode(mode, menu);
             Set<String> browsers = getPackageNames(PackageManagerUtils.queryAllWebBrowsersInfo());
@@ -202,6 +203,14 @@ public class ChromeActionModeHandler {
                     .notifyEvent(EventConstants.WEB_SEARCH_PERFORMED);
             selector.openNewTab(generateUrlParamsForSearch(query),
                     TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab, mTab.isIncognito());
+        }
+
+        private void recordUserAction() {
+            if (mHelper.supportsFloatingActionMode()) {
+                RecordUserAction.record("MobileActionBarShown.Floating");
+            } else {
+                RecordUserAction.record("MobileActionBarShown.Toolbar");
+            }
         }
     }
 }

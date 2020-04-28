@@ -8,6 +8,7 @@ import "services/media_session/public/mojom/media_session.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/origin.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
 
 struct MediaFeed {
@@ -45,7 +46,7 @@ struct MediaFeed {
   int64 last_fetch_content_types;
 
   // The logos for the feed.
-  array<media_session.mojom.MediaImage> logos;
+  array<MediaImage> logos;
 
   // A display name for the feed.
   string display_name;
@@ -218,7 +219,7 @@ struct PlayNextCandidate {
   array<Identifier> identifiers;
 
   // The images for the episode.
-  array<media_session.mojom.MediaImage> images;
+  array<MediaImage> images;
 };
 
 // https://schema.org/TVEpisode
@@ -240,7 +241,7 @@ struct TVEpisode {
   LiveDetails? live;
 
   // The images for the episode.
-  array<media_session.mojom.MediaImage> images;
+  array<MediaImage> images;
 };
 
 // Details specific to live content.
@@ -262,6 +263,61 @@ enum SafeSearchResult {
 
   // We checked this item and it was classified as unsafe (e.g. adult).
   kUnsafe,
+};
+
+// Content attributes describe the image's type and defines its suggested
+// usages.
+enum ContentAttribute {
+  // The image is an artistic render of the show. Usually a poster or banner.
+  kIconic,
+
+  // The image is a still/framegrab from the media item.
+  kSceneStill,
+
+  // The image is a poster image for the show.
+  kPoster,
+
+  // Suitable for being used as a background and does not contain text.
+  kBackground,
+
+  // The image is suitable for use on a dark background.
+  kForDarkBackground,
+
+  // The image is suitable for use on a light background.
+  kForLightBackground,
+
+  // The predominant figure is positioned at the center of the image.
+  kCentered,
+
+  // The predominant figure is positioned to the right of the image and the left
+  // side is empty and can be used for text overlays.
+  kRightCentered,
+
+  // The predominant figure is positioned to the left of the image and the right
+  // side is empty and can be used for text overlays.
+  kLeftCentered,
+
+  // The image has a transparent background.
+  kHasTransparentBackground,
+
+  // The content's title appears in the image.
+  kHasTitle,
+
+  // The content's title does not appear in the image.
+  kNoTitle
+};
+
+// A media image for use with media feeds. This can be a thumbnail representing
+// content in a media feed item, or it can be a logo for the feed.
+struct MediaImage {
+  // URL of the image
+  url.mojom.Url src;
+
+  // Size of the image. Width and height in pixels.
+  gfx.mojom.Size size;
+
+  // Describes the image's type and defines its suggested usages.
+  array<ContentAttribute> content_attributes;
 };
 
 // The Media Feed Item is an individual item stored in a Media Feed. It
@@ -320,7 +376,7 @@ struct MediaFeedItem {
   bool clicked;
 
   // The images for the feed item.
-  array<media_session.mojom.MediaImage> images;
+  array<MediaImage> images;
 
   // The result of safe search checking this media item.
   SafeSearchResult safe_search_result;

@@ -19,6 +19,10 @@
 namespace base {
 class SequencedTaskRunner;
 }  // namespace base
+namespace history {
+class HistoryService;
+class DeletionInfo;
+}  // namespace history
 namespace feedstore {
 class Record;
 }  // namespace feedstore
@@ -34,6 +38,10 @@ class RefreshTaskScheduler;
 class MetricsReporter;
 class FeedNetwork;
 class FeedStore;
+
+namespace internal {
+bool ShouldClearFeed(const history::DeletionInfo& deletion_info);
+}  // namespace internal
 
 class FeedService : public KeyedService {
  public:
@@ -57,6 +65,7 @@ class FeedService : public KeyedService {
       PrefService* local_state,
       std::unique_ptr<leveldb_proto::ProtoDatabase<feedstore::Record>> database,
       signin::IdentityManager* identity_manager,
+      history::HistoryService* history_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const std::string& api_key,
@@ -70,6 +79,7 @@ class FeedService : public KeyedService {
  private:
   class StreamDelegateImpl;
   class NetworkDelegateImpl;
+  class HistoryObserverImpl;
 
   // These components are owned for construction of |FeedStreamApi|. These will
   // be null if |FeedStreamApi| is created externally.
@@ -80,6 +90,7 @@ class FeedService : public KeyedService {
   std::unique_ptr<FeedNetwork> feed_network_;
   std::unique_ptr<FeedStore> store_;
   std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler_;
+  std::unique_ptr<HistoryObserverImpl> history_observer_;
 
   std::unique_ptr<FeedStreamApi> stream_;
 };

@@ -12,7 +12,7 @@ PASS KeyframeEffect.getKeyframes() returns expected frames for an animation with
 PASS KeyframeEffect.getKeyframes() returns expected frames for an animation with different properties on different keyframes, all with the same easing function
 PASS KeyframeEffect.getKeyframes() returns expected frames for an animation with different properties on different keyframes, with a different easing function on each
 PASS KeyframeEffect.getKeyframes() returns expected frames for an animation with multiple keyframes for the same time, and all with the same easing function
-FAIL KeyframeEffect.getKeyframes() returns expected frames for an animation with multiple keyframes for the same time and with different easing functions assert_equals: Number of keyframes should match expected 3 but got 5
+PASS KeyframeEffect.getKeyframes() returns expected frames for an animation with multiple keyframes for the same time and with different easing functions
 PASS KeyframeEffect.getKeyframes() returns expected frames for an animation with multiple keyframes for the same time and with different but equivalent easing functions
 PASS KeyframeEffect.getKeyframes() returns expected frames for overlapping keyframes
 PASS KeyframeEffect.getKeyframes() returns expected values for animations with filter properties and missing keyframes

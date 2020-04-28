@@ -241,7 +241,7 @@ size_t FontFaceSetDocument::ApproximateBlankCharacterCount(Document& document) {
 void FontFaceSetDocument::LCPLimitReached(TimerBase*) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kAlignFontDisplayAutoTimeoutWithLCPGoal));
-  if (!GetDocument()->IsActive())
+  if (!GetDocument() || !GetDocument()->IsActive())
     return;
   has_reached_lcp_limit_ = true;
   for (FontFace* font_face : CSSConnectedFontFaceList())

@@ -62,14 +62,22 @@ class TestNavigationObserver::TestWebContentsObserver
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
 };
 
+TestNavigationObserver::WebContentsState::WebContentsState() = default;
+TestNavigationObserver::WebContentsState::WebContentsState(
+    WebContentsState&& other) = default;
+TestNavigationObserver::WebContentsState&
+TestNavigationObserver::WebContentsState::operator=(WebContentsState&& other) =
+    default;
+TestNavigationObserver::WebContentsState::~WebContentsState() = default;
+
 TestNavigationObserver::TestNavigationObserver(
     WebContents* web_contents,
     int number_of_navigations,
     MessageLoopRunner::QuitMode quit_mode)
     : TestNavigationObserver(web_contents,
                              number_of_navigations,
-                             GURL() /* target_url */,
-                             net::OK /* target_error */,
+                             base::nullopt /* target_url */,
+                             base::nullopt /* target_error */,
                              quit_mode) {}
 
 TestNavigationObserver::TestNavigationObserver(
@@ -81,9 +89,9 @@ TestNavigationObserver::TestNavigationObserver(
     const GURL& target_url,
     MessageLoopRunner::QuitMode quit_mode)
     : TestNavigationObserver(nullptr,
-                             -1 /* num_of_navigations */,
+                             1 /* num_of_navigations */,
                              target_url,
-                             net::OK /* target_error */,
+                             base::nullopt /* target_error */,
                              quit_mode) {}
 
 TestNavigationObserver::TestNavigationObserver(
@@ -91,8 +99,8 @@ TestNavigationObserver::TestNavigationObserver(
     net::Error target_error,
     MessageLoopRunner::QuitMode quit_mode)
     : TestNavigationObserver(web_contents,
-                             -1 /* num_of_navigations */,
-                             GURL(),
+                             1 /* num_of_navigations */,
+                             base::nullopt,
                              target_error,
                              quit_mode) {}
 
@@ -125,18 +133,17 @@ void TestNavigationObserver::WatchExistingWebContents() {
 }
 
 void TestNavigationObserver::RegisterAsObserver(WebContents* web_contents) {
-  web_contents_observers_.insert(
-      std::make_unique<TestWebContentsObserver>(this, web_contents));
+  web_contents_state_[web_contents].observer =
+      std::make_unique<TestWebContentsObserver>(this, web_contents);
 }
 
 TestNavigationObserver::TestNavigationObserver(
     WebContents* web_contents,
     int number_of_navigations,
-    const GURL& target_url,
-    net::Error target_error,
+    const base::Optional<GURL>& target_url,
+    base::Optional<net::Error> target_error,
     MessageLoopRunner::QuitMode quit_mode)
     : wait_event_(WaitEvent::kLoadStopped),
-      navigation_started_(false),
       navigations_completed_(0),
       number_of_navigations_(number_of_navigations),
       target_url_(target_url),
@@ -159,83 +166,115 @@ void TestNavigationObserver::OnWebContentsCreated(WebContents* web_contents) {
 void TestNavigationObserver::OnWebContentsDestroyed(
     TestWebContentsObserver* observer,
     WebContents* web_contents) {
-  web_contents_observers_.erase(web_contents_observers_.find(observer));
+  auto web_contents_state_iter = web_contents_state_.find(web_contents);
+  DCHECK(web_contents_state_iter != web_contents_state_.end());
+  DCHECK_EQ(web_contents_state_iter->second.observer.get(), observer);
+
+  web_contents_state_.erase(web_contents_state_iter);
 }
 
 void TestNavigationObserver::OnNavigationEntryCommitted(
     TestWebContentsObserver* observer,
     WebContents* web_contents,
     const LoadCommittedDetails& load_details) {
-  navigation_started_ = true;
+  WebContentsState* web_contents_state = GetWebContentsState(web_contents);
+  web_contents_state->navigation_started = true;
+  web_contents_state->last_navigation_matches_filter = false;
 }
 
 void TestNavigationObserver::OnDidAttachInterstitialPage(
     WebContents* web_contents) {
   // Going to an interstitial page does not trigger NavigationEntryCommitted,
   // but has the same meaning for us here.
-  navigation_started_ = true;
+  WebContentsState* web_contents_state = GetWebContentsState(web_contents);
+  web_contents_state->navigation_started = true;
+  web_contents_state->last_navigation_matches_filter = false;
 }
 
 void TestNavigationObserver::OnDidStartLoading(WebContents* web_contents) {
-  navigation_started_ = true;
+  WebContentsState* web_contents_state = GetWebContentsState(web_contents);
+  web_contents_state->navigation_started = true;
+  web_contents_state->last_navigation_matches_filter = false;
 }
 
 void TestNavigationObserver::OnDidStopLoading(WebContents* web_contents) {
-  if (!navigation_started_)
+  WebContentsState* web_contents_state = GetWebContentsState(web_contents);
+  if (!web_contents_state->navigation_started)
     return;
 
   if (wait_event_ == WaitEvent::kLoadStopped)
-    EventTriggered();
+    EventTriggered(web_contents_state);
 }
 
 void TestNavigationObserver::OnDidStartNavigation(
     NavigationHandle* navigation_handle) {
-  last_navigation_succeeded_ = false;
-  NavigationRequest* request = NavigationRequest::From(navigation_handle);
-  if (request) {
-    last_initiator_origin_ = request->common_params().initiator_origin;
-  } else {
-    last_initiator_origin_.reset();
+  if (target_url_.has_value() &&
+      target_url_.value() != navigation_handle->GetURL()) {
+    return;
   }
+
+  WebContentsState* web_contents_state =
+      GetWebContentsState(navigation_handle->GetWebContents());
+  if (!web_contents_state->navigation_started)
+    return;
+
+  last_navigation_succeeded_ = false;
 }
 
 void TestNavigationObserver::OnDidFinishNavigation(
     NavigationHandle* navigation_handle) {
-  NavigationRequest* request = NavigationRequest::From(navigation_handle);
-
-  if (target_url_ != GURL() && ignore_other_urls_ &&
-      target_url_ != navigation_handle->GetURL()) {
+  if (target_url_.has_value() &&
+      target_url_.value() != navigation_handle->GetURL()) {
+    return;
+  }
+  if (target_error_.has_value() &&
+      target_error_.value() != navigation_handle->GetNetErrorCode()) {
     return;
   }
 
+  WebContentsState* web_contents_state =
+      GetWebContentsState(navigation_handle->GetWebContents());
+  if (!web_contents_state->navigation_started)
+    return;
+  if (HasFilter())
+    web_contents_state->last_navigation_matches_filter = true;
+
+  NavigationRequest* request = NavigationRequest::From(navigation_handle);
+
   last_navigation_url_ = navigation_handle->GetURL();
-  last_initiator_origin_ = request->common_params().initiator_origin;
+  last_navigation_initiator_origin_ = request->common_params().initiator_origin;
   last_navigation_succeeded_ = !navigation_handle->IsErrorPage();
   last_net_error_code_ = navigation_handle->GetNetErrorCode();
   last_navigation_type_ = request->navigation_type();
 
   if (wait_event_ == WaitEvent::kNavigationFinished)
-    EventTriggered();
+    EventTriggered(web_contents_state);
 }
 
-void TestNavigationObserver::EventTriggered() {
-  if (target_url_ == GURL() && target_error_ == net::OK) {
-    DCHECK_GE(navigations_completed_, 0);
+void TestNavigationObserver::EventTriggered(
+    WebContentsState* web_contents_state) {
+  if (HasFilter() && !web_contents_state->last_navigation_matches_filter)
+    return;
 
-    ++navigations_completed_;
-    if (navigations_completed_ != number_of_navigations_) {
-      return;
-    }
-  } else if (target_url_ != GURL()) {
-    if (target_url_ != last_navigation_url_) {
-      return;
-    }
-  } else if (target_error_ != last_net_error_code_) {
+  DCHECK_GE(navigations_completed_, 0);
+  ++navigations_completed_;
+  if (navigations_completed_ != number_of_navigations_) {
     return;
   }
 
-  navigation_started_ = false;
+  web_contents_state->navigation_started = false;
   message_loop_runner_->Quit();
+}
+
+bool TestNavigationObserver::HasFilter() {
+  return target_url_.has_value() || target_error_.has_value();
+}
+
+TestNavigationObserver::WebContentsState*
+TestNavigationObserver::GetWebContentsState(WebContents* web_contents) {
+  auto web_contents_state_iter = web_contents_state_.find(web_contents);
+  DCHECK(web_contents_state_iter != web_contents_state_.end());
+  return &(web_contents_state_iter->second);
 }
 
 }  // namespace content

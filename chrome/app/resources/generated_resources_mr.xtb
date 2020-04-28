@@ -672,6 +672,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> तुमची स्थापना पूर्ण करण्यासाठी तयार आहे</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">मायक्रोफोनचा ॲक्‍सेस द्या</translation>
+<translation id="1871534214638631766">तुम्ही आशयावर राइट क्लिक करता किंवा दाबून ठेवता तेव्हा त्यासंबंधित माहिती दाखवा</translation>
 <translation id="1871615898038944731">तुमचे <ph name="DEVICE_TYPE" /> अद्ययावत आहे</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{टॅब दुसर्‍या विंडोवर हलवा}other{टॅब दुसर्‍या विंडोवर हलवा}}</translation>
 <translation id="1875386316419689002">हा टॅब HID डिव्हाइसशी कनेक्ट केला आहे.</translation>
@@ -728,6 +729,7 @@
 <translation id="1944528062465413897">ब्लूटूथ पेअरींग कोड:</translation>
 <translation id="1944921356641260203">अपडेट आढळले</translation>
 <translation id="1946577776959096882">खाती पाहा</translation>
+<translation id="1949584741547056205">झटपट उत्तरे</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">शेअर माउंट करताना एरर आली. कृपया तुमची क्रेडेंशियल तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="1956050014111002555">फाइलमध्ये एकाधिक प्रमाणपत्रे आहेत ज्यापैकी एकही इंपोर्ट झालेले नाही: </translation>
@@ -1909,7 +1911,6 @@
 <translation id="3543597750097719865">SHA-1 सह X9.62 ECDSA स्वाक्षरी</translation>
 <translation id="3544879808695557954">वापरकर्तानाव (पर्यायी)</translation>
 <translation id="354602065659584722">धोकादायक सॉफ्टवेअर काढले</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">प्रॉक्सी सेटिंग्ज</translation>
 <translation id="3548162552723420559">वातावरणाशी जुळण्यासाठी स्क्रीनचे रंग अ‍ॅडजस्ट करते</translation>
 <translation id="3550915441744863158">Chrome स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी नवीन आवृत्ती असते</translation>
@@ -5553,7 +5554,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8493236660459102203">मायक्रोफोन:</translation>
 <translation id="8496717697661868878">हे प्लगइन रन करा</translation>
 <translation id="8497219075884839166">Windows सुविधा</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">तुमच्या स्क्रीनकडे पाहणे किंवा मंद उजेडात वाचणे सोपे करते</translation>
 <translation id="8498395510292172881">Chrome मध्ये वाचन सुरू ठेवा</translation>
 <translation id="8500234928660943538">चुकीची PUK. बाकी असलेले प्रयत्न: <ph name="RETRIES" />.</translation>

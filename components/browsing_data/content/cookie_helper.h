@@ -22,6 +22,7 @@ namespace net {
 class CanonicalCookie;
 }
 namespace content {
+struct CookieAccessDetails;
 class StoragePartition;
 }
 
@@ -75,18 +76,10 @@ class CannedCookieHelper : public CookieHelper {
 
   explicit CannedCookieHelper(content::StoragePartition* storage_partition);
 
-  // Adds the cookies from |cookie_list|. Current cookies that have the same
-  // cookie name, cookie domain, cookie path, host-only-flag tuple as passed
-  // cookies are replaced by the passed cookies.
-  void AddReadCookies(const GURL& frame_url,
-                      const GURL& request_url,
-                      const net::CookieList& cookie_list);
-
-  // Adds a CanonicalCookie.
-  // TODO(markusheintz): Remove the dublicated logic.
-  void AddChangedCookie(const GURL& frame_url,
-                        const GURL& request_url,
-                        const net::CanonicalCookie& cookie);
+  // Adds the cookies from |details.cookie_list|. Current cookies that have the
+  // same cookie name, cookie domain, cookie path, host-only-flag tuple as
+  // passed cookies are replaced by the passed cookies.
+  void AddCookies(const content::CookieAccessDetails& details);
 
   // Clears the list of canned cookies.
   void Reset();

@@ -27,7 +27,6 @@
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
 #include "components/strings/grit/components_locale_settings.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/generated_code_cache_settings.h"
@@ -39,7 +38,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/window_container_type.mojom.h"
 #include "net/proxy_resolution/proxy_config.h"
@@ -63,6 +61,7 @@
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/browser/tab_specific_content_settings_delegate.h"
+#include "weblayer/browser/user_agent.h"
 #include "weblayer/browser/web_contents_view_delegate_impl.h"
 #include "weblayer/browser/weblayer_browser_interface_binders.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
@@ -114,6 +113,8 @@ namespace switches {
 // TODO(alexclarke): Find a better place for this.
 const char kProxyBypassList[] = "proxy-bypass-list";
 }  // namespace switches
+
+namespace weblayer {
 
 namespace {
 
@@ -191,21 +192,6 @@ void CreateMediaDrmStorage(
 
 }  // namespace
 
-namespace weblayer {
-
-blink::UserAgentMetadata GetUserAgentMetadata() {
-  blink::UserAgentMetadata metadata;
-
-  metadata.brand = version_info::GetProductName();
-  metadata.full_version = version_info::GetVersionNumber();
-  metadata.major_version = version_info::GetMajorVersionNumber();
-  metadata.platform = version_info::GetOSType();
-  metadata.architecture = content::BuildCpuInfo();
-  metadata.model = content::BuildModelInfo();
-
-  return metadata;
-}
-
 ContentBrowserClientImpl::ContentBrowserClientImpl(MainParams* params)
     : params_(params),
       feature_list_creator_(std::make_unique<FeatureListCreator>()) {
@@ -271,18 +257,11 @@ void ContentBrowserClientImpl::LogWebFeatureForCurrentPage(
 }
 
 std::string ContentBrowserClientImpl::GetProduct() {
-  return version_info::GetProductNameAndVersionForUserAgent();
+  return weblayer::GetProduct();
 }
 
 std::string ContentBrowserClientImpl::GetUserAgent() {
-  std::string product = GetProduct();
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kUseMobileUserAgent))
-    product += " Mobile";
-  return content::BuildUserAgentFromProduct(product);
+  return weblayer::GetUserAgent();
 }
 
 blink::UserAgentMetadata ContentBrowserClientImpl::GetUserAgentMetadata() {

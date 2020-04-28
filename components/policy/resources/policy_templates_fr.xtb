@@ -5192,6 +5192,11 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8665314828727504286">Mode de protection de la navigation sécurisée</translation>
 <translation id="8672321184841719703">Cibler une version pour les mises à jour automatiques</translation>
 <translation id="867410340948518937">U2F (Deuxième facteur universel)</translation>
+<translation id="8680488165461049026">Cette règle autorise l'option Réponses rapides à accéder au contenu sélectionné et à envoyer les informations le concernant au serveur.
+
+      Si la règle est activée, l'option Réponses rapides est autorisée à accéder au contenu sélectionné.
+      Si la règle est désactivée, cette option n'est pas autorisée à accéder à ce contenu.
+      Si la règle n'est pas définie, les utilisateurs peuvent choisir d'autoriser ou non l'option Réponses rapides à accéder au contenu sélectionné.</translation>
 <translation id="8685024486845674965">L'avertissement de protection par mot de passe est déclenché en cas de réutilisation du mot de passe</translation>
 <translation id="8687958770985542440">Réactiver les API Web Components v0 jusqu'à la version M84.</translation>
 <translation id="8693243869659262736">Utiliser le client DNS intégré</translation>
@@ -5557,6 +5562,7 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 
       Si cette règle est définie sur "True" ou si elle n'est pas configurée, la création de comptes utilisateur est autorisée à condition que <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> n'empêche pas l'utilisateur de se connecter.</translation>
 <translation id="974349541138387272">Permet de définir le modèle URI du résolveur DNS-over-HTTPS souhaité</translation>
+<translation id="974479807614498635">"Autoriser l'option Réponses rapides à accéder au contenu sélectionné"</translation>
 <translation id="981346395360763138">Services de localisation Google</translation>
 <translation id="982497069985795632">Activer la vérification orthographique</translation>
 <translation id="991560005425213776">Envoyer le nom d'utilisateur et le nom de fichier aux imprimantes en natif</translation>

@@ -9120,6 +9120,9 @@ interface XRInputSourcesChangeEvent : Event
     getter removed
     getter session
     method constructor
+interface XRLayer
+    attribute @@toStringTag
+    method constructor
 interface XRPose
     attribute @@toStringTag
     getter emulatedPosition
@@ -9231,7 +9234,7 @@ interface XRViewport
     getter x
     getter y
     method constructor
-interface XRWebGLLayer
+interface XRWebGLLayer : XRLayer
     static method getNativeFramebufferScaleFactor
     attribute @@toStringTag
     getter antialias

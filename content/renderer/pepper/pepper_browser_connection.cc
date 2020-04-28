@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "content/common/frame_messages.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/render_frame_impl.h"

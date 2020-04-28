@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"

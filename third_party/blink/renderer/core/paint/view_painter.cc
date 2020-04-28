@@ -276,15 +276,14 @@ void ViewPainter::PaintRootElementGroup(
   // transforms apply. The strategy is to issue draw commands in the root
   // element's local space, which requires mapping the document background rect.
   bool background_renderable = true;
-  bool root_element_has_transform = false;
   IntRect paint_rect = pixel_snapped_background_rect;
+  // Offset for BackgroundImageGeometry to offset the image's origin. This makes
+  // background tiling start at the root element's origin instead of the view.
+  // This is different from the offset for painting, which is in |paint_rect|.
+  LayoutPoint background_image_offset;
   if (!root_object || !root_object->IsBox()) {
     background_renderable = false;
   } else {
-    // TODO(pdr): There are additional reasons for a transform node, such as
-    // will-change: transform. This check should be updated to include these, or
-    // possibly check if the |paint_rect| mapping below had an effect.
-    root_element_has_transform = root_object->StyleRef().HasTransform();
     const auto& view_contents_state =
         layout_view_.FirstFragment().ContentsProperties();
     GeometryMapper::SourceToDestinationRect(view_contents_state.Transform(),
@@ -292,6 +291,18 @@ void ViewPainter::PaintRootElementGroup(
                                             paint_rect);
     if (paint_rect.IsEmpty())
       background_renderable = false;
+    // TODO(pdr): There are additional reasons for a transform node, such as
+    // will-change: transform. This check should be updated to include these, or
+    // possibly check if the |paint_rect| mapping below had an effect.
+    if (root_object->StyleRef().HasTransform()) {
+      // With transforms, paint offset is encoded in paint property nodes but we
+      // can use the |paint_rect|'s adjusted location as the offset from the
+      // view to the root element.
+      background_image_offset = paint_rect.Location();
+    } else {
+      background_image_offset =
+          -root_object->FirstFragment().PaintOffset().ToLayoutPoint();
+    }
   }
 
   bool should_clear_canvas =
@@ -368,7 +379,7 @@ void ViewPainter::PaintRootElementGroup(
     context.FillRect(paint_rect, Color(), SkBlendMode::kClear);
   }
 
-  BackgroundImageGeometry geometry(layout_view_, root_element_has_transform);
+  BackgroundImageGeometry geometry(layout_view_, background_image_offset);
   BoxModelObjectPainter box_model_painter(layout_view_);
   for (const auto* fill_layer : base::Reversed(reversed_paint_list)) {
     DCHECK(fill_layer->Clip() == EFillBox::kBorder);

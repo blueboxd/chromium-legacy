@@ -92,10 +92,11 @@ STATIC_ASSERT_ENUM(blink::kWebLongEdge, LONG_EDGE);
 STATIC_ASSERT_ENUM(blink::kWebShortEdge, SHORT_EDGE);
 
 enum PrintPreviewHelperEvents {
-  PREVIEW_EVENT_REQUESTED,
-  PREVIEW_EVENT_CACHE_HIT,  // Unused
-  PREVIEW_EVENT_CREATE_DOCUMENT,
-  PREVIEW_EVENT_NEW_SETTINGS,  // Unused
+  PREVIEW_EVENT_REQUESTED,        // Received a request for a preview document.
+  PREVIEW_EVENT_CACHE_HIT,        // Unused.
+  PREVIEW_EVENT_CREATE_DOCUMENT,  // Started creating a preview document.
+  PREVIEW_EVENT_NEW_SETTINGS,     // Unused.
+  PREVIEW_EVENT_INITIATED,        // Initiated print preview.
   PREVIEW_EVENT_MAX,
 };
 
@@ -2387,6 +2388,11 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
       return;
     }
   }
+
+  base::UmaHistogramEnumeration(print_preview_context_.IsForArc()
+                                    ? "Arc.PrintPreview.PreviewEvent"
+                                    : "PrintPreview.PreviewEvent",
+                                PREVIEW_EVENT_INITIATED, PREVIEW_EVENT_MAX);
   Send(new PrintHostMsg_RequestPrintPreview(routing_id(), params));
 }
 

@@ -377,10 +377,6 @@ jumbo_source_set("base") {
   }
 
   if (use_x11) {
-    configs += [
-      "//build/config/linux:x11",
-      "//build/config/linux:xext",
-    ]
     sources += [ "user_input_monitor_linux.cc" ]
     deps += [
       "//ui/events:events_base",

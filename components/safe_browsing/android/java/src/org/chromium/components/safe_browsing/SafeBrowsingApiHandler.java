@@ -47,18 +47,6 @@ public interface SafeBrowsingApiHandler {
     public boolean init(Observer result);
 
     /**
-     * Returns the Safety Net ID of the device. Checks to make sure that the feature to report
-     * telemetry for APK downloads is enabled. This should not be called for AW.
-     *
-     * @return the Safety Net ID of the device.
-     */
-    // TODO(crbug.com/1070836): Remove this interface once internal repository implementation is
-    // removed.
-    public default String getSafetyNetId() {
-        return "";
-    }
-
-    /**
      * Start a URI-lookup to determine if it matches one of the specified threats.
      * This is called on every URL resource Chrome loads, on the same sequence as |init|.
      */

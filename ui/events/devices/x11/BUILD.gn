@@ -21,8 +21,6 @@ jumbo_component("x11") {
     "touch_factory_x11.h",
   ]
 
-  configs += [ "//build/config/linux:x11" ]
-
   defines = [ "EVENTS_DEVICES_X11_IMPLEMENTATION" ]
 
   deps = [

@@ -34,6 +34,7 @@
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/permissions/test/mock_permission_request.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -146,7 +147,13 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
       origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie);
-  web_contents()->OnCookieChange(origin, origin, *cookie, false);
+  static_cast<content::WebContentsObserver*>(
+      TabSpecificContentSettings::FromWebContents(web_contents()))
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+                           origin,
+                           origin,
+                           {*cookie},
+                           false});
   content_setting_image_model->Update(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_TRUE(HasIcon(*content_setting_image_model));

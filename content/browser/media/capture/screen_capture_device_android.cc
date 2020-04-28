@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "media/capture/content/android/thread_safe_capture_oracle.h"
 
 namespace content {

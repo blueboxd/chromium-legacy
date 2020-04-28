@@ -234,6 +234,12 @@ TEST_F(DesktopWindowTreeHostX11Test, CaptureEventForwarding) {
 
 TEST_F(DesktopWindowTreeHostX11Test, InputMethodFocus) {
   std::unique_ptr<Widget> widget(CreateWidget(gfx::Rect(100, 100, 100, 100)));
+
+  // Waiter should be created as early as possible so that PropertyNotify has
+  // time to be set before widget is activated.
+  ActivationWaiter waiter(
+      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+
   std::unique_ptr<Textfield> textfield(new Textfield);
   textfield->SetBounds(0, 0, 200, 20);
   widget->GetRootView()->AddChildView(textfield.get());
@@ -246,11 +252,6 @@ TEST_F(DesktopWindowTreeHostX11Test, InputMethodFocus) {
   // EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE,
   //           widget->GetInputMethod()->GetTextInputType());
 
-  // Waiter should be created before widget->Activate is called. Otherwise,
-  // there is a race, and waiter might not be able to set property changes mask
-  // on time and miss the events.
-  ActivationWaiter waiter(
-      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
   widget->Activate();
   waiter.Wait();
 

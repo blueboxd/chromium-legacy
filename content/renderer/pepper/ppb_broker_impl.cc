@@ -4,7 +4,7 @@
 
 #include "content/renderer/pepper/ppb_broker_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"

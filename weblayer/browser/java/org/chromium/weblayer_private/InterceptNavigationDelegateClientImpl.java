@@ -118,11 +118,7 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
 
     @Override
     public void closeTab() {
-        // Prior to 84 the client was not equipped to handle the case of WebLayer initiating the
-        // last tab being closed, so we simply short-circuit out here in that case.
-        if (WebLayerFactoryImpl.getClientMajorVersion() < 84) return;
-
-        mTab.getBrowser().destroyTab(mTab);
+        closeTab(mTab);
     }
 
     @Override
@@ -130,5 +126,13 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
         if (params.hasUserGesture || params.hasUserGestureCarryover) {
             mLastNavigationWithUserGestureTime = SystemClock.elapsedRealtime();
         }
+    }
+
+    static void closeTab(TabImpl tab) {
+        // Prior to 84 the client was not equipped to handle the case of WebLayer initiating the
+        // last tab being closed, so we simply short-circuit out here in that case.
+        if (WebLayerFactoryImpl.getClientMajorVersion() < 84) return;
+
+        tab.getBrowser().destroyTab(tab);
     }
 }

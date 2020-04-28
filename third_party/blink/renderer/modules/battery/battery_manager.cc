@@ -25,7 +25,7 @@ BatteryManager::~BatteryManager() = default;
 
 BatteryManager::BatteryManager(ExecutionContext* context)
     : ExecutionContextLifecycleStateObserver(context),
-      PlatformEventController(To<LocalDOMWindow>(context)->document()) {}
+      PlatformEventController(*To<LocalDOMWindow>(context)) {}
 
 ScriptPromise BatteryManager::StartRequest(ScriptState* script_state) {
   if (!battery_property_) {

@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/input/synthetic_pointer_action.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ui/latency/latency_info.h"
 
 namespace content {

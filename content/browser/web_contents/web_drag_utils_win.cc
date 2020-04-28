@@ -5,7 +5,7 @@
 #include "content/browser/web_contents/web_drag_utils_win.h"
 
 #include <oleidl.h>
-#include "base/logging.h"
+#include "base/check.h"
 
 using blink::WebDragOperation;
 using blink::WebDragOperationsMask;

@@ -4,7 +4,7 @@
 
 #include "content/child/webthemeengine_impl_android.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/system/sys_info.h"
 #include "content/child/webthemeengine_impl_conversions.h"
 #include "skia/ext/platform_canvas.h"

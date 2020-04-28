@@ -8,6 +8,7 @@
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/common/ui/util/dynamic_type_util.h"
+#import "ios/chrome/common/ui/util/image_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,12 +31,16 @@ constexpr CGFloat kButtonVerticalInsets = 17;
 constexpr CGFloat kPrimaryButtonCornerRadius = 13;
 constexpr CGFloat kStackViewSpacing = 8;
 constexpr CGFloat kStackViewSpacingAfterIllustration = 27;
+constexpr CGFloat kGeneratedImagePadding = 20;
 // The multiplier used when in regular horizontal size class.
 constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
 }  // namespace
 
 @interface ConfirmationAlertViewController () <UIToolbarDelegate>
+
+// Container view that will wrap the views making up the content.
+@property(nonatomic, strong) UIStackView* stackView;
 
 // References to the UI properties that need to be updated when the trait
 // collection changes.
@@ -73,11 +78,11 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   UILabel* title = [self createTitleLabel];
   UILabel* subtitle = [self createSubtitleLabel];
 
-  UIStackView* stackView = [self
+  self.stackView = [self
       createStackViewWithArrangedSubviews:@[ self.imageView, title, subtitle ]];
 
   UIScrollView* scrollView = [self createScrollView];
-  [scrollView addSubview:stackView];
+  [scrollView addSubview:self.stackView];
   [self.view addSubview:scrollView];
 
   self.view.preservesSuperviewLayoutMargins = YES;
@@ -108,7 +113,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
   // Constraint the content of the scroll view to the size of the stack view.
   // This defines the content area.
-  AddSameConstraints(stackView, scrollView);
+  AddSameConstraints(self.stackView, scrollView);
 
   // Disable horizontal scrolling and constraint the content size to the scroll
   // view size.
@@ -273,6 +278,13 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   [self.topToolbar invalidateIntrinsicContentSize];
 
   [super updateViewConstraints];
+}
+
+- (UIImage*)content {
+  UIEdgeInsets padding =
+      UIEdgeInsetsMake(kGeneratedImagePadding, kGeneratedImagePadding,
+                       kGeneratedImagePadding, kGeneratedImagePadding);
+  return ImageFromView(self.stackView, self.view.backgroundColor, padding);
 }
 
 #pragma mark - UIToolbarDelegate

@@ -121,13 +121,13 @@ std::string FRERequirementToString(
   using FRERequirement = AutoEnrollmentController::FRERequirement;
   switch (requirement) {
     case FRERequirement::kRequired:
-      return "Auto-enrollment required.";
+      return "Forced Re-Enrollment required.";
     case FRERequirement::kNotRequired:
-      return "Auto-enrollment disabled: first setup.";
+      return "Forced Re-Enrollment disabled: first setup.";
     case FRERequirement::kExplicitlyRequired:
-      return "Auto-enrollment required: flag in VPD.";
+      return "Forced Re-Enrollment required: flag in VPD.";
     case FRERequirement::kExplicitlyNotRequired:
-      return "Auto-enrollment disabled: flag in VPD.";
+      return "Forced Re-Enrollment disabled: flag in VPD.";
   }
 
   NOTREACHED();
@@ -149,7 +149,7 @@ std::string AutoEnrollmentStateToString(policy::AutoEnrollmentState state) {
     case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
       return "No enrollment";
     case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
-      return "Zero-touch enrollment";
+      return "Zero-Touch enrollment";
     case policy::AutoEnrollmentState::AUTO_ENROLLMENT_STATE_DISABLED:
       return "Device disabled";
   }
@@ -340,7 +340,7 @@ bool AutoEnrollmentController::IsFREEnabled() {
   if (command_line_mode == kForcedReEnrollmentNever)
     return false;
 
-  LOG(FATAL) << "Unknown auto-enrollment mode for FRE: " << command_line_mode
+  LOG(FATAL) << "Unknown Forced Re-Enrollment mode: " << command_line_mode
              << ".";
   return false;
 }
@@ -365,8 +365,7 @@ bool AutoEnrollmentController::IsInitialEnrollmentEnabled() {
   if (command_line_mode == kInitialEnrollmentNever)
     return false;
 
-  LOG(FATAL) << "Unknown auto-enrollment mode for initial enrollment: "
-             << command_line_mode << ".";
+  LOG(FATAL) << "Unknown Initial Enrollment mode: " << command_line_mode << ".";
   return false;
 }
 
@@ -524,6 +523,7 @@ AutoEnrollmentController::GetInitialEnrollmentRequirement() {
       (embargo_state == system::FactoryPingEmbargoState::kInvalid ||
        embargo_state == system::FactoryPingEmbargoState::kNotPassed)) {
     // Wait for the system clock to become synchronized and check again.
+    LOG(WARNING) << "Skip Initial Enrollment Check due to out of sync clock.";
     system_clock_sync_wait_requested_ = true;
     return InitialEnrollmentRequirement::kNotRequired;
   }
@@ -555,6 +555,8 @@ AutoEnrollmentController::GetInitialEnrollmentRequirement() {
   RecordInitialEnrollmentRequirement(
       InitialEnrollmentRequirementHistogramValue::kRequired,
       system_clock_sync_state_);
+
+  VLOG(1) << "Initial Enrollment Check required.";
   return InitialEnrollmentRequirement::kRequired;
 }
 
@@ -627,14 +629,18 @@ bool AutoEnrollmentController::ShouldDoFRECheck(
 bool AutoEnrollmentController::ShouldDoInitialEnrollmentCheck() {
   // Skip Initial Enrollment check if it is not enabled according to
   // command-line flags.
-  if (!IsInitialEnrollmentEnabled())
+  if (!IsInitialEnrollmentEnabled()) {
+    VLOG(1) << "Initial Enrollment is disabled.";
     return false;
+  }
 
   // Skip Initial Enrollment check if it is not required according to the
   // device state.
   if (GetInitialEnrollmentRequirement() ==
-      InitialEnrollmentRequirement::kNotRequired)
+      InitialEnrollmentRequirement::kNotRequired) {
+    VLOG(1) << "Initial Enrollment Check is not required.";
     return false;
+  }
 
   return true;
 }

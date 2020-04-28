@@ -450,6 +450,25 @@ public class WebLayer {
     }
 
     /**
+     * Returns the user agent string used by WebLayer.
+     *
+     * @return The user-agent string.
+     *
+     * @since 84.
+     */
+    public String getUserAgentString() {
+        ThreadCheck.ensureOnUiThread();
+        if (getSupportedMajorVersionInternal() < 84) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return mImpl.getUserAgentString();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
      * To enable or disable DevTools remote debugging.
      */
     public void setRemoteDebuggingEnabled(boolean enabled) {

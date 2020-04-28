@@ -19,7 +19,8 @@ class Image;
 
 namespace upboarding {
 
-using GetTilesCallback = base::OnceCallback<void(const std::vector<Tile*>&)>;
+using TileList = std::vector<Tile>;
+using GetTilesCallback = base::OnceCallback<void(TileList)>;
 using VisualsCallback = base::OnceCallback<void(const gfx::Image&)>;
 
 // The central class on chrome client responsible for fetching, storing,

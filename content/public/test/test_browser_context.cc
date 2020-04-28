@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_controller_delegate.h"
 #include "content/public/test/mock_resource_context.h"

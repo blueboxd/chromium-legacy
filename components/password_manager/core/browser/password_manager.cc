@@ -910,7 +910,7 @@ void PasswordManager::OnLoginSuccessful() {
 
     if (!submitted_manager->IsNewLogin()) {
       client_->NotifySuccessfulLoginWithExistingPassword(
-          submitted_manager->GetPendingCredentials());
+          submitted_manager->Clone());
     }
 
     if (submitted_manager->HasGeneratedPassword())

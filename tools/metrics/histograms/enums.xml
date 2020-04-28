@@ -3286,6 +3286,7 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="kLauncherSearchResult"/>
   <int value="9" label="kLauncherSearchBoxIcon"/>
   <int value="10" label="kProactiveSuggestions"/>
+  <int value="11" label="kLauncherChip"/>
 </enum>
 
 <enum name="AssistantExitPoint">
@@ -3350,6 +3351,7 @@ Unknown properties are collapsed to zero. -->
   <int value="9" label="kConversationStarter"/>
   <int value="10" label="kWhatsOnMyScreen"/>
   <int value="11" label="kQuickAnswers"/>
+  <int value="12" label="kLauncherChip"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix">
@@ -37919,6 +37921,8 @@ from previous Chrome versions.
   <int value="-2047822258" label="enable-avfoundation"/>
   <int value="-2047190657" label="SyncUserConsentSeparateType:enabled"/>
   <int value="-2047071651" label="NearbySharing:enabled"/>
+  <int value="-2044001553"
+      label="disable-experimental-accessibility-chromevox-language-switching"/>
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
   <int value="-2040471724" label="CrOSComponent:disabled"/>
   <int value="-2040115518" label="load-media-router-component-extension"/>
@@ -39053,8 +39057,6 @@ from previous Chrome versions.
   <int value="-792785226" label="TemporaryUnexpireFlagsM78:disabled"/>
   <int value="-792079435" label="EnableAppsGridGapFeature:disabled"/>
   <int value="-790036192" label="overscroll-start-threshold"/>
-  <int value="-788074946"
-      label="enable-experimental-accessibility-chromevox-language-switching"/>
   <int value="-787969387" label="HTTPSServerPreviewsUsingURLLoader:enabled"/>
   <int value="-787876637" label="HomeLauncherGestures:enabled"/>
   <int value="-787426248" label="ChromeHomeSurvey:disabled"/>
@@ -39277,6 +39279,8 @@ from previous Chrome versions.
   <int value="-528149352" label="WebRtcUseEchoCanceller3:enabled"/>
   <int value="-526236814" label="WebAssemblyTiering:enabled"/>
   <int value="-523030434" label="EnableBackgroundBlur:enabled"/>
+  <int value="-522075903"
+      label="OmniboxOnFocusSuggestionsContextualWeb:enabled"/>
   <int value="-520221221" label="UserDataSnapshot:enabled"/>
   <int value="-520004021" label="WebXRHitTest:disabled"/>
   <int value="-519960638" label="enable-site-engagement-service"/>
@@ -39301,6 +39305,8 @@ from previous Chrome versions.
       label="OmniboxGroupSuggestionsBySearchVsUrl:disabled"/>
   <int value="-498740735" label="ArcUsbHost:disabled"/>
   <int value="-498463128" label="MacSystemShareMenu:enabled"/>
+  <int value="-497366418"
+      label="enable-experimental-accessibility-chromevox-tutorial"/>
   <int value="-496119023" label="WebXR:enabled"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>
   <int value="-494722408" label="ContentSuggestionsLargeThumbnail:enabled"/>
@@ -40563,6 +40569,8 @@ from previous Chrome versions.
   <int value="1024560563" label="EnableFuzzyAppSearch:enabled"/>
   <int value="1026981579" label="TLS13HardeningForLocalAnchors:enabled"/>
   <int value="1027252926" label="SyncSupportSecondaryAccount:enabled"/>
+  <int value="1028817487"
+      label="OmniboxOnFocusSuggestionsContextualWeb:disabled"/>
   <int value="1033148287" label="NTPShortcuts:disabled"/>
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
   <int value="1033597574" label="disable-layer-squashing"/>
@@ -42950,6 +42958,7 @@ Called by update_use_counter_css.py.-->
   <int value="658" label="appearance"/>
   <int value="659" label="math-superscript-shift-style"/>
   <int value="660" label="ruby-position"/>
+  <int value="661" label="text-underline-offset"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -54212,6 +54221,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="PREVIEW_EVENT_CACHE_HIT"/>
   <int value="2" label="PREVIEW_EVENT_CREATE_DOCUMENT"/>
   <int value="3" label="PREVIEW_EVENT_NEW_SETTINGS"/>
+  <int value="4" label="PREVIEW_EVENT_INITIATED"/>
 </enum>
 
 <enum name="PrintPreviewPdfActionBuckets">
@@ -64566,6 +64576,7 @@ would be helpful to identify which type is being sent.
   <int value="7" label="Bookmark id does not exist in model"/>
   <int value="8" label="Bookmark in model is missing sync metadata"/>
   <int value="9" label="Client tag hash does not match bookmark GUID"/>
+  <int value="10" label="Duplicate client tag hashes exist"/>
 </enum>
 
 <enum name="SyncBookmarkModelSyncState">

@@ -1911,7 +1911,6 @@
 <translation id="3543597750097719865">使用 SHA-512 的 X9.62 ECDSA 簽章</translation>
 <translation id="3544879808695557954">使用者名稱 (選填)</translation>
 <translation id="354602065659584722">有害軟體已移除</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3548162552723420559">配合環境調整螢幕顏色</translation>
 <translation id="3550915441744863158">Chrome 會自動更新，隨時讓你使用最新版本</translation>
@@ -5556,7 +5555,6 @@
 <translation id="8493236660459102203">麥克風：</translation>
 <translation id="8496717697661868878">執行這個外掛程式</translation>
 <translation id="8497219075884839166">Windows 公用程式</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">讓你在光線昏暗的環境下更容易看清畫面內容或閱讀文字</translation>
 <translation id="8498395510292172881">在 Chrome 中繼續閱讀</translation>
 <translation id="8500234928660943538">PUK 不正確。剩餘重試次數：<ph name="RETRIES" /> 次。</translation>

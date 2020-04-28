@@ -7,6 +7,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_param_descriptor.h"
+#include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/messaging/message_channel.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
@@ -227,7 +228,7 @@ void AudioWorkletHandler::NotifyProcessorError(
   if (!Context() || !Context()->GetExecutionContext() || !GetNode())
     return;
 
-  static_cast<AudioWorkletNode*>(GetNode())->FireProcessorError();
+  static_cast<AudioWorkletNode*>(GetNode())->FireProcessorError(error_state);
 }
 
 // ----------------------------------------------------------------
@@ -408,8 +409,27 @@ MessagePort* AudioWorkletNode::port() const {
   return node_port_;
 }
 
-void AudioWorkletNode::FireProcessorError() {
-  DispatchEvent(*Event::Create(event_type_names::kProcessorerror));
+void AudioWorkletNode::FireProcessorError(
+    AudioWorkletProcessorErrorState error_state) {
+  DCHECK(IsMainThread());
+  DCHECK(error_state == AudioWorkletProcessorErrorState::kConstructionError ||
+         error_state == AudioWorkletProcessorErrorState::kProcessError);
+
+  String error_message = "an error thrown from ";
+  switch (error_state) {
+    case AudioWorkletProcessorErrorState::kNoError:
+      NOTREACHED();
+      return;
+    case AudioWorkletProcessorErrorState::kConstructionError:
+      error_message = error_message + "AudioWorkletProcessor constructor";
+      break;
+    case AudioWorkletProcessorErrorState::kProcessError:
+      error_message = error_message + "AudioWorkletProcessor::process() method";
+      break;
+  }
+  ErrorEvent* event = ErrorEvent::Create(
+      error_message, SourceLocation::Capture(GetExecutionContext()), nullptr);
+  DispatchEvent(*event);
 }
 
 scoped_refptr<AudioWorkletHandler> AudioWorkletNode::GetWorkletHandler() const {

@@ -42,7 +42,6 @@
 #include "net/nqe/weighted_observation.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)

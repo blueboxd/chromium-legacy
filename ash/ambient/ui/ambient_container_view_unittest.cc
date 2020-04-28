@@ -8,7 +8,7 @@
 
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_controller.h"
-#include "ash/ambient/fake_ambient_backend_controller_impl.h"
+#include "ash/ambient/test/ambient_ash_test_base.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
@@ -26,42 +26,20 @@
 
 namespace ash {
 
-class AmbientContainerViewTest : public AshTestBase {
+class AmbientContainerViewTest : public AmbientAshTestBase {
  public:
-  AmbientContainerViewTest()
-      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+  AmbientContainerViewTest() = default;
   ~AmbientContainerViewTest() override = default;
 
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kAmbientModeFeature);
-    AshTestBase::SetUp();
-
-    // Will extract this into AmbientAshTestBase.
-    // Need to reset first and then assign the TestPhotoClient because can only
-    // have one instance of AmbientBackendController.
-    GetAmbientController()->set_backend_controller_for_testing(nullptr);
-    GetAmbientController()->set_backend_controller_for_testing(
-        std::make_unique<FakeAmbientBackendControllerImpl>());
-  }
-
-  void Toggle() { GetAmbientController()->Toggle(); }
-
   AmbientContainerView* GetView() {
-    return GetAmbientController()->get_container_view_for_testing();
+    return ambient_controller()->get_container_view_for_testing();
   }
 
-  const base::OneShotTimer& GetTimer() const {
-    return GetAmbientController()->get_timer_for_testing();
+  const base::OneShotTimer& GetTimer() {
+    return ambient_controller()->get_timer_for_testing();
   }
 
  private:
-  AmbientController* GetAmbientController() const {
-    return Shell::Get()->ambient_controller();
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(AmbientContainerViewTest);
 };
 

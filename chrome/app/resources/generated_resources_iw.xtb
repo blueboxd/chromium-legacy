@@ -670,6 +670,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> מוכן להשלים את ההתקנה שלך</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">הענקת גישה למיקרופון</translation>
+<translation id="1871534214638631766">הצגת פרטים קשורים אחרי לחיצה ימנית או לחיצה ארוכה על תוכן</translation>
 <translation id="1871615898038944731">ה-<ph name="DEVICE_TYPE" /> שלך מעודכן</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{העברת כרטיסייה לחלון אחר}two{העברת כרטיסיות לחלון אחר}many{העברת כרטיסיות לחלון אחר}other{העברת כרטיסיות לחלון אחר}}</translation>
 <translation id="1875386316419689002">‏הכרטיסייה הזו מחוברת להתקן HID.</translation>
@@ -726,6 +727,7 @@
 <translation id="1944528062465413897">‏קוד התאמת Bluetooth:</translation>
 <translation id="1944921356641260203">נמצא עדכון</translation>
 <translation id="1946577776959096882">הצגת חשבונות</translation>
+<translation id="1949584741547056205">תשובות מהירות</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">קרתה שגיאה בטעינת התקן הרשת לשיתוף קבצים. יש לבדוק את פרטי הכניסה ולנסות שוב.</translation>
 <translation id="1956050014111002555">הקובץ הכיל אישורים מרובים שאף אחד מהם לא יובא:</translation>
@@ -1908,7 +1910,6 @@
 <translation id="3543597750097719865">‏חתימת X9.62 ECDSA עם SHA-512</translation>
 <translation id="3544879808695557954">שם משתמש (אופציונלי)</translation>
 <translation id="354602065659584722">תוכנה מזיקה הוסרה</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">‏הגדרות Proxy</translation>
 <translation id="3548162552723420559">מתאים את צבע המסך לסביבה</translation>
 <translation id="3550915441744863158">‏Chrome מתעדכן באופן אוטומטי כך שתשתמש תמיד בגרסה העדכנית ביותר</translation>
@@ -5556,7 +5557,6 @@
 <translation id="8493236660459102203">מיקרופון:</translation>
 <translation id="8496717697661868878">הרץ פלאגין זה</translation>
 <translation id="8497219075884839166">‏תוכניות שירות של Windows</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">מקל עליך להביט במסך או לקרוא באור מעומעם</translation>
 <translation id="8498395510292172881">‏המשך קריאה ב-Chrome</translation>
 <translation id="8500234928660943538">‏ה-PUK שגוי. מספר הניסיונות החוזרים שנותרו: <ph name="RETRIES" />.</translation>

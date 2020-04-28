@@ -1,0 +1,34 @@
+This is a testharness.js-based test.
+PASS The DedicatedWorkerGlobalScope interface object should not be exposed
+PASS The AbstractView interface object should not be exposed
+PASS The AbstractWorker interface object should not be exposed
+FAIL The Location interface object should not be exposed assert_false: expected false got true
+FAIL The Navigator interface object should not be exposed assert_false: expected false got true
+FAIL The DOMImplementation interface object should not be exposed assert_false: expected false got true
+FAIL The Audio interface object should not be exposed assert_false: expected false got true
+FAIL The HTMLCanvasElement interface object should not be exposed assert_false: expected false got true
+PASS The Path interface object should not be exposed
+FAIL The TextMetrics interface object should not be exposed assert_false: expected false got true
+PASS The CanvasProxy interface object should not be exposed
+FAIL The CanvasRenderingContext2D interface object should not be exposed assert_false: expected false got true
+PASS The DrawingStyle interface object should not be exposed
+FAIL The PopStateEvent interface object should not be exposed assert_false: expected false got true
+FAIL The HashChangeEvent interface object should not be exposed assert_false: expected false got true
+FAIL The PageTransitionEvent interface object should not be exposed assert_false: expected false got true
+FAIL The ReadableStreamDefaultReader interface object should not be exposed assert_false: expected false got true
+PASS The ReadableStreamBYOBReader interface object should not be exposed
+PASS The ReadableStreamDefaultController interface object should not be exposed
+PASS The ReadableByteStreamController interface object should not be exposed
+FAIL The WritableStreamDefaultWriter interface object should not be exposed assert_false: expected false got true
+PASS The WritableStreamDefaultController interface object should not be exposed
+PASS The IDBEnvironment interface object should not be exposed
+PASS The Database interface object should not be exposed
+FAIL The UIEvent interface object should not be exposed assert_false: expected false got true
+FAIL The FocusEvent interface object should not be exposed assert_false: expected false got true
+FAIL The MouseEvent interface object should not be exposed assert_false: expected false got true
+FAIL The WheelEvent interface object should not be exposed assert_false: expected false got true
+FAIL The InputEvent interface object should not be exposed assert_false: expected false got true
+FAIL The KeyboardEvent interface object should not be exposed assert_false: expected false got true
+FAIL The CompositionEvent interface object should not be exposed assert_false: expected false got true
+Harness: the test ran to completion.
+

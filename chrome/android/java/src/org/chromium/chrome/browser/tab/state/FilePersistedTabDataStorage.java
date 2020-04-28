@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.tab.state;
 
-import android.support.v4.util.AtomicFile;
-
 import androidx.annotation.VisibleForTesting;
+import androidx.core.util.AtomicFile;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;

@@ -673,6 +673,7 @@
 <translation id="1867780286110144690">మీ వ్యవస్థాపనను పూర్తి చెయ్యడానికి <ph name="PRODUCT_NAME" /> సిద్ధంగా ఉంది</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">మైక్రోఫోన్‌కు యాక్సెస్ ఇవ్వండి</translation>
+<translation id="1871534214638631766">కంటెంట్‌పై కుడి క్లిక్ ఇచ్చినప్పుడు లేదా ఎక్కువసేపు నొక్కినప్పుడు సంబంధిత సమాచారాన్ని చూపు</translation>
 <translation id="1871615898038944731">మీ <ph name="DEVICE_TYPE" /> తాజాగా ఉంది</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{ట్యాబ్‌ను మరొక విండోకు తరలించండి}other{ట్యాబ్‌లను మరొక విండోకు తరలించండి}}</translation>
 <translation id="1875386316419689002">HID పరికరానికి ఈ ట్యాబ్ కనెక్ట్ చేయబడింది.</translation>
@@ -729,6 +730,7 @@
 <translation id="1944528062465413897">బ్లూటూత్ పెయిరింగ్ కోడ్:</translation>
 <translation id="1944921356641260203">అప్‌డేట్ కనుగొనబడింది</translation>
 <translation id="1946577776959096882">ఖాతాలను చూడండి</translation>
+<translation id="1949584741547056205">త్వరిత సమాధానాలు</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">షేర్‌ను మౌంట్ చేయడంలో ఎర్రర్ ఏర్పడింది. దయచేసి మీ ఆధారాలను సరిచూసుకుని, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="1956050014111002555">ఫైల్ బహుళ ప్రమాణపత్రాలను కలిగి ఉంది, వీటిలో ఏది దిగుమతి చెయ్యబడింది:</translation>
@@ -1910,7 +1912,6 @@
 <translation id="3543597750097719865">SHA-512తో X9.62 ECDSA సంతకం</translation>
 <translation id="3544879808695557954">వినియోగదారు పేరు (ఐచ్ఛికం)</translation>
 <translation id="354602065659584722">హానికరమైన సాఫ్ట్‌వేర్ తీసివేయబడింది</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">ప్రాక్సీ సెట్టింగ్‌లు</translation>
 <translation id="3548162552723420559">పర్యావరణానికి సరిపోల్చడానికి స్క్రీన్ రంగును సర్దుబాటు చేస్తుంది</translation>
 <translation id="3550915441744863158">Chrome ఆటోమేటిక్‌గా అప్‌డేట్ అవుతుంది కాబట్టి మీ వద్ద ఎప్పుడూ సరికొత్త వెర్షన్ ఉంటుంది</translation>
@@ -5553,7 +5554,6 @@
 <translation id="8493236660459102203">మైక్రోఫోన్:</translation>
 <translation id="8496717697661868878">ఈ ప్లగ్ఇన్‌ను అమలు చేయి</translation>
 <translation id="8497219075884839166">Windows వినియోగాలు</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">కాంతి తక్కువగా ఉన్నప్పుడు మీ స్క్రీన్‌ని చూడటం లేదా చదవడాన్ని సులభతరం చేస్తుంది</translation>
 <translation id="8498395510292172881">Chromeలో చదవడం కొనసాగించండి</translation>
 <translation id="8500234928660943538">PUK తప్పు. మిగిలి ఉన్న పునఃప్రయత్నాల సంఖ్య: <ph name="RETRIES" />.</translation>

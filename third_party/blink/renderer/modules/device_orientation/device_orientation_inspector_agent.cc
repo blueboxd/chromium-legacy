@@ -34,8 +34,8 @@ void DeviceOrientationInspectorAgent::Trace(Visitor* visitor) {
 }
 
 DeviceOrientationController* DeviceOrientationInspectorAgent::Controller() {
-  Document* document = inspected_frames_->Root()->GetDocument();
-  return document ? &DeviceOrientationController::From(*document) : nullptr;
+  LocalDOMWindow* window = inspected_frames_->Root()->DomWindow();
+  return window ? &DeviceOrientationController::From(*window) : nullptr;
 }
 
 Response DeviceOrientationInspectorAgent::setDeviceOrientationOverride(

@@ -117,9 +117,14 @@ void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedBeforeActivation(
     const cc::RenderFrameMetadata& metadata) {}
 
 void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation() {
-  is_scroll_offset_at_top_ = host_->render_frame_metadata_provider()
-                                 ->LastRenderFrameMetadata()
-                                 .is_scroll_offset_at_top;
+  const cc::RenderFrameMetadata& metadata =
+      host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
+  is_scroll_offset_at_top_ = metadata.is_scroll_offset_at_top;
+
+  BrowserAccessibilityManager* manager =
+      host()->GetRootBrowserAccessibilityManager();
+  if (manager)
+    manager->SetPageScaleFactor(metadata.page_scale_factor);
 }
 
 void RenderWidgetHostViewBase::OnRenderFrameSubmission() {}

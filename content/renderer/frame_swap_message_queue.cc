@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "ipc/ipc_message.h"

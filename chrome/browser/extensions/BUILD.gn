@@ -505,8 +505,6 @@ jumbo_static_library("extensions") {
     "error_console/error_console_factory.h",
     "event_router_forwarder.cc",
     "event_router_forwarder.h",
-    "extension_action.cc",
-    "extension_action.h",
     "extension_action_icon_factory.cc",
     "extension_action_icon_factory.h",
     "extension_action_manager.cc",
@@ -1109,7 +1107,6 @@ jumbo_static_library("extensions") {
     }
 
     if (use_x11) {
-      configs += [ "//build/config/linux:x11" ]
       deps += [
         "//ui/events:events_base",
         "//ui/events/platform",

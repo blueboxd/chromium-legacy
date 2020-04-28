@@ -23,37 +23,37 @@ namespace upboarding {
 namespace {
 const char kTileProviderBridgeKey[] = "tile_provider_bridge";
 
-ScopedJavaLocalRef<jobject> createJavaTileAndMaybeAddToList(
+ScopedJavaLocalRef<jobject> CreateJavaTileAndMaybeAddToList(
     JNIEnv* env,
     ScopedJavaLocalRef<jobject> jlist,
-    Tile* tile) {
+    const Tile& tile) {
   ScopedJavaLocalRef<jobject> jchildren =
       Java_TileProviderBridge_createList(env);
 
-  for (const auto& subtile : tile->sub_tiles)
-    createJavaTileAndMaybeAddToList(env, jchildren, subtile.get());
+  for (const auto& subtile : tile.sub_tiles)
+    CreateJavaTileAndMaybeAddToList(env, jchildren, *subtile.get());
 
   return Java_TileProviderBridge_createTileAndMaybeAddToList(
-      env, jlist, ConvertUTF8ToJavaString(env, tile->id),
-      ConvertUTF8ToJavaString(env, tile->display_text),
-      ConvertUTF8ToJavaString(env, tile->accessibility_text),
-      ConvertUTF8ToJavaString(env, tile->query_text), jchildren);
+      env, jlist, ConvertUTF8ToJavaString(env, tile.id),
+      ConvertUTF8ToJavaString(env, tile.display_text),
+      ConvertUTF8ToJavaString(env, tile.accessibility_text),
+      ConvertUTF8ToJavaString(env, tile.query_text), jchildren);
 }
 
-ScopedJavaLocalRef<jobject> createJavaTiles(JNIEnv* env,
-                                            const std::vector<Tile*>& tiles) {
+ScopedJavaLocalRef<jobject> CreateJavaTiles(JNIEnv* env,
+                                            std::vector<Tile> tiles) {
   ScopedJavaLocalRef<jobject> jlist = Java_TileProviderBridge_createList(env);
 
-  for (Tile* tile : tiles)
-    createJavaTileAndMaybeAddToList(env, jlist, tile);
+  for (const auto& tile : tiles)
+    CreateJavaTileAndMaybeAddToList(env, jlist, tile);
 
   return jlist;
 }
 
 void RunGetTilesCallback(const JavaRef<jobject>& j_callback,
-                         const std::vector<Tile*>& tiles) {
+                         std::vector<Tile> tiles) {
   JNIEnv* env = AttachCurrentThread();
-  RunObjectCallbackAndroid(j_callback, createJavaTiles(env, tiles));
+  RunObjectCallbackAndroid(j_callback, CreateJavaTiles(env, std::move(tiles)));
 }
 
 void RunGeVisualsCallback(const JavaRef<jobject>& j_callback,

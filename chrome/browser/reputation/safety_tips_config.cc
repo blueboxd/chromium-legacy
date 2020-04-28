@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
 using chrome_browser_safety_tips::FlaggedPage;
@@ -114,6 +115,25 @@ bool IsUrlAllowlistedBySafetyTipsComponent(
         });
 
     if (lower != allowed_pages.end() && pattern == lower->pattern()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool IsTargetUrlAllowlistedBySafetyTipsComponent(
+    const chrome_browser_safety_tips::SafetyTipsConfig* proto,
+    const GURL& url) {
+  DCHECK(proto);
+  DCHECK(!url.host().empty());
+  for (const auto& host_pattern : proto->allowed_target_pattern()) {
+    if (!host_pattern.has_regex()) {
+      continue;
+    }
+    DCHECK(!host_pattern.regex().empty());
+    const re2::RE2 regex(host_pattern.regex());
+    DCHECK(regex.ok());
+    if (re2::RE2::FullMatch(url.host(), regex)) {
       return true;
     }
   }

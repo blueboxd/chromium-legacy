@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "base/pickle.h"
 #include "base/threading/thread_task_runner_handle.h"

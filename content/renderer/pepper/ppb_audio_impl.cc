@@ -4,7 +4,7 @@
 
 #include "content/renderer/pepper/ppb_audio_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/pepper_platform_audio_output.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"

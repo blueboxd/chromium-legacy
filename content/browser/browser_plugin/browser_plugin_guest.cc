@@ -522,16 +522,6 @@ void BrowserPluginGuest::OnSetFocus(int browser_plugin_instance_id,
   SetFocus(rwh, focused, focus_type);
 }
 
-void BrowserPluginGuest::OnSetEditCommandsForNextKeyEvent(
-    int browser_plugin_instance_id,
-    const std::vector<EditCommand>& edit_commands) {
-  GetWebContents()
-      ->GetRenderViewHost()
-      ->GetWidget()
-      ->GetWidgetInputHandler()
-      ->SetEditCommandsForNextKeyEvent(edit_commands);
-}
-
 void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
   // mouse_locked_ could be false here if the lock attempt was cancelled due
   // to window focus, or for various other reasons before the guest was informed

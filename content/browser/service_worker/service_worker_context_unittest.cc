@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"

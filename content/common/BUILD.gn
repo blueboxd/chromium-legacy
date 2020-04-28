@@ -55,6 +55,8 @@ source_set("common") {
     "appcache_interfaces.h",
     "ax_content_node_data.cc",
     "ax_content_node_data.h",
+    "ax_serialization_utils.cc",
+    "ax_serialization_utils.h",
     "background_fetch/background_fetch_types.cc",
     "background_fetch/background_fetch_types.h",
     "browser_plugin/browser_plugin_constants.cc",
@@ -412,10 +414,7 @@ source_set("common") {
   }
 
   if (use_clang_profiling_inside_sandbox) {
-    sources += [
-      "profiling_utils.cc",
-      "profiling_utils.h",
-    ]
+    sources += [ "profiling_utils.cc" ]
   }
 }
 

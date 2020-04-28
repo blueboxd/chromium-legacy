@@ -584,6 +584,28 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       RetryAuthTokenExchangeRequestOnUnauthorizedError) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+
+  base::RunLoop run_loop;
+  auth_instance().RequestAccountInfo(kFakeUserName, run_loop.QuitClosure());
+
+  EXPECT_TRUE(
+      test_url_loader_factory()->IsPending(arc::kAuthTokenExchangeEndPoint));
+  test_url_loader_factory()->SimulateResponseForPendingRequest(
+      arc::kAuthTokenExchangeEndPoint, std::string(), net::HTTP_UNAUTHORIZED);
+
+  // Should retry auth token exchange request
+  EXPECT_TRUE(
+      test_url_loader_factory()->IsPending(arc::kAuthTokenExchangeEndPoint));
+  test_url_loader_factory()->SimulateResponseForPendingRequest(
+      arc::kAuthTokenExchangeEndPoint, GetFakeAuthTokenResponse());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance().account_info());
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
                        ReAuthenticatePrimaryAccountFailsForInvalidAccount) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,

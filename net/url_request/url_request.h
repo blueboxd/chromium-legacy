@@ -44,7 +44,6 @@
 #include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -731,11 +730,15 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Allow the URLRequestJob class to control the is_pending() flag.
   void set_is_pending(bool value) { is_pending_ = value; }
 
-  // Allow the URLRequestJob class to set our status too.
-  void set_status(URLRequestStatus status);
+  // Setter / getter for the status of the request. Status is represented as a
+  // net::Error code. See |status_|.
+  int status() const { return status_; }
+  void set_status(int status);
+
+  // Returns true if the request failed or was cancelled.
+  bool failed() const;
 
   // Returns the error status of the request.
-  const URLRequestStatus& status() const { return status_; }
 
   // Allow the URLRequestJob to redirect this request. If non-null,
   // |removed_headers| and |modified_headers| are changes
@@ -798,7 +801,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // Called by URLRequestJob to allow interception when the final response
   // occurs.
-  void NotifyResponseStarted(const URLRequestStatus& status);
+  void NotifyResponseStarted(int net_error);
 
   // These functions delegate to |delegate_|.  See URLRequest::Delegate for the
   // meaning of these functions.
@@ -873,10 +876,18 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Notify... methods for this.
   Delegate* delegate_;
 
-  // Current error status of the job. When no error has been encountered, this
-  // will be SUCCESS. If multiple errors have been encountered, this will be
-  // the first non-SUCCESS status seen.
-  URLRequestStatus status_;
+  // Current error status of the job, as a net::Error code. When the job is
+  // busy, it is ERR_IO_PENDING. When the job is idle (either completed, or
+  // awaiting a call from the URLRequestDelegate before continuing the request),
+  // it is OK. If the request has been cancelled without a specific error, it is
+  // ERR_ABORTED. And on failure, it's the corresponding error code for that
+  // error.
+  //
+  // |status_| may bounce between ERR_IO_PENDING and OK as a request proceeds,
+  // but once an error is encountered or the request is canceled, it will take
+  // the appropriate error code and never change again. If multiple failures
+  // have been encountered, this will be the first error encountered.
+  int status_;
 
   // The HTTP response info, lazily initialized.
   HttpResponseInfo response_info_;

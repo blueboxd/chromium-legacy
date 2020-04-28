@@ -673,6 +673,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> орнотууңузду бүтүргөнгө даяр</translation>
 <translation id="1868193363684582383">"Окей Google"</translation>
 <translation id="1870629042957780127">Микрофонду колдонууга уруксат берүү</translation>
+<translation id="1871534214638631766">Чычкандагы оң баскычты чыкылдатканда же мазмунду коё бербей басып турганда тийиштүү маалымат көрсөтүлөт</translation>
 <translation id="1871615898038944731"><ph name="DEVICE_TYPE" /> түзмөгүңүз жаңыртылган</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Өтмөктү башка терезеге жылдыруу}other{Өтмөктөрдү башка терезеге жылдыруу}}</translation>
 <translation id="1875386316419689002">Бул өтмөк HID түзмөгүнө туташтырылган.</translation>
@@ -729,6 +730,7 @@
 <translation id="1944528062465413897">Bluetooth жупташтыруу коду:</translation>
 <translation id="1944921356641260203">Жаңыртуу табылды</translation>
 <translation id="1946577776959096882">Аккаунттарды көрүү</translation>
+<translation id="1949584741547056205">Ыкчам жооптор</translation>
 <translation id="1951012854035635156">Жардамчы</translation>
 <translation id="1954813140452229842">Түзмөктү кошууда ката кетти. Эсептик дайын-даректериңизди текшерип, кайталап көрүңүз.</translation>
 <translation id="1956050014111002555">Файлда, бирөөсү да импорттолбогон, бир нече тастыктама бар:</translation>
@@ -1910,7 +1912,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="3543597750097719865">X9.62 ECDSA Колтамгасы SHA-512 менен</translation>
 <translation id="3544879808695557954">Колдонуучунун аты (милдеттүү эмес)</translation>
 <translation id="354602065659584722">Зыянкеч программа өчүрүлдү</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Прокси жөндөөлөрү</translation>
 <translation id="3548162552723420559">Айлана-чөйрөгө окшоштуруу үчүн экрандын түсүн тууралайт</translation>
 <translation id="3550915441744863158">Chrome автоматтык түрдө жаңырып тургандыктан, ар дайым кычыраган жапжаңы версияда иштейсиз.</translation>
@@ -5556,7 +5557,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8493236660459102203">Микрофон:</translation>
 <translation id="8496717697661868878">Бул плагинди иштетүү</translation>
 <translation id="8497219075884839166">Windows кызматтык программалары</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Бул режим күңүрт жерде көзүңүзгө күч келтирбөөгө жардам берет</translation>
 <translation id="8498395510292172881">Chrome'до улантуу</translation>
 <translation id="8500234928660943538">PUK туура эмес. Калган аракеттердин саны: <ph name="RETRIES" />.</translation>

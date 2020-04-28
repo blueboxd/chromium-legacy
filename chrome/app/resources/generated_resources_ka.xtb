@@ -1911,7 +1911,6 @@
 <translation id="3543597750097719865">X9.62 ECDSA ხელმოწერა SHA-512-ით</translation>
 <translation id="3544879808695557954">მომხმარებლის სახელი (არასავალდებულო)</translation>
 <translation id="354602065659584722">საზიანო პროგრამული უზრუნველყოფა ამოიშალა</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">პროქსის პარამეტრები</translation>
 <translation id="3548162552723420559">დაარეგულირებს ეკრანის ფერს გარემოს შესაბამისად</translation>
 <translation id="3550915441744863158">Chrome ავტომატურად განახლდება, ასე რომ თქვენ ყოველთვის გაქვთ უახლესი ვერსია</translation>
@@ -5556,7 +5555,6 @@
 <translation id="8493236660459102203">მიკროფონი:</translation>
 <translation id="8496717697661868878">ამ დანამატის გაშვება</translation>
 <translation id="8497219075884839166">Windows-ის უტილიტები</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">გაიმარტივეთ ეკრანზე კითხვა ან მისი ყურება მკრთალი განათების პირობებში</translation>
 <translation id="8498395510292172881">კითხვის გაგრძელება Chrome-ში</translation>
 <translation id="8500234928660943538">PUK-კოდი არასწორია. გამეორებების დარჩენილი რაოდენობა: <ph name="RETRIES" />.</translation>

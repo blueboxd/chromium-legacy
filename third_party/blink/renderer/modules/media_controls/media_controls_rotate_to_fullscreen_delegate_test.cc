@@ -211,7 +211,7 @@ void MediaControlsRotateToFullscreenDelegateTest::InitScreenAndVideo(
     // MediaControlsRotateToFullscreenDelegate's requirement that the device
     // supports the API and can provide beta and gamma values. The orientation
     // will be ignored.
-    DeviceOrientationController::From(GetDocument())
+    DeviceOrientationController::From(GetWindow())
         .SetOverride(DeviceOrientationData::Create(
             0.0 /* alpha */, 90.0 /* beta */, 0.0 /* gamma */,
             false /* absolute */));
@@ -473,7 +473,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Dispatch an null Device Orientation event, as happens when the device lacks
   // the necessary hardware to support the Device Orientation API.
-  DeviceOrientationController::From(GetDocument())
+  DeviceOrientationController::From(GetWindow())
       .SetOverride(DeviceOrientationData::Create());
   test::RunPendingTasks();
 
@@ -501,7 +501,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   // Dispatch a Device Orientation event where all values are zero, as happens
   // on poorly configured devices that lack the necessary hardware to support
   // the Device Orientation API, but don't properly expose that lack.
-  DeviceOrientationController::From(GetDocument())
+  DeviceOrientationController::From(GetWindow())
       .SetOverride(
           DeviceOrientationData::Create(0.0 /* alpha */, 0.0 /* beta */,
                                         0.0 /* gamma */, false /* absolute */));

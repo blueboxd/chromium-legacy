@@ -4,7 +4,7 @@
 
 #include "content/common/input/touch_event_stream_validator.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/stringprintf.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"

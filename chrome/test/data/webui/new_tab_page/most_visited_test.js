@@ -429,7 +429,7 @@ suite('NewTabPageMostVisitedTest', () => {
     await addTiles(2);
     const {actionMenu, dialog} = mostVisited.$;
     assertFalse(actionMenu.open);
-    queryTiles()[0].querySelector('cr-icon-button').click();
+    queryTiles()[0].querySelector('#actionMenuButton').click();
     assertTrue(actionMenu.open);
     assertFalse(dialog.open);
     mostVisited.$.actionMenuEdit.click();
@@ -464,7 +464,7 @@ suite('NewTabPageMostVisitedTest', () => {
       cancelButton = dialog.querySelector('.cancel-button');
       await addTiles(2);
       tile = queryTiles()[1];
-      actionMenuButton = tile.querySelector('cr-icon-button');
+      actionMenuButton = tile.querySelector('#actionMenuButton');
       actionMenuButton.click();
       mostVisited.$.actionMenuEdit.click();
     });
@@ -526,7 +526,7 @@ suite('NewTabPageMostVisitedTest', () => {
     const {actionMenu, actionMenuRemove: removeButton} = mostVisited.$;
     await addTiles(2);
     const secondTile = queryTiles()[1];
-    const actionMenuButton = secondTile.querySelector('cr-icon-button');
+    const actionMenuButton = secondTile.querySelector('#actionMenuButton');
 
     assertFalse(actionMenu.open);
     actionMenuButton.click();
@@ -541,7 +541,7 @@ suite('NewTabPageMostVisitedTest', () => {
 
   test('remove with icon button (customLinksEnabled=false)', async () => {
     await addTiles(1, /* customLinksEnabled */ false);
-    const removeButton = queryTiles()[0].querySelector('cr-icon-button');
+    const removeButton = queryTiles()[0].querySelector('#removeButton');
     const deleteCalled = testProxy.handler.whenCalled('deleteMostVisitedTile');
     removeButton.click();
     assertEquals('https://a/', (await deleteCalled).url);

@@ -180,8 +180,8 @@ InputMethodPrivateGetInputMethodsFunction::Run() {
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateFetchAllDictionaryWordsFunction::Run() {
-  SpellcheckService* spellcheck = SpellcheckServiceFactory::GetForContext(
-      context_);
+  SpellcheckService* spellcheck =
+      SpellcheckServiceFactory::GetForContext(browser_context());
   if (!spellcheck) {
     return RespondNow(
         Error(InformativeError(kErrorSpellCheckNotAvailable, function_name())));
@@ -205,8 +205,8 @@ InputMethodPrivateAddWordToDictionaryFunction::Run() {
   std::unique_ptr<AddWordToDictionary::Params> params(
       AddWordToDictionary::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  SpellcheckService* spellcheck = SpellcheckServiceFactory::GetForContext(
-      context_);
+  SpellcheckService* spellcheck =
+      SpellcheckServiceFactory::GetForContext(browser_context());
   if (!spellcheck) {
     return RespondNow(
         Error(InformativeError(kErrorSpellCheckNotAvailable, function_name())));
@@ -391,7 +391,7 @@ ExtensionFunction::ResponseAction InputMethodPrivateSetSettingsFunction::Run() {
         extensions::events::INPUT_METHOD_PRIVATE_ON_SETTINGS_CHANGED,
         OnSettingsChanged::kEventName,
         OnSettingsChanged::Create(params->engine_id, params->settings),
-        context_);
+        browser_context());
     router->BroadcastEvent(std::move(event));
   }
 

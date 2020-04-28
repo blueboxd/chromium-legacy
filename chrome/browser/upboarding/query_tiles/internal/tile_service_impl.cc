@@ -21,7 +21,7 @@ TileServiceImpl::TileServiceImpl(std::unique_ptr<ImageLoader> image_loader,
 TileServiceImpl::~TileServiceImpl() = default;
 
 void TileServiceImpl::GetQueryTiles(GetTilesCallback callback) {
-  NOTIMPLEMENTED();
+  tile_manager_->GetTiles(std::move(callback));
 }
 
 void TileServiceImpl::GetVisuals(const std::string& tile_id,

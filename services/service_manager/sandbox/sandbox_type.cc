@@ -30,6 +30,12 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
 #endif
     case SandboxType::kAudio:
       return !IsAudioSandboxEnabled();
+    case SandboxType::kVideoCapture:
+#if defined(OS_FUCHSIA)
+      return false;
+#else
+      return true;
+#endif
     case SandboxType::kNetwork:
 #if defined(OS_MACOSX)
       return false;
@@ -105,6 +111,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SandboxType::kCdm:
     case SandboxType::kPrintCompositor:
     case SandboxType::kAudio:
+    case SandboxType::kVideoCapture:
 #if defined(OS_WIN)
     case SandboxType::kXrCompositing:
     case SandboxType::kProxyResolver:
@@ -215,6 +222,8 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
       return switches::kUtilitySandbox;
     case SandboxType::kAudio:
       return switches::kAudioSandbox;
+    case SandboxType::kVideoCapture:
+      return switches::kVideoCaptureSandbox;
 #if !defined(OS_MACOSX)
     case SandboxType::kSharingService:
       return switches::kSharingServiceSandbox;
@@ -283,6 +292,8 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
     return SandboxType::kAudio;
   if (sandbox_string == switches::kSpeechRecognitionSandbox)
     return SandboxType::kSpeechRecognition;
+  if (sandbox_string == switches::kVideoCaptureSandbox)
+    return SandboxType::kVideoCapture;
 #if defined(OS_CHROMEOS)
   if (sandbox_string == switches::kImeSandbox)
     return SandboxType::kIme;

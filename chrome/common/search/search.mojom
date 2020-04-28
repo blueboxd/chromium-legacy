@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module chrome.mojom;
+module search.mojom;
 
 import "chrome/common/search/omnibox.mojom";
 import "mojo/public/mojom/base/string16.mojom";
@@ -208,7 +208,7 @@ struct SearchBoxTheme;
 // example, the browser will tell the frame if the omnibox got focus.
 interface EmbeddedSearchClient {
   // Updates the NTP realbox with the autocomplete results.
-  AutocompleteResultChanged(chrome.mojom.AutocompleteResult result);
+  AutocompleteResultChanged(search.mojom.AutocompleteResult result);
 
   // Updates the NTP realbox popup with the image or favicon data URL for the
   // given |match_index| and |url| where |url| is an AutocompleteMatch image_url

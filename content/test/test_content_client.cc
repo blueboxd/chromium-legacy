@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/base_paths.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"

@@ -4,7 +4,7 @@
 
 #include "content/browser/accessibility/hit_testing_browsertest.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
@@ -77,6 +77,10 @@ float AccessibilityHitTestingBrowserTest::GetDeviceScaleFactor() {
   return GetRootBrowserAccessibilityManager()->device_scale_factor();
 }
 
+float AccessibilityHitTestingBrowserTest::GetPageScaleFactor() {
+  return GetRootBrowserAccessibilityManager()->GetPageScaleFactor();
+}
+
 gfx::Rect
 AccessibilityHitTestingBrowserTest::GetViewBoundsInScreenCoordinates() {
   return GetRootBrowserAccessibilityManager()
@@ -104,7 +108,7 @@ gfx::Point AccessibilityHitTestingBrowserTest::CSSToPhysicalPixelPoint(
     gfx::Point css_point) {
   gfx::Point frame_point = CSSToFramePoint(css_point);
   gfx::Point viewport_point =
-      gfx::ScaleToRoundedPoint(frame_point, page_scale_);
+      gfx::ScaleToRoundedPoint(frame_point, GetPageScaleFactor());
 
   gfx::Rect screen_view_bounds = GetViewBoundsInScreenCoordinates();
   gfx::Point screen_point =
@@ -221,7 +225,6 @@ void AccessibilityHitTestingBrowserTest::SimulatePinchZoom(
   const cc::RenderFrameMetadata& render_frame_metadata =
       observer.LastRenderFrameMetadata();
   DCHECK(render_frame_metadata.page_scale_factor == desired_page_scale);
-  page_scale_ = render_frame_metadata.page_scale_factor;
   if (render_frame_metadata.root_scroll_offset)
     scroll_offset_ = gfx::ToRoundedVector2d(
         render_frame_metadata.root_scroll_offset.value());
@@ -258,7 +261,7 @@ std::string AccessibilityHitTestingBrowserTest::GetScopedTrace(
                 << GetRootBrowserAccessibilityManager()
                        ->GetViewBoundsInScreenCoordinates()
                        .ToString()
-                << " Page scale: " << page_scale_
+                << " Page scale: " << GetPageScaleFactor()
                 << " Scroll offset: " << scroll_offset_.ToString() << std::endl
                 << "Test point CSS: " << css_point.ToString()
                 << " Frame: " << CSSToFramePoint(css_point).ToString()
@@ -468,7 +471,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingCrossProcessBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
-                       CachingAsyncHitTestingInIframes) {
+                       CachingAsyncHitTestMissesElement) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
@@ -522,7 +525,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
 
 #if !defined(OS_ANDROID) && !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
-                       CachingAsyncHitTestWithPinchZoom) {
+                       CachingAsyncHitTest_WithPinchZoom) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
@@ -563,7 +566,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
-                       HitTestWithPinchZoom) {
+                       HitTest_WithPinchZoom) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
@@ -599,6 +602,62 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
     BrowserAccessibility* hit_node = HitTestAndWaitForResult(rect_b_point);
     BrowserAccessibility* expected_node =
         FindNode(ax::mojom::Role::kGenericContainer, "rectB");
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_b_point, expected_node, hit_node);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
+                       CachingAsyncHitTestMissesElement_WithPinchZoom) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(embedded_test_server()->GetURL(
+      "/accessibility/hit_testing/simple_rectangles_with_curtain.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  waiter.WaitForNotification();
+
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "rectA");
+
+  // Apply pinch zoom.
+  SimulatePinchZoom(1.25f);
+
+  // For each point we try, the first time we call CachingAsyncHitTest it
+  // should FAIL and return the wrong object, because this test page has
+  // been designed to confound local synchronous hit testing using
+  // z-indexes. However, calling CachingAsyncHitTest a second time should
+  // return the correct result (since CallCachingAsyncHitTest waits for the
+  // HOVER event to be received).
+
+  // Test a hit on a rect in the main frame.
+  {
+    // First call should land on the wrong element.
+    gfx::Point rect_2_point(49, 20);
+    BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_2_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rect2");
+    EXPECT_NE(expected_node->GetName(), hit_node->GetName());
+
+    // Call again and we should get the correct element.
+    hit_node = CallCachingAsyncHitTest(rect_2_point);
+    EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_2_point, expected_node, hit_node);
+  }
+
+  // Test a hit on a rect in the iframe.
+  {
+    // First call should land on the wrong element.
+    gfx::Point rect_b_point(79, 79);
+    BrowserAccessibility* hit_node = CallCachingAsyncHitTest(rect_b_point);
+    BrowserAccessibility* expected_node =
+        FindNode(ax::mojom::Role::kGenericContainer, "rectB");
+    EXPECT_NE(expected_node->GetName(), hit_node->GetName());
+
+    // Call again and we should get the correct element.
+    hit_node = CallCachingAsyncHitTest(rect_b_point);
     EXPECT_ACCESSIBILITY_HIT_TEST_RESULT(rect_b_point, expected_node, hit_node);
   }
 }

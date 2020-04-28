@@ -699,28 +699,32 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
       item->safe_search_result = media_feeds::mojom::SafeSearchResult::kUnknown;
 
       {
-        media_session::MediaImage image;
-        image.src = GURL("https://www.example.org/image1.png");
-        item->images.push_back(image);
+        media_feeds::mojom::MediaImagePtr image =
+            media_feeds::mojom::MediaImage::New();
+        image->src = GURL("https://www.example.org/image1.png");
+        item->images.push_back(std::move(image));
       }
 
       {
-        media_session::MediaImage image;
-        image.src = GURL("https://www.example.org/image2.png");
-        image.sizes.push_back(gfx::Size(10, 10));
-        item->images.push_back(image);
+        media_feeds::mojom::MediaImagePtr image =
+            media_feeds::mojom::MediaImage::New();
+        image->src = GURL("https://www.example.org/image2.png");
+        image->size = gfx::Size(10, 10);
+        item->images.push_back(std::move(image));
       }
 
       {
-        media_session::MediaImage image;
-        image.src = GURL("https://www.example.org/episode-image.png");
-        item->tv_episode->images.push_back(image);
+        media_feeds::mojom::MediaImagePtr image =
+            media_feeds::mojom::MediaImage::New();
+        image->src = GURL("https://www.example.org/episode-image.png");
+        item->tv_episode->images.push_back(std::move(image));
       }
 
       {
-        media_session::MediaImage image;
-        image.src = GURL("https://www.example.org/next-image.png");
-        item->play_next_candidate->images.push_back(image);
+        media_feeds::mojom::MediaImagePtr image =
+            media_feeds::mojom::MediaImage::New();
+        image->src = GURL("https://www.example.org/next-image.png");
+        item->play_next_candidate->images.push_back(std::move(image));
       }
 
       items.push_back(std::move(item));
@@ -778,20 +782,22 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
     return items;
   }
 
-  static std::vector<media_session::MediaImage> GetExpectedLogos() {
-    std::vector<media_session::MediaImage> logos;
+  static std::vector<media_feeds::mojom::MediaImagePtr> GetExpectedLogos() {
+    std::vector<media_feeds::mojom::MediaImagePtr> logos;
 
     {
-      media_session::MediaImage image;
-      image.src = GURL("https://www.example.org/image1.png");
-      image.sizes.push_back(gfx::Size(10, 10));
-      logos.push_back(image);
+      media_feeds::mojom::MediaImagePtr image =
+          media_feeds::mojom::MediaImage::New();
+      image->src = GURL("https://www.example.org/image1.png");
+      image->size = gfx::Size(10, 10);
+      logos.push_back(std::move(image));
     }
 
     {
-      media_session::MediaImage image;
-      image.src = GURL("https://www.example.org/image2.png");
-      logos.push_back(image);
+      media_feeds::mojom::MediaImagePtr image =
+          media_feeds::mojom::MediaImage::New();
+      image->src = GURL("https://www.example.org/image2.png");
+      logos.push_back(std::move(image));
     }
 
     return logos;
@@ -932,7 +938,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
   service()->StoreMediaFeedFetchResult(
       feed_id, GetAltExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
-      std::vector<media_session::MediaImage>(), kExpectedDisplayName,
+      std::vector<media_feeds::mojom::MediaImagePtr>(), kExpectedDisplayName,
       std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
@@ -976,7 +982,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
   service()->StoreMediaFeedFetchResult(
       feed_id, GetAltExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ true,
-      std::vector<media_session::MediaImage>(), kExpectedDisplayName,
+      std::vector<media_feeds::mojom::MediaImagePtr>(), kExpectedDisplayName,
       std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
@@ -1047,7 +1053,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_WithEmpty) {
   service()->StoreMediaFeedFetchResult(
       feed_id, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
-      std::vector<media_session::MediaImage>(), std::string(),
+      std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
       std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
@@ -1069,7 +1075,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_WithEmpty) {
       feed_id, std::vector<media_feeds::mojom::MediaFeedItemPtr>(),
       media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
-      std::vector<media_session::MediaImage>(), std::string(),
+      std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
       std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
@@ -1097,7 +1103,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_MultipleFeeds) {
   service()->StoreMediaFeedFetchResult(
       feed_id_a, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
-      std::vector<media_session::MediaImage>(), std::string(),
+      std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
       GetExpectedAssociatedOrigins(), base::DoNothing());
   WaitForDB();
 
@@ -1105,7 +1111,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_MultipleFeeds) {
       feed_id_b, GetAltExpectedItems(),
       media_feeds::mojom::FetchResult::kFailedNetworkError,
       /* was_fetched_from_cache= */ false,
-      std::vector<media_session::MediaImage>(), std::string(),
+      std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
       std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
@@ -1188,7 +1194,7 @@ TEST_P(MediaHistoryStoreFeedsTest, RediscoverMediaFeed) {
   service()->StoreMediaFeedFetchResult(
       feed_id, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
-      std::vector<media_session::MediaImage>(), std::string(),
+      std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
       std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
@@ -1349,49 +1355,55 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckLogoMax) {
   // to ensure a no-op.
   const int feed_id = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
 
-  std::vector<media_session::MediaImage> logos;
+  std::vector<media_feeds::mojom::MediaImagePtr> logos;
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image1.png");
-    logos.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image1.png");
+    logos.push_back(std::move(image));
   }
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image2.png");
-    logos.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image2.png");
+    logos.push_back(std::move(image));
   }
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image3.png");
-    logos.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image3.png");
+    logos.push_back(std::move(image));
   }
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image4.png");
-    logos.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image4.png");
+    logos.push_back(std::move(image));
   }
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image5.png");
-    logos.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image5.png");
+    logos.push_back(std::move(image));
   }
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image6.png");
-    logos.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image6.png");
+    logos.push_back(std::move(image));
   }
 
   service()->StoreMediaFeedFetchResult(
       feed_id, GetExpectedItems(),
       media_feeds::mojom::FetchResult::kFailedNetworkError,
-      /* was_fetched_from_cache= */ false, logos, kExpectedDisplayName,
-      std::vector<url::Origin>(), base::DoNothing());
+      /* was_fetched_from_cache= */ false, std::move(logos),
+      kExpectedDisplayName, std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1425,39 +1437,45 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckImageMax) {
   item->safe_search_result = media_feeds::mojom::SafeSearchResult::kUnknown;
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image1.png");
-    item->images.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image1.png");
+    item->images.push_back(std::move(image));
   }
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image2.png");
-    item->images.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image2.png");
+    item->images.push_back(std::move(image));
   }
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image3.png");
-    item->images.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image3.png");
+    item->images.push_back(std::move(image));
   }
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image4.png");
-    item->images.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image4.png");
+    item->images.push_back(std::move(image));
   }
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image5.png");
-    item->images.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image5.png");
+    item->images.push_back(std::move(image));
   }
 
   {
-    media_session::MediaImage image;
-    image.src = GURL("https://www.example.org/image6.png");
-    item->images.push_back(image);
+    media_feeds::mojom::MediaImagePtr image =
+        media_feeds::mojom::MediaImage::New();
+    image->src = GURL("https://www.example.org/image6.png");
+    item->images.push_back(std::move(image));
   }
 
   std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
@@ -1537,7 +1555,7 @@ TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
   service()->StoreMediaFeedFetchResult(
       feed_id_a, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
-      std::vector<media_session::MediaImage>(), std::string(),
+      std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
       std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
@@ -1545,7 +1563,7 @@ TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
       feed_id_b, GetAltExpectedItems(),
       media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
-      std::vector<media_session::MediaImage>(), std::string(),
+      std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
       std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
@@ -1668,14 +1686,14 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
             i + 1, GetExpectedItems(),
             media_feeds::mojom::FetchResult::kSuccess,
             /* was_fetched_from_cache= */ false,
-            std::vector<media_session::MediaImage>(), std::string(),
+            std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
             std::vector<url::Origin>(), base::DoNothing());
       } else if (i % 2 == 0) {
         service()->StoreMediaFeedFetchResult(
             i + 1, GetAltExpectedItems(),
             media_feeds::mojom::FetchResult::kSuccess,
             /* was_fetched_from_cache= */ false,
-            std::vector<media_session::MediaImage>(), std::string(),
+            std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
             std::vector<url::Origin>(), base::DoNothing());
       }
     }
@@ -2155,7 +2173,7 @@ TEST_P(MediaHistoryStoreFeedsTest, DeleteMediaFeed) {
   service()->StoreMediaFeedFetchResult(
       feed_id_a, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
-      std::vector<media_session::MediaImage>(), std::string(),
+      std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
       std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
@@ -2163,7 +2181,7 @@ TEST_P(MediaHistoryStoreFeedsTest, DeleteMediaFeed) {
       feed_id_b, GetAltExpectedItems(),
       media_feeds::mojom::FetchResult::kFailedNetworkError,
       /* was_fetched_from_cache= */ false,
-      std::vector<media_session::MediaImage>(), std::string(),
+      std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
       std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 

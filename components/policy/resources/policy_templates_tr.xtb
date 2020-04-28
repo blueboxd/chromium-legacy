@@ -5518,7 +5518,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
       Bu politika true (doğru) değerine ayarlanırsa veya yapılandırılmazsa, <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> tarafından kullanıcıların giriş yapmasının engellenmemesi koşuluyla yeni kullanıcı hesaplarının oluşturulmasına izin verilir.</translation>
 <translation id="974349541138387272">İstenen DNS-over-HTTPS çözümleyicisinin URI şablonunu belirler</translation>
-<translation id="974479807614498635">"Hızlı Yanıtlar'ın seçilen içeriğe erişmesine izin ver</translation>
+<translation id="974479807614498635">"Hızlı Yanıtlar'ın seçilen içeriğe erişmesine izin ver"</translation>
 <translation id="981346395360763138">Google konum hizmetleri devre dışı</translation>
 <translation id="982497069985795632">Yazım denetimini etkinleştir</translation>
 <translation id="991560005425213776">Kullanıcı adını ve dosya adını yerel yazıcılara gönderme</translation>

@@ -566,6 +566,12 @@
       },
     },
   },
+  'capture_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/1075762
+      'Fuchsia x64',  # https://crbug.com/1075762
+    ],
+  },
   'cc_unittests': {
     'modifications': {
       'Linux TSan Tests': {
@@ -2099,7 +2105,7 @@
       },
     },
     'remove_from': [
-      # There's no need to run telemetry_perf_unittests on both kitkat and
+      # There's no need to run telemetry_perf_unittests on both lollipop and
       # marshmallow on the CQ. https://crbug.com/1026487.
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
@@ -2133,7 +2139,7 @@
   'unit_tests': {
     'remove_from': [
       'android-code-coverage-native', # crbug/1018434
-      # There's no need to run unit_tests on both kitkat and marshmallow
+      # There's no need to run unit_tests on both lollipop and marshmallow
       # on the CQ. https://crbug.com/1026487.
       'android-marshmallow-arm64-rel',
     ],

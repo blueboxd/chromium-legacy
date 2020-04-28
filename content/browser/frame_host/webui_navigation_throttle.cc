@@ -49,10 +49,8 @@ WebUINavigationThrottle::CreateThrottleForNavigation(
   if (navigation_handle->IsInMainFrame())
     return nullptr;
 
-  RenderFrameHostImpl* parent = NavigationRequest::From(navigation_handle)
-                                    ->frame_tree_node()
-                                    ->parent()
-                                    ->current_frame_host();
+  RenderFrameHostImpl* parent =
+      NavigationRequest::From(navigation_handle)->GetParentFrame();
 
   // Throttle if the renderer process has WebUI bindings, or if the parent frame
   // is on a WebUI page.

@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Blokirano na nekim sajtovima</translation>
 <translation id="3190152372525844641">Uključite dozvole za Chrome u <ph name="BEGIN_LINK" />Android podešavanjima<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> sačuvanih podataka</translation>
-<translation id="3223655101706843289">Ovim brišete sve podatke i kolačiće koje čuvaju sajt <ph name="ORIGIN" /> i njegova aplikacija na početnom ekranu.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Dozvoli sajtovima da pristupaju senzorima (preporučeno)</translation>
 <translation id="3295602654194328831">Sakrij informacije</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Sačuvaj</translation>
 <translation id="5335288049665977812">Dozvoli sajtovima da pokreću JavaScript (preporučeno)</translation>
 <translation id="534295439873310000">NFC uređaji</translation>
+<translation id="5354152178998424783">Ovim brišete <ph name="DATASIZE" /> podataka i kolačića koje čuvaju sajtovi.</translation>
 <translation id="5391532827096253100">Veza sa ovim sajtom nije bezbedna. Informacije o sajtu</translation>
 <translation id="5494752089476963479">Blokiraj oglase na sajtovima koji prikazuju oglase koji ometaju aktivnosti ili obmanjujuće oglase</translation>
 <translation id="5505264765875738116">Sajtovi ne mogu da traže da šalju obaveštenja</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Odjavićete se sa ovog sajta.</translation>
 <translation id="7828557259026017104">Kolačići su datoteke koje prave veb-sajtovi koje posećujete. Sajtovi ih koriste da bi zapamtili vaša podešavanja. Kolačiće treće strane prave drugi sajtovi. Ti sajtovi su vlasnici delova sadržaja koji vidite na posećenoj veb-stranici, poput oglasa ili slika.</translation>
 <translation id="7846076177841592234">Otkaži izbor</translation>
+<translation id="7846621471902887024">Odjavićete se sa svih sajtova.</translation>
 <translation id="7882806643839505685">Dozvoli zvuk za određeni sajt.</translation>
 <translation id="7993619969781047893">Funkcije na nekim sajtovima mogu da prestanu sa radom</translation>
 <translation id="7999064672810608036">Želite li stvarno da obrišete sve lokalne podatke, uključujući kolačiće, i resetujete sve dozvole za ovaj veb-sajt?</translation>

@@ -40,10 +40,10 @@ extern const char kSearchIconResourceName[];
 std::string AutocompleteMatchVectorIconToResourceName(
     const gfx::VectorIcon& icon);
 
-std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
+std::vector<search::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
     const AutocompleteResult& result);
 
-chrome::mojom::AutocompleteResultPtr CreateAutocompleteResult(
+search::mojom::AutocompleteResultPtr CreateAutocompleteResult(
     const base::string16& input,
     const AutocompleteResult& result,
     PrefService* prefs);

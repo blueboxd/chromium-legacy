@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -160,7 +161,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   void OnAnchorBoundsChanged();
 
  protected:
-
   // Returns the desired arrow post-RTL mirroring if needed.
   BubbleBorder::Arrow arrow() const { return arrow_; }
 
@@ -283,6 +283,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // monitor clicks as well for the desired behavior.
   std::unique_ptr<ui::BubbleCloser> mac_bubble_closer_;
 #endif
+
+  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BubbleDialogDelegateView);
 };

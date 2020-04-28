@@ -5,8 +5,8 @@
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "content/child/browser_font_resource_trusted.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"

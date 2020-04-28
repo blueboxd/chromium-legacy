@@ -199,8 +199,6 @@ WebString ConvertToPublic(
       return "frame-src";
     case CSPDirectiveName::FormAction:
       return "form-action";
-    case CSPDirectiveName::UpgradeInsecureRequests:
-      return "upgrade-insecure-requests";
     case CSPDirectiveName::NavigateTo:
       return "navigate-to";
     case CSPDirectiveName::FrameAncestors:
@@ -223,9 +221,13 @@ WebContentSecurityPolicy ConvertToPublic(
                        ConvertToPublic(std::move(directive.value))};
   }
 
-  return {policy->header->type,         policy->header->source,
-          std::move(directives),        std::move(policy->report_endpoints),
-          policy->header->header_value, policy->use_reporting_api};
+  return {policy->header->type,
+          policy->header->source,
+          std::move(directives),
+          policy->upgrade_insecure_requests,
+          std::move(policy->report_endpoints),
+          policy->header->header_value,
+          policy->use_reporting_api};
 }
 
 }  // namespace

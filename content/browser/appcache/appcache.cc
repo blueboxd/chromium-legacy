@@ -9,7 +9,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_group.h"

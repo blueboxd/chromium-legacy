@@ -274,9 +274,9 @@ void CrostiniApps::LoadIconFromVM(const std::string app_id,
                                   IconEffects icon_effects,
                                   LoadIconCallback callback) {
   if (!allow_placeholder_icon) {
-    // Treat this as failure. We still run the callback, with the zero
-    // IconValue.
-    std::move(callback).Run(apps::mojom::IconValue::New());
+    // Treat this as failure. We still run the callback, with a nullptr to
+    // indicate failure.
+    std::move(callback).Run(nullptr);
     return;
   }
 

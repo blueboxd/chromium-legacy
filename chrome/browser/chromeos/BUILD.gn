@@ -57,10 +57,7 @@ source_set("chromeos") {
     ":device_configuration_proto",
     ":device_policy_remover_generated",
     ":print_job_info_proto",
-    ":reporting_constants_proto",
-    ":reporting_record_proto",
     ":screen_brightness_event_proto",
-    ":status_proto",
     ":user_activity_event_proto",
     ":user_charging_event_proto",
     "crostini:crostini_installer_types_mojom",
@@ -77,6 +74,7 @@ source_set("chromeos") {
     "//chrome/browser/apps/platform_apps",
     "//chrome/browser/apps/platform_apps/api",
     "//chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_error_page",
+    "//chrome/browser/chromeos/net/mojom",
     "//chrome/browser/chromeos/power/ml/smart_dim",
     "//chrome/browser/devtools",
     "//chrome/browser/extensions",
@@ -1927,11 +1925,6 @@ source_set("chromeos") {
     "policy/lock_to_single_user_manager.h",
     "policy/login_profile_policy_provider.cc",
     "policy/login_profile_policy_provider.h",
-    "policy/messaging_layer/util/status.cc",
-    "policy/messaging_layer/util/status.h",
-    "policy/messaging_layer/util/status_macros.h",
-    "policy/messaging_layer/util/statusor.cc",
-    "policy/messaging_layer/util/statusor.h",
     "policy/minimum_version_policy_handler.cc",
     "policy/minimum_version_policy_handler.h",
     "policy/minimum_version_policy_handler_delegate_impl.cc",
@@ -3087,8 +3080,6 @@ source_set("unit_tests") {
     "policy/heartbeat_scheduler_unittest.cc",
     "policy/hostname_handler_unittest.cc",
     "policy/lock_to_single_user_manager_unittest.cc",
-    "policy/messaging_layer/util/status_unittest.cc",
-    "policy/messaging_layer/util/statusor_unittest.cc",
     "policy/minimum_version_policy_handler_unittest.cc",
     "policy/network_configuration_updater_unittest.cc",
     "policy/off_hours/device_off_hours_controller_unittest.cc",
@@ -3279,7 +3270,6 @@ source_set("unit_tests") {
   deps = [
     ":arc_test_support",
     ":attestation_proto",
-    ":status_proto",
     ":test_support",
     ":user_activity_event_proto",
     "//ash",
@@ -3423,19 +3413,6 @@ proto_library("device_configuration_proto") {
 
 proto_library("print_job_info_proto") {
   sources = [ "printing/history/print_job_info.proto" ]
-}
-
-proto_library("reporting_record_proto") {
-  sources = [ "policy/messaging_layer/proto/record.proto" ]
-}
-
-proto_library("reporting_constants_proto") {
-  sources = [ "policy/messaging_layer/public/record_constants.proto" ]
-}
-
-proto_library("status_proto") {
-  sources = [ "policy/messaging_layer/util/status.proto" ]
-  generate_python = false
 }
 
 device_policy_remover_path = "$target_gen_dir/device_policy_remover.cc"

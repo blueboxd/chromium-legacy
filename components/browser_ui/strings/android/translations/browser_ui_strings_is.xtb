@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Útilokaðar á sumum vefsvæðum</translation>
 <translation id="3190152372525844641">Kveiktu á heimildum fyrir Chrome í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> af vistuðum gögnum</translation>
-<translation id="3223655101706843289">Þetta hreinsar öll gögn og fótspor sem <ph name="ORIGIN" /> og forrit þess á heimaskjánum hafa vistað.</translation>
 <translation id="3227137524299004712">Hljóðnemi</translation>
 <translation id="3277252321222022663">Leyfa vefsvæðum að fá aðgang að skynjurum (ráðlagt)</translation>
 <translation id="3295602654194328831">Fela upplýsingar</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Vista</translation>
 <translation id="5335288049665977812">Leyfa vefsvæðum að keyra JavaScript (ráðlagt)</translation>
 <translation id="534295439873310000">NFC-tæki</translation>
+<translation id="5354152178998424783">Þetta hreinsar <ph name="DATASIZE" /> af gögnum og fótsporum sem vefsvæði geyma.</translation>
 <translation id="5391532827096253100">Tenging þín við þetta vefsvæði er ekki örugg. Upplýsingar um vefsvæði</translation>
 <translation id="5494752089476963479">Útiloka auglýsingar á vefsvæðum sem birta ágengar eða villandi auglýsingar</translation>
 <translation id="5505264765875738116">Vefsvæði geta ekki óskað eftir því að senda tilkynningar</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Þú verður skráð(ur) út af þessu vefsvæði.</translation>
 <translation id="7828557259026017104">Fótspor eru skrár sem myndast á vefsvæðum sem þú heimsækir. Vefsvæði geta notað þau til að muna kjörstillingarnar þínar. Fótspor frá þriðja aðila eru búin til af öðrum vefsvæðum. Þessi vefsvæði eiga eitthvað af efninu, eins og auglýsingar eða myndir, sem þú sérð á vefsíðunni sem þú heimsækir.</translation>
 <translation id="7846076177841592234">Hætta við val</translation>
+<translation id="7846621471902887024">Þú verður skráð(ur) út af öllum vefsvæðum.</translation>
 <translation id="7882806643839505685">Leyfa hljóð á tilteknu vefsvæði.</translation>
 <translation id="7993619969781047893">Ekki er víst að allir eiginleikar á öllum vefsvæðum virki</translation>
 <translation id="7999064672810608036">Ertu viss um að þú viljir hreinsa öll staðbundin gögn fyrir þetta vefsvæði, þar á meðal fótspor, og endurstilla allar heimildir þess?</translation>

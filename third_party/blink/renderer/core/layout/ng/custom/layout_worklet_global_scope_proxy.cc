@@ -8,7 +8,6 @@
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -33,24 +32,23 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
     PendingLayoutRegistry* pending_layout_registry,
     size_t global_scope_number) {
   DCHECK(IsMainThread());
-  Document* document = frame->GetDocument();
-  reporting_proxy_ =
-      std::make_unique<MainThreadWorkletReportingProxy>(document);
+  LocalDOMWindow* window = frame->DomWindow();
+  reporting_proxy_ = std::make_unique<MainThreadWorkletReportingProxy>(window);
 
   String global_scope_name =
       StringView("LayoutWorklet #") + String::Number(global_scope_number);
 
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-      document->Url(), mojom::blink::ScriptType::kModule, global_scope_name,
-      document->UserAgent(), frame->Client()->UserAgentMetadata(),
+      window->Url(), mojom::blink::ScriptType::kModule, global_scope_name,
+      window->UserAgent(), frame->Client()->UserAgentMetadata(),
       frame->Client()->CreateWorkerFetchContext(),
-      document->GetContentSecurityPolicy()->Headers(),
-      document->GetReferrerPolicy(), document->GetSecurityOrigin(),
-      document->IsSecureContext(), document->GetHttpsState(),
+      window->GetContentSecurityPolicy()->Headers(),
+      window->GetReferrerPolicy(), window->GetSecurityOrigin(),
+      window->IsSecureContext(), window->GetHttpsState(),
       nullptr /* worker_clients */,
       frame->Client()->CreateWorkerContentSettingsClient(),
-      document->GetSecurityContext().AddressSpace(),
-      OriginTrialContext::GetTokens(frame->DomWindow()).get(),
+      window->GetSecurityContext().AddressSpace(),
+      OriginTrialContext::GetTokens(window).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, module_responses_map,
       mojo::NullRemote() /* browser_interface_broker */,

@@ -1844,6 +1844,14 @@ CSSValue* ComputedStyleUtils::ValueForTransformOperation(
           rotate.Angle(), CSSPrimitiveValue::UnitType::kDegrees));
       return result;
     }
+    case TransformOperation::kRotateAroundOrigin: {
+      // TODO(https://github.com/w3c/csswg-drafts/issues/5011):
+      // Update this once there is consensus.
+      TransformationMatrix matrix;
+      operation.Apply(matrix, FloatSize(0, 0));
+      return ValueForTransformationMatrix(matrix, zoom,
+                                          /*force_matrix3d=*/false);
+    }
     case TransformOperation::kSkewX: {
       const auto& skew = To<SkewTransformOperation>(operation);
       auto* result = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSkewX);
@@ -1890,10 +1898,6 @@ CSSValue* ComputedStyleUtils::ValueForTransformOperation(
     case TransformOperation::kInterpolated:
       // TODO(816803): The computed value in this case is not fully spec'd
       // See https://github.com/w3c/css-houdini-drafts/issues/425
-      return CSSIdentifierValue::Create(CSSValueID::kNone);
-    default:
-      // The remaining operations are unsupported.
-      NOTREACHED();
       return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
 }

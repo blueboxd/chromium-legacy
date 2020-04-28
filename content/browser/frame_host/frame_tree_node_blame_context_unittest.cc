@@ -98,7 +98,7 @@ class FrameTreeNodeBlameContextTest : public RenderViewHostImplTestHarness {
     for (int child_num = 1; shape[consumption++] == '('; ++child_num) {
       int child_id = self_id * 10 + child_num;
       tree()->AddFrame(
-          node, process_id(), child_id,
+          node->current_frame_host(), process_id(), child_id,
           TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
           TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
           blink::WebTreeScopeType::kDocument, std::string(),
@@ -153,7 +153,7 @@ TEST_F(FrameTreeNodeBlameContextTest, FrameCreation) {
       snapshot_traced.insert(node);
       std::string parent_id = GetParentNodeID(event);
       EXPECT_FALSE(parent_id.empty());
-      EXPECT_EQ(node->parent(),
+      EXPECT_EQ(node->parent()->frame_tree_node(),
                 tree()->FindByID(strtol(parent_id.c_str(), nullptr, 16)));
     } else {
       EXPECT_EQ(TRACE_EVENT_PHASE_CREATE_OBJECT, event->phase);

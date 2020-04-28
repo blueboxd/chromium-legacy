@@ -137,6 +137,11 @@ class PasswordManagerClient {
       std::unique_ptr<PasswordFormManagerForUI> form_to_save,
       bool is_update) = 0;
 
+  // Informs the embedder that the user can move the given |form_to_move| to
+  // their account store.
+  virtual void PromptUserToMovePasswordToAccount(
+      std::unique_ptr<PasswordFormManagerForUI> form_to_move) = 0;
+
   // Informs the embedder that the onboarding experience should be shown.
   // This will also offer the ability to actually save the password.
   // Returns true if both the onboarding and the saving prompt were displayed.
@@ -195,9 +200,10 @@ class PasswordManagerClient {
       std::unique_ptr<autofill::PasswordForm> form) = 0;
 
   // Inform the embedder that the user signed in with a saved credential.
-  // |form| contains the form used.
+  // |submitted_manager| contains the form used and allows to move credentials.
   virtual void NotifySuccessfulLoginWithExistingPassword(
-      const autofill::PasswordForm& form) = 0;
+      std::unique_ptr<password_manager::PasswordFormManagerForUI>
+          submitted_manager) = 0;
 
   // Inform the embedder that the site called 'store()'.
   virtual void NotifyStorePasswordCalled() = 0;

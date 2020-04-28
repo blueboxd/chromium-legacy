@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "base/base64.h"
 #include "base/hash/hash.h"
@@ -30,6 +31,10 @@ namespace sync_bookmarks {
 const base::Feature kInvalidateBookmarkSyncMetadataIfMismatchingGuid{
     "InvalidateBookmarkSyncMetadataIfMismatchingGuid",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+extern const base::Feature kInvalidateBookmarkSyncMetadataIfClientTagDuplicates{
+    "InvalidateBookmarkSyncMetadataIfClientTagDuplicates",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -486,8 +491,8 @@ SyncedBookmarkTracker::InitEntitiesFromModelAndMetadata(
   std::unordered_map<int64_t, const bookmarks::BookmarkNode*>
       id_to_bookmark_node_map = BuildIdToBookmarkNodeMap(model);
 
-  // Collect ids of non-deletion entries in the metadata.
-  std::vector<int> metadata_node_ids;
+  std::unordered_set<syncer::ClientTagHash, syncer::ClientTagHash::Hash>
+      used_client_tag_hashes;
 
   for (sync_pb::BookmarkMetadata& bookmark_metadata :
        *model_metadata.mutable_bookmarks_metadata()) {
@@ -501,6 +506,27 @@ SyncedBookmarkTracker::InitEntitiesFromModelAndMetadata(
     if (sync_id_to_entities_map_.count(sync_id) != 0) {
       DLOG(ERROR) << "Error when decoding sync metadata: Duplicated server id.";
       return CorruptionReason::DUPLICATED_SERVER_ID;
+    }
+
+    // Duplicate nodes might happen by restoring of a removed bookmark due to
+    // some past bugs (see https://crbug.com/1071061). In this case it was
+    // possible that there were two entities for the same node: one of them is a
+    // tombstone and another one is the entity for the restored bookmark.
+    // Currently the tombstone entity is overridden in this case, but it is
+    // still possible that the incorrect state was stored.
+    if (bookmark_metadata.metadata().has_client_tag_hash()) {
+      const syncer::ClientTagHash client_tag_hash =
+          syncer::ClientTagHash::FromHashed(
+              bookmark_metadata.metadata().client_tag_hash());
+      const bool new_element =
+          used_client_tag_hashes.insert(client_tag_hash).second;
+      if (!new_element &&
+          base::FeatureList::IsEnabled(
+              kInvalidateBookmarkSyncMetadataIfClientTagDuplicates)) {
+        DLOG(ERROR) << "Error when decoding sync metadata: Duplicated client "
+                       "tag hash.";
+        return CorruptionReason::DUPLICATED_CLIENT_TAG_HASH;
+      }
     }
 
     // Handle tombstones.

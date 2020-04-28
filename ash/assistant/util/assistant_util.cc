@@ -42,6 +42,7 @@ bool IsVoiceEntryPoint(AssistantEntryPoint entry_point, bool prefer_voice) {
       return prefer_voice;
     case AssistantEntryPoint::kUnspecified:
     case AssistantEntryPoint::kDeepLink:
+    case AssistantEntryPoint::kLauncherChip:
     case AssistantEntryPoint::kLauncherSearchResult:
     case AssistantEntryPoint::kProactiveSuggestions:
     case AssistantEntryPoint::kSetup:
@@ -54,6 +55,7 @@ bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) {
   switch (entry_point) {
     case AssistantEntryPoint::kDeepLink:
     case AssistantEntryPoint::kHotword:
+    case AssistantEntryPoint::kLauncherChip:
     case AssistantEntryPoint::kLauncherSearchBoxIcon:
     case AssistantEntryPoint::kLauncherSearchResult:
     case AssistantEntryPoint::kProactiveSuggestions:

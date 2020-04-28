@@ -5009,6 +5009,11 @@
 <translation id="8665314828727504286">“安全浏览”功能的保护级别</translation>
 <translation id="8672321184841719703">目标自动更新版本</translation>
 <translation id="867410340948518937">U2F（通用第二重因素）</translation>
+<translation id="8680488165461049026">此政策旨在授权“快速解答”功能访问所选内容并将相关信息发送给服务器。
+
+      如果您启用了此政策，“快速解答”功能将能够访问所选内容。
+      如果您停用了此政策，“快速解答”功能将无法访问所选内容。
+      如果您不设置此政策，用户可以自行决定是否允许“快速解答”功能访问所选内容。</translation>
 <translation id="8685024486845674965">重复使用密码可触发密码保护服务警告功能</translation>
 <translation id="8687958770985542440">重新启用 Web Components v0 API 直至 M84。</translation>
 <translation id="8693243869659262736">使用内置 DNS 客户端</translation>
@@ -5341,6 +5346,7 @@
 
       如果未配置此政策或将其设置为 true，那么只要 <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> 未阻止登录，用户就可以创建新的用户帐号。</translation>
 <translation id="974349541138387272">指定所需 DNS-over-HTTPS 解析器的 URI 模板</translation>
+<translation id="974479807614498635">允许“快速解答”功能访问所选内容</translation>
 <translation id="981346395360763138">已停用 Google 位置信息服务</translation>
 <translation id="982497069985795632">启用拼写检查</translation>
 <translation id="991560005425213776">向原生打印机发送用户名和文件名</translation>

@@ -10,9 +10,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -28,6 +26,8 @@ import org.chromium.chrome.browser.media.MediaCaptureDevicesDispatcherAndroid;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabViewManager;
+import org.chromium.chrome.browser.tab.TabViewProvider;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.ui.base.WindowAndroid;
@@ -36,7 +36,7 @@ import org.chromium.ui.base.WindowAndroid;
  * Represents the suspension page presented when a user tries to visit a site whose fully-qualified
  * domain name (FQDN) has been suspended via Digital Wellbeing.
  */
-public class SuspendedTab extends EmptyTabObserver implements UserData {
+public class SuspendedTab extends EmptyTabObserver implements UserData, TabViewProvider {
     private static final String DIGITAL_WELLBEING_SITE_DETAILS_ACTION =
             "org.chromium.chrome.browser.usage_stats.action.SHOW_WEBSITE_DETAILS";
     private static final String EXTRA_FQDN_NAME =
@@ -147,7 +147,7 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
 
     @VisibleForTesting
     boolean isViewAttached() {
-        return mView != null && mView.getParent() == mTab.getContentView();
+        return mView != null && TabViewManager.get(mTab).getCurrentTabViewProvider() == this;
     }
 
     private View createView() {
@@ -155,20 +155,16 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
         LayoutInflater inflater = LayoutInflater.from(context);
 
         View suspendedTabView = inflater.inflate(R.layout.suspended_tab, null);
+        suspendedTabView.setLayoutParams(
+                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         return suspendedTabView;
     }
 
     private void attachView() {
         assert mView == null;
 
-        ViewGroup parent = mTab.getContentView();
-        // getContentView() will return null if the tab doesn't have a WebContents, which is
-        // possible in some situations, e.g. if the renderer crashes.
-        if (parent == null) return;
         mView = createView();
-        parent.addView(mView,
-                new LinearLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        TabViewManager.get(mTab).addTabViewProvider(this);
         updateFqdnText();
     }
 
@@ -201,10 +197,8 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
     }
 
     private void removeViewIfPresent() {
-        if (isViewAttached()) {
-            mTab.getContentView().removeView(mView);
-            mView = null;
-        }
+        TabViewManager.get(mTab).removeTabViewProvider(this);
+        mView = null;
     }
 
     // TabObserver implementation.
@@ -221,5 +215,15 @@ public class SuspendedTab extends EmptyTabObserver implements UserData {
     @Override
     public void destroy() {
         mTab.removeObserver(this);
+    }
+
+    @Override
+    public int getTabViewProviderType() {
+        return Type.SUSPENDED_TAB;
+    }
+
+    @Override
+    public View getView() {
+        return mView;
     }
 }

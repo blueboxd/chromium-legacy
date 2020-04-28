@@ -266,7 +266,7 @@ void MediaHistoryKeyedService::StoreMediaFeedFetchResult(
     std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
     const media_feeds::mojom::FetchResult result,
     const bool was_fetched_from_cache,
-    const std::vector<media_session::MediaImage>& logos,
+    std::vector<media_feeds::mojom::MediaImagePtr> logos,
     const std::string& display_name,
     const std::vector<url::Origin>& associated_origins,
     base::OnceClosure callback) {
@@ -275,7 +275,7 @@ void MediaHistoryKeyedService::StoreMediaFeedFetchResult(
         FROM_HERE,
         base::BindOnce(&MediaHistoryStore::StoreMediaFeedFetchResult, store,
                        feed_id, std::move(items), result,
-                       was_fetched_from_cache, logos, display_name,
+                       was_fetched_from_cache, std::move(logos), display_name,
                        associated_origins),
         std::move(callback));
   }

@@ -5,8 +5,8 @@
 #include "content/browser/renderer_host/pepper/pepper_proxy_lookup_helper.h"
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"

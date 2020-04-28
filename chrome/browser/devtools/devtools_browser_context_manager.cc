@@ -127,7 +127,12 @@ void DevToolsBrowserContextManager::OnBrowserRemoved(Browser* browser) {
   Profile* otr_profile = it->second;
   otr_profiles_.erase(it);
   otr_profile->RemoveObserver(this);
-  ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile);
+  // We cannot delete immediately here: the profile might still be referenced
+  // during the browser tear-down process.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ProfileDestroyer::DestroyProfileWhenAppropriate,
+                     base::Unretained(otr_profile)));
 
   std::move(pending_disposal->second).Run(true, "");
   pending_context_disposals_.erase(pending_disposal);

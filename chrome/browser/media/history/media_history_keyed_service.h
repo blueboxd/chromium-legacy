@@ -101,7 +101,7 @@ class MediaHistoryKeyedService : public KeyedService,
       std::vector<media_feeds::mojom::MediaFeedItemPtr> items,
       const media_feeds::mojom::FetchResult result,
       const bool was_fetched_from_cache,
-      const std::vector<media_session::MediaImage>& logos,
+      std::vector<media_feeds::mojom::MediaImagePtr> logos,
       const std::string& display_name,
       const std::vector<url::Origin>& associated_origins,
       base::OnceClosure callback);

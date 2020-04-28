@@ -284,7 +284,6 @@ jumbo_component("events") {
   if (use_x11 || ozone_platform_x11) {
     public += [ "x/x11_event_translation.h" ]
     sources += [ "x/x11_event_translation.cc" ]
-    configs += [ "//build/config/linux:x11" ]
     deps += [
       "//ui/events/devices",
       "//ui/events/devices/x11",
@@ -612,7 +611,6 @@ if (!is_ios) {
 
     if (use_x11) {
       sources += [ "devices/x11/device_data_manager_x11_unittest.cc" ]
-      configs += [ "//build/config/linux:x11" ]
       deps += [
         "//ui/events/devices/x11",
         "//ui/events/x:unittests",

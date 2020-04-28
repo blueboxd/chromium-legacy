@@ -424,10 +424,6 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
         "test/linux_output_window.cc",
         "test/linux_output_window.h",
       ]
-      configs += [
-        "//build/config/linux:x11",
-        "//build/config/linux:xext",
-      ]
       public_deps += [ "//ui/gfx/x" ]
       deps += [ "//third_party/libyuv" ]
     }

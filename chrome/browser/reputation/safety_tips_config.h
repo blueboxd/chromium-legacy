@@ -32,6 +32,12 @@ bool IsUrlAllowlistedBySafetyTipsComponent(
     const chrome_browser_safety_tips::SafetyTipsConfig* proto,
     const GURL& url);
 
+// Checks the hostname of |url| against the component updater target allowlist
+// and returns whether the URL is explicitly allowed.
+bool IsTargetUrlAllowlistedBySafetyTipsComponent(
+    const chrome_browser_safety_tips::SafetyTipsConfig* proto,
+    const GURL& target_url);
+
 // Checks SafeBrowsing-style permutations of |url| against the component updater
 // blocklist and returns the match type. kNone means the URL is not blocked.
 // This method assumes that the flagged pages in the safety tip config proto are

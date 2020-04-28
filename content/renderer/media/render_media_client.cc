@@ -5,7 +5,6 @@
 #include "content/renderer/media/render_media_client.h"
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/time/default_tick_clock.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"

@@ -179,12 +179,16 @@ TEST_F(ThirdPartyMetricsObserverTest, BlockedCookiesRead_NotRecorded) {
 
   // If there are any blocked_by_policy reads, nothing should be recorded. Even
   // if there are subsequent non-blocked third-party reads.
-  tester()->SimulateCookiesRead(GURL("https://a.com"), GURL("https://top.com"),
-                                net::CookieList(),
-                                true /* blocked_by_policy */);
-  tester()->SimulateCookiesRead(GURL("https://a.com"), GURL("https://top.com"),
-                                net::CookieList(),
-                                false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  true /* blocked_by_policy */});
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
 
   tester()->NavigateToUntrackedUrl();
 
@@ -197,8 +201,11 @@ TEST_F(ThirdPartyMetricsObserverTest,
 
   GURL url = GURL("data:,Hello%2C%20World!");
   ASSERT_FALSE(url.has_host());
-  tester()->SimulateCookiesRead(url, GURL("https://top.com"), net::CookieList(),
-                                false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  url,
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectUniqueSample(kReadCookieHistogram, 0, 1);
@@ -210,8 +217,11 @@ TEST_F(ThirdPartyMetricsObserverTest,
 
   GURL url = GURL("https://127.0.0.1/cookies");
   ASSERT_TRUE(url.has_host());
-  tester()->SimulateCookiesRead(url, GURL("https://top.com"), net::CookieList(),
-                                false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  url,
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectUniqueSample(kReadCookieHistogram, 1, 1);
@@ -221,9 +231,11 @@ TEST_F(ThirdPartyMetricsObserverTest,
        DifferentSchemeSameRegistrableDomain_OneRecorded) {
   NavigateAndCommit(GURL("http://top.com"));
 
-  tester()->SimulateCookiesRead(GURL("https://top.com"), GURL("http://top.com"),
-                                net::CookieList(),
-                                false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://top.com"),
+                                  GURL("http://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectUniqueSample(kReadCookieHistogram, 1, 1);
@@ -232,9 +244,11 @@ TEST_F(ThirdPartyMetricsObserverTest,
 TEST_F(ThirdPartyMetricsObserverTest, OnlyFirstPartyCookiesRead_NotRecorded) {
   NavigateAndCommit(GURL("https://top.com"));
 
-  tester()->SimulateCookiesRead(GURL("https://top.com"),
-                                GURL("https://top.com"), net::CookieList(),
-                                false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://top.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectUniqueSample(kReadCookieHistogram, 0, 1);
@@ -243,9 +257,11 @@ TEST_F(ThirdPartyMetricsObserverTest, OnlyFirstPartyCookiesRead_NotRecorded) {
 TEST_F(ThirdPartyMetricsObserverTest, OneCookieRead_OneRecorded) {
   NavigateAndCommit(GURL("https://top.com"));
 
-  tester()->SimulateCookiesRead(GURL("https://a.com"), GURL("https://top.com"),
-                                net::CookieList(),
-                                false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectUniqueSample(kReadCookieHistogram, 1, 1);
@@ -256,15 +272,21 @@ TEST_F(ThirdPartyMetricsObserverTest,
        ThreeCookiesReadSameThirdParty_OneRecorded) {
   NavigateAndCommit(GURL("https://top.com"));
 
-  tester()->SimulateCookiesRead(GURL("https://a.com"), GURL("https://top.com"),
-                                net::CookieList(),
-                                false /* blocked_by_policy */);
-  tester()->SimulateCookiesRead(GURL("https://a.com/foo"),
-                                GURL("https://top.com"), net::CookieList(),
-                                false /* blocked_by_policy */);
-  tester()->SimulateCookiesRead(GURL("https://sub.a.com/bar"),
-                                GURL("https://top.com"), net::CookieList(),
-                                false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://a.com/foo"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://sub.a.com/bar"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
 
   tester()->NavigateToUntrackedUrl();
 
@@ -276,15 +298,21 @@ TEST_F(ThirdPartyMetricsObserverTest,
   NavigateAndCommit(GURL("https://top.com"));
 
   // Simulate third-party cookie reads from two different origins.
-  tester()->SimulateCookiesRead(GURL("https://a.com"), GURL("https://top.com"),
-                                net::CookieList(),
-                                false /* blocked_by_policy */);
-  tester()->SimulateCookiesRead(GURL("https://a.com"), GURL("https://top.com"),
-                                net::CookieList(),
-                                false /* blocked_by_policy */);
-  tester()->SimulateCookiesRead(GURL("https://b.com"), GURL("https://top.com"),
-                                net::CookieList(),
-                                false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://b.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectUniqueSample(kReadCookieHistogram, 2, 1);
@@ -302,12 +330,16 @@ TEST_F(ThirdPartyMetricsObserverTest, BlockedCookiesChanged_NotRecorded) {
 
   // If there are any blocked_by_policy writes, nothing should be recorded. Even
   // if there are non-blocked third-party writes.
-  tester()->SimulateCookieChange(GURL("https://a.com"), GURL("https://top.com"),
-                                 net::CanonicalCookie(),
-                                 false /* blocked_by_policy */);
-  tester()->SimulateCookieChange(GURL("https://a.com"), GURL("https://top.com"),
-                                 net::CanonicalCookie(),
-                                 true /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  true /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
   tester()->histogram_tester().ExpectTotalCount(kWriteCookieHistogram, 0);
 }
@@ -318,9 +350,11 @@ TEST_F(ThirdPartyMetricsObserverTest,
 
   GURL url = GURL("data:,Hello%2C%20World!");
   ASSERT_FALSE(url.has_host());
-  tester()->SimulateCookieChange(url, GURL("https://top.com"),
-                                 net::CanonicalCookie(),
-                                 false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  url,
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
   tester()->histogram_tester().ExpectUniqueSample(kWriteCookieHistogram, 0, 1);
 }
@@ -331,9 +365,11 @@ TEST_F(ThirdPartyMetricsObserverTest,
 
   GURL url = GURL("https://127.0.0.1/cookies");
   ASSERT_TRUE(url.has_host());
-  tester()->SimulateCookieChange(url, GURL("https://top.com"),
-                                 net::CanonicalCookie(),
-                                 false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  url,
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
   tester()->histogram_tester().ExpectUniqueSample(kWriteCookieHistogram, 1, 1);
 }
@@ -342,9 +378,11 @@ TEST_F(ThirdPartyMetricsObserverTest,
        OnlyFirstPartyCookiesChanged_NotRecorded) {
   NavigateAndCommit(GURL("https://top.com"));
 
-  tester()->SimulateCookieChange(
-      GURL("https://top.com"), GURL("https://top.com"), net::CanonicalCookie(),
-      false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  GURL("https://top.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectUniqueSample(kWriteCookieHistogram, 0, 1);
@@ -353,9 +391,11 @@ TEST_F(ThirdPartyMetricsObserverTest,
 TEST_F(ThirdPartyMetricsObserverTest, OneCookieChanged_OneRecorded) {
   NavigateAndCommit(GURL("https://top.com"));
 
-  tester()->SimulateCookieChange(GURL("https://a.com"), GURL("https://top.com"),
-                                 net::CanonicalCookie(),
-                                 false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectUniqueSample(kWriteCookieHistogram, 1, 1);
@@ -366,12 +406,16 @@ TEST_F(ThirdPartyMetricsObserverTest,
        TwoCookiesChangeSameThirdParty_OneRecorded) {
   NavigateAndCommit(GURL("https://top.com"));
 
-  tester()->SimulateCookieChange(GURL("https://a.com"), GURL("https://top.com"),
-                                 net::CanonicalCookie(),
-                                 false /* blocked_by_policy */);
-  tester()->SimulateCookieChange(GURL("https://a.com"), GURL("https://top.com"),
-                                 net::CanonicalCookie(),
-                                 false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectUniqueSample(kWriteCookieHistogram, 1, 1);
@@ -382,15 +426,21 @@ TEST_F(ThirdPartyMetricsObserverTest,
   NavigateAndCommit(GURL("https://top.com"));
 
   // Simulate third-party cookie reads from two different origins.
-  tester()->SimulateCookieChange(GURL("https://a.com"), GURL("https://top.com"),
-                                 net::CanonicalCookie(),
-                                 false /* blocked_by_policy */);
-  tester()->SimulateCookieChange(GURL("https://a.com"), GURL("https://top.com"),
-                                 net::CanonicalCookie(),
-                                 false /* blocked_by_policy */);
-  tester()->SimulateCookieChange(GURL("https://b.com"), GURL("https://top.com"),
-                                 net::CanonicalCookie(),
-                                 false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  GURL("https://b.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectUniqueSample(kWriteCookieHistogram, 2, 1);
@@ -400,12 +450,16 @@ TEST_F(ThirdPartyMetricsObserverTest, ReadAndChangeCookies_BothRecorded) {
   NavigateAndCommit(GURL("https://top.com"));
 
   // Simulate third-party cookie reads from two different origins.
-  tester()->SimulateCookiesRead(GURL("https://a.com"), GURL("https://top.com"),
-                                net::CookieList(),
-                                false /* blocked_by_policy */);
-  tester()->SimulateCookieChange(GURL("https://b.com"), GURL("https://top.com"),
-                                 net::CanonicalCookie(),
-                                 false /* blocked_by_policy */);
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kRead,
+                                  GURL("https://a.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
+  tester()->SimulateCookieAccess({content::CookieAccessDetails::Type::kChange,
+                                  GURL("https://b.com"),
+                                  GURL("https://top.com"),
+                                  {net::CanonicalCookie()},
+                                  false /* blocked_by_policy */});
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectUniqueSample(kReadCookieHistogram, 1, 1);

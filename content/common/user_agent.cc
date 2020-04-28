@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"

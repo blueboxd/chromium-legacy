@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_CONTROLLER_H_
 
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/device_single_window_event_controller.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -17,16 +17,16 @@ class Event;
 
 class MODULES_EXPORT DeviceOrientationController
     : public DeviceSingleWindowEventController,
-      public Supplement<Document> {
+      public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationController);
 
  public:
   static const char kSupplementName[];
 
-  explicit DeviceOrientationController(Document&);
+  explicit DeviceOrientationController(LocalDOMWindow&);
   ~DeviceOrientationController() override;
 
-  static DeviceOrientationController& From(Document&);
+  static DeviceOrientationController& From(LocalDOMWindow&);
 
   // Inherited from DeviceSingleWindowEventController.
   void DidUpdateData() override;

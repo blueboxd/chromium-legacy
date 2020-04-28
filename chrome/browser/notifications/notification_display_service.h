@@ -30,18 +30,22 @@ class NotificationDisplayService : public KeyedService {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    // Invoked when the |notification| is displayed.
-    virtual void OnDisplay(
-        const message_center::Notification& notification) = 0;
+    // Invoked when the |notification| is displayed. The |metadata| is provided
+    // for persistent web page notifications only, which require
+    // |service_worker_scope|.
+    virtual void OnNotificationDisplayed(
+        const message_center::Notification& notification,
+        const NotificationCommon::Metadata* const metadata) = 0;
 
     // Invoked when the notification having |notification_id| is closed.
-    virtual void OnClose(const std::string& notification_id) = 0;
+    virtual void OnNotificationClosed(const std::string& notification_id) = 0;
 
     // Invoked when the NotificationDisplayService object (the thing that this
     // observer observes) will be destroyed. In response, the observer, |this|,
     // should call "RemoveObserver(this)", whether directly or indirectly (e.g.
     // via ScopedObserver::Remove).
-    virtual void OnWillBeDestroyed(NotificationDisplayService* service) = 0;
+    virtual void OnNotificationDisplayServiceDestroyed(
+        NotificationDisplayService* service) = 0;
 
    protected:
     ~Observer() override;

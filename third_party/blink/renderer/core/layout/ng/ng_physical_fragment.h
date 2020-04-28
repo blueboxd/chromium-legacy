@@ -280,6 +280,11 @@ class CORE_EXPORT NGPhysicalFragment
   LayoutObject* GetMutableLayoutObject() const {
     return IsCSSBox() ? layout_object_ : nullptr;
   }
+  // Similar to |GetLayoutObject|, but returns the |LayoutObject| of its
+  // container for |!IsCSSBox()| fragments instead of |nullptr|.
+  const LayoutObject* GetSelfOrContainerLayoutObject() const {
+    return layout_object_;
+  }
 
   const FragmentData* GetFragmentData() const;
 

@@ -5,9 +5,9 @@
 #include "content/public/test/unittest_test_suite.h"
 
 #include "base/base_switches.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"

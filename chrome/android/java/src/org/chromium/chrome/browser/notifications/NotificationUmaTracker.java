@@ -263,15 +263,6 @@ public class NotificationUmaTracker {
         }
     }
 
-    /**
-     * Logs when failed to create notification with Android API.
-     * @param type Type of the notification.
-     */
-    public static void onNotificationFailedToCreate(@SystemNotificationType int type) {
-        if (type == SystemNotificationType.UNKNOWN) return;
-        recordHistogram("Mobile.SystemNotification.CreationFailure", type);
-    }
-
     private void logNotificationShown(@SystemNotificationType int type,
             @ChromeChannelDefinitions.ChannelId String channelId) {
         if (!mNotificationManager.areNotificationsEnabled()) {

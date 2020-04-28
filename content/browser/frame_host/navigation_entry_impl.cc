@@ -162,7 +162,7 @@ void RecursivelyGenerateFrameState(
 // ancestor chain is detected, otherwise true.
 bool InSameTreePosition(FrameTreeNode* frame_tree_node,
                         NavigationEntryImpl::TreeNode* node) {
-  FrameTreeNode* ftn = frame_tree_node->parent();
+  FrameTreeNode* ftn = FrameTreeNode::From(frame_tree_node->parent());
   NavigationEntryImpl::TreeNode* current_node = node->parent;
   while (ftn && current_node) {
     if (!current_node->MatchesFrame(ftn))
@@ -173,7 +173,7 @@ bool InSameTreePosition(FrameTreeNode* frame_tree_node,
       return false;
     }
 
-    ftn = ftn->parent();
+    ftn = FrameTreeNode::From(ftn->parent());
     current_node = current_node->parent;
   }
   return true;
@@ -902,7 +902,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   // We should already have a TreeNode for the parent node by the time this node
   // commits.  Find it first.
   NavigationEntryImpl::TreeNode* parent_node =
-      GetTreeNode(frame_tree_node->parent());
+      GetTreeNode(FrameTreeNode::From(frame_tree_node->parent()));
   if (!parent_node) {
     // The renderer should not send a commit for a subframe before its parent.
     // TODO(creis): Kill the renderer if we get here.

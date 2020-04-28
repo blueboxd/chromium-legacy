@@ -12,7 +12,6 @@
 #include "chrome/browser/media/feeds/media_feeds_utils.h"
 #include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_store.h"
-#include "services/media_session/public/cpp/media_image.h"
 #include "sql/statement.h"
 #include "url/gurl.h"
 
@@ -334,7 +333,7 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
     const int item_count,
     const int item_play_next_count,
     const int item_content_types,
-    const std::vector<media_session::MediaImage>& logos,
+    const std::vector<media_feeds::mojom::MediaImagePtr>& logos,
     const std::string& display_name,
     const int item_safe_count) {
   DCHECK_LT(0, DB()->transaction_nesting());

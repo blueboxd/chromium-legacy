@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
 
 namespace content {

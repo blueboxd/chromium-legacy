@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL [[CanBlock]] in a Window Atomics.wait cannot be called in this context
+Harness: the test ran to completion.
+

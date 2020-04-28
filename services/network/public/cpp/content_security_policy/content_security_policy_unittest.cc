@@ -485,7 +485,7 @@ TEST(ContentSecurityPolicy, ShouldUpgradeInsecureRequest) {
   EXPECT_FALSE(ShouldUpgradeInsecureRequest(policies));
 
   policies.push_back(mojom::ContentSecurityPolicy::New());
-  policies[0]->directives[mojom::CSPDirectiveName::UpgradeInsecureRequests];
+  policies[0]->upgrade_insecure_requests = true;
 
   EXPECT_TRUE(ShouldUpgradeInsecureRequest(policies));
 }
@@ -494,7 +494,7 @@ TEST(ContentSecurityPolicy, ShouldUpgradeInsecureRequest) {
 TEST(ContentSecurityPolicy, UpgradeInsecureRequests) {
   std::vector<mojom::ContentSecurityPolicyPtr> policies;
   policies.push_back(mojom::ContentSecurityPolicy::New());
-  policies[0]->directives[mojom::CSPDirectiveName::UpgradeInsecureRequests];
+  policies[0]->upgrade_insecure_requests = true;
 
   struct {
     std::string input;

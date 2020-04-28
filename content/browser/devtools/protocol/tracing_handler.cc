@@ -194,9 +194,11 @@ void FillFrameData(base::trace_event::TracedValue* data,
   data->SetString("frame", node->devtools_frame_token().ToString());
   data->SetString("url", url.ReplaceComponents(strip_fragment).spec());
   data->SetString("name", node->frame_name());
-  if (node->parent())
-    data->SetString("parent",
-                    node->parent()->devtools_frame_token().ToString());
+  if (node->parent()) {
+    data->SetString(
+        "parent",
+        node->parent()->frame_tree_node()->devtools_frame_token().ToString());
+  }
   if (frame_host) {
     RenderProcessHost* process_host = frame_host->GetProcess();
     const base::Process& process_handle = process_host->GetProcess();

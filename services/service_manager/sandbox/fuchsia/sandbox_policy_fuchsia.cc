@@ -9,6 +9,7 @@
 #include <zircon/processargs.h>
 #include <zircon/syscalls/policy.h>
 
+#include <fuchsia/camera3/cpp/fidl.h>
 #include <fuchsia/fonts/cpp/fidl.h>
 #include <fuchsia/intl/cpp/fidl.h>
 #include <fuchsia/logger/cpp/fidl.h>
@@ -103,6 +104,13 @@ constexpr SandboxConfig kRendererConfig = {
     kAmbientMarkVmoAsExecutable,
 };
 
+constexpr SandboxConfig kVideoCaptureConfig = {
+    base::make_span((const char* const[]){
+        fuchsia::camera3::DeviceWatcher::Name_,
+    }),
+    0,
+};
+
 // No-access-to-anything.
 constexpr SandboxConfig kEmptySandboxConfig = {
     base::span<const char* const>(),
@@ -121,6 +129,8 @@ const SandboxConfig* GetConfigForSandboxType(SandboxType type) {
       return &kRendererConfig;
     case SandboxType::kWebContext:
       return &kWebContextConfig;
+    case SandboxType::kVideoCapture:
+      return &kVideoCaptureConfig;
     // Remaining types receive no-access-to-anything.
     case SandboxType::kAudio:
     case SandboxType::kCdm:

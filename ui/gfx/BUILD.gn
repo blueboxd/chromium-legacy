@@ -410,7 +410,6 @@ jumbo_component("gfx") {
 
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
-    configs += [ "//build/config/linux:x11" ]
   }
 }
 
@@ -452,7 +451,6 @@ jumbo_component("color_space") {
   }
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
-    configs += [ "//build/config/linux:x11" ]
   }
   defines = [ "COLOR_SPACE_IMPLEMENTATION" ]
 }

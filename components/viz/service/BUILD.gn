@@ -221,7 +221,6 @@ viz_component("service") {
       "display_embedder/software_output_device_x11.cc",
       "display_embedder/software_output_device_x11.h",
     ]
-    configs = [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
   }
 
@@ -407,7 +406,6 @@ viz_source_set("gpu_service_dependencies") {
       "display_embedder/skia_output_device_x11.cc",
       "display_embedder/skia_output_device_x11.h",
     ]
-    configs = [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
   }
 

@@ -130,7 +130,6 @@ class VULKAN_EXPORT VulkanSwapChain {
   base::Optional<uint32_t> acquired_image_;
   bool is_writing_ = false;
   VkSemaphore end_write_semaphore_ = VK_NULL_HANDLE;
-  bool surface_lost_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSwapChain);
 };

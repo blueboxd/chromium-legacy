@@ -16,7 +16,7 @@
 // SearchBouncer tracks a set of URLs which should be transferred back to the
 // browser process for potential reassignment to an Instant renderer process.
 class SearchBouncer : public content::RenderThreadObserver,
-                      public chrome::mojom::SearchBouncer {
+                      public search::mojom::SearchBouncer {
  public:
   SearchBouncer();
   ~SearchBouncer() override;
@@ -30,16 +30,16 @@ class SearchBouncer : public content::RenderThreadObserver,
   // Returns whether |url| is a valid Instant new tab page URL.
   bool IsNewTabPage(const GURL& url) const;
 
-  // chrome::mojom::SearchBouncer:
+  // search::mojom::SearchBouncer:
   void SetNewTabPageURL(const GURL& new_tab_page_url) override;
 
  private:
   void BindSearchBouncerReceiver(
-      mojo::PendingAssociatedReceiver<chrome::mojom::SearchBouncer> receiver);
+      mojo::PendingAssociatedReceiver<search::mojom::SearchBouncer> receiver);
 
   GURL new_tab_page_url_;
 
-  mojo::AssociatedReceiver<chrome::mojom::SearchBouncer>
+  mojo::AssociatedReceiver<search::mojom::SearchBouncer>
       search_bouncer_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SearchBouncer);

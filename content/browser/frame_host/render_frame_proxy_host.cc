@@ -93,8 +93,6 @@ RenderFrameProxyHost::RenderFrameProxyHost(
 
   bool is_proxy_to_parent = !frame_tree_node_->IsMainFrame() &&
                             frame_tree_node_->parent()
-                                    ->render_manager()
-                                    ->current_frame_host()
                                     ->GetSiteInstance() == site_instance;
   bool is_proxy_to_outer_delegate =
       frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate();
@@ -154,6 +152,7 @@ RenderViewHostImpl* RenderFrameProxyHost::GetRenderViewHost() {
 
 RenderWidgetHostView* RenderFrameProxyHost::GetRenderWidgetHostView() {
   return frame_tree_node_->parent()
+      ->frame_tree_node()
       ->render_manager()
       ->GetRenderWidgetHostView();
 }
@@ -211,8 +210,10 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
     // new child frames always start out as local frames, so a new proxy should
     // never have a RenderFrameHost as a parent.
     RenderFrameProxyHost* parent_proxy =
-        frame_tree_node_->parent()->render_manager()->GetRenderFrameProxyHost(
-            site_instance_.get());
+        frame_tree_node_->parent()
+            ->frame_tree_node()
+            ->render_manager()
+            ->GetRenderFrameProxyHost(site_instance_.get());
     CHECK(parent_proxy);
 
     // Proxies that aren't live in the parent node should not be initialized

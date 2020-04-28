@@ -1910,7 +1910,6 @@
 <translation id="3543597750097719865">Подпись ECDSA X9.62 с SHA-512</translation>
 <translation id="3544879808695557954">Имя пользователя (необязательно)</translation>
 <translation id="354602065659584722">Вредоносное ПО удалено</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Настройки прокси-сервера</translation>
 <translation id="3548162552723420559">Цвет экрана будет меняться в зависимости от окружения</translation>
 <translation id="3550915441744863158">Chrome обновляется автоматически, поэтому у вас всегда будет установлена последняя версия.</translation>
@@ -5556,7 +5555,6 @@
 <translation id="8493236660459102203">Микрофон:</translation>
 <translation id="8496717697661868878">Запустить подключаемый модуль</translation>
 <translation id="8497219075884839166">Утилиты Windows</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Этот режим помогает снизить напряжение глаз при тусклом свете</translation>
 <translation id="8498395510292172881">Продолжить чтение в Chrome</translation>
 <translation id="8500234928660943538">Неверный PUK-код. Осталось попыток: <ph name="RETRIES" />.</translation>

@@ -43,7 +43,7 @@
 #endif  // OS_LINUX
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
-#include "content/common/profiling_utils.h"
+#include "content/public/common/profiling_utils.h"
 #endif
 
 namespace {

@@ -278,10 +278,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public void maybeSetWindowId(Intent intent) {}
 
     private void closeTab() {
-        // Closing of tabs as part of intent launching is not yet implemented in WebLayer, and
-        // parameters are specified such that this flow should never be invoked.
-        // TODO(crbug.com/1031465): Adapt //chrome's logic for closing of tabs.
-        assert false;
+        InterceptNavigationDelegateClientImpl.closeTab(mTab);
     }
 
     @Override

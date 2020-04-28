@@ -13,11 +13,12 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"

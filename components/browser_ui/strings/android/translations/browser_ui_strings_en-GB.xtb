@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Blocked on some sites</translation>
 <translation id="3190152372525844641">Turn on permissions for Chrome in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> stored data</translation>
-<translation id="3223655101706843289">This will clear all data and cookies stored by <ph name="ORIGIN" /> and its app on your home screen.</translation>
 <translation id="3227137524299004712">Microphone</translation>
 <translation id="3277252321222022663">Allow sites to access sensors (recommended)</translation>
 <translation id="3295602654194328831">Hide info</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Save</translation>
 <translation id="5335288049665977812">Allow sites to run JavaScript (recommended)</translation>
 <translation id="534295439873310000">NFC devices</translation>
+<translation id="5354152178998424783">This will clear <ph name="DATASIZE" /> of data and cookies stored by sites.</translation>
 <translation id="5391532827096253100">Your connection to this site is not secure. Site information</translation>
 <translation id="5494752089476963479">Block ads on sites that show intrusive or misleading ads</translation>
 <translation id="5505264765875738116">Sites can't ask to send notifications</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">You'll be signed out of this site.</translation>
 <translation id="7828557259026017104">Cookies are files created by websites that you visit. Sites use them to remember your preferences. Third-party cookies are created by other sites. These sites own some of the content, like ads or images, that you see on the web page that you visit.</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
+<translation id="7846621471902887024">You'll be signed out of all sites.</translation>
 <translation id="7882806643839505685">Allow sound for a specific site.</translation>
 <translation id="7993619969781047893">Features on some sites may break</translation>
 <translation id="7999064672810608036">Are you sure that you want to clear all local data, including cookies, and reset all permissions for this website?</translation>

@@ -54,15 +54,16 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
   bool DiscoverFeed(const GURL& url);
 
   // Updates the feed following a fetch.
-  bool UpdateFeedFromFetch(const int64_t feed_id,
-                           const media_feeds::mojom::FetchResult result,
-                           const bool was_fetched_from_cache,
-                           const int item_count,
-                           const int item_play_next_count,
-                           const int item_content_types,
-                           const std::vector<media_session::MediaImage>& logos,
-                           const std::string& display_name,
-                           const int item_safe_count);
+  bool UpdateFeedFromFetch(
+      const int64_t feed_id,
+      const media_feeds::mojom::FetchResult result,
+      const bool was_fetched_from_cache,
+      const int item_count,
+      const int item_play_next_count,
+      const int item_content_types,
+      const std::vector<media_feeds::mojom::MediaImagePtr>& logos,
+      const std::string& display_name,
+      const int item_safe_count);
 
   // Returns the feed rows in the database.
   std::vector<media_feeds::mojom::MediaFeedPtr> GetRows(

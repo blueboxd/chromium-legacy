@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/webgl_rendering_context_or_webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
+#include "third_party/blink/renderer/modules/xr/xr_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_webgl_drawing_buffer.h"
@@ -27,7 +28,7 @@ class WebGLRenderingContextBase;
 class XRSession;
 class XRViewport;
 
-class XRWebGLLayer final : public ScriptWrappable {
+class XRWebGLLayer final : public XRLayer {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -44,8 +45,6 @@ class XRWebGLLayer final : public ScriptWrappable {
       const WebGLRenderingContextOrWebGL2RenderingContext&,
       const XRWebGLLayerInit*,
       ExceptionState&);
-
-  XRSession* session() const { return session_; }
 
   WebGLRenderingContextBase* context() const { return webgl_context_; }
 
@@ -79,8 +78,6 @@ class XRWebGLLayer final : public ScriptWrappable {
   void Trace(Visitor*) override;
 
  private:
-  const Member<XRSession> session_;
-
   Member<XRViewport> left_viewport_;
   Member<XRViewport> right_viewport_;
 

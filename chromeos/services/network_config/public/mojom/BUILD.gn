@@ -10,8 +10,13 @@ mojom("mojom") {
     "cros_network_config.mojom",
   ]
 
-  deps = [
+  public_deps = [
+    ":network_types",
     "//mojo/public/mojom/base",
     "//services/network/public/mojom:mojom_ip_address",
   ]
+}
+
+mojom("network_types") {
+  sources = [ "network_types.mojom" ]
 }

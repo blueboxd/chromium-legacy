@@ -75,19 +75,6 @@ ToastDialogView::ToastDialogView(const base::string16& app_name,
 
 ToastDialogView::~ToastDialogView() = default;
 
-void ToastDialogView::Show() {
-  views::Widget::InitParams params =
-      GetDialogWidgetInitParams(this, nullptr, nullptr, gfx::Rect());
-
-  ash_util::SetupWidgetInitParamsForContainer(
-      &params, ash::kShellWindowId_SettingBubbleContainer);
-
-  views::Widget* widget = new views::Widget;  // owned by native widget
-  widget->Init(std::move(params));
-  widget->AddObserver(this);
-  widget->Show();
-}
-
 ui::ModalType ToastDialogView::GetModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
@@ -107,6 +94,13 @@ void ToastDialogView::AddedToWidget() {
 
 bool ToastDialogView::ShouldShowCloseButton() const {
   return true;
+}
+
+void ToastDialogView::OnBeforeBubbleWidgetInit(
+    views::Widget::InitParams* params,
+    views::Widget* widget) const {
+  ash_util::SetupWidgetInitParamsForContainer(
+      params, ash::kShellWindowId_SettingBubbleContainer);
 }
 
 }  // namespace lock_screen_apps

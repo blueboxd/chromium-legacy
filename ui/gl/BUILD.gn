@@ -294,13 +294,6 @@ jumbo_component("gl") {
       "gl_visual_picker_glx.h",
     ]
 
-    configs += [
-      "//build/config/linux:x11",
-      "//build/config/linux:xcomposite",
-      "//build/config/linux:xext",
-      "//build/config/linux:xrandr",
-    ]
-
     deps += [
       "//ui/base/x",
       "//ui/gfx/x",
@@ -511,7 +504,6 @@ jumbo_static_library("test_support") {
   }
 
   if (use_x11) {
-    configs += [ "//build/config/linux:x11" ]
     deps += [
       "//ui/gfx/x",
       "//ui/platform_window/x11",
@@ -613,7 +605,6 @@ test("gl_unittests") {
   if (use_x11) {
     sources += [ "gl_context_glx_unittest.cc" ]
     deps += [ "//ui/gfx/x" ]
-    configs += [ "//build/config/linux:x11" ]
   }
 }
 

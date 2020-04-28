@@ -570,7 +570,7 @@
       },
       'android-cronet-arm-dbg': {
         'mixins': [
-          'kitkat_or_lollipop',
+          'lollipop',
           'hammerhead',
         ],
         'additional_compile_targets': [
@@ -625,8 +625,8 @@
       },
       'android-cronet-asan-arm-rel': {
         'mixins': [
-          'kitkat_or_lollipop',
           'hammerhead',
+          'kitkat',
         ],
         'additional_compile_targets': [
           'cronet_package',
@@ -647,7 +647,16 @@
         },
         'os_type': 'android',
       },
-      'android-cronet-lollipop-arm-rel': {},
+      'android-cronet-lollipop-arm-rel': {
+        'mixins': [
+          'lollipop',
+          'hammerhead',
+        ],
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+        'os_type': 'android',
+      },
       'android-cronet-marshmallow-arm64-rel': {
         'mixins': [
           'marshmallow',
@@ -708,14 +717,8 @@
       'android-lollipop-arm-rel': {
         'mixins': [
           'hammerhead',
+          'lollipop',
         ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'LMY48M',
-            },
-          ],
-        },
         'additional_compile_targets': [
           'cronet_test_instrumentation_apk',
           'monochrome_static_initializers',
@@ -827,7 +830,7 @@
       },
       'android-bfcache-rel': {
         'mixins': [
-          'kitkat_or_lollipop',
+          'lollipop',
           'hammerhead',
         ],
         'os_type': 'android',
@@ -989,7 +992,7 @@
       },
       'ToTAndroid': {
         'mixins': [
-          'kitkat_or_lollipop',
+          'lollipop',
           'hammerhead',
         ],
         'additional_compile_targets': [
@@ -1507,7 +1510,7 @@
       'android-lollipop-arm-rel-swarming': {
         'mixins': [
           'chromium-template-pool',
-          'kitkat_or_lollipop',
+          'lollipop',
           'hammerhead',
         ],
         'test_suites': {
@@ -3015,7 +3018,7 @@
         'mixins': [
           'gpu_pool',
           'hammerhead',
-          'lollipop',
+          'lollipop_generic',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
@@ -3043,7 +3046,7 @@
         'skip_merge_script': True,
         'mixins': [
           'gpu_pool',
-          'lollipop',
+          'lollipop_generic',
           'shamu',
         ],
         'test_suites': {
@@ -4450,7 +4453,7 @@
         },
         'mixins': [
           'hammerhead',
-          'kitkat_or_lollipop',
+          'kitkat',
         ],
         'os_type': 'android',
       },
@@ -4682,7 +4685,7 @@
       'WebRTC Chromium FYI Android Tests (dbg) (K Nexus5)': {
         'os_type': 'android',
         'mixins': [
-          'kitkat_or_lollipop_generic',
+          'kitkat_generic',
           'hammerhead',
         ],
         'test_suites': {
@@ -5128,7 +5131,7 @@
     'machines': {
       'android-opus-arm-rel': {
         'mixins': [
-          'kitkat_or_lollipop',
+          'lollipop',
           'hammerhead',
         ],
         'test_suites': {
@@ -5138,7 +5141,7 @@
       },
       'android_blink_rel': {
         'mixins': [
-          'kitkat_or_lollipop',
+          'lollipop',
           'hammerhead',
         ],
         'test_suites': {

@@ -13,6 +13,9 @@
 #include "components/feed/core/v2/feed_stream.h"
 #include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/history_service_observer.h"
+#include "components/history/core/browser/history_types.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -33,6 +36,41 @@ class EulaObserver : public web_resource::EulaAcceptedNotifier::Observer {
 };
 
 }  // namespace
+
+namespace internal {
+bool ShouldClearFeed(const history::DeletionInfo& deletion_info) {
+  // We ignore expirations since they're not user-initiated.
+  if (deletion_info.is_from_expiration())
+    return false;
+
+  // If a user deletes a single URL, we don't consider this a clear user
+  // intent to clear our data.
+  return deletion_info.IsAllHistory() ||
+         deletion_info.deleted_rows().size() > 1;
+}
+}  // namespace internal
+
+class FeedService::HistoryObserverImpl
+    : public history::HistoryServiceObserver {
+ public:
+  HistoryObserverImpl(history::HistoryService* history_service,
+                      FeedStream* feed_stream)
+      : feed_stream_(feed_stream) {
+    history_service->AddObserver(this);
+  }
+  HistoryObserverImpl(const HistoryObserverImpl&) = delete;
+  HistoryObserverImpl& operator=(const HistoryObserverImpl&) = delete;
+
+  // history::HistoryServiceObserver.
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     const history::DeletionInfo& deletion_info) override {
+    if (internal::ShouldClearFeed(deletion_info))
+      feed_stream_->OnHistoryDeleted();
+  }
+
+ private:
+  FeedStream* feed_stream_;
+};
 
 class FeedService::NetworkDelegateImpl : public FeedNetworkImpl::Delegate {
  public:
@@ -69,6 +107,7 @@ class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
  private:
   web_resource::EulaAcceptedNotifier eula_notifier_;
   std::unique_ptr<EulaObserver> eula_observer_;
+  std::unique_ptr<HistoryObserverImpl> history_observer_;
 };
 
 FeedService::FeedService(std::unique_ptr<FeedStreamApi> stream)
@@ -81,6 +120,7 @@ FeedService::FeedService(
     PrefService* local_state,
     std::unique_ptr<leveldb_proto::ProtoDatabase<feedstore::Record>> database,
     signin::IdentityManager* identity_manager,
+    history::HistoryService* history_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& api_key,
@@ -102,11 +142,12 @@ FeedService::FeedService(
       base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
       chrome_info);
 
+  history_observer_ = std::make_unique<HistoryObserverImpl>(
+      history_service, static_cast<FeedStream*>(stream_.get()));
   stream_delegate_->Initialize(static_cast<FeedStream*>(stream_.get()));
 
   // TODO(harringtond): Call FeedStream::OnSignedIn()
   // TODO(harringtond): Call FeedStream::OnSignedOut()
-  // TODO(harringtond): Call FeedStream::OnHistoryDeleted()
   // TODO(harringtond): Call FeedStream::OnCacheDataCleared()
   // TODO(harringtond): Call FeedStream::OnEnterForeground()
 }

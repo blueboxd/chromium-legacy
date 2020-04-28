@@ -5080,6 +5080,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="8665314828727504286">セーフ ブラウジングの保護レベル</translation>
 <translation id="8672321184841719703">自動更新の対象バージョンを指定</translation>
 <translation id="867410340948518937">U2F（Universal Second Factor）</translation>
+<translation id="8680488165461049026">このポリシーでは、スピード アンサーに、選択したコンテンツへのアクセスとサーバーへの情報送信を許可します。
+
+      このポリシーを有効にした場合、スピード アンサーは選択したコンテンツにアクセスできます。
+      このポリシーを無効にした場合、スピード アンサーは選択したコンテンツにアクセスできません。
+      このポリシーが設定されていない場合、スピード アンサーに選択したコンテンツへのアクセスを許可するかどうかをユーザーが指定できます。</translation>
 <translation id="8685024486845674965">パスワードが再使用されたときに、パスワード保護について警告する</translation>
 <translation id="8687958770985542440">M84 まで Web Components v0 API を再度有効にします。</translation>
 <translation id="8693243869659262736">組み込みの DNS クライアントを使用する</translation>
@@ -5432,6 +5437,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーが true または未設定の場合、<ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> でユーザーのログインが禁止されていなければ、新しいユーザー アカウントを作成できます。</translation>
 <translation id="974349541138387272">希望の DNS-over-HTTPS リゾルバの URI テンプレートを指定する</translation>
+<translation id="974479807614498635">「スピード アンサーに、選択したコンテンツへのアクセスを許可する」</translation>
 <translation id="981346395360763138">Google 位置情報サービスが無効</translation>
 <translation id="982497069985795632">スペルチェックを有効にする</translation>
 <translation id="991560005425213776">ネイティブ プリンタにユーザー名とファイル名を送信する</translation>

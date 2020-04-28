@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Blokeeritud teatud saitidel</translation>
 <translation id="3190152372525844641">Lülita <ph name="BEGIN_LINK" />Android-seadetes<ph name="END_LINK" /> sisse load Chrome'ile.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> salvestatud andmeid</translation>
-<translation id="3223655101706843289">See kustutab kõik saidi <ph name="ORIGIN" /> ja selle rakenduse salvestatud andmed ja küpsisefailid teie avakuvalt.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Luba saitide jaoks juurdepääs anduritele (soovitatav)</translation>
 <translation id="3295602654194328831">Peida teave</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5335288049665977812">Luba saitidel käitada JavaScripti (soovitatav)</translation>
 <translation id="534295439873310000">NFC-seadmed</translation>
+<translation id="5354152178998424783">See kustutab <ph name="DATASIZE" /> andmed ja küpsisefailid, mille saidid on salvestanud.</translation>
 <translation id="5391532827096253100">Teie ühendus selle saidiga ei ole turvaline. Saidi teave</translation>
 <translation id="5494752089476963479">Blokeeri reklaamid saitidel, mis kuvavad sekkuvaid või eksitavaid reklaame</translation>
 <translation id="5505264765875738116">Saidid ei saa küsida luba märguannete saatmiseks</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Teid logitakse sellelt saidilt välja.</translation>
 <translation id="7828557259026017104">Küpsisefailid on failid, mille on loonud teie külastatud veebisaidid. Saidid kasutavad neid teie eelistuste meeldejätmiseks. Kolmanda osapoole küpsisefailid loovad teised saidid. Need saidid omavad külastatud veebisaidil kuvatud sisu, nt reklaame või pilte.</translation>
 <translation id="7846076177841592234">Tühista valik</translation>
+<translation id="7846621471902887024">Teid logitakse kõikidelt saitidelt välja.</translation>
 <translation id="7882806643839505685">Konkreetse saidi heli lubamine.</translation>
 <translation id="7993619969781047893">Mõne saidi funktsioonid ei pruugi töötada.</translation>
 <translation id="7999064672810608036">Kas soovite kindlasti kustutada kõik kohalikud andmed (sh küpsised) ja lähtestada kõik selle veebisaidi load?</translation>

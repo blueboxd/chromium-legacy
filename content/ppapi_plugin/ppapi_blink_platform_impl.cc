@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string16.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"

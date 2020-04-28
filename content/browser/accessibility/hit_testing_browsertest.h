@@ -31,6 +31,7 @@ class AccessibilityHitTestingBrowserTest
  protected:
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager();
   float GetDeviceScaleFactor();
+  float GetPageScaleFactor();
   gfx::Rect GetViewBoundsInScreenCoordinates();
   gfx::Point CSSToFramePoint(gfx::Point css_point);
   gfx::Point CSSToPhysicalPixelPoint(gfx::Point css_point);

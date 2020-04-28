@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import contextlib
 import copy
 import glob
@@ -157,6 +158,18 @@ class IntegrationTest(unittest.TestCase):
       _TEST_MINIMAL_APKS_PATH,
     ])
 
+  def _CreateTestArgs(self):
+    return argparse.Namespace(
+        **{
+            'is_bundle': False,
+            'java_only': False,
+            'native_only': False,
+            'no_java': False,
+            'no_native': False,
+            'relocations': False,
+            'source_directory': _TEST_SOURCE_DIR,
+        })
+
   def _CloneSizeInfo(self, use_output_directory=True, use_elf=True,
                      use_apk=False, use_minimal_apks=False, use_pak=False):
     assert not use_elf or use_output_directory
@@ -167,10 +180,10 @@ class IntegrationTest(unittest.TestCase):
       elf_path = _TEST_ELF_PATH if use_elf else None
       output_directory = _TEST_OUTPUT_DIR if use_output_directory else None
       knobs = archive.SectionSizeKnobs()
+      opts = archive.ContainerArchiveOptions(self._CreateTestArgs())
       # Override for testing. Lower the bar for compacting symbols, to allow
       # smaller test cases to be created.
       knobs.max_same_name_alias_count = 3
-      knobs.src_root = _TEST_SOURCE_DIR
       apk_path = None
       minimal_apks_path = None
       apk_so_path = None
@@ -201,6 +214,8 @@ class IntegrationTest(unittest.TestCase):
                                           minimal_apks_path, _TEST_TOOL_PREFIX,
                                           output_directory, linker_name)
         section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
+            knobs=knobs,
+            opts=opts,
             map_path=_TEST_MAP_PATH,
             tool_prefix=_TEST_TOOL_PREFIX,
             elf_path=elf_path,
@@ -211,8 +226,7 @@ class IntegrationTest(unittest.TestCase):
             pak_files=pak_files,
             pak_info_file=pak_info_file,
             linker_name=linker_name,
-            size_info_prefix=size_info_prefix,
-            knobs=knobs)
+            size_info_prefix=size_info_prefix)
         IntegrationTest.cached_size_info[cache_key] = archive.CreateSizeInfo(
             [section_sizes], [raw_symbols], [metadata])
     return copy.deepcopy(IntegrationTest.cached_size_info[cache_key])

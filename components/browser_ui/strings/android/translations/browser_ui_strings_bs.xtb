@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Blokirano na nekim web lokacijama</translation>
 <translation id="3190152372525844641">Uključite odobrenja za Chrome u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> pohranjenih podataka</translation>
-<translation id="3223655101706843289">Ovim će se obrisati svi podaci i kolačići koje je pohranila web lokacija <ph name="ORIGIN" /> i njena aplikacija na vašem početnom ekranu.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Dozvolite web lokacijama pristup senzorima (preporučeno)</translation>
 <translation id="3295602654194328831">Sakrij informacije</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Sačuvaj</translation>
 <translation id="5335288049665977812">Web-lokacije mogu pokretati JavaScript (preporučeno)</translation>
 <translation id="534295439873310000">NFC uređaji</translation>
+<translation id="5354152178998424783">Izbrisat će se <ph name="DATASIZE" /> podataka i kolačića koje su spremile web-lokacije.</translation>
 <translation id="5391532827096253100">Veza s web lokacijom nije sigurna. Informacije o web lokaciji</translation>
 <translation id="5494752089476963479">Blokiraj oglase na web lokacijama koje prikazuju nametljive ili obmanjujuće oglase</translation>
 <translation id="5505264765875738116">Web lokacije ne mogu tražiti da šalju obavještenja</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Odjavit ćete se s ove web lokacije.</translation>
 <translation id="7828557259026017104">Kolačići su fajlovi koje kreiraju web lokacije koje posjetite. Web lokacije ih koriste da zapamte vaše preference. Kolačiće treće strane kreiraju druge web lokacije. Te web lokacije posjeduju dio sadržaja, kao što su oglasi ili slike, koji se prikazuje na web stranici koju posjećujete.</translation>
 <translation id="7846076177841592234">Otkazivanje odabira</translation>
+<translation id="7846621471902887024">Odjavit ćete se sa svih web-lokacija.</translation>
 <translation id="7882806643839505685">Omogućavanje zvuka za određenu web lokaciju.</translation>
 <translation id="7993619969781047893">Moguće je da će funkcije na nekim web lokacijama prestati s radom</translation>
 <translation id="7999064672810608036">Jeste li sigurni da želite obrisati sve lokalne podatke, uključujući kolačiće i poništiti sva odobrenja za ovu web lokaciju?</translation>

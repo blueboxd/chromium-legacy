@@ -73,9 +73,9 @@ ChromeVoxPrefs = class {
     // Since language switching is currently an experimental feature, ensure
     // that it is off if the feature flag is absent.
     chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-chromevox-language-switching',
-        function(enabled) {
-          if (!enabled) {
+        'disable-experimental-accessibility-chromevox-language-switching',
+        (enabled) => {
+          if (enabled) {
             localStorage['languageSwitching'] = false;
           }
         });

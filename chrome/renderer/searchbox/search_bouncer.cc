@@ -51,6 +51,6 @@ void SearchBouncer::SetNewTabPageURL(const GURL& new_tab_page_url) {
 }
 
 void SearchBouncer::BindSearchBouncerReceiver(
-    mojo::PendingAssociatedReceiver<chrome::mojom::SearchBouncer> receiver) {
+    mojo::PendingAssociatedReceiver<search::mojom::SearchBouncer> receiver) {
   search_bouncer_receiver_.Bind(std::move(receiver));
 }

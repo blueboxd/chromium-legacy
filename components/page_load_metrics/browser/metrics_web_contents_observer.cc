@@ -19,6 +19,7 @@
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/media_player_id.h"
@@ -363,24 +364,25 @@ void MetricsWebContentsObserver::FrameSizeChanged(
     committed_load_->FrameSizeChanged(render_frame_host, frame_size);
 }
 
-void MetricsWebContentsObserver::OnCookiesRead(
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CookieList& cookie_list,
-    bool blocked_by_policy) {
-  if (committed_load_)
-    committed_load_->OnCookiesRead(url, first_party_url, cookie_list,
-                                   blocked_by_policy);
-}
+void MetricsWebContentsObserver::OnCookiesAccessed(
+    const content::CookieAccessDetails& details) {
+  if (!committed_load_)
+    return;
 
-void MetricsWebContentsObserver::OnCookieChange(
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
-  if (committed_load_)
-    committed_load_->OnCookieChange(url, first_party_url, cookie,
-                                    blocked_by_policy);
+  // TODO(altimin): Propagate |CookieAccessDetails| further.
+  switch (details.type) {
+    case content::CookieAccessDetails::Type::kRead:
+      committed_load_->OnCookiesRead(details.url, details.first_party_url,
+                                     details.cookie_list,
+                                     details.blocked_by_policy);
+      break;
+    case content::CookieAccessDetails::Type::kChange:
+      for (const auto& cookie : details.cookie_list) {
+        committed_load_->OnCookieChange(details.url, details.first_party_url,
+                                        cookie, details.blocked_by_policy);
+      }
+      break;
+  }
 }
 
 void MetricsWebContentsObserver::OnStorageAccessed(const GURL& url,

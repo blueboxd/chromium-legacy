@@ -12,6 +12,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/android/feed/v2/feed_service_bridge.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -58,6 +59,7 @@ FeedServiceFactory::FeedServiceFactory()
           "FeedService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 FeedServiceFactory::~FeedServiceFactory() = default;
@@ -98,6 +100,8 @@ KeyedService* FeedServiceFactory::BuildServiceInstanceFor(
           leveldb_proto::ProtoDbType::FEED_STREAM_DATABASE,
           feed_dir.AppendASCII("streamdb"), background_task_runner),
       identity_manager,
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::IMPLICIT_ACCESS),
       storage_partition->GetURLLoaderFactoryForBrowserProcess(),
       background_task_runner, api_key, chrome_info);
 }

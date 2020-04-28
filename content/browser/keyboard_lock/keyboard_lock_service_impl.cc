@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"

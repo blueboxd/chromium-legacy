@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/geolocation/geolocation_provider.h"
 #include "services/device/geolocation/geolocation_provider_impl.h"
 #include "services/device/geolocation/public_ip_address_geolocation_provider.h"
@@ -126,6 +126,8 @@ class DeviceService : public mojom::DeviceService {
 #endif
   ~DeviceService() override;
 
+  void AddReceiver(mojo::PendingReceiver<mojom::DeviceService> receiver);
+
   void SetPlatformSensorProviderForTesting(
       std::unique_ptr<PlatformSensorProvider> provider);
 
@@ -199,7 +201,7 @@ class DeviceService : public mojom::DeviceService {
   void BindUsbDeviceManagerTest(
       mojo::PendingReceiver<mojom::UsbDeviceManagerTest> receiver) override;
 
-  mojo::Receiver<mojom::DeviceService> receiver_;
+  mojo::ReceiverSet<mojom::DeviceService> receivers_;
   std::unique_ptr<PowerMonitorMessageBroadcaster>
       power_monitor_message_broadcaster_;
   std::unique_ptr<PublicIpAddressGeolocationProvider>

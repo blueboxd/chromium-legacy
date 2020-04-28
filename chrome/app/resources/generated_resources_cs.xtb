@@ -1911,7 +1911,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3543597750097719865">Podpis X9.62 ECDSA s SHA-512</translation>
 <translation id="3544879808695557954">Uživatelské jméno (nepovinné)</translation>
 <translation id="354602065659584722">Škodlivý software byl odstraněn</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="3548162552723420559">Upravit barvu obrazovky, aby odpovídala prostředí</translation>
 <translation id="3550915441744863158">Chrome se automaticky aktualizuje, abyste měli vždy nejnovější verzi</translation>
@@ -5556,7 +5555,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8493236660459102203">Mikrofon:</translation>
 <translation id="8496717697661868878">Spustit plugin</translation>
 <translation id="8497219075884839166">Nástroje Windows</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Usnadnit čtení a sledování obrazovky při tlumeném osvětlení</translation>
 <translation id="8498395510292172881">Pokračovat ve čtení v Chromu</translation>
 <translation id="8500234928660943538">Nesprávný kód PUK. Zbývající pokusy: <ph name="RETRIES" />.</translation>

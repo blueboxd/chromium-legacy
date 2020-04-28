@@ -11,7 +11,9 @@
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event_pump.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_sensor_entry.h"
@@ -34,8 +36,9 @@ class MockDeviceOrientationController final
 
  public:
   explicit MockDeviceOrientationController(
-      DeviceOrientationEventPump* orientation_pump)
-      : PlatformEventController(nullptr),
+      DeviceOrientationEventPump* orientation_pump,
+      LocalDOMWindow& window)
+      : PlatformEventController(window),
         did_change_device_orientation_(false),
         orientation_pump_(orientation_pump) {}
   ~MockDeviceOrientationController() override {}
@@ -102,8 +105,10 @@ class DeviceOrientationEventPumpTest : public testing::Test {
             sensor_provider.PassPipe(),
             device::mojom::SensorProvider::Version_));
 
-    controller_ =
-        MakeGarbageCollected<MockDeviceOrientationController>(orientation_pump);
+    page_holder_ = std::make_unique<DummyPageHolder>();
+
+    controller_ = MakeGarbageCollected<MockDeviceOrientationController>(
+        orientation_pump, *page_holder_->GetFrame().DomWindow());
 
     ExpectRelativeOrientationSensorStateToBe(
         DeviceSensorEntry::State::NOT_INITIALIZED);
@@ -135,6 +140,7 @@ class DeviceOrientationEventPumpTest : public testing::Test {
 
  private:
   Persistent<MockDeviceOrientationController> controller_;
+  std::unique_ptr<DummyPageHolder> page_holder_;
   FakeSensorProvider sensor_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPumpTest);
@@ -707,8 +713,11 @@ class DeviceAbsoluteOrientationEventPumpTest : public testing::Test {
         mojo::PendingRemote<device::mojom::blink::SensorProvider>(
             sensor_provider.PassPipe(),
             device::mojom::SensorProvider::Version_));
+
+    page_holder_ = std::make_unique<DummyPageHolder>();
+
     controller_ = MakeGarbageCollected<MockDeviceOrientationController>(
-        absolute_orientation_pump);
+        absolute_orientation_pump, *page_holder_->GetFrame().DomWindow());
 
     ExpectAbsoluteOrientationSensorStateToBe(
         DeviceSensorEntry::State::NOT_INITIALIZED);
@@ -731,6 +740,7 @@ class DeviceAbsoluteOrientationEventPumpTest : public testing::Test {
 
  private:
   Persistent<MockDeviceOrientationController> controller_;
+  std::unique_ptr<DummyPageHolder> page_holder_;
   FakeSensorProvider sensor_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceAbsoluteOrientationEventPumpTest);

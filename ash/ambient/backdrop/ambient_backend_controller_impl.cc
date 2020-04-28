@@ -215,21 +215,20 @@ void AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal(
           gaia_id, access_token, client_id);
   auto resource_request = CreateResourceRequest(request);
 
-  // |base::Unretained| is safe because this instance outlives
-  // |backdrop_url_loader_|.
-  DCHECK(!backdrop_url_loader_);
-  backdrop_url_loader_ = std::make_unique<BackdropURLLoader>();
-  backdrop_url_loader_->Start(
+  auto backdrop_url_loader = std::make_unique<BackdropURLLoader>();
+  auto* loader_ptr = backdrop_url_loader.get();
+  loader_ptr->Start(
       std::move(resource_request), request.body, NO_TRAFFIC_ANNOTATION_YET,
       base::BindOnce(&AmbientBackendControllerImpl::OnScreenUpdateInfoFetched,
-                     base::Unretained(this), std::move(callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(backdrop_url_loader)));
 }
 
 void AmbientBackendControllerImpl::OnScreenUpdateInfoFetched(
     OnScreenUpdateInfoFetchedCallback callback,
+    std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
     std::unique_ptr<std::string> response) {
-  DCHECK(backdrop_url_loader_);
-  backdrop_url_loader_.reset();
+  DCHECK(backdrop_url_loader);
 
   // Parse the |ScreenUpdate| out from the response string.
   // Note that the |backdrop_screen_update| can be a dummy instance if the
@@ -257,21 +256,20 @@ void AmbientBackendControllerImpl::StartToGetSettings(
                                                        client_id);
   auto resource_request = CreateResourceRequest(request);
 
-  // |base::Unretained| is safe because this instance outlives
-  // |backdrop_url_loader_|.
-  DCHECK(!backdrop_url_loader_);
-  backdrop_url_loader_ = std::make_unique<BackdropURLLoader>();
-  backdrop_url_loader_->Start(
+  auto backdrop_url_loader = std::make_unique<BackdropURLLoader>();
+  auto* loader_ptr = backdrop_url_loader.get();
+  loader_ptr->Start(
       std::move(resource_request), request.body, NO_TRAFFIC_ANNOTATION_YET,
       base::BindOnce(&AmbientBackendControllerImpl::OnGetSettings,
-                     base::Unretained(this), std::move(callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(backdrop_url_loader)));
 }
 
 void AmbientBackendControllerImpl::OnGetSettings(
     GetSettingsCallback callback,
+    std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
     std::unique_ptr<std::string> response) {
-  DCHECK(backdrop_url_loader_);
-  backdrop_url_loader_.reset();
+  DCHECK(backdrop_url_loader);
 
   int topic_source = BackdropClientConfig::ParseGetSettingsResponse(*response);
   if (topic_source == -1)
@@ -296,21 +294,20 @@ void AmbientBackendControllerImpl::StartToUpdateSettings(
           gaia_id, access_token, client_id, static_cast<int>(topic_source));
   auto resource_request = CreateResourceRequest(request);
 
-  // |base::Unretained| is safe because this instance outlives
-  // |backdrop_url_loader_|.
-  DCHECK(!backdrop_url_loader_);
-  backdrop_url_loader_ = std::make_unique<BackdropURLLoader>();
-  backdrop_url_loader_->Start(
+  auto backdrop_url_loader = std::make_unique<BackdropURLLoader>();
+  auto* loader_ptr = backdrop_url_loader.get();
+  loader_ptr->Start(
       std::move(resource_request), request.body, NO_TRAFFIC_ANNOTATION_YET,
       base::BindOnce(&AmbientBackendControllerImpl::OnUpdateSettings,
-                     base::Unretained(this), std::move(callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(backdrop_url_loader)));
 }
 
 void AmbientBackendControllerImpl::OnUpdateSettings(
     UpdateSettingsCallback callback,
+    std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
     std::unique_ptr<std::string> response) {
-  DCHECK(backdrop_url_loader_);
-  backdrop_url_loader_.reset();
+  DCHECK(backdrop_url_loader);
 
   const bool success =
       BackdropClientConfig::ParseUpdateSettingsResponse(*response);

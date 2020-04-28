@@ -219,9 +219,6 @@ bool TestingLegacySessionStorageDatabase::CommitAreaChanges(
 
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
   leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
-  UMA_HISTOGRAM_ENUMERATION("SessionStorageDatabase.Commit",
-                            leveldb_env::GetLevelDBStatusUMAValue(s),
-                            leveldb_env::LEVELDB_STATUS_MAX);
   return DatabaseErrorCheck(s.ok());
 }
 

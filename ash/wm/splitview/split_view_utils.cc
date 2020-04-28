@@ -412,19 +412,16 @@ void ShowAppCannotSnapToast() {
       kAppCannotSnapToastDurationMs, base::Optional<base::string16>()));
 }
 
-SplitViewController::SnapPosition GetSnapPosition(
+SplitViewController::SnapPosition GetSnapPositionForLocation(
     aura::Window* root_window,
-    aura::Window* window,
     const gfx::Point& location_in_screen,
-    const gfx::Point& initial_location_in_screen,
+    const base::Optional<gfx::Point>& initial_location_in_screen,
     int snap_distance_from_edge,
     int minimum_drag_distance,
     int horizontal_edge_inset,
     int vertical_edge_inset) {
-  if (!ShouldAllowSplitView() ||
-      !SplitViewController::Get(root_window)->CanSnapWindow(window)) {
+  if (!ShouldAllowSplitView())
     return SplitViewController::NONE;
-  }
 
   const bool horizontal = SplitViewController::IsLayoutHorizontal();
   const bool right_side_up = SplitViewController::IsLayoutRightSideUp();
@@ -476,9 +473,9 @@ SplitViewController::SnapPosition GetSnapPosition(
     drag_end_near_edge = true;
   }
 
-  if (!drag_end_near_edge && window->GetRootWindow() == root_window) {
+  if (!drag_end_near_edge && initial_location_in_screen) {
     // Check how far the window has been dragged.
-    const auto distance = location_in_screen - initial_location_in_screen;
+    const auto distance = location_in_screen - *initial_location_in_screen;
     const int primary_axis_distance = horizontal ? distance.x() : distance.y();
     const bool is_left_or_top =
         SplitViewController::IsPhysicalLeftOrTop(snap_position);
@@ -489,6 +486,29 @@ SplitViewController::SnapPosition GetSnapPosition(
   }
 
   return snap_position;
+}
+
+SplitViewController::SnapPosition GetSnapPosition(
+    aura::Window* root_window,
+    aura::Window* window,
+    const gfx::Point& location_in_screen,
+    const gfx::Point& initial_location_in_screen,
+    int snap_distance_from_edge,
+    int minimum_drag_distance,
+    int horizontal_edge_inset,
+    int vertical_edge_inset) {
+  if (!SplitViewController::Get(root_window)->CanSnapWindow(window)) {
+    return SplitViewController::NONE;
+  }
+
+  base::Optional<gfx::Point> initial_location_in_current_screen = base::nullopt;
+  if (window->GetRootWindow() == root_window)
+    initial_location_in_current_screen = initial_location_in_screen;
+
+  return GetSnapPositionForLocation(
+      root_window, location_in_screen, initial_location_in_current_screen,
+      snap_distance_from_edge, minimum_drag_distance, horizontal_edge_inset,
+      vertical_edge_inset);
 }
 
 }  // namespace ash

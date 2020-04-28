@@ -151,7 +151,7 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
                            WebGLFramebuffer* framebuffer,
                            double framebuffer_scale,
                            bool ignore_depth_values)
-    : session_(session),
+    : XRLayer(session),
       webgl_context_(webgl_context),
       framebuffer_(framebuffer),
       framebuffer_scale_(framebuffer_scale),
@@ -331,12 +331,11 @@ scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage() {
 }
 
 void XRWebGLLayer::Trace(Visitor* visitor) {
-  visitor->Trace(session_);
   visitor->Trace(left_viewport_);
   visitor->Trace(right_viewport_);
   visitor->Trace(webgl_context_);
   visitor->Trace(framebuffer_);
-  ScriptWrappable::Trace(visitor);
+  XRLayer::Trace(visitor);
 }
 
 }  // namespace blink

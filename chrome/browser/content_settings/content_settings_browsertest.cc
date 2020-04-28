@@ -33,6 +33,7 @@
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -103,10 +104,7 @@ class CookieChangeObserver : public content::WebContentsObserver {
 
   void Wait() { run_loop_.Run(); }
 
-  void OnCookieChange(const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override {
+  void OnCookiesAccessed(const content::CookieAccessDetails& details) override {
     run_loop_.Quit();
   }
 

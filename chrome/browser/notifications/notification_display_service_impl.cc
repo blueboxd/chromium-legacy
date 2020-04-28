@@ -182,7 +182,7 @@ NotificationDisplayServiceImpl::NotificationDisplayServiceImpl(Profile* profile)
 
 NotificationDisplayServiceImpl::~NotificationDisplayServiceImpl() {
   for (auto& obs : observers_)
-    obs.OnWillBeDestroyed(this);
+    obs.OnNotificationDisplayServiceDestroyed(this);
 }
 
 void NotificationDisplayServiceImpl::ProcessNotificationOperation(
@@ -268,6 +268,9 @@ void NotificationDisplayServiceImpl::Display(
     return;
   }
 
+  for (auto& observer : observers_)
+    observer.OnNotificationDisplayed(notification, metadata.get());
+
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
   NotificationPlatformBridge* bridge =
       NotificationPlatformBridge::CanHandleType(notification_type)
@@ -282,9 +285,6 @@ void NotificationDisplayServiceImpl::Display(
   NotificationHandler* handler = GetNotificationHandler(notification_type);
   if (handler)
     handler->OnShow(profile_, notification.id());
-
-  for (auto& observer : observers_)
-    observer.OnDisplay(notification);
 }
 
 void NotificationDisplayServiceImpl::Close(
@@ -310,7 +310,7 @@ void NotificationDisplayServiceImpl::Close(
 #endif
 
   for (auto& observer : observers_)
-    observer.OnClose(notification_id);
+    observer.OnNotificationClosed(notification_id);
 }
 
 void NotificationDisplayServiceImpl::GetDisplayed(

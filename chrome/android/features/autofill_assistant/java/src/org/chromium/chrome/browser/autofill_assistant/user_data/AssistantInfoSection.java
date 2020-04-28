@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
@@ -30,6 +32,7 @@ public class AssistantInfoSection {
     AssistantInfoSection(Context context, ViewGroup parent) {
         mContext = context;
         mView = new TextView(context);
+        ApiCompatibilityUtils.setTextAppearance(mView, R.style.TextAppearance_TextSmall_Secondary);
 
         int horizontalMargin = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_horizontal_spacing);
@@ -48,10 +51,6 @@ public class AssistantInfoSection {
         return mView;
     }
 
-    void setVisible(boolean visible) {
-        mView.setVisibility(visible ? View.VISIBLE : View.GONE);
-    }
-
     void setText(String text) {
         if (TextUtils.isEmpty(text)) {
             mView.setVisibility(View.GONE);
@@ -66,6 +65,15 @@ public class AssistantInfoSection {
         lp.setMarginStart(marginStart);
         lp.setMarginEnd(marginEnd);
         view.setLayoutParams(lp);
+    }
+
+    public void setPaddings(int topPadding, int bottomPadding) {
+        mView.setPadding(
+                mView.getPaddingLeft(), topPadding, mView.getPaddingRight(), bottomPadding);
+    }
+
+    public void setCenter(boolean center) {
+        mView.setGravity(center ? Gravity.CENTER_HORIZONTAL : (Gravity.TOP | Gravity.START));
     }
 
     private void onLinkClicked(int link) {

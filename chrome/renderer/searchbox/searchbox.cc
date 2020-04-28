@@ -207,9 +207,9 @@ SearchBox::SearchBox(content::RenderFrame* render_frame)
       most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
       has_received_most_visited_(false) {
   // Connect to the embedded search interface in the browser.
-  mojo::AssociatedRemote<chrome::mojom::EmbeddedSearchConnector> connector;
+  mojo::AssociatedRemote<search::mojom::EmbeddedSearchConnector> connector;
   render_frame->GetRemoteAssociatedInterfaces()->GetInterface(&connector);
-  mojo::PendingAssociatedRemote<chrome::mojom::EmbeddedSearchClient>
+  mojo::PendingAssociatedRemote<search::mojom::EmbeddedSearchClient>
       embedded_search_client;
   receiver_.Bind(embedded_search_client.InitWithNewEndpointAndPassReceiver(),
                  render_frame->GetTaskRunner(
@@ -544,7 +544,7 @@ void SearchBox::DeleteCustomLinkResult(bool success) {
 }
 
 void SearchBox::AutocompleteResultChanged(
-    chrome::mojom::AutocompleteResultPtr result) {
+    search::mojom::AutocompleteResultPtr result) {
   if (can_run_js_in_renderframe_) {
     SearchBoxExtension::DispatchAutocompleteResultChanged(
         render_frame()->GetWebFrame(), std::move(result));

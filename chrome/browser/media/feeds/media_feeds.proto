@@ -146,6 +146,24 @@ message Image {
   string url = 1;
   int64 width = 2;
   int64 height = 3;
+
+  // Content attributes describe the image's type and defines its suggested
+  // usages.
+  enum ContentAttribute {
+    ICONIC = 0;
+    SCENE_STILL = 1;
+    POSTER = 2;
+    BACKGROUND = 3;
+    FOR_DARK_BACKGROUND = 4;
+    FOR_LIGHT_BACKGROUND = 5;
+    CENTERED = 6;
+    RIGHT_CENTERED = 7;
+    LEFT_CENTERED = 8;
+    FOR_TRANSPARENT_BACKGROUND = 9;
+    HAS_TITLE = 10;
+  };
+
+  repeated ContentAttribute content_attribute = 4;
 }
 
 // Stores up to 5 images of different sizes.

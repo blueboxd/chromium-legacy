@@ -39,7 +39,7 @@ class MockEmbeddedSearchClientFactory
     : public SearchIPCRouter::EmbeddedSearchClientFactory {
  public:
   MOCK_METHOD0(GetEmbeddedSearchClient,
-               chrome::mojom::EmbeddedSearchClient*(void));
+               search::mojom::EmbeddedSearchClient*(void));
 };
 
 }  // namespace

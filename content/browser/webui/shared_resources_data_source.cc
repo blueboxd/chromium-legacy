@@ -7,10 +7,11 @@
 #include <stddef.h>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -175,6 +176,12 @@ const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
       {IDR_NETWORK_CONFIG_MOJOM_LITE_JS,
        "mojo/chromeos/services/network_config/public/mojom/"
        "cros_network_config.mojom-lite.js"},
+      {IDR_NETWORK_CONFIG_TYPES_MOJOM_HTML,
+       "mojo/chromeos/services/network_config/public/mojom/"
+       "network_types.mojom.html"},
+      {IDR_NETWORK_CONFIG_TYPES_MOJOM_LITE_JS,
+       "mojo/chromeos/services/network_config/public/mojom/"
+       "network_types.mojom-lite.js"},
       {IDR_IP_ADDRESS_MOJOM_HTML,
        "mojo/services/network/public/mojom/"
        "ip_address.mojom.html"},

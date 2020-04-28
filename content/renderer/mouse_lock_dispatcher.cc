@@ -4,7 +4,7 @@
 
 #include "content/renderer/mouse_lock_dispatcher.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 
 namespace content {

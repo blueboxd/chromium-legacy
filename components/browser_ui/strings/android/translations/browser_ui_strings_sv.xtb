@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Blockeras på vissa webbplatser</translation>
 <translation id="3190152372525844641">Aktivera behörigheter för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> sparad data</translation>
-<translation id="3223655101706843289">All data och alla cookies som har sparats av <ph name="ORIGIN" /> och den tillhörande appen på startskärmen rensas.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Tillåt att webbplatser får åtkomst till enhetens sensorer (rekommenderas)</translation>
 <translation id="3295602654194328831">Dölj info</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5335288049665977812">Tillåt att JavaScript körs på webbplatser (rekommenderas)</translation>
 <translation id="534295439873310000">NFC-enheter</translation>
+<translation id="5354152178998424783"><ph name="DATASIZE" /> data och cookies som har sparats av webbplatser rensas.</translation>
 <translation id="5391532827096253100">Anslutningen till webbplatsen är inte säker. Webbplatsinformation</translation>
 <translation id="5494752089476963479">Blockera annonser på webbplatser där påträngande eller vilseledande annonser visas</translation>
 <translation id="5505264765875738116">Webbplatser får inte be om tillåtelse att skicka aviseringar</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Du loggas ut från webbplatsen.</translation>
 <translation id="7828557259026017104">Cookies är filer som har skapats av webbplatser du besöker. De används för att spara inställningar på en webbplats. Cookies från tredje part skapas av andra webbplatser. Dessa webbplatser äger en del av innehållet som visas på webbplatsen du besöker, till exempel annonser eller bilder.</translation>
 <translation id="7846076177841592234">Rensa val</translation>
+<translation id="7846621471902887024">Du loggas ut från alla webbplatser.</translation>
 <translation id="7882806643839505685">Tillåt ljud för en webbplats.</translation>
 <translation id="7993619969781047893">Funktioner kan sluta att fungera på vissa webbplatser</translation>
 <translation id="7999064672810608036">Vill du ta bort all lokal data för webbplatsen, inklusive cookies, och återställa alla behörigheter för den?</translation>

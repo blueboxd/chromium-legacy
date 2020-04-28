@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
@@ -18,6 +19,16 @@
 namespace base {
 
 namespace {
+
+// Jank analysis uncovered that Windows uses native ::PeekMessage calls as an
+// opportunity to yield to other threads according to some heuristics (e.g.
+// presumably when there's no input but perhaps a single WM_USER message posted
+// later than another thread was readied). MessagePumpForUI doesn't intend to
+// give this opportunity to the kernel when invoking ::PeekMessage however as it
+// runs most tasks out-of-band. Hence, PM_NOYIELD should be used to tell
+// ::PeekMessage it's not the only source of work for this thread.
+const Feature kNoYieldFromNativePeek{"NoYieldFromNativePeek",
+                                     FEATURE_DISABLED_BY_DEFAULT};
 
 enum MessageLoopProblems {
   MESSAGE_POST_ERROR,
@@ -287,10 +298,13 @@ void MessagePumpForUI::WaitForWork(Delegate::NextWorkInfo next_work_info) {
       }
 
       {
+        static const auto kAdditionalFlags =
+            FeatureList::IsEnabled(kNoYieldFromNativePeek) ? PM_NOYIELD : 0x0;
+
         MSG msg;
         // Trace as in ProcessNextWindowsMessage().
         TRACE_EVENT0("base", "MessagePumpForUI::WaitForWork PeekMessage");
-        if (::PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE))
+        if (::PeekMessage(&msg, nullptr, 0, 0, kAdditionalFlags | PM_NOREMOVE))
           return;
       }
 
@@ -462,13 +476,17 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
   MSG msg;
   bool has_msg = false;
   {
+    static const auto kAdditionalFlags =
+        FeatureList::IsEnabled(kNoYieldFromNativePeek) ? PM_NOYIELD : 0x0;
+
     // PeekMessage can run a message if |sent_messages_in_queue|, trace that and
     // emit the boolean param to see if it ever janks independently (ref.
     // comment on GetQueueStatus).
     TRACE_EVENT1("base",
                  "MessagePumpForUI::ProcessNextWindowsMessage PeekMessage",
                  "sent_messages_in_queue", sent_messages_in_queue);
-    has_msg = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE;
+    has_msg = ::PeekMessage(&msg, nullptr, 0, 0,
+                            kAdditionalFlags | PM_REMOVE) != FALSE;
   }
   if (has_msg)
     return ProcessMessageHelper(msg);

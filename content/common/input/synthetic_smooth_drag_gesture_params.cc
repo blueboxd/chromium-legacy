@@ -4,7 +4,7 @@
 
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace content {
 namespace {

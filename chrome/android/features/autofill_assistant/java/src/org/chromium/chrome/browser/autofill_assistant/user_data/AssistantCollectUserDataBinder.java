@@ -357,6 +357,10 @@ class AssistantCollectUserDataBinder
         } else if (propertyKey == AssistantCollectUserDataModel.INFO_SECTION_TEXT) {
             view.mInfoSection.setText(model.get(AssistantCollectUserDataModel.INFO_SECTION_TEXT));
             return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.INFO_SECTION_TEXT_CENTER) {
+            view.mInfoSection.setCenter(
+                    model.get(AssistantCollectUserDataModel.INFO_SECTION_TEXT_CENTER));
+            return true;
         } else if (propertyKey == AssistantCollectUserDataModel.PRIVACY_NOTICE_TEXT) {
             view.mTermsSection.setPrivacyNoticeText(
                     model.get(AssistantCollectUserDataModel.PRIVACY_NOTICE_TEXT));
@@ -590,7 +594,9 @@ class AssistantCollectUserDataBinder
                     0, view.mSectionToSectionPadding, view.mSectionToSectionPadding);
         }
         view.mTermsSection.setPaddings(view.mSectionToSectionPadding, 0);
-        view.mTermsAsCheckboxSection.setPaddings(view.mSectionToSectionPadding, 0);
+        // Do not set padding to the view.mTermsAsCheckboxSection, it already has "padding" from
+        // its checkbox (that coincidentally matches the padding of mSectionToSectionPadding).
+        view.mInfoSection.setPaddings(view.mSectionToSectionPadding, 0);
 
         // Hide dividers for currently invisible sections and after the expanded section, if any.
         boolean prevSectionIsExpandedOrInvisible = false;

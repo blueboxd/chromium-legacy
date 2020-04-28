@@ -21,7 +21,10 @@ proto_library("policy_common_definitions_compile_proto") {
     ":proto_internal",
   ]
 
-  sources = [ "policy_common_definitions.proto" ]
+  sources = [
+    "policy_common_definitions.proto",
+    "record_constants.proto",
+  ]
 
   proto_out_dir = "components/policy/proto"
 }

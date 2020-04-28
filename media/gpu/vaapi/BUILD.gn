@@ -109,7 +109,6 @@ source_set("vaapi") {
   }
 
   if (use_x11) {
-    configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
     sources += [
       "vaapi_picture_tfp.cc",
@@ -167,7 +166,6 @@ source_set("common") {
   }
 
   if (use_x11) {
-    configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
   }
 

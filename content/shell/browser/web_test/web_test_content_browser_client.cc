@@ -329,14 +329,17 @@ WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
       "https://devtools.oopif.test/",
   };
 
-  // On platforms with strict Site Isolation, the also isolate WPT origins for
-  // additional OOPIF coverage.
+  // When appropriate, we isolate WPT origins for additional OOPIF coverage.
   //
-  // Don't isolate WPT origins on
-  // 1) platforms where strict Site Isolation is not the default.
-  // 2) in web tests under virtual/not-site-per-process where
+  // We don't isolate WPT origins:
+  // 1) on platforms where strict Site Isolation is not the default.
+  // 2) in web tests under virtual/not-site-per-process where the
   //    --disable-site-isolation-trials switch is used.
-  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites()) {
+  // 3) in web tests under virtual/no-auto-wpt-origin-isolation where the
+  //    --disable-auto-wpt-origin-isolation switch is used.
+  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAutoWPTOriginIsolation)) {
     // The list of hostnames below is based on
     // https://web-platform-tests.org/writing-tests/server-features.html
     const char* kWptHostnames[] = {

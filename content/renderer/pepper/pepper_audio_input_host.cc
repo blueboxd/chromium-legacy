@@ -4,7 +4,7 @@
 
 #include "content/renderer/pepper/pepper_audio_input_host.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "content/common/pepper_file_util.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"

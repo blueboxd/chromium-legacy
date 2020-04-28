@@ -247,14 +247,8 @@ public class MultiInstanceManager
         List<ActivityManager.AppTask> appTasks = activityManager.getAppTasks();
         ActivityManager.AppTask otherActivityTask = null;
         for (ActivityManager.AppTask task : appTasks) {
-            if (task.getTaskInfo() == null || task.getTaskInfo().baseActivity == null) continue;
-            String baseActivity = task.getTaskInfo().baseActivity.getClassName();
-            // Contrary to the documentation task.getTaskInfo().baseActivity for the .LauncherMain
-            // activity alias is the alias itself, and not the implementation. Filed b/66729258;
-            // for now translate the alias manually.
-            if (baseActivity.equals(ChromeTabbedActivity.MAIN_LAUNCHER_ACTIVITY_NAME)) {
-                baseActivity = ChromeTabbedActivity.class.getName();
-            }
+            String baseActivity = MultiWindowUtils.getActivityNameFromTask(task);
+
             if (baseActivity.equals(otherWindowActivityClass.getName())) {
                 otherActivityTask = task;
             }

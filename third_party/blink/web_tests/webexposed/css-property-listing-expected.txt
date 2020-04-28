@@ -346,6 +346,7 @@ All changes to this list should go through Blink's feature review process: http:
     text-shadow
     text-size-adjust
     text-transform
+    text-underline-offset
     text-underline-position
     top
     touch-action

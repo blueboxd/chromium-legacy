@@ -91,7 +91,7 @@ template("remoting_android_client_java_tmpl") {
       "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/android_deps:androidx_drawerlayout_drawerlayout_java",
       "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",
-      "//third_party/android_deps:com_android_support_mediarouter_v7_java",
+      "//third_party/android_deps:androidx_mediarouter_mediarouter_java",
       "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
       "//ui/android:ui_utils_java",
     ]

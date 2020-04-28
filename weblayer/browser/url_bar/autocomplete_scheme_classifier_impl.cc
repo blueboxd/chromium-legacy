@@ -5,11 +5,31 @@
 #include "weblayer/browser/url_bar/autocomplete_scheme_classifier_impl.h"
 
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/public/common/url_constants.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/url_constants.h"
 
+#if defined(OS_ANDROID)
+#include "weblayer/browser/java/jni/AutocompleteSchemeClassifierImpl_jni.h"
+#endif
+
 namespace weblayer {
+
+#if defined(OS_ANDROID)
+static jlong JNI_AutocompleteSchemeClassifierImpl_CreateAutocompleteClassifier(
+    JNIEnv* env) {
+  return reinterpret_cast<intptr_t>(
+      new weblayer::AutocompleteSchemeClassifierImpl());
+}
+
+static void JNI_AutocompleteSchemeClassifierImpl_DeleteAutocompleteClassifier(
+    JNIEnv* env,
+    jlong autocomplete_scheme_classifier_impl) {
+  delete reinterpret_cast<weblayer::AutocompleteSchemeClassifierImpl*>(
+      autocomplete_scheme_classifier_impl);
+}
+#endif
 
 metrics::OmniboxInputType
 AutocompleteSchemeClassifierImpl::GetInputTypeForScheme(

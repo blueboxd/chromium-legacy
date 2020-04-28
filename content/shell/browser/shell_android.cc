@@ -9,7 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"

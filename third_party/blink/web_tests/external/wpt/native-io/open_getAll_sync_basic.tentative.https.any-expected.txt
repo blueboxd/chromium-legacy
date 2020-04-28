@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL nativeIO.getAllSync returns file created by nativeIO.openSync nativeIO.openSync is not a function
+Harness: the test ran to completion.
+

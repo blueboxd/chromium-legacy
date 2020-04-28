@@ -460,10 +460,6 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // The arguments to the API. Only non-null if argument were specified.
   std::unique_ptr<base::ListValue> args_;
 
-  // The BrowserContext of this function's extension.
-  // TODO(devlin): Grr... protected members. Move this to be private.
-  content::BrowserContext* context_ = nullptr;
-
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
@@ -528,6 +524,9 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // is invoked.
   extensions::functions::HistogramValue histogram_value_ =
       extensions::functions::UNKNOWN;
+
+  // The BrowserContext associated with the requesting renderer
+  content::BrowserContext* context_ = nullptr;
 
   // The type of the JavaScript context where this call originated.
   extensions::Feature::Context source_context_type_ =

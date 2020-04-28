@@ -235,6 +235,10 @@ class FrameImpl : public fuchsia::web::Frame,
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderViewReady() override;
   void DidFirstVisuallyNonEmptyPaint() override;
+  void ResourceLoadComplete(
+      content::RenderFrameHost* render_frame_host,
+      const content::GlobalRequestID& request_id,
+      const blink::mojom::ResourceLoadInfo& resource_load_info) override;
 
   const std::unique_ptr<content::WebContents> web_contents_;
   ContextImpl* const context_;

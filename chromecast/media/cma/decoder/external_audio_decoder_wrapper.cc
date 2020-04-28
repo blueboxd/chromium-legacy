@@ -37,20 +37,20 @@ const size_t kMinConversionBufferSize = 256;
 
 class ExternalDecoderLib {
  public:
-  ExternalDecoderLib() {
-    lib_ = std::make_unique<base::ScopedNativeLibrary>(
-        base::FilePath(kDefaultExternalDecoderPath));
-    supported_config_func_ = reinterpret_cast<IsSupportedConfigFunction>(
-        lib_->GetFunctionPointer(kSupportedConfigFunction));
-    create_func_ = reinterpret_cast<CreateFunction>(
-        lib_->GetFunctionPointer(kCreateFunction));
-    delete_func_ = reinterpret_cast<DeleteFunction>(
-        lib_->GetFunctionPointer(kDeleteFunction));
+  ExternalDecoderLib() : lib_(base::FilePath(kDefaultExternalDecoderPath)) {
+    if (lib_.is_valid()) {
+      supported_config_func_ = reinterpret_cast<IsSupportedConfigFunction>(
+          lib_.GetFunctionPointer(kSupportedConfigFunction));
+      create_func_ = reinterpret_cast<CreateFunction>(
+          lib_.GetFunctionPointer(kCreateFunction));
+      delete_func_ = reinterpret_cast<DeleteFunction>(
+          lib_.GetFunctionPointer(kDeleteFunction));
 
-    LOG_IF(ERROR, !supported_config_func_)
-        << "Missing function: " << kSupportedConfigFunction;
-    LOG_IF(ERROR, !create_func_) << "Missing function: " << kCreateFunction;
-    LOG_IF(ERROR, !delete_func_) << "Missing function: " << kDeleteFunction;
+      LOG_IF(ERROR, !supported_config_func_)
+          << "Missing function: " << kSupportedConfigFunction;
+      LOG_IF(ERROR, !create_func_) << "Missing function: " << kCreateFunction;
+      LOG_IF(ERROR, !delete_func_) << "Missing function: " << kDeleteFunction;
+    }
   }
 
   ExternalDecoderLib(const ExternalDecoderLib&) = delete;
@@ -87,7 +87,7 @@ class ExternalDecoderLib {
   using CreateFunction = decltype(&ExternalAudioDecoder_CreateDecoder);
   using DeleteFunction = decltype(&ExternalAudioDecoder_DeleteDecoder);
 
-  std::unique_ptr<base::ScopedNativeLibrary> lib_;
+  base::ScopedNativeLibrary lib_;
   IsSupportedConfigFunction supported_config_func_ = nullptr;
   CreateFunction create_func_ = nullptr;
   DeleteFunction delete_func_ = nullptr;

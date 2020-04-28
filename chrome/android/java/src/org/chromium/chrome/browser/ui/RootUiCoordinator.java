@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
@@ -115,6 +116,7 @@ public class RootUiCoordinator
     private List<ButtonDataProvider> mButtonDataProviders;
     private IdentityDiscController mIdentityDiscController;
     private ChromeActionModeHandler mChromeActionModeHandler;
+    private ToolbarActionModeCallback mActionModeControllerCallback;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -231,9 +233,9 @@ public class RootUiCoordinator
         mTabThemeColorProvider = new TabThemeColorProvider(mActivity);
         mTabThemeColorProvider.setActivityTabProvider(mActivity.getActivityTabProvider());
 
+        initFindToolbarManager();
         initializeToolbar();
         initAppMenu();
-        initFindToolbarManager();
         initDirectActionInitializer();
         if (mAppMenuCoordinator != null) {
             mToolbarManager.onAppMenuInitialized(mAppMenuCoordinator);
@@ -410,12 +412,13 @@ public class RootUiCoordinator
                     mActivityTabProvider, mShareDelegateSupplier, new ShareUtils(),
                     bottomToolbarVisibilitySupplier);
             mButtonDataProviders = Arrays.asList(mIdentityDiscController, shareButtonController);
+            mActionModeControllerCallback = new ToolbarActionModeCallback();
             mToolbarManager = new ToolbarManager(mActivity, mActivity.getFullscreenManager(),
                     toolbarContainer, mActivity.getCompositorViewHolder().getInvalidator(),
                     urlFocusChangedCallback, mTabThemeColorProvider, mTabObscuringHandler,
                     mShareDelegateSupplier, bottomToolbarVisibilitySupplier,
                     mIdentityDiscController, mButtonDataProviders, mActivityTabProvider,
-                    mScrimCoordinator);
+                    mScrimCoordinator, mActionModeControllerCallback, mFindToolbarManager);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }
@@ -499,7 +502,7 @@ public class RootUiCoordinator
         }
         mFindToolbarManager = new FindToolbarManager(mActivity.findViewById(stubId),
                 mActivity.getTabModelSelector(), mActivity.getWindowAndroid(),
-                mToolbarManager.getActionModeControllerCallback());
+                mActionModeControllerCallback);
 
         mFindToolbarObserver = new FindToolbarObserver() {
             @Override
@@ -512,8 +515,6 @@ public class RootUiCoordinator
         };
 
         mFindToolbarManager.addObserver(mFindToolbarObserver);
-
-        mActivity.getToolbarManager().setFindToolbarManager(mFindToolbarManager);
     }
 
     /**

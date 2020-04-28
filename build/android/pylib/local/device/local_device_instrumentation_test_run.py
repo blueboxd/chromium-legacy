@@ -982,11 +982,19 @@ class LocalDeviceInstrumentationTestRun(
           fail_on_unsupported = fail_on_unsupported.lower() == 'true'
         if device.build_version_sdk not in RENDER_TEST_MODEL_SDK_CONFIGS.get(
             device.product_model, []) and not fail_on_unsupported:
-          _AppendToLog(
-              results, 'Gold comparison for %s failed, but model %s with SDK '
-              '%d is not a supported configuration, so ignoring failure.' %
-              (render_name, device.product_model, device.build_version_sdk))
-          continue
+          if self._test_instance.skia_gold_properties.local_pixel_tests:
+            _AppendToLog(
+                results, 'Gold comparison for %s failed, but model %s with SDK '
+                '%d is not a supported configuration. This failure would be '
+                'ignored on the bots, but failing since tests are being run '
+                'locally.' % (render_name, device.product_model,
+                              device.build_version_sdk))
+          else:
+            _AppendToLog(
+                results, 'Gold comparison for %s failed, but model %s with SDK '
+                '%d is not a supported configuration, so ignoring failure.' %
+                (render_name, device.product_model, device.build_version_sdk))
+            continue
 
         _FailTestIfNecessary(results)
         failure_log = (

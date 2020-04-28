@@ -670,6 +670,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" />已准备就绪，可以进行安装。</translation>
 <translation id="1868193363684582383">“Ok Google”</translation>
 <translation id="1870629042957780127">授权使用麦克风</translation>
+<translation id="1871534214638631766">在您右键点击或长按内容时显示相关信息</translation>
 <translation id="1871615898038944731">您的 <ph name="DEVICE_TYPE" /> 使用的操作系统已为最新版本</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{将标签页移至另一个窗口}other{将标签页移至另一个窗口}}</translation>
 <translation id="1875386316419689002">此标签页已连接到 HID 设备。</translation>
@@ -726,6 +727,7 @@
 <translation id="1944528062465413897">蓝牙配对码：</translation>
 <translation id="1944921356641260203">发现更新</translation>
 <translation id="1946577776959096882">查看帐号</translation>
+<translation id="1949584741547056205">快速解答</translation>
 <translation id="1951012854035635156">智能助理</translation>
 <translation id="1954813140452229842">装载共享资源时出错。请检查您的凭据，然后重试。</translation>
 <translation id="1956050014111002555">该文件包含多个证书，但均未导入：</translation>
@@ -1906,7 +1908,6 @@
 <translation id="3543597750097719865">采用 SHA-512 算法的 X9.62 ECDSA 签名</translation>
 <translation id="3544879808695557954">用户名（选填）</translation>
 <translation id="354602065659584722">有害软件已移除</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="3548162552723420559">调整屏幕颜色以与环境相称</translation>
 <translation id="3550915441744863158">Chrome会自动更新，因此您使用的始终都是最新版本</translation>
@@ -5551,7 +5552,6 @@
 <translation id="8493236660459102203">麦克风：</translation>
 <translation id="8496717697661868878">运行此插件</translation>
 <translation id="8497219075884839166">Windows 实用程序</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">可让您更舒适地在黯淡的光线下查看屏幕或阅读文字</translation>
 <translation id="8498395510292172881">继续在 Chrome 中阅读</translation>
 <translation id="8500234928660943538">PUK 不正确。剩余重试次数：<ph name="RETRIES" /> 次。</translation>

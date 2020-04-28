@@ -72,6 +72,7 @@
 <translation id="310520048233152454">请输入网址。</translation>
 <translation id="3175736971608411871">定时器</translation>
 <translation id="3199563858620722075">组合框</translation>
+<translation id="3329013043687509092">饱和度</translation>
 <translation id="3450233048674729344">值必须小于或等于 <ph name="MAXIMUM" />。</translation>
 <translation id="3486220673238053218">定义</translation>
 <translation id="3557673793733683882">标题 <ph name="HEADING_LEVEL" /></translation>
@@ -260,6 +261,7 @@
 <translation id="8845239796550121995">现在正投射到您的电视上</translation>
 <translation id="8851136666856101339">主体内容</translation>
 <translation id="8875657656876809964">视频播放出错</translation>
+<translation id="8889402386540077796">色调</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">目前时间（以秒为单位）</translation>

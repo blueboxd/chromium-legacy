@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Bllokuar në disa sajte</translation>
 <translation id="3190152372525844641">Aktivizo lejimet për Chrome te <ph name="BEGIN_LINK" />"Cilësimet" e Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Të dhënat e ruajtura <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="3223655101706843289">Kjo do të pastrojë të gjitha të dhënat dhe kukit e ruajtura nga <ph name="ORIGIN" /> dhe aplikacionet e tij në ekranin bazë.</translation>
 <translation id="3227137524299004712">Mikrofoni</translation>
 <translation id="3277252321222022663">Lejoju faqeve të të hapin sensorët (rekomandohet)</translation>
 <translation id="3295602654194328831">Fshih informacionin</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Ruaj</translation>
 <translation id="5335288049665977812">Lejoji sajtet të ekzekutojnë JavaScript (rekomandohet)</translation>
 <translation id="534295439873310000">Pajisjet me NFC</translation>
+<translation id="5354152178998424783">Kjo do të pastrojë <ph name="DATASIZE" /> të dhëna dhe kuki të ruajtura nga sajtet.</translation>
 <translation id="5391532827096253100">Lidhja jote me këtë faqe nuk është e sigurt. Informacioni i faqes</translation>
 <translation id="5494752089476963479">Blloko reklamat në sajtet që shfaqin reklama ndërhyrëse ose mashtruese</translation>
 <translation id="5505264765875738116">Sajtet nuk mund të kërkojnë të dërgojnë njoftime</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Do të dalësh nga ky sajt.</translation>
 <translation id="7828557259026017104">Kukit janë skedarë të krijuar nga sajtet e uebit që viziton ti. Përdori ato për të kujtuar preferencat e tua. Kukit e palëve të treta krijohen nga sajte të tjera. Këto sajte zotërojnë disa nga përmbajtjet, si p.sh. reklamat ose imazhet që ti shikon në faqen e uebit që viziton.</translation>
 <translation id="7846076177841592234">Anulo zgjedhjen</translation>
+<translation id="7846621471902887024">Do të dalësh nga të gjitha sajtet.</translation>
 <translation id="7882806643839505685">Lejo tingullin për një sajt specifik.</translation>
 <translation id="7993619969781047893">Veçoritë në disa sajte mund të ndalojnë së funksionuari</translation>
 <translation id="7999064672810608036">Je i sigurt që dëshiron t'i pastrosh të gjitha të dhënat lokale, duke përfshirë kukit, dhe të rivendosësh të gjitha lejet për këtë sajt uebi?</translation>

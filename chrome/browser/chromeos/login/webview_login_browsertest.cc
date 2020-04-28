@@ -625,7 +625,6 @@ IN_PROC_BROWSER_TEST_P(WebviewLoginWithIframeTest, GaiaWithIframe) {
   ErrorScreenWatcher error_screen_watcher;
 
   content::TestNavigationObserver navigation_observer(frame_url_);
-  navigation_observer.set_ignore_other_urls(true);
   navigation_observer.StartWatchingNewWebContents();
 
   WaitForGaiaPageLoadAndPropertyUpdate();

@@ -67,6 +67,7 @@ cast_source_set("audio") {
     "cast_audio_mixer.h",
     "cast_audio_output_stream.cc",
     "cast_audio_output_stream.h",
+    "cast_audio_resampler_impl.cc",
     "cma_audio_output_stream.cc",
     "cma_audio_output_stream.h",
   ]
@@ -76,6 +77,7 @@ cast_source_set("audio") {
     "//base",
     "//chromecast/base",
     "//chromecast/common/mojom",
+    "//chromecast/media/api",
     "//chromecast/media/audio/capture_service:receiver",
     "//chromecast/media/audio/mixer_service:common",
     "//chromecast/media/audio/mixer_service:output_stream_connection",

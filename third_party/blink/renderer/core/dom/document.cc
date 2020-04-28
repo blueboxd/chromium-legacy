@@ -2975,12 +2975,8 @@ void Document::DetachCompositorTimeline(
       !GetSettings()->GetAcceleratedCompositingEnabled())
     return;
 
-  // This requires detaching all animations from timeline first before detaching
-  // timeline.
-  if (timeline->GetAnimationTimeline()->IsScrollTimeline() &&
-      timeline->GetAnimationTimeline()->HasAnimation())
-    return;
-
+  // During Document::Shutdown() the timeline needs to be unconditionally
+  // detached.
   GetPage()->GetChromeClient().DetachCompositorAnimationTimeline(timeline,
                                                                  GetFrame());
 }
@@ -4672,10 +4668,6 @@ void Document::ProcessBaseElement() {
   } else {
     base_target_ = g_null_atom;
   }
-}
-
-String Document::UserAgent() const {
-  return GetFrame() ? GetFrame()->Loader().UserAgent() : String();
 }
 
 void Document::DidLoadAllImports() {

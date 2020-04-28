@@ -670,6 +670,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> നിങ്ങളുടെ ഇന്‍‌സ്റ്റാളേഷന്‍ പൂര്‍ത്തിയാക്കുന്നതിന് തയ്യാറാണ്</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">മൈക്രോഫോണിന് ആക്‌സസ് നൽകുക</translation>
+<translation id="1871534214638631766">ഉള്ളടക്കത്തിൽ വലത്-ക്ലിക്ക് ചെയ്യുമ്പോഴോ ദീർഘനേരം അമർത്തുമ്പോഴോ അതിന്റെ അനുബന്ധ വിവരങ്ങൾ കാണിക്കുക</translation>
 <translation id="1871615898038944731">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> അപ്‌‌ടു‌ഡേറ്റാണ്</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{ടാബ് മറ്റൊരു വിൻഡോയിലേക്ക് നീക്കുക}other{ടാബുകൾ മറ്റൊരു വിൻഡോയിലേക്ക് നീക്കുക}}</translation>
 <translation id="1875386316419689002">ഈ ടാബ് HID ഉപകരണവുമായി കണക്‌റ്റ് ചെയ്‌തിരിക്കുന്നു.</translation>
@@ -726,6 +727,7 @@
 <translation id="1944528062465413897">Bluetooth ജോടിയാക്കൽ കോഡ്:</translation>
 <translation id="1944921356641260203">അപ്‌ഡേറ്റ് കണ്ടെത്തി</translation>
 <translation id="1946577776959096882">അക്കൗണ്ടുകൾ കാണുക</translation>
+<translation id="1949584741547056205">ദ്രുത ഉത്തരങ്ങൾ</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">പങ്കിടൽ മൗണ്ട് ചെയ്യുന്നതിൽ പിശക്. ക്രെഡൻഷ്യലുകൾ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="1956050014111002555">ഫയലില്‍ ഒന്നിലധികം സാക്‍ഷ്യപ്ത്രങ്ങള്‍ അടങ്ങിയിരിക്കുന്നു, അതിലൊന്നും ഇറക്കുമതി ചെയ്തില്ല:</translation>
@@ -1907,7 +1909,6 @@
 <translation id="3543597750097719865">SHA-512 ഉള്ള X9.62 ECDSA സിഗ്നേച്ചർ</translation>
 <translation id="3544879808695557954">ഉപയോക്തൃനാമം (ഓപ്‌ഷണൽ)</translation>
 <translation id="354602065659584722">ദോഷകരമായ സോഫ്‌റ്റ്‌വയർ നീക്കംചെയ്‌തു</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">പ്രോക്‌സി ക്രമീകരണം</translation>
 <translation id="3548162552723420559">ചുറ്റുപാടുമായി പൊരുത്തപ്പെടുന്നതിന് സ്ക്രീൻ നിറം ക്രമീകരിക്കുക</translation>
 <translation id="3550915441744863158">സ്വയമേവ Chrome അപ്‌ഡേറ്റ് ചെയ്യുന്നതിനാൽ നിങ്ങളുടേത് എപ്പോഴും പുതുമയുള്ള പതിപ്പായിരിക്കും.</translation>
@@ -5555,7 +5556,6 @@
 <translation id="8493236660459102203">മൈക്രോഫോണ്‍:</translation>
 <translation id="8496717697661868878">ഈ പ്ലഗിന്‍ പ്രവര്‍ത്തിപ്പിക്കുക</translation>
 <translation id="8497219075884839166">Windows യൂട്ടിലിറ്റികൾ</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">മങ്ങിയ വെളിച്ചത്തിൽ സ്‌ക്രീൻ നോക്കുന്നതോ വായിക്കുന്നതോ എളുപ്പമാക്കുക</translation>
 <translation id="8498395510292172881">Chrome-ൽ വായന തുടരുക</translation>
 <translation id="8500234928660943538">PUK തെറ്റാണ്. ശേഷിക്കുന്ന ശ്രമങ്ങൾ: <ph name="RETRIES" />.</translation>

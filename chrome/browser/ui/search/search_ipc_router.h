@@ -37,7 +37,7 @@ class SearchIPCRouterTest;
 // SearchIPCRouter is responsible for receiving and sending IPC messages between
 // the browser and the Instant page.
 class SearchIPCRouter : public content::WebContentsObserver,
-                        public chrome::mojom::EmbeddedSearch {
+                        public search::mojom::EmbeddedSearch {
  public:
   // SearchIPCRouter calls its delegate in response to messages received from
   // the page.
@@ -237,14 +237,14 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessToggleSuggestionGroupIdVisibility() = 0;
   };
 
-  // Creates chrome::mojom::EmbeddedSearchClient connections on request.
+  // Creates search::mojom::EmbeddedSearchClient connections on request.
   class EmbeddedSearchClientFactory {
    public:
     EmbeddedSearchClientFactory() = default;
     virtual ~EmbeddedSearchClientFactory() = default;
 
     // The returned pointer is owned by the factory.
-    virtual chrome::mojom::EmbeddedSearchClient* GetEmbeddedSearchClient() = 0;
+    virtual search::mojom::EmbeddedSearchClient* GetEmbeddedSearchClient() = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(EmbeddedSearchClientFactory);
@@ -256,7 +256,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   ~SearchIPCRouter() override;
 
   // Updates the renderer with the autocomplete results.
-  void AutocompleteResultChanged(chrome::mojom::AutocompleteResultPtr result);
+  void AutocompleteResultChanged(search::mojom::AutocompleteResultPtr result);
 
   // Updates the renderer with the given autocomplete match's image data.
   void AutocompleteMatchImageAvailable(uint32_t match_index,
@@ -289,7 +289,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Called when the tab corresponding to |this| instance is deactivated.
   void OnTabDeactivated();
 
-  // chrome::mojom::EmbeddedSearch:
+  // search::mojom::EmbeddedSearch:
   void FocusOmnibox(int page_id, bool focus) override;
   void DeleteMostVisitedItem(int page_seq_no, const GURL& url) override;
   void UndoMostVisitedDeletion(int page_seq_no, const GURL& url) override;
@@ -391,7 +391,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Used by unit tests.
   int page_seq_no_for_testing() const { return commit_counter_; }
 
-  chrome::mojom::EmbeddedSearchClient* embedded_search_client() {
+  search::mojom::EmbeddedSearchClient* embedded_search_client() {
     return embedded_search_client_factory_->GetEmbeddedSearchClient();
   }
 
@@ -408,7 +408,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Receiver for the connected main frame. We only allow one frame to connect
   // at the moment, but this could be extended to a map of connected frames, if
   // desired.
-  mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearch> receiver_{this};
+  mojo::AssociatedReceiver<search::mojom::EmbeddedSearch> receiver_{this};
 
   std::unique_ptr<EmbeddedSearchClientFactory> embedded_search_client_factory_;
 

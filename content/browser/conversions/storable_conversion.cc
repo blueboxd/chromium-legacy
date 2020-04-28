@@ -4,7 +4,7 @@
 
 #include "content/browser/conversions/storable_conversion.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace content {
 

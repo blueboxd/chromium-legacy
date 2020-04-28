@@ -16,9 +16,11 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/ubertoken_fetcher.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace extensions {
 
@@ -120,6 +122,15 @@ void GaiaWebAuthFlow::OnUbertokenFetchComplete(GoogleServiceAuthError error,
       GaiaUrls::GetInstance()->merge_session_url().Resolve(merge_query));
 
   web_flow_ = CreateWebAuthFlow(merge_url);
+  network::mojom::CookieManager* cookie_manager =
+      web_flow_->GetGuestPartition()->GetCookieManagerForBrowserProcess();
+  cookie_manager->DeleteCookies(
+      network::mojom::CookieDeletionFilter::New(),
+      base::BindOnce(&GaiaWebAuthFlow::OnCookiesDeleted,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void GaiaWebAuthFlow::OnCookiesDeleted(uint32_t num_deleted) {
   web_flow_->Start();
 }
 

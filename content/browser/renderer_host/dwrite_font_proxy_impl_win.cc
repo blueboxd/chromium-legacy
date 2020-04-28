@@ -14,9 +14,9 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"

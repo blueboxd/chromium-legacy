@@ -36,7 +36,7 @@ class BASE_EXPORT ProfileBuilder {
   // implementations should simply atomically copy metadata state to be
   // associated with the sample.
   virtual void RecordMetadata(
-      MetadataRecorder::MetadataProvider* metadata_provider) {}
+      const MetadataRecorder::MetadataProvider& metadata_provider) {}
 
   // Applies the specified metadata |item| to samples collected in the range
   // [period_start, period_end), iff the profile already captured execution that

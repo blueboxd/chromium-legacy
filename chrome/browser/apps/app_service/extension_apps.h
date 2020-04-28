@@ -17,6 +17,7 @@
 #include "chrome/browser/apps/app_service/app_notifications.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
@@ -178,12 +179,18 @@ class ExtensionApps : public apps::PublisherBase,
   void OnArcAppListPrefsDestroyed() override;
 
   // NotificationDisplayService::Observer overrides.
-  void OnDisplay(const message_center::Notification& notification) override;
-  void OnClose(const std::string& notification_id) override;
-  void OnWillBeDestroyed(NotificationDisplayService* service) override;
+  void OnNotificationDisplayed(
+      const message_center::Notification& notification,
+      const NotificationCommon::Metadata* const metadata) override;
+  void OnNotificationClosed(const std::string& notification_id) override;
+  void OnNotificationDisplayServiceDestroyed(
+      NotificationDisplayService* service) override;
 
   void MaybeAddNotification(const std::string& app_id,
                             const std::string& notification_id);
+  void MaybeAddWebPageNotifications(
+      const message_center::Notification& notification,
+      const NotificationCommon::Metadata* const metadata);
 
   // Checks if extension is disabled and if enable flow should be started.
   // Returns true if extension enable flow is started or there is already one

@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL cookieStore.get returns the cookie written by cookieStore.set promise_test: Unhandled rejection with value: object "ReferenceError: cookieStore is not defined"
+Harness: the test ran to completion.
+

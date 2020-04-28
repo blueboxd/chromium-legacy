@@ -100,14 +100,14 @@ double Min(base::Optional<double> a, double b) {
   return b;
 }
 
-PseudoPriority ConvertStringtoPriority(const String& pseudo) {
-  if (pseudo.IsNull())
+PseudoPriority ConvertPseudoIdtoPriority(const PseudoId& pseudo) {
+  if (pseudo == kPseudoIdNone)
     return PseudoPriority::kNone;
-  if (pseudo == "::marker")
+  if (pseudo == kPseudoIdMarker)
     return PseudoPriority::kMarker;
-  if (pseudo == "::before")
+  if (pseudo == kPseudoIdBefore)
     return PseudoPriority::kBefore;
-  if (pseudo == "::after")
+  if (pseudo == kPseudoIdAfter)
     return PseudoPriority::kAfter;
   return PseudoPriority::kOther;
 }
@@ -159,6 +159,14 @@ void RecordCompositorAnimationFailureReasons(
     }
   }
 }
+
+Element* OriginatingElement(Element* owning_element) {
+  if (owning_element->IsPseudoElement()) {
+    return owning_element->parentElement();
+  }
+  return owning_element;
+}
+
 }  // namespace
 
 Animation* Animation::Create(AnimationEffect* effect,
@@ -472,44 +480,53 @@ bool Animation::HasLowerCompositeOrdering(
   // The specs:
   // https://drafts.csswg.org/css-animations-2/#animation-composite-order
   // https://drafts.csswg.org/css-transitions-2/#animation-composite-order
-  if (anim_priority1 != kDefaultPriority && animation1->effect() &&
-      animation2->effect()) {
-    // TODO(crbug.com/1043778): Implement and use OwningElement on CSSAnimation
-    // and CSSTransition.
-    auto* effect1 = DynamicTo<KeyframeEffect>(animation1->effect());
-    auto* effect2 = DynamicTo<KeyframeEffect>(animation2->effect());
-    Element* target1 = effect1->target();
-    Element* target2 = effect2->target();
+  if (anim_priority1 != kDefaultPriority) {
+    Element* owning_element1 = animation1->OwningElement();
+    Element* owning_element2 = animation2->OwningElement();
+
+    // Both animations are either CSS transitions or CSS animations with owning
+    // elements.
+    DCHECK(owning_element1 && owning_element2);
+    Element* originating_element1 = OriginatingElement(owning_element1);
+    Element* originating_element2 = OriginatingElement(owning_element2);
 
     // The tree position comparison would take a longer time, thus affect the
     // performance. We only do it when it comes to getAnimation.
-    if (*target1 != *target2) {
+    if (originating_element1 != originating_element2) {
       if (compare_animation_type == CompareAnimationsOrdering::kTreeOrder) {
-        return target1->compareDocumentPosition(target2) &
+        // Since pseudo elements are compared by their originating element,
+        // they sort before their children.
+        return originating_element1->compareDocumentPosition(
+                   originating_element2) &
                Node::kDocumentPositionFollowing;
       } else {
-        return target1 < target2;
+        return originating_element1 < originating_element2;
       }
     }
 
     // A pseudo-element has a higher composite ordering than its originating
-    // element, but lower than the originating element's children.
+    // element, hence kPseudoIdNone is sorted earliest.
     // Two pseudo-elements sharing the same originating element are sorted
     // as follows:
     // ::marker
     // ::before
     // other pseudo-elements (ordered by selector)
     // ::after
-    const String& pseudo1 = effect1->pseudoElement();
-    const String& pseudo2 = effect2->pseudoElement();
-    PseudoPriority priority1 = ConvertStringtoPriority(pseudo1);
-    PseudoPriority priority2 = ConvertStringtoPriority(pseudo2);
+    const PseudoId pseudo1 = owning_element1->GetPseudoId();
+    const PseudoId pseudo2 = owning_element2->GetPseudoId();
+    PseudoPriority priority1 = ConvertPseudoIdtoPriority(pseudo1);
+    PseudoPriority priority2 = ConvertPseudoIdtoPriority(pseudo2);
 
     if (priority1 != priority2)
       return priority1 < priority2;
-    if (priority1 == kOther && pseudo1 != pseudo2)
-      return CodeUnitCompareLessThan(pseudo1, pseudo2);
 
+    // The following if statement is not reachable, but the implementation
+    // matches the specification for composite ordering
+    if (priority1 == kOther && pseudo1 != pseudo2) {
+      return CodeUnitCompareLessThan(
+          PseudoElement::PseudoElementNameForEvents(pseudo1),
+          PseudoElement::PseudoElementNameForEvents(pseudo2));
+    }
     if (anim_priority1 == kCssAnimationPriority) {
       // When comparing two CSSAnimations with the same owning element, we sort
       // A and B based on their position in the computed value of the
@@ -2011,8 +2028,10 @@ void Animation::DetachCompositorTimeline() {
 
   compositor_timeline->AnimationDestroyed(*this);
 
-  if (compositor_timeline->GetAnimationTimeline()->IsScrollTimeline())
+  if (compositor_timeline->GetAnimationTimeline()->IsScrollTimeline() &&
+      !compositor_timeline->GetAnimationTimeline()->HasAnimation()) {
     document_->DetachCompositorTimeline(compositor_timeline);
+  }
 }
 
 void Animation::UpdateCompositorScrollTimeline() {

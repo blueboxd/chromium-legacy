@@ -30,6 +30,8 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<PasswordFormManagerForUI> form_to_save,
       bool update_password) override;
+  void PromptUserToMovePasswordToAccount(
+      std::unique_ptr<PasswordFormManagerForUI> form_to_move) override;
   bool ShowOnboarding(
       std::unique_ptr<PasswordFormManagerForUI> form_to_save) override;
   void ShowManualFallbackForSaving(
@@ -50,7 +52,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   void NotifyUserCouldBeAutoSignedIn(
       std::unique_ptr<autofill::PasswordForm>) override;
   void NotifySuccessfulLoginWithExistingPassword(
-      const autofill::PasswordForm& form) override;
+      std::unique_ptr<PasswordFormManagerForUI> submitted_manager) override;
   void NotifyStorePasswordCalled() override;
   void AutomaticPasswordSave(
       std::unique_ptr<PasswordFormManagerForUI> saved_manager) override;

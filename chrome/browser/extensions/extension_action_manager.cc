@@ -5,10 +5,10 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"

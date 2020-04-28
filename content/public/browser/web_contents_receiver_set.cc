@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 
 namespace content {

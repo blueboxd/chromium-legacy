@@ -38,6 +38,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
@@ -837,6 +838,13 @@ enum AuthenticationState {
                      action:@selector(onPrimaryButtonPressed:)
            forControlEvents:UIControlEventTouchUpInside];
   _primaryButton.hidden = YES;
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      _primaryButton.pointerInteractionEnabled = YES;
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
   [self.view addSubview:_primaryButton];
 
   _secondaryButton = [[MDCFlatButton alloc] init];
@@ -846,6 +854,13 @@ enum AuthenticationState {
              forControlEvents:UIControlEventTouchUpInside];
   _secondaryButton.accessibilityIdentifier = kSkipSigninAccessibilityIdentifier;
   _secondaryButton.hidden = YES;
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      _secondaryButton.pointerInteractionEnabled = YES;
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
   [self.view addSubview:_secondaryButton];
 
   if (gChromeSigninViewControllerShowsActivityIndicator) {

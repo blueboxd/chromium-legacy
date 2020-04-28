@@ -64,8 +64,6 @@ jumbo_component("init") {
       "gl_initializer_x11.cc",
     ]
 
-    configs += [ "//build/config/linux:x11" ]
-
     deps += [
       "//ui/base/x",
       "//ui/base/x:gl",

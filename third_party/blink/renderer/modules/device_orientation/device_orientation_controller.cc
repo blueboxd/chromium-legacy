@@ -6,7 +6,6 @@
 
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -22,9 +21,9 @@
 
 namespace blink {
 
-DeviceOrientationController::DeviceOrientationController(Document& document)
-    : DeviceSingleWindowEventController(document),
-      Supplement<Document>(document) {}
+DeviceOrientationController::DeviceOrientationController(LocalDOMWindow& window)
+    : DeviceSingleWindowEventController(window),
+      Supplement<LocalDOMWindow>(window) {}
 
 DeviceOrientationController::~DeviceOrientationController() = default;
 
@@ -38,12 +37,12 @@ const char DeviceOrientationController::kSupplementName[] =
     "DeviceOrientationController";
 
 DeviceOrientationController& DeviceOrientationController::From(
-    Document& document) {
+    LocalDOMWindow& window) {
   DeviceOrientationController* controller =
-      Supplement<Document>::From<DeviceOrientationController>(document);
+      Supplement<LocalDOMWindow>::From<DeviceOrientationController>(window);
   if (!controller) {
-    controller = MakeGarbageCollected<DeviceOrientationController>(document);
-    ProvideTo(document, controller);
+    controller = MakeGarbageCollected<DeviceOrientationController>(window);
+    ProvideTo(window, controller);
   }
   return *controller;
 }
@@ -54,28 +53,28 @@ void DeviceOrientationController::DidAddEventListener(
   if (event_type != EventTypeName())
     return;
 
-  // The document could be detached, e.g. if it is the `contentDocument` of an
+  // The window could be detached, e.g. if it is the `contentWindow` of an
   // <iframe> that has been removed from the DOM of its parent frame.
-  if (GetDocument().IsContextDestroyed())
+  if (GetWindow().IsContextDestroyed())
     return;
 
   // The API is not exposed to Workers or Worklets, so if the current realm
   // execution context is valid, it must have a responsible browsing context.
-  SECURITY_CHECK(GetDocument().GetFrame());
+  SECURITY_CHECK(GetWindow().GetFrame());
 
   // The event handler property on `window` is restricted to [SecureContext],
   // but nothing prevents a site from calling `window.addEventListener(...)`
   // from a non-secure browsing context.
-  if (!GetDocument().IsSecureContext())
+  if (!GetWindow().IsSecureContext())
     return;
 
-  UseCounter::Count(GetDocument(), WebFeature::kDeviceOrientationSecureOrigin);
+  UseCounter::Count(GetWindow(), WebFeature::kDeviceOrientationSecureOrigin);
 
   if (!has_event_listener_) {
     if (!CheckPolicyFeatures(
             {mojom::blink::FeaturePolicyFeature::kAccelerometer,
              mojom::blink::FeaturePolicyFeature::kGyroscope})) {
-      LogToConsolePolicyFeaturesDisabled(GetDocument().GetFrame(),
+      LogToConsolePolicyFeaturesDisabled(GetWindow().GetFrame(),
                                          EventTypeName());
       return;
     }
@@ -137,13 +136,13 @@ void DeviceOrientationController::Trace(Visitor* visitor) {
   visitor->Trace(override_orientation_data_);
   visitor->Trace(orientation_event_pump_);
   DeviceSingleWindowEventController::Trace(visitor);
-  Supplement<Document>::Trace(visitor);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 void DeviceOrientationController::RegisterWithOrientationEventPump(
     bool absolute) {
-  // The document's frame may be null if the document was already shut down.
-  LocalFrame* frame = GetDocument().GetFrame();
+  // The window's frame may be null if the window was already shut down.
+  LocalFrame* frame = GetWindow().GetFrame();
   if (!orientation_event_pump_) {
     if (!frame)
       return;

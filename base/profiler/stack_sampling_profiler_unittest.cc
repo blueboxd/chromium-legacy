@@ -165,7 +165,7 @@ class TestProfileBuilder : public ProfileBuilder {
   // ProfileBuilder:
   ModuleCache* GetModuleCache() override;
   void RecordMetadata(
-      MetadataRecorder::MetadataProvider* metadata_provider) override;
+      const MetadataRecorder::MetadataProvider& metadata_provider) override;
   void ApplyMetadataRetrospectively(
       TimeTicks period_start,
       TimeTicks period_end,
@@ -204,7 +204,7 @@ ModuleCache* TestProfileBuilder::GetModuleCache() {
 }
 
 void TestProfileBuilder::RecordMetadata(
-    MetadataRecorder::MetadataProvider* metadata_provider) {
+    const MetadataRecorder::MetadataProvider& metadata_provider) {
   ++record_metadata_count_;
 }
 

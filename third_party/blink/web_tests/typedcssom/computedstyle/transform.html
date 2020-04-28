@@ -11,9 +11,15 @@
 <body>
 <div id='testElement'></div>
 
+<svg>
+  <g id='testSvgGroup'>
+  </g>
+</svg>
+
 <script>
 
 var testElement = document.getElementById('testElement');
+var testSvgGroup = document.getElementById('testSvgGroup');
 var computedStyleMap = testElement.computedStyleMap();
 
 test(function() {
@@ -94,6 +100,17 @@ test(function() {
       'Computes as specified (matrix3d)');
   assert_equals(getComputedStyle(testElement).transform, 'matrix(2, 0, 0, 3, 4, 5)', 'Resolves as 2D');
 }, 'transform preserved a matrix3d value which reperesents a 2d transform')
+
+test(function() {
+  // Chosen for floating-point stability as 90deg was returning episilon
+  // for coefficients which should have been zero.
+  testSvgGroup.setAttribute('transform', 'rotate(45, 10, 0)');
+  var result = testSvgGroup.computedStyleMap().get('transform');
+
+  // TODO(https://github.com/w3c/csswg-drafts/issues/5011):
+  // Update this once there is consensus.
+  assert_equals(result.toString(), "matrix(0.707107, 0.707107, -0.707107, 0.707107, 2.92893, -7.07107)");
+}, 'transform serializes a three-valued rotate from an svg presentation attribute value as a matrix.')
 
 </script>
 </body>

@@ -4,7 +4,8 @@
 
 #include "content/browser/download/save_item.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_file_manager.h"

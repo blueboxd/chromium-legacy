@@ -9,7 +9,8 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "content/child/child_thread_impl.h"

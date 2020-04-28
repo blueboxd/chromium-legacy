@@ -627,9 +627,9 @@ ci.mac_builder(
     os = os.MAC_ANY,
 )
 
-# The build runs on 10.13, but triggers tests on 10.10 bots.
-ci.mac_builder(
+ci.thin_tester(
     name = 'Mac10.10 Tests',
+    mastername = 'chromium.mac',
     console_view_entry = ci.console_view_entry(
         category = 'release',
         short_name = '10',
@@ -637,9 +637,9 @@ ci.mac_builder(
     triggered_by = [builder_name('Mac Builder')],
 )
 
-# The build runs on 10.13, but triggers tests on 10.11 bots.
-ci.mac_builder(
+ci.thin_tester(
     name = 'Mac10.11 Tests',
+    mastername = 'chromium.mac',
     console_view_entry = ci.console_view_entry(
         category = 'release',
         short_name = '11',
@@ -647,53 +647,53 @@ ci.mac_builder(
     triggered_by = [builder_name('Mac Builder')],
 )
 
-ci.mac_builder(
+ci.thin_tester(
     name = 'Mac10.12 Tests',
+    mastername = 'chromium.mac',
     console_view_entry = ci.console_view_entry(
         category = 'release',
         short_name = '12',
     ),
-    os = os.MAC_10_12,
     triggered_by = [builder_name('Mac Builder')],
 )
 
-ci.mac_builder(
+ci.thin_tester(
     name = 'Mac10.13 Tests',
+    mastername = 'chromium.mac',
     console_view_entry = ci.console_view_entry(
         category = 'release',
         short_name = '13',
     ),
-    os = os.MAC_10_13,
     triggered_by = [builder_name('Mac Builder')],
 )
 
-ci.mac_builder(
+ci.thin_tester(
     name = 'Mac10.14 Tests',
+    mastername = 'chromium.mac',
     console_view_entry = ci.console_view_entry(
         category = 'release',
         short_name = '14',
     ),
-    os = os.MAC_10_14,
     triggered_by = [builder_name('Mac Builder')],
 )
 
-ci.mac_builder(
+ci.thin_tester(
     name = 'Mac10.13 Tests (dbg)',
+    mastername = 'chromium.mac',
     console_view_entry = ci.console_view_entry(
         category = 'debug',
         short_name = '13',
     ),
-    os = os.MAC_ANY,
     triggered_by = [builder_name('Mac Builder (dbg)')],
 )
 
-ci.mac_builder(
+ci.thin_tester(
     name = 'WebKit Mac10.13 (retina)',
+    mastername = 'chromium.mac',
     console_view_entry = ci.console_view_entry(
         category = 'release',
         short_name = 'ret',
     ),
-    os = os.MAC_10_13,
     triggered_by = [builder_name('Mac Builder')],
 )
 

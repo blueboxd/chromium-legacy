@@ -13,9 +13,6 @@
 # TODO(crbug.com/976083): Enable this.
 -MSE_Widevine/EncryptedMediaTest.*
 
-# TODO(crbug.com/977743): Enable this.
--ManagementApiKioskTest.ManagementApi
-
 # TODO(crbug.com/985390): Enable this.
 -OSSettingsPeoplePageAccountManagerTest.AllJsTests
 

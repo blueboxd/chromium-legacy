@@ -86,11 +86,6 @@ source_set("x11") {
     configs += [ "//ui/events/ozone/layout:xkbcommon" ]
   }
 
-  configs += [
-    "//build/config/linux:x11",
-    "//build/config/linux:xrandr",
-  ]
-
   public_configs = [ "//third_party/khronos:khronos_headers" ]
 }
 

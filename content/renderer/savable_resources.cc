@@ -7,7 +7,6 @@
 #include <set>
 
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/url_utils.h"
 #include "content/renderer/render_frame_impl.h"

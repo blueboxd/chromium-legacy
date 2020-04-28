@@ -211,6 +211,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> errors.</translation>
 <translation id="3519867315646775981">Transliteració (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portuguès</translation>
+<translation id="3524311639100184459">Compte: aquests fitxers són temporals i és possible que se suprimeixin automàticament per alliberar espai de disc.  <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Carpeta</translation>
 <translation id="3549797760399244642">Ves a drive.google.com...</translation>
 <translation id="357479282490346887">Lituà</translation>
@@ -500,6 +501,7 @@
 <translation id="6806699711453372963">Gestiona les opcions per compartir amb Linux</translation>
 <translation id="6808193438228982088">Guineu</translation>
 <translation id="6820687829547641339">Arxiu tar comprimit Gzip</translation>
+<translation id="6823166707458800069">Es crea automàticament una còpia de seguretat en línia de tots els fitxers desats en aquesta carpeta.</translation>
 <translation id="6825883775269213504">Rus</translation>
 <translation id="6827236167376090743">La reproducció d'aquest vídeo continuarà indefinidament.</translation>
 <translation id="6847101934483209767">S'ha suprimit <ph name="ENTRY_NAME" /> de la selecció.</translation>

@@ -648,10 +648,6 @@ jumbo_component("views") {
   }
 
   if (use_x11) {
-    configs += [
-      "//build/config/linux:x11",
-      "//build/config/linux:xrandr",
-    ]
     deps += [
       "//ui/events/devices",
       "//ui/events/devices/x11",
@@ -757,7 +753,7 @@ jumbo_component("views") {
       ]
       public_deps += [ "//ui/base/mojom:cursor_type" ]
       if (use_x11) {
-        deps += [
+        public_deps += [
           "//ui/base/x",
           "//ui/platform_window/x11",
         ]
@@ -1255,10 +1251,6 @@ test("views_unittests") {
     }
 
     if (use_x11) {
-      configs += [
-        "//build/config/linux:x11",
-        "//build/config/linux:xext",
-      ]
       deps += [
         "//ui/events/devices",
         "//ui/events/platform/x11",

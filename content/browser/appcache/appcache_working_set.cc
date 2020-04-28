@@ -4,7 +4,7 @@
 
 #include "content/browser/appcache/appcache_working_set.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_response_info.h"

@@ -174,6 +174,7 @@ struct CollectUserDataOptions {
   std::string accept_terms_and_conditions_text;
   std::string terms_require_review_text;
   std::string info_section_text;
+  bool info_section_text_center = false;
   std::string privacy_notice_text;
   bool show_terms_as_checkbox = false;
 

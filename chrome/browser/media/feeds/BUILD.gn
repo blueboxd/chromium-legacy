@@ -10,6 +10,7 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//services/media_session/public/mojom",
+    "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_origin",
   ]
 }

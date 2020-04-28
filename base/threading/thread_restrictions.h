@@ -160,6 +160,7 @@ class SynchronousCompositor;
 class SynchronousCompositorHost;
 class SynchronousCompositorSyncCallBridge;
 class TextInputClientMac;
+class WaitForProcessesToDumpProfilingInfo;
 class WebContentsViewMac;
 }  // namespace content
 namespace cronet {
@@ -311,6 +312,7 @@ class ScopedAllowThreadRecallForStackSamplingProfiler;
 class SimpleThread;
 class StackSamplingProfiler;
 class Thread;
+class WaitableEvent;
 
 bool PathProviderWin(int, FilePath*);
 
@@ -506,6 +508,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class content::SynchronousCompositor;
   friend class content::SynchronousCompositorHost;
   friend class content::SynchronousCompositorSyncCallBridge;
+  friend class content::WaitForProcessesToDumpProfilingInfo;
   friend class media::AudioInputDevice;
   friend class media::AudioOutputDevice;
   friend class media::PaintCanvasVideoRenderer;

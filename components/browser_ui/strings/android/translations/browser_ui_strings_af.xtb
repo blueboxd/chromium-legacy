@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Geblokkeer op sommige werwe</translation>
 <translation id="3190152372525844641">Skakel toestemmings vir Chrome aan in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gestoorde data</translation>
-<translation id="3223655101706843289">Dit sal alle data en webkoekies uitvee wat deur <ph name="ORIGIN" /> en sy program op jou Tuisskerm geberg is.</translation>
 <translation id="3227137524299004712">Mikrofoon</translation>
 <translation id="3277252321222022663">Laat werwe toegang tot sensors toe (aanbeveel)</translation>
 <translation id="3295602654194328831">Versteek inligting</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Berg</translation>
 <translation id="5335288049665977812">Laat werwe toe om JavaScript te gebruik (aanbeveel)</translation>
 <translation id="534295439873310000">NFC-toestelle</translation>
+<translation id="5354152178998424783">Dit sal <ph name="DATASIZE" /> se data en webkoekies uitvee wat deur werwe geberg is.</translation>
 <translation id="5391532827096253100">Jou verbinding aan hierdie werf is nie veilig nie. Werfinligting</translation>
 <translation id="5494752089476963479">Blokkeer advertensies op werwe wat indringerige of misleidende advertensies wys</translation>
 <translation id="5505264765875738116">Werwe kan nie vra om kennisgewings te stuur nie</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Jy sal op hierdie werf afgemeld word.</translation>
 <translation id="7828557259026017104">Webkoekies is lêers wat geskep word deur webwerwe wat jy besoek. Werwe kan hulle gebruik om jou voorkeure te onthou. Derdepartywebkoekies word deur ander werwe geskep. Hierdie werwe besit van die inhoud, soos advertensies of prente, wat jy sien op die webbladsy wat jy besoek.</translation>
 <translation id="7846076177841592234">Kanselleer keuse</translation>
+<translation id="7846621471902887024">Jy sal op alle werwe afgemeld word.</translation>
 <translation id="7882806643839505685">Laat klank toe vir 'n spesifieke werf.</translation>
 <translation id="7993619969781047893">Kenmerke op sommige werwe kan breek</translation>
 <translation id="7999064672810608036">Is jy seker dat jy alle plaaslike data, insluitend webkoekies, wil uitvee en alle toestemmings vir hierdie webwerf wil terugstel?</translation>

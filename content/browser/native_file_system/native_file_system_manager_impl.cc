@@ -5,9 +5,10 @@
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"

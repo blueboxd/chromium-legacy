@@ -175,20 +175,21 @@ bool GetDuration(const Property& property, T* item) {
 // least one media image and no more than kMaxImages. A media image is either a
 // valid URL string or an ImageObject entity containing a width, height, and
 // URL.
-base::Optional<std::vector<media_session::MediaImage>> GetMediaImage(
+base::Optional<std::vector<mojom::MediaImagePtr>> GetMediaImage(
     const Property& property) {
   if (property.values->url_values.empty() &&
       property.values->entity_values.empty()) {
     return base::nullopt;
   }
 
-  std::vector<media_session::MediaImage> images;
+  std::vector<mojom::MediaImagePtr> images;
 
   for (const auto& url : property.values->url_values) {
     if (!url.is_valid())
       continue;
-    media_session::MediaImage image;
-    image.src = url;
+
+    auto image = mojom::MediaImage::New();
+    image->src = url;
 
     images.push_back(std::move(image));
     if (images.size() == kMaxImages)
@@ -214,10 +215,10 @@ base::Optional<std::vector<media_session::MediaImage>> GetMediaImage(
     if (!IsUrl(*url))
       continue;
 
-    media_session::MediaImage image;
-    image.src = url->values->url_values[0];
-    image.sizes.push_back(gfx::Size(width->values->long_values[0],
-                                    height->values->long_values[0]));
+    auto image = mojom::MediaImage::New();
+    image->src = url->values->url_values[0];
+    image->size = gfx::Size(width->values->long_values[0],
+                            height->values->long_values[0]);
 
     images.push_back(std::move(image));
     if (images.size() == kMaxImages)
@@ -230,7 +231,7 @@ base::Optional<std::vector<media_session::MediaImage>> GetMediaImage(
 // properties.
 bool ValidateProvider(const Property& provider,
                       std::string* display_name,
-                      std::vector<media_session::MediaImage>* images) {
+                      std::vector<mojom::MediaImagePtr>* images) {
   if (provider.values->entity_values.empty())
     return false;
 
@@ -254,7 +255,7 @@ bool ValidateProvider(const Property& provider,
   auto maybe_images = GetMediaImage(*logo);
   if (!maybe_images.has_value() || maybe_images.value().empty())
     return false;
-  *images = maybe_images.value();
+  *images = std::move(maybe_images.value());
 
   return true;
 }
@@ -852,7 +853,7 @@ bool GetMediaFeedItem(const EntityPtr& item,
   auto converted_images = GetMediaImage(*image);
   if (!converted_images.has_value())
     return false;
-  converted_item->images = converted_images.value();
+  converted_item->images = std::move(converted_images.value());
 
   if (!convert_property.Run(schema_org::property::kInteractionStatistic, false,
                             base::BindOnce(&GetInteractionStatistics))) {
@@ -985,7 +986,7 @@ void GetDataFeedItems(
 // static
 base::Optional<std::vector<mojom::MediaFeedItemPtr>> GetMediaFeeds(
     const EntityPtr& entity,
-    std::vector<media_session::MediaImage>* logos,
+    std::vector<mojom::MediaImagePtr>* logos,
     std::string* display_name) {
   if (!entity || entity->type != schema_org::entity::kCompleteDataFeed)
     return base::nullopt;

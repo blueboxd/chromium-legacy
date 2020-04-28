@@ -20,14 +20,14 @@ namespace omnibox {
 
 namespace {
 
-base::flat_map<int32_t, chrome::mojom::SuggestionGroupPtr>
+base::flat_map<int32_t, search::mojom::SuggestionGroupPtr>
 CreateSuggestionGroupsMap(
     PrefService* prefs,
     const SearchSuggestionParser::HeadersMap& headers_map) {
-  base::flat_map<int32_t, chrome::mojom::SuggestionGroupPtr> result_map;
+  base::flat_map<int32_t, search::mojom::SuggestionGroupPtr> result_map;
   for (const auto& pair : headers_map) {
-    chrome::mojom::SuggestionGroupPtr suggestion_group =
-        chrome::mojom::SuggestionGroup::New();
+    search::mojom::SuggestionGroupPtr suggestion_group =
+        search::mojom::SuggestionGroup::New();
     suggestion_group->header = pair.second;
     suggestion_group->hidden =
         omnibox::IsSuggestionGroupIdHidden(prefs, pair.first);
@@ -99,24 +99,24 @@ std::string AutocompleteMatchVectorIconToResourceName(
   }
 }
 
-std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
+std::vector<search::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
     const AutocompleteResult& result) {
-  std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
+  std::vector<search::mojom::AutocompleteMatchPtr> matches;
   for (const AutocompleteMatch& match : result) {
-    chrome::mojom::AutocompleteMatchPtr mojom_match =
-        chrome::mojom::AutocompleteMatch::New();
+    search::mojom::AutocompleteMatchPtr mojom_match =
+        search::mojom::AutocompleteMatch::New();
     mojom_match->allowed_to_be_default_match =
         match.allowed_to_be_default_match;
     mojom_match->contents = match.contents;
     for (const auto& contents_class : match.contents_class) {
       mojom_match->contents_class.push_back(
-          chrome::mojom::ACMatchClassification::New(contents_class.offset,
+          search::mojom::ACMatchClassification::New(contents_class.offset,
                                                     contents_class.style));
     }
     mojom_match->description = match.description;
     for (const auto& description_class : match.description_class) {
       mojom_match->description_class.push_back(
-          chrome::mojom::ACMatchClassification::New(description_class.offset,
+          search::mojom::ACMatchClassification::New(description_class.offset,
                                                     description_class.style));
     }
     mojom_match->destination_url = match.destination_url.spec();
@@ -137,11 +137,11 @@ std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
   return matches;
 }
 
-chrome::mojom::AutocompleteResultPtr CreateAutocompleteResult(
+search::mojom::AutocompleteResultPtr CreateAutocompleteResult(
     const base::string16& input,
     const AutocompleteResult& result,
     PrefService* prefs) {
-  return chrome::mojom::AutocompleteResult::New(
+  return search::mojom::AutocompleteResult::New(
       input, CreateSuggestionGroupsMap(prefs, result.headers_map()),
       CreateAutocompleteMatches(result));
 }

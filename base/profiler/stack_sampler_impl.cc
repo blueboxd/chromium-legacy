@@ -8,6 +8,7 @@
 
 #include "base/check.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/profiler/metadata_recorder.h"
 #include "base/profiler/profile_builder.h"
 #include "base/profiler/sample_metadata.h"
@@ -32,16 +33,14 @@ namespace {
 // the thread is suspended.
 class StackCopierDelegate : public StackCopier::Delegate {
  public:
-  StackCopierDelegate(ModuleCache* module_cache,
-                      Unwinder* native_unwinder,
+  StackCopierDelegate(Unwinder* native_unwinder,
                       Unwinder* aux_unwinder,
-                      ProfileBuilder* profile_builder)
-      : module_cache_(module_cache),
-        native_unwinder_(native_unwinder),
+                      ProfileBuilder* profile_builder,
+                      MetadataRecorder::MetadataProvider* metadata_provider)
+      : native_unwinder_(native_unwinder),
         aux_unwinder_(aux_unwinder),
         profile_builder_(profile_builder),
-        metadata_provider_(std::make_unique<MetadataRecorder::MetadataProvider>(
-            GetSampleMetadataRecorder())) {}
+        metadata_provider_(metadata_provider) {}
 
   StackCopierDelegate(const StackCopierDelegate&) = delete;
   StackCopierDelegate& operator=(const StackCopierDelegate&) = delete;
@@ -56,31 +55,14 @@ class StackCopierDelegate : public StackCopier::Delegate {
     if (aux_unwinder_)
       aux_unwinder_->OnStackCapture();
 
-#if !defined(OS_POSIX) || defined(OS_MACOSX)
-    profile_builder_->RecordMetadata(metadata_provider_.get());
-#else
-    // TODO(https://crbug.com/1056283): Support metadata recording on POSIX
-    // platforms.
-    ALLOW_UNUSED_LOCAL(profile_builder_);
-#endif
-  }
-
-  void OnThreadResume() override {
-    // Reset this as soon as possible because it may hold a lock on the
-    // metadata.
-    metadata_provider_.reset();
-
-    native_unwinder_->UpdateModules(module_cache_);
-    if (aux_unwinder_)
-      aux_unwinder_->UpdateModules(module_cache_);
+    profile_builder_->RecordMetadata(*metadata_provider_);
   }
 
  private:
-  ModuleCache* const module_cache_;
   Unwinder* const native_unwinder_;
   Unwinder* const aux_unwinder_;
   ProfileBuilder* const profile_builder_;
-  std::unique_ptr<MetadataRecorder::MetadataProvider> metadata_provider_;
+  const MetadataRecorder::MetadataProvider* const metadata_provider_;
 };
 
 }  // namespace
@@ -108,12 +90,21 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
   RegisterContext thread_context;
   uintptr_t stack_top;
   TimeTicks timestamp;
-  StackCopierDelegate delegate(module_cache_, native_unwinder_.get(),
-                               aux_unwinder_.get(), profile_builder);
-  bool success = stack_copier_->CopyStack(stack_buffer, &stack_top, &timestamp,
-                                          &thread_context, &delegate);
-  if (!success)
-    return;
+  {
+    // Make this scope as small as possible because |metadata_provider| is
+    // holding a lock.
+    MetadataRecorder::MetadataProvider metadata_provider(
+        GetSampleMetadataRecorder());
+    StackCopierDelegate delegate(native_unwinder_.get(), aux_unwinder_.get(),
+                                 profile_builder, &metadata_provider);
+    bool success = stack_copier_->CopyStack(
+        stack_buffer, &stack_top, &timestamp, &thread_context, &delegate);
+    if (!success)
+      return;
+  }
+  native_unwinder_->UpdateModules(module_cache_);
+  if (aux_unwinder_)
+    aux_unwinder_->UpdateModules(module_cache_);
 
   if (test_delegate_)
     test_delegate_->OnPreStackWalk();

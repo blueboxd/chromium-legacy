@@ -21,6 +21,9 @@ ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state,
 }
 
 ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state) {
+  if (!script_state->ContextIsValid())
+    return ScriptPromise();
+
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
 
   // Check to see if this request would be blocked according to the Battery

@@ -696,7 +696,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        AllowedByComponentUpdater) {
   SetSafetyTipAllowlistPatterns(
       {"xn--googl-fsa.com/",  // googlé.com in punycode
-       "site.test/", "another-site.test/"});
+       "site.test/", "another-site.test/"},
+      {});
   TestInterstitialNotShown(browser(), GetURL("googlé.com"));
   CheckNoUkm();
 

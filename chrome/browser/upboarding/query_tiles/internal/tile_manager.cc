@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/upboarding/query_tiles/internal/tile_manager.h"
 
@@ -55,17 +57,14 @@ class TileManagerImpl : public TileManager {
                                   std::move(group), std::move(callback)));
   }
 
-  void GetTiles(std::vector<Tile*>* tiles) override {
-    DCHECK(tiles);
-
-    if (!initialized_)
-      return;
-
-    tiles->clear();
+  void GetTiles(GetTilesCallback callback) override {
+    std::vector<Tile> tiles;
     if (tile_group_ && ValidateGroup(tile_group_.get())) {
       for (const auto& tile : tile_group_->tiles)
-        tiles->emplace_back(tile.get());
+        tiles.emplace_back(*tile.get());
     }
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(tiles)));
   }
 
   void OnTileStoreInitialized(
@@ -110,7 +109,8 @@ class TileManagerImpl : public TileManager {
     std::move(callback).Run(status);
   }
 
-  // Returns true if the group is not expired and the locale matches OS setting.
+  // Returns true if the group is not expired and the locale matches OS
+  // setting.
   bool ValidateGroup(const TileGroup* group) const {
     return clock_->Now() - group->last_updated_ts < config_->expire_duration &&
            group->locale == config_->locale;

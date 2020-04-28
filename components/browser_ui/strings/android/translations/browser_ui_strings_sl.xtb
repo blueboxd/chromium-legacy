@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Blokirano na nekaterih spletnih mestih</translation>
 <translation id="3190152372525844641">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenja za Chrome.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> shranjenih podatkov</translation>
-<translation id="3223655101706843289">S tem boste izbrisali vse podatke in piškotke, ki sta jih na začetnem zaslonu shranila spletno mesto <ph name="ORIGIN" /> in njegova aplikacija.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Spletnim mestom dovoli dostop do tipal (priporočeno)</translation>
 <translation id="3295602654194328831">Skrij informacije</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5335288049665977812">Spletnim mestom dovoli izvajanje JavaScripta (priporočeno)</translation>
 <translation id="534295439873310000">Naprave s tehnologijo NFC</translation>
+<translation id="5354152178998424783">S tem boste izbrisali <ph name="DATASIZE" /> podatkov in piškotkov, ki so jih shranila spletna mesta.</translation>
 <translation id="5391532827096253100">Povezava s tem spletnim mestom ni varna. Podatki o spletnem mestu.</translation>
 <translation id="5494752089476963479">Blokiranje oglasov na spletnih mestih, ki prikazujejo vsiljive ali zavajajoče oglase</translation>
 <translation id="5505264765875738116">Spletna mesta vas ne smejo vprašati, ali želite, da vam pošiljajo obvestila</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Odjavljeni boste s tega spletnega mesta.</translation>
 <translation id="7828557259026017104">Piškotki so datoteke, ki jih ustvarijo spletna mesta, ki jih obiščete. Spletna mesta jih uporabljajo, da si zapomnijo vaše nastavitve. Piškotke drugih spletnih mest ustvarijo druga spletna mesta. Ta spletna mesta imajo v lasti nekatero vsebino, na primer oglase ali slike, ki jo vidite na spletni strani, ki jo obiščete.</translation>
 <translation id="7846076177841592234">Prekliči izbor</translation>
+<translation id="7846621471902887024">Odjavljeni boste z vseh spletnih mest.</translation>
 <translation id="7882806643839505685">Dovolitev zvoka za določeno spletno mesto.</translation>
 <translation id="7993619969781047893">Funkcije na nekaterih spletnih mestih morda ne bodo delovale</translation>
 <translation id="7999064672810608036">Ali želite res izbrisati vse lokalne podatke, vključno s piškotki, in ponastaviti vsa dovoljenja za to spletno mesto?</translation>

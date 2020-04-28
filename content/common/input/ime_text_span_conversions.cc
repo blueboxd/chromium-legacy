@@ -4,7 +4,7 @@
 
 #include "content/common/input/ime_text_span_conversions.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace content {
 

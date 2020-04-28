@@ -28,6 +28,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// VideoCaptureDevice not implemented on Fuchsia.
+#if !defined(OS_FUCHSIA)
+
 #if defined(OS_WIN)
 #include <mfcaptureengine.h>
 #include "base/win/scoped_com_initializer.h"
@@ -881,3 +884,4 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest,
 #endif
 
 }  // namespace media
+#endif  // !defined(OS_FUCHSIA)

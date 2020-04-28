@@ -5,10 +5,10 @@
 #include "content/browser/font_unique_name_lookup/font_unique_name_lookup.h"
 
 #include "base/android/build_info.h"
+#include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"

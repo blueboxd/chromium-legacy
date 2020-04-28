@@ -33,6 +33,8 @@ const char* ProcessNameFromSandboxType(
       return "gpu";
     case service_manager::SandboxType::kNetwork:
       return "network";
+    case service_manager::SandboxType::kVideoCapture:
+      return "video-capture";
     default:
       NOTREACHED() << "Unknown sandbox_type.";
       return nullptr;

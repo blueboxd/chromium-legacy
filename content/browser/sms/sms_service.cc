@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "content/browser/sms/sms_metrics.h"
 #include "content/public/browser/navigation_details.h"

@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/dynamic_color_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -334,23 +335,8 @@ const CGFloat kClearButtonSize = 28.0f;
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {
       clearButton.pointerInteractionEnabled = YES;
-
-      // Customize the pointer highlight zone around the cancel button to be
-      // snug in the corner of the location view.
       clearButton.pointerStyleProvider =
-          ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
-                           UIPointerShape* proposedShape) {
-        CGRect rect = button.frame;
-        UITargetedPreview* preview =
-            [[UITargetedPreview alloc] initWithView:button];
-        UIPointerLiftEffect* effect =
-            [UIPointerLiftEffect effectWithPreview:preview];
-        return [UIPointerStyle
-            styleWithEffect:effect
-                      shape:[UIPointerShape
-                                shapeWithRoundedRect:rect
-                                        cornerRadius:rect.size.width / 2]];
-      };
+          CreateLiftEffectCirclePointerStyleProvider();
     }
   }
 #endif  // defined(__IPHONE_13_4)

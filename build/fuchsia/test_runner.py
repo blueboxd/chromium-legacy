@@ -19,6 +19,7 @@ import time
 from common_args import AddCommonArgs, ConfigureLogging, GetDeploymentTargetForArgs
 from net_test_server import SetupTestServer
 from run_package import RunPackage, RunPackageArgs, SystemLogReader
+from runner_exceptions import HandleExceptionAndReturnExitCode
 
 DEFAULT_TEST_SERVER_CONCURRENCY = 4
 
@@ -138,37 +139,41 @@ def main():
   if args.child_args:
     child_args.extend(args.child_args)
 
-  with GetDeploymentTargetForArgs(args) as target:
-    with SystemLogReader() as system_logger:
-      target.Start()
+  try:
+    with GetDeploymentTargetForArgs(args) as target:
+      with SystemLogReader() as system_logger:
+        target.Start()
 
-      if args.system_log_file and args.system_log_file != '-':
-        system_logger.Start(target, args.package, args.system_log_file)
+        if args.system_log_file and args.system_log_file != '-':
+          system_logger.Start(target, args.package, args.system_log_file)
 
-      if args.test_launcher_filter_file:
-        target.PutFile(args.test_launcher_filter_file, TEST_FILTER_PATH,
-                      for_package=args.package_name)
-        child_args.append('--test-launcher-filter-file=' + TEST_FILTER_PATH)
+        if args.test_launcher_filter_file:
+          target.PutFile(args.test_launcher_filter_file, TEST_FILTER_PATH,
+                        for_package=args.package_name)
+          child_args.append('--test-launcher-filter-file=' + TEST_FILTER_PATH)
 
-      test_server = None
-      if args.enable_test_server:
-        assert test_concurrency
-        test_server = SetupTestServer(target, test_concurrency,
-                                      args.package_name)
+        test_server = None
+        if args.enable_test_server:
+          assert test_concurrency
+          test_server = SetupTestServer(target, test_concurrency,
+                                        args.package_name)
 
-      run_package_args = RunPackageArgs.FromCommonArgs(args)
-      returncode = RunPackage(
-          args.output_directory, target, args.package, args.package_name,
-          child_args, run_package_args)
+        run_package_args = RunPackageArgs.FromCommonArgs(args)
+        returncode = RunPackage(
+            args.output_directory, target, args.package, args.package_name,
+            child_args, run_package_args)
 
-      if test_server:
-        test_server.Stop()
+        if test_server:
+          test_server.Stop()
 
-      if args.test_launcher_summary_output:
-        target.GetFile(TEST_RESULT_PATH, args.test_launcher_summary_output,
-                      for_package=args.package_name)
+        if args.test_launcher_summary_output:
+          target.GetFile(TEST_RESULT_PATH, args.test_launcher_summary_output,
+                        for_package=args.package_name)
 
-      return returncode
+        return returncode
+
+  except:
+    return HandleExceptionAndReturnExitCode()
 
 
 if __name__ == '__main__':

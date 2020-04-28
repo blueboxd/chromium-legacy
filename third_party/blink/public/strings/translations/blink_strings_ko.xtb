@@ -72,6 +72,7 @@
 <translation id="310520048233152454">URL을 입력하세요.</translation>
 <translation id="3175736971608411871">타이머</translation>
 <translation id="3199563858620722075">콤보 상자</translation>
+<translation id="3329013043687509092">채도</translation>
 <translation id="3450233048674729344">값은 <ph name="MAXIMUM" /> 이하여야 합니다.</translation>
 <translation id="3486220673238053218">정의</translation>
 <translation id="3557673793733683882">제목 <ph name="HEADING_LEVEL" /></translation>
@@ -260,6 +261,7 @@
 <translation id="8845239796550121995">TV로 전송 중</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">동영상 재생 오류</translation>
+<translation id="8889402386540077796">색조</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" />KB</translation>
 <translation id="8987927404178983737">월</translation>
 <translation id="901493112792887934">현재 시간(초)</translation>

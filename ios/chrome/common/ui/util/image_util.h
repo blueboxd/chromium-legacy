@@ -17,4 +17,10 @@
  */
 UIImage* ResizeImageForSearchByImage(UIImage* image);
 
+// Returns an image generated from the given |view|, using |backgroundColor| and
+// adding |padding| around the centered image.
+UIImage* ImageFromView(UIView* view,
+                       UIColor* backgroundColor,
+                       UIEdgeInsets padding);
+
 #endif  // IOS_CHROME_COMMON_UI_UTIL_IMAGE_UTIL_H_

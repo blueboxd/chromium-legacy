@@ -6,7 +6,8 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace content {

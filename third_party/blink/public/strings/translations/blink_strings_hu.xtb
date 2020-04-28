@@ -72,6 +72,7 @@
 <translation id="310520048233152454">Adjon meg egy URL-t.</translation>
 <translation id="3175736971608411871">időzítő</translation>
 <translation id="3199563858620722075">legördülő lista</translation>
+<translation id="3329013043687509092">Telítettség</translation>
 <translation id="3450233048674729344">Az érték legyen kisebb vagy egyenlő, mint <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definíció</translation>
 <translation id="3557673793733683882"><ph name="HEADING_LEVEL" />. címsor</translation>
@@ -260,6 +261,7 @@
 <translation id="8845239796550121995">Átküldés a tévére folyamatban</translation>
 <translation id="8851136666856101339">fő</translation>
 <translation id="8875657656876809964">Videólejátszási hiba</translation>
+<translation id="8889402386540077796">Színárnyalat</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8987927404178983737">hónap</translation>
 <translation id="901493112792887934">jelenlegi idő másodpercben</translation>

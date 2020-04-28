@@ -685,6 +685,7 @@ source_set("unit_tests") {
     ":sync",
     ":test_support_engine",
     ":test_support_model",
+    ":test_support_nigori",
     "//base",
     "//base/test:test_support",
     "//components/invalidation/impl",

@@ -4,7 +4,8 @@
 
 #include "content/renderer/pepper/pepper_audio_output_host.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "content/common/pepper_file_util.h"
 #include "content/renderer/pepper/pepper_audio_controller.h"

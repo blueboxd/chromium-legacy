@@ -4,7 +4,7 @@
 
 #include "content/browser/system_connector_impl.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequence_local_storage_slot.h"

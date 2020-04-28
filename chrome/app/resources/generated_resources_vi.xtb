@@ -673,6 +673,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> sẵn sàng hoàn tất việc cài đặt của bạn</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">Cấp quyền truy cập vào micrô</translation>
+<translation id="1871534214638631766">Hiển thị thông tin liên quan khi bạn nhấp chuột phải vào nội dung hoặc nhấn và giữ nội dung</translation>
 <translation id="1871615898038944731"><ph name="DEVICE_TYPE" /> của bạn đã cập nhật</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Di chuyển thẻ sang một cửa sổ khác}other{Di chuyển các thẻ sang một cửa sổ khác}}</translation>
 <translation id="1875386316419689002">Tab này kết nối với một thiết bị HID.</translation>
@@ -729,6 +730,7 @@
 <translation id="1944528062465413897">Mã ghép nối Bluetooth:</translation>
 <translation id="1944921356641260203">Đã tìm thấy bản cập nhật</translation>
 <translation id="1946577776959096882">Xem tài khoản</translation>
+<translation id="1949584741547056205">Trả lời nhanh</translation>
 <translation id="1951012854035635156">Trợ lý</translation>
 <translation id="1954813140452229842">Lỗi khi kết nối với thư mục chia sẻ. Vui lòng kiểm tra thông tin đăng nhập của bạn rồi thử lại.</translation>
 <translation id="1956050014111002555">Tệp chứa nhiều chứng chỉ, chưa có chứng chỉ nào trong số đó được nhập:</translation>
@@ -1910,7 +1912,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3543597750097719865">Chữ ký X9.62 ECDSA với SHA-512</translation>
 <translation id="3544879808695557954">Tên người dùng (tùy chọn)</translation>
 <translation id="354602065659584722">Đã xóa phần mềm độc hại</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="3548162552723420559">Điều chỉnh màu màn hình cho phù hợp với môi trường xung quanh</translation>
 <translation id="3550915441744863158">Chrome tự động cập nhật nên bạn luôn có phiên bản mới nhất</translation>
@@ -5557,7 +5558,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8493236660459102203">Micrô:</translation>
 <translation id="8496717697661868878">Chạy Plugin này</translation>
 <translation id="8497219075884839166">Tiện ích Windows</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Giúp bạn nhìn màn hình hoặc đọc dưới ánh sáng mờ dễ dàng hơn</translation>
 <translation id="8498395510292172881">Tiếp tục đọc trong Chrome</translation>
 <translation id="8500234928660943538">PUK không đúng. Bạn còn <ph name="RETRIES" /> lần thử lại.</translation>

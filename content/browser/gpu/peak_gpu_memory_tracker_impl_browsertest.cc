@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -118,6 +119,10 @@ class TestGpuService : public viz::mojom::GpuService {
 #if defined(OS_MACOSX)
   void BeginCATransaction() override {}
   void CommitCATransaction(CommitCATransactionCallback callback) override {}
+#endif
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  void WriteClangProfilingProfile(
+      WriteClangProfilingProfileCallback callback) override {}
 #endif
   void Crash() override {}
   void Hang() override {}

@@ -96,7 +96,7 @@ bool ShouldCreateDevToolsForNode(FrameTreeNode* ftn) {
 
 FrameTreeNode* GetFrameTreeNodeAncestor(FrameTreeNode* frame_tree_node) {
   while (frame_tree_node && !ShouldCreateDevToolsForNode(frame_tree_node))
-    frame_tree_node = frame_tree_node->parent();
+    frame_tree_node = FrameTreeNode::From(frame_tree_node->parent());
   DCHECK(frame_tree_node);
   return frame_tree_node;
 }
@@ -660,7 +660,7 @@ void RenderFrameDevToolsAgentHost::ConnectWebContents(WebContents* wc) {
 std::string RenderFrameDevToolsAgentHost::GetParentId() {
   if (IsChildFrame()) {
     FrameTreeNode* frame_tree_node =
-        GetFrameTreeNodeAncestor(frame_tree_node_->parent());
+        GetFrameTreeNodeAncestor(frame_tree_node_->parent()->frame_tree_node());
     return RenderFrameDevToolsAgentHost::GetOrCreateFor(frame_tree_node)
         ->GetId();
   }

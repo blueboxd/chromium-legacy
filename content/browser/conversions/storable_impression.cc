@@ -4,7 +4,7 @@
 
 #include "content/browser/conversions/storable_impression.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace content {
 

@@ -331,38 +331,15 @@ void TabSpecificContentSettings::OnDomStorageAccessed(const GURL& url,
   NotifySiteDataObservers();
 }
 
-void TabSpecificContentSettings::OnCookiesRead(
-    const GURL& url,
-    const GURL& frame_url,
-    const net::CookieList& cookie_list,
-    bool blocked_by_policy) {
-  if (cookie_list.empty())
+void TabSpecificContentSettings::OnCookiesAccessed(
+    const content::CookieAccessDetails& details) {
+  if (details.cookie_list.empty())
     return;
-  if (blocked_by_policy) {
-    blocked_local_shared_objects_.cookies()->AddReadCookies(frame_url, url,
-                                                            cookie_list);
+  if (details.blocked_by_policy) {
+    blocked_local_shared_objects_.cookies()->AddCookies(details);
     OnContentBlocked(ContentSettingsType::COOKIES);
   } else {
-    allowed_local_shared_objects_.cookies()->AddReadCookies(frame_url, url,
-                                                            cookie_list);
-    OnContentAllowed(ContentSettingsType::COOKIES);
-  }
-
-  NotifySiteDataObservers();
-}
-
-void TabSpecificContentSettings::OnCookieChange(
-    const GURL& url,
-    const GURL& frame_url,
-    const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
-  if (blocked_by_policy) {
-    blocked_local_shared_objects_.cookies()->AddChangedCookie(frame_url, url,
-                                                              cookie);
-    OnContentBlocked(ContentSettingsType::COOKIES);
-  } else {
-    allowed_local_shared_objects_.cookies()->AddChangedCookie(frame_url, url,
-                                                              cookie);
+    allowed_local_shared_objects_.cookies()->AddCookies(details);
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 

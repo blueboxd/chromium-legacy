@@ -150,8 +150,7 @@ void WebContentsViewChildFrame::TakeFocus(bool reverse) {
                                   ->GetProxyToOuterDelegate();
   FrameTreeNode* outer_node = FrameTreeNode::GloballyFindByID(
       web_contents_->GetOuterDelegateFrameTreeNodeId());
-  RenderFrameHostImpl* rfhi =
-      outer_node->parent()->render_manager()->current_frame_host();
+  RenderFrameHostImpl* rfhi = outer_node->parent();
 
   rfhi->AdvanceFocus(reverse ? blink::mojom::FocusType::kBackward
                              : blink::mojom::FocusType::kForward,

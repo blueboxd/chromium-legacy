@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/callback_list.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/containers/id_map.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
@@ -539,6 +540,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // than RenderProcessHostImpl (from underneath
   // RenderProcessHostImpl::AddCorbExceptionForPlugin).
   virtual void CleanupNetworkServicePluginExceptionsUponDestruction() = 0;
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  // Ask the renderer process to dump its profiling data to disk. Invokes
+  // |callback| once this has completed.
+  virtual void DumpProfilingData(base::OnceClosure callback) {}
+#endif
 
   // Static management functions -----------------------------------------------
 

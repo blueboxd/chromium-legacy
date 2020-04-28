@@ -43,7 +43,6 @@ class Gamepad;
 
 namespace blink {
 
-class Document;
 class GamepadDispatcher;
 class GamepadHapticActuator;
 class GamepadList;
@@ -61,7 +60,6 @@ class MODULES_EXPORT NavigatorGamepad final
  public:
   static const char kSupplementName[];
 
-  static NavigatorGamepad* From(Document&);
   static NavigatorGamepad& From(Navigator&);
 
   explicit NavigatorGamepad(Navigator&);

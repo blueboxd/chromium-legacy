@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
@@ -175,6 +176,11 @@ class TestGpuService : public mojom::GpuService {
   void BeginCATransaction() override {}
 
   void CommitCATransaction(CommitCATransactionCallback callback) override {}
+#endif
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  void WriteClangProfilingProfile(
+      WriteClangProfilingProfileCallback callback) override {}
 #endif
 
   void Crash() override {}

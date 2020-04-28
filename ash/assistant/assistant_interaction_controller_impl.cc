@@ -243,9 +243,17 @@ void AssistantInteractionControllerImpl::OnDeepLinkReceived(
     return;
   }
 
+  const AssistantEntryPoint entry_point =
+      GetDeepLinkParamAsEntryPoint(params, DeepLinkParam::kEntryPoint)
+          .value_or(AssistantEntryPoint::kDeepLink);
+
   // Explicitly call ShowUi() to set the correct Assistant entry point.
-  // ShowUi() will no-op if UI is already shown.
-  AssistantUiController::Get()->ShowUi(AssistantEntryPoint::kDeepLink);
+  // NOTE: ShowUi() will no-op if UI is already shown.
+  AssistantUiController::Get()->ShowUi(entry_point);
+
+  const AssistantQuerySource query_source =
+      GetDeepLinkParamAsQuerySource(params, DeepLinkParam::kQuerySource)
+          .value_or(AssistantQuerySource::kDeepLink);
 
   // A text query originating from a deep link will carry forward the allowance/
   // forbiddance of TTS from the previous response. This is predominately aimed
@@ -256,7 +264,7 @@ void AssistantInteractionControllerImpl::OnDeepLinkReceived(
   // we can expose a deep link parameter when the need arises.
   StartTextInteraction(query.value(), /*allow_tts=*/model_.response() &&
                                           model_.response()->has_tts(),
-                       /*query_source=*/AssistantQuerySource::kDeepLink);
+                       query_source);
 }
 
 void AssistantInteractionControllerImpl::OnUiVisibilityChanged(

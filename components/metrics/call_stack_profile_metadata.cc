@@ -107,8 +107,8 @@ CallStackProfileMetadata::~CallStackProfileMetadata() = default;
 // suspended so must not take any locks, including indirectly through use of
 // heap allocation, LOG, CHECK, or DCHECK.
 void CallStackProfileMetadata::RecordMetadata(
-    base::MetadataRecorder::MetadataProvider* metadata_provider) {
-  metadata_item_count_ = metadata_provider->GetItems(&metadata_items_);
+    const base::MetadataRecorder::MetadataProvider& metadata_provider) {
+  metadata_item_count_ = metadata_provider.GetItems(&metadata_items_);
 }
 
 google::protobuf::RepeatedPtrField<CallStackProfile::MetadataItem>

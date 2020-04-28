@@ -2224,14 +2224,14 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
   int process_id = root1->current_frame_host()->GetProcess()->GetID();
   constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
   tree1->AddFrame(
-      root1, process_id, 12,
+      root1->current_frame_host(), process_id, 12,
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
       blink::WebTreeScopeType::kDocument, std::string(), "uniqueName0", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(), false, kOwnerType);
   tree1->AddFrame(
-      root1, process_id, 13,
+      root1->current_frame_host(), process_id, 13,
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
       blink::WebTreeScopeType::kDocument, std::string(), "uniqueName1", false,
@@ -2245,14 +2245,14 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
   FrameTreeNode* root2 = tree2->root();
   process_id = root2->current_frame_host()->GetProcess()->GetID();
   tree2->AddFrame(
-      root2, process_id, 22,
+      root2->current_frame_host(), process_id, 22,
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
       blink::WebTreeScopeType::kDocument, std::string(), "uniqueName2", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(), false, kOwnerType);
   tree2->AddFrame(
-      root2, process_id, 23,
+      root2->current_frame_host(), process_id, 23,
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
       blink::WebTreeScopeType::kDocument, std::string(), "uniqueName3", false,
@@ -2271,7 +2271,7 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
   FrameTreeNode* root4 = tree4->root();
   process_id = root4->current_frame_host()->GetProcess()->GetID();
   tree4->AddFrame(
-      root4, process_id, 42,
+      root4->current_frame_host(), process_id, 42,
       TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
       TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
       blink::WebTreeScopeType::kDocument, std::string(), "uniqueName4", false,

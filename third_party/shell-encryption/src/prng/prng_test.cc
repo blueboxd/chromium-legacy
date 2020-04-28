@@ -142,5 +142,29 @@ TYPED_TEST(PrngTest, ReplayDifferentInKeyTest) {
   EXPECT_NE(r64, other_r64);
 }
 
+TYPED_TEST(PrngTest, GeneratesUniqueRandomStrings) {
+  const int kKeySize = 20;
+  const int kIterations = 10000;
+  const char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+  std::vector<std::string> keys;
+  for (int i = 0; i < kIterations; i++) {
+    // Create a random key
+    std::string key(kKeySize, 0);
+    for (int j = 0; j < kKeySize; j++) {
+      ASSERT_OK_AND_ASSIGN(auto v, this->prng_->Rand8());
+      key[j] = charset[static_cast<int>(v) % sizeof(charset)];
+    }
+
+    // With very high probability (~(1/36)^20), a key will only appear once.
+    int count = 0;
+    for (auto k : keys) {
+      if (k == key) count++;
+    }
+    ASSERT_EQ(count, 0);
+    keys.push_back(key);
+  }
+}
+
 }  // namespace
 }  // namespace rlwe

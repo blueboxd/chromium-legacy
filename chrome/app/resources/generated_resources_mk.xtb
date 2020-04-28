@@ -173,6 +173,7 @@
 <translation id="122082903575839559">Алгоритам за потпис на сертификат</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 со RSA шифрирање</translation>
 <translation id="1221825588892235038">Само избор</translation>
+<translation id="1223484782328004593"><ph name="APP_NAME" /> бара лиценца</translation>
 <translation id="1223853788495130632">Администраторот препорачува специфична вредност за оваа поставка.</translation>
 <translation id="1224275271335624810">Најбрзо</translation>
 <translation id="1225177025209879837">Се обработува барање...</translation>
@@ -211,6 +212,7 @@
 <translation id="1272978324304772054">Корисничката сметка не му припаѓа на доменот за кој е запишан овој уред. Доколку сакате да го запишете на друг домен, потребно е прво да ја поминете обновата на уредот.</translation>
 <translation id="1274977772557788323">Поставки за складирање на Adobe Flash Player</translation>
 <translation id="1274997165432133392">Колачиња и други податоци за локација</translation>
+<translation id="1276994519141842946">Не може да се деинсталира <ph name="APP_NAME" /></translation>
 <translation id="1280820357415527819">Се пребаруваат мобилни мрежи</translation>
 <translation id="1280965841156951489">Измени датотеки</translation>
 <translation id="1285320974508926690">Никогаш не преведувај ја оваа локација</translation>
@@ -319,6 +321,7 @@
 <translation id="1426870617281699524">Кликнете „Обиди се пак“ и прифатете го прашањето на компјутерот</translation>
 <translation id="1427269577154060167">Држава</translation>
 <translation id="142758023928848008">Овозможи лепливи копчиња (за извршување кратенки на тастатура со нивно пишување секвенцијално)</translation>
+<translation id="142765311413773645">Лиценцата на <ph name="APP_NAME" /> е истечена</translation>
 <translation id="1429300045468813835">Избришани се сите</translation>
 <translation id="143027896309062157">Прочитајте ги и променете ги сите ваши податоци на веб-локациите што ги посетувате</translation>
 <translation id="1430915738399379752">Печати</translation>
@@ -1006,6 +1009,7 @@
 <translation id="2325444234681128157">Запомни ја лозинката</translation>
 <translation id="2326931316514688470">&amp;Вчитај ја апликацијата повторно</translation>
 <translation id="2327492829706409234">Вклучи апликација</translation>
+<translation id="2328561734797404498">Рестартирајте го уредот за да го користите <ph name="APP_NAME" />.</translation>
 <translation id="2329597144923131178">Најавете се за да ги добиете обележувачите, историјата, лозинките и другите поставки на сите ваши уреди.</translation>
 <translation id="2332131598580221120">Прикажи во продавница</translation>
 <translation id="2332192922827071008">Отвори ги „Поставките“</translation>
@@ -1264,6 +1268,7 @@
 <translation id="2665717534925640469">Страницата е сега на цел екран и го оневозможи курсорот на глувчето.</translation>
 <translation id="2665919335226618153">Аман! Имаше грешка за време на форматирањето.</translation>
 <translation id="2667463864537187133">Управувајте со проверката на правописот</translation>
+<translation id="2669241540496514785">Не можеше да се отвори <ph name="APP_NAME" /></translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> споделува картичка на Chrome.</translation>
 <translation id="2670429602441959756">Страницава содржи функции што сѐ уште не се поддржани во режим на виртуелна реалност. Излегуваме…</translation>
 <translation id="2671451824761031126">Обележувачите и поставките се подготвени</translation>
@@ -1340,6 +1345,7 @@
 <translation id="2757338480560142065">Погрижете се лозинката што ја зачувувате да се совпаѓа со лозинката за <ph name="WEBSITE" /></translation>
 <translation id="2762441749940182211">Камерата е блокирана</translation>
 <translation id="2765217105034171413">Мало</translation>
+<translation id="2766091842833763951">Не можеше да се постави <ph name="APP_NAME" /> поради конфигурациски проблем. Контактирајте со администраторот на уредот во вашата организација. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="2766161002040448006">Прашај родител</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> ќе може да ја изменува <ph name="FILENAME" /> сѐ додека не ги затворите сите картички за сајтов</translation>
 <translation id="276969039800130567">Најавени сте како <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -1912,7 +1918,6 @@
 <translation id="3543597750097719865">X9.62 ECDSA потпис со SHA-512</translation>
 <translation id="3544879808695557954">Корисничко име (изборно)</translation>
 <translation id="354602065659584722">Штетниот софтвер е отстранет</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Поставки на прокси</translation>
 <translation id="3548162552723420559">Ја приспособува бојата на екранот за да се совпаѓа со околината</translation>
 <translation id="3550915441744863158">Chrome автоматски се ажурира, па секогаш ја имате најновата верзија</translation>
@@ -2422,6 +2427,7 @@
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Јазици</translation>
 <translation id="4184885522552335684">Повлечете за да поместите екран</translation>
+<translation id="4187424053537113647">Се поставува <ph name="APP_NAME" />…</translation>
 <translation id="4194570336751258953">Овозможи допри и кликни</translation>
 <translation id="4195643157523330669">Отвори во нова картичка</translation>
 <translation id="4195814663415092787">Продолжете каде што сте застанале</translation>
@@ -2540,6 +2546,7 @@
 <translation id="4379281552162875326">Да се деинсталира „<ph name="APP_NAME" />“?</translation>
 <translation id="4380648069038809855">Се влезе во цел екран</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" />, уште 1 сметка}one{<ph name="EMAIL" />, уште <ph name="EXTRA_ACCOUNTS" /> сметка}other{<ph name="EMAIL" />, уште <ph name="EXTRA_ACCOUNTS" /> сметки}}</translation>
+<translation id="43829217466934313"><ph name="APP_NAME" /> не е дозволен на уредов. Контактирајте со администраторот на уредот во вашата организација. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="4384312707950789900">Додај во претпочитани</translation>
 <translation id="4384652540891215547">Активирајте ја наставката</translation>
 <translation id="438503109373656455">Саратога</translation>
@@ -2872,6 +2879,7 @@
 <translation id="4863769717153320198">Изгледа како <ph name="WIDTH" /> x <ph name="HEIGHT" /> (стандардна)</translation>
 <translation id="4864369630010738180">Се најавува…</translation>
 <translation id="486635084936119914">Отворај одредени типови датотеки автоматски по преземањето</translation>
+<translation id="4869289251183233431">На уредот нема доволно капацитет. Потребно е најмалку <ph name="MINIMUM_SPACE" /> слободен простор за да се користи <ph name="APP_NAME" />, а се препорачува повеќе од <ph name="RECOMMENDED_SPACE" /> слободен простор. За да го зголемите слободниот простор, избришете датотеки од уредот.</translation>
 <translation id="48704129375571883">Додајте дополнителни функции</translation>
 <translation id="4870758487381879312">Внесете лозинка што ви ја обезбедил администраторот за да добиете информации за конфигурацијата</translation>
 <translation id="4870903493621965035">Нема спарени уреди</translation>
@@ -2924,6 +2932,7 @@
 <translation id="4920887663447894854">Следниве локации беа блокирани да не ја следат вашата локација на оваа страница:</translation>
 <translation id="49226369361073053">{0,plural, =0{Ажурирајте го уредот веднаш}=1{Ажурирајте го уредот во рок од 1 секунда}one{Ажурирајте го уредот во рок од # секунда}other{Ажурирајте го уредот во рок од # секунди}}</translation>
 <translation id="492299503953721473">Отстрани ги апликациите за Android</translation>
+<translation id="492363500327720082">Се деинсталира <ph name="APP_NAME" />…</translation>
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925320384394644410">Вашите порти ќе се појават тука</translation>
 <translation id="4925542575807923399">Администраторот на оваа сметка бара таа да биде првата пријавена сметка во сесија со повеќе пријавувања.</translation>
@@ -3485,6 +3494,7 @@
 <translation id="5692875591060376599">Избраната датотека е непозната и може да биде опасна. Да се испрати во „Напредна заштита на Google“ за скенирање?</translation>
 <translation id="569425414730375234">Тековна инкогнито сесија: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
 <translation id="5696143504434933566">Пријавете злоупотреба од „<ph name="EXTENSION_NAME" />“</translation>
+<translation id="5696177755977520104">Синхронизација на поставките за Chrome OS</translation>
 <translation id="5696679855467848181">Тековна PPD-датотека што се користи: <ph name="PPD_NAME" /></translation>
 <translation id="570043786759263127">Апликации и услуги на Google Play</translation>
 <translation id="5700836101007545240">Администраторот ја оневозможил функцијата „Додај врска“</translation>
@@ -3795,6 +3805,7 @@
 <translation id="6103681770816982672">Предупредување: се префрлате на канал за програмери</translation>
 <translation id="6104068876731806426">Сметки на Google</translation>
 <translation id="6104311680260824317">Уредот не може да се приклучи на доменот. Серверот не ги поддржува одредените типови шифрирање на Kerberos. Кликнете „Повеќе опции“ за поставките за шифрирање.</translation>
+<translation id="6105994589138235234">Синхронизација на прелистувачот Chrome</translation>
 <translation id="6112294629795967147">Допрете за да ја промените големината</translation>
 <translation id="6112727384379533756">Додајте билет</translation>
 <translation id="6112931163620622315">Проверете го телефонот</translation>
@@ -3832,6 +3843,7 @@
 <translation id="6155141482566063812">Картичка во заднина го споделува вашиот екран</translation>
 <translation id="6156323911414505561">Покажи лента со обележувачи</translation>
 <translation id="6156863943908443225">Кеш на скрипта</translation>
+<translation id="6157197137667039897">Не можеше да се инсталира <ph name="APP_NAME" />. Обидете се повторно или контактирајте со администраторот на уредот во вашата организација. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="6160625263637492097">Обезбеди сертификат за автентикација</translation>
 <translation id="6163363155248589649">&amp;Нормален</translation>
 <translation id="6163522313638838258">Прошири сѐ...</translation>
@@ -4032,6 +4044,7 @@
 <translation id="6430814529589430811">Base64-шифриран ASCII, еден сертификат</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> ќе постави автоматски ажурирања за сите корисници на компјутерот.</translation>
 <translation id="6434309073475700221">Отфрли</translation>
+<translation id="6434325376267409267">Уредот треба да се ажурира пред да може да користите <ph name="APP_NAME" />.</translation>
 <translation id="6436164536244065364">Прикажи во веб-продавница</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - пуштено е аудио</translation>
 <translation id="6442187272350399447">Супер</translation>
@@ -4075,6 +4088,7 @@
 <translation id="6491376743066338510">Авторизацијата не успеа</translation>
 <translation id="6494445798847293442">Не е орган за сертифицирање</translation>
 <translation id="6495925982925244349">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, управувана од администраторот, детали</translation>
+<translation id="6496965928959882519">На уредот нема доволно капацитет. Се препорачува слободен простор од најмалку <ph name="RECOMMENDED_SPACE" /> за да се користи <ph name="APP_NAME" />. За да го зголемите слободниот простор, избришете датотеки од уредот.</translation>
 <translation id="6498249116389603658">&amp;Сите ваши јазици</translation>
 <translation id="6499143127267478107">Се решава домаќин во скрипта на прокси...</translation>
 <translation id="6499681088828539489">Не дозволувајте прокси за споделени мрежи</translation>
@@ -4746,6 +4760,7 @@
 <translation id="7421925624202799674">&amp;Прикажи извор на страница</translation>
 <translation id="7422192691352527311">Претпочитани вредности…</translation>
 <translation id="7423098979219808738">Прво прашај</translation>
+<translation id="7423807071740419372"><ph name="APP_NAME" /> бара дозвола за да се изврши</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">Страница во заднина: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7427798576651127129">Јавете се од <ph name="DEVICE_NAME" /></translation>
@@ -4776,6 +4791,7 @@
 <translation id="746216226901520237">Следниот пат, телефонот ќе го отклучи вашиот <ph name="DEVICE_TYPE" />. Smart Lock може да се исклучи во „Поставки“.</translation>
 <translation id="7463006580194749499">Додај лице</translation>
 <translation id="7465522323587461835">{NUM_OPEN_TABS,plural, =1{# отворена картичка, притиснете за да префрлите на лента за картички}one{# отворена картичка, притиснете за да префрлите на лента за картички}other{# отворени картички, притиснете за да префрлите на лента за картички}}</translation>
+<translation id="7465635034594602553">Нешто не е во ред. Почекајте неколку минути и повторно извршете го <ph name="APP_NAME" />.</translation>
 <translation id="7465778193084373987">URL-адреса за отповикани сертификати на Netscape</translation>
 <translation id="7469894403370665791">Автоматски поврзи се на мрежава</translation>
 <translation id="747114903913869239">Грешка: Не може да дешифрира наставка</translation>
@@ -5561,7 +5577,6 @@
 <translation id="8493236660459102203">Микрофон:</translation>
 <translation id="8496717697661868878">Стартувај го приклучокот</translation>
 <translation id="8497219075884839166">Услуги на Windows</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Го олеснува гледањето во екранот или читањето при слаба светлина</translation>
 <translation id="8498395510292172881">Продолжете со читање во Chrome</translation>
 <translation id="8500234928660943538">Погрешен PUK. Преостанати обиди: <ph name="RETRIES" />.</translation>
@@ -5822,6 +5837,7 @@
 <translation id="8818958672113348984">Потврдете преку телефонот</translation>
 <translation id="8820817407110198400">Обележувачи</translation>
 <translation id="8821045908425223359">Конфигурирајте IP-адреса автоматски</translation>
+<translation id="8821268776955756404"><ph name="APP_NAME" /> е подготвен за употреба.</translation>
 <translation id="882204272221080310">Ажурирајте го фирмверот за дополнителна безбедност.</translation>
 <translation id="8823514049557262177">Копирај го &amp;текстот на врската</translation>
 <translation id="8823559166155093873">Блокирај колачиња</translation>
@@ -5892,6 +5908,7 @@
 <translation id="8902667442496790482">Отвори ги поставките за „Изберете за говор“</translation>
 <translation id="8903263458134414071">Изберете сметка за да се најавите</translation>
 <translation id="890616557918890486">Промени го изворот</translation>
+<translation id="8909298138148012791"><ph name="APP_NAME" /> е деинсталиран</translation>
 <translation id="8909833622202089127">Сајтот ја следи вашата локација</translation>
 <translation id="8910146161325739742">Споделете го екранот</translation>
 <translation id="8910222113987937043">Промените во обележувачите, историјата, лозинките и другите поставки нема веќе да се синхронизираат со вашата сметка на Google. Сепак, вашите податоци ќе останат складирани во сметката на Google и со нив може да управувате во <ph name="BEGIN_LINK" />„Контролната табла на Google“<ph name="END_LINK" />.</translation>

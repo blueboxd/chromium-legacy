@@ -46,7 +46,8 @@ enum class ExpectedCorruptionReason {
   UNKNOWN_BOOKMARK_ID = 7,
   UNTRACKED_BOOKMARK = 8,
   BOOKMARK_GUID_MISMATCH = 9,
-  kMaxValue = BOOKMARK_GUID_MISMATCH
+  DUPLICATED_CLIENT_TAG_HASH = 10,
+  kMaxValue = DUPLICATED_CLIENT_TAG_HASH
 };
 
 sync_pb::EntitySpecifics GenerateSpecifics(const std::string& title,
@@ -700,6 +701,46 @@ TEST(SyncedBookmarkTrackerTest, ShouldNotMatchModelAndMetadataIfGuidMismatch) {
   histogram_tester.ExpectUniqueSample(
       "Sync.BookmarksModelMetadataCorruptionReason",
       /*sample=*/ExpectedCorruptionReason::BOOKMARK_GUID_MISMATCH, /*count=*/1);
+}
+
+TEST(SyncedBookmarkTrackerTest,
+     ShouldNotMatchModelAndMetadataIfTombstoneHasDuplicatedClientTagHash) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node0 = model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("node0"));
+
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(model.get());
+  sync_pb::BookmarkMetadata* node0_metadata =
+      model_metadata.add_bookmarks_metadata();
+  *node0_metadata = CreateNodeMetadata(node0->id(), /*server_id=*/"id0");
+
+  const syncer::ClientTagHash client_tag_hash =
+      syncer::ClientTagHash::FromUnhashed(syncer::BOOKMARKS, node0->guid());
+  node0_metadata->mutable_metadata()->set_client_tag_hash(
+      client_tag_hash.value());
+
+  // Add the duplicate tombstone with a different server id but same client tag
+  // hash.
+  sync_pb::BookmarkMetadata* tombstone_metadata =
+      model_metadata.add_bookmarks_metadata();
+  *tombstone_metadata = CreateTombstoneMetadata("id1");
+  tombstone_metadata->mutable_metadata()->set_client_tag_hash(
+      client_tag_hash.value());
+
+  base::HistogramTester histogram_tester;
+
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              IsNull());
+
+  histogram_tester.ExpectUniqueSample(
+      "Sync.BookmarksModelMetadataCorruptionReason",
+      /*sample=*/ExpectedCorruptionReason::DUPLICATED_CLIENT_TAG_HASH,
+      /*count=*/1);
 }
 
 TEST(SyncedBookmarkTrackerTest,

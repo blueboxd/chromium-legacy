@@ -62,7 +62,6 @@
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -771,10 +770,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return _voiceSearchController && _voiceSearchController->IsPlayingAudio();
 }
 
-- (TabModel*)tabModel {
-  return self.browser ? self.browser->GetTabModel() : nil;
-}
-
 - (ChromeBrowserState*)browserState {
   return self.browser ? self.browser->GetBrowserState() : nullptr;
 }
@@ -1024,7 +1019,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)setPrimary:(BOOL)primary {
-  [self.tabModel setPrimary:primary];
+  TabUsageRecorderBrowserAgent* tabUsageRecorder =
+      TabUsageRecorderBrowserAgent::FromBrowser(_browser);
+  if (tabUsageRecorder) {
+    tabUsageRecorder->RecordPrimaryTabModelChange(
+        primary, _browser->GetWebStateList()->GetActiveWebState());
+  }
   if (primary) {
     [self updateBroadcastState];
   }

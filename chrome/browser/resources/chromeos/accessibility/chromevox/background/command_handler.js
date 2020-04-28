@@ -1455,13 +1455,6 @@ CommandHandler.init = function() {
   });
 
   chrome.commandLinePrivate.hasSwitch(
-      'enable-experimental-accessibility-chromevox-language-switching',
-      (enabled) => {
-        if (enabled) {
-          CommandHandler.languageLoggingEnabled_ = true;
-        }
-      });
-  chrome.commandLinePrivate.hasSwitch(
       'enable-experimental-accessibility-language-detection', (enabled) => {
         if (enabled) {
           CommandHandler.languageLoggingEnabled_ = true;

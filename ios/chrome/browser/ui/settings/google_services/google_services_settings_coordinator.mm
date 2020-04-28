@@ -21,18 +21,21 @@
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
-#import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using signin_metrics::AccessPoint;
+using signin_metrics::PromoAction;
 
 @interface GoogleServicesSettingsCoordinator () <
     GoogleServicesSettingsCommandHandler,
@@ -50,15 +53,16 @@
 // View controller presented by this coordinator.
 @property(nonatomic, strong, readonly)
     GoogleServicesSettingsViewController* googleServicesSettingsViewController;
-// The SigninInteractionCoordinator that presents Sign In UI for the
-// Settings page.
-@property(nonatomic, strong)
-    SigninInteractionCoordinator* signinInteractionCoordinator;
 // Coordinator to present the manage sync settings.
 @property(nonatomic, strong)
     ManageSyncSettingsCoordinator* manageSyncSettingsCoordinator;
 // YES if stop has been called.
 @property(nonatomic, assign) BOOL stopDone;
+// YES if the last sign-in has been interrupted. In that case, the coordinator
+// is going to be stopped, and the sync setup flag should not be marked as done.
+// And the sync should not be marked as disabled. The sync should be kept
+// undecided.
+@property(nonatomic, assign) BOOL signinInterrupted;
 
 @end
 
@@ -119,9 +123,8 @@
     return;
   }
   // Sync changes should only be commited if the user is authenticated and
-  // there is no sign-in progress.
-  if (self.authService->IsAuthenticated() &&
-      !self.signinInteractionCoordinator) {
+  // the sign-in has not been interrupted.
+  if (self.authService->IsAuthenticated() && !self.signinInterrupted) {
     SyncSetupService* syncSetupService =
         SyncSetupServiceFactory::GetForBrowserState(
             self.browser->GetBrowserState());
@@ -134,13 +137,6 @@
     }
     syncSetupService->CommitSyncChanges();
   }
-  if (self.signinInteractionCoordinator) {
-    [self.signinInteractionCoordinator cancel];
-    // |self.signinInteractionCoordinator| is set to nil by
-    // the completion block called by -[GoogleServicesSettingsCoordinator
-    // signInInteractionCoordinatorDidComplete]
-    DCHECK(!self.signinInteractionCoordinator);
-  }
   self.stopDone = YES;
 }
 
@@ -150,10 +146,6 @@
   DCHECK(self.authenticationFlow);
   self.authenticationFlow = nil;
   [self.googleServicesSettingsViewController allowUserInteraction];
-}
-
-- (void)signInInteractionCoordinatorDidComplete {
-  self.signinInteractionCoordinator = nil;
 }
 
 #pragma mark - Properties
@@ -221,23 +213,31 @@
 }
 
 - (void)showSignIn {
-  signin_metrics::RecordSigninUserActionForAccessPoint(
-      signin_metrics::AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS,
-      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
-  DCHECK(!self.signinInteractionCoordinator);
-  self.signinInteractionCoordinator =
-      [[SigninInteractionCoordinator alloc] initWithBrowser:self.browser];
   __weak __typeof(self) weakSelf = self;
-  [self.signinInteractionCoordinator
-            signInWithIdentity:nil
-                   accessPoint:signin_metrics::AccessPoint::
-                                   ACCESS_POINT_GOOGLE_SERVICES_SETTINGS
-                   promoAction:signin_metrics::PromoAction::
-                                   PROMO_ACTION_NO_SIGNIN_PROMO
-      presentingViewController:self.baseNavigationController
-                    completion:^(BOOL success) {
-                      [weakSelf signInInteractionCoordinatorDidComplete];
-                    }];
+  DCHECK(self.dispatcher);
+  signin_metrics::RecordSigninUserActionForAccessPoint(
+      AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS,
+      PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
+  ShowSigninCommand* command = [[ShowSigninCommand alloc]
+      initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
+               identity:nil
+            accessPoint:AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS
+            promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
+               callback:^(BOOL success) {
+                 [weakSelf signinFinishedWithSuccess:success];
+               }];
+  [self.dispatcher showSignin:command
+           baseViewController:self.googleServicesSettingsViewController];
+}
+
+- (void)signinFinishedWithSuccess:(BOOL)success {
+  // TODO(crbug.com/971989): SigninCoordinatorResult should be received instead
+  // of guessing if the sign-in has been interrupted.
+  ChromeIdentity* primaryAccount =
+      AuthenticationServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState())
+          ->GetAuthenticatedIdentity();
+  self.signinInterrupted = !success && primaryAccount;
 }
 
 - (void)openAccountSettings {

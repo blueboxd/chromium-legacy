@@ -43,6 +43,7 @@ java_cpp_enum("generated_enums") {
 android_library("java") {
   sources = [
     "org/chromium/weblayer_private/ActionModeCallback.java",
+    "org/chromium/weblayer_private/AutocompleteSchemeClassifierImpl.java",
     "org/chromium/weblayer_private/BrowserFragmentImpl.java",
     "org/chromium/weblayer_private/BrowserImpl.java",
     "org/chromium/weblayer_private/BrowserViewController.java",
@@ -64,6 +65,7 @@ android_library("java") {
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/NewTabCallbackProxy.java",
+    "org/chromium/weblayer_private/PageInfoControllerDelegateImpl.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
     "org/chromium/weblayer_private/ProfileManager.java",
     "org/chromium/weblayer_private/RemoteFragmentImpl.java",
@@ -95,6 +97,7 @@ android_library("java") {
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/util/android:java",
+    "//components/content_settings/android:java",
     "//components/crash/android:handler_java",
     "//components/crash/android:java",
     "//components/download/internal/common:internal_java",
@@ -111,6 +114,7 @@ android_library("java") {
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/omnibox/browser:browser_java",
+    "//components/page_info/android:java",
     "//components/permissions/android:java",
     "//components/security_interstitials/content/android:java",
     "//components/spellcheck/browser/android:java",
@@ -121,7 +125,6 @@ android_library("java") {
     "//net/android:net_java",
     "//services/network/public/mojom:mojom_java",
     "//third_party/android_deps:androidx_core_core_java",
-    "//third_party/android_deps:com_android_support_support_compat_java",
     "//ui/android:ui_full_java",
     "//ui/android:ui_java",
     "//url:gurl_java",
@@ -170,6 +173,7 @@ android_library("test_java") {
 
 generate_jni("jni") {
   sources = [
+    "org/chromium/weblayer_private/AutocompleteSchemeClassifierImpl.java",
     "org/chromium/weblayer_private/BrowserImpl.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/CookieManagerImpl.java",

@@ -211,6 +211,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> грешки.</translation>
 <translation id="3519867315646775981">Транслитерација (shalom ← שלום)</translation>
 <translation id="3522708245912499433">португалски</translation>
+<translation id="3524311639100184459">Внимание: датотекиве се привремени и може да се бришат автоматски за да се ослободи простор на дискот.  <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3549797760399244642">Одете на drive.google.com...</translation>
 <translation id="357479282490346887">литвански</translation>
@@ -499,6 +500,7 @@
 <translation id="6806699711453372963">Управувајте со споделувањето на Linux</translation>
 <translation id="6808193438228982088">Лисица</translation>
 <translation id="6820687829547641339">tar архива компримирана со gzip</translation>
+<translation id="6823166707458800069">Автоматски се прави резервна копија онлајн од сите датотеки зачувани во папкава.</translation>
 <translation id="6825883775269213504">руски</translation>
 <translation id="6827236167376090743">Видеото ќе се прикажува постојано.</translation>
 <translation id="6847101934483209767">Го отстранивте <ph name="ENTRY_NAME" /> од изборот.</translation>

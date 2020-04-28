@@ -200,6 +200,40 @@ TEST_F(FontDisplayAutoLCPAlignFailureModeTest,
   EXPECT_FALSE(GetTargetFont().ShouldSkipDrawing());
 }
 
+// https://crbug.com/1065508
+TEST_F(FontDisplayAutoLCPAlignFailureModeTest,
+       TimeoutFiredAfterDocumentShutdown) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+
+  LoadURL("https://example.com");
+  main_resource.Complete(R"HTML(
+    <!doctype html>
+    <style>
+      @font-face {
+        font-family: custom-font;
+        src: url(https://example.com/Ahem.woff2) format("woff2");
+      }
+      #target {
+        font: 25px/1 custom-font, monospace;
+      }
+    </style>
+    <span id=target style="position:relative">0123456789</span>
+  )HTML");
+
+  font_resource.Finish();
+
+  SimRequest next_page_resource("https://example2.com/", "text/html");
+  LoadURL("https://example2.com/");
+
+  // Wait until we reach the LCP limit, and the timeout for the previous
+  // document fires. Shouldn't crash here.
+  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(
+      features::kAlignFontDisplayAutoTimeoutWithLCPGoalTimeoutParam.Get()));
+
+  next_page_resource.Finish();
+}
+
 class FontDisplayAutoLCPAlignSwapModeTest
     : public FontDisplayAutoLCPAlignTestBase {
  public:

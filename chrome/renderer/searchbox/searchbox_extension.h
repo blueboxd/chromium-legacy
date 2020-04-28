@@ -39,7 +39,7 @@ class SearchBoxExtension {
                                              bool success);
   static void DispatchAutocompleteResultChanged(
       blink::WebLocalFrame* frame,
-      chrome::mojom::AutocompleteResultPtr result);
+      search::mojom::AutocompleteResultPtr result);
   static void DispatchAutocompleteMatchImageAvailable(
       blink::WebLocalFrame* frame,
       uint32_t match_index,

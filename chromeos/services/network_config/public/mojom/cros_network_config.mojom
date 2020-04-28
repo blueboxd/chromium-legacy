@@ -12,6 +12,7 @@
 
 module chromeos.network_config.mojom;
 
+import "chromeos/services/network_config/public/mojom/network_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/ip_address.mojom";
 
@@ -30,73 +31,6 @@ enum ActivationStateType {
 enum AuthenticationType {
   kNone,
   k8021x,
-};
-
-// Connection state of visible networks.
-enum ConnectionStateType {
-  kOnline,
-  kConnected,
-  kPortal,
-  kConnecting,
-  kNotConnected,
-};
-
-// Device / Technology state for devices.
-enum DeviceStateType {
-  kUninitialized,
-  kDisabled,
-  kEnabling,
-  kEnabled,
-  kProhibited,
-  // Not used in DeviceStateProperties, but useful when querying by type.
-  kUnavailable,
-};
-
-// The network technology type. NOTE: 'All' and 'Wireless' are only used by
-// FilterType for requesting groups of networks.
-enum NetworkType {
-  kAll,
-  kCellular,
-  kEthernet,
-  // Mobile includes Cellular, and Tether.
-  kMobile,
-  kTether,
-  kVPN,
-  // Wireles includes Cellular, Tether, and WiFi.
-  kWireless,
-  kWiFi,
-};
-
-// The ONC source for the network configuration, i.e. whether it is stored in
-// the User or Device profile and whether it was configured by policy.
-enum OncSource {
-  // The network is not remembered, or the property is not configurable.
-  kNone,
-  // The configuration is saved in the user profile.
-  kUser,
-  // The configuration is saved in the device profile.
-  kDevice,
-  // The configuration came from a user policy and is saved in the user profile.
-  kUserPolicy,
-  // The configuration came from a device policy and is saved in the device
-  // profile.
-  kDevicePolicy,
-};
-
-// The policy source for property values managed by policy.
-enum PolicySource {
-  // The property is not controlled by policy.
-  kNone,
-  // The property value came from a user policy and is enforced.
-  kUserPolicyEnforced,
-  // The property value came from a device policy and is enforced.
-  kDevicePolicyEnforced,
-  // The property value came from a user policy and is recommended.
-  kUserPolicyRecommended,
-  // The property value came from a device policy and is recommended.
-  kDevicePolicyRecommended,
-  // The property value came from an extension.
-  kActiveExtension,
 };
 
 enum ProxyMode {
@@ -366,7 +300,7 @@ struct PaymentPortalProperties {
 // active_value: The value provided by the configuration manager (e.g. Shill).
 //     This will match |policy_value| when |policy_source| is enforced.
 // policy_source: The source of the value provided by policy when available,
-//     or kNone (see PolicySource).
+//     or kNone (see PolicySource in network_types.mojom).
 // policy_value: The value provided by policy when available.
 
 // Fundamental managed types.

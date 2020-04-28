@@ -355,12 +355,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsDOMContentLoaded() override;
   void UpdateAdFrameType(blink::mojom::AdFrameType ad_frame_type) override;
   blink::mojom::AuthenticatorStatus PerformGetAssertionWebAuthSecurityChecks(
-      const std::string& relying_party_id) override;
+      const std::string& relying_party_id,
+      const url::Origin& effective_origin) override;
   blink::mojom::AuthenticatorStatus PerformMakeCredentialWebAuthSecurityChecks(
-      const std::string& relying_party_id) override;
+      const std::string& relying_party_id,
+      const url::Origin& effective_origin) override;
   void SetIsXrOverlaySetup() override;
   bool IsInBackForwardCache() override;
   ukm::SourceId GetPageUkmSourceId() override;
+  StoragePartition* GetStoragePartition() override;
+  BrowserContext* GetBrowserContext() override;
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to
@@ -893,7 +897,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver);
 
 #if defined(OS_ANDROID)
-  base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHost();
+  base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHost() override;
   service_manager::InterfaceProvider* GetJavaInterfaces() override;
 #endif
 
@@ -1475,6 +1479,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
     document_associated_data_.SetUserData(key, std::move(data));
   }
 
+  // Returns the child RenderFrameHostImpl if |child_frame_routing_id| is an
+  // immediate child of this FrameTreeNode. |child_frame_routing_id| is
+  // considered untrusted, so the renderer process is killed if it refers to a
+  // RenderFrameHostImpl that is not a child of this node.
+  RenderFrameHostImpl* FindAndVerifyChild(int32_t child_frame_routing_id,
+                                          bad_message::BadMessageReason reason);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1856,13 +1867,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // this function will return the platform view on the main frame; for main
   // frames, it will return the current frame's view.
   RenderWidgetHostViewBase* GetViewForAccessibility();
-
-  // Returns the child RenderFrameHostImpl if |child_frame_routing_id| is an
-  // immediate child of this FrameTreeNode.  |child_frame_routing_id| is
-  // considered untrusted, so the renderer process is killed if it refers to a
-  // RenderFrameHostImpl that is not a child of this node.
-  RenderFrameHostImpl* FindAndVerifyChild(int32_t child_frame_routing_id,
-                                          bad_message::BadMessageReason reason);
 
   // Returns a raw pointer to the Web Bluetooth Service owned by the frame. Used
   // for testing purposes only (see |TestRenderFrameHost|).

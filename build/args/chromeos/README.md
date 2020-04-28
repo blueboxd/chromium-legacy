@@ -4,7 +4,8 @@ Files in this directory are populated by running `gclient sync` with specific
 arguments set in the .gclient file. Specifically:
 * The file must have a top-level variable set: `target_os = ["chromeos"]`
 * The `"custom_vars"` parameter of the chromium/src.git solution must include the
-  parameter: `"cros_board": "{BOARD_NAME}"`
+  parameter: `"cros_boards": "{BOARD_NAMES}"` where `{BOARD_NAMES}` is a
+  colon-separated list of boards you'd like to checkout.
 
 A typical .gclient file is a sibling of the src/ directory, and might look like
 this:
@@ -17,7 +18,7 @@ solutions = [
     "custom_deps": {},
     "custom_vars" : {
         "checkout_src_internal": True,
-        "cros_board": "eve",
+        "cros_boards": "eve",
     },
   },
 ]
@@ -41,5 +42,5 @@ use_goma = true
 goma_dir = "/path/to/goma/"
 ```
 
-TODO(bpastene): Add list support to gclient and allow multiple boards to be
-specified in the .gclient file.
+TODO(bpastene): Make 'cros_boards' a first class citizen in gclient and replace
+it with 'target_boards' instead.

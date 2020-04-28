@@ -1909,7 +1909,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3543597750097719865">Firma X9.62 ECDSA con SHA-512</translation>
 <translation id="3544879808695557954">Nombre de usuario (opcional)</translation>
 <translation id="354602065659584722">Se quitó el software dañino</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3548162552723420559">Ajusta el color de la pantalla para adaptarlo al entorno</translation>
 <translation id="3550915441744863158">Debido a que Chrome se actualiza automáticamente, siempre tendrás la versión más reciente</translation>
@@ -5556,7 +5555,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8493236660459102203">Micrófono:</translation>
 <translation id="8496717697661868878">Ejecutar este complemento</translation>
 <translation id="8497219075884839166">Utilidades de Windows</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Te permite ver o leer mejor en lugares con luz tenue</translation>
 <translation id="8498395510292172881">Seguir leyendo en Chrome</translation>
 <translation id="8500234928660943538">El PUK es incorrecto. Intentos restantes: <ph name="RETRIES" />.</translation>

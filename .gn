@@ -419,7 +419,6 @@ check_targets = [
   "//third_party/javax_inject/*",
   "//third_party/jinja2/*",
   "//third_party/jsoncpp/*",
-  "//third_party/jsr-305/*",
   "//third_party/jstemplate/*",
   "//third_party/junit/*",
   "//third_party/khronos/*",

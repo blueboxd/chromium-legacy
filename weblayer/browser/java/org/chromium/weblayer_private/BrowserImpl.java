@@ -271,7 +271,7 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     @CalledByNative
-    private boolean getDarkThemeEnabled() {
+    boolean getDarkThemeEnabled() {
         Context context = getContext();
         if (context == null) return false;
         if (mDarkThemeEnabled == null) {

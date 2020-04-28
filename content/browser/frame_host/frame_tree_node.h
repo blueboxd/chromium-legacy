@@ -69,12 +69,16 @@ class CONTENT_EXPORT FrameTreeNode {
   // regardless of which FrameTree it is in.
   static FrameTreeNode* GloballyFindByID(int frame_tree_node_id);
 
+  // Returns the FrameTreeNode for the given |rfh|. Same as
+  // rfh->frame_tree_node(), but also supports nullptrs.
+  static FrameTreeNode* From(RenderFrameHost* rfh);
+
   // Callers are are expected to initialize sandbox flags separately after
   // calling the constructor.
   FrameTreeNode(
       FrameTree* frame_tree,
       Navigator* navigator,
-      FrameTreeNode* parent,
+      RenderFrameHostImpl* parent,
       blink::WebTreeScopeType scope,
       const std::string& name,
       const std::string& unique_name,
@@ -116,7 +120,7 @@ class CONTENT_EXPORT FrameTreeNode {
 
   unsigned int depth() const { return depth_; }
 
-  FrameTreeNode* parent() const { return parent_; }
+  RenderFrameHostImpl* parent() const { return parent_; }
 
   FrameTreeNode* opener() const { return opener_; }
 
@@ -450,8 +454,9 @@ class CONTENT_EXPORT FrameTreeNode {
   // even if the frame does a cross-process navigation.
   const int frame_tree_node_id_;
 
-  // The parent node of this frame. |nullptr| if this node is the root.
-  FrameTreeNode* const parent_;
+  // The RenderFrameHost owning this FrameTreeNode, which cannot change for the
+  // life of this FrameTreeNode. |nullptr| if this node is the root.
+  RenderFrameHostImpl* const parent_;
 
   // Number of edges from this node to the root. 0 if this is the root.
   const unsigned int depth_;

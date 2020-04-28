@@ -38,12 +38,12 @@ bool IsInInstantProcess(content::RenderFrameHost* render_frame) {
 
 class EmbeddedSearchClientFactoryImpl
     : public SearchIPCRouter::EmbeddedSearchClientFactory,
-      public chrome::mojom::EmbeddedSearchConnector {
+      public search::mojom::EmbeddedSearchConnector {
  public:
   // |web_contents| and |binding| must outlive this object.
   EmbeddedSearchClientFactoryImpl(
       content::WebContents* web_contents,
-      mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearch>* receiver)
+      mojo::AssociatedReceiver<search::mojom::EmbeddedSearch>* receiver)
       : client_receiver_(receiver), factory_receivers_(web_contents, this) {
     DCHECK(web_contents);
     DCHECK(receiver);
@@ -51,37 +51,37 @@ class EmbeddedSearchClientFactoryImpl
     embedded_search_client_.reset();
   }
 
-  chrome::mojom::EmbeddedSearchClient* GetEmbeddedSearchClient() override {
+  search::mojom::EmbeddedSearchClient* GetEmbeddedSearchClient() override {
     return embedded_search_client_.is_bound() ? embedded_search_client_.get()
                                               : nullptr;
   }
 
  private:
   void Connect(
-      mojo::PendingAssociatedReceiver<chrome::mojom::EmbeddedSearch> receiver,
-      mojo::PendingAssociatedRemote<chrome::mojom::EmbeddedSearchClient> client)
+      mojo::PendingAssociatedReceiver<search::mojom::EmbeddedSearch> receiver,
+      mojo::PendingAssociatedRemote<search::mojom::EmbeddedSearchClient> client)
       override;
 
   // An interface used to push updates to the frame that connected to us. Before
   // we've been connected to a frame, messages sent on this interface go into
   // the void.
-  mojo::AssociatedRemote<chrome::mojom::EmbeddedSearchClient>
+  mojo::AssociatedRemote<search::mojom::EmbeddedSearchClient>
       embedded_search_client_;
 
   // Used to bind incoming pending receivers to the implementation, which lives
   // in SearchIPCRouter.
-  mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearch>* client_receiver_;
+  mojo::AssociatedReceiver<search::mojom::EmbeddedSearch>* client_receiver_;
 
   // Receivers used to listen to connection requests.
-  content::WebContentsFrameReceiverSet<chrome::mojom::EmbeddedSearchConnector>
+  content::WebContentsFrameReceiverSet<search::mojom::EmbeddedSearchConnector>
       factory_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSearchClientFactoryImpl);
 };
 
 void EmbeddedSearchClientFactoryImpl::Connect(
-    mojo::PendingAssociatedReceiver<chrome::mojom::EmbeddedSearch> receiver,
-    mojo::PendingAssociatedRemote<chrome::mojom::EmbeddedSearchClient> client) {
+    mojo::PendingAssociatedReceiver<search::mojom::EmbeddedSearch> receiver,
+    mojo::PendingAssociatedRemote<search::mojom::EmbeddedSearchClient> client) {
   content::RenderFrameHost* frame = factory_receivers_.GetCurrentTargetFrame();
   const bool is_main_frame = frame->GetParent() == nullptr;
   if (!IsInInstantProcess(frame) || !is_main_frame) {
@@ -112,7 +112,7 @@ SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
 SearchIPCRouter::~SearchIPCRouter() = default;
 
 void SearchIPCRouter::AutocompleteResultChanged(
-    chrome::mojom::AutocompleteResultPtr result) {
+    search::mojom::AutocompleteResultPtr result) {
   if (!policy_->ShouldProcessAutocompleteResultChanged(is_active_tab_) ||
       !embedded_search_client()) {
     return;

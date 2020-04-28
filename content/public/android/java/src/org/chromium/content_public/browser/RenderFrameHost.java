@@ -80,19 +80,24 @@ public interface RenderFrameHost {
 
     /**
      * Runs security checks associated with a Web Authentication GetAssertion request for the
-     * the given relying party ID. The return value is a code corresponding to the
-     * AuthenticatorStatus mojo enum.
+     * the given relying party ID and an effective origin. If the request originated from a render
+     * process, then the effective origin is the same as the last committed origin. However, if the
+     * request originated from an internal request from the browser process (e.g. Payments
+     * Autofill), then the relying party ID would not match the renderer's origin, and will
+     * therefore have to provide its own effective origin. The return value is a code corresponding
+     * to the AuthenticatorStatus mojo enum.
      *
      * @return Status code indicating the result of the GetAssertion request security checks.
      */
-    int performGetAssertionWebAuthSecurityChecks(String relyingPartyId);
+    int performGetAssertionWebAuthSecurityChecks(String relyingPartyId, Origin effectiveOrigin);
 
     /**
      * Runs security checks associated with a Web Authentication MakeCredential request for the
-     * the given relying party ID. The return value is a code corresponding to the
-     * AuthenticatorStatus mojo enum.
+     * the given relying party ID and an effective origin. See
+     * performGetAssertionWebAuthSecurityChecks for more on |effectiveOrigin|. The return value is a
+     * code corresponding to the AuthenticatorStatus mojo enum.
      *
      * @return Status code indicating the result of the MakeCredential request security checks.
      */
-    int performMakeCredentialWebAuthSecurityChecks(String relyingPartyId);
+    int performMakeCredentialWebAuthSecurityChecks(String relyingPartyId, Origin effectiveOrigin);
 }

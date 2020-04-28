@@ -208,7 +208,7 @@ public class PasswordAccessorySheetControllerTest {
         // Invoke callback on the option toggle that was stored in the model. This is not the same
         // as the OptionToggle passed above, because the mediator repackages it to include an
         // additional method call in the callback.
-        OptionToggle repackagedToggle = (OptionToggle) mSheetDataPieces.get(1).getDataPiece();
+        OptionToggle repackagedToggle = (OptionToggle) mSheetDataPieces.get(0).getDataPiece();
 
         // Pretend to enable the toggle like a click would do.
         repackagedToggle.getCallback().onResult(true);
@@ -216,7 +216,7 @@ public class PasswordAccessorySheetControllerTest {
         // Check that the original callback was called and that the model was updated with an
         // enabled toggle
         assertTrue(toggleEnabled.get());
-        assertTrue(((OptionToggle) mSheetDataPieces.get(1).getDataPiece()).isEnabled());
+        assertTrue(((OptionToggle) mSheetDataPieces.get(0).getDataPiece()).isEnabled());
     }
 
     @Test

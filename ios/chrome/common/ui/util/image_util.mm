@@ -64,3 +64,28 @@ UIImage* ResizeImageForSearchByImage(UIImage* image) {
   UIGraphicsEndImageContext();
   return resizedPhoto;
 }
+
+UIImage* ImageFromView(UIView* view,
+                       UIColor* backgroundColor,
+                       UIEdgeInsets padding) {
+  // Overall bounds of the generated image.
+  CGRect imageBounds = CGRectMake(
+      0.0, 0.0, view.bounds.size.width + padding.left + padding.right,
+      view.bounds.size.height + padding.top + padding.bottom);
+
+  // Centered bounds for drawing the view's content.
+  CGRect contentBounds =
+      CGRectMake(padding.left, padding.top, view.bounds.size.width,
+                 view.bounds.size.height);
+
+  UIGraphicsImageRenderer* renderer =
+      [[UIGraphicsImageRenderer alloc] initWithBounds:imageBounds];
+  return [renderer imageWithActions:^(UIGraphicsImageRendererContext* context) {
+    // Draw background.
+    [backgroundColor set];
+    UIRectFill(imageBounds);
+
+    // Draw view.
+    [view drawViewHierarchyInRect:contentBounds afterScreenUpdates:YES];
+  }];
+}

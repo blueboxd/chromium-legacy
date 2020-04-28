@@ -377,6 +377,7 @@ textRendering
 textShadow
 textSizeAdjust
 textTransform
+textUnderlineOffset
 textUnderlinePosition
 top
 touchAction

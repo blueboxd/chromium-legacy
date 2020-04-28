@@ -72,7 +72,7 @@ base::ModuleCache* CallStackProfileBuilder::GetModuleCache() {
 // suspended so must not take any locks, including indirectly through use of
 // heap allocation, LOG, CHECK, or DCHECK.
 void CallStackProfileBuilder::RecordMetadata(
-    base::MetadataRecorder::MetadataProvider* metadata_provider) {
+    const base::MetadataRecorder::MetadataProvider& metadata_provider) {
   if (work_id_recorder_) {
     unsigned int work_id = work_id_recorder_->RecordWorkId();
     // A work id of 0 indicates that the message loop has not yet started.

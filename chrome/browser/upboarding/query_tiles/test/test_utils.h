@@ -38,6 +38,9 @@ bool AreTilesIdentical(const Tile& lhs, const Tile& rhs);
 // Returns true if all data in two lists of Tile are identical.
 bool AreTilesIdentical(std::vector<Tile*> lhs, std::vector<Tile*> rhs);
 
+// Returns true if all data in two lists of Tile are identical.
+bool AreTilesIdentical(std::vector<Tile> lhs, std::vector<Tile> rhs);
+
 }  // namespace test
 }  // namespace upboarding
 

@@ -31,12 +31,17 @@
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/logging.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
 #include "base/process/memory.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "third_party/apple_apsl/CFBase.h"
+
+#if defined(OS_IOS)
+#include "base/ios/ios_util.h"
+#else
+#include "base/mac/mac_util.h"
+#endif
 
 namespace base {
 namespace allocator {
@@ -208,7 +213,11 @@ void* oom_killer_memalign_purgeable(struct _malloc_zone_t* zone,
 // === Core Foundation CFAllocators ===
 
 bool CanGetContextForCFAllocator() {
+#if defined(OS_IOS)
+  return !base::ios::IsRunningOnOrLater(14, 0, 0);
+#else
   return !base::mac::IsOSLaterThan10_15_DontCallThis();
+#endif
 }
 
 CFAllocatorContext* ContextForCFAllocator(CFAllocatorRef allocator) {

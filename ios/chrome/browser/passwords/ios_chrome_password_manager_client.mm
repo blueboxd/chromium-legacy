@@ -108,6 +108,11 @@ bool IOSChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   return true;
 }
 
+void IOSChromePasswordManagerClient::PromptUserToMovePasswordToAccount(
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move) {
+  NOTIMPLEMENTED();
+}
+
 bool IOSChromePasswordManagerClient::ShowOnboarding(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
   return false;
@@ -191,8 +196,10 @@ void IOSChromePasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
 }
 
 void IOSChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
-    const autofill::PasswordForm& form) {
-  helper_.NotifySuccessfulLoginWithExistingPassword(form);
+    std::unique_ptr<password_manager::PasswordFormManagerForUI>
+        submitted_manager) {
+  helper_.NotifySuccessfulLoginWithExistingPassword(
+      std::move(submitted_manager));
 }
 
 void IOSChromePasswordManagerClient::NotifyStorePasswordCalled() {

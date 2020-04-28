@@ -12,6 +12,7 @@
 #include "base/timer/timer.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -290,22 +291,9 @@ void PageLoadMetricsObserverTester::SimulateMediaPlayed() {
       video_type, content::MediaPlayerId(render_frame_host, 0));
 }
 
-void PageLoadMetricsObserverTester::SimulateCookiesRead(
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CookieList& cookie_list,
-    bool blocked_by_policy) {
-  metrics_web_contents_observer_->OnCookiesRead(url, first_party_url,
-                                                cookie_list, blocked_by_policy);
-}
-
-void PageLoadMetricsObserverTester::SimulateCookieChange(
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
-  metrics_web_contents_observer_->OnCookieChange(url, first_party_url, cookie,
-                                                 blocked_by_policy);
+void PageLoadMetricsObserverTester::SimulateCookieAccess(
+    const content::CookieAccessDetails& details) {
+  metrics_web_contents_observer_->OnCookiesAccessed(details);
 }
 
 void PageLoadMetricsObserverTester::SimulateStorageAccess(

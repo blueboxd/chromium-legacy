@@ -11,6 +11,7 @@
 #include "base/test/task_environment.h"
 #include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
+#include "chromeos/services/network_config/public/mojom/network_types.mojom-forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

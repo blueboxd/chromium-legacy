@@ -90,10 +90,14 @@ bool g_needs_set_up_for_test_case = true;
     GREYAssertNil(alertGetTextError, @"Error getting alert text.\n%@",
                   alertGetTextError);
 
-    // If the system alert is of a known type, accept it.
-    // Otherwise, reject it, as unknown types include alerts which are not
-    // desirable to accept, including OS upgrades.
-    if ([self grey_systemAlertType] != GREYSystemAlertTypeUnknown) {
+    @try {
+      // TODO(crbug.com/1073542): Style guide does not allow throwing
+      // exceptions. This call throws an NSInternalInconsistencyException when
+      // the system alert is unknown in EG2 framework. The exception will be
+      // handled in @catch. Otherwise the system alert is of a known type,
+      // accept it.
+      [self grey_systemAlertType];
+
       DLOG(WARNING) << "Accepting iOS system alert: "
                     << base::SysNSStringToUTF8(alertText);
 
@@ -101,16 +105,41 @@ bool g_needs_set_up_for_test_case = true;
       [self grey_acceptSystemDialogWithError:&acceptAlertError];
       GREYAssertNil(acceptAlertError, @"Error accepting system alert.\n%@",
                     acceptAlertError);
-    } else {
-      DLOG(WARNING) << "Denying iOS system alert of unknown type: "
-                    << base::SysNSStringToUTF8(alertText);
 
-      NSError* denyAlertError = nil;
-      [self grey_denySystemDialogWithError:&denyAlertError];
-      GREYAssertNil(denyAlertError, @"Error denying system alert.\n%@",
-                    denyAlertError);
+    } @catch (NSException* exception) {
+      GREYAssert(
+          (exception.name == NSInternalInconsistencyException &&
+           [exception.reason rangeOfString:@"Invalid System Alert."].location !=
+               NSNotFound),
+          @"Unknown error caught when handling unknown system alert: %@",
+          exception.reason);
+      // If the unsupported alert is iOS upgrade alert, choose "Later".
+      // Otherwise, reject it, as unknown types include alerts which are not
+      // desirable to accept.
+      if ([alertText isEqualToString:@"Software Update"]) {
+        DLOG(WARNING) << "Denying iOS system alert of Software Update!";
+
+        NSError* dismissingUpgradeAlertError = nil;
+        [self grey_tapSystemDialogButtonWithText:@"Later"
+                                           error:&dismissingUpgradeAlertError];
+        GREYAssertNil(dismissingUpgradeAlertError,
+                      @"Error denying Software Update alert.\n%@",
+                      dismissingUpgradeAlertError);
+
+      } else {
+        DLOG(WARNING) << "Denying iOS system alert of unknown type: "
+                      << base::SysNSStringToUTF8(alertText);
+
+        NSError* denyAlertError = nil;
+        [self grey_denySystemDialogWithError:&denyAlertError];
+        GREYAssertNil(denyAlertError, @"Error denying system alert.\n%@",
+                      denyAlertError);
+      }
     }
   }
+  // Ensures no visible alert after handling.
+  [self grey_waitForAlertVisibility:NO
+                        withTimeout:kSystemAlertVisibilityTimeout];
 #endif  // CHROME_EARL_GREY_2
 }
 

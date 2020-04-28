@@ -22,6 +22,8 @@
 #include "chrome/browser/ui/views/passwords/credential_leak_dialog_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -39,6 +41,7 @@ using net::test_server::HttpResponse;
 using password_manager::CredentialLeakFlags;
 using password_manager::CredentialLeakType;
 using ::testing::Field;
+using ::testing::ReturnRef;
 
 namespace {
 
@@ -121,6 +124,15 @@ TestManagePasswordsUIController::CreateCredentialLeakPrompt(
   return current_credential_leak_prompt_;
 }
 
+std::unique_ptr<password_manager::PasswordFormManagerForUI> WrapFormInManager(
+    const autofill::PasswordForm* form) {
+  auto submitted_manager =
+      std::make_unique<password_manager::MockPasswordFormManagerForUI>();
+  ON_CALL(*submitted_manager, GetPendingCredentials)
+      .WillByDefault(ReturnRef(*form));
+  return submitted_manager;
+}
+
 class PasswordDialogViewTest : public DialogBrowserTest {
  public:
   // DialogBrowserTest:
@@ -196,8 +208,8 @@ content::WebContents* PasswordDialogViewTest::SetupTabWithTestController(
   browser->tab_strip_model()->AppendWebContents(std::move(new_tab), true);
 
   // Navigate to a Web URL.
-  EXPECT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
-      browser, GURL("http://www.google.com")));
+  EXPECT_NO_FATAL_FAILURE(
+      ui_test_utils::NavigateToURL(browser, GURL("http://www.google.com")));
   EXPECT_EQ(controller_,
             ManagePasswordsUIController::FromWebContents(raw_new_tab));
   return raw_new_tab;
@@ -367,14 +379,12 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   EXPECT_FALSE(controller()->current_autosignin_prompt());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
-                       PopupAccountChooserInIncognito) {
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAccountChooserInIncognito) {
   EXPECT_TRUE(
       password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
           browser()->profile()->GetPrefs()));
-  EXPECT_TRUE(
-      browser()->profile()->GetPrefs()->GetBoolean(
-          password_manager::prefs::kCredentialsEnableAutosignin));
+  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+      password_manager::prefs::kCredentialsEnableAutosignin));
   GURL origin("https://example.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
@@ -453,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   form.password_value = base::ASCIIToUTF16("I can fly!");
 
   // Successful login alone will not prompt:
-  client()->NotifySuccessfulLoginWithExistingPassword(form);
+  client()->NotifySuccessfulLoginWithExistingPassword(WrapFormInManager(&form));
   ASSERT_FALSE(controller()->current_autosignin_prompt());
 
   // Blocked automatic sign-in will not prompt:
@@ -466,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   blocked_form = std::make_unique<autofill::PasswordForm>(form);
   client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
   form.username_value = base::ASCIIToUTF16("notpeter@pan.test");
-  client()->NotifySuccessfulLoginWithExistingPassword(form);
+  client()->NotifySuccessfulLoginWithExistingPassword(WrapFormInManager(&form));
   ASSERT_FALSE(controller()->current_autosignin_prompt());
 
   // Successful login with the same form after block will not prompt if auto
@@ -475,15 +485,15 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
       password_manager::prefs::kCredentialsEnableAutosignin, false);
   blocked_form = std::make_unique<autofill::PasswordForm>(form);
   client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
-  client()->NotifySuccessfulLoginWithExistingPassword(form);
+  client()->NotifySuccessfulLoginWithExistingPassword(WrapFormInManager(&form));
   ASSERT_FALSE(controller()->current_autosignin_prompt());
   browser()->profile()->GetPrefs()->SetBoolean(
       password_manager::prefs::kCredentialsEnableAutosignin, true);
 
-  // Successful login with the same form after block will prompt:
+  // Successful login with the same form after block will *prompt:
   blocked_form = std::make_unique<autofill::PasswordForm>(form);
   client()->NotifyUserCouldBeAutoSignedIn(std::move(blocked_form));
-  client()->NotifySuccessfulLoginWithExistingPassword(form);
+  client()->NotifySuccessfulLoginWithExistingPassword(WrapFormInManager(&form));
   ASSERT_TRUE(controller()->current_autosignin_prompt());
 }
 

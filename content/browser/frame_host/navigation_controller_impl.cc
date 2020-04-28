@@ -425,7 +425,7 @@ bool DoesSandboxNavigationStayWithinSubtree(
     // sandboxed frame's subtree by walking up the tree looking for the
     // sandboxed frame.
     for (auto* frame = item->frame_tree_node(); frame;
-         frame = frame->parent()) {
+         frame = FrameTreeNode::From(frame->parent())) {
       if (frame->frame_tree_node_id() == sandbox_frame_tree_node_id) {
         within_subtree = true;
         break;

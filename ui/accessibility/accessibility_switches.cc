@@ -40,13 +40,17 @@ const char kEnableExperimentalAccessibilitySwitchAccessText[] =
 const char kEnableExperimentalAccessibilityChromeVoxAnnotations[] =
     "enable-experimental-accessibility-chromevox-annotations";
 
-// Enables language switching feature that hasn't launched yet.
-const char kEnableExperimentalAccessibilityChromeVoxLanguageSwitching[] =
-    "enable-experimental-accessibility-chromevox-language-switching";
+// Disables ChromeVox language switching feature.
+const char kDisableExperimentalAccessibilityChromeVoxLanguageSwitching[] =
+    "disable-experimental-accessibility-chromevox-language-switching";
 
 // Enables search bar to search the ChromeVox menus.
 const char kEnableExperimentalAccessibilityChromeVoxSearchMenus[] =
     "enable-experimental-accessibility-chromevox-search-menus";
+
+// Enables interactive tutorial for ChromeVox.
+const char kEnableExperimentalAccessibilityChromeVoxTutorial[] =
+    "enable-experimental-accessibility-chromevox-tutorial";
 
 bool IsExperimentalAccessibilityLanguageDetectionEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(

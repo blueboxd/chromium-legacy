@@ -37,7 +37,7 @@ class TestProfileBuilder : public ProfileBuilder {
   // ProfileBuilder
   ModuleCache* GetModuleCache() override { return module_cache_; }
   void RecordMetadata(
-      MetadataRecorder::MetadataProvider* metadata_provider) override {}
+      const MetadataRecorder::MetadataProvider& metadata_provider) override {}
 
   void OnSampleCompleted(std::vector<Frame> frames,
                          TimeTicks sample_timestamp) override {
@@ -97,7 +97,6 @@ class DelegateInvokingStackCopier : public StackCopier {
                  RegisterContext* thread_context,
                  Delegate* delegate) override {
     delegate->OnStackCopy();
-    delegate->OnThreadResume();
     return true;
   }
 };

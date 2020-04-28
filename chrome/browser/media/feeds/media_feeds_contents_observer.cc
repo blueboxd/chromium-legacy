@@ -12,6 +12,9 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/origin.h"
 
@@ -70,6 +73,15 @@ void MediaFeedsContentsObserver::DidFindMediaFeed(
 
     CHECK(url->SchemeIsCryptographic());
     service->DiscoverMediaFeed(*url);
+
+    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+    if (!ukm_recorder)
+      return;
+
+    ukm::builders::Media_Feed_Discover(
+        web_contents()->GetMainFrame()->GetPageUkmSourceId())
+        .SetHasMediaFeed(true)
+        .Record(ukm_recorder);
   }
 
   if (test_closure_)

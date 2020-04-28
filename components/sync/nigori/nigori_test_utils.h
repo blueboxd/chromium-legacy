@@ -47,6 +47,14 @@ sync_pb::NigoriSpecifics BuildKeystoreNigoriSpecifics(
     const KeyParamsForTesting& keystore_decryptor_params,
     const KeyParamsForTesting& keystore_key_params);
 
+// Builds NigoriSpecifics with following fields:
+// 1. encryption_keybag contains keys derived from |trusted_vault_keys| and
+// encrypted with key derived from last of them.
+// 2. passphrase_type is TRUSTED_VAULT_PASSPHRASE.
+// 3. keybag_is_frozen set to true.
+sync_pb::NigoriSpecifics BuildTrustedVaultNigoriSpecifics(
+    const std::vector<std::vector<uint8_t>>& trusted_vault_keys);
+
 // Creates a NigoriSpecifics that describes encryption using a custom
 // passphrase with the given |passphrase_key_params|. If |old_key_params| is
 // presented, |encryption_keybag| will also contain keys derived from it.

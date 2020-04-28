@@ -5,24 +5,23 @@
 #include "chrome/browser/media/feeds/media_feeds_utils.h"
 
 #include "chrome/browser/media/feeds/media_feeds.pb.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "services/media_session/public/cpp/media_image.h"
 
 namespace media_feeds {
 
-void MediaImageToProto(Image* proto, const media_session::MediaImage& image) {
-  proto->set_url(image.src.spec());
-
-  if (image.sizes.empty())
+void MediaImageToProto(Image* proto,
+                       const media_feeds::mojom::MediaImagePtr& image) {
+  if (!image)
     return;
 
-  DCHECK_EQ(1u, image.sizes.size());
-
-  proto->set_width(image.sizes[0].width());
-  proto->set_height(image.sizes[0].height());
+  proto->set_url(image->src.spec());
+  proto->set_width(image->size.width());
+  proto->set_height(image->size.height());
 }
 
 ImageSet MediaImagesToProto(
-    const std::vector<media_session::MediaImage>& images,
+    const std::vector<media_feeds::mojom::MediaImagePtr>& images,
     int max_number) {
   ImageSet image_set;
 
@@ -36,20 +35,19 @@ ImageSet MediaImagesToProto(
   return image_set;
 }
 
-media_session::MediaImage ProtoToMediaImage(const Image& proto) {
-  media_session::MediaImage image;
-  image.src = GURL(proto.url());
-
-  if (proto.width() > 0 && proto.height() > 0)
-    image.sizes.push_back(gfx::Size(proto.width(), proto.height()));
+media_feeds::mojom::MediaImagePtr ProtoToMediaImage(const Image& proto) {
+  media_feeds::mojom::MediaImagePtr image =
+      media_feeds::mojom::MediaImage::New();
+  image->src = GURL(proto.url());
+  image->size = gfx::Size(proto.width(), proto.height());
 
   return image;
 }
 
-std::vector<media_session::MediaImage> ProtoToMediaImages(
+std::vector<media_feeds::mojom::MediaImagePtr> ProtoToMediaImages(
     const ImageSet& image_set,
     unsigned max_number) {
-  std::vector<media_session::MediaImage> images;
+  std::vector<media_feeds::mojom::MediaImagePtr> images;
 
   for (auto& proto : image_set.image()) {
     images.push_back(ProtoToMediaImage(proto));

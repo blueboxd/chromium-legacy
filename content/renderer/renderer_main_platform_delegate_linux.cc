@@ -7,9 +7,9 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"

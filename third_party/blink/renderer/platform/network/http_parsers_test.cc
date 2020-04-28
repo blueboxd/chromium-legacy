@@ -687,8 +687,9 @@ TEST(HTTPParsersTest, ParseContentSecurityPolicyDirectiveName) {
       "Content-Security-Policy: frame-src 'none'\r\n"
       "Content-Security-Policy: child-src 'none'\r\n"
       "Content-Security-Policy: script-src 'none'\r\n"
-      "Content-Security-Policy: default-src 'none'\r\n");
-  EXPECT_EQ(8u, policies.size());
+      "Content-Security-Policy: default-src 'none'\r\n"
+      "Content-Security-Policy: upgrade-insecure-requests\r\n");
+  EXPECT_EQ(9u, policies.size());
   // frame-ancestors
   EXPECT_EQ(1u, policies[0]->directives.size());
   // sandbox. TODO(https://crbug.com/1041376) Implement this.
@@ -705,6 +706,8 @@ TEST(HTTPParsersTest, ParseContentSecurityPolicyDirectiveName) {
   EXPECT_EQ(0u, policies[6]->directives.size());
   // default-src. Not parsed.
   EXPECT_EQ(0u, policies[7]->directives.size());
+  // upgrade-insecure-policies. Not parsed.
+  EXPECT_EQ(false, policies[8]->upgrade_insecure_requests);
 }
 
 TEST(HTTPParsersTest, ParseContentSecurityPolicyReportTo) {

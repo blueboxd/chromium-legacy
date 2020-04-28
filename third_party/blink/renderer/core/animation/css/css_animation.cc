@@ -22,7 +22,7 @@ CSSAnimation::CSSAnimation(ExecutionContext* execution_context,
   // The owning_element does not always equal to the target element of an
   // animation. The following spec gives an example:
   // https://drafts.csswg.org/css-animations-2/#owning-element-section
-  owning_element_ = To<KeyframeEffect>(effect())->target();
+  owning_element_ = To<KeyframeEffect>(effect())->EffectTarget();
 }
 
 String CSSAnimation::playState() const {

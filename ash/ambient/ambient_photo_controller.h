@@ -35,8 +35,7 @@ class ASH_EXPORT AmbientPhotoController {
                                WeatherIconDownloadCallback icon_callback);
 
  private:
-  friend class AmbientContainerViewTest;
-  friend class AmbientPhotoControllerTest;
+  friend class AmbientAshTestBase;
 
   void OnNextScreenUpdateInfoFetched(PhotoDownloadCallback photo_callback,
                                      WeatherIconDownloadCallback icon_callback,

@@ -1983,6 +1983,7 @@ if (!is_android) {
         "../browser/ui/views/payments/modifiers_browsertest.cc",
         "../browser/ui/views/payments/order_summary_view_controller_browsertest.cc",
         "../browser/ui/views/payments/payment_handler_change_payment_method_browsertest.cc",
+        "../browser/ui/views/payments/payment_handler_window_size_browsertest.cc",
         "../browser/ui/views/payments/payment_method_view_controller_browsertest.cc",
         "../browser/ui/views/payments/payment_request_blob_url_browsertest.cc",
         "../browser/ui/views/payments/payment_request_browsertest.cc",
@@ -3298,6 +3299,8 @@ test("unit_tests") {
     "../browser/policy/file_selection_dialogs_policy_handler_unittest.cc",
     "../browser/policy/homepage_location_policy_handler_unittest.cc",
     "../browser/policy/javascript_policy_handler_unittest.cc",
+    "../browser/policy/messaging_layer/util/status_unittest.cc",
+    "../browser/policy/messaging_layer/util/statusor_unittest.cc",
     "../browser/policy/profile_policy_connector_unittest.cc",
     "../browser/policy/webusb_allow_devices_for_urls_policy_handler_unittest.cc",
     "../browser/predictors/autocomplete_action_predictor_table_unittest.cc",
@@ -3931,6 +3934,7 @@ test("unit_tests") {
       "../browser/lookalikes/lookalike_url_navigation_throttle_unittest.cc",
       "../browser/reputation/local_heuristics_unittest.cc",
       "../browser/reputation/reputation_service_unittest.cc",
+      "../browser/reputation/safety_tips_config_unittest.cc",
 
       # Media remoting is not supported on Android for now.
       "../browser/media/cast_remoting_connector_unittest.cc",
@@ -4242,6 +4246,7 @@ test("unit_tests") {
 
   if (!is_android) {
     sources += [
+      "../browser/apps/app_service/app_icon_factory_unittest.cc",
       "../browser/apps/app_service/app_service_proxy_unittest.cc",
       "../browser/apps/app_service/app_service_test.cc",
       "../browser/apps/app_service/app_service_test.h",
@@ -4633,7 +4638,6 @@ test("unit_tests") {
       "../browser/extensions/extension_action_icon_factory_unittest.cc",
       "../browser/extensions/extension_action_manager_unittest.cc",
       "../browser/extensions/extension_action_runner_unittest.cc",
-      "../browser/extensions/extension_action_unittest.cc",
       "../browser/extensions/extension_api_unittest.cc",
       "../browser/extensions/extension_api_unittest.h",
       "../browser/extensions/extension_checkup_unittest.cc",

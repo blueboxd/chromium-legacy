@@ -1824,13 +1824,19 @@ TEST(URLCanonTest, CanonicalizeFileSystemURL) {
     const char* expected;
     bool expected_success;
   } cases[] = {
-    {"Filesystem:htTp://www.Foo.com:80/tempoRary", "filesystem:http://www.foo.com/tempoRary/", true},
-    {"filesystem:httpS://www.foo.com/temporary/", "filesystem:https://www.foo.com/temporary/", true},
-    {"filesystem:http://www.foo.com//", "filesystem:http://www.foo.com//", false},
-    {"filesystem:http://www.foo.com/persistent/bob?query#ref", "filesystem:http://www.foo.com/persistent/bob?query#ref", true},
-    {"filesystem:fIle://\\temporary/", "filesystem:file:///temporary/", true},
-    {"filesystem:fiLe:///temporary", "filesystem:file:///temporary/", true},
-    {"filesystem:File:///temporary/Bob?qUery#reF", "filesystem:file:///temporary/Bob?qUery#reF", true},
+      {"Filesystem:htTp://www.Foo.com:80/tempoRary",
+       "filesystem:http://www.foo.com/tempoRary/", true},
+      {"filesystem:httpS://www.foo.com/temporary/",
+       "filesystem:https://www.foo.com/temporary/", true},
+      {"filesystem:http://www.foo.com//", "filesystem:http://www.foo.com//",
+       false},
+      {"filesystem:http://www.foo.com/persistent/bob?query#ref",
+       "filesystem:http://www.foo.com/persistent/bob?query#ref", true},
+      {"filesystem:fIle://\\temporary/", "filesystem:file:///temporary/", true},
+      {"filesystem:fiLe:///temporary", "filesystem:file:///temporary/", true},
+      {"filesystem:File:///temporary/Bob?qUery#reF",
+       "filesystem:file:///temporary/Bob?qUery#reF", true},
+      {"FilEsysteM:htTp:E=/.", "filesystem:http://e%3D//", false},
   };
 
   for (size_t i = 0; i < base::size(cases); i++) {

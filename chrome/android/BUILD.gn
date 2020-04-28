@@ -417,17 +417,14 @@ android_library("chrome_java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_collection_collection_java",
     "//third_party/android_deps:androidx_coordinatorlayout_coordinatorlayout_java",
+    "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_deps:androidx_customview_customview_java",
+    "//third_party/android_deps:androidx_gridlayout_gridlayout_java",
+    "//third_party/android_deps:androidx_interpolator_interpolator_java",
     "//third_party/android_deps:androidx_legacy_legacy_support_v13_java",
     "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",
     "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java8_java",
     "//third_party/android_deps:androidx_lifecycle_lifecycle_runtime_java",
-
-    # TODO(bjoyce): Change to AndroidX materials after
-    # ClearBrowsingDataTabsFramgent.java is converted to AndroidX.
-    "//third_party/android_deps:androidx_core_core_java",
-    "//third_party/android_deps:androidx_gridlayout_gridlayout_java",
-    "//third_party/android_deps:androidx_interpolator_interpolator_java",
     "//third_party/android_deps:androidx_mediarouter_mediarouter_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
@@ -546,6 +543,9 @@ android_library("chrome_java") {
   # TODO(crbug/1022172): Instead of adding source files, add it as a separate
   # dependency when circular deps is resolved.
   sources += share_java_sources
+
+  # This is added to speed-up compile time.
+  skip_jetify = true
 }
 
 generate_product_config_srcjar("chrome_product_config") {
@@ -944,6 +944,10 @@ android_library("chrome_test_java") {
     "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
+
+    # TODO (bjoyce): Remove recyclerview_v7 when espresso tests are migrated
+    # to androidx.
+    "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_deps:com_google_android_material_material_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
@@ -2978,6 +2982,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenCoordinator.java",
     "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenInstaller.java",
     "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenMediator.java",
+    "java/src/org/chromium/chrome/browser/webauth/AuthenticatorImpl.java",
   ]
 
   # Used for testing only, should not be shipped to end users.

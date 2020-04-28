@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview
+ * @suppress {checkTypes|missingProperties|suspiciousCode}
+ * @suppress {undefinedVars|uselessCode}
+ */
+
 /* eslint-disable */
 
 var Module = (function() {

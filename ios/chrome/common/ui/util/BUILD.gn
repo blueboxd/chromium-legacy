@@ -11,6 +11,8 @@ source_set("util") {
     "constraints_ui_util.mm",
     "image_util.h",
     "image_util.mm",
+    "pointer_interaction_util.h",
+    "pointer_interaction_util.mm",
   ]
   deps = [
     "//base",

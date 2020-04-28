@@ -5552,7 +5552,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20200424",
                     "enable_features": [
                         "SlowDCTimerInterruptsWin"
                     ]

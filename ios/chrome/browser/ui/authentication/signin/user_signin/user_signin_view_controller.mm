@@ -4,9 +4,11 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_view_controller.h"
 
+#include "base/feature_list.h"
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/gradient_view.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
@@ -406,6 +408,13 @@ enum AuthenticationButtonType {
   DCHECK(self.unifiedConsentViewController);
   self.confirmationButton = [[UIButton alloc] init];
   self.confirmationButton.accessibilityIdentifier = @"ic_close";
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      self.confirmationButton.pointerInteractionEnabled = YES;
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 
   [self addSubviewWithButton:self.confirmationButton];
   // Note that the button style will depend on the user sign-in state.
@@ -426,6 +435,13 @@ enum AuthenticationButtonType {
   [self.skipSigninButton addTarget:self
                             action:@selector(onSkipSigninButtonPressed:)
                   forControlEvents:UIControlEventTouchUpInside];
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      self.skipSigninButton.pointerInteractionEnabled = YES;
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 }
 
 // Sets up button properties and adds it to view.

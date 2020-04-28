@@ -2725,7 +2725,6 @@ jumbo_static_library("ui") {
         "views/javascript_app_modal_event_blocker_x11.cc",
         "views/javascript_app_modal_event_blocker_x11.h",
       ]
-      configs += [ "//build/config/linux:x11" ]
       deps += [
         "//components/dbus/menu",
         "//ui/events/devices",
@@ -4057,6 +4056,7 @@ jumbo_static_library("ui") {
     deps += [
       "//ash/app_list",
       "//ash/assistant/model",
+      "//ash/assistant/util",
       "//ash/public/cpp",
       "//ash/public/cpp/app_list/vector_icons",
       "//ash/public/cpp/vector_icons",

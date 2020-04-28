@@ -417,7 +417,7 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
   items_container_->SetPaintToLayer();
   items_container_->layer()->SetFillsBoundsOpaquely(false);
   bounds_animator_ = std::make_unique<views::BoundsAnimator>(
-      items_container_, /*use_transforms=*/true);
+      items_container_, /*use_transforms=*/false);
 
   if (!folder_delegate) {
     SetBorder(views::CreateEmptyBorder(

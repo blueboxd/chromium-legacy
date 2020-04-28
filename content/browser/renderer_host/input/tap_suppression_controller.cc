@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 

@@ -11,9 +11,10 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/i18n/char_iterator.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

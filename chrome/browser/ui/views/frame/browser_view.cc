@@ -2393,6 +2393,7 @@ views::View* BrowserView::CreateOverlayView() {
 }
 
 void BrowserView::OnWidgetDestroying(views::Widget* widget) {
+  widget_observer_.Remove(widget);
   // Destroy any remaining WebContents early on. Doing so may result in
   // calling back to one of the Views/LayoutManagers or supporting classes of
   // BrowserView. By destroying here we ensure all said classes are valid.
@@ -2640,7 +2641,7 @@ void BrowserView::ViewHierarchyChanged(
 void BrowserView::AddedToWidget() {
   views::ClientView::AddedToWidget();
 
-  GetWidget()->AddObserver(this);
+  widget_observer_.Add(GetWidget());
 
   // Stow a pointer to this object onto the window handle so that we can get at
   // it later when all we have is a native view.

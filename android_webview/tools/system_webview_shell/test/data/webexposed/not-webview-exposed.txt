@@ -136,7 +136,7 @@ interface XRRigidTransform
 interface XRSpace : EventTarget
 interface XRInputSourcesChangeEvent : Event
 interface XRInputSource
-interface XRWebGLLayer
+interface XRWebGLLayer : XRLayer
 interface XRInputSourceEvent : Event
 interface XRViewerPose : XRPose
 interface XRInputSourceArray

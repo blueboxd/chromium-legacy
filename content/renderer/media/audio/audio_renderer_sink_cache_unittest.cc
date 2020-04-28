@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/audio/audio_device_description.h"

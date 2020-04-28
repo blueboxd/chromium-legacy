@@ -126,7 +126,6 @@ jumbo_component("clipboard") {
           "clipboard_x11.cc",
           "clipboard_x11.h",
         ]
-        configs += [ "//build/config/linux:x11" ]
         deps += [
           "//ui/base",
           "//ui/base/x",

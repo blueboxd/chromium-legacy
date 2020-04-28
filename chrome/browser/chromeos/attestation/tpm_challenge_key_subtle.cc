@@ -474,10 +474,12 @@ void TpmChallengeKeySubtleImpl::GetCertificateCallback(
 void TpmChallengeKeySubtleImpl::GetPublicKey() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  const std::string& key =
+      (!key_name_for_spkac_.empty()) ? key_name_for_spkac_ : key_name_;
+
   CryptohomeClient::Get()->TpmAttestationGetPublicKey(
       key_type_,
-      cryptohome::CreateAccountIdentifierFromAccountId(GetAccountId()),
-      GetKeyNameForRegister(),
+      cryptohome::CreateAccountIdentifierFromAccountId(GetAccountId()), key,
       base::BindOnce(&TpmChallengeKeySubtleImpl::PrepareKeyFinished,
                      weak_factory_.GetWeakPtr()));
 }

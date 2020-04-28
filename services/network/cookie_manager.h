@@ -29,10 +29,6 @@ namespace network {
 class SessionCleanupCookieStore;
 
 // Wrap a cookie store in an implementation of the mojo cookie interface.
-
-// This is an IO thread object; all methods on this object must be called on
-// the IO thread.  Note that this does not restrict the locations from which
-// mojo messages may be sent to the object.
 class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
     : public mojom::CookieManager {
  public:

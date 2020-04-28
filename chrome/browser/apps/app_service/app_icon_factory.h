@@ -68,6 +68,10 @@ void LoadIconFromWebApp(content::BrowserContext* context,
 // The file named by |path| might be empty, not found or otherwise unreadable.
 // If so, "fallback(callback)" is run. If the file is non-empty and readable,
 // just "callback" is run, even if that file doesn't contain a valid image.
+//
+// |fallback| should run its callback argument once complete, even on a
+// failure. A failure should be indicated by passing nullptr, in which case the
+// pipeline will use a generic fallback icon.
 void LoadIconFromFileWithFallback(
     apps::mojom::IconCompression icon_compression,
     int size_hint_in_dip,

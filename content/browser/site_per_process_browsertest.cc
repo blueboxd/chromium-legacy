@@ -6198,7 +6198,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   FrameTreeNode* node = web_contents()->GetFrameTree()->root()->child_at(0);
   EXPECT_TRUE(node);
   EXPECT_NE(node->current_frame_host()->GetSiteInstance(),
-            node->parent()->current_frame_host()->GetSiteInstance());
+            node->parent()->GetSiteInstance());
 
   // Navigate to the site of the parent, but to a page that will not commit.
   GURL same_site_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -6272,7 +6272,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
   FrameTreeNode* node = contents->GetFrameTree()->root()->child_at(0);
   EXPECT_TRUE(node);
   EXPECT_NE(node->current_frame_host()->GetSiteInstance(),
-            node->parent()->current_frame_host()->GetSiteInstance());
+            node->parent()->GetSiteInstance());
 
   // Grab the routing id of the first child RenderFrameHost and set up a process
   // observer to ensure there is no crash when a new RenderFrame creation is
@@ -6284,8 +6284,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
   int widget_routing_id =
       node->current_frame_host()->GetRenderWidgetHost()->GetRoutingID();
   int parent_routing_id =
-      node->parent()->render_manager()->GetRoutingIdForSiteInstance(
-          node->current_frame_host()->GetSiteInstance());
+      node->parent()
+          ->frame_tree_node()
+          ->render_manager()
+          ->GetRoutingIdForSiteInstance(
+              node->current_frame_host()->GetSiteInstance());
 
   // Have the parent frame remove the child frame from its DOM. This should
   // result in the child RenderFrame being deleted in the remote process.

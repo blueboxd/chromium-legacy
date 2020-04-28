@@ -228,12 +228,20 @@ const base::Feature kOmniboxDemoteByType{"OmniboxDemoteByType",
 const base::Feature kNewSearchFeatures{"OmniboxNewSearchFeatures",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Feature to configure on-focus suggestions provided by ZeroSuggestProvider.
-// This feature's main job is to contain some field trial parameters such as:
-//  - "ZeroSuggestVariant" configures the per-page-classification mode of
-//    ZeroSuggestProvider.
+// This feature exists to flexibly configure on-focus suggestions using the
+// "ZeroSuggestVariant" per-page-classification parameter.
+//
+// However, since only one experiment can configure this feature, it should
+// generally not be used. Instead, create a new base::Feature for each feature.
 const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables on-focus suggestions on the Open Web, that are contextual to the
+// current URL. Will only work if user is signed-in and syncing, or is
+// otherwise eligible to send the current page URL to the suggest server.
+const base::Feature kOnFocusSuggestionsContextualWeb{
+    "OmniboxOnFocusSuggestionsContextualWeb",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allow suggestions to be shown to the user on the New Tab Page upon focusing
 // URL bar (the omnibox).

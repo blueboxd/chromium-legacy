@@ -84,6 +84,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
     virtual void OnProcessingSpinnerShown() = 0;
 
     virtual void OnProcessingSpinnerHidden() = 0;
+
+    virtual void OnPaymentHandlerWindowOpened() = 0;
   };
 
   // Build a Dialog around the PaymentRequest object. |observer| is used to
@@ -177,14 +179,26 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
 
   Profile* GetProfile();
 
+  // Calculates the actual payment handler dialog height based on the preferred
+  // height and current browser window size.
+  int GetActualPaymentHandlerDialogHeight() const;
+
+  // Calculates the dialog width depending on whether or not the large payment
+  // handler window is currently showing.
+  int GetActualDialogWidth() const;
+
   ViewStack* view_stack_for_testing() { return view_stack_.get(); }
   views::View* throbber_overlay_for_testing() { return throbber_overlay_; }
 
  private:
+  // The browsertest validates the calculated dialog size.
+  friend class PaymentHandlerWindowSizeTest;
+
   void OnDialogOpened();
   void ShowInitialPaymentSheet();
   void SetupSpinnerOverlay();
   void OnDialogClosed();
+  void ResizeDialogWindow();
 
   // views::View
   gfx::Size CalculatePreferredSize() const override;
@@ -213,6 +227,14 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
 
   // The number of initialization tasks that are not yet initialized.
   size_t number_of_initialization_tasks_ = 0;
+
+  // True when payment handler screen is shown and the
+  // kPaymentHandlerPopUpSizeWindow runtime flag is set.
+  bool is_showing_large_payment_handler_window_ = false;
+
+  // Calculated based on the browser content size at the time of opening payment
+  // handler window.
+  int payment_handler_window_height_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestDialogView);
 };

@@ -4,8 +4,8 @@
 
 #include "content/test/test_content_browser_client.h"
 
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "content/public/browser/browser_context.h"
 
 #if defined(OS_ANDROID)

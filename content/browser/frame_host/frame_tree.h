@@ -151,7 +151,7 @@ class CONTENT_EXPORT FrameTree {
   // exposed by the corresponding RenderFrameHost. The caller takes care of
   // sending the client end of the interface down to the RenderFrame.
   FrameTreeNode* AddFrame(
-      FrameTreeNode* parent,
+      RenderFrameHostImpl* parent,
       int process_id,
       int new_routing_id,
       mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>

@@ -7,9 +7,9 @@
 #include <set>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"

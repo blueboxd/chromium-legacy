@@ -12,12 +12,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -335,8 +336,6 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToParent() {
     return nullptr;
 
   return GetRenderFrameProxyHost(frame_tree_node_->parent()
-                                     ->render_manager()
-                                     ->current_frame_host()
                                      ->GetSiteInstance());
 }
 
@@ -353,7 +352,6 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToOuterDelegate() {
   }
 
   return GetRenderFrameProxyHost(outer_contents_frame_tree_node->parent()
-                                     ->current_frame_host()
                                      ->GetSiteInstance());
 }
 
@@ -536,7 +534,7 @@ void RenderFrameHostManager::CommitFramePolicy(
   // Notify all of the frame's proxies about updated policies, excluding
   // the parent process since it already knows the latest state.
   SiteInstance* parent_site_instance =
-      frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
+      frame_tree_node_->parent()->GetSiteInstance();
   for (const auto& pair : proxy_hosts_) {
     if (pair.second->GetSiteInstance() != parent_site_instance) {
       pair.second->GetAssociatedRemoteFrame()->DidUpdateFramePolicy(
@@ -1101,7 +1099,7 @@ void RenderFrameHostManager::OnEnforceInsecureNavigationsSet(
 void RenderFrameHostManager::OnDidChangeCollapsedState(bool collapsed) {
   DCHECK(frame_tree_node_->parent());
   SiteInstance* parent_site_instance =
-      frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
+      frame_tree_node_->parent()->GetSiteInstance();
 
   // There will be no proxy to represent the pending or speculative RFHs in the
   // parent's SiteInstance until the navigation is committed, but the old RFH is
@@ -1121,8 +1119,7 @@ void RenderFrameHostManager::OnDidUpdateFrameOwnerProperties(
     const blink::mojom::FrameOwnerProperties& properties) {
   // FrameOwnerProperties exist only for frames that have a parent.
   CHECK(frame_tree_node_->parent());
-  SiteInstance* parent_instance =
-      frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
+  SiteInstance* parent_instance = frame_tree_node_->parent()->GetSiteInstance();
 
   auto properties_for_local_frame = properties.Clone();
 
@@ -1690,7 +1687,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // isolation policy.
   if (!frame_tree_node_->IsMainFrame()) {
     SiteInstance* parent_site_instance =
-        frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
+        frame_tree_node_->parent()->GetSiteInstance();
     if (GetContentClient()->browser()->ShouldStayInParentProcessForNTP(
             dest_url, parent_site_instance)) {
       return SiteInstanceDescriptor(parent_site_instance);
@@ -1784,8 +1781,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
         frame_tree_node_->frame_tree()->root()->current_frame_host();
     if (IsCurrentlySameSite(main_frame, dest_url))
       return SiteInstanceDescriptor(main_frame->GetSiteInstance());
-    RenderFrameHostImpl* parent =
-        frame_tree_node_->parent()->current_frame_host();
+    RenderFrameHostImpl* parent = frame_tree_node_->parent();
     if (IsCurrentlySameSite(parent, dest_url))
       return SiteInstanceDescriptor(parent->GetSiteInstance());
   }
@@ -1809,8 +1805,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   if (!base::FeatureList::IsEnabled(
           features::kProcessSharingWithStrictSiteInstances)) {
     if (!frame_tree_node_->IsMainFrame()) {
-      RenderFrameHostImpl* parent =
-          frame_tree_node_->parent()->current_frame_host();
+      RenderFrameHostImpl* parent = frame_tree_node_->parent();
       bool dest_url_requires_dedicated_process =
           SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
               parent->GetSiteInstance()->GetIsolationContext(), dest_url);
@@ -2045,11 +2040,10 @@ void RenderFrameHostManager::CreateProxiesForNewNamedFrame() {
   // opener's SiteInstance, since new windows are always first opened in the
   // same SiteInstance as their opener, and if the new window navigates
   // cross-site, that proxy would be created as part of unloading.
-  for (FrameTreeNode* ancestor = opener->parent(); ancestor;
-       ancestor = ancestor->parent()) {
-    RenderFrameHostImpl* ancestor_rfh = ancestor->current_frame_host();
-    if (ancestor_rfh->GetSiteInstance() != current_instance)
-      CreateRenderFrameProxy(ancestor_rfh->GetSiteInstance());
+  for (RenderFrameHost* ancestor = opener->parent(); ancestor;
+       ancestor = ancestor->GetParent()) {
+    if (ancestor->GetSiteInstance() != current_instance)
+      CreateRenderFrameProxy(ancestor->GetSiteInstance());
   }
 }
 
@@ -2076,9 +2070,7 @@ RenderFrameHostManager::CreateRenderFrameHost(
       DCHECK(!frame_tree_node_->IsMainFrame());
       // The first RenderFrameHost for a child FrameTreeNode is always in the
       // same SiteInstance as its parent.
-      DCHECK_EQ(
-          frame_tree_node_->parent()->current_frame_host()->GetSiteInstance(),
-          site_instance);
+      DCHECK_EQ(frame_tree_node_->parent()->GetSiteInstance(), site_instance);
       // The RenderViewHost must already exist for the parent's SiteInstance.
       DCHECK(render_view_host);
       break;
@@ -2474,6 +2466,7 @@ bool RenderFrameHostManager::InitRenderFrame(
   int parent_routing_id = MSG_ROUTING_NONE;
   if (frame_tree_node_->parent()) {
     parent_routing_id = frame_tree_node_->parent()
+                            ->frame_tree_node()
                             ->render_manager()
                             ->GetRoutingIdForSiteInstance(site_instance);
     CHECK_NE(parent_routing_id, MSG_ROUTING_NONE);

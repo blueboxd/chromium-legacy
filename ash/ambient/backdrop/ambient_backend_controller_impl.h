@@ -40,14 +40,17 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
                                      const std::string& gaia_id,
                                      const std::string& access_token);
 
-  void OnScreenUpdateInfoFetched(OnScreenUpdateInfoFetchedCallback callback,
-                                 std::unique_ptr<std::string> response);
+  void OnScreenUpdateInfoFetched(
+      OnScreenUpdateInfoFetchedCallback callback,
+      std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
+      std::unique_ptr<std::string> response);
 
   void StartToGetSettings(GetSettingsCallback callback,
                           const std::string& gaia_id,
                           const std::string& access_token);
 
   void OnGetSettings(GetSettingsCallback callback,
+                     std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
                      std::unique_ptr<std::string> response);
 
   void StartToUpdateSettings(AmbientModeTopicSource topic_source,
@@ -56,10 +59,8 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
                              const std::string& access_token);
 
   void OnUpdateSettings(UpdateSettingsCallback callback,
+                        std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
                         std::unique_ptr<std::string> response);
-
-  // The url loader for the Backdrop service request.
-  std::unique_ptr<BackdropURLLoader> backdrop_url_loader_;
 
   BackdropClientConfig backdrop_client_config_;
 

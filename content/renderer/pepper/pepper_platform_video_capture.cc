@@ -5,8 +5,9 @@
 #include "content/renderer/pepper/pepper_platform_video_capture.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/render_frame_impl.h"

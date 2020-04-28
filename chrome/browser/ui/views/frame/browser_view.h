@@ -870,6 +870,8 @@ class BrowserView : public BrowserWindow,
   ScopedObserver<banners::AppBannerManager, banners::AppBannerManager::Observer>
       app_banner_manager_observer_{this};
 
+  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
+
   bool interactive_resize_in_progress_ = false;
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_{

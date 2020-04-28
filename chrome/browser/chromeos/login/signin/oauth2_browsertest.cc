@@ -1063,8 +1063,13 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, Throttle) {
   EXPECT_TRUE(fake_google_.IsPageRequested());
 }
 
-// TODO(https://crbug.com/990844): Re-enable once flakiness is fixed.
-IN_PROC_BROWSER_TEST_P(MergeSessionTest, DISABLED_XHRNotThrottled) {
+// The test is too slow for the MSan configuration.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_XHRNotThrottled DISABLED_XHRNotThrottled
+#else
+#define MAYBE_XHRNotThrottled XHRNotThrottled
+#endif
+IN_PROC_BROWSER_TEST_P(MergeSessionTest, MAYBE_XHRNotThrottled) {
   StartNewUserSession(/*wait_for_merge=*/false,
                       /*is_under_advanced_protection=*/false);
 
@@ -1099,8 +1104,7 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, DISABLED_XHRNotThrottled) {
 
   if (do_async_xhr()) {
     // Verify that we've sent XHR request from the extension side...
-    JsExpectOnBackgroundPage(ext->id(),
-                             "googleRequestSent && !googleResponseReceived");
+    JsExpectOnBackgroundPage(ext->id(), "googleRequestSent");
 
     // Wait until non-google XHR content to load.
     ASSERT_TRUE(non_google_xhr_listener->WaitUntilSatisfied());

@@ -484,6 +484,11 @@
     "args": ["--disable-site-isolation-trials"]
   },
   {
+    "prefix": "no-auto-wpt-origin-isolation",
+    "bases": ["external/wpt/origin-isolation"],
+    "args": ["--disable-auto-wpt-origin-isolation"]
+  },
+  {
     "prefix": "focusless-spat-nav",
     "bases": [],
     "args": ["--enable-blink-features=FocuslessSpatialNavigation",

@@ -592,10 +592,6 @@
         parent="TextAppearance.TextLarge.Primary">
         <item name="android:textSize">20sp</item>
     </style>
-    <style name="TextAppearance.PageInfoPermissionSubtitle"
-        parent="TextAppearance.TextMedium.Secondary">
-        <item name="android:textColor">@color/secondary_text_default_material_light</item>
-    </style>
     <style name="TextAppearance.PhotoPickerSpecialTile"
         parent="TextAppearance.TextMediumThick.Primary">
         <item name="android:textColor">@color/photo_picker_special_tile_text_color</item>

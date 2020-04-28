@@ -1635,13 +1635,7 @@ CSPDirectiveList::ExposeForNavigationalChecks() const {
                            navigate_to_->ExposeForNavigationalChecks());
   }
 
-  if (upgrade_insecure_requests_) {
-    auto empty_source_list = network::mojom::blink::CSPSourceList::New(
-        WTF::Vector<network::mojom::blink::CSPSourcePtr>(), false, false,
-        false);
-    policy->directives.Set(CSPDirectiveName::UpgradeInsecureRequests,
-                           std::move(empty_source_list));
-  }
+  policy->upgrade_insecure_requests = upgrade_insecure_requests_;
 
   return policy;
 }

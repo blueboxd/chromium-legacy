@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/common/ax_serialization_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
@@ -580,8 +581,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   src.GetRelativeBounds(offset_container, bounds_in_container,
                         container_transform, &clips_children);
   dst->relative_bounds.bounds = bounds_in_container;
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
-  if (src.Equals(root())) {
+  if (content::AXShouldIncludePageScaleFactorInRoot() && src.Equals(root())) {
     WebView* web_view = render_frame_->GetRenderView()->GetWebView();
     std::unique_ptr<gfx::Transform> container_transform_gfx =
         std::make_unique<gfx::Transform>(container_transform);
@@ -591,14 +591,10 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
         -web_view->VisualViewportOffset().OffsetFromOrigin());
     if (!container_transform_gfx->IsIdentity())
       dst->relative_bounds.transform = std::move(container_transform_gfx);
-  } else if (!container_transform.isIdentity())
+  } else if (!container_transform.isIdentity()) {
     dst->relative_bounds.transform =
         base::WrapUnique(new gfx::Transform(container_transform));
-#else
-  if (!container_transform.isIdentity())
-    dst->relative_bounds.transform =
-        base::WrapUnique(new gfx::Transform(container_transform));
-#endif  // !defined(OS_ANDROID) && !defined(OS_MACOSX)
+  }
   if (!offset_container.IsDetached())
     dst->relative_bounds.offset_container_id = offset_container.AxID();
   if (clips_children)

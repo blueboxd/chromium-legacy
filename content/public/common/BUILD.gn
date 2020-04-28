@@ -277,6 +277,10 @@ jumbo_source_set("common_sources") {
       "pepper_plugin_info.h",
     ]
   }
+
+  if (use_clang_profiling_inside_sandbox) {
+    sources += [ "profiling_utils.h" ]
+  }
 }
 
 source_set("common_traits_types") {

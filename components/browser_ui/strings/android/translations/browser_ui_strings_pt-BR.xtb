@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Bloqueados em alguns sites</translation>
 <translation id="3190152372525844641">Ative as permissões para o Chrome nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
-<translation id="3223655101706843289">Isso limpará todos os dados e cookies armazenados por <ph name="ORIGIN" /> e o app dele na sua tela inicial.</translation>
 <translation id="3227137524299004712">Microfone</translation>
 <translation id="3277252321222022663">Permitir que sites acessem os sensores (recomendado)</translation>
 <translation id="3295602654194328831">Ocultar informações</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5335288049665977812">Permitir que sites executem o JavaScript (recomendado)</translation>
 <translation id="534295439873310000">Dispositivos NFC</translation>
+<translation id="5354152178998424783">Essa ação limpará <ph name="DATASIZE" /> de dados e cookies armazenados por sites.</translation>
 <translation id="5391532827096253100">Sua conexão com este site não é segura. Informações do site</translation>
 <translation id="5494752089476963479">Bloquear anúncios em sites com publicidade invasiva ou enganosa</translation>
 <translation id="5505264765875738116">Os sites não podem pedir para enviar notificações</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Sua conta será desconectada desse site.</translation>
 <translation id="7828557259026017104">Os cookies são arquivos criados pelos sites que você visita, usados por esses sites para lembrar suas preferências. Os cookies de terceiros são criados por outros sites que possuem uma parte do conteúdo, como anúncios ou imagens, que você vê na página da Web acessada.</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
+<translation id="7846621471902887024">Sua conta será desconectada de todos os sites.</translation>
 <translation id="7882806643839505685">Permitir o som de um site específico.</translation>
 <translation id="7993619969781047893">Os recursos de alguns sites podem apresentar falhas</translation>
 <translation id="7999064672810608036">Você quer mesmo apagar todos os dados locais, inclusive os cookies, e redefinir todas as permissões para este website?</translation>

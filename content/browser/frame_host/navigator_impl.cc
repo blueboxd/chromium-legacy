@@ -6,9 +6,10 @@
 
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"

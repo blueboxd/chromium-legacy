@@ -9,6 +9,7 @@ import android.content.Context;
 import android.os.Build;
 
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
+import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 
 /**

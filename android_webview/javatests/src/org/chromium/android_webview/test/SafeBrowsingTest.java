@@ -148,11 +148,6 @@ public class SafeBrowsingTest {
         private static final long CHECK_DELTA_US = 10;
 
         @Override
-        public String getSafetyNetId() {
-            return "";
-        }
-
-        @Override
         public boolean init(Observer result) {
             mObserver = result;
             return true;

@@ -107,7 +107,7 @@ media_feeds::mojom::LiveDetailsPtr Convert(
   return out;
 }
 
-media_session::MediaImage Convert(const media_feeds::Image& image) {
+media_feeds::mojom::MediaImagePtr Convert(const media_feeds::Image& image) {
   return media_feeds::ProtoToMediaImage(image);
 }
 
@@ -146,14 +146,11 @@ void FillLiveDetails(const media_feeds::mojom::LiveDetailsPtr& live_details,
         live_details->end_time->ToDeltaSinceWindowsEpoch().InSeconds());
 }
 
-void FillImage(const media_session::MediaImage& image,
+void FillImage(const media_feeds::mojom::MediaImagePtr& image,
                media_feeds::Image* proto) {
-  proto->set_url(image.src.spec());
-
-  if (!image.sizes.empty()) {
-    proto->set_width(image.sizes[0].width());
-    proto->set_height(image.sizes[0].height());
-  }
+  proto->set_url(image->src.spec());
+  proto->set_width(image->size.width());
+  proto->set_height(image->size.height());
 }
 
 }  // namespace

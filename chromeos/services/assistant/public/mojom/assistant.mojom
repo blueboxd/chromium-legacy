@@ -117,6 +117,7 @@ enum AssistantEntryPoint {
   kLauncherSearchResult = 8,
   kLauncherSearchBoxIcon = 9,
   kProactiveSuggestions = 10,
+  kLauncherChip = 11,
 };
 
 // Enumeration of Assistant exit points. These values are persisted to logs.
@@ -169,6 +170,7 @@ enum AssistantQuerySource {
   kConversationStarter = 9,
   kWhatsOnMyScreen = 10,
   kQuickAnswers = 11,
+  kLauncherChip = 12,
 };
 
 // Subscribes to Assistant's interaction event. These events are server driven

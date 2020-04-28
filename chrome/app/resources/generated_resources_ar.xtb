@@ -673,6 +673,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> جاهز لإكمال عملية التثبيت</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">منح الإذن للوصول إلى الميكروفون</translation>
+<translation id="1871534214638631766">يمكنك عرض معلومات ذات صلة عند النقر بزر الماوس الأيمن أو الضغط مع الاستمرار على المحتوى.</translation>
 <translation id="1871615898038944731">جهاز <ph name="DEVICE_TYPE" /> مُحدّث</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{نقل علامة تبويب واحدة إلى نافذة أخرى}zero{نقل علامات تبويب إلى نافذة أخرى}two{نقل علامتَي تبويب إلى نافذة أخرى}few{نقل علامات تبويب إلى نافذة أخرى}many{نقل علامات تبويب إلى نافذة أخرى}other{نقل علامات تبويب إلى نافذة أخرى}}</translation>
 <translation id="1875386316419689002">‏علامة التبويب هذه متصّلة بجهاز HID.</translation>
@@ -729,6 +730,7 @@
 <translation id="1944528062465413897">رمز إقران البلوتوث:</translation>
 <translation id="1944921356641260203">تم العثور على التحديث</translation>
 <translation id="1946577776959096882">عرض الحسابات</translation>
+<translation id="1949584741547056205">إجابات سريعة</translation>
 <translation id="1951012854035635156">المساعد</translation>
 <translation id="1954813140452229842">حدث خطأ في تحميل المشاركة. يُرجى التحقُّق من بيانات الاعتماد وإعادة المحاولة.</translation>
 <translation id="1956050014111002555">احتوى الملف على شهادات متعددة، لم يتم استيراد أي منها:</translation>
@@ -1910,7 +1912,6 @@
 <translation id="3543597750097719865">‏توقيع X9.62 ECDSA باستخدام SHA-512</translation>
 <translation id="3544879808695557954">اسم المستخدم (اختياري)</translation>
 <translation id="354602065659584722">تمت إزالة البرامج الضارة</translation>
-<translation id="3546284949680281622">‏بروتوكول TCP</translation>
 <translation id="3547954654003013442">إعدادات الخادم الوكيل</translation>
 <translation id="3548162552723420559">ضبط لون الشاشة ليتناسب مع البيئة المحيطة</translation>
 <translation id="3550915441744863158">‏يتم تحديث Chrome تلقائيًا، وبالتالي يتوفر لديك دومًا أحدث إصدار منه.</translation>
@@ -5556,7 +5557,6 @@
 <translation id="8493236660459102203">الميكروفون:</translation>
 <translation id="8496717697661868878">تشغيل هذا المكون الإضافي</translation>
 <translation id="8497219075884839166">‏الأدوات المساعدة في Windows</translation>
-<translation id="8498014781268779783">‏بروتوكول UDP</translation>
 <translation id="8498214519255567734">يمكنك تسهيل النظر إلى الشاشة أو القراءة في الضوء الخافت</translation>
 <translation id="8498395510292172881">‏متابعة القراءة في Chrome</translation>
 <translation id="8500234928660943538">‏PUK غير صحيح. مرات إعادة المحاولة المتبقية: <ph name="RETRIES" /></translation>

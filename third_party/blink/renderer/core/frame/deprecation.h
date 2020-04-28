@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEPRECATION_H_
 
 #include <bitset>
+
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -20,7 +21,9 @@ enum class FeaturePolicyFeature;
 class Document;
 class DocumentLoader;
 class ExecutionContext;
+class KURL;
 class LocalFrame;
+class Report;
 
 class CORE_EXPORT Deprecation final {
   DISALLOW_NEW();
@@ -55,6 +58,8 @@ class CORE_EXPORT Deprecation final {
   static void CountDeprecationCrossOriginIframe(const Document&, WebFeature);
 
   static String DeprecationMessage(WebFeature);
+
+  static Report* CreateReport(const KURL& context_url, WebFeature);
 
   // Note: this is only public for tests.
   bool IsSuppressed(CSSPropertyID unresolved_property);

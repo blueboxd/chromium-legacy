@@ -22,6 +22,8 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
@@ -228,7 +230,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
       const gfx::Point& relative_point);
 
  protected:
-
   // BrowserPluginGuest is a WebContentsObserver of |web_contents| and
   // |web_contents| has to stay valid for the lifetime of BrowserPluginGuest.
   // Constructor protected for testing.
@@ -271,10 +272,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Sets the name of the guest so that other guests in the same partition can
   // access it.
   void OnSetName(int instance_id, const std::string& name);
-  // Updates the size state of the guest.
-  void OnSetEditCommandsForNextKeyEvent(
-      int instance_id,
-      const std::vector<EditCommand>& edit_commands);
+
   // TODO(wjmaclean): Investigate how to update this comment.
   // The guest WebContents is visible if both its embedder is visible and
   // the browser plugin element is visible. If either one is not then the

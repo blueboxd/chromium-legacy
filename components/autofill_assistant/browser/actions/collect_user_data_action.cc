@@ -1035,6 +1035,8 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
   if (collect_user_data.has_info_section_text()) {
     collect_user_data_options_->info_section_text =
         collect_user_data.info_section_text();
+    collect_user_data_options_->info_section_text_center =
+        collect_user_data.info_section_text_center();
   }
 
   collect_user_data_options_->privacy_notice_text =

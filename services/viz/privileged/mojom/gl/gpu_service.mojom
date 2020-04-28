@@ -151,6 +151,11 @@ interface GpuService {
   [EnableIf=is_mac]
   CommitCATransaction() => ();
 
+  // Write out the accumulated code profiling profile to the configured file.
+  // The callback is invoked once the profile has been flushed to disk.
+  [EnableIf=use_clang_profiling]
+  WriteClangProfilingProfile() => ();
+
   Crash();
   Hang();
   ThrowJavaException();

@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateChildToAboutBlank) {
   // initiate the navigation.
   FrameTreeNode* target =
       contents->GetFrameTree()->root()->child_at(0)->child_at(0);
-  FrameTreeNode* initiator = target->parent();
+  FrameTreeNode* initiator = target->parent()->frame_tree_node();
 
   // Give the target a name.
   EXPECT_TRUE(ExecJs(target, "window.name = 'target';"));
@@ -406,7 +406,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
   // initiate the navigation.
   FrameTreeNode* target =
       contents->GetFrameTree()->root()->child_at(0)->child_at(0);
-  FrameTreeNode* initiator = target->parent()->parent();
+  FrameTreeNode* initiator =
+      target->parent()->frame_tree_node()->parent()->frame_tree_node();
 
   // Give the target a name.
   EXPECT_TRUE(ExecJs(target, "window.name = 'target';"));
@@ -453,7 +454,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateGrandchildToDataUrl) {
   // initiate the navigation.
   FrameTreeNode* target =
       contents->GetFrameTree()->root()->child_at(0)->child_at(0);
-  FrameTreeNode* initiator = target->parent()->parent();
+  FrameTreeNode* initiator =
+      target->parent()->frame_tree_node()->parent()->frame_tree_node();
 
   // Give the target a name.
   EXPECT_TRUE(ExecJs(target, "window.name = 'target';"));

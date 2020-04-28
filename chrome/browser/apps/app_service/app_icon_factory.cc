@@ -41,6 +41,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/grit/extensions_browser_resources.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -245,12 +246,31 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
                       apps::IconEffects icon_effects,
                       int fallback_icon_resource,
                       apps::mojom::Publisher::LoadIconCallback callback)
+      : IconLoadingPipeline(icon_compression,
+                            size_hint_in_dip,
+                            is_placeholder_icon,
+                            icon_effects,
+                            fallback_icon_resource,
+                            base::OnceCallback<void(
+                                apps::mojom::Publisher::LoadIconCallback)>(),
+                            std::move(callback)) {}
+
+  IconLoadingPipeline(
+      apps::mojom::IconCompression icon_compression,
+      int size_hint_in_dip,
+      bool is_placeholder_icon,
+      apps::IconEffects icon_effects,
+      int fallback_icon_resource,
+      base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)>
+          fallback,
+      apps::mojom::Publisher::LoadIconCallback callback)
       : icon_compression_(icon_compression),
         size_hint_in_dip_(size_hint_in_dip),
         is_placeholder_icon_(is_placeholder_icon),
         icon_effects_(icon_effects),
         fallback_icon_resource_(fallback_icon_resource),
-        callback_(std::move(callback)) {}
+        callback_(std::move(callback)),
+        fallback_callback_(std::move(fallback)) {}
 
   void LoadWebAppIcon(const std::string& web_app_id,
                       const GURL& launch_url,
@@ -299,6 +319,10 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
   int fallback_icon_resource_;
 
   apps::mojom::Publisher::LoadIconCallback callback_;
+
+  // A custom fallback operation to try.
+  base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)>
+      fallback_callback_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 };
@@ -537,6 +561,32 @@ void IconLoadingPipeline::MaybeLoadFallbackOrCompleteEmpty() {
     }
   }
 
+  if (fallback_callback_) {
+    // Wrap the result of |fallback_callback_| in another callback instead of
+    // passing it to |callback_| directly so we can catch failures and try other
+    // things.
+    apps::mojom::Publisher::LoadIconCallback fallback_adaptor = base::BindOnce(
+        [](scoped_refptr<IconLoadingPipeline> pipeline,
+           apps::mojom::IconValuePtr ptr) {
+          if (!ptr.is_null()) {
+            std::move(pipeline->callback_).Run(std::move(ptr));
+          } else {
+            pipeline->MaybeLoadFallbackOrCompleteEmpty();
+          }
+        },
+        base::WrapRefCounted(this));
+
+    // Wrap this to ensure the fallback callback doesn't forget to call it.
+    fallback_adaptor = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+        std::move(fallback_adaptor), nullptr);
+
+    std::move(fallback_callback_).Run(std::move(fallback_adaptor));
+    // |fallback_callback_| is null at this point, so if we get reinvoked then
+    // we won't try this fallback again.
+
+    return;
+  }
+
   if (fallback_icon_resource_ != kInvalidIconResource) {
     int icon_resource = fallback_icon_resource_;
     // Resetting default icon resource to ensure no infinite loops.
@@ -649,23 +699,10 @@ void LoadIconFromFileWithFallback(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   constexpr bool is_placeholder_icon = false;
 
-  auto callback_fallback_adapter = base::BindOnce(
-      [](apps::mojom::Publisher::LoadIconCallback callback,
-         base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)>
-             fallback,
-         ::apps::mojom::IconValuePtr icon_value_ptr) {
-        if (icon_value_ptr.is_null()) {
-          std::move(fallback).Run(std::move(callback));
-        } else {
-          std::move(callback).Run(std::move(icon_value_ptr));
-        }
-      },
-      std::move(callback), std::move(fallback));
-
   scoped_refptr<IconLoadingPipeline> icon_loader =
       base::MakeRefCounted<IconLoadingPipeline>(
           icon_compression, size_hint_in_dip, is_placeholder_icon, icon_effects,
-          IDR_APP_DEFAULT_ICON, std::move(callback_fallback_adapter));
+          IDR_APP_DEFAULT_ICON, std::move(fallback), std::move(callback));
   icon_loader->LoadCompressedIconFromFile(path);
 }
 

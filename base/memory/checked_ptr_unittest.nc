@@ -9,7 +9,7 @@
 
 #include "base/memory/checked_ptr.h"
 
-namespace base {
+namespace {
 
 struct Producer {};
 struct DerivedProducer : Producer {};
@@ -17,7 +17,7 @@ struct OtherDerivedProducer : Producer {};
 struct Unrelated {};
 struct DerivedUnrelated : Unrelated {};
 
-#if defined(NCTEST_AUTO_DOWNCAST)  // [r"no viable conversion from 'CheckedPtr<base::Producer>' to 'CheckedPtr<base::DerivedProducer>'"]
+#if defined(NCTEST_AUTO_DOWNCAST)  // [r"no viable conversion from 'CheckedPtr<\(anonymous namespace\)::Producer>' to 'CheckedPtr<\(anonymous namespace\)::DerivedProducer>'"]
 
 void WontCompile() {
   Producer f;
@@ -25,7 +25,7 @@ void WontCompile() {
   CheckedPtr<DerivedProducer> derived_ptr = ptr;
 }
 
-#elif defined(NCTEST_STATIC_DOWNCAST)  // [r"no matching conversion for static_cast from 'CheckedPtr<base::Producer>' to 'CheckedPtr<base::DerivedProducer>'"]
+#elif defined(NCTEST_STATIC_DOWNCAST)  // [r"no matching conversion for static_cast from 'CheckedPtr<\(anonymous namespace\)::Producer>' to 'CheckedPtr<\(anonymous namespace\)::DerivedProducer>'"]
 
 void WontCompile() {
   Producer f;
@@ -34,7 +34,7 @@ void WontCompile() {
       static_cast<CheckedPtr<DerivedProducer>>(ptr);
 }
 
-#elif defined(NCTEST_AUTO_REF_DOWNCAST)  // [r"non-const lvalue reference to type 'CheckedPtr<base::DerivedProducer>' cannot bind to a value of unrelated type 'CheckedPtr<base::Producer>'"]
+#elif defined(NCTEST_AUTO_REF_DOWNCAST)  // [r"non-const lvalue reference to type 'CheckedPtr<\(anonymous namespace\)::DerivedProducer>' cannot bind to a value of unrelated type 'CheckedPtr<\(anonymous namespace\)::Producer>'"]
 
 void WontCompile() {
   Producer f;
@@ -42,7 +42,7 @@ void WontCompile() {
   CheckedPtr<DerivedProducer>& derived_ptr = ptr;
 }
 
-#elif defined(NCTEST_STATIC_REF_DOWNCAST)  // [r"non-const lvalue reference to type 'CheckedPtr<base::DerivedProducer>' cannot bind to a value of unrelated type 'CheckedPtr<base::Producer>'"]
+#elif defined(NCTEST_STATIC_REF_DOWNCAST)  // [r"non-const lvalue reference to type 'CheckedPtr<\(anonymous namespace\)::DerivedProducer>' cannot bind to a value of unrelated type 'CheckedPtr<\(anonymous namespace\)::Producer>'"]
 
 void WontCompile() {
   Producer f;
@@ -51,21 +51,21 @@ void WontCompile() {
       static_cast<CheckedPtr<DerivedProducer>&>(ptr);
 }
 
-#elif defined(NCTEST_AUTO_DOWNCAST_FROM_RAW) // [r"no viable conversion from 'base::Producer \*' to 'CheckedPtr<base::DerivedProducer>'"]
+#elif defined(NCTEST_AUTO_DOWNCAST_FROM_RAW) // [r"no viable conversion from '\(anonymous namespace\)::Producer \*' to 'CheckedPtr<\(anonymous namespace\)::DerivedProducer>'"]
 
 void WontCompile() {
   Producer f;
   CheckedPtr<DerivedProducer> ptr = &f;
 }
 
-#elif defined(NCTEST_UNRELATED_FROM_RAW) // [r"no viable conversion from 'base::DerivedProducer \*' to 'CheckedPtr<base::Unrelated>'"]
+#elif defined(NCTEST_UNRELATED_FROM_RAW) // [r"no viable conversion from '\(anonymous namespace\)::DerivedProducer \*' to 'CheckedPtr<\(anonymous namespace\)::Unrelated>'"]
 
 void WontCompile() {
   DerivedProducer f;
   CheckedPtr<Unrelated> ptr = &f;
 }
 
-#elif defined(NCTEST_UNRELATED_STATIC_FROM_WRAPPED) // [r"static_cast from 'base::DerivedProducer \*' to 'base::Unrelated \*', which are not related by inheritance, is not allowed"]
+#elif defined(NCTEST_UNRELATED_STATIC_FROM_WRAPPED) // [r"static_cast from '\(anonymous namespace\)::DerivedProducer \*' to '\(anonymous namespace\)::Unrelated \*', which are not related by inheritance, is not allowed"]
 
 void WontCompile() {
   DerivedProducer f;
@@ -83,4 +83,4 @@ void WontCompile() {
 
 #endif
 
-}  // namespace base
+}  // namespace

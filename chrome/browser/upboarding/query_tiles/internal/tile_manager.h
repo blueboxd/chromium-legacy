@@ -24,6 +24,7 @@ class TileManager {
  public:
   using TileStore = Store<TileGroup>;
   using TileGroupStatusCallback = base::OnceCallback<void(TileGroupStatus)>;
+  using GetTilesCallback = base::OnceCallback<void(std::vector<Tile>)>;
 
   // Creates the instance.
   static std::unique_ptr<TileManager> Create(
@@ -36,7 +37,7 @@ class TileManager {
   virtual void Init(TileGroupStatusCallback callback) = 0;
 
   // Returns tiles to the caller.
-  virtual void GetTiles(std::vector<Tile*>* tiles) = 0;
+  virtual void GetTiles(GetTilesCallback callback) = 0;
 
   // Save the query tiles into database.
   virtual void SaveTiles(std::vector<std::unique_ptr<Tile>> top_level_tiles,

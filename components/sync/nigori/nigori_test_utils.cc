@@ -56,6 +56,27 @@ sync_pb::NigoriSpecifics BuildKeystoreNigoriSpecifics(
   return specifics;
 }
 
+sync_pb::NigoriSpecifics BuildTrustedVaultNigoriSpecifics(
+    const std::vector<std::vector<uint8_t>>& trusted_vault_keys) {
+  sync_pb::NigoriSpecifics specifics;
+  specifics.set_passphrase_type(
+      sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE);
+  specifics.set_keybag_is_frozen(true);
+
+  std::unique_ptr<syncer::CryptographerImpl> cryptographer =
+      syncer::CryptographerImpl::CreateEmpty();
+  for (const std::vector<uint8_t>& trusted_vault_key : trusted_vault_keys) {
+    const std::string key_name = cryptographer->EmplaceKey(
+        base::Base64Encode(trusted_vault_key),
+        syncer::KeyDerivationParams::CreateForPbkdf2());
+    cryptographer->SelectDefaultEncryptionKey(key_name);
+  }
+
+  EXPECT_TRUE(cryptographer->Encrypt(cryptographer->ToProto().key_bag(),
+                                     specifics.mutable_encryption_keybag()));
+  return specifics;
+}
+
 sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
     const KeyParamsForTesting& passphrase_key_params,
     const base::Optional<KeyParamsForTesting>& old_key_params) {

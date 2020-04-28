@@ -69,6 +69,9 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
     return;
   }
 
+  // Since we don't make a copy of buffer passed in, we must retain a reference.
+  init_data_ = init;
+
   DOMArrayPiece buffer;
   if (init->data().IsArrayBuffer()) {
     buffer = DOMArrayPiece(init->data().GetAsArrayBuffer());
@@ -171,6 +174,7 @@ void ImageDecoderExternal::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(consumer_);
   visitor->Trace(pending_decodes_);
+  visitor->Trace(init_data_);
   visitor->Trace(options_);
   ScriptWrappable::Trace(visitor);
 }

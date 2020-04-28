@@ -151,7 +151,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                void(PasswordFormManagerForUI*, bool, bool));
   MOCK_METHOD0(HideManualFallbackForSaving, void());
   MOCK_METHOD1(NotifySuccessfulLoginWithExistingPassword,
-               void(const autofill::PasswordForm&));
+               void(std::unique_ptr<PasswordFormManagerForUI>));
   MOCK_METHOD0(AutomaticPasswordSaveIndicator, void());
   MOCK_CONST_METHOD0(GetPrefs, PrefService*());
   MOCK_CONST_METHOD0(GetMainFrameURL, const GURL&());
@@ -1833,7 +1833,9 @@ TEST_F(PasswordManagerTest, FormSubmittedUnchangedNotifiesClient) {
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
   EXPECT_CALL(*store_, UpdateLogin(_)).WillOnce(SaveArg<0>(&updated_form));
   EXPECT_CALL(client_, NotifySuccessfulLoginWithExistingPassword(_))
-      .WillOnce(SaveArg<0>(&notified_form));
+      .WillOnce([&notified_form](const auto& submitted_manager) {
+        notified_form = submitted_manager->GetPendingCredentials();
+      });
 
   // Now the password manager waits for the navigation to complete.
   observed.clear();
@@ -2241,11 +2243,13 @@ TEST_F(PasswordManagerTest, AutofillingOfAffiliatedCredentials) {
   OnPasswordFormSubmitted(filled_form.form_data);
 
   PasswordForm saved_form;
-  PasswordForm saved_notified_form;
+  autofill::PasswordForm saved_notified_form;
   EXPECT_CALL(*store_, UpdateLogin(_)).WillOnce(SaveArg<0>(&saved_form));
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
   EXPECT_CALL(client_, NotifySuccessfulLoginWithExistingPassword(_))
-      .WillOnce(SaveArg<0>(&saved_notified_form));
+      .WillOnce([&saved_notified_form](const auto& submitted_manager) {
+        saved_notified_form = submitted_manager->GetPendingCredentials();
+      });
   EXPECT_CALL(*store_, AddLogin(_)).Times(0);
   EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, _)).Times(0);
 

@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
@@ -276,12 +277,18 @@ TEST_F(CookieHelperTest, CannedDeleteCookie) {
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
       origin1, "A=1", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie1);
-  helper->AddChangedCookie(origin1, origin1, *cookie1);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin1,
+                      origin1,
+                      {*cookie1}});
   const GURL origin2("http://www.gmail.google.com");
   std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
       origin2, "B=1", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie2);
-  helper->AddChangedCookie(origin2, origin2, *cookie2);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin2,
+                      origin2,
+                      {*cookie2}});
 
   helper->StartFetching(
       base::Bind(&CookieHelperTest::FetchCallback, base::Unretained(this)));
@@ -308,12 +315,18 @@ TEST_F(CookieHelperTest, CannedDomainCookie) {
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
       origin, "A=1", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie1);
-  helper->AddChangedCookie(origin, origin, *cookie1);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie1}});
   std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
       origin, "A=1; Domain=.www.google.com", base::Time::Now(),
       base::nullopt /* server_time */));
   ASSERT_TRUE(cookie2);
-  helper->AddChangedCookie(origin, origin, *cookie2);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie2}});
 
   helper->StartFetching(base::Bind(
       &CookieHelperTest::CannedDomainCookieCallback, base::Unretained(this)));
@@ -322,7 +335,8 @@ TEST_F(CookieHelperTest, CannedDomainCookie) {
   helper->Reset();
   ASSERT_TRUE(helper->empty());
 
-  helper->AddReadCookies(origin, origin, cookie);
+  helper->AddCookies(
+      {content::CookieAccessDetails::Type::kRead, origin, origin, cookie});
   helper->StartFetching(base::Bind(
       &CookieHelperTest::CannedDomainCookieCallback, base::Unretained(this)));
 }
@@ -337,8 +351,10 @@ TEST_F(CookieHelperTest, CannedUnique) {
   std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
       origin, "A=1", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie);
-  helper->AddChangedCookie(origin, origin, *cookie);
-  helper->AddChangedCookie(origin, origin, *cookie);
+  helper->AddCookies(
+      {content::CookieAccessDetails::Type::kChange, origin, origin, {*cookie}});
+  helper->AddCookies(
+      {content::CookieAccessDetails::Type::kChange, origin, origin, {*cookie}});
   helper->StartFetching(base::Bind(&CookieHelperTest::CannedUniqueCallback,
                                    base::Unretained(this)));
 
@@ -346,8 +362,10 @@ TEST_F(CookieHelperTest, CannedUnique) {
   helper->Reset();
   ASSERT_TRUE(helper->empty());
 
-  helper->AddReadCookies(origin, origin, cookie_list);
-  helper->AddReadCookies(origin, origin, cookie_list);
+  helper->AddCookies(
+      {content::CookieAccessDetails::Type::kRead, origin, origin, cookie_list});
+  helper->AddCookies(
+      {content::CookieAccessDetails::Type::kRead, origin, origin, cookie_list});
   helper->StartFetching(base::Bind(&CookieHelperTest::CannedUniqueCallback,
                                    base::Unretained(this)));
 }
@@ -362,52 +380,82 @@ TEST_F(CookieHelperTest, CannedReplaceCookie) {
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
       origin, "A=1", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie1);
-  helper->AddChangedCookie(origin, origin, *cookie1);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie1}});
   std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
       origin, "A=2", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie2);
-  helper->AddChangedCookie(origin, origin, *cookie2);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie2}});
   std::unique_ptr<net::CanonicalCookie> cookie3(net::CanonicalCookie::Create(
       origin, "A=3; Path=/example/0", base::Time::Now(),
       base::nullopt /* server_time */));
   ASSERT_TRUE(cookie3);
-  helper->AddChangedCookie(origin, origin, *cookie3);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie3}});
   std::unique_ptr<net::CanonicalCookie> cookie4(net::CanonicalCookie::Create(
       origin, "A=4; Path=/example/0", base::Time::Now(),
       base::nullopt /* server_time */));
   ASSERT_TRUE(cookie4);
-  helper->AddChangedCookie(origin, origin, *cookie4);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie4}});
   std::unique_ptr<net::CanonicalCookie> cookie5(net::CanonicalCookie::Create(
       origin, "A=5; Domain=google.com", base::Time::Now(),
       base::nullopt /* server_time */));
   ASSERT_TRUE(cookie5);
-  helper->AddChangedCookie(origin, origin, *cookie5);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie5}});
   std::unique_ptr<net::CanonicalCookie> cookie6(net::CanonicalCookie::Create(
       origin, "A=6; Domain=google.com", base::Time::Now(),
       base::nullopt /* server_time */));
   ASSERT_TRUE(cookie6);
-  helper->AddChangedCookie(origin, origin, *cookie6);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie6}});
   std::unique_ptr<net::CanonicalCookie> cookie7(net::CanonicalCookie::Create(
       origin, "A=7; Domain=google.com; Path=/example/1", base::Time::Now(),
       base::nullopt /* server_time */));
   ASSERT_TRUE(cookie7);
-  helper->AddChangedCookie(origin, origin, *cookie7);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie7}});
   std::unique_ptr<net::CanonicalCookie> cookie8(net::CanonicalCookie::Create(
       origin, "A=8; Domain=google.com; Path=/example/1", base::Time::Now(),
       base::nullopt /* server_time */));
   ASSERT_TRUE(cookie8);
-  helper->AddChangedCookie(origin, origin, *cookie8);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie8}});
 
   std::unique_ptr<net::CanonicalCookie> cookie9(net::CanonicalCookie::Create(
       origin, "A=9; Domain=www.google.com", base::Time::Now(),
       base::nullopt /* server_time */));
   ASSERT_TRUE(cookie9);
-  helper->AddChangedCookie(origin, origin, *cookie9);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie9}});
   std::unique_ptr<net::CanonicalCookie> cookie10(net::CanonicalCookie::Create(
       origin, "A=10; Domain=www.google.com", base::Time::Now(),
       base::nullopt /* server_time */));
   ASSERT_TRUE(cookie10);
-  helper->AddChangedCookie(origin, origin, *cookie10);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      origin,
+                      origin,
+                      {*cookie10}});
 
   helper->StartFetching(base::Bind(
       &CookieHelperTest::CannedReplaceCookieCallback, base::Unretained(this)));
@@ -416,8 +464,10 @@ TEST_F(CookieHelperTest, CannedReplaceCookie) {
   helper->Reset();
   ASSERT_TRUE(helper->empty());
 
-  helper->AddReadCookies(origin, origin, cookie_list);
-  helper->AddReadCookies(origin, origin, cookie_list);
+  helper->AddCookies(
+      {content::CookieAccessDetails::Type::kRead, origin, origin, cookie_list});
+  helper->AddCookies(
+      {content::CookieAccessDetails::Type::kRead, origin, origin, cookie_list});
   helper->StartFetching(base::Bind(
       &CookieHelperTest::CannedReplaceCookieCallback, base::Unretained(this)));
 }
@@ -433,7 +483,10 @@ TEST_F(CookieHelperTest, CannedEmpty) {
       net::CanonicalCookie::Create(url_google, "a=1", base::Time::Now(),
                                    base::nullopt /* server_time */));
   ASSERT_TRUE(changed_cookie);
-  helper->AddChangedCookie(url_google, url_google, *changed_cookie);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      url_google,
+                      url_google,
+                      {*changed_cookie}});
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());
@@ -444,7 +497,8 @@ TEST_F(CookieHelperTest, CannedEmpty) {
   ASSERT_TRUE(cookie);
   cookies.push_back(*cookie);
 
-  helper->AddReadCookies(url_google, url_google, cookies);
+  helper->AddCookies({content::CookieAccessDetails::Type::kRead, url_google,
+                      url_google, cookies});
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());
@@ -462,15 +516,24 @@ TEST_F(CookieHelperTest, CannedDifferentFrames) {
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
       request_url, "a=1", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie1);
-  helper->AddChangedCookie(frame1_url, request_url, *cookie1);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      frame1_url,
+                      request_url,
+                      {*cookie1}});
   std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
       request_url, "b=1", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie2);
-  helper->AddChangedCookie(frame1_url, request_url, *cookie2);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      frame1_url,
+                      request_url,
+                      {*cookie2}});
   std::unique_ptr<net::CanonicalCookie> cookie3(net::CanonicalCookie::Create(
       request_url, "c=1", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie3);
-  helper->AddChangedCookie(frame2_url, request_url, *cookie3);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      frame1_url,
+                      request_url,
+                      {*cookie3}});
 
   helper->StartFetching(
       base::Bind(&CookieHelperTest::CannedDifferentFramesCallback,
@@ -500,12 +563,18 @@ TEST_F(CookieHelperTest, CannedGetCookieCount) {
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
       frame1_url, "A=1", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie1);
-  helper->AddChangedCookie(frame1_url, frame1_url, *cookie1);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      frame1_url,
+                      frame1_url,
+                      {*cookie1}});
   EXPECT_EQ(1U, helper->GetCookieCount());
   std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
       frame1_url, "B=1", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie2);
-  helper->AddChangedCookie(frame1_url, frame1_url, *cookie2);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      frame1_url,
+                      frame1_url,
+                      {*cookie2}});
   EXPECT_EQ(2U, helper->GetCookieCount());
 
   // Use a different frame URL for adding another cookie that will replace one
@@ -516,7 +585,10 @@ TEST_F(CookieHelperTest, CannedGetCookieCount) {
   std::unique_ptr<net::CanonicalCookie> cookie3(net::CanonicalCookie::Create(
       frame1_url, "A=2", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie3);
-  helper->AddChangedCookie(frame2_url, frame1_url, *cookie3);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      frame2_url,
+                      frame1_url,
+                      {*cookie3}});
   EXPECT_EQ(2U, helper->GetCookieCount());
 
   // Add two more cookies that are set while loading resources. The two cookies
@@ -525,12 +597,18 @@ TEST_F(CookieHelperTest, CannedGetCookieCount) {
   std::unique_ptr<net::CanonicalCookie> cookie4(net::CanonicalCookie::Create(
       request1_url, "A=2", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie4);
-  helper->AddChangedCookie(frame2_url, request1_url, *cookie4);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      frame2_url,
+                      request1_url,
+                      {*cookie4}});
   EXPECT_EQ(3U, helper->GetCookieCount());
   std::unique_ptr<net::CanonicalCookie> cookie5(net::CanonicalCookie::Create(
       request2_url, "A=2", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie5);
-  helper->AddChangedCookie(frame2_url, request2_url, *cookie5);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      frame2_url,
+                      request2_url,
+                      {*cookie5}});
   EXPECT_EQ(4U, helper->GetCookieCount());
 
   // Host-only and domain cookies are treated as seperate items. This means that
@@ -543,7 +621,10 @@ TEST_F(CookieHelperTest, CannedGetCookieCount) {
       frame1_url, "A=3; Domain=.www.google.com", base::Time::Now(),
       base::nullopt /* server_time */));
   ASSERT_TRUE(cookie6);
-  helper->AddChangedCookie(frame2_url, frame1_url, *cookie6);
+  helper->AddCookies({content::CookieAccessDetails::Type::kChange,
+                      frame2_url,
+                      frame1_url,
+                      {*cookie6}});
   EXPECT_EQ(5U, helper->GetCookieCount());
 }
 

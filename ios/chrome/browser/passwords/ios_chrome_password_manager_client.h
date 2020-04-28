@@ -88,6 +88,9 @@ class IOSChromePasswordManagerClient
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool update_password) override;
+  void PromptUserToMovePasswordToAccount(
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move)
+      override;
   bool ShowOnboarding(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save)
       override;
@@ -121,7 +124,8 @@ class IOSChromePasswordManagerClient
   void NotifyUserCouldBeAutoSignedIn(
       std::unique_ptr<autofill::PasswordForm> form) override;
   void NotifySuccessfulLoginWithExistingPassword(
-      const autofill::PasswordForm& form) override;
+      std::unique_ptr<password_manager::PasswordFormManagerForUI>
+          submitted_manager) override;
   void NotifyStorePasswordCalled() override;
   void NotifyUserCredentialsWereLeaked(
       password_manager::CredentialLeakType leak_type,

@@ -7,6 +7,8 @@
 
 #include "base/clang_profiling_buildflags.h"
 
+#include "base/base_export.h"
+
 #if !BUILDFLAG(CLANG_PROFILING)
 #error "Clang profiling can only be used if CLANG_PROFILING macro is defined"
 #endif
@@ -19,7 +21,7 @@ namespace base {
 // (or triggering a debug crash), where the automatic at-exit writer will not
 // be invoked.
 // This call is thread-safe, and will write profiling data at-most-once.
-void WriteClangProfilingProfile();
+BASE_EXPORT void WriteClangProfilingProfile();
 
 }  // namespace base
 

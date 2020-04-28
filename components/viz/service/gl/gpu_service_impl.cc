@@ -98,6 +98,10 @@
 #include "components/viz/common/gpu/dawn_context_provider.h"
 #endif
 
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+#include "base/test/clang_profiling.h"
+#endif
+
 namespace viz {
 
 namespace {
@@ -1041,6 +1045,14 @@ void GpuServiceImpl::CommitCATransaction(CommitCATransactionCallback callback) {
   main_runner_->PostTaskAndReply(FROM_HERE,
                                  base::BindOnce(&ui::CommitCATransaction),
                                  WrapCallback(io_runner_, std::move(callback)));
+}
+#endif
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+void GpuServiceImpl::WriteClangProfilingProfile(
+    WriteClangProfilingProfileCallback callback) {
+  base::WriteClangProfilingProfile();
+  std::move(callback).Run();
 }
 #endif
 

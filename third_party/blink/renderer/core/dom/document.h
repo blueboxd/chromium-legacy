@@ -309,12 +309,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // should move to LocalDOMWindow.
   ContentSecurityPolicy* GetContentSecurityPolicyForWorld();
   LocalDOMWindow* ExecutingWindow() const;
-  String UserAgent() const;
-  // TODO(https://crbug.com/880986): Implement Document's HTTPS state in more
-  // spec-conformant way.
-  HttpsState GetHttpsState() const {
-    return CalculateHttpsState(GetSecurityOrigin());
-  }
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts);
   String OutgoingReferrer() const;
   network::mojom::ReferrerPolicy GetReferrerPolicy() const;

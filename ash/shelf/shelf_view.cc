@@ -325,7 +325,7 @@ ShelfView::ShelfView(ShelfModel* model,
       view_model_(std::make_unique<views::ViewModel>()),
       bounds_animator_(
           std::make_unique<views::BoundsAnimator>(this,
-                                                  /*use_transforms=*/true)),
+                                                  /*use_transforms=*/false)),
       focus_search_(std::make_unique<ShelfFocusSearch>(this)),
       drag_and_drop_host_(drag_and_drop_host),
       shelf_button_delegate_(shelf_button_delegate) {

@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/no_destructor.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
@@ -58,17 +59,10 @@ CannedCookieHelper::~CannedCookieHelper() {
   Reset();
 }
 
-void CannedCookieHelper::AddReadCookies(const GURL& frame_url,
-                                        const GURL& url,
-                                        const net::CookieList& cookie_list) {
-  for (const auto& add_cookie : cookie_list)
-    AddCookie(frame_url, add_cookie);
-}
-
-void CannedCookieHelper::AddChangedCookie(const GURL& frame_url,
-                                          const GURL& url,
-                                          const net::CanonicalCookie& cookie) {
-  AddCookie(frame_url, cookie);
+void CannedCookieHelper::AddCookies(
+    const content::CookieAccessDetails& details) {
+  for (const auto& add_cookie : details.cookie_list)
+    AddCookie(details.url, add_cookie);
 }
 
 void CannedCookieHelper::Reset() {

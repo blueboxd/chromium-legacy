@@ -1907,7 +1907,6 @@
 <translation id="3543597750097719865">X9.62 ECDSA SHA-512-тэй гарын үсэг</translation>
 <translation id="3544879808695557954">Хэрэглэгчийн нэр (сонголтот)</translation>
 <translation id="354602065659584722">Аюултай програмыг устгасан</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Прокси тохиргоо</translation>
 <translation id="3548162552723420559">Дэлгэцийн өнгийг хүрээлэн буй орчинд тааруулахын тулд тохируулдаг</translation>
 <translation id="3550915441744863158">Chrome автоматиор шинэчилдэг тул та хамгийн сүүлийн үеийн хувилбарыг үргэлж хэрэглэнэ</translation>
@@ -5549,7 +5548,6 @@
 <translation id="8493236660459102203">Микрофон:</translation>
 <translation id="8496717697661868878">Энэ нэмэлт өргөтгөлийг ажиллуул</translation>
 <translation id="8497219075884839166">Windows хэрэгсэл</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Дэлгэцээ бүдэг гэрэлтэй үед харах эсвэл уншихад илүү хялбар болгоно</translation>
 <translation id="8498395510292172881">Chrome-д үргэлжлүүлэн унших</translation>
 <translation id="8500234928660943538">PUK буруу байна. Үлдсэн дахин оролдлого: <ph name="RETRIES" />.</translation>

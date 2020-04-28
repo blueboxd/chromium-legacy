@@ -10,12 +10,12 @@
 
 namespace blink {
 
-class Document;
+class ExecutionContext;
 
 class CORE_EXPORT MainThreadWorkletReportingProxy
     : public WorkerReportingProxy {
  public:
-  explicit MainThreadWorkletReportingProxy(Document*);
+  explicit MainThreadWorkletReportingProxy(ExecutionContext*);
   ~MainThreadWorkletReportingProxy() override = default;
 
   // Implements WorkerReportingProxy.
@@ -24,7 +24,7 @@ class CORE_EXPORT MainThreadWorkletReportingProxy
   void DidTerminateWorkerThread() override;
 
  private:
-  Persistent<Document> document_;
+  Persistent<ExecutionContext> context_;
 };
 
 }  // namespace blink

@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_GPU_UTILS_H_
 
 #include "base/callback_forward.h"
+#include "base/clang_profiling_buildflags.h"
 #include "content/common/content_export.h"
 #include "gpu/config/gpu_preferences.h"
 
@@ -20,6 +21,10 @@ CONTENT_EXPORT const gpu::GpuPreferences GetGpuPreferencesFromCommandLine();
 CONTENT_EXPORT void StopGpuProcess(base::OnceClosure callback);
 
 CONTENT_EXPORT gpu::GpuChannelEstablishFactory* GetGpuChannelEstablishFactory();
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+CONTENT_EXPORT void DumpGpuProfilingData(base::OnceClosure callback);
+#endif
 
 }  // namespace content
 

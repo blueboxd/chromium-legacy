@@ -6,7 +6,7 @@
 
 #include <android/input.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/time/time.h"
 #include "ui/events/android/key_event_utils.h"
 #include "ui/events/base_event_utils.h"

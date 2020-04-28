@@ -8,7 +8,6 @@
 
 #include <stddef.h>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "rlz/lib/assert.h"

@@ -673,6 +673,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> prest dago instalazioa osatzeko</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">Eman mikrofonoa atzitzeko baimena</translation>
+<translation id="1871534214638631766">Erakutsi erlazionatutako informazioa edukia eskuineko botoiarekin edo luze sakatzean</translation>
 <translation id="1871615898038944731">Eguneratuta dago <ph name="DEVICE_TYPE" /> gailua</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Eraman fitxa beste leiho batera}other{Eraman fitxak beste leiho batera}}</translation>
 <translation id="1875386316419689002">Fitxa hau HID gailu batekin konektatuta dago.</translation>
@@ -729,6 +730,7 @@
 <translation id="1944528062465413897">Bluetooth konexioaren parekatze-kodea:</translation>
 <translation id="1944921356641260203">Eguneratzea aurkitu da</translation>
 <translation id="1946577776959096882">Ikusi kontuak</translation>
+<translation id="1949584741547056205">Erantzun bizkorrak</translation>
 <translation id="1951012854035635156">Laguntzailea</translation>
 <translation id="1954813140452229842">Errore bat gertatu da fitxategiak partekatzeko biltegia muntatzean. Egiaztatu kredentzialak eta saiatu berriro.</translation>
 <translation id="1956050014111002555">Fitxategiak ziurtagiri bat baino gehiago ditu, baina ez da bat ere inportatu:</translation>
@@ -1910,7 +1912,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3543597750097719865">SHA-512 ziurtagiria duen X9.62 ECDSA sinadura</translation>
 <translation id="3544879808695557954">Erabiltzaile-izena (aukerakoa)</translation>
 <translation id="354602065659584722">Kendu da software kaltegarria</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Proxy-ezarpenak</translation>
 <translation id="3548162552723420559">Pantailaren kolorea doitzen du ingurunearekin bat etor dadin</translation>
 <translation id="3550915441744863158">Chrome automatikoki eguneratzen denez, beti izango duzu bertsiorik berriena</translation>
@@ -5556,7 +5557,6 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="8493236660459102203">Mikrofonoa:</translation>
 <translation id="8496717697661868878">Abiarazi plugin hau</translation>
 <translation id="8497219075884839166">Windows-en tresnak</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Ez zaizu egingo horren nekagarria argi gutxiko inguruetan pantailari begira egotea</translation>
 <translation id="8498395510292172881">Jarraitu irakurtzen Chrome-n</translation>
 <translation id="8500234928660943538">Okerreko PUK kodea. Geratzen diren saiakerak: <ph name="RETRIES" />.</translation>

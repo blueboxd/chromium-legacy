@@ -9,9 +9,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"

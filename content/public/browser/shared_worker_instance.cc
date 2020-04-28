@@ -4,7 +4,7 @@
 
 #include "content/public/browser/shared_worker_instance.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 

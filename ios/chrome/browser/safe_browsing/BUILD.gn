@@ -7,11 +7,15 @@ import("//ios/features.gni")
 
 source_set("safe_browsing") {
   sources = [
+    "safe_browsing_error.h",
+    "safe_browsing_error.mm",
     "safe_browsing_service.h",
     "safe_browsing_service_impl.h",
     "safe_browsing_service_impl.mm",
     "safe_browsing_tab_helper.h",
     "safe_browsing_tab_helper.mm",
+    "safe_browsing_unsafe_resource_container.h",
+    "safe_browsing_unsafe_resource_container.mm",
     "safe_browsing_url_allow_list.h",
     "safe_browsing_url_allow_list.mm",
     "url_checker_delegate_impl.h",
@@ -66,6 +70,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "safe_browsing_service_unittest.mm",
+    "safe_browsing_unsafe_resource_container_unittest.mm",
     "safe_browsing_url_allow_list_unittest.mm",
   ]
 

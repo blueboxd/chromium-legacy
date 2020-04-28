@@ -57,11 +57,6 @@ class TpmChallengeKeySubtleFactory final {
 using TpmChallengeKeyCallback =
     base::OnceCallback<void(const TpmChallengeKeyResult& result)>;
 
-// Asynchronously runs the flow to challenge a key in the caller context. Allows
-// to generate a key pair and then build VA challenge response using it. If
-// observing the key pair is not required, consider using |TpmChallengeKey|
-// class.
-
 // Asynchronously runs the flow to challenge a key in the caller context.
 // Consider using |TpmChallengeKey| class for simple cases.
 // This class provides a detailed API for calculating Verified Access challenge
@@ -84,7 +79,10 @@ class TpmChallengeKeySubtle {
 
   // Checks that it is allowed to generate a VA challenge response and generates
   // a new key pair if necessary. Returns result via |callback|. In case of
-  // success |TpmChallengeKeyResult::public_key| will be filled.
+  // success |TpmChallengeKeyResult::public_key| will be filled. If
+  // key_name_for_spkac was specified, will return the public key for the key
+  // included in SPKAC. Otherwise will return the public key for the challenged
+  // key.
   virtual void StartPrepareKeyStep(AttestationKeyType key_type,
                                    const std::string& key_name,
                                    Profile* profile,

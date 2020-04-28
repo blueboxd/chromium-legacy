@@ -35,9 +35,6 @@ class BASE_EXPORT StackCopier {
     // deallocation, including indirectly via use of DCHECK/CHECK or other
     // logging statements.
     virtual void OnStackCopy() = 0;
-
-    // Invoked after the stack has been copied and the target thread resumed.
-    virtual void OnThreadResume() = 0;
   };
 
   virtual ~StackCopier();

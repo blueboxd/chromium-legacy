@@ -28,7 +28,7 @@
 // https://www.chromium.org/embeddedsearch).
 class SearchBox : public content::RenderFrameObserver,
                   public content::RenderFrameObserverTracker<SearchBox>,
-                  public chrome::mojom::EmbeddedSearchClient {
+                  public search::mojom::EmbeddedSearchClient {
  public:
   // Helper class for GenerateImageURLFromTransientURL() to adapt SearchBox's
   // instance, thereby allow mocking for unit tests.
@@ -246,9 +246,9 @@ class SearchBox : public content::RenderFrameObserver,
                                 ui::PageTransition transition) override;
   void OnDestruct() override;
 
-  // Overridden from chrome::mojom::EmbeddedSearchClient:
+  // Overridden from search::mojom::EmbeddedSearchClient:
   void AutocompleteResultChanged(
-      chrome::mojom::AutocompleteResultPtr result) override;
+      search::mojom::AutocompleteResultPtr result) override;
   void AutocompleteMatchImageAvailable(uint32_t match_index,
                                        const std::string& image_url,
                                        const std::string& data_url) override;
@@ -269,9 +269,9 @@ class SearchBox : public content::RenderFrameObserver,
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
 
   // The connection to the EmbeddedSearch service in the browser process.
-  mojo::AssociatedRemote<chrome::mojom::EmbeddedSearch>
+  mojo::AssociatedRemote<search::mojom::EmbeddedSearch>
       embedded_search_service_;
-  mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearchClient> receiver_{this};
+  mojo::AssociatedReceiver<search::mojom::EmbeddedSearchClient> receiver_{this};
 
   // Whether it's legal to execute JavaScript in |render_frame()|.
   // This class may want to execute JS in response to IPCs (via the

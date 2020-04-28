@@ -5,7 +5,7 @@
 #include "content/test/portal/portal_interceptor_for_testing.h"
 
 #include <utility>
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"

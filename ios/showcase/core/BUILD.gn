@@ -30,8 +30,8 @@ source_set("main_eg2") {
   deps = [
     ":core",
     "//base",
+    "//ios/chrome/browser/ui/omnibox/keyboard_assist",
     "//ios/chrome/browser/ui/settings",
-    "//ios/chrome/browser/ui/toolbar/keyboard_assist",
 
     # Needed to disable the tests hooks.
     "//ios/chrome/test/earl_grey:hooks",
@@ -48,11 +48,11 @@ source_set("main") {
   deps = [
     ":core",
     "//base",
-    "//ios/chrome/browser/ui/settings",
-    "//ios/chrome/browser/ui/toolbar/keyboard_assist",
 
     # Needed to disable the tests hooks.
     "//ios/chrome/app:tests_fake_hook",
+    "//ios/chrome/browser/ui/omnibox/keyboard_assist",
+    "//ios/chrome/browser/ui/settings",
 
     # Needed for including ios/chrome/browser/ui.
     "//ios/chrome/browser/tabs:tabs_internal",

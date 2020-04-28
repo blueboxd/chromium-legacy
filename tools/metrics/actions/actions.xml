@@ -12183,9 +12183,31 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileActionBarShown">
+  <obsolete>Deprecated as of 04/2020.</obsolete>
   <owner>donnd@chromium.org</owner>
   <description>
-    The Action Bar was shown in response to the user selecting text.
+    The Action Bar was shown in response to the user selecting text. Deprecated
+    in favor of MobileActionBarShown.Toolbar which doesn't record same data
+    twice. See crbug.com/1072811.
+  </description>
+</action>
+
+<action name="MobileActionBarShown.Floating">
+  <owner>gayane@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The floating Action Bar was shown in response to the user selecting or
+    adjusting already selected text. Valid for Android M+.
+  </description>
+</action>
+
+<action name="MobileActionBarShown.Toolbar">
+  <owner>gayane@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The Action Bar was shown in response to the user selecting or adjusting
+    already selected text. Valid for versions before Android M. See
+    MobileActionBarShown.Floating for Android M+.
   </description>
 </action>
 

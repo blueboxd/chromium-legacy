@@ -272,7 +272,7 @@ void MediaFeedsService::OnFetchResponse(
     return;
   }
 
-  std::vector<media_session::MediaImage> logos;
+  std::vector<media_feeds::mojom::MediaImagePtr> logos;
   std::string display_name;
   auto feed_items = GetMediaFeeds(response, &logos, &display_name);
 

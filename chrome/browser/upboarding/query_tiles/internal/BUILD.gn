@@ -52,6 +52,7 @@ source_set("unit_tests") {
     "proto_conversion_unittest.cc",
     "tile_fetcher_unittest.cc",
     "tile_group_unittest.cc",
+    "tile_manager_unittest.cc",
     "tile_store_unittest.cc",
   ]
 

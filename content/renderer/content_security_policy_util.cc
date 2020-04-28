@@ -42,6 +42,7 @@ network::mojom::ContentSecurityPolicyPtr BuildContentSecurityPolicy(
     auto name = network::ToCSPDirectiveName(directive.name.Utf8());
     policy->directives[name] = BuildCSPSourceList(directive.source_list);
   }
+  policy->upgrade_insecure_requests = policy_in.upgrade_insecure_requests;
 
   for (const blink::WebString& endpoint : policy_in.report_endpoints)
     policy->report_endpoints.push_back(endpoint.Utf8());

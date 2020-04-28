@@ -5076,6 +5076,11 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8665314828727504286">Schutzniveau für Safe Browsing</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8680488165461049026">Mit dieser Richtlinie erhält die Funktion "Schnelle Antworten" die Berechtigung, auf ausgewählte Inhalte zuzugreifen und die Informationen an den Server zu senden.
+
+      Wenn die Richtlinie aktiviert ist, kann die Funktion "Schnelle Antworten" auf ausgewählte Inhalte zugreifen.
+      Wenn die Richtlinie deaktiviert ist, kann sie es nicht.
+      Ist die Richtlinie nicht festgelegt, können Nutzer entscheiden, ob die Funktion "Schnelle Antworten" auf ausgewählte Inhalte zugreifen darf oder nicht.</translation>
 <translation id="8685024486845674965">Die Passwortschutzwarnung wird durch die Wiederverwendung eines Passworts ausgelöst</translation>
 <translation id="8687958770985542440">Damit wird die Web Components v0 API bis M84 wieder aktiviert.</translation>
 <translation id="8693243869659262736">Integrierten DNS-Client verwenden</translation>
@@ -5430,6 +5435,7 @@ Wenn die Richtlinie auf "true" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialog
 
       Ist die Richtlinie auf "true" gesetzt oder nicht konfiguriert, dürfen neue Nutzerkonten erstellt werden, falls die Nutzer nicht durch die Richtlinie "<ph name="DEVICE_USER_WHITELIST_POLICY_NAME" />" an einer Anmeldung gehindert werden.</translation>
 <translation id="974349541138387272">Die URI-Vorlage des gewünschten DoH-Resolvers (DNS over HTTPS) angeben</translation>
+<translation id="974479807614498635">"Der Funktion "Schnelle Antworten" erlauben, auf ausgewählte Inhalte zuzugreifen"</translation>
 <translation id="981346395360763138">Standortdienste von Google deaktiviert</translation>
 <translation id="982497069985795632">Rechtschreibprüfung aktivieren</translation>
 <translation id="991560005425213776">Nutzer- und Dateiname an native Drucker senden</translation>

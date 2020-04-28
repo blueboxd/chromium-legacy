@@ -305,7 +305,6 @@ source_set("lib") {
   }
 
   if (use_x11) {
-    configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
   }
 

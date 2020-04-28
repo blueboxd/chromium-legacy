@@ -151,10 +151,6 @@ class AshTestHelper : public aura::test::AuraTestHelper {
       std::make_unique<TestAssistantService>();
   std::unique_ptr<TestSystemTrayClient> system_tray_client_ =
       std::make_unique<TestSystemTrayClient>();
-  std::unique_ptr<TestAssistantImageDownloader> assistant_image_downloader_ =
-      std::make_unique<TestAssistantImageDownloader>();
-  std::unique_ptr<TestAmbientClient> ambient_client_ =
-      std::make_unique<TestAmbientClient>();
   std::unique_ptr<AppListTestHelper> app_list_test_helper_;
   std::unique_ptr<BluezDBusManagerInitializer> bluez_dbus_manager_initializer_;
   std::unique_ptr<PowerPolicyControllerInitializer>

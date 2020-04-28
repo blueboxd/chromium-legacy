@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -22,8 +23,8 @@ namespace blink {
 class MainThreadWorkletReportingProxyForTest final
     : public MainThreadWorkletReportingProxy {
  public:
-  explicit MainThreadWorkletReportingProxyForTest(Document* document)
-      : MainThreadWorkletReportingProxy(document) {}
+  explicit MainThreadWorkletReportingProxyForTest(LocalDOMWindow* window)
+      : MainThreadWorkletReportingProxy(window) {}
 
   void CountFeature(WebFeature feature) override {
     // Any feature should be reported only one time.
@@ -52,7 +53,7 @@ class MainThreadWorkletTest : public PageTestBase {
   void SetUpScope(const String& csp_header) {
     PageTestBase::SetUp(IntSize());
     NavigateTo(KURL("https://example.com/"));
-    Document* document = &GetDocument();
+    LocalDOMWindow* window = GetFrame().DomWindow();
 
     // Set up the CSP for Document before starting MainThreadWorklet because
     // MainThreadWorklet inherits the owner Document's CSP.
@@ -60,21 +61,20 @@ class MainThreadWorkletTest : public PageTestBase {
     csp->DidReceiveHeader(csp_header,
                           network::mojom::ContentSecurityPolicyType::kEnforce,
                           network::mojom::ContentSecurityPolicySource::kHTTP);
-    document->InitContentSecurityPolicy(csp);
+    window->document()->InitContentSecurityPolicy(csp);
 
     reporting_proxy_ =
-        std::make_unique<MainThreadWorkletReportingProxyForTest>(document);
+        std::make_unique<MainThreadWorkletReportingProxyForTest>(window);
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        document->Url(), mojom::ScriptType::kModule, "MainThreadWorklet",
-        document->UserAgent(),
-        document->GetFrame()->Loader().UserAgentMetadata(),
+        window->Url(), mojom::ScriptType::kModule, "MainThreadWorklet",
+        window->UserAgent(), window->GetFrame()->Loader().UserAgentMetadata(),
         nullptr /* web_worker_fetch_context */,
-        document->GetContentSecurityPolicy()->Headers(),
-        document->GetReferrerPolicy(), document->GetSecurityOrigin(),
-        document->IsSecureContext(), document->GetHttpsState(),
+        window->GetContentSecurityPolicy()->Headers(),
+        window->GetReferrerPolicy(), window->GetSecurityOrigin(),
+        window->IsSecureContext(), window->GetHttpsState(),
         nullptr /* worker_clients */, nullptr /* content_settings_client */,
-        document->GetSecurityContext().AddressSpace(),
-        OriginTrialContext::GetTokens(document->GetExecutionContext()).get(),
+        window->GetSecurityContext().AddressSpace(),
+        OriginTrialContext::GetTokens(window).get(),
         base::UnguessableToken::Create(), nullptr /* worker_settings */,
         kV8CacheOptionsDefault,
         MakeGarbageCollected<WorkletModuleResponsesMap>());

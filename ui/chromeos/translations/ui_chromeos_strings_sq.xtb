@@ -211,6 +211,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> gabime.</translation>
 <translation id="3519867315646775981">Transliterim (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugalisht</translation>
+<translation id="3524311639100184459">Kujdes! Këta skedarë janë të përkohshëm dhe mund të fshihen automatikisht për të liruar hapësirën në disk.  <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Dosje</translation>
 <translation id="3549797760399244642">Shko te drive.google.com...</translation>
 <translation id="357479282490346887">Lituanisht</translation>
@@ -499,6 +500,7 @@
 <translation id="6806699711453372963">Menaxho ndarjen në Linux</translation>
 <translation id="6808193438228982088">Dhelpër</translation>
 <translation id="6820687829547641339">Arkivi i ngjeshur Gzip</translation>
+<translation id="6823166707458800069">Të gjithë skedarët e ruajtur në këtë dosje rezervohen automatikisht në linjë.</translation>
 <translation id="6825883775269213504">Rusisht</translation>
 <translation id="6827236167376090743">Kjo video do të vazhdojë të luhet për një kohë shumë të gjatë.</translation>
 <translation id="6847101934483209767"><ph name="ENTRY_NAME" /> u hoq nga zgjedhja.</translation>

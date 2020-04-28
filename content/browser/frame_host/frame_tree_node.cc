@@ -96,10 +96,17 @@ FrameTreeNode* FrameTreeNode::GloballyFindByID(int frame_tree_node_id) {
   return it == nodes->end() ? nullptr : it->second;
 }
 
+// static
+FrameTreeNode* FrameTreeNode::From(RenderFrameHost* rfh) {
+  if (!rfh)
+    return nullptr;
+  return static_cast<RenderFrameHostImpl*>(rfh)->frame_tree_node();
+}
+
 FrameTreeNode::FrameTreeNode(
     FrameTree* frame_tree,
     Navigator* navigator,
-    FrameTreeNode* parent,
+    RenderFrameHostImpl* parent,
     blink::WebTreeScopeType scope,
     const std::string& name,
     const std::string& unique_name,
@@ -112,7 +119,7 @@ FrameTreeNode::FrameTreeNode(
       render_manager_(this, frame_tree->manager_delegate()),
       frame_tree_node_id_(next_frame_tree_node_id_++),
       parent_(parent),
-      depth_(parent ? parent->depth_ + 1 : 0u),
+      depth_(parent ? parent->frame_tree_node()->depth_ + 1 : 0u),
       opener_(nullptr),
       original_opener_(nullptr),
       has_committed_real_load_(false),
@@ -135,7 +142,7 @@ FrameTreeNode::FrameTreeNode(
       devtools_frame_token_(devtools_frame_token),
       frame_owner_properties_(frame_owner_properties),
       was_discarded_(false),
-      blame_context_(frame_tree_node_id_, parent) {
+      blame_context_(frame_tree_node_id_, FrameTreeNode::From(parent)) {
   std::pair<FrameTreeNodeIdMap::iterator, bool> result =
       g_frame_tree_node_id_map.Get().insert(
           std::make_pair(frame_tree_node_id_, this));
@@ -372,7 +379,8 @@ void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
 
   if (parent()) {
     // Subframes should always inherit their parent's sandbox flags.
-    pending_frame_policy_.sandbox_flags |= parent()->active_sandbox_flags();
+    pending_frame_policy_.sandbox_flags |=
+        parent()->frame_tree_node()->active_sandbox_flags();
     // This is only applied on subframes; container policy and required document
     // policy are not mutable on main frame.
     pending_frame_policy_.container_policy = frame_policy.container_policy;

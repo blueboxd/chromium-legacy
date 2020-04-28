@@ -669,6 +669,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" />  તમારું ઇન્સ્ટોલેશન પૂર્ણ કરવાની તૈયારીમાં છે</translation>
 <translation id="1868193363684582383">"ઓકે Google"</translation>
 <translation id="1870629042957780127">માઇક્રોફોનનો ઍક્સેસ આપો</translation>
+<translation id="1871534214638631766">તમે જ્યારે રાઇટ ક્લિક કરો અથવા કન્ટેન્ટને થોડીવાર દબાવી રાખો, ત્યારે સંબંધિત માહિતી બતાવો</translation>
 <translation id="1871615898038944731">તમારું <ph name="DEVICE_TYPE" /> અપ ટૂ ડેટ છે</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{ટૅબને બીજી વિંડોમાં ખસેડો}one{ટૅબને બીજી વિંડોમાં ખસેડો}other{ટૅબને બીજી વિંડોમાં ખસેડો}}</translation>
 <translation id="1875386316419689002">આ ટૅબ HID ડિવાઇસ સાથે કનેક્ટ કરેલું છે.</translation>
@@ -725,6 +726,7 @@
 <translation id="1944528062465413897">બ્લૂટૂથ જોડાણ કરવાનો કોડ:</translation>
 <translation id="1944921356641260203">અપડેટ મળ્યું</translation>
 <translation id="1946577776959096882">એકાઉન્ટ જુઓ</translation>
+<translation id="1949584741547056205">ઝડપી જવાબો</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">શેર માઉન્ટ કરવામાં ભૂલ આવી. કૃપા કરીને તમારા ઓળખપત્રો ચેક કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="1956050014111002555">ફાઇલમાં બહુવિધ પ્રમાણપત્રો રહેલા છે, તેમાંનાં કોઈપણ આયાત કરેલા નથી:</translation>
@@ -1906,7 +1908,6 @@
 <translation id="3543597750097719865">SHA-512 સાથે X9.62 ECDSA સહી</translation>
 <translation id="3544879808695557954">વપરાશકર્તાનું નામ (વૈકલ્પિક)</translation>
 <translation id="354602065659584722">નુકસાનકારક સૉફ્ટવેર દૂર કર્યુ</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">પ્રૉક્સી સેટિંગ</translation>
 <translation id="3548162552723420559">પર્યાવરણ સાથે મેળ કરવા માટે સ્ક્રીનના રંગમાં ઘટાડો-વધારો કરો</translation>
 <translation id="3550915441744863158">Chrome ઑટોમૅટિક રીતે અપડેટ થાય છે, જેથી કરીને તમારી પાસે હંમેશાં સૌથી નવું વર્ઝન રહે છે.</translation>
@@ -5549,7 +5550,6 @@ USB ડિવાઇસ</translation>
 <translation id="8493236660459102203">માઇક્રોફોન:</translation>
 <translation id="8496717697661868878">આ પ્લગિન ચલાવો</translation>
 <translation id="8497219075884839166">વિંડોની ઉપયોગીતાઓ</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">ઓછા પ્રકાશમાં તમારી સ્ક્રીન પર જોવાનું અથવા વાંચવાનું સરળ બનાવે છે</translation>
 <translation id="8498395510292172881">Chromeમાં વાંચવાનું ચાલુ રાખો</translation>
 <translation id="8500234928660943538">ખોટો PUK. બાકીના ફરી પ્રયાસો: <ph name="RETRIES" />.</translation>

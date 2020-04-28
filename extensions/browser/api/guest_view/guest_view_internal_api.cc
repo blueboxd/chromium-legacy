@@ -41,7 +41,8 @@ ExtensionFunction::ResponseAction GuestViewInternalCreateGuestFunction::Run() {
   if (!guest_view_manager) {
     guest_view_manager = GuestViewManager::CreateWithDelegate(
         browser_context(),
-        ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(context_));
+        ExtensionsAPIClient::Get()->CreateGuestViewManagerDelegate(
+            browser_context()));
   }
 
   content::WebContents* sender_web_contents = GetSenderWebContents();

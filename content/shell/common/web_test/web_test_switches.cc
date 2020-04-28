@@ -35,6 +35,12 @@ const char kEnableLeakDetection[] = "enable-leak-detection";
 // Encode binary web test results (images, audio) using base64.
 const char kEncodeBinary[] = "encode-binary";
 
+// Disables the automatic origin isolation of web platform test domains.
+// We normally origin-isolate them for better test coverage, but tests of opt-in
+// origin isolation need to disable this.
+const char kDisableAutoWPTOriginIsolation[] =
+    "disable-auto-wpt-origin-isolation";
+
 // This makes us disable some web-platform runtime features so that we test
 // content_shell as if it was a stable release. It is only followed when
 // kRunWebTest is set. For the features' level, see

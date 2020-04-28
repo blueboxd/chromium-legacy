@@ -461,9 +461,7 @@ storage::FileSystemContext* GetFileSystemContextForExtensionId(
 storage::FileSystemContext* GetFileSystemContextForRenderFrameHost(
     Profile* profile,
     content::RenderFrameHost* render_frame_host) {
-  content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
-  return content::BrowserContext::GetStoragePartition(profile, site_instance)->
-      GetFileSystemContext();
+  return render_frame_host->GetStoragePartition()->GetFileSystemContext();
 }
 
 bool ConvertAbsoluteFilePathToFileSystemUrl(Profile* profile,

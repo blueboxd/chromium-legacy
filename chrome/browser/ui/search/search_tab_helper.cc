@@ -722,7 +722,7 @@ void SearchTabHelper::OnDeleteAutocompleteMatchConfirm(
   DCHECK(autocomplete_controller_);
 
   bool success = false;
-  std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
+  std::vector<search::mojom::AutocompleteMatchPtr> matches;
 
   if (accepted && search::DefaultSearchProviderIsGoogle(profile()) &&
       autocomplete_controller_->result().size() > line) {

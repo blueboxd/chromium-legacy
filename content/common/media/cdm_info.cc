@@ -4,7 +4,7 @@
 
 #include "content/public/common/cdm_info.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace content {
 

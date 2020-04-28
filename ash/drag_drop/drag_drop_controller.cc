@@ -10,10 +10,16 @@
 #include "ash/drag_drop/drag_drop_tracker.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -58,6 +64,16 @@ const int kCancelAnimationFrameRate = 60;
 static const float kTouchDragImageScale = 1.2f;
 static const int kTouchDragImageVerticalOffset = -25;
 
+// The following distances are copied from tablet_mode_window_drag_delegate.cc.
+// TODO(https://crbug.com/1069869): share these constants.
+
+// Items dragged to within |kDistanceFromEdgeDp| of the screen will get snapped
+// even if they have not moved by |kMinimumDragToSnapDistanceDp|.
+constexpr float kDistanceFromEdgeDp = 16.f;
+// The minimum distance that an item must be moved before it is snapped. This
+// prevents accidental snaps.
+constexpr float kMinimumDragToSnapDistanceDp = 96.f;
+
 // Adjusts the drag image bounds such that the new bounds are scaled by |scale|
 // and translated by the |drag_image_offset| and and additional
 // |vertical_offset|.
@@ -86,6 +102,37 @@ void DispatchGestureEndToWindow(aura::Window* window) {
     window->delegate()->OnGestureEvent(&gesture_end);
   }
 }
+
+bool IsChromeTabDrag(const ui::OSExchangeData& drag_data) {
+  if (!features::IsWebUITabStripTabDragIntegrationEnabled())
+    return false;
+
+  base::Pickle pickle;
+  drag_data.GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
+                           &pickle);
+  base::PickleIterator iter(pickle);
+
+  uint32_t entry_count = 0;
+  if (!iter.ReadUInt32(&entry_count))
+    return false;
+
+  for (uint32_t i = 0; i < entry_count; ++i) {
+    base::StringPiece16 type;
+    base::StringPiece16 data;
+    if (!iter.ReadStringPiece16(&type) || !iter.ReadStringPiece16(&data))
+      return false;
+
+    // TODO(https://crbug.com/1069869): share this constant between Ash
+    // and Chrome instead of hardcoding it in both places.
+    static const base::NoDestructor<base::string16> chrome_tab_type(
+        base::ASCIIToUTF16("application/vnd.chromium.tab"));
+    if (type == *chrome_tab_type)
+      return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 class DragDropTrackerDelegate : public aura::WindowDelegate {
@@ -200,6 +247,7 @@ int DragDropController::StartDragAndDrop(
   drag_data_ = std::move(data);
   drag_operation_ = operation;
   current_drag_actions_ = 0;
+  is_chrome_tab_drag_ = IsChromeTabDrag(*drag_data_);
 
   start_location_ = screen_location;
   current_location_ = screen_location;
@@ -214,6 +262,14 @@ int DragDropController::StartDragAndDrop(
 
   for (aura::client::DragDropClientObserver& observer : observers_)
     observer.OnDragStarted();
+
+  if (is_chrome_tab_drag_) {
+    // TODO(crbug.com/1069869): move tab dragging logic to delegate or observer.
+    split_view_drag_indicators_ = std::make_unique<SplitViewDragIndicators>(
+        Shell::GetPrimaryRootWindow());
+    split_view_drag_indicators_->SetDraggedWindow(
+        drag_image_->GetWidget()->GetNativeView());
+  }
 
   if (should_block_during_drag_drop_) {
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
@@ -486,15 +542,47 @@ void DragDropController::DragUpdate(aura::Window* target,
       observer.OnDragActionsChanged(op);
   }
 
+  gfx::Point root_location_in_screen = event.root_location();
+  ::wm::ConvertPointToScreen(target->GetRootWindow(), &root_location_in_screen);
+
   DCHECK(drag_image_.get());
   if (drag_image_->GetVisible()) {
-    gfx::Point root_location_in_screen = event.root_location();
-    ::wm::ConvertPointToScreen(target->GetRootWindow(),
-                               &root_location_in_screen);
     current_location_ = root_location_in_screen;
     drag_image_->SetScreenPosition(root_location_in_screen -
                                    drag_image_offset_);
     drag_image_->SetTouchDragOperation(op);
+  }
+
+  if (is_chrome_tab_drag_) {
+    aura::Window* const drag_image_window =
+        drag_image_->GetWidget()->GetNativeView();
+    const gfx::Rect area =
+        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+            drag_image_window);
+
+    // These should only be seen in tablet mode which precludes dragging between
+    // displays.
+    DCHECK_EQ(drag_image_window->GetRootWindow(), target->GetRootWindow());
+
+    SplitViewController::SnapPosition snap_position =
+        ::ash::GetSnapPositionForLocation(
+            Shell::GetPrimaryRootWindow(), root_location_in_screen,
+            start_location_,
+            /*snap_distance_from_edge=*/kDistanceFromEdgeDp,
+            /*minimum_drag_distance=*/kMinimumDragToSnapDistanceDp,
+            /*horizontal_edge_inset=*/area.width() *
+                    kHighlightScreenPrimaryAxisRatio +
+                kHighlightScreenEdgePaddingDp,
+            /*vertical_edge_inset=*/area.height() *
+                    kHighlightScreenPrimaryAxisRatio +
+                kHighlightScreenEdgePaddingDp);
+    split_view_drag_indicators_->SetWindowDraggingState(
+        SplitViewDragIndicators::ComputeWindowDraggingState(
+            true, SplitViewDragIndicators::WindowDraggingState::kFromTop,
+            snap_position));
+
+    // TODO(https://crbug.com/1069869): scale source window up/down similar to
+    // |TabletModeBrowserWindowDragDelegate::UpdateSourceWindow()|.
   }
 }
 
@@ -512,8 +600,6 @@ void DragDropController::Drop(aura::Window* target,
   aura::client::DragDropDelegate* delegate =
       aura::client::GetDragDropDelegate(target);
   if (delegate) {
-    const bool is_chrome_tab_drag = IsChromeTabDrag();
-
     ui::DropTargetEvent e(*drag_data_.get(), event.location_f(),
                           event.root_location_f(), drag_operation_);
     e.set_flags(event.flags());
@@ -521,9 +607,11 @@ void DragDropController::Drop(aura::Window* target,
 
     ui::OSExchangeData copied_data(drag_data_->provider().Clone());
     drag_operation_ = delegate->OnPerformDrop(e, std::move(drag_data_));
-    if (drag_operation_ == 0 && is_chrome_tab_drag) {
+    if (drag_operation_ == 0 && is_chrome_tab_drag_) {
       Shell::Get()->shell_delegate()->CreateBrowserForTabDrop(
           drag_source_window_, copied_data);
+      // TODO(https://crbug.com/1069869): snap the created browser if
+      // necessary.
       StartCanceledAnimation(kCancelAnimationDuration);
     } else if (drag_operation_ == 0) {
       StartCanceledAnimation(kCancelAnimationDuration);
@@ -633,42 +721,17 @@ void DragDropController::Cleanup() {
     drag_window_->RemoveObserver(this);
   drag_window_ = NULL;
   drag_data_.reset();
+
+  if (is_chrome_tab_drag_) {
+    split_view_drag_indicators_->SetWindowDraggingState(
+        SplitViewDragIndicators::WindowDraggingState::kNoDrag);
+    split_view_drag_indicators_.reset();
+    is_chrome_tab_drag_ = false;
+  }
+
   // Cleanup can be called again while deleting DragDropTracker, so delete
   // the pointer with a local variable to avoid double free.
   std::unique_ptr<DragDropTracker> holder = std::move(drag_drop_tracker_);
-}
-
-bool DragDropController::IsChromeTabDrag() {
-  if (!features::IsWebUITabStripTabDragIntegrationEnabled())
-    return false;
-
-  if (!drag_data_)
-    return false;
-  base::Pickle pickle;
-  drag_data_->GetPickledData(ui::ClipboardFormatType::GetWebCustomDataType(),
-                             &pickle);
-  base::PickleIterator iter(pickle);
-
-  uint32_t entry_count = 0;
-  if (!iter.ReadUInt32(&entry_count))
-    return false;
-
-  for (uint32_t i = 0; i < entry_count; ++i) {
-    base::StringPiece16 type;
-    base::StringPiece16 data;
-    if (!iter.ReadStringPiece16(&type) || !iter.ReadStringPiece16(&data)) {
-      return false;
-    }
-
-    // TODO(https://crbug.com/1069869): share this constant between Ash
-    // and Chrome instead of hardcoding it in both places.
-    static const base::string16 chrome_tab_type =
-        base::ASCIIToUTF16("application/vnd.chromium.tab");
-    if (type == chrome_tab_type)
-      return true;
-  }
-
-  return false;
 }
 
 }  // namespace ash

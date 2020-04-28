@@ -27,7 +27,6 @@ component("x") {
     "//ui/events/keycodes:x11",
     "//ui/gfx/x",
   ]
-  configs += [ "//build/config/linux:x11" ]
 }
 
 # XEvent translation tests are kept in a separate source_set so that both
@@ -44,7 +43,6 @@ source_set("unittests") {
     "events_x_unittest.cc",
     "x11_event_translation_unittest.cc",
   ]
-  configs += [ "//build/config/linux:x11" ]
   deps = [
     "//base/test:test_support",
     "//testing/gtest",

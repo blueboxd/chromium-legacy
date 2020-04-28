@@ -178,7 +178,7 @@ class MockEmbeddedSearchClientFactory
     : public SearchIPCRouter::EmbeddedSearchClientFactory {
  public:
   MOCK_METHOD0(GetEmbeddedSearchClient,
-               chrome::mojom::EmbeddedSearchClient*(void));
+               search::mojom::EmbeddedSearchClient*(void));
 };
 
 }  // namespace
@@ -1105,10 +1105,10 @@ TEST_F(SearchIPCRouterTest, SendAutocompleteResultChanged) {
       .Times(1);
 
   GetSearchIPCRouter().AutocompleteResultChanged(
-      chrome::mojom::AutocompleteResult::New(
+      search::mojom::AutocompleteResult::New(
           base::string16(),
-          base::flat_map<int32_t, chrome::mojom::SuggestionGroupPtr>(),
-          std::vector<chrome::mojom::AutocompleteMatchPtr>()));
+          base::flat_map<int32_t, search::mojom::SuggestionGroupPtr>(),
+          std::vector<search::mojom::AutocompleteMatchPtr>()));
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreAutocompleteResultChanged) {
@@ -1122,10 +1122,10 @@ TEST_F(SearchIPCRouterTest, IgnoreAutocompleteResultChanged) {
       .Times(0);
 
   GetSearchIPCRouter().AutocompleteResultChanged(
-      chrome::mojom::AutocompleteResult::New(
+      search::mojom::AutocompleteResult::New(
           base::string16(),
-          base::flat_map<int32_t, chrome::mojom::SuggestionGroupPtr>(),
-          std::vector<chrome::mojom::AutocompleteMatchPtr>()));
+          base::flat_map<int32_t, search::mojom::SuggestionGroupPtr>(),
+          std::vector<search::mojom::AutocompleteMatchPtr>()));
 }
 
 TEST_F(SearchIPCRouterTest, SendAutocompleteMatchImageAvailable) {

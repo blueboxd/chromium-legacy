@@ -1477,10 +1477,18 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
   gfx::Rect screen_view_bounds = GetViewBoundsInScreenCoordinates();
 
   if (delegate_) {
+    // Transform from screen to viewport to frame coordinates to pass to Blink.
+    // Note that page scale (pinch zoom) is independent of device scale factor
+    // (display DPI). Only the latter is affected by UseZoomForDSF.
+    // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
+    gfx::Point viewport_point =
+        blink_screen_point - screen_view_bounds.OffsetFromOrigin();
+    gfx::Point frame_point =
+        gfx::ScaleToRoundedPoint(viewport_point, 1.0f / page_scale_factor_);
+
     // This triggers an asynchronous request to compute the true object that's
     // under the point.
-    // TODO(crbug.com/2140198): this should take page scale factor into account
-    HitTest(blink_screen_point - screen_view_bounds.OffsetFromOrigin());
+    HitTest(frame_point);
 
     // Unfortunately we still have to return an answer synchronously because
     // the APIs were designed that way. The best case scenario is that the
@@ -1523,6 +1531,14 @@ void BrowserAccessibilityManager::DidActivatePortal(
     FireGeneratedEvent(ui::AXEventGenerator::Event::PORTAL_ACTIVATED,
                        GetRoot());
   }
+}
+
+void BrowserAccessibilityManager::SetPageScaleFactor(float page_scale_factor) {
+  page_scale_factor_ = page_scale_factor;
+}
+
+float BrowserAccessibilityManager::GetPageScaleFactor() const {
+  return page_scale_factor_;
 }
 
 void BrowserAccessibilityManager::CollectChangedNodesAndParentsForAtomicUpdate(

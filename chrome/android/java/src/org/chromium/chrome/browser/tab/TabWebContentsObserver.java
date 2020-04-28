@@ -206,7 +206,14 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 }
             } else {
                 rendererCrashStatus = TAB_RENDERER_CRASH_STATUS_SHOWN_IN_FOREGROUND_APP;
-                SadTab.from(mTab).show();
+                // TODO(crbug.com/1074078): Remove the Handler and call SadTab directly when
+                // WebContentsObserverProxy observers' iterator concurrency issue is fixed.
+                // Showing the SadTab will cause the content view hosting WebContents to lose focus.
+                // Post the show in order to avoid immediately triggering
+                // {@link WebContentsObserver#onWebContentsLostFocus}. This will ensure all
+                // observers in {@link WebContentsObserverProxy} receive callbacks for
+                // {@link WebContentsObserver#renderProcessGone} first.
+                (new Handler()).post(SadTab.from(mTab)::show);
                 // This is necessary to correlate histogram data with stability counts.
                 RecordHistogram.recordBooleanHistogram("Stability.Android.RendererCrash", true);
             }

@@ -296,11 +296,13 @@ void LocalDOMWindow::DisableEval(const String& error_message) {
 }
 
 String LocalDOMWindow::UserAgent() const {
-  return document()->UserAgent();
+  return GetFrame() ? GetFrame()->Loader().UserAgent() : String();
 }
 
 HttpsState LocalDOMWindow::GetHttpsState() const {
-  return document()->GetHttpsState();
+  // TODO(https://crbug.com/880986): Implement Document's HTTPS state in more
+  // spec-conformant way.
+  return CalculateHttpsState(GetSecurityOrigin());
 }
 
 ResourceFetcher* LocalDOMWindow::Fetcher() const {

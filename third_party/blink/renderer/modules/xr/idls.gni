@@ -12,6 +12,7 @@ modules_idl_files = [
   "xr_input_source_array.idl",
   "xr_input_source_event.idl",
   "xr_input_sources_change_event.idl",
+  "xr_layer.idl",
   "xr_light_estimate.idl",
   "xr_light_probe.idl",
   "xr_plane.idl",

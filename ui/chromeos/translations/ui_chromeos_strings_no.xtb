@@ -211,6 +211,7 @@
 <translation id="3495304270784461826"><ph name="COUNT" /> feil.</translation>
 <translation id="3519867315646775981">Translitterasjon (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Portugisisk</translation>
+<translation id="3524311639100184459">Advarsel: Disse filene er midlertidige og kan bli slettet automatisk for å frigjøre diskplass.  <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3549797760399244642">Gå til drive.google.com</translation>
 <translation id="357479282490346887">Litauisk</translation>
@@ -500,6 +501,7 @@
 <translation id="6806699711453372963">Administrer Linux-deling</translation>
 <translation id="6808193438228982088">Rev</translation>
 <translation id="6820687829547641339">Komprimert tar-arkiv for Gzip</translation>
+<translation id="6823166707458800069">Alle filene som lagres i denne mappen, blir automatisk sikkerhetskopiert på nettet.</translation>
 <translation id="6825883775269213504">Russisk</translation>
 <translation id="6827236167376090743">Denne videoen fortsetter å spilles av til Dovre faller.</translation>
 <translation id="6847101934483209767">Fjernet <ph name="ENTRY_NAME" /> fra utvalget.</translation>

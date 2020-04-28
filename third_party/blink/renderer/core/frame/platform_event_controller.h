@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class Document;
+class LocalDOMWindow;
 
 // Base controller class for registering controllers with a dispatcher.
 // It watches page visibility and calls stopUpdating when page is not visible.
@@ -29,10 +29,10 @@ class CORE_EXPORT PlatformEventController : public PageVisibilityObserver {
   virtual void DidUpdateData() = 0;
 
   void Trace(Visitor*) override;
-  Document* GetDocument() const { return document_; }
+  LocalDOMWindow& GetWindow() const { return *window_; }
 
  protected:
-  explicit PlatformEventController(Document*);
+  explicit PlatformEventController(LocalDOMWindow&);
   virtual ~PlatformEventController();
 
   virtual void RegisterWithDispatcher() = 0;
@@ -51,7 +51,7 @@ class CORE_EXPORT PlatformEventController : public PageVisibilityObserver {
   void UpdateCallback();
 
   bool is_active_;
-  Member<Document> document_;
+  Member<LocalDOMWindow> window_;
   TaskHandle update_callback_handle_;
 };
 

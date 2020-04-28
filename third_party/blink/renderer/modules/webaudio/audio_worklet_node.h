@@ -118,9 +118,9 @@ class AudioWorkletNode final : public AudioNode,
   // IDL
   AudioParamMap* parameters() const;
   MessagePort* port() const;
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(processorerror, kProcessorerror)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(processorerror, kError)
 
-  void FireProcessorError();
+  void FireProcessorError(AudioWorkletProcessorErrorState);
 
   void Trace(Visitor*) override;
 

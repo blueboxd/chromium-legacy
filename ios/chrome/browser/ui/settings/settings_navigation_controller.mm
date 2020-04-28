@@ -369,6 +369,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
           initWithBaseNavigationController:self
                                    browser:self.browser
                                       mode:GoogleServicesSettingsModeSettings];
+  self.googleServicesSettingsCoordinator.dispatcher =
+      _settingsNavigationDelegate.handlerForSettings;
   self.googleServicesSettingsCoordinator.delegate = self;
   [self.googleServicesSettingsCoordinator start];
 }

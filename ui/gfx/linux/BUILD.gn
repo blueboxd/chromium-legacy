@@ -47,7 +47,6 @@ source_set("gbm") {
 
 if (use_x11) {
   component("gpu_memory_buffer_support_x11") {
-    configs += [ "//build/config/linux:x11" ]
     sources = [
       "gpu_memory_buffer_support_x11.cc",
       "gpu_memory_buffer_support_x11.h",

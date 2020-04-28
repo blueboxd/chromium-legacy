@@ -673,6 +673,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> est prêt à terminer l'installation.</translation>
 <translation id="1868193363684582383">« Ok Google »</translation>
 <translation id="1870629042957780127">Autoriser l'accès au microphone</translation>
+<translation id="1871534214638631766">Afficher de l'information connexe lorsque vous faites un clic droit ou un appui prolongé sur un élément</translation>
 <translation id="1871615898038944731">Votre <ph name="DEVICE_TYPE" /> est à jour</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Déplacer l'onglet vers une autre fenêtre}one{Déplacer l'onglet vers une autre fenêtre}other{Déplacer les onglets vers une autre fenêtre}}</translation>
 <translation id="1875386316419689002">Cet onglet est connecté à un appareil HID.</translation>
@@ -729,6 +730,7 @@
 <translation id="1944528062465413897">Code d'association Bluetooth :</translation>
 <translation id="1944921356641260203">Une mise à jour a été trouvée</translation>
 <translation id="1946577776959096882">Voir les comptes</translation>
+<translation id="1949584741547056205">Réponses rapides</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">Erreur lors du partage. Veuillez vérifier vos authentifiants et réessayer.</translation>
 <translation id="1956050014111002555">Le fichier contenait plusieurs certificats, mais aucun d'entre eux n'a pu être importé :</translation>
@@ -1911,7 +1913,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3543597750097719865">Signature X9.62 ECDSA avec SHA-512</translation>
 <translation id="3544879808695557954">Nom d'utilisateur (facultatif)</translation>
 <translation id="354602065659584722">Le logiciel nuisible a été supprimé</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Paramètres de mandataire</translation>
 <translation id="3548162552723420559">Adaptez la couleur de l'écran à l'environnement</translation>
 <translation id="3550915441744863158">Chrome se met automatiquement à jour afin que vous ayez toujours la version la plus récente</translation>
@@ -5557,7 +5558,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8493236660459102203">Microphone :</translation>
 <translation id="8496717697661868878">Exécuter ce plugiciel</translation>
 <translation id="8497219075884839166">Utilitaires Windows</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Permettre de regarder l'écran plus facilement lorsque l'éclairage est faible</translation>
 <translation id="8498395510292172881">Continuer la lecture dans Chrome</translation>
 <translation id="8500234928660943538">Code PUK incorrect. Tentatives restantes : <ph name="RETRIES" />.</translation>

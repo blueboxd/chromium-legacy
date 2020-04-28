@@ -25,7 +25,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
       is_hidden_for_paint_(text.IsHiddenForPaint()),
       text_direction_(static_cast<unsigned>(text.ResolvedDirection())),
       ink_overflow_computed_(false),
-      is_first_for_node_(text.IsFirstForNode()) {
+      is_first_for_node_(true),
+      is_last_for_node_(true) {
 #if DCHECK_IS_ON()
   if (text_.shape_result) {
     DCHECK_EQ(text_.shape_result->StartIndex(), StartOffset());
@@ -53,7 +54,8 @@ NGFragmentItem::NGFragmentItem(NGInlineItemResult&& item_result,
       is_hidden_for_paint_(false),  // TODO(kojii): not supported yet.
       text_direction_(static_cast<unsigned>(item_result.item->Direction())),
       ink_overflow_computed_(false),
-      is_first_for_node_(item_result.IsFirstForNode()) {
+      is_first_for_node_(true),
+      is_last_for_node_(true) {
 #if DCHECK_IS_ON()
   if (text_.shape_result) {
     DCHECK_EQ(text_.shape_result->StartIndex(), StartOffset());
@@ -76,7 +78,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
       is_hidden_for_paint_(false),
       text_direction_(static_cast<unsigned>(line.BaseDirection())),
       ink_overflow_computed_(false),
-      is_first_for_node_(true) {
+      is_first_for_node_(true),
+      is_last_for_node_(true) {
   DCHECK(!IsFormattingContextRoot());
 }
 
@@ -90,7 +93,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
       is_hidden_for_paint_(box.IsHiddenForPaint()),
       text_direction_(static_cast<unsigned>(resolved_direction)),
       ink_overflow_computed_(false),
-      is_first_for_node_(box.IsFirstForNode()) {
+      is_first_for_node_(true),
+      is_last_for_node_(true) {
   DCHECK_EQ(IsFormattingContextRoot(), box.IsFormattingContextRoot());
 }
 
@@ -104,7 +108,8 @@ NGFragmentItem::NGFragmentItem(const NGInlineItem& inline_item,
       is_hidden_for_paint_(false),
       text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
       ink_overflow_computed_(false),
-      is_first_for_node_(true) {
+      is_first_for_node_(true),
+      is_last_for_node_(true) {
   DCHECK_EQ(inline_item.Type(), NGInlineItem::kOpenTag);
   DCHECK(layout_object_);
   DCHECK(layout_object_->IsLayoutInline());

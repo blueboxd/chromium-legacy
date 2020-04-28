@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Blokeret på visse websites</translation>
 <translation id="3190152372525844641">Aktivér tilladelser for Chrome i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gemte data</translation>
-<translation id="3223655101706843289">Dette rydder alle de data og cookies, der er gemt af <ph name="ORIGIN" />, og de apps, den har installeret, på din startskærm.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Tillad, at websites kan få adgang til sensorer (anbefales)</translation>
 <translation id="3295602654194328831">Skjul oplysninger</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5335288049665977812">Tillad, at websites kører JavaScript (anbefales)</translation>
 <translation id="534295439873310000">NFC-enheder</translation>
+<translation id="5354152178998424783">Dette rydder <ph name="DATASIZE" /> data og cookies, som er gemt af websites.</translation>
 <translation id="5391532827096253100">Din forbindelse til dette website er ikke sikker. Websiteoplysninger</translation>
 <translation id="5494752089476963479">Bloker annoncer på websites, der viser påtrængende eller vildledende annoncer</translation>
 <translation id="5505264765875738116">Websites kan ikke spørge dig, om de må sende dig notifikationer</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Du bliver logget ud af dette website.</translation>
 <translation id="7828557259026017104">Cookies er filer, som oprettes af de websites, du besøger. Websites anvender dem til at huske dine præferencer. Tredjepartscookies oprettes af andre websites. Disse websites ejer noget af indholdet, f.eks. de annoncer eller billeder, der vises på den webside, du besøger.</translation>
 <translation id="7846076177841592234">Annuller valg</translation>
+<translation id="7846621471902887024">Du bliver logget ud af alle websites.</translation>
 <translation id="7882806643839505685">Tillad, at et bestemt website afspiller lyd.</translation>
 <translation id="7993619969781047893">Funktioner på visse websites fungerer muligvis ikke</translation>
 <translation id="7999064672810608036">Er du sikker på, at du vil slette alle lokale data, herunder cookies, og nulstille alle tilladelser for dette website?</translation>

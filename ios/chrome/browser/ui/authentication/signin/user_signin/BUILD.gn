@@ -19,6 +19,7 @@ source_set("user_signin") {
     "user_signin_view_controller.mm",
   ]
   deps = [
+    "//base",
     "//components/consent_auditor",
     "//components/sync/base",
     "//components/unified_consent",
@@ -26,6 +27,7 @@ source_set("user_signin") {
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication/signin:signin_headers",
     "//ios/chrome/browser/ui/authentication/signin:signin_protected",

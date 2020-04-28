@@ -27,6 +27,13 @@ message UrlPattern {
   optional string pattern = 1;
 }
 
+message HostPattern {
+  // |regex| is a regular expression that matches allowlisted hostnames.
+  // This is different than UrlPattern.pattern which matches URLs.
+  // IMPORTANT: Don't forget to escape dots when used as label separators.
+  optional string regex = 1;
+}
+
 // Configuration for the safety tips component. A binary version of this proto
 // will be distributed to Chrome clients via component updater. The binary will
 // contain a single instance of this message.
@@ -45,4 +52,17 @@ message SafetyTipsConfig {
   // - Lookalike warnings operate on eTLD+1, so it only makes sense for this
   //   to be eTLD+1, such as "google.com/".
   repeated UrlPattern allowed_pattern = 3;
+
+  // Similar to allowed_pattern, but used to allowlist targets for some of the
+  // heuristics.
+  // - For edit distance, this is the matched domain. For example, consider edit
+  //   distance flagging foo1.com, foo2.com, ... as a spoof of foo.com. If
+  //   we are fairly sure that these are all separate and legitimate sites,
+  //   allowlisting foo.com is much easier than allowlisting fooN.coms.
+  // - For target embedding, this is the embedded target. Some organizations use
+  //   lookalike subdomains to proxy popular domains or customize their content
+  //   for these popular domains. E.g. google-scholar-com.university.edu.
+  //   In these cases it's simpler to allowlist the target instead of the
+  //   embedder.
+  repeated HostPattern allowed_target_pattern = 4;
 }

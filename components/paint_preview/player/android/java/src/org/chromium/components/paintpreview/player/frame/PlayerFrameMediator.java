@@ -9,6 +9,8 @@ import android.graphics.Rect;
 import android.util.Pair;
 import android.view.View;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
@@ -58,6 +60,12 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private final Map<Float, Bitmap[][]> mBitmapMatrix = new HashMap<>();
     /** Whether a request for a bitmap tile is pending, mapped by scale factor. */
     private final Map<Float, boolean[][]> mPendingBitmapRequests = new HashMap<>();
+    /**
+     * Whether we currently need a bitmap tile. This is used for deleting bitmaps that we don't
+     * need and freeing up memory.
+     */
+    @VisibleForTesting
+    final Map<Float, boolean[][]> mRequiredBitmaps = new HashMap<>();
     /** The current scale factor. */
     private float mScaleFactor;
 
@@ -73,7 +81,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     /**
      * Adds a new sub-frame to this frame.
      * @param subFrameView The {@link View} associated with the sub-frame.
-     * @param clipRect The bounds of the sub-frame, relative to this frame.
+     * @param clipRect     The bounds of the sub-frame, relative to this frame.
      */
     void addSubFrame(View subFrameView, Rect clipRect) {
         mSubFrames.add(new Pair<>(subFrameView, clipRect));
@@ -92,17 +100,15 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     /**
      * Called when either the view port of the scale factor should be changed. Updates the view port
      * and requests bitmap tiles for portion of the view port that don't have bitmap tiles.
-     * @param distanceX The horizontal distance that the view port should be moved by.
-     * @param distanceY The vertical distance that the view port should be moved by.
+     * @param distanceX   The horizontal distance that the view port should be moved by.
+     * @param distanceY   The vertical distance that the view port should be moved by.
      * @param scaleFactor The new scale factor.
      */
     private void updateViewport(int distanceX, int distanceY, float scaleFactor) {
-        // TODO(crbug.com/1021111): Implement a caching mechanism that (i) fetches nearby tiles, and
-        // (ii) destroys bitmaps that are unlikely to be used soon.
-
         // Initialize the bitmap matrix for this scale factor if we haven't already.
         Bitmap[][] bitmapMatrix = mBitmapMatrix.get(scaleFactor);
         boolean[][] pendingBitmapRequests = mPendingBitmapRequests.get(scaleFactor);
+        boolean[][] requiredBitmaps = mRequiredBitmaps.get(scaleFactor);
         if (bitmapMatrix == null) {
             // Each tile is as big as the view port. Here we determine the number of columns and
             // rows for the current scale factor.
@@ -111,7 +117,9 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
             bitmapMatrix = new Bitmap[rows][cols];
             mBitmapMatrix.put(scaleFactor, bitmapMatrix);
             pendingBitmapRequests = new boolean[rows][cols];
+            requiredBitmaps = new boolean[rows][cols];
             mPendingBitmapRequests.put(scaleFactor, pendingBitmapRequests);
+            mRequiredBitmaps.put(scaleFactor, requiredBitmaps);
         }
 
         // If the scale factor is changed, the view should get the correct bitmap matrix.
@@ -125,6 +133,13 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         mViewportRect.offset(distanceX, distanceY);
         mModel.set(PlayerFrameProperties.VIEWPORT, mViewportRect);
 
+        // Clear the required bitmaps matrix. It will be updated in #requestBitmapForTile.
+        for (int row = 0; row < requiredBitmaps.length; row++) {
+            for (int col = 0; col < requiredBitmaps[row].length; col++) {
+                requiredBitmaps[row][col] = false;
+            }
+        }
+
         // Request bitmaps for tiles inside the view port that don't already have a bitmap.
         final int tileWidth = mViewportRect.width();
         final int tileHeight = mViewportRect.height();
@@ -134,17 +149,19 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         final int rowEnd = (int) Math.ceil((double) mViewportRect.bottom / tileHeight);
         for (int col = colStart; col < colEnd; col++) {
             for (int row = rowStart; row < rowEnd; row++) {
-                if (bitmapMatrix[row][col] == null && !pendingBitmapRequests[row][col]) {
-                    int tileLeft = col * tileWidth;
-                    int tileTop = row * tileHeight;
-                    mBitmapRequestRect.set(
-                            tileLeft, tileTop, tileLeft + tileWidth, tileTop + tileHeight);
-                    BitmapRequestHandler bitmapRequestHandler =
-                            new BitmapRequestHandler(row, col, scaleFactor);
-                    pendingBitmapRequests[row][col] = true;
-                    mCompositorDelegate.requestBitmap(mGuid, mBitmapRequestRect, scaleFactor,
-                            bitmapRequestHandler, bitmapRequestHandler);
-                }
+                int tileLeft = col * tileWidth;
+                int tileTop = row * tileHeight;
+                requestBitmapForTile(
+                        tileLeft, tileTop, tileWidth, tileHeight, row, col, scaleFactor);
+            }
+        }
+
+        // Request bitmaps for adjacent tiles that are not currently in the view port. The reason
+        // that we do this in a separate loop is to make sure bitmaps for tiles inside the view port
+        // are fetched first.
+        for (int col = colStart; col < colEnd; col++) {
+            for (int row = rowStart; row < rowEnd; row++) {
+                requestBitmapForAdjacentTiles(tileWidth, tileHeight, row, col, scaleFactor);
             }
         }
 
@@ -158,6 +175,67 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
             }
         }
         mModel.set(PlayerFrameProperties.SUBFRAME_VIEWS, visibleSubFrames);
+    }
+
+    private void requestBitmapForAdjacentTiles(
+            int tileWidth, int tileHeight, int row, int col, float scaleFactor) {
+        Bitmap[][] bitmapMatrix = mBitmapMatrix.get(scaleFactor);
+        if (bitmapMatrix == null) return;
+
+        if (row > 0) {
+            requestBitmapForTile(col * tileWidth, (row - 1) * tileHeight, tileWidth, tileHeight,
+                    row - 1, col, scaleFactor);
+        }
+        if (row < bitmapMatrix.length - 1) {
+            requestBitmapForTile(col * tileWidth, (row + 1) * tileHeight, tileWidth, tileHeight,
+                    row + 1, col, scaleFactor);
+        }
+        if (col > 0) {
+            requestBitmapForTile((col - 1) * tileWidth, row * tileHeight, tileWidth, tileHeight,
+                    row, col - 1, scaleFactor);
+        }
+        if (col < bitmapMatrix[row].length - 1) {
+            requestBitmapForTile((col + 1) * tileWidth, row * tileHeight, tileWidth, tileHeight,
+                    row, col + 1, scaleFactor);
+        }
+    }
+
+    private void requestBitmapForTile(
+            int x, int y, int width, int height, int row, int col, float scaleFactor) {
+        Bitmap[][] bitmapMatrix = mBitmapMatrix.get(scaleFactor);
+        boolean[][] pendingBitmapRequests = mPendingBitmapRequests.get(scaleFactor);
+        boolean[][] requiredBitmaps = mRequiredBitmaps.get(scaleFactor);
+        if (requiredBitmaps == null) return;
+
+        requiredBitmaps[row][col] = true;
+        if (bitmapMatrix == null || pendingBitmapRequests == null || bitmapMatrix[row][col] != null
+                || pendingBitmapRequests[row][col]) {
+            return;
+        }
+
+        mBitmapRequestRect.set(x, y, x + width, y + height);
+        BitmapRequestHandler bitmapRequestHandler = new BitmapRequestHandler(row, col, scaleFactor);
+        pendingBitmapRequests[row][col] = true;
+        mCompositorDelegate.requestBitmap(
+                mGuid, mBitmapRequestRect, scaleFactor, bitmapRequestHandler, bitmapRequestHandler);
+    }
+
+    /**
+     * Remove previously fetched bitmaps that are no longer required according to
+     * {@link #mRequiredBitmaps}.
+     */
+    private void deleteUnrequiredBitmaps(float scaleFactor) {
+        Bitmap[][] bitmapMatrix = mBitmapMatrix.get(scaleFactor);
+        boolean[][] requiredBitmaps = mRequiredBitmaps.get(scaleFactor);
+        for (int row = 0; row < bitmapMatrix.length; row++) {
+            for (int col = 0; col < bitmapMatrix[row].length; col++) {
+                Bitmap bitmap = bitmapMatrix[row][col];
+                if (!requiredBitmaps[row][col] && bitmap != null) {
+                    bitmap.recycle();
+                    bitmapMatrix[row][col] = null;
+                }
+            }
+        }
     }
 
     /**
@@ -226,11 +304,17 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
             assert mBitmapMatrix.get(mRequestScaleFactor)[mRequestRow][mRequestCol] == null;
             assert mPendingBitmapRequests.get(mRequestScaleFactor)[mRequestRow][mRequestCol];
 
-            mBitmapMatrix.get(mScaleFactor)[mRequestRow][mRequestCol] = result;
             mPendingBitmapRequests.get(mScaleFactor)[mRequestRow][mRequestCol] = false;
-            if (PlayerFrameMediator.this.mScaleFactor == mRequestScaleFactor) {
-                mModel.set(PlayerFrameProperties.BITMAP_MATRIX, mBitmapMatrix.get(mScaleFactor));
+            if (mRequiredBitmaps.get(mRequestScaleFactor)[mRequestRow][mRequestCol]) {
+                mBitmapMatrix.get(mScaleFactor)[mRequestRow][mRequestCol] = result;
+                if (PlayerFrameMediator.this.mScaleFactor == mRequestScaleFactor) {
+                    mModel.set(
+                            PlayerFrameProperties.BITMAP_MATRIX, mBitmapMatrix.get(mScaleFactor));
+                }
+            } else {
+                result.recycle();
             }
+            deleteUnrequiredBitmaps(mRequestScaleFactor);
         }
 
         /**

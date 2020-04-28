@@ -60,6 +60,8 @@ std::string GetSandboxTypeInEnglish(content::SandboxType sandbox_type) {
       return "PDF Conversion";
     case content::SandboxType::kSharingService:
       return "Sharing";
+    case content::SandboxType::kVideoCapture:
+      return "Video Capture";
   }
 }
 

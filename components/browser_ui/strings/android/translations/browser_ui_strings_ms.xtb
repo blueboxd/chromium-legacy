@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Disekat di sesetengah tapak</translation>
 <translation id="3190152372525844641">Hidupkan kebenaran untuk Chrome dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> data disimpan</translation>
-<translation id="3223655101706843289">Tindakan ini akan mengosongkan semua data dan kuki yang disimpan oleh <ph name="ORIGIN" /> dan apl pada Skrin utama anda.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Benarkan tapak mengakses penderia (disyorkan)</translation>
 <translation id="3295602654194328831">Sembunyikan Maklumat</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5335288049665977812">Benarkan tapak menjalankan JavaScript (disyorkan)</translation>
 <translation id="534295439873310000">Peranti NFC</translation>
+<translation id="5354152178998424783">Tindakan ini akan mengosongkan <ph name="DATASIZE" /> data dan kuki yang disimpan oleh tapak.</translation>
 <translation id="5391532827096253100">Sambungan anda ke tapak web ini tidak selamat. Maklumat tapak</translation>
 <translation id="5494752089476963479">Sekat iklan di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="5505264765875738116">Tapak tidak boleh membuat permintaan untuk menghantar pemberitahuan</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">Anda akan dilog keluar daripada tapak ini.</translation>
 <translation id="7828557259026017104">Kuki ialah fail yang dibuat oleh tapak web yang anda lawati. Tapak menggunakan kuki untuk mengingat pilihan anda. Kuki pihak ketiga dibuat oleh tapak lain. Tapak ini memiliki sebahagian daripada kandungan, seperti iklan atau imej, yang anda lihat dalam halaman web yang anda lawati.</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
+<translation id="7846621471902887024">Anda akan dilog keluar daripada semua tapak.</translation>
 <translation id="7882806643839505685">Benarkan bunyi untuk tapak tertentu.</translation>
 <translation id="7993619969781047893">Ciri pada sesetengah tapak mungkin rosak</translation>
 <translation id="7999064672810608036">Anda pasti ingin mengosongkan semua data setempat, termasuk kuki dan menetapkan semula semua kebenaran untuk tapak web ini?</translation>

@@ -99,8 +99,7 @@ DeviceService::DeviceService(
     const WakeLockContextCallback& wake_lock_context_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate,
     mojo::PendingReceiver<mojom::DeviceService> receiver)
-    : receiver_(this, std::move(receiver)),
-      file_task_runner_(std::move(file_task_runner)),
+    : file_task_runner_(std::move(file_task_runner)),
       io_task_runner_(std::move(io_task_runner)),
       url_loader_factory_(std::move(url_loader_factory)),
       network_connection_tracker_(network_connection_tracker),
@@ -108,6 +107,7 @@ DeviceService::DeviceService(
       wake_lock_context_callback_(wake_lock_context_callback),
       wake_lock_provider_(file_task_runner_, wake_lock_context_callback_),
       java_interface_provider_initialized_(false) {
+  receivers_.Add(this, std::move(receiver));
   java_nfc_delegate_.Reset(java_nfc_delegate);
 }
 #else
@@ -118,13 +118,13 @@ DeviceService::DeviceService(
     network::NetworkConnectionTracker* network_connection_tracker,
     const std::string& geolocation_api_key,
     mojo::PendingReceiver<mojom::DeviceService> receiver)
-    : receiver_(this, std::move(receiver)),
-      file_task_runner_(std::move(file_task_runner)),
+    : file_task_runner_(std::move(file_task_runner)),
       io_task_runner_(std::move(io_task_runner)),
       url_loader_factory_(std::move(url_loader_factory)),
       network_connection_tracker_(network_connection_tracker),
       geolocation_api_key_(geolocation_api_key),
       wake_lock_provider_(file_task_runner_, wake_lock_context_callback_) {
+  receivers_.Add(this, std::move(receiver));
 #if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
     defined(OS_MACOSX)
   serial_port_manager_ = std::make_unique<SerialPortManagerImpl>(
@@ -160,6 +160,11 @@ DeviceService::~DeviceService() {
   serial_port_manager_task_runner_->DeleteSoon(FROM_HERE,
                                                std::move(serial_port_manager_));
 #endif
+}
+
+void DeviceService::AddReceiver(
+    mojo::PendingReceiver<mojom::DeviceService> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void DeviceService::SetPlatformSensorProviderForTesting(

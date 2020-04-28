@@ -5212,6 +5212,11 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8665314828727504286">세이프 브라우징 보호 수준</translation>
 <translation id="8672321184841719703">자동 업데이트 버전 타겟팅</translation>
 <translation id="867410340948518937">U2F(범용 2차 요소)</translation>
+<translation id="8680488165461049026">이 정책은 선택한 콘텐츠에 액세스하고 정보를 서버로 보낼 권한을 빠른 답변에 부여합니다.
+
+      정책이 사용 설정되면 빠른 답변에서 선택한 콘텐츠에 액세스할 수 있습니다.
+      사용 중지되면 빠른 답변에서 선택한 콘텐츠에 액세스할 수 없습니다.
+      설정되지 않으면 사용자가 빠른 답변에서 선택한 콘텐츠에 액세스하도록 허용할지 결정할 수 있습니다.</translation>
 <translation id="8685024486845674965">비밀번호가 재사용되어 비밀번호 보호 경고가 실행됨</translation>
 <translation id="8687958770985542440">M84까지 Web Components v0 API를 다시 사용 설정합니다.</translation>
 <translation id="8693243869659262736">내장 DNS 클라이언트 사용</translation>
@@ -5581,6 +5586,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       이 정책을 true로 설정하거나 구성하지 않으면 <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" />이(가) 사용자 로그인을 차단하지 않을 경우 새 사용자 계정이 생성될 수 있습니다.</translation>
 <translation id="974349541138387272">원하는 DNS-over-HTTPS 리졸버의 URI 템플릿 지정</translation>
+<translation id="974479807614498635">'빠른 답변에서 선택한 콘텐츠에 액세스하도록 허용'</translation>
 <translation id="981346395360763138">Google 위치 서비스가 사용 중지됨</translation>
 <translation id="982497069985795632">맞춤법 검사 사용 설정</translation>
 <translation id="991560005425213776">기본 프린터로 사용자 이름과 파일 이름 보내기</translation>

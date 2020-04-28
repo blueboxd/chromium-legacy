@@ -20,8 +20,6 @@ jumbo_component("x11") {
 
   defines = [ "EVENTS_IMPLEMENTATION" ]
 
-  configs += [ "//build/config/linux:x11" ]
-
   public_deps = [
     "//ui/events",
     "//ui/events:events_base",

@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 
-#include "base/logging.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/public/common/content_client.h"
 #include "ppapi/proxy/ppapi_messages.h"

@@ -2880,6 +2880,66 @@ TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimation) {
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 11.f);
 }
 
+TEST_F(LegacySWPictureLayerImplTest,
+       AnimationTilingChangesWithWillChangeTransformHint) {
+  gfx::Size viewport_size(1000, 1000);
+  host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
+
+  gfx::Size layer_bounds(100, 100);
+  SetupDefaultTrees(layer_bounds);
+
+  float contents_scale = 1.f;
+  float device_scale = 1.f;
+  float page_scale = 1.f;
+  float maximum_animation_scale = 1.f;
+  float starting_animation_scale = 0.f;
+  bool animating_transform = false;
+
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.f);
+
+  active_layer()->SetHasWillChangeTransformHint(true);
+  pending_layer()->SetHasWillChangeTransformHint(true);
+
+  // Starting an animation should cause tiling resolution to get set to the
+  // maximum animation scale factor.
+  animating_transform = true;
+  maximum_animation_scale = 2.f;
+  contents_scale = 1.f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
+
+  // Once we stop animating, because we have a will-change: transform hint
+  // we should not reset the scale factor.
+  animating_transform = false;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
+
+  // Starting an animation with a different maximum animation scale should
+  // not cause a change either.
+  animating_transform = true;
+  maximum_animation_scale = 1.5f;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
+
+  // Again, stop animating, because we have a will-change: transform hint
+  // we should not reset the scale factor.
+  animating_transform = false;
+
+  SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
+                               maximum_animation_scale,
+                               starting_animation_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 2.f);
+}
+
 TEST_F(LegacySWPictureLayerImplTest, HighResTilingDuringAnimationAspectRatio) {
   gfx::Size viewport_size(2000, 1000);
   host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
@@ -3440,6 +3500,9 @@ TEST_F(LegacySWPictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 3.f);
 }
+
+TEST_F(LegacySWPictureLayerImplTest,
+       AnimationChangeRespectsWillChangeTransformHint) {}
 
 TEST_F(LegacySWPictureLayerImplTest, LowResReadyToDrawNotEnoughToActivate) {
   gfx::Size tile_size(100, 100);

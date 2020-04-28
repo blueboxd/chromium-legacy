@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"

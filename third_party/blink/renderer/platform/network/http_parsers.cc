@@ -92,10 +92,11 @@ blink::ContentSecurityPolicyPtr ConvertToBlink(
   policy->header = ConvertToBlink(std::move(policy_in->header));
   policy->use_reporting_api = policy_in->use_reporting_api;
 
-  for (auto& directive : policy_in->directives) {
-    policy->directives.insert(ConvertToBlink(directive.first),
-                              ConvertToBlink(std::move(directive.second)));
+  for (auto& list : policy_in->directives) {
+    policy->directives.insert(ConvertToBlink(list.first),
+                              ConvertToBlink(std::move(list.second)));
   }
+  policy->upgrade_insecure_requests = policy_in->upgrade_insecure_requests;
 
   for (auto& endpoint : policy_in->report_endpoints)
     policy->report_endpoints.push_back(String::FromUTF8(endpoint));

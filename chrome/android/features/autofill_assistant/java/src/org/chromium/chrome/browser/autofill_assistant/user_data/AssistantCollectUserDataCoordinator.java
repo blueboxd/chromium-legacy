@@ -112,14 +112,14 @@ public class AssistantCollectUserDataCoordinator {
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
+        AssistantInfoSection infoSection =
+                new AssistantInfoSection(mActivity, paymentRequestExpanderAccordion);
+
         AssistantTermsSection termsSection = new AssistantTermsSection(
                 mActivity, paymentRequestExpanderAccordion, /* showAsSingleCheckbox= */ false);
         AssistantTermsSection termsAsCheckboxSection =
                 new AssistantTermsSection(mActivity, paymentRequestExpanderAccordion,
                         /* showAsSingleCheckbox= */ true);
-
-        AssistantInfoSection infoSection =
-                new AssistantInfoSection(mActivity, paymentRequestExpanderAccordion);
 
         paymentRequestExpanderAccordion.setTag(
                 AssistantTagsForTesting.COLLECT_USER_DATA_ACCORDION_TAG);

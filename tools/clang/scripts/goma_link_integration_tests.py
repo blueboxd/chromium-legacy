@@ -410,6 +410,34 @@ class GomaLdIntegrationTest(unittest.TestCase):
       main_disasm = disasm[main_idx:after_main_idx]
       self.assertNotIn(b'foo', main_disasm)
 
+  def test_no_gomacc(self):
+    with named_directory() as d, working_directory(d):
+      _create_inputs(d)
+      subprocess.check_call([
+          self.clangxx(), '-c', '-Os', '-flto=thin', 'main.cpp', '-o', 'main.o'
+      ])
+      subprocess.check_call(
+          [self.clangxx(), '-c', '-Os', '-flto=thin', 'foo.cpp', '-o', 'foo.o'])
+      rc = GomaLinkUnixWhitelistMain().main([
+          'goma_ld.py', '--no-gomacc', '-j', '16', '--',
+          self.clangxx(), '-fuse-ld=lld', '-flto=thin', 'main.o', 'foo.o', '-o',
+          'main'
+      ])
+      # Should succeed.
+      self.assertEqual(rc, 0)
+      # build.ninja file should not have gomacc invocations in it.
+      with open(os.path.join(d, 'lto.main', 'build.ninja')) as f:
+        buildrules = f.read()
+        self.assertNotIn('gomacc ', buildrules)
+        self.assertIn('build lto.main/main.o : codegen ', buildrules)
+        self.assertIn('build lto.main/foo.o : codegen ', buildrules)
+      # Check that main does not call foo.
+      disasm = subprocess.check_output(['llvm-objdump', '-d', 'main'])
+      main_idx = disasm.index(b' <main>:\n')
+      after_main_idx = disasm.index(b'\n\n', main_idx)
+      main_disasm = disasm[main_idx:after_main_idx]
+      self.assertNotIn(b'foo', main_disasm)
+
 
 if __name__ == '__main__':
   unittest.main()

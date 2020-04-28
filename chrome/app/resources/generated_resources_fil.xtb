@@ -673,6 +673,7 @@
 <translation id="1867780286110144690">Ang <ph name="PRODUCT_NAME" /> ay handa nang kumpletuhin ang iyong pag-install</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">Magbigay ng access sa mikropono</translation>
+<translation id="1871534214638631766">Ipakita ang kaugnay na impormasyon kapag nag-right click ka sa o matagal mong pinindot ang content</translation>
 <translation id="1871615898038944731">Napapanahon ang iyong <ph name="DEVICE_TYPE" /></translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Ilipat ang tab sa isa pang window}one{Ilipat ang mga tab sa isa pang window}other{Ilipat ang mga tab sa isa pang window}}</translation>
 <translation id="1875386316419689002">Nakakonekta ang tab na ito sa isang HID device.</translation>
@@ -729,6 +730,7 @@
 <translation id="1944528062465413897">Code ng pagpapares ng Bluetooth</translation>
 <translation id="1944921356641260203">May nahanap na update</translation>
 <translation id="1946577776959096882">Tingnan ang mga account</translation>
+<translation id="1949584741547056205">Mga Mabilisang Sagot</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">Nagka-error sa pag-mount ng share. Pakitingnan ang iyong mga kredensyal at subukang muli.</translation>
 <translation id="1956050014111002555">Naglaman ang file ng maraming certificate, wala sa mga ito ang na-import:</translation>
@@ -1910,7 +1912,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3543597750097719865">X9.62 ECDSA Signature na may SHA-512</translation>
 <translation id="3544879808695557954">Username (opsyonal)</translation>
 <translation id="354602065659584722">Naalis ang mapaminsalang software</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="3548162552723420559">Nagsasaayos sa kulay ng screen para tumugma sa kapaligiran</translation>
 <translation id="3550915441744863158">Awtomatikong nag-a-update ang Chrome upang palagi kang mayroon ng pinakabagong bersyon</translation>
@@ -5558,7 +5559,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8493236660459102203">Mikropono:</translation>
 <translation id="8496717697661868878">Patakbuhin ang Plugin na Ito</translation>
 <translation id="8497219075884839166">Mga Utility ng Windows</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Pinapadali nitong tumingin sa iyong screen o magbasa sa dilim</translation>
 <translation id="8498395510292172881">Ipagpatuloy ang pagbabasa sa Chrome</translation>
 <translation id="8500234928660943538">Mali ang PUK. Natitirang pag-retry: <ph name="RETRIES" />.</translation>

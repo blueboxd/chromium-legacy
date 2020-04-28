@@ -116,6 +116,7 @@
 <translation id="2359043044084662842">Prevedi</translation>
 <translation id="2359808026110333948">Nastavite</translation>
 <translation id="2360196772093551345">Zahtevaj mobilni sajt</translation>
+<translation id="2379896346847637748">Otvori u novom prozoru</translation>
 <translation id="2381405137052800939">Osnove</translation>
 <translation id="2386793615875593361">Izabrana je 1 slika</translation>
 <translation id="2421004566762153674">Blokira kolačiće treće strane</translation>
@@ -429,6 +430,7 @@ Podaci su šifrovani pomoću pristupne fraze za sinhronizaciju <ph name="TIME" 
 <translation id="6447842834002726250">Kolačići</translation>
 <translation id="6464071786529933911">Otvori na novoj kartici bez arhiviranja</translation>
 <translation id="6476800141292307438">Stranica se prevodi na: <ph name="LANGUAGE" />. Opcije su dostupne u dnu ekrana.</translation>
+<translation id="648164694371393720">Greška pri potvrdi identiteta</translation>
 <translation id="6482629121755362506">Broj izbrisanih stavki je <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6561262006871132942">Uvećajte</translation>
 <translation id="6610002944194042868">Opcije prevoda</translation>

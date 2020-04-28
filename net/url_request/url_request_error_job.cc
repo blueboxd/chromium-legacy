@@ -10,7 +10,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/url_request_status.h"
 
 namespace net {
 

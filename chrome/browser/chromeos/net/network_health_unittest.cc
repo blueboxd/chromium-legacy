@@ -24,6 +24,7 @@ constexpr char kDeviceName[] = "device_name";
 }  // namespace
 
 namespace chromeos {
+namespace network_health {
 
 class NetworkHealthTest : public ::testing::Test {
  public:
@@ -41,8 +42,9 @@ class NetworkHealthTest : public ::testing::Test {
 TEST_F(NetworkHealthTest, GetNetworkHealthSucceeds) {
   // Check that the default wifi device created by CrosNetworkConfigTestHelper
   // exists.
-  auto network_health_state = network_health_.GetNetworkHealthState();
-  ASSERT_EQ(network_health_state.devices.size(), std::size_t(1));
+  const auto& initial_network_health_state =
+      network_health_.GetNetworkHealthState();
+  ASSERT_EQ(initial_network_health_state.devices.size(), std::size_t(1));
 
   // Create an ethernet device and service, and make it the active network.
   cros_network_config_test_helper_.network_state_helper().AddDevice(
@@ -56,11 +58,12 @@ TEST_F(NetworkHealthTest, GetNetworkHealthSucceeds) {
   // Wait until the network and service have been created and configured.
   task_environment_.RunUntilIdle();
 
-  network_health_state = network_health_.GetNetworkHealthState();
-  EXPECT_EQ(network_health_state.devices.size(), std::size_t(2));
-  EXPECT_EQ(network_health_state.active_networks.size(), std::size_t(1));
-  EXPECT_EQ(network_health_state.active_networks[0].name, kServiceName);
-  EXPECT_EQ(network_health_state.devices[1].type, NetworkType::kEthernet);
+  const auto& network_health_state = network_health_.GetNetworkHealthState();
+  ASSERT_EQ(network_health_state.devices.size(), std::size_t(2));
+  ASSERT_EQ(network_health_state.active_networks.size(), std::size_t(1));
+  EXPECT_EQ(network_health_state.active_networks[0]->name, kServiceName);
+  EXPECT_EQ(network_health_state.devices[1]->type, NetworkType::kEthernet);
 }
 
+}  // namespace network_health
 }  // namespace chromeos

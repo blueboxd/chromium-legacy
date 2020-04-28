@@ -62,11 +62,11 @@ class AccessorySheetTabMediator implements Provider.Observer<AccessorySheetData>
         if (accessorySheetData == null) return new AccessorySheetDataPiece[0];
 
         List<AccessorySheetDataPiece> items = new ArrayList<>();
-        if (shouldShowTitle(accessorySheetData.getUserInfoList())) {
-            items.add(new AccessorySheetDataPiece(accessorySheetData.getTitle(), Type.TITLE));
-        }
         if (accessorySheetData.getOptionToggle() != null) {
             items.add(createDataPieceForToggle(accessorySheetData.getOptionToggle()));
+        }
+        if (shouldShowTitle(accessorySheetData.getUserInfoList())) {
+            items.add(new AccessorySheetDataPiece(accessorySheetData.getTitle(), Type.TITLE));
         }
         if (!accessorySheetData.getWarning().isEmpty()) {
             items.add(new AccessorySheetDataPiece(accessorySheetData.getWarning(), Type.WARNING));

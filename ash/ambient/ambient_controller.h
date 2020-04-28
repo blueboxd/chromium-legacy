@@ -67,21 +67,13 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
   // while fading-out the current shown image.
   void OnBackgroundPhotoEvents();
 
-  AmbientContainerView* get_container_view_for_testing() {
-    return container_view_;
-  }
-
-  const base::OneShotTimer& get_timer_for_testing() const {
-    return refresh_timer_;
-  }
-
   AmbientBackendController* ambient_backend_controller() {
     return ambient_backend_controller_.get();
   }
 
  private:
+  friend class AmbientAshTestBase;
   friend class AmbientContainerViewTest;
-  friend class AmbientPhotoControllerTest;
 
   void CreateContainerView();
   void DestroyContainerView();
@@ -99,6 +91,14 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
 
   AmbientPhotoController* get_ambient_photo_controller_for_testing() {
     return &ambient_photo_controller_;
+  }
+
+  AmbientContainerView* get_container_view_for_testing() {
+    return container_view_;
+  }
+
+  const base::OneShotTimer& get_timer_for_testing() const {
+    return refresh_timer_;
   }
 
   void set_backend_controller_for_testing(

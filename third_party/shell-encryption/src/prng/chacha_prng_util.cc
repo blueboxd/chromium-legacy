@@ -31,16 +31,27 @@ absl::Status ChaChaPrngResalt(absl::string_view key, int buffer_size,
                               int* salt_counter, int* position_in_buffer,
                               std::vector<Uint8>* buffer) {
   buffer->assign(buffer_size, 0);
-  std::string salt = "salt";
-  if (salt.size() > kChaChaNonceSize) {
-    return absl::InternalError("The salt length is too large.");
-  }
-  salt.resize(kChaChaNonceSize, 0);
 
+  // Following https://tools.ietf.org/html/rfc7539, Sec 2.3, we create the
+  // nonce as a kChaChaNonceSize (=12) bytes string, where the 4 first
+  // bytes are fixed, and the next 8 bytes correspond to the counter.
+  std::string nonce = "salt00000000";
+  if (nonce.size() != kChaChaNonceSize) {
+    return absl::InternalError("The salt length is incorrect.");
+  }
+  Uint64 counter = static_cast<Uint64>(*salt_counter);
+  for (int i = 0; i < 8; i++) {
+    nonce[4 + i] = counter & 0xFF;
+    counter >>= 8;
+  }
+
+  // We call the CRYPTO_chacha_20() function from OpenSSL. Note that the last
+  // parameter is a *block* counter. The salt counter needs instead to be
+  // included in the nonce.
   CRYPTO_chacha_20(buffer->data(), buffer->data(), buffer->size(),
                    reinterpret_cast<const Uint8*>(key.data()),
-                   reinterpret_cast<const Uint8*>(salt.data()),
-                   static_cast<uint32_t>(*salt_counter));
+                   reinterpret_cast<const Uint8*>(nonce.data()),
+                   /* counter = */ 0);
 
   ++(*salt_counter);
   *position_in_buffer = 0;

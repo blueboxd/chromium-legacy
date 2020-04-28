@@ -131,7 +131,12 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
       origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie1);
-  web_contents()->OnCookieChange(origin, origin, *cookie1, false);
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+                           origin,
+                           origin,
+                           {*cookie1},
+                           false});
 #if !defined(OS_ANDROID)
   content_settings->OnContentBlocked(ContentSettingsType::IMAGES);
 #endif
@@ -162,13 +167,23 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
       content_settings->IsContentBlocked(ContentSettingsType::MEDIASTREAM_MIC));
   EXPECT_TRUE(content_settings->IsContentBlocked(
       ContentSettingsType::MEDIASTREAM_CAMERA));
-  web_contents()->OnCookieChange(origin, origin, *cookie1, false);
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+                           origin,
+                           origin,
+                           {*cookie1},
+                           false});
 
   // Block a cookie.
   std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
       origin, "C=D", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie2);
-  web_contents()->OnCookieChange(origin, origin, *cookie2, true);
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+                           origin,
+                           origin,
+                           {*cookie2},
+                           true});
   EXPECT_TRUE(content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
 
   // Block a javascript during a navigation.
@@ -258,7 +273,12 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
       origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie1);
-  web_contents()->OnCookieChange(origin, origin, *cookie1, false);
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+                           origin,
+                           origin,
+                           {*cookie1},
+                           false});
   ASSERT_TRUE(content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
   ASSERT_FALSE(
       content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
@@ -267,7 +287,12 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
   std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
       origin, "C=D", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie2);
-  web_contents()->OnCookieChange(origin, origin, *cookie2, true);
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+                           origin,
+                           origin,
+                           {*cookie2},
+                           true});
   ASSERT_TRUE(content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
   ASSERT_TRUE(content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
 }
@@ -280,9 +305,10 @@ TEST_F(TabSpecificContentSettingsTest, EmptyCookieList) {
       content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
   ASSERT_FALSE(
       content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
-  web_contents()->OnCookiesRead(GURL("http://google.com"),
-                                GURL("http://google.com"), net::CookieList(),
-                                true);
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
+                           GURL("http://google.com"), GURL("http://google.com"),
+                           net::CookieList(), true});
   ASSERT_FALSE(
       content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
   ASSERT_FALSE(
@@ -300,7 +326,12 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
   std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
       origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie);
-  web_contents()->OnCookieChange(origin, origin, *cookie, blocked_by_policy);
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+                           origin,
+                           origin,
+                           {*cookie},
+                           blocked_by_policy});
 
   net::CookieList cookie_list;
   std::unique_ptr<net::CanonicalCookie> other_cookie(
@@ -310,9 +341,10 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
   ASSERT_TRUE(other_cookie);
 
   cookie_list.push_back(*other_cookie);
-  web_contents()->OnCookiesRead(GURL("http://google.com"),
-                                GURL("http://google.com"), cookie_list,
-                                blocked_by_policy);
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
+                           GURL("http://google.com"), GURL("http://google.com"),
+                           cookie_list, blocked_by_policy});
   content_settings->OnFileSystemAccessed(GURL("http://google.com"),
                                          blocked_by_policy);
   content_settings->OnIndexedDBAccessed(GURL("http://google.com"),
@@ -330,9 +362,12 @@ TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainer) {
   auto cookie = net::CanonicalCookie::Create(GURL("http://google.com"), "k=v",
                                              base::Time::Now(),
                                              base::nullopt /* server_time */);
-  web_contents()->OnCookiesRead(GURL("http://google.com"),
-                                GURL("http://google.com"), {*cookie},
-                                blocked_by_policy);
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
+                           GURL("http://google.com"),
+                           GURL("http://google.com"),
+                           {*cookie},
+                           blocked_by_policy});
   content_settings->OnFileSystemAccessed(GURL("https://www.google.com"),
                                          blocked_by_policy);
   content_settings->OnIndexedDBAccessed(GURL("https://localhost"),
@@ -372,16 +407,22 @@ TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainerCookie) {
   auto cookie4 = net::CanonicalCookie::Create(
       GURL("http://www.google.com"), "k4=v; Domain=.www.google.com",
       base::Time::Now(), base::nullopt /* server_time */);
-  web_contents()->OnCookiesRead(
-      GURL("http://www.google.com"), GURL("http://www.google.com"),
-      {*cookie1, *cookie2, *cookie3, *cookie4}, blocked_by_policy);
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
+                           GURL("http://www.google.com"),
+                           GURL("http://www.google.com"),
+                           {*cookie1, *cookie2, *cookie3, *cookie4},
+                           blocked_by_policy});
 
   auto cookie5 = net::CanonicalCookie::Create(GURL("https://www.google.com"),
                                               "k5=v", base::Time::Now(),
                                               base::nullopt /* server_time */);
-  web_contents()->OnCookiesRead(GURL("https://www.google.com"),
-                                GURL("https://www.google.com"), {*cookie5},
-                                blocked_by_policy);
+  static_cast<content::WebContentsObserver*>(content_settings)
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
+                           GURL("https://www.google.com"),
+                           GURL("https://www.google.com"),
+                           {*cookie5},
+                           blocked_by_policy});
 
   const auto& objects = content_settings->allowed_local_shared_objects();
   EXPECT_EQ(5u, objects.GetObjectCount());

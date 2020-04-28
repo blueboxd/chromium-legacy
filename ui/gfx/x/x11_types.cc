@@ -10,26 +10,13 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11_switches.h"
 
 namespace gfx {
 
-namespace {
-
-XDisplay* OpenNewXDisplay() {
-  if (!XInitThreads())
-    return nullptr;
-  std::string display_str =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kX11Display);
-  return XOpenDisplay(display_str.empty() ? nullptr : display_str.c_str());
-}
-
-}  // namespace
-
 XDisplay* GetXDisplay() {
-  static XDisplay* display = OpenNewXDisplay();
-  return display;
+  return x11::Connection::Get()->display();
 }
 
 XDisplay* CloneXDisplay(XDisplay* display) {
@@ -90,10 +77,10 @@ void PutARGBImage(XDisplay* display,
 
   image.width = data_width;
   image.height = data_height;
-  image.format = ZPixmap;
-  image.byte_order = LSBFirst;
+  image.format = static_cast<int>(x11::XProto::ImageFormat::ZPixmap);
+  image.byte_order = static_cast<int>(x11::XProto::ImageOrder::LSBFirst);
   image.bitmap_unit = 8;
-  image.bitmap_bit_order = LSBFirst;
+  image.bitmap_bit_order = static_cast<int>(x11::XProto::ImageOrder::LSBFirst);
   image.depth = depth;
   image.bits_per_pixel = pixmap_bpp;
   image.bytes_per_line = data_width * pixmap_bpp / 8;

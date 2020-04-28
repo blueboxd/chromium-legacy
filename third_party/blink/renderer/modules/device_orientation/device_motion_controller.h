@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_CONTROLLER_H_
 
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/device_single_window_event_controller.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -16,16 +16,16 @@ class DeviceMotionEventPump;
 
 class MODULES_EXPORT DeviceMotionController final
     : public DeviceSingleWindowEventController,
-      public Supplement<Document> {
+      public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionController);
 
  public:
   static const char kSupplementName[];
 
-  explicit DeviceMotionController(Document&);
+  explicit DeviceMotionController(LocalDOMWindow&);
   ~DeviceMotionController() override;
 
-  static DeviceMotionController& From(Document&);
+  static DeviceMotionController& From(LocalDOMWindow&);
 
   // DeviceSingleWindowEventController
   void DidAddEventListener(LocalDOMWindow*,

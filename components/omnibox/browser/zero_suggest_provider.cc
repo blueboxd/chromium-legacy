@@ -698,10 +698,14 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
   if (base::Contains(field_trial_variants, kNoneVariant))
     return NONE;
 
-  // TODO(tommycli): Since this can be configured via ZeroSuggestVariant, we
-  // should eliminate this special case and use a field trial configuration.
   if (current_page_classification_ == OmniboxEventProto::CHROMEOS_APP_LIST)
     return REMOTE_NO_URL;
+
+  if (current_page_classification_ == OmniboxEventProto::OTHER &&
+      base::FeatureList::IsEnabled(omnibox::kOnFocusSuggestionsContextualWeb) &&
+      can_send_current_url) {
+    return REMOTE_SEND_URL;
+  }
 
   if (base::Contains(field_trial_variants, kRemoteNoUrlVariant)) {
     if (RemoteNoUrlSuggestionsAreAllowed(client(), template_url_service))

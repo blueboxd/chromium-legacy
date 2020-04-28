@@ -673,6 +673,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> siap menyelesaikan penginstalan</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">Beri akses untuk mikrofon</translation>
+<translation id="1871534214638631766">Menampilkan info terkait saat Anda mengklik kanan atau menekan lama pada konten</translation>
 <translation id="1871615898038944731"><ph name="DEVICE_TYPE" /> Anda adalah versi terbaru</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Pindahkan tab ke jendela lain}other{Pindahkan beberapa tab ke jendela lain}}</translation>
 <translation id="1875386316419689002">Tab ini terhubung dengan perangkat HID.</translation>
@@ -729,6 +730,7 @@
 <translation id="1944528062465413897">Kode penyambungan Bluetooth:</translation>
 <translation id="1944921356641260203">Pembaruan ditemukan</translation>
 <translation id="1946577776959096882">Lihat akun</translation>
+<translation id="1949584741547056205">Jawaban Cepat</translation>
 <translation id="1951012854035635156">Asisten</translation>
 <translation id="1954813140452229842">Error saat memasang URL berbagi. Periksa kredensial Anda dan coba lagi.</translation>
 <translation id="1956050014111002555">File berisi beberapa sertifikat, dan tidak ada satu pun di antaranya yang diimpor.</translation>
@@ -1908,7 +1910,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3543597750097719865">Tanda tangan X9.62 ECDSA dengan SHA-512</translation>
 <translation id="3544879808695557954">Nama pengguna (opsional)</translation>
 <translation id="354602065659584722">Software berbahaya dihapus</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Setelan proxy</translation>
 <translation id="3548162552723420559">Menyesuaikan warna layar agar cocok dengan lingkungan sekitarnya</translation>
 <translation id="3550915441744863158">Chrome memperbarui secara otomatis jadi Anda selalu memiliki versi terbaru</translation>
@@ -5555,7 +5556,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8493236660459102203">Mikrofon:</translation>
 <translation id="8496717697661868878">Jalankan Plugin Ini</translation>
 <translation id="8497219075884839166">Windows Utilities</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Memudahkan Anda melihat layar atau membaca saat cahaya redup</translation>
 <translation id="8498395510292172881">Lanjutkan membaca di Chrome</translation>
 <translation id="8500234928660943538">PUK salah. Percobaan ulang tersisa: <ph name="RETRIES" />.</translation>

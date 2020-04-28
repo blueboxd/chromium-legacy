@@ -4,7 +4,6 @@
 
 #include "content/public/browser/native_web_keyboard_event.h"
 
-#include "base/logging.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/event.h"

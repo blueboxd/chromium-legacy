@@ -673,6 +673,7 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> гатовы завяршыць усталяванне</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">Даць доступ да мікрафона</translation>
+<translation id="1871534214638631766">Паказваць інфармацыю пра змесціва пры доўгім націсканні на яго або націсканні правай кнопкай мышы</translation>
 <translation id="1871615898038944731">Абнаўленне прылады <ph name="DEVICE_TYPE" /> не патрабуецца</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Перамясціць укладку ў іншае акно}one{Перамясціць укладкі ў іншае акно}few{Перамясціць укладкі ў іншае акно}many{Перамясціць укладкі ў іншае акно}other{Перамясціць укладкі ў іншае акно}}</translation>
 <translation id="1875386316419689002">Гэта ўкладка падключана да прылады HID.</translation>
@@ -729,6 +730,7 @@
 <translation id="1944528062465413897">Код спалучэння Bluetooth</translation>
 <translation id="1944921356641260203">Знойдзена абнаўленне</translation>
 <translation id="1946577776959096882">Праглядзець уліковыя запісы</translation>
+<translation id="1949584741547056205">Хуткія адказы</translation>
 <translation id="1951012854035635156">Памочнік</translation>
 <translation id="1954813140452229842">Не ўдалося падключыць абагулены рэсурс. Праверце ўліковыя даныя і паўтарыце спробу.</translation>
 <translation id="1956050014111002555">У файле было некалькі сертыфікатаў, ні адзін з іх не быў імпартаваны:</translation>
@@ -1910,7 +1912,6 @@
 <translation id="3543597750097719865">Подпіс X9.62 ECDSA з SHA-512</translation>
 <translation id="3544879808695557954">Імя карыстальніка (неабавязкова)</translation>
 <translation id="354602065659584722">Шкодная праграма выдалена</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">Налады проксі-сервера</translation>
 <translation id="3548162552723420559">Дапасоўваць колер экрана да навакольнага асяроддзя</translation>
 <translation id="3550915441744863158">Chrome абнаўляецца аўтаматычна, таму ў вас заўсёды будзе ўсталявана апошняя версія</translation>
@@ -5556,7 +5557,6 @@
 <translation id="8493236660459102203">Мікрафон:</translation>
 <translation id="8496717697661868878">Запусціць гэту ўбудову</translation>
 <translation id="8497219075884839166">Утыліты Windows</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">Пры ўключанай функцыі зручней глядзець на экран пры цьмяным асвятленні</translation>
 <translation id="8498395510292172881">Бесперапыннае чытанне ў браўзеры Chrome</translation>
 <translation id="8500234928660943538">Няправільны PUK-код. Засталося спроб: <ph name="RETRIES" />.</translation>

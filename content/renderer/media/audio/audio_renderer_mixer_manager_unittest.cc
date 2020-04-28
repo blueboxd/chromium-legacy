@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "media/audio/audio_device_description.h"

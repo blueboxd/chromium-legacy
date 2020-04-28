@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL NativeIOFileSync.read returns bytes written by NativeIOFileSync.write nativeIO.openSync is not a function
+Harness: the test ran to completion.
+

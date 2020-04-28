@@ -14,7 +14,6 @@
 #include "chrome/browser/upboarding/query_tiles/internal/config.h"
 #include "chrome/browser/upboarding/query_tiles/internal/tile_manager.h"
 #include "chrome/browser/upboarding/query_tiles/internal/tile_service_impl.h"
-#include "chrome/browser/upboarding/query_tiles/internal/tile_store.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"

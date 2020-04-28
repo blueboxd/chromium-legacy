@@ -14,23 +14,20 @@ namespace lock_screen_apps {
 
 // The system modal bubble dialog shown to the user when a lock screen app is
 // first launched from the lock screen. The dialog will block the app UI until
-// the uesr closes it.
+// the user closes it.
 class ToastDialogView : public views::BubbleDialogDelegateView {
  public:
   ToastDialogView(const base::string16& app_name,
                   base::OnceClosure dismissed_callback);
   ~ToastDialogView() override;
 
-  // Shows the toast dialog.
-  void Show();
-
-  // views::WidgetDelegate:
+  // views::BubbleDialogDelegateView:
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
-
-  // views::BubbleDialogDelegate:
   void AddedToWidget() override;
   bool ShouldShowCloseButton() const override;
+  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
+                                views::Widget* widget) const override;
 
  private:
   // The name of the app for which the dialog is shown.

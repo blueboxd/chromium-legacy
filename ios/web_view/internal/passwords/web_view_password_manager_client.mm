@@ -116,6 +116,11 @@ bool WebViewPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   return true;
 }
 
+void WebViewPasswordManagerClient::PromptUserToMovePasswordToAccount(
+    std::unique_ptr<PasswordFormManagerForUI> form_to_move) {
+  NOTIMPLEMENTED();
+}
+
 bool WebViewPasswordManagerClient::ShowOnboarding(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
   return false;
@@ -192,8 +197,10 @@ void WebViewPasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
 }
 
 void WebViewPasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
-    const autofill::PasswordForm& form) {
-  helper_.NotifySuccessfulLoginWithExistingPassword(form);
+    std::unique_ptr<password_manager::PasswordFormManagerForUI>
+        submitted_manager) {
+  helper_.NotifySuccessfulLoginWithExistingPassword(
+      std::move(submitted_manager));
 }
 
 void WebViewPasswordManagerClient::NotifyStorePasswordCalled() {

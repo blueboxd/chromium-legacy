@@ -25,8 +25,7 @@ using device::BluetoothUUID;
 namespace {
 
 BluetoothChooserContext* GetBluetoothChooserContext(RenderFrameHost* frame) {
-  auto* profile = Profile::FromBrowserContext(
-      WebContents::FromRenderFrameHost(frame)->GetBrowserContext());
+  auto* profile = Profile::FromBrowserContext(frame->GetBrowserContext());
   return BluetoothChooserContextFactory::GetForProfile(profile);
 }
 

@@ -183,6 +183,7 @@ def parse_args(args):
   ap = argparse.ArgumentParser()
   ap.add_argument('--gomacc', help='path to gomacc.')
   ap.add_argument('--jobs', '-j', help='maximum number of concurrent jobs.')
+  ap.add_argument('--no-gomacc', action='store_true', help='do not use gomacc.')
   try:
     splitpos = args.index('--')
   except:
@@ -499,15 +500,19 @@ class GomaLinkBase(object):
     params and with objs being a list of bitcode files for which to generate
     native code.
     """
+    if self.gomacc:
+      gomacc_prefix = ninjaenc(self.gomacc) + ' '
+    else:
+      gomacc_prefix = ''
     ensure_dir(os.path.dirname(ninjaname))
     with open(ninjaname, 'w') as f:
       f.write(('\nrule native-link\n  command = %s @$rspname'
                '\n  rspfile = $rspname\n  rspfile_content = $params\n') %
               (ninjaenc(params.linker), ))
 
-      f.write(('\nrule codegen\n  command = %s %s -c %s'
+      f.write(('\nrule codegen\n  command = %s%s -c %s'
                ' -fthinlto-index=$index %s$bitcode -o $out\n') %
-              (ninjaenc(self.gomacc), ninjaenc(params.compiler),
+              (gomacc_prefix, ninjaenc(params.compiler),
                ninjajoin(params.codegen_params), self.XIR))
 
       for tup in params.codegen:
@@ -575,6 +580,8 @@ class GomaLinkBase(object):
       return subprocess.call([args.linker] + args.linker_args)
     if args.gomacc:
       self.gomacc = args.gomacc
+    if args.no_gomacc:
+      self.gomacc = None
     if args.jobs:
       self.jobs = int(args.jobs)
 

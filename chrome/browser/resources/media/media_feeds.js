@@ -109,6 +109,7 @@ class MediaFeedsTableDelegate {
           contentTypes.length === 0 ? 'None' : contentTypes.join(',');
     } else if (key === 'logos' || key === 'images') {
       // Format an array of mojo media images.
+      // TODO(crbug.com/1074478): Display the image content attributes.
       data.forEach((image) => {
         const a = document.createElement('a');
         a.href = image.src.url;

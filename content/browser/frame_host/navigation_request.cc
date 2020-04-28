@@ -221,11 +221,11 @@ void UpdateLoadFlagsWithCacheFlags(int* load_flags,
 }
 
 // TODO(clamy): This should be function in FrameTreeNode.
-bool IsSecureFrame(FrameTreeNode* frame) {
+bool IsSecureFrame(RenderFrameHostImpl* frame) {
   while (frame) {
-    if (!IsPotentiallyTrustworthyOrigin(frame->current_origin()))
+    if (!IsPotentiallyTrustworthyOrigin(frame->GetLastCommittedOrigin()))
       return false;
-    frame = frame->parent();
+    frame = frame->GetParent();
   }
   return true;
 }
@@ -2457,7 +2457,7 @@ void NavigationRequest::OnStartChecksComplete(
 
   bool parent_is_main_frame = !frame_tree_node_->parent()
                                   ? false
-                                  : frame_tree_node_->parent()->IsMainFrame();
+                                  : frame_tree_node_->parent()->is_main_frame();
 
   std::unique_ptr<NavigationUIData> navigation_ui_data;
   if (navigation_ui_data_)
@@ -2995,9 +2995,7 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
     return net::OK;
   }
 
-  FrameTreeNode* parent_ftn = frame_tree_node()->parent();
-  RenderFrameHostImpl* parent =
-      parent_ftn ? parent_ftn->current_frame_host() : nullptr;
+  RenderFrameHostImpl* parent = frame_tree_node()->parent();
   if (!parent &&
       frame_tree_node()
           ->current_frame_host()
@@ -3065,9 +3063,9 @@ NavigationRequest::CheckCredentialedSubresource() const {
 
   // Relative URLs on top-level pages that were loaded with embedded credentials
   // should load correctly.
-  FrameTreeNode* parent_ftn = frame_tree_node_->parent();
-  DCHECK(parent_ftn);
-  const GURL& parent_url = parent_ftn->current_url();
+  RenderFrameHostImpl* parent = frame_tree_node_->parent();
+  DCHECK(parent);
+  const GURL& parent_url = parent->GetLastCommittedURL();
   if (url::Origin::Create(parent_url)
           .IsSameOriginWith(url::Origin::Create(common_params_->url)) &&
       parent_url.username() == common_params_->url.username() &&
@@ -3076,8 +3074,6 @@ NavigationRequest::CheckCredentialedSubresource() const {
   }
 
   // Warn the user about the request being blocked.
-  RenderFrameHostImpl* parent = parent_ftn->current_frame_host();
-  DCHECK(parent);
   const char* console_message =
       "Subresource requests whose URLs contain embedded credentials (e.g. "
       "`https://user:pass@host/`) are blocked. See "
@@ -3099,15 +3095,13 @@ NavigationRequest::CheckLegacyProtocolInSubresource() const {
   if (!ShouldTreatURLSchemeAsLegacy(common_params_->url))
     return LegacyProtocolInSubresourceCheckResult::ALLOW_REQUEST;
 
-  FrameTreeNode* parent_ftn = frame_tree_node_->parent();
-  DCHECK(parent_ftn);
-  const GURL& parent_url = parent_ftn->current_url();
+  RenderFrameHostImpl* parent = frame_tree_node_->parent();
+  DCHECK(parent);
+  const GURL& parent_url = parent->GetLastCommittedURL();
   if (ShouldTreatURLSchemeAsLegacy(parent_url))
     return LegacyProtocolInSubresourceCheckResult::ALLOW_REQUEST;
 
   // Warn the user about the request being blocked.
-  RenderFrameHostImpl* parent = parent_ftn->current_frame_host();
-  DCHECK(parent);
   const char* console_message =
       "Subresource requests using legacy protocols (like `ftp:`) are blocked. "
       "Please deliver web-accessible resources over modern protocols like "
@@ -3562,9 +3556,9 @@ bool NavigationRequest::IsSelfReferentialURL() {
   // We allow one level of self-reference because some sites depend on that,
   // but we don't allow more than one.
   bool found_self_reference = false;
-  for (const FrameTreeNode* node = frame_tree_node()->parent(); node;
-       node = node->parent()) {
-    if (node->current_url().EqualsIgnoringRef(common_params_->url)) {
+  for (RenderFrameHost* rfh = frame_tree_node()->parent(); rfh;
+       rfh = rfh->GetParent()) {
+    if (rfh->GetLastCommittedURL().EqualsIgnoringRef(common_params_->url)) {
       if (found_self_reference)
         return true;
       found_self_reference = true;
@@ -3917,13 +3911,12 @@ bool NavigationRequest::IsInMainFrame() {
 }
 
 RenderFrameHostImpl* NavigationRequest::GetParentFrame() {
-  return IsInMainFrame() ? nullptr
-                         : frame_tree_node()->parent()->current_frame_host();
+  return IsInMainFrame() ? nullptr : frame_tree_node()->parent();
 }
 
 bool NavigationRequest::IsParentMainFrame() {
-  FrameTreeNode* parent = frame_tree_node()->parent();
-  return parent && parent->IsMainFrame();
+  RenderFrameHostImpl* parent = frame_tree_node()->parent();
+  return parent && parent->is_main_frame();
 }
 
 int NavigationRequest::GetFrameTreeNodeId() {

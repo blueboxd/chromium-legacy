@@ -11,8 +11,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace base {
-
 // This helps when copying arrays/vectors of pointers.
 static_assert(std::is_trivially_copyable<CheckedPtr<void>>::value,
               "CheckedPtr should be trivially copyable");
@@ -32,8 +30,6 @@ struct Derived : MyStruct {
   Derived(int x, int y) : MyStruct(x), y(y) {}
   int y;
 };
-
-}  // namespace
 
 TEST(CheckedPtr, NullStarDereference) {
   CheckedPtr<int> ptr;
@@ -183,4 +179,4 @@ TEST(CheckedPtr, AdvanceString) {
   }
 }
 
-}  // namespace base
+}  // namespace

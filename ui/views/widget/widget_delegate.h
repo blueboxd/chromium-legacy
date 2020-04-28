@@ -31,6 +31,17 @@ class VIEWS_EXPORT WidgetDelegate {
  public:
   struct Params {
     base::string16 title;
+
+    // Whether to display the widget's title in the frame.
+    bool show_title = true;
+
+#if defined(USE_AURA)
+    // Whether to center the widget's title within the frame.
+    bool center_title = false;
+#endif
+
+    // Whether to show a close button in the widget frame.
+    bool show_close_button = true;
   };
 
   WidgetDelegate();
@@ -209,6 +220,11 @@ class VIEWS_EXPORT WidgetDelegate {
   // Setters for data parameters of the WidgetDelegate. If you use these
   // setters, there is no need to override the corresponding virtual getters.
   void SetWindowTitle(const base::string16& title);
+  void SetShouldShowCloseButton(bool show_close_button);
+  void SetShouldShowTitle(bool show_title);
+#if defined(USE_AURA)
+  void SetShouldCenterTitle(bool center_title);
+#endif
 
  protected:
   virtual ~WidgetDelegate();

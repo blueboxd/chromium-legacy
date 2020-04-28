@@ -64,8 +64,6 @@ bool StackCopierSuspend::CopyStack(StackBuffer* stack_buffer,
         StackBuffer::kPlatformStackAlignment, stack_buffer->buffer());
   }
 
-  delegate->OnThreadResume();
-
   *stack_top = reinterpret_cast<uintptr_t>(stack_copy_bottom) + (top - bottom);
 
   for (uintptr_t* reg :

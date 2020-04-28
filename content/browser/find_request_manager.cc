@@ -83,7 +83,7 @@ FrameTreeNode* GetParent(FrameTreeNode* node) {
   if (!node)
     return nullptr;
   if (node->parent())
-    return node->parent();
+    return node->parent()->frame_tree_node();
 
   auto* contents = WebContentsImpl::FromFrameTreeNode(node);
   if (!node->IsMainFrame() || !contents->GetOuterWebContents())

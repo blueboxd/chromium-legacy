@@ -435,7 +435,7 @@ void InstantService::UpdateMostVisitedInfo() {
 void InstantService::SendNewTabPageURLToRenderer(
     content::RenderProcessHost* rph) {
   if (auto* channel = rph->GetChannel()) {
-    mojo::AssociatedRemote<chrome::mojom::SearchBouncer> client;
+    mojo::AssociatedRemote<search::mojom::SearchBouncer> client;
     channel->GetRemoteAssociatedInterface(&client);
     client->SetNewTabPageURL(search::GetNewTabPageURL(profile_));
   }

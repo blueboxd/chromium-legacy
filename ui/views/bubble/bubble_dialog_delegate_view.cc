@@ -179,7 +179,7 @@ Widget* BubbleDialogDelegateView::CreateBubble(
 #endif
 
   bubble_delegate->SizeToContents();
-  bubble_widget->AddObserver(bubble_delegate);
+  bubble_delegate->widget_observer_.Add(bubble_widget);
   return bubble_widget;
 }
 
@@ -203,8 +203,6 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
 }
 
 BubbleDialogDelegateView::~BubbleDialogDelegateView() {
-  if (GetWidget())
-    GetWidget()->RemoveObserver(this);
   SetLayoutManager(nullptr);
   SetAnchorView(nullptr);
 }
@@ -263,6 +261,9 @@ void BubbleDialogDelegateView::OnWidgetClosing(Widget* widget) {
 void BubbleDialogDelegateView::OnWidgetDestroying(Widget* widget) {
   if (anchor_widget() == widget)
     SetAnchorView(nullptr);
+
+  if (widget_observer_.IsObserving(widget))
+    widget_observer_.Remove(widget);
 }
 
 void BubbleDialogDelegateView::OnWidgetVisibilityChanging(Widget* widget,

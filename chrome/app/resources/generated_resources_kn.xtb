@@ -173,6 +173,7 @@
 <translation id="122082903575839559">ಪ್ರಮಾಣಪತ್ರ ಸಹಿ ಅಲ್ಗಾರಿದಮ್</translation>
 <translation id="1221024147024329929">RSA ಎನ್‌ಕ್ರಿಪ್ಶನ್‌ನೊಂದಿಗೆ PKCS #1 MD2</translation>
 <translation id="1221825588892235038">ಆಯ್ಕೆ ಮಾತ್ರ</translation>
+<translation id="1223484782328004593"><ph name="APP_NAME" /> ಗೆ ಪರವಾನಗಿ ಒಂದರ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="1223853788495130632">ಈ ಸೆಟ್ಟಿಂಗ್‌ಗೆ ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ದಿಷ್ಟ ಮೌಲ್ಯವನ್ನು ಶಿಫಾರಸು ಮಾಡುತ್ತಾರೆ.</translation>
 <translation id="1224275271335624810">ಅತಿ ಕ್ಷಿಪ್ರ</translation>
 <translation id="1225177025209879837">ವಿನಂತಿ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -211,6 +212,7 @@
 <translation id="1272978324304772054">ಈ ಬಳಕೆದಾರನ ಖಾತೆಯು ಸಾಧನವು ದಾಖಲಾಗಿರುವ ಡೊಮೇನ್‌ಗೆ ಸಂಬಂಧಿಸಿಲ್ಲ. ನೀವು ವಿಭಿನ್ನ ಡೊಮೆನ್ ಅನ್ನು ದಾಖಲಿಸಲು ಬಯಸುವುದಾದರೆ ನೀವು ಮೊದಲು ಮರುಪ್ರಾಪ್ತಿಯ ಸಾಧನದ ಮೂಲಕ ಹೋಗುವ ಅವಶ್ಯಕತೆ ಇದೆ.</translation>
 <translation id="1274977772557788323">Adobe Flash Player ಸಂಗ್ರಹಣೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="1274997165432133392">ಕುಕೀಗಳು ಮತ್ತು ಇತರ ಡೇಟಾ</translation>
+<translation id="1276994519141842946"><ph name="APP_NAME" /> ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="1280820357415527819">ಮೊಬೈಲ್ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಹುಡುಕಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1280965841156951489">ಫೈಲ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="1285320974508926690">ಈ ಸೈಟ್ ಅನ್ನು ಎಂದಿಗೂ ಭಾಷಾಂತರಿಸದಿರಿ</translation>
@@ -319,6 +321,7 @@
 <translation id="1426870617281699524">ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ ಎಂಬುದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ ಮತ್ತು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಪ್ರಾಂಪ್ಟ್ ಅನ್ನು ಸ್ವೀಕರಿಸಿ</translation>
 <translation id="1427269577154060167">ದೇಶ</translation>
 <translation id="142758023928848008">ಸ್ಟಿಕಿ ಕೀಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸು (ಅವುಗಳನ್ನು ಅನುಕ್ರಮವಾಗಿ ಟೈಪ್‌ ಮಾಡುವ ಮೂಲಕ ಕೀಬೋರ್ಡ್‌ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು)</translation>
+<translation id="142765311413773645"><ph name="APP_NAME" /> ಪರವಾನಗಿಯ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
 <translation id="1429300045468813835">ಎಲ್ಲವನ್ನೂ ತೆರವುಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="143027896309062157">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಮತ್ತು ನೀವು ಭೇಟಿ ನೀಡುವ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಎಲ್ಲ ಡೇಟಾವನ್ನು ಓದಿ ಮತ್ತು ಬದಲಾಯಿಸಿ</translation>
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
@@ -674,6 +677,7 @@
 <translation id="1867780286110144690">ನಿಮ್ಮ ಸ್ಥಾಪನೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು <ph name="PRODUCT_NAME" /> ಸಿದ್ದವಾಗಿದೆ</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">ಮೈಕ್ರೋಫೋನ್‌ಗೆ ಪ್ರವೇಶ ನೀಡಿ</translation>
+<translation id="1871534214638631766">ಕಂಟೆಂಟ್ ಮೇಲೆ ಬಲ ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ಅಥವಾ ದೀರ್ಘಕಾಲ ಒತ್ತಿಹಿಡಿದಾಗ, ಕಂಟೆಂಟ್‌ಗೆ ಸಂಬಂಧಿಸಿದ ಮಾಹಿತಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="1871615898038944731">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅಪ್‌ ಟು ಡೇಟ್‌ ಆಗಿದೆ</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{ಟ್ಯಾಬ್ ಅನ್ನು ಬೇರೊಂದು ವಿಂಡೋಗೆ ಸರಿಸಿ}one{ಟ್ಯಾಬ್‌ಗಳನ್ನು ಬೇರೊಂದು ವಿಂಡೋಗೆ ಸರಿಸಿ}other{ಟ್ಯಾಬ್‌ಗಳನ್ನು ಬೇರೊಂದು ವಿಂಡೋಗೆ ಸರಿಸಿ}}</translation>
 <translation id="1875386316419689002">ಈ ಟ್ಯಾಬ್, HID ಸಾಧನಕ್ಕೆ ಕನೆಕ್ಟ್ ಆಗಿದೆ.</translation>
@@ -730,6 +734,7 @@
 <translation id="1944528062465413897">ಬ್ಲೂಟೂತ್ ಜೋಡಿಸುವ ಕೋಡ್:</translation>
 <translation id="1944921356641260203">ಅಪ್‌ಡೇಟ್‌‌ ಕಂಡುಬಂದಿದೆ</translation>
 <translation id="1946577776959096882">ಖಾತೆಗಳನ್ನು ವೀಕ್ಷಿಸಿ</translation>
+<translation id="1949584741547056205">ತ್ವರಿತ ಉತ್ತರಗಳು</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">ಹಂಚಿಕೆಯನ್ನು ಅಳವಡಿಸುವುದರಲ್ಲಿ ದೋಷವಿದೆ. ನಿಮ್ಮ ರುಜುವಾತುಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="1956050014111002555">ಫೈಲ್ ಬಹು ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಒಳಗೊಂಡಿದೆ, ಅವುಗಳಲ್ಲಿ ಯಾವುದನ್ನೂ ಆಮದು ಮಾಡಿಕೊಳ್ಳಲಾಗಿಲ್ಲ: </translation>
@@ -1005,6 +1010,7 @@
 <translation id="2325444234681128157">ಪಾಸ್‌ವರ್ಡ್‌ ನೆನಪಿಟ್ಟುಕೊಳ್ಳಿ</translation>
 <translation id="2326931316514688470">ಅಪ್ಲಿಕೇಶನ್ &amp;ಮರುಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="2327492829706409234">ಅಪ್ಲಿಕೇಶನ್ ಸಕ್ರಿಯಗೊಳಿಸು</translation>
+<translation id="2328561734797404498"><ph name="APP_NAME" /> ಬಳಸಲು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="2329597144923131178">ನಿಮ್ಮ ಎಲ್ಲ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2332131598580221120">ಸ್ಟೋರ್‌ನಲ್ಲಿ ವೀಕ್ಷಿಸಿ</translation>
 <translation id="2332192922827071008">ಪ್ರಾಶಸ್ತ್ಯಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
@@ -1262,6 +1268,7 @@
 <translation id="2665717534925640469">ಈ ಪುಟವು ಇದೀಗ ಪೂರ್ಣ ಪರದೆಯಾಗಿದೆ ಮತ್ತು ನಿಮ್ಮ ಮೌಸ್ ಕರ್ಸರ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದೆ.</translation>
 <translation id="2665919335226618153">ಓಹ್, ಹೋಯ್ತು! ಸ್ವರೂಪಣೆ ಸಂದರ್ಭದಲ್ಲಿ ದೋಷ ಕಂಡುಬಂದಿದೆ.</translation>
 <translation id="2667463864537187133">ಕಾಗುಣಿತ ಪರಿಶೀಲನೆ ನಿರ್ವಹಿಸಿ</translation>
+<translation id="2669241540496514785"><ph name="APP_NAME" /> ಅನ್ನು ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> Chrome ಟ್ಯಾಬ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದೆ.</translation>
 <translation id="2670429602441959756">VR ನಲ್ಲಿ ಇನ್ನೂ ಬೆಂಬಲಿಸದ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಈ ಪುಟವು ಒಳಗೊಂಡಿದೆ. ನಿರ್ಗಮಿಸುತ್ತಿದೆ...</translation>
 <translation id="2671451824761031126">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಸಿದ್ಧವಾಗಿವೆ</translation>
@@ -1338,6 +1345,7 @@
 <translation id="2757338480560142065">ನೀವು ಈಗ ಉಳಿಸುತ್ತಿರುವ ಪಾಸ್‌ವರ್ಡ್, ಈ ಮೊದಲು <ph name="WEBSITE" /> ಗೆ ಹೊಂದಿಸಿದ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗೆ ಹೋಲುತ್ತಿದೆಯಾ ಎಂಬುದನ್ನು ದೃಢೀಕರಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="2762441749940182211">ಕ್ಯಾಮೆರಾವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="2765217105034171413">ಸಣ್ಣ</translation>
+<translation id="2766091842833763951">ಕಾನ್ಫಿಗರೇಶನ್ ಸಮಸ್ಯೆ ಒಂದರಿಂದಾಗಿ, <ph name="APP_NAME" /> ಅನ್ನು ಸೆಟಪ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸಾಧನ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ. ದೋಷ ಕೋಡ್: <ph name="ERROR_CODE" />.</translation>
 <translation id="2766161002040448006">ಪೋಷಕರ ಬಳಿ ಕೇಳಿ</translation>
 <translation id="2767127727915954024">ಈ ಸೈಟ್‌ಗೆ ಸಂಬಂಧಿಸಿದ ಎಲ್ಲಾ ಟ್ಯಾಬ್‌ಗಳನ್ನು ನೀವು ಮುಚ್ಚುವವರೆಗೆ, <ph name="FILENAME" /> ಫೈಲ್ ಅನ್ನು ಎಡಿಟ್ ಮಾಡಲು <ph name="ORIGIN" /> ಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> ಹೆಸರಿನಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಲಾಗಿದೆ.</translation>
@@ -1910,7 +1918,6 @@
 <translation id="3543597750097719865">SHA-512 ಜೊತೆಗೆ X9.62 ECDSA ಸಹಿ</translation>
 <translation id="3544879808695557954">ಬಳಕೆದಾರರ ಹೆಸರು (ಐಚ್ಛಿಕ)</translation>
 <translation id="354602065659584722">ಹಾನಿಕಾರಕ ಸಾಫ್ಟ್‌ವೇರ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ</translation>
-<translation id="3546284949680281622">TCP</translation>
 <translation id="3547954654003013442">ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="3548162552723420559">ಪರಿಸರಕ್ಕೆ ಸರಿಹೊಂದುವಂತೆ ಪರದೆಯ ಬಣ್ಣವನ್ನು ಹೊಂದಾಣಿಕೆ ಮಾಡುತ್ತದೆ</translation>
 <translation id="3550915441744863158">Chrome ಸ್ವಯಂಚಾಲಿತವಾಗಿ ನವೀಕರಣಗೊಳ್ಳುತ್ತದೆ. ಹೀಗಾಗಿ ನೀವು ಯಾವಾಗಲೂ ತಾಜಾ ಆವೃತ್ತಿಯನ್ನು ಹೊಂದಿರುತ್ತೀರಿ.</translation>
@@ -2420,6 +2427,7 @@
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">ಭಾಷೆಗಳು</translation>
 <translation id="4184885522552335684">ಡಿಸ್‌ಪ್ಲೇಯನ್ನು ಸರಿಸಲು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
+<translation id="4187424053537113647"><ph name="APP_NAME" /> ಅನ್ನು ಹೊಂದಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4194570336751258953">ಕ್ಲಿಕ್ ಮಾಡಲು ಟ್ಯಾಪ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="4195643157523330669">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="4195814663415092787">ಎಲ್ಲಿ ಬಿಡಲಾಗಿದೆಯೋ ಅಲ್ಲಿಂದಲೇ ಮುಂದುವರೆ</translation>
@@ -2538,6 +2546,7 @@
 <translation id="4379281552162875326">"<ph name="APP_NAME" />" ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕೆ?</translation>
 <translation id="4380648069038809855">ಪೂರ್ಣಪರದೆಗೆ ಪ್ರವೇಶಿಸಲಾಗಿದೆ</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" />, +1 ಕ್ಕೂ ಹೆಚ್ಚಿನ ಖಾತೆ}one{<ph name="EMAIL" />, +<ph name="EXTRA_ACCOUNTS" /> ಕ್ಕೂ ಹೆಚ್ಚಿನ ಖಾತೆಗಳು}other{<ph name="EMAIL" />, +<ph name="EXTRA_ACCOUNTS" /> ಕ್ಕೂ ಹೆಚ್ಚಿನ ಖಾತೆಗಳು}}</translation>
+<translation id="43829217466934313"><ph name="APP_NAME" /> ಅನ್ನು ಈ ಸಾಧನದಲ್ಲಿ ಅನುಮತಿಸಲಾಗುವುದಿಲ್ಲ. ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸಾಧನ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ. ದೋಷ ಕೋಡ್: <ph name="ERROR_CODE" />.</translation>
 <translation id="4384312707950789900">ಆದ್ಯತೆಗೆ ಸೇರಿಸಿ</translation>
 <translation id="4384652540891215547">ವಿಸ್ತರಣೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="438503109373656455">ಸರಾಟೊಗಾ</translation>
@@ -2871,6 +2880,7 @@
 <translation id="4863769717153320198"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (ಡಿಫಾಲ್ಟ್‌‌) ನಂತೆ ತೋರುತ್ತಿದೆ</translation>
 <translation id="4864369630010738180">ಸೈನ್ ಇನ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="486635084936119914">ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ನಂತರ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕೆಲವು ಫೈಲ್ ಪ್ರಕಾರಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
+<translation id="4869289251183233431">ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಕಡಿಮೆ ಸ್ಥಳಾವಕಾಶವಿದೆ. <ph name="APP_NAME" /> ಬಳಸಲು ಕನಿಷ್ಠ <ph name="MINIMUM_SPACE" /> ಯಷ್ಟು ಮುಕ್ತ ಸ್ಥಳಾವಕಾಶದ ಅಗತ್ಯವಿದೆ ಮತ್ತು <ph name="RECOMMENDED_SPACE" />ಗಿಂತ ಹೆಚ್ಚು ಮುಕ್ತ ಸ್ಥಳಾವಕಾಶ ಇರಬೇಕೆಂದು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ. ಮುಕ್ತ ಸ್ಥಳಾವಕಾಶವನ್ನು ಹೆಚ್ಚಿಸಲು, ಸಾಧನದಲ್ಲಿರುವ ಫೈಲ್‌ಗಳನ್ನು ಅಳಿಸಿ.</translation>
 <translation id="48704129375571883">ಹೆಚ್ಚುವರಿ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="4870758487381879312">ಕಾನ್ಫಿಗರೇಶನ್ ಮಾಹಿತಿಯನ್ನು ಪಡೆಯಲು ನಿರ್ವಾಹಕರು ನೀಡಿದ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ</translation>
 <translation id="4870903493621965035">ಯಾವುದೇ ಜೋಡಿಸಲಾದ ಸಾಧನಗಳಿಲ್ಲ</translation>
@@ -2923,6 +2933,7 @@
 <translation id="4920887663447894854">ಈ ಪುಟದಲ್ಲಿ ನಿಮ್ಮ ಸ್ಥಾನವನ್ನು ನಿಗಾ ಇರಿಸದಂತೆ ಮುಂದಿನ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ:</translation>
 <translation id="49226369361073053">{0,plural, =0{ಈಗಲೇ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ}=1{1 ಸೆಕೆಂಡ್ ಒಳಗೆ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ}one{# ಸೆಕೆಂಡ್‌ಗಳ ಒಳಗೆ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ}other{# ಸೆಕೆಂಡ್‌ಗಳ ಒಳಗೆ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ}}</translation>
 <translation id="492299503953721473">Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕು</translation>
+<translation id="492363500327720082"><ph name="APP_NAME" /> ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925320384394644410">ನಿಮ್ಮ ಪೋರ್ಟ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ</translation>
 <translation id="4925542575807923399">ಬಹು ಸೈನ್ ಇನ್ ಸೆಷನ್‌ನಲ್ಲಿ ಈ ಖಾತೆಯನ್ನು ಮೊದಲಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲಾದ ಖಾತೆಯು ಅಗತ್ಯವಿರುತ್ತದೆ ಎಂದು ಈ ಖಾತೆಯ ನಿರ್ವಾಹಕರಿಗೆ ಅಗತ್ಯವಿರುತ್ತದೆ.</translation>
@@ -3485,6 +3496,7 @@
 <translation id="5692875591060376599">ಆಯ್ಕೆ ಮಾಡಿದ ಫೈಲ್, ಅಪರಿಚಿತವಾಗಿದೆ ಮತ್ತು ಇದು ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು. ಸ್ಕ್ಯಾನ್ ಮಾಡಲು Google ಸುಧಾರಿತ ರಕ್ಷಣೆಗೆ ಕಳಿಸುವುದೇ?</translation>
 <translation id="569425414730375234">ಪ್ರಸ್ತುತ ಅದೃಶ್ಯ ಸೆಶನ್: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" ನಿಂದ ದುರುಪಯೋಗವನ್ನು ವರದಿ ಮಾಡಿ</translation>
+<translation id="5696177755977520104">Chrome OS ಸೆಟ್ಟಿಂಗ್‌ಗಳ ಸಿಂಕ್</translation>
 <translation id="5696679855467848181">ಪ್ರಸ್ತುತ PPD ಫೈಲ್ ಬಳಕೆಯಲ್ಲಿದೆ: <ph name="PPD_NAME" /></translation>
 <translation id="570043786759263127">Google Play ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಮತ್ತು ಸೇವೆಗಳು</translation>
 <translation id="5700836101007545240">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಸಂಪರ್ಕ ಸೇರಿಸುವುದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ</translation>
@@ -3795,6 +3807,7 @@
 <translation id="6103681770816982672">ಎಚ್ಚರಿಕೆ: ನೀವು ಡೆವಲಪರ್ ಚಾನಲ್‌ಗೆ ಬದಲಾಯಿಸುತ್ತಿರುವಿರಿ</translation>
 <translation id="6104068876731806426">Google ಖಾತೆಗಳು</translation>
 <translation id="6104311680260824317">ಡೊಮೇನ್‌ಗೆ ಸಾಧನವನ್ನು ಸೇರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಿರ್ದಿಷ್ಟ Kerberos ಎನ್‌ಕ್ರಿಪ್ಶನ್ ಪ್ರಕಾರಗಳನ್ನು ಸರ್ವರ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ಎನ್‌ಕ್ರಿಪ್ಶನ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗಾಗಿ "ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳನ್ನು" ಪರಿಶೀಲಿಸಿ.</translation>
+<translation id="6105994589138235234">Chrome ಬ್ರೌಸರ್ ಸಿಂಕ್</translation>
 <translation id="6112294629795967147">ಮರುಗಾತ್ರಗೊಳಿಸಲು ಸ್ಪರ್ಶಿಸಿ</translation>
 <translation id="6112727384379533756">ಟಿಕೆಟ್ ಅನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="6112931163620622315">ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
@@ -3832,6 +3845,7 @@
 <translation id="6155141482566063812">ಹಿನ್ನೆಲೆ ಟ್ಯಾಬ್ ನಿಮ್ಮ ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದೆ</translation>
 <translation id="6156323911414505561">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="6156863943908443225">ಸ್ಕ್ರಿಪ್ಟ್ ಕ್ಯಾಷ್</translation>
+<translation id="6157197137667039897"><ph name="APP_NAME" /> ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸಾಧನ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ. ದೋಷ ಕೋಡ್: <ph name="ERROR_CODE" />.</translation>
 <translation id="6160625263637492097">ದೃಢೀಕರಣಕ್ಕೆ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಒದಗಿಸಿ</translation>
 <translation id="6163363155248589649">&amp;ಸಾಮಾನ್ಯ</translation>
 <translation id="6163522313638838258">ಎಲ್ಲವನ್ನೂ ಹಿಗ್ಗಿಸು...</translation>
@@ -4032,6 +4046,7 @@
 <translation id="6430814529589430811">Base64-ಎನ್‌ಕೋಡ್ ಮಾಡಿದ ASCII, ಏಕ ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="6431347207794742960">ಈ ಕಂಪ್ಯೂಟರ್‌ನ ಎಲ್ಲ ಬಳಕೆದಾರರಿಗಾಗಿ <ph name="PRODUCT_NAME" /> ಸ್ವಯಂಚಾಲಿತ ನವೀಕರಣಗಳನ್ನು ಹೊಂದಿಸುತ್ತದೆ.</translation>
 <translation id="6434309073475700221">ತಿರಸ್ಕರಿಸಿ</translation>
+<translation id="6434325376267409267">ನೀವು <ph name="APP_NAME" /> ಅನ್ನು ಬಳಸುವ ಮೊದಲು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="6436164536244065364">ವೆಬ್ ಅಂಗಡಿಯಲ್ಲಿ ವೀಕ್ಷಿಸಿ</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - ಆಡಿಯೋ ಪ್ಲೇ ಆಗುತ್ತಿದೆ</translation>
 <translation id="6442187272350399447">ಆಕರ್ಷಕ</translation>
@@ -4075,6 +4090,7 @@
 <translation id="6491376743066338510">ದೃಢೀಕರಣ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="6494445798847293442">ಪ್ರಮಾಣೀಕರಣದ ಪ್ರಾಧಿಕಾರವಲ್ಲ</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_COUNT" /> ರಲ್ಲಿ <ph name="NETWORK_INDEX" /> ನೆಟ್‌ವರ್ಕ್, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />%, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸಿದ್ದಾರೆ, ವಿವರಗಳು</translation>
+<translation id="6496965928959882519">ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಕಡಿಮೆ ಸ್ಥಳಾವಕಾಶವಿದೆ. <ph name="APP_NAME" /> ಬಳಸಲು ಕನಿಷ್ಠ <ph name="RECOMMENDED_SPACE" /> ಯಷ್ಟು ಮುಕ್ತ ಸ್ಥಳಾವಕಾಶ ಇರಬೇಕೆಂದು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ. ಮುಕ್ತ ಸ್ಥಳಾವಕಾಶವನ್ನು ಹೆಚ್ಚಿಸಲು, ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿರುವ ಫೈಲ್‌ಗಳನ್ನು ಅಳಿಸಿ.</translation>
 <translation id="6498249116389603658">&amp;ನಿಮ್ಮ ಎಲ್ಲಾ ಭಾಷೆಗಳು</translation>
 <translation id="6499143127267478107">ಪ್ರಾಕ್ಸಿ ಸ್ಕ್ರಿಪ್ಟ್‌ನಲ್ಲಿ ಹೋಸ್ಟ್ ಅನ್ನು ಪರಿಹರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="6499681088828539489">ಹಂಚಿರುವ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಪ್ರಾಕ್ಸಿಗಳನ್ನು ಅನುಮತಿಸಬೇಡಿ</translation>
@@ -4747,6 +4763,7 @@
 <translation id="7421925624202799674">ಫ್ರೇಮ್ ಮೂಲವನ್ನು &amp;ವೀಕ್ಷಿಸಿ</translation>
 <translation id="7422192691352527311">ಪ್ರಾಶಸ್ತ್ಯಗಳು...</translation>
 <translation id="7423098979219808738">ಮೊದಲು ಕೇಳಿ</translation>
+<translation id="7423807071740419372">ರನ್ ಆಗಲು <ph name="APP_NAME" /> ಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">ಹಿನ್ನೆಲೆ ಪುಟ: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7427798576651127129"><ph name="DEVICE_NAME" /> ನಿಂದ ಕರೆ ಮಾಡಿ</translation>
@@ -4777,6 +4794,7 @@
 <translation id="746216226901520237">ಮುಂದಿನ ಬಾರಿ, ನಿಮ್ಮ ಫೋನ್ ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡುತ್ತದೆ. ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ Smart Lock ಅನ್ನು ಆಫ್ ಮಾಡಬಹುದು.</translation>
 <translation id="7463006580194749499">ವ್ಯಕ್ತಿಯನ್ನು ಸೇರಿಸು</translation>
 <translation id="7465522323587461835">{NUM_OPEN_TABS,plural, =1{# ಟ್ಯಾಬ್ ತೆರೆದಿದೆ, ಟ್ಯಾಬ್ ಸ್ಟ್ರಿಪ್ ಟಾಗಲ್ ಮಾಡಲು ಒತ್ತಿರಿ}one{# ಟ್ಯಾಬ್‌ಗಳು ತೆರೆದಿವೆ, ಟ್ಯಾಬ್‌ ಸ್ಟ್ರಿಪ್ ಟಾಗಲ್ ಮಾಡಲು ಒತ್ತಿರಿ}other{# ಟ್ಯಾಬ್‌ಗಳು ತೆರೆದಿವೆ, ಟ್ಯಾಬ್‌ ಸ್ಟ್ರಿಪ್ ಟಾಗಲ್ ಮಾಡಲು ಒತ್ತಿರಿ}}</translation>
+<translation id="7465635034594602553">ಏನೋ ತಪ್ಪಾಗಿದೆ. ಕೆಲವು ನಿಮಿಷಗಳವರೆಗೆ ನಿರೀಕ್ಷಿಸಿ ಮತ್ತು <ph name="APP_NAME" /> ಅನ್ನು ಪುನಃ ರನ್ ಮಾಡಿ.</translation>
 <translation id="7465778193084373987">Netscape ಪ್ರಮಾಣಪತ್ರ ಹಿಂತೆಗೆದುಕೊಳ್ಳುವಿಕೆ URL</translation>
 <translation id="7469894403370665791">ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ</translation>
 <translation id="747114903913869239">ದೋಷ: ವಿಸ್ತರಣೆಯನ್ನು ಡಿಕೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
@@ -5556,7 +5574,6 @@
 <translation id="8493236660459102203">ಮೈಕ್ರೋಫೋನ್:</translation>
 <translation id="8496717697661868878">ಈ ಪ್ಲಗಿನ್ ಚಾಲನೆ ಮಾಡು</translation>
 <translation id="8497219075884839166">ವಿಂಡೋಗಳ ಸೌಲಭ್ಯಗಳು</translation>
-<translation id="8498014781268779783">UDP</translation>
 <translation id="8498214519255567734">ಮಂದ ಬೆಳಕಿನಲ್ಲಿಯೂ ನಿಮ್ಮ ಪರದೆಯನ್ನು ನೋಡಲು ಅಥವಾ ಓದಲು ಸುಲಭವಾಗಿಸುತ್ತದೆ</translation>
 <translation id="8498395510292172881">Chrome ನಲ್ಲಿ ಓದುವುದನ್ನು ಮುಂದುವರಿಸಿ</translation>
 <translation id="8500234928660943538">PUK ತಪ್ಪಾಗಿದೆ. ಬಾಕಿಯಿರುವ ಮರುಪ್ರಯತ್ನಗಳು: <ph name="RETRIES" />.</translation>
@@ -5817,6 +5834,7 @@
 <translation id="8818958672113348984">ನಿಮ್ಮ ಫೋನ್ ಮೂಲಕ ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="8820817407110198400">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="8821045908425223359">ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಐಪಿ ವಿಳಾಸವನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿ</translation>
+<translation id="8821268776955756404"><ph name="APP_NAME" /> ಬಳಸಲು ಸಿದ್ಧವಾಗಿದೆ.</translation>
 <translation id="882204272221080310">ಹೆಚ್ಚುವರಿ ಸುರಕ್ಷತೆಗಾಗಿ ಫರ್ಮ್‌ವೇರ್ ಅಪ್‌ಡೇಟ್‌‌ ಮಾಡಿ.</translation>
 <translation id="8823514049557262177">ಲಿಂಕ್ ಪ&amp;ಠ್ಯ ನಕಲಿಸಿ</translation>
 <translation id="8823559166155093873">ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
@@ -5887,6 +5905,7 @@
 <translation id="8902667442496790482">ಆಯ್ಕೆಮಾಡಿ ಮತ್ತು ಆಲಿಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="8903263458134414071">ಸೈನ್ ಇನ್ ಮಾಡಲು ಒಂದು ಖಾತೆಯನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="890616557918890486">ಮೂಲವನ್ನು ಬದಲಿಸಿ</translation>
+<translation id="8909298138148012791"><ph name="APP_NAME" /> ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8909833622202089127">ನಿಮ್ಮ ಸ್ಧಳವನ್ನು ಸೈಟ್‌ ಟ್ರ್ಯಾಕ್ ಮಾಡುತ್ತಿದೆ</translation>
 <translation id="8910146161325739742">ನಿಮ್ಮ ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಿ</translation>
 <translation id="8910222113987937043">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಮಾಡಲಾಗುವ ಬದಲಾವಣೆಗಳನ್ನು ಇನ್ನು ಮುಂದೆ ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸಿಂಕ್‌ ಮಾಡಲಾಗುವುದಿಲ್ಲ. ಆದಾಗ್ಯೂ, ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಡೇಟಾ ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿಯೇ ಇರುತ್ತದೆ ಮತ್ತು <ph name="BEGIN_LINK" />Google ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌<ph name="END_LINK" />ನಲ್ಲಿ ನಿರ್ವಹಿಸಬಹುದಾಗಿದೆ.</translation>

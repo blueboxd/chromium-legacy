@@ -655,19 +655,6 @@ class WebContents : public PageNavigator,
   // page.
   virtual void SyncRendererPrefs() = 0;
 
-  // Notifies WebContents that an attempt has been made to read the cookies in
-  // |cookie_list|.
-  virtual void OnCookiesRead(const GURL& url,
-                             const GURL& first_party_url,
-                             const net::CookieList& cookie_list,
-                             bool blocked_by_policy) = 0;
-
-  // Notifies WebContents that an attempt has been made to set |cookie|.
-  virtual void OnCookieChange(const GURL& url,
-                              const GURL& first_party_url,
-                              const net::CanonicalCookie& cookie,
-                              bool blocked_by_policy) = 0;
-
   // Commands ------------------------------------------------------------------
 
   // Stop any pending navigation.

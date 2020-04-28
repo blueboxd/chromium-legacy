@@ -63,7 +63,6 @@
 <translation id="3123473560110926937">Bloqueado em alguns sites.</translation>
 <translation id="3190152372525844641">Ative as autorizações para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
-<translation id="3223655101706843289">Esta ação limpa todos os dados e cookies armazenados por <ph name="ORIGIN" /> e pelas respetivas apps no seu ecrã principal.</translation>
 <translation id="3227137524299004712">Microfone</translation>
 <translation id="3277252321222022663">Permitir que os sites acedam aos sensores (recomendado)</translation>
 <translation id="3295602654194328831">Ocultar informações</translation>
@@ -111,6 +110,7 @@
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5335288049665977812">Permitir que os sites executem JavaScript (recomendado)</translation>
 <translation id="534295439873310000">Dispositivos NFC</translation>
+<translation id="5354152178998424783">Esta ação eliminará <ph name="DATASIZE" /> de dados e cookies armazenados pelos sites.</translation>
 <translation id="5391532827096253100">A sua ligação a este site não é segura. Informações do site</translation>
 <translation id="5494752089476963479">Bloquear anúncios em sites que apresentam anúncios intrusivos ou enganadores</translation>
 <translation id="5505264765875738116">Os sites não podem pedir para enviar notificações.</translation>
@@ -179,6 +179,7 @@
 <translation id="7817023149356982970">A sua sessão será terminada neste site.</translation>
 <translation id="7828557259026017104">Os cookies são ficheiros criados pelos Websites que visitou. Os sites utilizam os cookies para memorizar as suas preferências. Os cookies de terceiros são criados por outros sites. Estes sites possuem algum do conteúdo, tal como anúncios ou imagens, que vê na página Web que visita.</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
+<translation id="7846621471902887024">A sua sessão terminará em todos os sites.</translation>
 <translation id="7882806643839505685">Permita a reprodução de som de um site específico.</translation>
 <translation id="7993619969781047893">As funcionalidades em alguns sites podem falhar.</translation>
 <translation id="7999064672810608036">Tem a certeza de que pretende limpar todos os dados locais, incluindo cookies, e repor todas as autorizações para este Website?</translation>

@@ -10,7 +10,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/shell/test_runner/gamepad_controller.h"

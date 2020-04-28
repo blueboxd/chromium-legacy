@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/common/ax_serialization_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
@@ -1255,6 +1256,17 @@ gfx::Rect BrowserAccessibility::RelativeToAbsoluteBounds(
 
   if (coordinate_system == ui::AXCoordinateSystem::kScreenDIPs ||
       coordinate_system == ui::AXCoordinateSystem::kScreenPhysicalPixels) {
+    // Most platforms include page scale factor in the transform on the root
+    // node of the AXTree. That transform gets applied by the call to
+    // RelativeToTreeBounds() in the loop above. However, if the root transform
+    // did not include page scale factor, we need to apply it now.
+    // TODO(crbug.com/1074116): this should probably apply visual viewport
+    // offset as well.
+    if (!content::AXShouldIncludePageScaleFactorInRoot()) {
+      BrowserAccessibilityManager* root_manager = manager()->GetRootManager();
+      if (root_manager)
+        bounds.Scale(root_manager->GetPageScaleFactor());
+    }
     bounds.Offset(
         manager()->GetViewBoundsInScreenCoordinates().OffsetFromOrigin());
     if (coordinate_system == ui::AXCoordinateSystem::kScreenPhysicalPixels &&

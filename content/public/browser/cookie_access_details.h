@@ -1,0 +1,34 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_PUBLIC_BROWSER_COOKIE_ACCESS_DETAILS_H_
+#define CONTENT_PUBLIC_BROWSER_COOKIE_ACCESS_DETAILS_H_
+
+#include "content/common/content_export.h"
+#include "net/cookies/canonical_cookie.h"
+#include "url/gurl.h"
+
+namespace content {
+
+struct CONTENT_EXPORT CookieAccessDetails {
+  enum class Type { kRead, kChange };
+
+  CookieAccessDetails();
+  CookieAccessDetails(Type type,
+                      const GURL& url,
+                      const GURL& first_party_url,
+                      const net::CookieList& list,
+                      bool blocked_by_policy = false);
+  ~CookieAccessDetails();
+
+  Type type;
+  GURL url;
+  GURL first_party_url;
+  net::CookieList cookie_list;
+  bool blocked_by_policy;
+};
+
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_COOKIE_ACCESS_DETAILS_H_

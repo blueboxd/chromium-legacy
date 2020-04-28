@@ -121,7 +121,7 @@ void WebAuthFlow::DetachDelegateAndDelete() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
-content::StoragePartition* WebAuthFlow::GetGuestPartition() const {
+content::StoragePartition* WebAuthFlow::GetGuestPartition() {
   return content::BrowserContext::GetStoragePartitionForSite(
       profile_, GetWebViewSiteURL());
 }

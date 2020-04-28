@@ -213,11 +213,11 @@ IN_PROC_BROWSER_TEST_P(ForceEnabledOriginTrialsBrowserTest,
 
   // When Iframe navigates away, it loses origin trial.
   const GURL url("https://other.test/notrial.html");
+  TestNavigationObserver navigation_observer(url);
+  navigation_observer.WatchExistingWebContents();
   ASSERT_TRUE(content::ExecuteScript(
       GetFrameByName("same-origin"),
       content::JsReplace("location.href=$1", url.spec())));
-  TestNavigationObserver navigation_observer(url);
-  navigation_observer.WatchExistingWebContents();
   navigation_observer.WaitForNavigationFinished();
   EXPECT_FALSE(HasTrialEnabled(GetFrameByName("same-origin")));
 }
@@ -235,7 +235,9 @@ IN_PROC_BROWSER_TEST_P(ForceEnabledOriginTrialsBrowserTest,
   EXPECT_FALSE(HasTrialEnabled(GetFrameByName("same-origin")));
   EXPECT_FALSE(HasTrialEnabled(GetFrameByName("cross-origin")));
 
-  // Create an iframe with origin trial.
+  // Create an iframe with origin trial and wait for it to load
+  TestNavigationObserver navigation_observer(frame_url);
+  navigation_observer.WatchExistingWebContents();
   ASSERT_TRUE(content::ExecuteScript(
       GetFrameByName("same-origin"),
       content::JsReplace("{"
@@ -245,10 +247,6 @@ IN_PROC_BROWSER_TEST_P(ForceEnabledOriginTrialsBrowserTest,
                          "  document.body.appendChild(ifrm);"
                          "}",
                          frame_url.spec())));
-
-  // Wait for iframe to load.
-  TestNavigationObserver navigation_observer(frame_url);
-  navigation_observer.WatchExistingWebContents();
   navigation_observer.WaitForNavigationFinished();
 
   // The newly created iframe should have origin trial.

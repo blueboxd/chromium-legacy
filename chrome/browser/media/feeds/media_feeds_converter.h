@@ -18,7 +18,7 @@ namespace media_feeds {
 // the returned result.
 base::Optional<std::vector<mojom::MediaFeedItemPtr>> GetMediaFeeds(
     const schema_org::improved::mojom::EntityPtr& schema_org_entity,
-    std::vector<media_session::MediaImage>* logos,
+    std::vector<mojom::MediaImagePtr>* logos,
     std::string* display_name);
 
 }  // namespace media_feeds

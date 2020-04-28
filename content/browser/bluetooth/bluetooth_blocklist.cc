@@ -4,7 +4,7 @@
 
 #include "content/browser/bluetooth/bluetooth_blocklist.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_split.h"

@@ -177,6 +177,8 @@ public class AssistantCollectUserDataModel extends PropertyModel {
 
     public static final WritableObjectPropertyKey<String> INFO_SECTION_TEXT =
             new WritableObjectPropertyKey<>();
+    public static final WritableBooleanPropertyKey INFO_SECTION_TEXT_CENTER =
+            new WritableBooleanPropertyKey();
 
     public static final WritableObjectPropertyKey<View> GENERIC_USER_INTERFACE_PREPENDED =
             new WritableObjectPropertyKey<>();
@@ -205,9 +207,9 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 DATE_RANGE_END_TIMESLOT, DATE_RANGE_END_DATE_LABEL, DATE_RANGE_END_TIME_LABEL,
                 DATE_RANGE_DATE_NOT_SET_ERROR_MESSAGE, DATE_RANGE_TIME_NOT_SET_ERROR_MESSAGE,
                 PREPENDED_SECTIONS, APPENDED_SECTIONS, TERMS_REQUIRE_REVIEW_TEXT,
-                PRIVACY_NOTICE_TEXT, INFO_SECTION_TEXT, GENERIC_USER_INTERFACE_PREPENDED,
-                GENERIC_USER_INTERFACE_APPENDED, CONTACT_SUMMARY_DESCRIPTION_OPTIONS,
-                CONTACT_FULL_DESCRIPTION_OPTIONS);
+                PRIVACY_NOTICE_TEXT, INFO_SECTION_TEXT, INFO_SECTION_TEXT_CENTER,
+                GENERIC_USER_INTERFACE_PREPENDED, GENERIC_USER_INTERFACE_APPENDED,
+                CONTACT_SUMMARY_DESCRIPTION_OPTIONS, CONTACT_FULL_DESCRIPTION_OPTIONS);
 
         /**
          * Set initial state for basic type properties (others are implicitly null).
@@ -509,8 +511,9 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     }
 
     @CalledByNative
-    private void setInfoSectionText(String text) {
+    private void setInfoSectionText(String text, boolean center) {
         set(INFO_SECTION_TEXT, text);
+        set(INFO_SECTION_TEXT_CENTER, center);
     }
 
     @CalledByNative

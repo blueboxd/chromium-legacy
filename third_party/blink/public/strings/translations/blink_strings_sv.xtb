@@ -72,6 +72,7 @@
 <translation id="310520048233152454">Ange en webbadress.</translation>
 <translation id="3175736971608411871">timer</translation>
 <translation id="3199563858620722075">kombinationsruta</translation>
+<translation id="3329013043687509092">Mättnad</translation>
 <translation id="3450233048674729344">Värdet måste vara mindre än eller lika med <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definition</translation>
 <translation id="3557673793733683882">rubrik <ph name="HEADING_LEVEL" /></translation>
@@ -260,6 +261,7 @@
 <translation id="8845239796550121995">Castar nu till TV:n</translation>
 <translation id="8851136666856101339">huvud</translation>
 <translation id="8875657656876809964">Videouppspelningsfel</translation>
+<translation id="8889402386540077796">Nyans</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8987927404178983737">Månad</translation>
 <translation id="901493112792887934">aktuell tid i sekunder</translation>

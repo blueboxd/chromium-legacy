@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed;
 
+import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuListItem;
+
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.view.View;
@@ -18,7 +20,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
@@ -31,7 +35,14 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
+import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 
 /**
  * A mediator for the {@link FeedSurfaceCoordinator} responsible for interacting with the
@@ -39,11 +50,12 @@ import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServ
  */
 class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
                                      ContextMenuManager.TouchEnabledDelegate,
-                                     TemplateUrlServiceObserver {
+                                     TemplateUrlServiceObserver, ListMenu.Delegate {
     private final FeedSurfaceCoordinator mCoordinator;
     private final @Nullable SnapScrollHelper mSnapScrollHelper;
     private final PrefChangeRegistrar mPrefChangeRegistrar;
     private final SigninManager mSigninManager;
+    private final NativePageNavigationDelegate mPageNavigationDelegate;
 
     private @Nullable ScrollListener mStreamScrollListener;
     private ContentChangedListener mStreamContentChangedListener;
@@ -55,6 +67,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
     private boolean mHasHeader;
     private boolean mTouchEnabled = true;
     private boolean mStreamContentChanged;
+    private boolean mHasHeaderMenu;
     private int mThumbnailWidth;
     private int mThumbnailHeight;
     private int mThumbnailScrollY;
@@ -62,16 +75,27 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
     /**
      * @param coordinator The {@link FeedSurfaceCoordinator} that interacts with this class.
      * @param snapScrollHelper The {@link SnapScrollHelper} that handles snap scrolling.
+     * @param pageNavigationDelegate The {@link NativePageNavigationDelegate} that handles page
+     *                               navigation.
      */
-    FeedSurfaceMediator(
-            FeedSurfaceCoordinator coordinator, @Nullable SnapScrollHelper snapScrollHelper) {
+    FeedSurfaceMediator(FeedSurfaceCoordinator coordinator,
+            @Nullable SnapScrollHelper snapScrollHelper,
+            @Nullable NativePageNavigationDelegate pageNavigationDelegate) {
         mCoordinator = coordinator;
         mSnapScrollHelper = snapScrollHelper;
         mSigninManager = IdentityServicesProvider.get().getSigninManager();
+        mPageNavigationDelegate = pageNavigationDelegate;
 
         mPrefChangeRegistrar = new PrefChangeRegistrar();
         mHasHeader = mCoordinator.getSectionHeaderView() != null;
         mPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_SECTION_ENABLED, this::updateContent);
+        mHasHeaderMenu = ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_MENU);
+
+        // Check that there is a navigation delegate when using the feed header menu.
+        if (mPageNavigationDelegate == null && mHasHeaderMenu) {
+            assert false : "Need navigation delegate for header menu";
+        }
+
         initialize();
         // Create the content.
         updateContent();
@@ -150,12 +174,17 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
                 PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
 
         if (mHasHeader) {
-            mSectionHeader = new SectionHeader(
-                    getSectionHeaderText(), suggestionsVisible, this::onSectionHeaderToggled);
+            mSectionHeader = new SectionHeader(getSectionHeaderText(suggestionsVisible),
+                    suggestionsVisible, this::onSectionHeaderToggled);
             mPrefChangeRegistrar.addObserver(
                     Pref.NTP_ARTICLES_LIST_VISIBLE, this::updateSectionHeader);
             TemplateUrlServiceFactory.get().addObserver(this);
             mCoordinator.getSectionHeaderView().setHeader(mSectionHeader);
+
+            if (mHasHeaderMenu) {
+                mSectionHeader.setMenuModelList(buildMenuItems());
+                mSectionHeader.setListMenuDelegate(this::onItemSelected);
+            }
         }
         // Show feed if there is no header that would allow user to hide feed.
         // This is currently only relevant for the two panes start surface.
@@ -209,7 +238,11 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
 
     /** Update whether the section header should be expanded and its text contents. */
     private void updateSectionHeader() {
-        mSectionHeader.setHeaderText(getSectionHeaderText());
+        mSectionHeader.setHeaderText(getSectionHeaderText(mSectionHeader.isExpanded()));
+        if (mHasHeaderMenu) {
+            mSectionHeader.setMenuModelList(buildMenuItems());
+        }
+
         boolean suggestionsVisible =
                 PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
         if (mSectionHeader.isExpanded() != suggestionsVisible) mSectionHeader.toggleHeader();
@@ -234,13 +267,37 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
     }
 
     /** Returns the section header text based on the selected default search engine */
-    private String getSectionHeaderText() {
+    private String getSectionHeaderText(boolean isExpanded) {
         Resources res = mCoordinator.getSectionHeaderView().getResources();
-        final int sectionHeaderStringId =
-                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()
-                ? R.string.ntp_article_suggestions_section_header
-                : R.string.ntp_article_suggestions_section_header_branded;
+        final int sectionHeaderStringId;
+        if (mHasHeaderMenu) {
+            sectionHeaderStringId =
+                    isExpanded ? R.string.ntp_discover_on : R.string.ntp_discover_off;
+        } else {
+            sectionHeaderStringId = TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()
+                    ? R.string.ntp_article_suggestions_section_header
+                    : R.string.ntp_article_suggestions_section_header_branded;
+        }
         return res.getString(sectionHeaderStringId);
+    }
+
+    private ModelList buildMenuItems() {
+        ModelList itemList = new ModelList();
+        int icon_id = 0;
+        itemList.add(buildMenuListItem(
+                R.string.ntp_manage_my_activity, R.id.ntp_feed_header_menu_item_activity, icon_id));
+        itemList.add(buildMenuListItem(
+                R.string.ntp_manage_interests, R.id.ntp_feed_header_menu_item_interest, icon_id));
+        itemList.add(buildMenuListItem(
+                R.string.learn_more, R.id.ntp_feed_header_menu_item_learn, icon_id));
+        if (mSectionHeader.isExpanded()) {
+            itemList.add(buildMenuListItem(R.string.ntp_turn_off_feed,
+                    R.id.ntp_feed_header_menu_item_toggle_switch, icon_id));
+        } else {
+            itemList.add(buildMenuListItem(R.string.ntp_turn_on_feed,
+                    R.id.ntp_feed_header_menu_item_toggle_switch, icon_id));
+        }
+        return itemList;
     }
 
     /**
@@ -347,6 +404,28 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
     @Override
     public void onTemplateURLServiceChanged() {
         updateSectionHeader();
+    }
+
+    @Override
+    public void onItemSelected(PropertyModel item) {
+        int itemId = item.get(ListMenuItemProperties.MENU_ITEM_ID);
+        if (itemId == R.id.ntp_feed_header_menu_item_activity) {
+            mPageNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
+                    new LoadUrlParams("https://myactivity.google.com/myactivity"));
+        } else if (itemId == R.id.ntp_feed_header_menu_item_interest) {
+            mPageNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
+                    new LoadUrlParams("https://www.google.com/preferences/interests"));
+        } else if (itemId == R.id.ntp_feed_header_menu_item_learn) {
+            mPageNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
+                    new LoadUrlParams("https://www.google.com/chrome/privacy"));
+        } else if (itemId == R.id.ntp_feed_header_menu_item_toggle_switch) {
+            mSectionHeader.toggleHeader();
+            SuggestionsMetrics.recordExpandableHeaderTapped(mSectionHeader.isExpanded());
+            SuggestionsMetrics.recordArticlesListVisible();
+        } else {
+            assert false
+                : String.format("Cannot handle action for item in the menu with id %d", itemId);
+        }
     }
 
     /**

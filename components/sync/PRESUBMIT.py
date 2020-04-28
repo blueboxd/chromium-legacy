@@ -27,7 +27,9 @@ EXCEPTION_MODEL_TYPES = [
   'SUPERVISED_USER_WHITELISTS',  # See previous.
 
   # Deprecated types:
-  'DEPRECATED_EXPERIMENTS']
+  'DEPRECATED_EXPERIMENTS',
+  'DEPRECATED_FAVICON_IMAGES',
+  'DEPRECATED_FAVICON_TRACKING']
 
 # Root tags are used as prefixes when creating storage keys, so certain strings
 # are blacklisted in order to prevent prefix collision.

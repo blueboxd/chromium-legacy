@@ -172,7 +172,7 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
                                                    &shortcuts);
 
   for (const auto& shortcut_data : shortcuts) {
-    DCHECK_EQ(shortcut_data.size(), 5u);
+    DCHECK_EQ(shortcut_data.size(), 6u);
     blink::Manifest::ShortcutItem shortcut_item;
     shortcut_item.name = shortcut_data[0];
     shortcut_item.short_name = base::NullableString16(shortcut_data[1]);
@@ -184,7 +184,8 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
 
     if (icon.src.is_valid()) {
       icon_url_to_murmur2_hash[icon.src.spec()] = WebApkIconHasher::Icon{
-          /* data= */ "", /* hash= */ base::UTF16ToUTF8(shortcut_data[4])};
+          /* data= */ base::UTF16ToUTF8(shortcut_data[5]),
+          /* hash= */ base::UTF16ToUTF8(shortcut_data[4])};
     }
     info.best_shortcut_icon_urls.push_back(icon.src);
     info.shortcut_items.push_back(std::move(shortcut_item));

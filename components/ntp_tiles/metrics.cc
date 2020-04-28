@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "components/ntp_tiles/constants.h"
 

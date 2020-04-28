@@ -301,8 +301,9 @@ public class WebApkUpdateManagerTest {
 
         creationData.manifestUrl = mTestServer.getURL(WEBAPK_MANIFEST_TOO_MANY_SHORTCUTS_URL);
         for (int i = 0; i < 4; i++) {
-            creationData.shortcuts.add(new WebApkExtras.ShortcutItem("name" + String.valueOf(i),
-                    "short_name", mTestServer.getURL(WEBAPK_SCOPE_URL + "launch_url"), "", ""));
+            creationData.shortcuts.add(
+                    new WebApkExtras.ShortcutItem("name" + String.valueOf(i), "short_name",
+                            mTestServer.getURL(WEBAPK_SCOPE_URL + "launch_url"), "", "", null));
         }
 
         // The fifth shortcut should be ignored.

@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <queue>
 
+#include "base/check_op.h"
 #include "base/containers/queue.h"
-#include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "base/stl_util.h"
 #include "base/trace_event/memory_usage_estimator.h"

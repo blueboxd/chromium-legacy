@@ -36,6 +36,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.url.URI;
@@ -362,7 +365,7 @@ public class ExternalNavigationHandler {
         if (handler.isFromCustomTabIntent() && !isExternalProtocol && incomingIntentRedirect
                 && !handler.shouldNavigationTypeStayInApp()
                 && mDelegate.maybeLaunchInstantApp(
-                        params.getUrl(), params.getReferrerUrl(), true)) {
+                        params.getUrl(), params.getReferrerUrl(), true, isSerpReferrer())) {
             if (DEBUG) {
                 Log.i(TAG, "Launching redirect to an instant app");
             }
@@ -600,12 +603,12 @@ public class ExternalNavigationHandler {
             boolean incomingIntentRedirect, boolean linkNotFromIntent) {
         if (incomingIntentRedirect
                 && mDelegate.maybeLaunchInstantApp(
-                        params.getUrl(), params.getReferrerUrl(), true)) {
+                        params.getUrl(), params.getReferrerUrl(), true, isSerpReferrer())) {
             if (DEBUG) Log.i(TAG, "Launching instant Apps redirect");
             return true;
         } else if (linkNotFromIntent && !params.isIncognito()
                 && mDelegate.maybeLaunchInstantApp(
-                        params.getUrl(), params.getReferrerUrl(), false)) {
+                        params.getUrl(), params.getReferrerUrl(), false, isSerpReferrer())) {
             if (DEBUG) Log.i(TAG, "Launching instant Apps link");
             return true;
         }
@@ -790,7 +793,8 @@ public class ExternalNavigationHandler {
     private boolean handleWithAutofillAssistant(
             ExternalNavigationParams params, Intent targetIntent, String browserFallbackUrl) {
         if (mDelegate.isIntentToAutofillAssistant(targetIntent)) {
-            if (mDelegate.handleWithAutofillAssistant(params, targetIntent, browserFallbackUrl)) {
+            if (mDelegate.handleWithAutofillAssistant(
+                        params, targetIntent, browserFallbackUrl, isGoogleReferrer())) {
                 if (DEBUG) Log.i(TAG, "Handled with Autofill Assistant.");
             } else {
                 if (DEBUG) Log.i(TAG, "Not handled with Autofill Assistant.");
@@ -913,7 +917,7 @@ public class ExternalNavigationHandler {
 
         boolean isDirectInstantAppsIntent =
                 isExternalProtocol && mDelegate.isIntentToInstantApp(targetIntent);
-        boolean shouldProxyForInstantApps = isDirectInstantAppsIntent && mDelegate.isSerpReferrer();
+        boolean shouldProxyForInstantApps = isDirectInstantAppsIntent && isSerpReferrer();
         if (preventDirectInstantAppsIntent(isDirectInstantAppsIntent, shouldProxyForInstantApps)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
@@ -923,9 +927,20 @@ public class ExternalNavigationHandler {
         // re-computed as it won't have changed.
         assert intentResolutionMatches(debugIntent, targetIntent);
 
-        if (params.isIncognito() && !mDelegate.willChromeHandleIntent(targetIntent)) {
-            return handleExternalIncognitoIntent(
-                    targetIntent, params, browserFallbackUrl, shouldProxyForInstantApps);
+        if (params.isIncognito()) {
+            boolean intentTargetedToChrome = mDelegate.willChromeHandleIntent(targetIntent);
+
+            // The user is about to potentially leave Chrome, so we should ask whether they want to
+            // leave incognito or not.
+            if (!intentTargetedToChrome) {
+                return handleExternalIncognitoIntent(
+                        targetIntent, params, browserFallbackUrl, shouldProxyForInstantApps);
+            }
+
+            // The intent is staying in Chrome, so we can simply navigate to the intent's URL, while
+            // staying in incognito.
+            return mDelegate.handleIncognitoIntentTargetingSelf(
+                    targetIntent, params.getReferrerUrl(), browserFallbackUrl);
         }
 
         if (shouldKeepIntentRedirectInChrome(
@@ -1288,6 +1303,39 @@ public class ExternalNavigationHandler {
         }
         RecordHistogram.recordEnumeratedHistogram(
                 INTENT_ACTION_HISTOGRAM, standardAction, StandardActions.NUM_ENTRIES);
+    }
+
+    @Nullable
+    private String getReferrerUrl() {
+        // TODO (thildebr): Investigate whether or not we can use getLastCommittedUrl() instead of
+        // the NavigationController.
+        if (!mDelegate.hasValidTab() || mDelegate.getWebContents() == null) return null;
+
+        NavigationController nController = mDelegate.getWebContents().getNavigationController();
+        int index = nController.getLastCommittedEntryIndex();
+        if (index == -1) return null;
+
+        NavigationEntry entry = nController.getEntryAtIndex(index);
+        if (entry == null) return null;
+
+        return entry.getUrl();
+    }
+
+    /**
+     * @return whether this navigation is from the search results page.
+     */
+    protected boolean isSerpReferrer() {
+        String referrerUrl = getReferrerUrl();
+        if (referrerUrl == null) return false;
+
+        return UrlUtilitiesJni.get().isGoogleSearchUrl(referrerUrl);
+    }
+
+    private boolean isGoogleReferrer() {
+        String referrerUrl = getReferrerUrl();
+        if (referrerUrl == null) return false;
+
+        return UrlUtilitiesJni.get().isGoogleSubDomainUrl(referrerUrl);
     }
 
     private @StandardActions int getStandardAction(String action) {

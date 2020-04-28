@@ -30,6 +30,8 @@ extern const base::Feature kReportFeedUserActions;
 
 extern const base::Feature kInterestFeedV2;
 
+extern const base::Feature kFeedHeaderMenu;
+
 }  // namespace feed
 
 #endif  // COMPONENTS_FEED_FEED_FEATURE_LIST_H_

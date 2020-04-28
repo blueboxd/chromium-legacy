@@ -1234,7 +1234,7 @@ public class WebApkUpdateManagerUnitTest {
     public void testUpdateIfShortcutIsAdded() {
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName", "launchUrl", "iconUrl", "iconHash"));
+                "name", "shortName", "launchUrl", "iconUrl", "iconHash", null));
         assertTrue(checkUpdateNeededForFetchedManifest(defaultManifestData(), fetchedData));
     }
 
@@ -1244,11 +1244,11 @@ public class WebApkUpdateManagerUnitTest {
     @Test
     public void testUpdateIfShortcutHasChangedName() {
         ManifestData androidData = defaultManifestData();
-        androidData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name1", "shortName", "launchUrl", "iconUrl", "iconHash"));
+        androidData.shortcuts.add(new WebApkExtras.ShortcutItem("name1", "shortName", "launchUrl",
+                "iconUrl", "iconHash", new WebappIcon("appName", 42)));
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name2", "shortName", "launchUrl", "iconUrl", "iconHash"));
+                "name2", "shortName", "launchUrl", "iconUrl", "iconHash", null));
         assertTrue(checkUpdateNeededForFetchedManifest(androidData, fetchedData));
     }
 
@@ -1258,11 +1258,11 @@ public class WebApkUpdateManagerUnitTest {
     @Test
     public void testUpdateIfShortcutHasChangedShortName() {
         ManifestData androidData = defaultManifestData();
-        androidData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName1", "launchUrl", "iconUrl", "iconHash"));
+        androidData.shortcuts.add(new WebApkExtras.ShortcutItem("name", "shortName1", "launchUrl",
+                "iconUrl", "iconHash", new WebappIcon("appName", 42)));
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName2", "launchUrl", "iconUrl", "iconHash"));
+                "name", "shortName2", "launchUrl", "iconUrl", "iconHash", null));
         assertTrue(checkUpdateNeededForFetchedManifest(androidData, fetchedData));
     }
 
@@ -1272,11 +1272,11 @@ public class WebApkUpdateManagerUnitTest {
     @Test
     public void testUpdateIfShortcutHasChangedLaunchUrl() {
         ManifestData androidData = defaultManifestData();
-        androidData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName", "launchUrl1", "iconUrl", "iconHash"));
+        androidData.shortcuts.add(new WebApkExtras.ShortcutItem("name", "shortName", "launchUrl1",
+                "iconUrl", "iconHash", new WebappIcon("appName", 42)));
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName", "launchUrl2", "iconUrl", "iconHash"));
+                "name", "shortName", "launchUrl2", "iconUrl", "iconHash", null));
         assertTrue(checkUpdateNeededForFetchedManifest(androidData, fetchedData));
     }
 
@@ -1286,11 +1286,11 @@ public class WebApkUpdateManagerUnitTest {
     @Test
     public void testUpdateIfShortcutHasChangedIconHash() {
         ManifestData androidData = defaultManifestData();
-        androidData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName", "launchUrl", "iconUrl", "iconHash1"));
+        androidData.shortcuts.add(new WebApkExtras.ShortcutItem("name", "shortName", "launchUrl",
+                "iconUrl", "iconHash1", new WebappIcon("appName", 42)));
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName", "launchUrl", "iconUrl", "iconHash2"));
+                "name", "shortName", "launchUrl", "iconUrl", "iconHash2", null));
         assertTrue(checkUpdateNeededForFetchedManifest(androidData, fetchedData));
     }
 
@@ -1300,11 +1300,11 @@ public class WebApkUpdateManagerUnitTest {
     @Test
     public void testNoUpdateIfShortcutHasOnlyIconUrlChanges() {
         ManifestData androidData = defaultManifestData();
-        androidData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName", "launchUrl", "iconUrl1", "iconHash"));
+        androidData.shortcuts.add(new WebApkExtras.ShortcutItem("name", "shortName", "launchUrl",
+                "iconUrl1", "iconHash", new WebappIcon("appName", 42)));
         ManifestData fetchedData = defaultManifestData();
         fetchedData.shortcuts.add(new WebApkExtras.ShortcutItem(
-                "name", "shortName", "launchUrl", "iconUrl2", "iconHash"));
+                "name", "shortName", "launchUrl", "iconUrl2", "iconHash", null));
         assertFalse(checkUpdateNeededForFetchedManifest(androidData, fetchedData));
     }
 }

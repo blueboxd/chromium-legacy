@@ -7,8 +7,9 @@
 #include <string.h>  // for memset()
 
 #include "base/bit_cast.h"
+#include "base/check.h"
 #include "base/hash/md5.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "url/gurl.h"
 
 namespace visitedlink {

@@ -4,7 +4,7 @@
 
 #include "components/drive/file_errors.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace drive {
 

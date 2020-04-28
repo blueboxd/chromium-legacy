@@ -37,7 +37,7 @@ Refer to README.md for content description and update process.
  <item id="cast_socket" hash_code="115192205" type="0" content_hash_code="42881651" os_list="linux,windows" file_path="components/cast_channel/cast_socket.cc"/>
  <item id="cast_udp_socket" hash_code="22573197" type="0" content_hash_code="75328301" os_list="linux,windows" file_path="components/mirroring/service/udp_socket_client.cc"/>
  <item id="cast_udp_transport" hash_code="5576536" type="0" content_hash_code="107643273" os_list="linux,windows" file_path="media/cast/net/udp_transport_impl.cc"/>
- <item id="certificate_verifier_url_loader" hash_code="80134684" type="0" content_hash_code="92630208" os_list="linux,windows" file_path="services/network/public/cpp/cert_verifier/cert_net_fetcher_url_loader.cc"/>
+ <item id="certificate_verifier_url_loader" hash_code="80134684" type="0" content_hash_code="92630208" os_list="linux,windows" file_path="services/cert_verifier/cert_net_url_loader/cert_net_fetcher_url_loader.cc"/>
  <item id="certificate_verifier_url_request" hash_code="85988208" type="0" content_hash_code="59262468" os_list="linux,windows" file_path="net/cert_net/cert_net_fetcher_url_request.cc"/>
  <item id="chrome_HaTS_service" hash_code="136028241" type="0" content_hash_code="68990360" os_list="linux,windows" file_path="chrome/browser/ui/hats/hats_survey_status_checker.cc"/>
  <item id="chrome_apps_socket_api" hash_code="8591273" type="0" content_hash_code="70868355" os_list="linux,windows" file_path="extensions/browser/api/socket/socket.cc"/>
@@ -168,7 +168,7 @@ Refer to README.md for content description and update process.
  <item id="network_location_provider" hash_code="23472048" type="1" second_id="96590038" content_hash_code="41087976" os_list="linux,windows" semantics_fields="1" policy_fields="3,4" file_path="services/device/geolocation/network_location_provider.cc"/>
  <item id="network_location_request" hash_code="96590038" type="2" content_hash_code="80741011" os_list="linux,windows" semantics_fields="2,3,4,5" policy_fields="-1" file_path="services/device/geolocation/network_location_request.cc"/>
  <item id="network_time_component" hash_code="46188932" type="0" content_hash_code="28051857" os_list="linux,windows" file_path="components/network_time/network_time_tracker.cc"/>
- <item id="notification_client" hash_code="78479125" type="0" content_hash_code="61551920" os_list="linux,windows" file_path="remoting/client/notification/notification_client.cc"/>
+ <item id="notification_client" hash_code="78479125" type="0" content_hash_code="129874070" os_list="linux,windows" file_path="remoting/client/notification/notification_client.cc"/>
  <item id="ntp_contextual_suggestions_fetch" hash_code="95711309" type="0" deprecated="2019-04-18" content_hash_code="107035434" file_path=""/>
  <item id="ntp_custom_background" hash_code="92125886" type="0" content_hash_code="61176452" os_list="linux,windows" file_path="chrome/browser/search/instant_service.cc"/>
  <item id="ntp_custom_link_checker_request" hash_code="78408551" type="0" deprecated="2018-10-26" content_hash_code="13407730" file_path=""/>
@@ -178,7 +178,7 @@ Refer to README.md for content description and update process.
  <item id="oauth2_access_token_fetcher" hash_code="27915688" type="0" content_hash_code="33501872" os_list="linux,windows" file_path="google_apis/gaia/oauth2_access_token_fetcher_impl.cc"/>
  <item id="oauth2_api_call_flow" hash_code="29188932" type="2" content_hash_code="108831236" os_list="linux,windows" policy_fields="-1" file_path="google_apis/gaia/oauth2_api_call_flow.cc"/>
  <item id="oauth2_mint_token_flow" hash_code="1112842" type="1" second_id="29188932" content_hash_code="91581432" os_list="linux,windows" semantics_fields="1,2,3,4,5" policy_fields="3,4" file_path="google_apis/gaia/oauth2_mint_token_flow.cc"/>
- <item id="ocsp_start_url_loader" hash_code="3646641" type="0" content_hash_code="106270072" os_list="linux" file_path="services/network/public/cpp/cert_verifier/nss_ocsp_session_url_loader.cc"/>
+ <item id="ocsp_start_url_loader" hash_code="3646641" type="0" content_hash_code="106270072" os_list="linux" file_path="services/cert_verifier/cert_net_url_loader/nss_ocsp_session_url_loader.cc"/>
  <item id="ocsp_start_url_request" hash_code="60921996" type="0" content_hash_code="6288676" os_list="linux" file_path="net/cert_net/nss_ocsp_session_url_request.cc"/>
  <item id="offline_prefetch" hash_code="19185953" type="0" content_hash_code="112039446" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_request_fetcher.cc"/>
  <item id="omnibox_documentsuggest" hash_code="6055066" type="0" content_hash_code="126973249" os_list="linux,windows" file_path="components/omnibox/browser/document_suggestions_service.cc"/>
@@ -263,7 +263,7 @@ Refer to README.md for content description and update process.
  <item id="save_file_manager" hash_code="56275203" type="0" content_hash_code="56692339" os_list="linux,windows" file_path="content/browser/download/save_file_manager.cc"/>
  <item id="sdch_dictionary_fetch" hash_code="47152935" type="0" deprecated="2017-09-16" content_hash_code="16764294" file_path=""/>
  <item id="search_suggest_service" hash_code="57785193" type="0" content_hash_code="132247652" os_list="linux,windows" file_path="chrome/browser/search/search_suggest/search_suggest_loader_impl.cc"/>
- <item id="security_key_socket" hash_code="31074955" type="0" content_hash_code="11296409" os_list="linux,windows" file_path="remoting/host/security_key/security_key_socket.cc"/>
+ <item id="security_key_socket" hash_code="31074955" type="0" content_hash_code="13741232" os_list="linux,windows" file_path="remoting/host/security_key/security_key_socket.cc"/>
  <item id="service_worker_navigation_preload" hash_code="129872904" type="0" content_hash_code="79473248" os_list="linux,windows" file_path="content/browser/service_worker/service_worker_fetch_dispatcher.cc"/>
  <item id="service_worker_update_checker" hash_code="130931413" type="0" content_hash_code="46608086" os_list="linux,windows" file_path="content/browser/service_worker/service_worker_single_script_update_checker.cc"/>
  <item id="services_http_server_error_response" hash_code="59302801" type="0" content_hash_code="127774041" os_list="linux,windows" file_path="services/network/public/cpp/server/http_server.cc"/>
@@ -278,9 +278,9 @@ Refer to README.md for content description and update process.
  <item id="speech_recognition_upstream" hash_code="66846958" type="0" content_hash_code="7706219" os_list="linux,windows" file_path="content/browser/speech/speech_recognition_engine.cc"/>
  <item id="spellcheck_hunspell_dictionary" hash_code="117649486" type="0" content_hash_code="45660952" os_list="linux,windows" file_path="chrome/browser/spellchecker/spellcheck_hunspell_dictionary.cc"/>
  <item id="spellcheck_lookup" hash_code="132553989" type="0" content_hash_code="120395045" os_list="linux,windows" file_path="components/spellcheck/browser/spelling_service_client.cc"/>
- <item id="ssl_hmac_channel_authenticator" hash_code="106124561" type="0" content_hash_code="93707499" os_list="linux,windows" file_path="remoting/protocol/ssl_hmac_channel_authenticator.cc"/>
+ <item id="ssl_hmac_channel_authenticator" hash_code="106124561" type="0" content_hash_code="110454877" os_list="linux,windows" file_path="remoting/protocol/ssl_hmac_channel_authenticator.cc"/>
  <item id="ssl_name_mismatch_lookup" hash_code="114468207" type="0" content_hash_code="97619078" os_list="linux,windows" file_path="components/security_interstitials/content/common_name_mismatch_handler.cc"/>
- <item id="stream_message_pipe_adapter" hash_code="71837756" type="0" content_hash_code="131019242" os_list="linux,windows" file_path="remoting/protocol/stream_message_pipe_adapter.cc"/>
+ <item id="stream_message_pipe_adapter" hash_code="71837756" type="0" content_hash_code="66212605" os_list="linux,windows" file_path="remoting/protocol/stream_message_pipe_adapter.cc"/>
  <item id="stream_packet_socket" hash_code="38197513" type="0" content_hash_code="55116994" os_list="linux,windows" file_path="remoting/protocol/stream_packet_socket.cc"/>
  <item id="suggestions_image_manager" hash_code="13211343" type="0" deprecated="2018-11-28" content_hash_code="36271280" file_path=""/>
  <item id="suggestions_service" hash_code="35370363" type="0" content_hash_code="66296423" os_list="linux,windows" file_path="components/suggestions/suggestions_service_impl.cc"/>

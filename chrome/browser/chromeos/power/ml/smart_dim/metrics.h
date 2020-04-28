@@ -35,7 +35,9 @@ enum class LoadComponentEvent {
   kReadComponentFilesError = 1,
   kLoadPreprocessorError = 2,
   kLoadMetadataError = 3,
-  kMaxValue = kLoadMetadataError
+  kLoadModelError = 4,
+  kCreateGraphExecutorError = 5,
+  kMaxValue = kCreateGraphExecutorError
 };
 
 enum class WorkerType {

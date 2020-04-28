@@ -5,7 +5,7 @@
 #include "components/reading_list/core/offline_url_utils.h"
 
 #include "base/hash/md5.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 
 namespace {

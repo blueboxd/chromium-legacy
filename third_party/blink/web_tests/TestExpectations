@@ -3096,10 +3096,9 @@ crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-002.html [ Failure ]
 crbug.com/1072928 external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
 crbug.com/1072928 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
 
+crbug.com/1074547 external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
+
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/mathml/relations/css-styling/color-005.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mathml/relations/css-styling/color-005.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/relations/css-styling/color-005.html [ Failure ]
@@ -6097,10 +6096,6 @@ crbug.com/1038656 [ Win ] http/tests/devtools/coverage/coverage-view-unused.js [
 # Temporarily disabled to land Linkifier changes in DevTools
 crbug.com/963183 http/tests/devtools/jump-to-previous-editing-location.js [ Pass Failure ]
 
-# Awaiting DevTools roll.
-crbug.com/1075437 http/tests/devtools/sources/autocomplete-css.js [ Pass Failure ]
-crbug.com/1075437 http/tests/devtools/sources/autocomplete-scss.js [ Pass Failure ]
-
 # Sheriff 2020-01-09
 crbug.com/1040270 http/tests/devtools/elements/styles-1/disable-property-workingcopy-update.js [ Pass Timeout ]
 
@@ -6563,3 +6558,7 @@ crbug.com/1073792 [ Mac10.13 ] virtual/threaded-prefer-compositing/fast/scrollin
 
 # the inspector-protocol/media tests only work in the virtual test environment.
 crbug.com/1074129 inspector-protocol/media/media-player.js [ TIMEOUT ]
+
+# Sheriff 2020-04-28
+crbug.com/1075915 [ Mac ] external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Failure ]
+crbug.com/1075915 [ Mac ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Failure ]

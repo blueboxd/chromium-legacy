@@ -1622,8 +1622,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       FROM_HERE);
 }
 
+// TODO(https://crbug.com/1075936) disabled due to flakiness
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DoesNotCacheIfMainFrameStillLoading) {
+                       DISABLED_DoesNotCacheIfMainFrameStillLoading) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
                                                       "/main_document");
   ASSERT_TRUE(embedded_test_server()->Start());

@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "third_party/smhasher/src/MurmurHash3.h"
 
 namespace optimization_guide {

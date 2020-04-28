@@ -130,10 +130,11 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
 void CrossProcessFrameConnector::RenderProcessGone() {
   has_crashed_ = true;
 
-  FrameTreeNode* node = frame_proxy_in_parent_renderer_->frame_tree_node();
-  int process_id = node->current_frame_host()->GetProcess()->GetID();
-  for (node = node->parent(); node; node = node->parent()) {
-    if (node->current_frame_host()->GetProcess()->GetID() == process_id) {
+  RenderFrameHost* rfh =
+      frame_proxy_in_parent_renderer_->frame_tree_node()->current_frame_host();
+  int process_id = rfh->GetProcess()->GetID();
+  for (rfh = rfh->GetParent(); rfh; rfh = rfh->GetParent()) {
+    if (rfh->GetProcess()->GetID() == process_id) {
       // The crash will be already logged by the ancestor - ignore this crash in
       // the current instance of the CrossProcessFrameConnector.
       is_crash_already_logged_ = true;

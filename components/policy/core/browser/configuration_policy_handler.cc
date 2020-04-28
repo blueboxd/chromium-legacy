@@ -10,12 +10,13 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"

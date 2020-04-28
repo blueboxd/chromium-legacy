@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "net/proxy_resolution/proxy_config.h"
 
 namespace {

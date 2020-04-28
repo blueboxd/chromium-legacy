@@ -4,9 +4,10 @@
 
 #include "components/omnibox/browser/location_bar_model_impl.h"
 
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"

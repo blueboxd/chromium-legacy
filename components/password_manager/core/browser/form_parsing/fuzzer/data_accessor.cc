@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <bitset>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace password_manager {
 

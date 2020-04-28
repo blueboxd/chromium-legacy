@@ -109,11 +109,6 @@ void ExternalProcessImporterBridge::SetKeywords(
   observer_->OnKeywordsImportReady(search_engines, unique_on_host_and_path);
 }
 
-void ExternalProcessImporterBridge::SetFirefoxSearchEnginesXMLData(
-    const std::vector<std::string>& search_engine_data) {
-  observer_->OnFirefoxSearchEngineDataReceived(search_engine_data);
-}
-
 void ExternalProcessImporterBridge::SetPasswordForm(
     const autofill::PasswordForm& form) {
   observer_->OnPasswordFormImportReady(form);

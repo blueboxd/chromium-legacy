@@ -226,7 +226,7 @@ void CorsURLLoaderFactory::DeleteIfNeeded() {
 
 // static
 bool CorsURLLoaderFactory::IsValidCorsExemptHeaders(
-    const std::unordered_set<std::string>& allowed_exempt_headers,
+    const base::flat_set<std::string>& allowed_exempt_headers,
     const net::HttpRequestHeaders& headers) {
   for (const auto& header : headers.GetHeaderVector()) {
     if (allowed_exempt_headers.find(header.key) !=

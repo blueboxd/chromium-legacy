@@ -4,7 +4,6 @@
 
 #include "components/password_manager/core/common/credential_manager_types.h"
 
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 

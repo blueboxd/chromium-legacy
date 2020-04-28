@@ -53,7 +53,8 @@ public class NotificationUmaTracker {
             SystemNotificationType.CLICK_TO_CALL, SystemNotificationType.SHARED_CLIPBOARD,
             SystemNotificationType.PERMISSION_REQUESTS,
             SystemNotificationType.PERMISSION_REQUESTS_HIGH, SystemNotificationType.ANNOUNCEMENT,
-            SystemNotificationType.SHARE_SAVE_IMAGE})
+            SystemNotificationType.SHARE_SAVE_IMAGE, SystemNotificationType.TWA_DISCLOSURE_INITIAL,
+            SystemNotificationType.TWA_DISCLOSURE_SUBSEQUENT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemNotificationType {
         int UNKNOWN = -1;
@@ -80,8 +81,10 @@ public class NotificationUmaTracker {
         int PERMISSION_REQUESTS_HIGH = 20;
         int ANNOUNCEMENT = 21;
         int SHARE_SAVE_IMAGE = 22;
+        int TWA_DISCLOSURE_INITIAL = 23;
+        int TWA_DISCLOSURE_SUBSEQUENT = 24;
 
-        int NUM_ENTRIES = 23;
+        int NUM_ENTRIES = 25;
     }
 
     /*

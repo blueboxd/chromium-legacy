@@ -77,6 +77,17 @@ public interface ExternalNavigationDelegate {
             boolean needsToCloseTab, boolean proxy);
 
     /**
+     * Handle the incognito intent by loading it as a URL in the embedder, using the fallbackUrl if
+     * the intent URL cannot be handled by the embedder.
+     * @param intent The intent to be handled by the embedder.
+     * @param referrerUrl The referrer for the current navigation.
+     * @param fallbackUrl The fallback URL to load if the intent cannot be handled by the embedder.
+     * @return The OverrideUrlLoadingResult for the action taken by the embedder.
+     */
+    @OverrideUrlLoadingResult
+    int handleIncognitoIntentTargetingSelf(Intent intent, String referrerUrl, String fallbackUrl);
+
+    /**
      * @param url The requested url.
      * @return Whether we should block the navigation and request file access before proceeding.
      */
@@ -136,19 +147,21 @@ public interface ExternalNavigationDelegate {
      * @param url The current URL.
      * @param referrerUrl The referrer URL.
      * @param isIncomingRedirect Whether we are handling an incoming redirect to an instant app.
+     * @param isSerpReferrer whether the referrer is the SERP.
      * @return Whether we launched an instant app.
      */
-    boolean maybeLaunchInstantApp(String url, String referrerUrl, boolean isIncomingRedirect);
-
-    /**
-     * @return whether this navigation is from the search results page.
-     */
-    boolean isSerpReferrer();
+    boolean maybeLaunchInstantApp(
+            String url, String referrerUrl, boolean isIncomingRedirect, boolean isSerpReferrer);
 
     /**
      * @return The WebContents instance associated with this delegate instance.
      */
     WebContents getWebContents();
+
+    /**
+     * @return Whether this delegate has a valid tab available.
+     */
+    public boolean hasValidTab();
 
     /**
      * @param intent The intent to launch.
@@ -177,6 +190,6 @@ public interface ExternalNavigationDelegate {
     /**
      * Gives the embedder a chance to handle the intent via the autofill assistant.
      */
-    boolean handleWithAutofillAssistant(
-            ExternalNavigationParams params, Intent targetIntent, String browserFallbackUrl);
+    boolean handleWithAutofillAssistant(ExternalNavigationParams params, Intent targetIntent,
+            String browserFallbackUrl, boolean isGoogleReferrer);
 }

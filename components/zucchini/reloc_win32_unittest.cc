@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/test/gtest_util.h"
 #include "components/zucchini/address_translator.h"

@@ -43,6 +43,12 @@
 #include "chromeos/constants/chromeos_switches.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_string.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/android/jni_headers/OTRProfileID_jni.h"
+#endif
+
 #if !defined(OS_ANDROID)
 #include "chrome/browser/first_run/first_run.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -130,6 +136,24 @@ std::ostream& operator<<(std::ostream& out,
   out << profile_id.ToString();
   return out;
 }
+
+#if defined(OS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject>
+Profile::OTRProfileID::ConvertToJavaOTRProfileID(JNIEnv* env) const {
+  return Java_OTRProfileID_Constructor(
+      env, base::android::ConvertUTF16ToJavaString(
+               env, base::ASCIIToUTF16(profile_id_)));
+}
+
+// static
+Profile::OTRProfileID Profile::OTRProfileID::ConvertFromJavaOTRProfileID(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_otr_profile_id) {
+  return OTRProfileID(
+      base::UTF16ToASCII(base::android::ConvertJavaStringToUTF16(
+          env, Java_OTRProfileID_getProfileID(env, j_otr_profile_id))));
+}
+#endif
 
 Profile::Profile()
     : restored_last_session_(false),

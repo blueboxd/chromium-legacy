@@ -5,7 +5,7 @@
 #include "components/metrics/delegating_provider.h"
 
 #include "base/barrier_closure.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace metrics {
 

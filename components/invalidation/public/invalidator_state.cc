@@ -4,7 +4,6 @@
 
 #include "components/invalidation/public/invalidator_state.h"
 
-#include "base/logging.h"
 
 namespace syncer {
 

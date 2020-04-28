@@ -86,7 +86,7 @@ public class CustomTabActivityTabControllerTest {
         Tab savedTab = env.prepareTab();
         env.saveTab(savedTab);
         env.reachNativeInit(mTabController);
-        verify(env.tabFactory, never()).createTab(any(), any());
+        verify(env.tabFactory, never()).createTab(any(), any(), any());
     }
 
     @Test
@@ -103,7 +103,7 @@ public class CustomTabActivityTabControllerTest {
 
         clearInvocations(env.tabFactory);
         mTabController.onFinishNativeInitialization();
-        verify(env.tabFactory, never()).createTab(any(), any());
+        verify(env.tabFactory, never()).createTab(any(), any(), any());
     }
 
     @Test

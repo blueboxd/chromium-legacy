@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaRegistrar;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.DisclosureNotification;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.NewDisclosureSnackbar;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
@@ -46,6 +47,7 @@ import dagger.Lazy;
 public class TrustedWebActivityCoordinator implements InflationObserver, NativeInitObserver {
     private final Lazy<TrustedWebActivityDisclosureView> mDisclosureView;
     private final Lazy<NewDisclosureSnackbar> mNewDisclosureView;
+    private final Lazy<DisclosureNotification> mDisclosureNotification;
     private final CurrentPageVerifier mCurrentPageVerifier;
     private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private final CustomTabToolbarColorController mToolbarColorController;
@@ -64,6 +66,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver, NativeI
             TrustedWebActivityDisclosureController disclosureController,
             Lazy<TrustedWebActivityDisclosureView> disclosureView,
             Lazy<NewDisclosureSnackbar> newDisclosureView,
+            Lazy<DisclosureNotification> disclosureNotification,
             TrustedWebActivityOpenTimeRecorder openTimeRecorder,
             CurrentPageVerifier currentPageVerifier,
             Verifier verifier,
@@ -84,6 +87,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver, NativeI
         // so they start working.
         mDisclosureView = disclosureView;
         mNewDisclosureView = newDisclosureView;
+        mDisclosureNotification = disclosureNotification;
         mCurrentPageVerifier = currentPageVerifier;
         mBrowserControlsVisibilityManager = browserControlsVisibilityManager;
         mToolbarColorController = toolbarColorController;
@@ -106,6 +110,20 @@ public class TrustedWebActivityCoordinator implements InflationObserver, NativeI
                 new PostMessageDisabler(customTabsConnection, intentDataProvider));
     }
 
+    private void initDisclosure(Lazy<TrustedWebActivityDisclosureView> disclosureView,
+            Lazy<NewDisclosureSnackbar> newDisclosureView,
+            Lazy<DisclosureNotification> disclosureNotification) {
+        // Calling get on the appropriate Lazy instance will cause Dagger to create the class.
+        // The classes wire themselves up to the rest of the code in their constructors.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)) {
+            // TODO(https://crbug.com/1068106): Determine whether notifications (both in general and
+            // the two channels we care about) are enabled. If so call disclosureNotification.get().
+            newDisclosureView.get().showIfNeeded();
+        } else {
+            disclosureView.get().showIfNeeded();
+        }
+    }
+
     @Override
     public void onPreInflationStartup() {
         if (mCurrentPageVerifier.getState() == null) {
@@ -124,13 +142,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver, NativeI
 
     @Override
     public void onFinishNativeInitialization() {
-        // Calling get on the appropriate Lazy instance will cause Dagger to create the class.
-        // The classes wire themselves up to the rest of the code in their constructors.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)) {
-            mNewDisclosureView.get().showIfNeeded();
-        } else {
-            mDisclosureView.get().showIfNeeded();
-        }
+        initDisclosure(mDisclosureView, mNewDisclosureView, mDisclosureNotification);
     }
 
     private void initSplashScreen(Lazy<TwaSplashController> splashController,

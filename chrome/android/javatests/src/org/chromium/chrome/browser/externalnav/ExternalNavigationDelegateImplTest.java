@@ -51,19 +51,11 @@ import java.util.List;
     private static final String[] SUPERVISOR_START_ACTIONS = {
             "com.google.android.instantapps.START", "com.google.android.instantapps.nmr1.INSTALL",
             "com.google.android.instantapps.nmr1.VIEW"};
+    private static final boolean IS_GOOGLE_REFERRER = true;
 
     class ExternalNavigationDelegateImplForTesting extends ExternalNavigationDelegateImpl {
         public ExternalNavigationDelegateImplForTesting() {
             super(mActivityTestRule.getActivity().getActivityTab());
-        }
-
-        @Override
-        public boolean isGoogleReferrer() {
-            return mIsGoogleReferrer;
-        }
-
-        public void setIsGoogleReferrer(boolean value) {
-            mIsGoogleReferrer = value;
         }
 
         @Override
@@ -78,7 +70,8 @@ import java.util.List;
 
         // Convenience for testing that reduces boilerplate in constructing arguments to the
         // production method that are common across tests.
-        public boolean handleWithAutofillAssistant(ExternalNavigationParams params) {
+        public boolean handleWithAutofillAssistant(
+                ExternalNavigationParams params, boolean isGoogleReferrer) {
             Intent intent;
             try {
                 intent = Intent.parseUri(AUTOFILL_ASSISTANT_INTENT_URL, Intent.URI_INTENT_SCHEME);
@@ -89,10 +82,9 @@ import java.util.List;
 
             String fallbackUrl = "https://www.example.com";
 
-            return handleWithAutofillAssistant(params, intent, fallbackUrl);
+            return handleWithAutofillAssistant(params, intent, fallbackUrl, isGoogleReferrer);
         }
 
-        private boolean mIsGoogleReferrer;
         private boolean mWasAutofillAssistantStarted;
     }
 
@@ -364,14 +356,13 @@ import java.util.List;
     testHandleWithAutofillAssistant_TriggersFromSearch() {
         ExternalNavigationDelegateImplForTesting delegate =
                 new ExternalNavigationDelegateImplForTesting();
-        delegate.setIsGoogleReferrer(true);
 
         ExternalNavigationParams params =
                 new ExternalNavigationParams
                         .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/false)
                         .build();
 
-        Assert.assertTrue(delegate.handleWithAutofillAssistant(params));
+        Assert.assertTrue(delegate.handleWithAutofillAssistant(params, IS_GOOGLE_REFERRER));
         Assert.assertTrue(delegate.wasAutofillAssistantStarted());
     }
 
@@ -383,14 +374,13 @@ import java.util.List;
     testHandleWithAutofillAssistant_DoesNotTriggerFromSearchInIncognito() {
         ExternalNavigationDelegateImplForTesting delegate =
                 new ExternalNavigationDelegateImplForTesting();
-        delegate.setIsGoogleReferrer(true);
 
         ExternalNavigationParams params =
                 new ExternalNavigationParams
                         .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/true)
                         .build();
 
-        Assert.assertFalse(delegate.handleWithAutofillAssistant(params));
+        Assert.assertFalse(delegate.handleWithAutofillAssistant(params, IS_GOOGLE_REFERRER));
         Assert.assertFalse(delegate.wasAutofillAssistantStarted());
     }
 
@@ -402,14 +392,13 @@ import java.util.List;
     testHandleWithAutofillAssistant_DoesNotTriggerFromDifferentOrigin() {
         ExternalNavigationDelegateImplForTesting delegate =
                 new ExternalNavigationDelegateImplForTesting();
-        delegate.setIsGoogleReferrer(false);
 
         ExternalNavigationParams params =
                 new ExternalNavigationParams
                         .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/false)
                         .build();
 
-        Assert.assertFalse(delegate.handleWithAutofillAssistant(params));
+        Assert.assertFalse(delegate.handleWithAutofillAssistant(params, !IS_GOOGLE_REFERRER));
         Assert.assertFalse(delegate.wasAutofillAssistantStarted());
     }
 
@@ -421,14 +410,13 @@ import java.util.List;
     testHandleWithAutofillAssistant_DoesNotTriggerWhenFeatureDisabled() {
         ExternalNavigationDelegateImplForTesting delegate =
                 new ExternalNavigationDelegateImplForTesting();
-        delegate.setIsGoogleReferrer(true);
 
         ExternalNavigationParams params =
                 new ExternalNavigationParams
                         .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/false)
                         .build();
 
-        Assert.assertFalse(delegate.handleWithAutofillAssistant(params));
+        Assert.assertFalse(delegate.handleWithAutofillAssistant(params, IS_GOOGLE_REFERRER));
         Assert.assertFalse(delegate.wasAutofillAssistantStarted());
     }
 }

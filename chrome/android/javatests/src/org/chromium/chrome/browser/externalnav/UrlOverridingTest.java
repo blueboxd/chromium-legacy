@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -94,6 +95,8 @@ public class UrlOverridingTest {
             BASE_PATH + "open_window_from_svg_user_gesture.html";
     private static final String NAVIGATION_FROM_JAVA_REDIRECTION_PAGE =
             BASE_PATH + "navigation_from_java_redirection.html";
+    private static final String NAVIGATION_TO_CCT_FROM_INTENT_URI =
+            BASE_PATH + "navigation_to_cct_via_intent_uri.html";
 
     private static class TestTabObserver extends EmptyTabObserver {
         private final CallbackHelper mFinishCallback;
@@ -465,5 +468,26 @@ public class UrlOverridingTest {
                 return mActivityMonitor.getHits();
             }
         }));
+    }
+
+    @Test
+    @LargeTest
+    public void testCCTRedirectFromIntentUriStaysInChrome_InIncognito() throws TimeoutException {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        // This will make the mActivityTestRule.getActivity().getActivityTab() used in the method
+        // loadUrlAndWaitForIntentUrl to return an incognito tab instead.
+        mActivityTestRule.loadUrlInNewTab("chrome://about/", /**incognito**/ true);
+
+        String fallbackUrl = mTestServer.getURL(FALLBACK_LANDING_PATH);
+        String fallbackUrlWithoutScheme = fallbackUrl.replace("http://", "");
+        String originalUrl = mTestServer.getURL(NAVIGATION_TO_CCT_FROM_INTENT_URI + "?replace_text="
+                + Base64.encodeToString(
+                        ApiCompatibilityUtils.getBytesUtf8("PARAM_FALLBACK_URL"), Base64.URL_SAFE)
+                + ":"
+                + Base64.encodeToString(
+                        ApiCompatibilityUtils.getBytesUtf8(fallbackUrlWithoutScheme),
+                        Base64.URL_SAFE));
+
+        loadUrlAndWaitForIntentUrl(originalUrl, true, false, false, fallbackUrl, true);
     }
 }

@@ -18,8 +18,8 @@ select,
 select:-internal-list-box,
 input,
 textarea {
-  background-color: -internal-light-dark-color(#ffffff, #3B3B3B);
-  border-color: -internal-light-dark-color(#767676, #C3C3C3);
+  background-color: -internal-light-dark(#ffffff, #3B3B3B);
+  border-color: -internal-light-dark(#767676, #C3C3C3);
 }
 
 a:-webkit-any-link:focus {
@@ -54,7 +54,7 @@ textarea:disabled {
 
 input:disabled,
 textarea:disabled {
-  background-color: -internal-light-dark-color(rgba(239, 239, 239, 0.3), rgba(59, 59, 59, 0.3));
+  background-color: -internal-light-dark(rgba(239, 239, 239, 0.3), rgba(59, 59, 59, 0.3));
 }
 
 select:disabled {
@@ -67,8 +67,8 @@ input[type="reset" i],
 input[type="color" i],
 input[type="file" i]::-webkit-file-upload-button,
 button {
-  background-color: -internal-light-dark-color(#efefef, #4A4A4A);
-  border-color: -internal-light-dark-color(#767676, #C3C3C3);
+  background-color: -internal-light-dark(#efefef, #4A4A4A);
+  border-color: -internal-light-dark(#767676, #C3C3C3);
 }
 
 input[type="button" i]:disabled,
@@ -77,9 +77,9 @@ input[type="reset" i]:disabled,
 input[type="color" i]:disabled,
 input[type="file" i]:disabled::-webkit-file-upload-button,
 button:disabled {
-  background-color: -internal-light-dark-color(rgba(239, 239, 239, 0.3), rgba(19, 1, 1, 0.3));
-  border-color: -internal-light-dark-color(rgba(118, 118, 118, 0.3), rgba(195, 195, 195, 0.3));
-  color: -internal-light-dark-color(rgba(16, 16, 16, 0.3), #aaaaaa);
+  background-color: -internal-light-dark(rgba(239, 239, 239, 0.3), rgba(19, 1, 1, 0.3));
+  border-color: -internal-light-dark(rgba(118, 118, 118, 0.3), rgba(195, 195, 195, 0.3));
+  color: -internal-light-dark(rgba(16, 16, 16, 0.3), #aaaaaa);
 }
 
 input[type="password" i]::-internal-reveal {
@@ -119,7 +119,7 @@ meter::-webkit-meter-inner-element:-internal-shadow-host-has-appearance {
 }
 
 meter::-webkit-meter-bar {
-  background: -internal-light-dark-color(#efefef, #4a4a4a);
+  background: -internal-light-dark(#efefef, #4a4a4a);
   border-width: thin;
   grid-row-start: line1;
   grid-row-end: line2;
@@ -131,15 +131,15 @@ meter::-webkit-meter-bar {
 }
 
 meter::-webkit-meter-optimum-value {
-  background: -internal-light-dark-color(#107c10, #74b374)
+  background: -internal-light-dark(#107c10, #74b374)
 }
 
 meter::-webkit-meter-suboptimum-value {
-  background: -internal-light-dark-color(#ffb900, #f2c812)
+  background: -internal-light-dark(#ffb900, #f2c812)
 }
 
 meter::-webkit-meter-even-less-good-value {
-  background: -internal-light-dark-color(#d83b01, #e98f6d)
+  background: -internal-light-dark(#d83b01, #e98f6d)
 }
 
 input[type="date" i]::-webkit-calendar-picker-indicator,

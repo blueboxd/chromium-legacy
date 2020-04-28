@@ -53,7 +53,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       const OriginAccessList* origin_access_list,
       const OriginAccessList* factory_bound_origin_access_list,
       PreflightController* preflight_controller,
-      const std::unordered_set<std::string>* allowed_exempt_headers);
+      const base::flat_set<std::string>* allowed_exempt_headers);
 
   ~CorsURLLoader() override;
 
@@ -184,7 +184,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   const OriginAccessList* const origin_access_list_;
   const OriginAccessList* const factory_bound_origin_access_list_;
   PreflightController* preflight_controller_;
-  const std::unordered_set<std::string>* allowed_exempt_headers_;
+  const base::flat_set<std::string>* allowed_exempt_headers_;
 
   // Flag to specify if the CORS-enabled scheme check should be applied.
   const bool skip_cors_enabled_scheme_check_;

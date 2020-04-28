@@ -433,9 +433,9 @@ void RenderWidgetHostViewChildFrame::SetIsInert() {
 
 void RenderWidgetHostViewChildFrame::UpdateInheritedEffectiveTouchAction() {
   if (host_ && frame_connector_) {
-    host_->Send(new WidgetMsg_SetInheritedEffectiveTouchAction(
-        host_->GetRoutingID(),
-        frame_connector_->InheritedEffectiveTouchAction()));
+    host_->GetAssociatedFrameWidget()
+        ->SetInheritedEffectiveTouchActionForSubFrame(
+            frame_connector_->InheritedEffectiveTouchAction());
   }
 }
 

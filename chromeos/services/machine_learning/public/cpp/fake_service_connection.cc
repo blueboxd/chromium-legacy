@@ -5,12 +5,19 @@
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
 
 #include <utility>
+#include "base/bind.h"
+#include "base/callback_forward.h"
+#include "base/optional.h"
 
 namespace chromeos {
 namespace machine_learning {
 
 FakeServiceConnectionImpl::FakeServiceConnectionImpl()
-    : execute_result_(mojom::Tensor::New()) {}
+    : output_tensor_(mojom::Tensor::New()),
+      load_model_result_(mojom::LoadModelResult::OK),
+      create_graph_executor_result_(mojom::CreateGraphExecutorResult::OK),
+      execute_result_(mojom::ExecuteResult::OK),
+      async_mode_(false) {}
 
 FakeServiceConnectionImpl::~FakeServiceConnectionImpl() {}
 
@@ -18,42 +25,124 @@ void FakeServiceConnectionImpl::LoadBuiltinModel(
     mojom::BuiltinModelSpecPtr spec,
     mojo::PendingReceiver<mojom::Model> receiver,
     mojom::MachineLearningService::LoadBuiltinModelCallback callback) {
-  model_receivers_.Add(this, std::move(receiver));
-  std::move(callback).Run(mojom::LoadModelResult::OK);
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleLoadBuiltinModelCall,
+      base::Unretained(this), std::move(receiver), std::move(callback)));
 }
 
 void FakeServiceConnectionImpl::LoadFlatBufferModel(
     mojom::FlatBufferModelSpecPtr spec,
     mojo::PendingReceiver<mojom::Model> receiver,
     mojom::MachineLearningService::LoadFlatBufferModelCallback callback) {
-  model_receivers_.Add(this, std::move(receiver));
-  std::move(callback).Run(mojom::LoadModelResult::OK);
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleLoadFlatBufferModelCall,
+      base::Unretained(this), std::move(receiver), std::move(callback)));
 }
 
 void FakeServiceConnectionImpl::CreateGraphExecutor(
     mojo::PendingReceiver<mojom::GraphExecutor> receiver,
     mojom::Model::CreateGraphExecutorCallback callback) {
-  graph_receivers_.Add(this, std::move(receiver));
-  std::move(callback).Run(mojom::CreateGraphExecutorResult::OK);
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleCreateGraphExecutorCall,
+      base::Unretained(this), std::move(receiver), std::move(callback)));
 }
 
 void FakeServiceConnectionImpl::Execute(
     base::flat_map<std::string, mojom::TensorPtr> inputs,
     const std::vector<std::string>& output_names,
     mojom::GraphExecutor::ExecuteCallback callback) {
-  std::vector<mojom::TensorPtr> output_tensors;
-  output_tensors.push_back(execute_result_.Clone());
-  std::move(callback).Run(mojom::ExecuteResult::OK, std::move(output_tensors));
+  ScheduleCall(base::BindOnce(&FakeServiceConnectionImpl::HandleExecuteCall,
+                              base::Unretained(this), std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::SetLoadModelFailure() {
+  load_model_result_ = mojom::LoadModelResult::LOAD_MODEL_ERROR;
+}
+
+void FakeServiceConnectionImpl::SetCreateGraphExecutorFailure() {
+  load_model_result_ = mojom::LoadModelResult::OK;
+  create_graph_executor_result_ =
+      mojom::CreateGraphExecutorResult::MODEL_INTERPRETATION_ERROR;
+}
+
+void FakeServiceConnectionImpl::SetExecuteFailure() {
+  load_model_result_ = mojom::LoadModelResult::OK;
+  create_graph_executor_result_ = mojom::CreateGraphExecutorResult::OK;
+  execute_result_ = mojom::ExecuteResult::EXECUTION_ERROR;
+}
+
+void FakeServiceConnectionImpl::SetExecuteSuccess() {
+  load_model_result_ = mojom::LoadModelResult::OK;
+  create_graph_executor_result_ = mojom::CreateGraphExecutorResult::OK;
+  execute_result_ = mojom::ExecuteResult::OK;
 }
 
 void FakeServiceConnectionImpl::SetOutputValue(
     const std::vector<int64_t>& shape,
     const std::vector<double>& value) {
-  execute_result_->shape = mojom::Int64List::New();
-  execute_result_->shape->value = shape;
-  execute_result_->data = mojom::ValueList::New();
-  execute_result_->data->set_float_list(mojom::FloatList::New());
-  execute_result_->data->get_float_list()->value = value;
+  output_tensor_->shape = mojom::Int64List::New();
+  output_tensor_->shape->value = shape;
+  output_tensor_->data = mojom::ValueList::New();
+  output_tensor_->data->set_float_list(mojom::FloatList::New());
+  output_tensor_->data->get_float_list()->value = value;
+}
+
+void FakeServiceConnectionImpl::SetAsyncMode(bool async_mode) {
+  async_mode_ = async_mode;
+}
+
+void FakeServiceConnectionImpl::RunPendingCalls() {
+  for (auto& call : pending_calls_) {
+    std::move(call).Run();
+  }
+
+  pending_calls_.clear();
+}
+
+void FakeServiceConnectionImpl::HandleLoadBuiltinModelCall(
+    mojo::PendingReceiver<mojom::Model> receiver,
+    mojom::MachineLearningService::LoadBuiltinModelCallback callback) {
+  if (load_model_result_ == mojom::LoadModelResult::OK)
+    model_receivers_.Add(this, std::move(receiver));
+
+  std::move(callback).Run(load_model_result_);
+}
+
+void FakeServiceConnectionImpl::ScheduleCall(base::OnceClosure call) {
+  if (async_mode_)
+    pending_calls_.push_back(std::move(call));
+  else
+    std::move(call).Run();
+}
+
+void FakeServiceConnectionImpl::HandleLoadFlatBufferModelCall(
+    mojo::PendingReceiver<mojom::Model> receiver,
+    mojom::MachineLearningService::LoadFlatBufferModelCallback callback) {
+  if (load_model_result_ == mojom::LoadModelResult::OK)
+    model_receivers_.Add(this, std::move(receiver));
+
+  std::move(callback).Run(load_model_result_);
+}
+
+void FakeServiceConnectionImpl::HandleCreateGraphExecutorCall(
+    mojo::PendingReceiver<mojom::GraphExecutor> receiver,
+    mojom::Model::CreateGraphExecutorCallback callback) {
+  if (create_graph_executor_result_ == mojom::CreateGraphExecutorResult::OK)
+    graph_receivers_.Add(this, std::move(receiver));
+
+  std::move(callback).Run(create_graph_executor_result_);
+}
+
+void FakeServiceConnectionImpl::HandleExecuteCall(
+    mojom::GraphExecutor::ExecuteCallback callback) {
+  if (execute_result_ != mojom::ExecuteResult::OK) {
+    std::move(callback).Run(execute_result_, base::nullopt);
+    return;
+  }
+
+  std::vector<mojom::TensorPtr> output_tensors;
+  output_tensors.push_back(output_tensor_.Clone());
+  std::move(callback).Run(execute_result_, std::move(output_tensors));
 }
 
 }  // namespace machine_learning

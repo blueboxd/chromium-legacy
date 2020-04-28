@@ -467,14 +467,7 @@ void PrePaintTreeWalk::WalkNGChildren(const LayoutObject* parent,
     if (const auto* fragment_item = (*iterator)->FragmentItem()) {
       // Line boxes are not interesting. They have no paint effects. Descend
       // directly into children.
-      bool descend_directly = fragment_item->Type() == NGFragmentItem::kLine;
-      if (!descend_directly && fragment_item->IsInlineBox() &&
-          !fragment_item->BoxFragment()) {
-        // Likewise for culled inlines.
-        descend_directly = true;
-        object->GetMutableForPainting().ClearPaintFlags();
-      }
-      if (descend_directly) {
+      if (fragment_item->Type() == NGFragmentItem::kLine) {
         WalkChildren(/* parent */ nullptr, iterator);
         continue;
       }

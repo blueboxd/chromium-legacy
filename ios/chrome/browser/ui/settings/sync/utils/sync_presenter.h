@@ -19,6 +19,9 @@
 // Presents the Google services settings.
 - (void)showGoogleServicesSettings;
 
+// Presents the Trusted Vault reauthentication dialog.
+- (void)showTrustedVaultReauthentication;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_UTILS_SYNC_PRESENTER_H_

@@ -4,7 +4,7 @@
 
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace content {
 

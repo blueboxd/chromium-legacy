@@ -4,7 +4,7 @@
 
 #include "components/arc/arc_service_manager.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/arc_session_runner.h"

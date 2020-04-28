@@ -4,7 +4,7 @@
 
 #include "components/sync/syncable/syncable_id.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/values.h"
 
 using std::ostream;

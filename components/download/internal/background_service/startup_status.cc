@@ -4,7 +4,7 @@
 
 #include "components/download/internal/background_service/startup_status.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace download {
 

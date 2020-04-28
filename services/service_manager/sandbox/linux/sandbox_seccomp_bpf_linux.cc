@@ -186,8 +186,8 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
     case SandboxType::kIme:
       return std::make_unique<ImeProcessPolicy>();
 #endif  // defined(OS_CHROMEOS)
+    case SandboxType::kZygoteIntermediateSandbox:
     case SandboxType::kNoSandbox:
-    case SandboxType::kInvalid:
       NOTREACHED();
       return nullptr;
   }
@@ -234,7 +234,7 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
     case SandboxType::kNetwork:
     case SandboxType::kUtility:
     case SandboxType::kNoSandbox:
-    case SandboxType::kInvalid:
+    case SandboxType::kZygoteIntermediateSandbox:
       // Otherwise, no checks required.
       break;
   }

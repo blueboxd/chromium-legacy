@@ -4,8 +4,9 @@
 
 #include "components/viz/common/gpu/dawn_context_provider.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "third_party/dawn/src/include/dawn/dawn_proc.h"
 

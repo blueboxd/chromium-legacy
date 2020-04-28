@@ -4,7 +4,7 @@
 
 #include "components/sync/test/test_directory_backing_store.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace syncer {
 namespace syncable {

@@ -78,7 +78,7 @@ bool CertVerifier::RequestParams::operator<(
 }
 
 // static
-std::unique_ptr<CertVerifier> CertVerifier::CreateDefault(
+std::unique_ptr<CertVerifier> CertVerifier::CreateDefaultWithoutCaching(
     scoped_refptr<CertNetFetcher> cert_net_fetcher) {
 #if defined(OS_NACL)
   NOTIMPLEMENTED();
@@ -101,10 +101,16 @@ std::unique_ptr<CertVerifier> CertVerifier::CreateDefault(
       CertVerifyProc::CreateSystemVerifyProc(std::move(cert_net_fetcher));
 #endif
 
+  return std::make_unique<MultiThreadedCertVerifier>(std::move(verify_proc));
+#endif
+}
+
+// static
+std::unique_ptr<CertVerifier> CertVerifier::CreateDefault(
+    scoped_refptr<CertNetFetcher> cert_net_fetcher) {
   return std::make_unique<CachingCertVerifier>(
       std::make_unique<CoalescingCertVerifier>(
-          std::make_unique<MultiThreadedCertVerifier>(std::move(verify_proc))));
-#endif
+          CreateDefaultWithoutCaching(std::move(cert_net_fetcher))));
 }
 
 bool operator==(const CertVerifier::Config& lhs,

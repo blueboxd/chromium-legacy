@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithms/asymmetric_key_util.h"
 #include "components/webcrypto/algorithms/util.h"

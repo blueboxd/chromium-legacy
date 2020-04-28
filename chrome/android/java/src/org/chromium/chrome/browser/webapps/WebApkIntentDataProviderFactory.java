@@ -64,6 +64,7 @@ public class WebApkIntentDataProviderFactory {
     private static final String SHORTCUT_SHORT_NAME_ATTRIBUTE = "shortcutShortLabel";
     private static final String SHORTCUT_ICON_HASH_ATTRIBUTE = "iconHash";
     private static final String SHORTCUT_ICON_URL_ATTRIBUTE = "iconUrl";
+    private static final String SHORTCUT_ICON_ATTRIBUTE = "icon";
     private static final String SHORTCUT_INTENT_LAUNCH_URL_ATTRIBUTE = "data";
 
     private static final String TAG = "WebApkInfo";
@@ -170,6 +171,8 @@ public class WebApkIntentDataProviderFactory {
                             SHORTCUT_ATTRIBUTE_NAMESPACE, SHORTCUT_SHORT_NAME_ATTRIBUTE, 0);
                     String iconUrl = parser.getAttributeValue(null, SHORTCUT_ICON_URL_ATTRIBUTE);
                     String iconHash = parser.getAttributeValue(null, SHORTCUT_ICON_HASH_ATTRIBUTE);
+                    int iconId = parser.getAttributeResourceValue(
+                            SHORTCUT_ATTRIBUTE_NAMESPACE, SHORTCUT_ICON_ATTRIBUTE, 0);
 
                     eventType = parser.next();
                     if (eventType != XmlPullParser.START_TAG
@@ -183,7 +186,7 @@ public class WebApkIntentDataProviderFactory {
 
                     shortcuts.add(new ShortcutItem(nameResId != 0 ? res.getString(nameResId) : "",
                             shortNameResId != 0 ? res.getString(shortNameResId) : "", launchUrl,
-                            iconUrl, iconHash));
+                            iconUrl, iconHash, new WebappIcon(webApkPackageName, iconId)));
                 }
                 eventType = parser.next();
             }

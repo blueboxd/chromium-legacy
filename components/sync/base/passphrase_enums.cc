@@ -4,7 +4,8 @@
 
 #include "components/sync/base/passphrase_enums.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace syncer {
 

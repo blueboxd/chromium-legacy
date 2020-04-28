@@ -4,7 +4,7 @@
 
 #include "components/crash/content/browser/crash_metrics_reporter_android.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"

@@ -1290,6 +1290,56 @@ TEST_F(TraceEventDataSourceTest, TrackSupportOnBeginAndEnd) {
                    /*pid_override=*/0, track);
 }
 
+TEST_F(TraceEventDataSourceTest, TrackSupportWithTimestamp) {
+  CreateTraceEventDataSource();
+
+  auto timestamp =
+      TRACE_TIME_TICKS_NOW() - base::TimeDelta::FromMicroseconds(100);
+  auto track = perfetto::Track(1);
+
+  TRACE_EVENT_BEGIN("browser", "bar", track, timestamp);
+
+  size_t packet_index = ExpectStandardPreamble();
+
+  auto* b_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectTraceEvent(
+      b_packet, /*category_iid=*/1u, /*name_iid=*/1u, TRACE_EVENT_PHASE_BEGIN,
+      /*flags=*/0, /*id=*/0,
+      /*absolute_timestamp=*/timestamp.since_origin().InMicroseconds(),
+      /*tid_override=*/0,
+      /*pid_override=*/0, track);
+
+  ExpectEventCategories(b_packet, {{1u, "browser"}});
+  ExpectEventNames(b_packet, {{1u, "bar"}});
+}
+
+TEST_F(TraceEventDataSourceTest, TrackSupportWithTimestampAndLambda) {
+  CreateTraceEventDataSource();
+
+  auto timestamp =
+      TRACE_TIME_TICKS_NOW() - base::TimeDelta::FromMicroseconds(100);
+  auto track = perfetto::Track(1);
+  bool lambda_called = false;
+
+  TRACE_EVENT_BEGIN("browser", "bar", track, timestamp,
+                    [&](perfetto::EventContext ctx) { lambda_called = true; });
+
+  EXPECT_TRUE(lambda_called);
+
+  size_t packet_index = ExpectStandardPreamble();
+
+  auto* b_packet = producer_client()->GetFinalizedPacket(packet_index++);
+  ExpectTraceEvent(
+      b_packet, /*category_iid=*/1u, /*name_iid=*/1u, TRACE_EVENT_PHASE_BEGIN,
+      /*flags=*/0, /*id=*/0,
+      /*absolute_timestamp=*/timestamp.since_origin().InMicroseconds(),
+      /*tid_override=*/0,
+      /*pid_override=*/0, track);
+
+  ExpectEventCategories(b_packet, {{1u, "browser"}});
+  ExpectEventNames(b_packet, {{1u, "bar"}});
+}
+
 // TODO(ddrone): following tests should be re-enabled once we figure out how
 // tracks on scoped events supposed to work
 TEST_F(TraceEventDataSourceTest, DISABLED_TrackSupport) {

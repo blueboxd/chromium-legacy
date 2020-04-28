@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"

@@ -5,7 +5,7 @@
 #include "components/viz/common/resources/single_release_callback.h"
 
 #include "base/callback_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace viz {
 

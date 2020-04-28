@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/ml/smart_dim/builtin_worker.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent_util.h"
 #include "chrome/grit/browser_resources.h"
@@ -19,9 +20,9 @@ namespace ml {
 
 namespace {
 
-using ::chromeos::machine_learning::mojom::BuiltinModelId;
-using ::chromeos::machine_learning::mojom::BuiltinModelSpec;
-using ::chromeos::machine_learning::mojom::BuiltinModelSpecPtr;
+using chromeos::machine_learning::mojom::BuiltinModelId;
+using chromeos::machine_learning::mojom::BuiltinModelSpec;
+using chromeos::machine_learning::mojom::BuiltinModelSpecPtr;
 
 constexpr size_t k20181115ModelInputVectorSize = 343;
 constexpr size_t k20190521ModelInputVectorSize = 592;
@@ -41,7 +42,7 @@ BuiltinWorker::GetPreprocessorConfig() {
   return preprocessor_config_.get();
 }
 
-const mojo::Remote<::chromeos::machine_learning::mojom::GraphExecutor>&
+const mojo::Remote<chromeos::machine_learning::mojom::GraphExecutor>&
 BuiltinWorker::GetExecutor() {
   LazyInitialize();
   return executor_;
@@ -89,15 +90,17 @@ void BuiltinWorker::LazyInitialize() {
     BuiltinModelSpecPtr spec =
         BuiltinModelSpec::New(v3_enabled ? BuiltinModelId::SMART_DIM_20190521
                                          : BuiltinModelId::SMART_DIM_20181115);
+    // Builtin model is supposed to be always available and valid, using
+    // base::DoNothing as callbacks.
     chromeos::machine_learning::ServiceConnection::GetInstance()
         ->LoadBuiltinModel(std::move(spec), model_.BindNewPipeAndPassReceiver(),
-                           base::BindOnce(&LoadModelCallback));
+                           base::DoNothing());
   }
 
   if (!executor_) {
     // Get the graph executor.
     model_->CreateGraphExecutor(executor_.BindNewPipeAndPassReceiver(),
-                                base::BindOnce(&CreateGraphExecutorCallback));
+                                base::DoNothing());
     executor_.set_disconnect_handler(base::BindOnce(
         &BuiltinWorker::OnConnectionError, base::Unretained(this)));
   }

@@ -4,7 +4,8 @@
 
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "components/autofill/core/browser/autofill_field.h"
 
 namespace autofill {

@@ -6,7 +6,8 @@
 
 #include <ostream>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "components/history/core/browser/download_constants.h"
 
 namespace history {

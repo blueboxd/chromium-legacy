@@ -7,7 +7,7 @@
 #include <tuple>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace url_matcher {
 

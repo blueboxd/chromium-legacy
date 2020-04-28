@@ -4,7 +4,7 @@
 
 #include "components/viz/common/quads/surface_draw_quad.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/optional.h"
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"

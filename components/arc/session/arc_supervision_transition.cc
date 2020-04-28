@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/arc/session/arc_supervision_transition.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace arc {
 

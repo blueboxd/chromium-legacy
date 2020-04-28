@@ -54,7 +54,7 @@ void StreamMessagePipeAdapter::Send(google::protobuf::MessageLite* message,
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("stream_message_pipe_adapter", R"(
         semantics {
-          sender: "Stream Message Pipe Adapter"
+          sender: "Chrome Remote Desktop"
           description: "Chrome Remote Desktop P2P channel."
           trigger: "Initiating a Chrome Remote Desktop connection."
           data:

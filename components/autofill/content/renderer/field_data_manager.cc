@@ -4,8 +4,8 @@
 
 #include "components/autofill/content/renderer/field_data_manager.h"
 
+#include "base/check.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
 
 namespace autofill {

@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/string_util.h"
 #include "components/payments/core/native_error_strings.h"
 

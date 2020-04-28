@@ -48,14 +48,14 @@ void SetAndCheckAncestorFlag(MediaStreamRequest* request) {
     // RenderFrame destroyed before the request is handled?
     return;
   }
-  FrameTreeNode* node = rfh->frame_tree_node();
 
-  while (node->parent() != nullptr) {
-    if (!node->HasSameOrigin(*node->parent())) {
+  while (rfh->GetParent()) {
+    if (!rfh->GetLastCommittedOrigin().IsSameOriginWith(
+            rfh->GetParent()->GetLastCommittedOrigin())) {
       request->all_ancestors_have_same_origin =  false;
       return;
     }
-    node = node->parent();
+    rfh = rfh->GetParent();
   }
   request->all_ancestors_have_same_origin = true;
 }

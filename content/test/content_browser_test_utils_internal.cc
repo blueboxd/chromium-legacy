@@ -376,17 +376,24 @@ RenderProcessHostBadIpcMessageWaiter::Wait() {
   return static_cast<bad_message::BadMessageReason>(internal_result.value());
 }
 
-ShowWidgetMessageFilter::ShowWidgetMessageFilter(WebContents* web_content)
+ShowWidgetMessageFilter::ShowWidgetMessageFilter(WebContents* web_contents)
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
     : BrowserMessageFilter(FrameMsgStart),
 #else
     : BrowserMessageFilter(ViewMsgStart),
 #endif
-      WebContentsObserver(web_content),
-      message_loop_runner_(new content::MessageLoopRunner) {
+      run_loop_(std::make_unique<base::RunLoop>()) {
+  WebContentsObserver::Observe(web_contents);
 }
 
-ShowWidgetMessageFilter::~ShowWidgetMessageFilter() = default;
+ShowWidgetMessageFilter::~ShowWidgetMessageFilter() {
+  DCHECK(is_shut_down_);
+}
+
+void ShowWidgetMessageFilter::Shutdown() {
+  WebContentsObserver::Observe(nullptr);
+  is_shut_down_ = true;
+}
 
 bool ShowWidgetMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ShowWidgetMessageFilter, message)
@@ -398,13 +405,15 @@ bool ShowWidgetMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ShowWidgetMessageFilter::Wait() {
-  message_loop_runner_->Run();
+  DCHECK(!is_shut_down_);
+  run_loop_->Run();
 }
 
 void ShowWidgetMessageFilter::Reset() {
+  DCHECK(!is_shut_down_);
   initial_rect_ = gfx::Rect();
   routing_id_ = MSG_ROUTING_NONE;
-  message_loop_runner_ = new content::MessageLoopRunner;
+  run_loop_ = std::make_unique<base::RunLoop>();
 }
 
 void ShowWidgetMessageFilter::OnShowWidget(int route_id,
@@ -436,7 +445,7 @@ void ShowWidgetMessageFilter::OnShowWidgetOnUI(int route_id,
                                                const gfx::Rect& initial_rect) {
   initial_rect_ = initial_rect;
   routing_id_ = route_id;
-  message_loop_runner_->Quit();
+  run_loop_->Quit();
 }
 
 DropMessageFilter::DropMessageFilter(uint32_t message_class,

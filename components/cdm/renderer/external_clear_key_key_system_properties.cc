@@ -4,7 +4,7 @@
 
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "media/base/eme_constants.h"
 
 namespace cdm {

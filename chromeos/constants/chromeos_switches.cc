@@ -430,6 +430,9 @@ const char kNoteTakingAppIds[] = "note-taking-app-ids";
 //   user-image
 const char kOobeForceShowScreen[] = "oobe-force-show-screen";
 
+// Allows the eula url to be overridden for tests.
+const char kOobeEulaUrlForTests[] = "oobe-eula-url-for-tests";
+
 // Indicates that the first user run flow (sequence of OOBE screens after the
 // first user login) should show tablet mode centric screens, even if the device
 // is not in tablet mode.

@@ -5,7 +5,7 @@
 #include "components/web_resource/eula_accepted_notifier.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"

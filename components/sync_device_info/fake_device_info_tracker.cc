@@ -4,7 +4,8 @@
 
 #include "components/sync_device_info/fake_device_info_tracker.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "components/sync_device_info/device_info.h"
 
 namespace {

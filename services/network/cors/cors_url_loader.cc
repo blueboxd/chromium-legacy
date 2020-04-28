@@ -101,7 +101,7 @@ CorsURLLoader::CorsURLLoader(
     const OriginAccessList* origin_access_list,
     const OriginAccessList* factory_bound_origin_access_list,
     PreflightController* preflight_controller,
-    const std::unordered_set<std::string>* allowed_exempt_headers)
+    const base::flat_set<std::string>* allowed_exempt_headers)
     : receiver_(this, std::move(loader_receiver)),
       process_id_(process_id),
       routing_id_(routing_id),

@@ -4,7 +4,7 @@
 
 #include "components/translate/core/browser/language_state.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/translate/core/browser/translate_driver.h"
 
 namespace translate {

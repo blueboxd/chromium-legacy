@@ -7,7 +7,7 @@
 #include <openssl/pool.h>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "components/openscreen_platform/network_context.h"
 #include "components/openscreen_platform/network_util.h"
 #include "components/openscreen_platform/tls_client_connection.h"

@@ -84,7 +84,7 @@ Optional<Value> JSONParser::Parse(StringPiece input) {
   // ICU and ReadUnicodeCharacter() use int32_t for lengths, so ensure
   // that the index_ will not overflow when parsing.
   if (!base::IsValueInRangeForNumericType<int32_t>(input.length())) {
-    ReportError(JSONReader::JSON_TOO_LARGE, 0);
+    ReportError(JSONReader::JSON_TOO_LARGE, -1);
     return nullopt;
   }
 
@@ -100,7 +100,7 @@ Optional<Value> JSONParser::Parse(StringPiece input) {
 
   // Make sure the input stream is at an end.
   if (GetNextToken() != T_END_OF_INPUT) {
-    ReportError(JSONReader::JSON_UNEXPECTED_DATA_AFTER_ROOT, 1);
+    ReportError(JSONReader::JSON_UNEXPECTED_DATA_AFTER_ROOT, 0);
     return nullopt;
   }
 
@@ -323,20 +323,20 @@ Optional<Value> JSONParser::ParseToken(Token token) {
     case T_NULL:
       return ConsumeLiteral();
     default:
-      ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 1);
+      ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 0);
       return nullopt;
   }
 }
 
 Optional<Value> JSONParser::ConsumeDictionary() {
   if (ConsumeChar() != '{') {
-    ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 1);
+    ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 0);
     return nullopt;
   }
 
   StackMarker depth_check(max_depth_, &stack_depth_);
   if (depth_check.IsTooDeep()) {
-    ReportError(JSONReader::JSON_TOO_MUCH_NESTING, 0);
+    ReportError(JSONReader::JSON_TOO_MUCH_NESTING, -1);
     return nullopt;
   }
 
@@ -345,7 +345,7 @@ Optional<Value> JSONParser::ConsumeDictionary() {
   Token token = GetNextToken();
   while (token != T_OBJECT_END) {
     if (token != T_STRING) {
-      ReportError(JSONReader::JSON_UNQUOTED_DICTIONARY_KEY, 1);
+      ReportError(JSONReader::JSON_UNQUOTED_DICTIONARY_KEY, 0);
       return nullopt;
     }
 
@@ -358,7 +358,7 @@ Optional<Value> JSONParser::ConsumeDictionary() {
     // Read the separator.
     token = GetNextToken();
     if (token != T_OBJECT_PAIR_SEPARATOR) {
-      ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
+      ReportError(JSONReader::JSON_SYNTAX_ERROR, 0);
       return nullopt;
     }
 
@@ -378,11 +378,11 @@ Optional<Value> JSONParser::ConsumeDictionary() {
       ConsumeChar();
       token = GetNextToken();
       if (token == T_OBJECT_END && !(options_ & JSON_ALLOW_TRAILING_COMMAS)) {
-        ReportError(JSONReader::JSON_TRAILING_COMMA, 1);
+        ReportError(JSONReader::JSON_TRAILING_COMMA, 0);
         return nullopt;
       }
     } else if (token != T_OBJECT_END) {
-      ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
+      ReportError(JSONReader::JSON_SYNTAX_ERROR, 0);
       return nullopt;
     }
   }
@@ -396,13 +396,13 @@ Optional<Value> JSONParser::ConsumeDictionary() {
 
 Optional<Value> JSONParser::ConsumeList() {
   if (ConsumeChar() != '[') {
-    ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 1);
+    ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 0);
     return nullopt;
   }
 
   StackMarker depth_check(max_depth_, &stack_depth_);
   if (depth_check.IsTooDeep()) {
-    ReportError(JSONReader::JSON_TOO_MUCH_NESTING, 0);
+    ReportError(JSONReader::JSON_TOO_MUCH_NESTING, -1);
     return nullopt;
   }
 
@@ -423,11 +423,11 @@ Optional<Value> JSONParser::ConsumeList() {
       ConsumeChar();
       token = GetNextToken();
       if (token == T_ARRAY_END && !(options_ & JSON_ALLOW_TRAILING_COMMAS)) {
-        ReportError(JSONReader::JSON_TRAILING_COMMA, 1);
+        ReportError(JSONReader::JSON_TRAILING_COMMA, 0);
         return nullopt;
       }
     } else if (token != T_ARRAY_END) {
-      ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
+      ReportError(JSONReader::JSON_SYNTAX_ERROR, 0);
       return nullopt;
     }
   }
@@ -446,7 +446,7 @@ Optional<Value> JSONParser::ConsumeString() {
 
 bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
   if (ConsumeChar() != '"') {
-    ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 1);
+    ReportError(JSONReader::JSON_UNEXPECTED_TOKEN, 0);
     return false;
   }
 
@@ -462,7 +462,7 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
                               &next_char) ||
         !IsValidCodepoint(next_char)) {
       if ((options_ & JSON_REPLACE_INVALID_CHARACTERS) == 0) {
-        ReportError(JSONReader::JSON_UNSUPPORTED_ENCODING, 1);
+        ReportError(JSONReader::JSON_UNSUPPORTED_ENCODING, 0);
         return false;
       }
       ConsumeChar();
@@ -501,7 +501,7 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
       // Read past the escape '\' and ensure there's a character following.
       Optional<StringPiece> escape_sequence = ConsumeChars(2);
       if (!escape_sequence) {
-        ReportError(JSONReader::JSON_INVALID_ESCAPE, 0);
+        ReportError(JSONReader::JSON_INVALID_ESCAPE, -1);
         return false;
       }
 
@@ -512,14 +512,14 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
           // are supported here for backwards-compatiblity with the old parser.
           escape_sequence = ConsumeChars(2);
           if (!escape_sequence) {
-            ReportError(JSONReader::JSON_INVALID_ESCAPE, -2);
+            ReportError(JSONReader::JSON_INVALID_ESCAPE, -3);
             return false;
           }
 
           int hex_digit = 0;
           if (!UnprefixedHexStringToInt(*escape_sequence, &hex_digit) ||
               !IsValidCharacter(hex_digit)) {
-            ReportError(JSONReader::JSON_INVALID_ESCAPE, -2);
+            ReportError(JSONReader::JSON_INVALID_ESCAPE, -3);
             return false;
           }
 
@@ -530,7 +530,7 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
           // UTF units are of the form \uXXXX.
           uint32_t code_point;
           if (!DecodeUTF16(&code_point)) {
-            ReportError(JSONReader::JSON_INVALID_ESCAPE, 0);
+            ReportError(JSONReader::JSON_INVALID_ESCAPE, -1);
             return false;
           }
           string.Append(code_point);
@@ -565,13 +565,13 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
           break;
         // All other escape squences are illegal.
         default:
-          ReportError(JSONReader::JSON_INVALID_ESCAPE, 0);
+          ReportError(JSONReader::JSON_INVALID_ESCAPE, -1);
           return false;
       }
     }
   }
 
-  ReportError(JSONReader::JSON_SYNTAX_ERROR, 0);
+  ReportError(JSONReader::JSON_SYNTAX_ERROR, -1);
   return false;
 }
 
@@ -641,7 +641,7 @@ Optional<Value> JSONParser::ConsumeNumber() {
     ConsumeChar();
 
   if (!ReadInt(false)) {
-    ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
+    ReportError(JSONReader::JSON_SYNTAX_ERROR, 0);
     return nullopt;
   }
   end_index = index_;
@@ -650,7 +650,7 @@ Optional<Value> JSONParser::ConsumeNumber() {
   if (PeekChar() == '.') {
     ConsumeChar();
     if (!ReadInt(true)) {
-      ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
+      ReportError(JSONReader::JSON_SYNTAX_ERROR, 0);
       return nullopt;
     }
     end_index = index_;
@@ -664,7 +664,7 @@ Optional<Value> JSONParser::ConsumeNumber() {
       ConsumeChar();
     }
     if (!ReadInt(true)) {
-      ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
+      ReportError(JSONReader::JSON_SYNTAX_ERROR, 0);
       return nullopt;
     }
     end_index = index_;
@@ -683,7 +683,7 @@ Optional<Value> JSONParser::ConsumeNumber() {
     case T_END_OF_INPUT:
       break;
     default:
-      ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
+      ReportError(JSONReader::JSON_SYNTAX_ERROR, 0);
       return nullopt;
   }
 
@@ -701,7 +701,7 @@ Optional<Value> JSONParser::ConsumeNumber() {
     return Value(num_double);
   }
 
-  ReportError(JSONReader::JSON_UNREPRESENTABLE_NUMBER, 1);
+  ReportError(JSONReader::JSON_UNREPRESENTABLE_NUMBER, 0);
   return nullopt;
 }
 
@@ -736,7 +736,7 @@ Optional<Value> JSONParser::ConsumeLiteral() {
     return Value(false);
   if (ConsumeIfMatch("null"))
     return Value(Value::Type::NONE);
-  ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
+  ReportError(JSONReader::JSON_SYNTAX_ERROR, 0);
   return nullopt;
 }
 
@@ -750,9 +750,6 @@ bool JSONParser::ConsumeIfMatch(StringPiece match) {
 
 void JSONParser::ReportError(JSONReader::JsonParseError code,
                              int column_adjust) {
-  // For historical reasons, column_adjust is off by one.
-  column_adjust--;
-
   error_code_ = code;
   error_line_ = line_number_;
   error_column_ = index_ - index_last_line_ + column_adjust;

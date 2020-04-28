@@ -4,7 +4,7 @@
 
 #include "components/omnibox/browser/history_match.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/trace_event/memory_usage_estimator.h"
 
 namespace history {

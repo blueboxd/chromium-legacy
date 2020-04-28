@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -42,12 +43,13 @@ class SmartDimWorker {
   virtual const assist_ranker::ExamplePreprocessorConfig*
   GetPreprocessorConfig() = 0;
   // Returns a mojo remote of ML service GraphExecutor to make inference.
-  virtual const mojo::Remote<
-      ::chromeos::machine_learning::mojom::GraphExecutor>&
+  virtual const mojo::Remote<chromeos::machine_learning::mojom::GraphExecutor>&
   GetExecutor() = 0;
 
   // Release the members on connection error, or when download_worker_ is ready
   // we can reset the builtin_worker_ to save memory.
+  // Note: subclasses might reconnect automatically, e.g. if ml_agent decides to
+  // use builtin_worker_ after it is Reset, LazyInitialize will reconnect it.
   virtual void Reset();
 
  protected:
@@ -59,8 +61,8 @@ class SmartDimWorker {
       preprocessor_config_;
 
   // Remotes used to execute functions in the ML service side.
-  mojo::Remote<::chromeos::machine_learning::mojom::Model> model_;
-  mojo::Remote<::chromeos::machine_learning::mojom::GraphExecutor> executor_;
+  mojo::Remote<chromeos::machine_learning::mojom::Model> model_;
+  mojo::Remote<chromeos::machine_learning::mojom::GraphExecutor> executor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SmartDimWorker);

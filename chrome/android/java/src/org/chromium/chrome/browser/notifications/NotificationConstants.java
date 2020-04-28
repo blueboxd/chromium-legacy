@@ -116,6 +116,12 @@ public class NotificationConstants {
     public static final int NOTIFICATION_ID_CLICK_TO_CALL_ERROR = 12;
 
     /**
+     * Unique identifier for the high priority "Running in Chrome" notification displayed when a
+     * TWA is run. It will be high priority the first time and low priority subsequently.
+     */
+    public static final int NOTIFICATION_ID_TWA_DISCLOSURE = 13;
+
+    /**
      * Separator used to separate the notification origin from additional data such as the
      * developer specified tag. This and the prefix following it need to be the same as the one
      * specified in notification_id_generator.cc.

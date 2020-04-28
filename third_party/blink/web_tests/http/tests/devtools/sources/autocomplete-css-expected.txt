@@ -28,7 +28,7 @@ Running: testPropertyValueAutocomplete1
 .red { border-style: |
 /* some other words to mess up */
 ======= Autocomplete Suggestions =======
-[dashed, dotted, double, groove, hidden, inherit, initial, inset, none, outset, ridge, solid, unset]
+[dashed, dotted, double, groove, hidden, inherit, initial, inset, none, outset, revert, ridge, solid, unset]
 
 Running: testPropertyValueAutocomplete2
 ========= Selection In Editor =========
@@ -48,18 +48,18 @@ Running: testPropertyValueAutocomplete4
 ========= Selection In Editor =========
 .red { border-style/* comment */: /* comment */|
 ======= Autocomplete Suggestions =======
-[dashed, dotted, double, groove, hidden, inherit, initial, inset, none, outset, ridge, solid, unset]
+[dashed, dotted, double, groove, hidden, inherit, initial, inset, none, outset, revert, ridge, solid, unset]
 
 Running: testPropertyValueAutocomplete5
 ========= Selection In Editor =========
 .my-class { -webkit-border: 1px solid black; -webkit-color: blue;
 text-align: |}
 ======= Autocomplete Suggestions =======
-[center, end, inherit, initial, justify, left, right, start, unset, -webkit-auto, -webkit-center, -webkit-left, -webkit-match-parent, -webkit-right]
+[center, end, inherit, initial, justify, left, revert, right, start, unset, -webkit-auto, -webkit-center, -webkit-left, -webkit-match-parent, -webkit-right]
 
 Running: verifySuggestionsOnColumnTypedIn
 .green {
    display|
 Suggestions displayed on ':' symbol typed in:
-[block, contents, flex, flow-root, grid, inherit, initial, inline, inline-block, inline-flex, inline-grid, inline-table, list-item, none, table, table-caption, table-cell, table-column, table-column-group, table-footer-group, table-header-group, table-row, table-row-group, unset, -webkit-box, -webkit-inline-box]
+[block, contents, flex, flow-root, grid, inherit, initial, inline, inline-block, inline-flex, inline-grid, inline-table, list-item, none, revert, table, table-caption, table-cell, table-column, table-column-group, table-footer-group, table-header-group, table-row, table-row-group, unset, -webkit-box, -webkit-inline-box]
 

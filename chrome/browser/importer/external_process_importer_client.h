@@ -79,8 +79,6 @@ class ExternalProcessImporterClient
   void OnKeywordsImportReady(
       const std::vector<importer::SearchEngineInfo>& search_engines,
       bool unique_on_host_and_path) override;
-  void OnFirefoxSearchEngineDataReceived(
-      const std::vector<std::string>& search_engine_data) override;
   void OnAutofillFormDataImportStart(
       uint32_t total_autofill_form_data_entry_count) override;
   void OnAutofillFormDataImportGroup(

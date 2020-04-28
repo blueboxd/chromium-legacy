@@ -8,8 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "components/feature_engagement/internal/availability_model.h"
 #include "components/feature_engagement/internal/display_lock_controller.h"

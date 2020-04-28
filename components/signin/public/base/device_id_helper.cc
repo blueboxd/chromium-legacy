@@ -4,9 +4,9 @@
 
 #include "components/signin/public/base/device_id_helper.h"
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/guid.h"
-#include "base/logging.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/base/signin_switches.h"

@@ -53,7 +53,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("ssl_hmac_channel_authenticator",
                                         R"(
         semantics {
-          sender: "Ssl Hmac Channel Authenticator"
+          sender: "Chrome Remote Desktop"
           description:
             "Performs the required authentication to start a Chrome Remote "
             "Desktop connection."

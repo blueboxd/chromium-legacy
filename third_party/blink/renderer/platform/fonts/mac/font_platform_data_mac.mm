@@ -40,6 +40,7 @@
 #import "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #import "third_party/skia/include/core/SkFont.h"
 #import "third_party/skia/include/core/SkStream.h"
+#import "third_party/skia/include/core/SkTypeface.h"
 #import "third_party/skia/include/core/SkTypes.h"
 #import "third_party/skia/include/ports/SkTypeface_mac.h"
 
@@ -48,6 +49,49 @@ constexpr SkFourByteTag kOpszTag = SkSetFourByteTag('o', 'p', 's', 'z');
 }
 
 namespace blink {
+
+bool VariableAxisChangeEffective(SkTypeface* typeface,
+                                 SkFourByteTag axis,
+                                 float new_value) {
+  // First clamp new value to within range of min and max of variable axis.
+  int num_axes = typeface->getVariationDesignParameters(nullptr, 0);
+  if (num_axes <= 0)
+    return false;
+
+  SkFontParameters::Variation::Axis axes_parameters[num_axes];
+  int returned_axes =
+      typeface->getVariationDesignParameters(axes_parameters, num_axes);
+  DCHECK_EQ(num_axes, returned_axes);
+  DCHECK_GE(num_axes, 0);
+
+  float clamped_new_value = new_value;
+  for (auto& axis_parameters : axes_parameters) {
+    if (axis_parameters.tag == axis) {
+      clamped_new_value = std::min(new_value, axis_parameters.max);
+      clamped_new_value = std::max(clamped_new_value, axis_parameters.min);
+    }
+  }
+
+  int num_coordinates = typeface->getVariationDesignPosition(nullptr, 0);
+  if (num_coordinates <= 0)
+    return true;  // Font has axes, but no positions, setting one would have an
+                  // effect.
+
+  // Then compare if clamped value differs from what is set on the font.
+  SkFontArguments::VariationPosition::Coordinate coordinates[num_coordinates];
+  int returned_coordinates =
+      typeface->getVariationDesignPosition(coordinates, num_coordinates);
+
+  if (returned_coordinates != num_coordinates)
+    return false;  // Something went wrong in retrieving actual axis positions,
+                   // font broken?
+
+  for (auto& coordinate : coordinates) {
+    if (coordinate.axis == axis)
+      return coordinate.value != clamped_new_value;
+  }
+  return false;
+}
 
 static bool CanLoadInProcess(NSFont* ns_font) {
   base::ScopedCFTypeRef<CGFontRef> cg_font(
@@ -175,7 +219,7 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
     // Set opsz to font size but allow having it overriden by
     // font-variation-settings in case it has 'opsz'.
     if (coordinate.axis == kOpszTag && optical_sizing == kAutoOpticalSizing) {
-      if (coordinate.value != SkFloatToScalar(size)) {
+      if (VariableAxisChangeEffective(typeface.get(), coordinate.axis, size)) {
         coordinate.value = SkFloatToScalar(size);
         axes_reconfigured = true;
       }
@@ -184,7 +228,8 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
     if (variation_settings &&
         variation_settings->FindPair(FourByteTagToAtomicString(coordinate.axis),
                                      &found_variation_setting)) {
-      if (coordinate.value != found_variation_setting.Value()) {
+      if (VariableAxisChangeEffective(typeface.get(), coordinate.axis,
+                                      found_variation_setting.Value())) {
         coordinate.value = found_variation_setting.Value();
         axes_reconfigured = true;
       }

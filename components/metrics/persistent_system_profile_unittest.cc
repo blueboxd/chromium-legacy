@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/rand_util.h"
 #include "components/variations/hashing.h"

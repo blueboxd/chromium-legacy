@@ -4,7 +4,7 @@
 
 #include "components/bookmarks/browser/bookmark_node_data.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/no_destructor.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"

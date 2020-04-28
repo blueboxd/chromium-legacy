@@ -278,6 +278,11 @@ void WebFrameWidgetBase::SetBackgroundOpaque(bool opaque) {
   }
 }
 
+void WebFrameWidgetBase::SetInheritedEffectiveTouchActionForSubFrame(
+    WebTouchAction touch_action) {
+  SetInheritedEffectiveTouchAction(touch_action);
+}
+
 void WebFrameWidgetBase::CancelDrag() {
   // It's possible for this to be called while we're not doing a drag if
   // it's from a previous page that got unloaded.

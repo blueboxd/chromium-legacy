@@ -4,8 +4,8 @@
 
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 
+#include "base/check_op.h"
 #include "base/deferred_sequenced_task_runner.h"
-#include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 
 namespace bookmarks {

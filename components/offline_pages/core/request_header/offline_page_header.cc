@@ -5,7 +5,7 @@
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 
 #include "base/base64.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 

@@ -113,7 +113,7 @@ void SecurityKeySocket::DoWrite() {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("security_key_socket", R"(
         semantics {
-          sender: "Security Key Socket"
+          sender: "Chrome Remote Desktop"
           description:
             "This request performs the communication between processes when "
             "handling security key (gnubby) authentication."

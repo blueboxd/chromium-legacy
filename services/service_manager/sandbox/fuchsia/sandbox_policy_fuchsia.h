@@ -27,12 +27,9 @@ namespace service_manager {
 
 class SERVICE_MANAGER_SANDBOX_EXPORT SandboxPolicyFuchsia {
  public:
-  SandboxPolicyFuchsia();
+  // Must be called on the IO thread.
+  explicit SandboxPolicyFuchsia(service_manager::SandboxType type);
   ~SandboxPolicyFuchsia();
-
-  // Initializes the policy of the given sandbox |type|. Must be called on the
-  // IO thread.
-  void Initialize(service_manager::SandboxType type);
 
   // Sets the service directory to pass to the child process when launching it.
   // This is only supported for SandboxType::kWebContext processes.  If this is
@@ -47,7 +44,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxPolicyFuchsia {
   void UpdateLaunchOptionsForSandbox(base::LaunchOptions* options);
 
  private:
-  service_manager::SandboxType type_ = service_manager::SandboxType::kInvalid;
+  service_manager::SandboxType type_;
 
   // Services directory used for the /svc namespace of the child process.
   std::unique_ptr<base::fuchsia::FilteredServiceDirectory> service_directory_;

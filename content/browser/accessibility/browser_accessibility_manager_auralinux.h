@@ -39,6 +39,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
   void FireLoadingEvent(BrowserAccessibility* node, bool is_loading);
   void FireNameChangedEvent(BrowserAccessibility* node);
   void FireDescriptionChangedEvent(BrowserAccessibility* node);
+  void FireSortDirectionChangedEvent(BrowserAccessibility* node);
   void FireSubtreeCreatedEvent(BrowserAccessibility* node);
   void OnFindInPageResult(int request_id,
                           int match_index,

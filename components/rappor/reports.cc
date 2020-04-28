@@ -4,7 +4,6 @@
 
 #include "components/rappor/reports.h"
 
-#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "components/rappor/byte_vector_utils.h"

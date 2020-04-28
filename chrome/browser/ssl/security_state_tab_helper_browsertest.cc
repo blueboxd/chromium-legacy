@@ -1809,16 +1809,9 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithHttpDangerous,
 
 // Visit a valid HTTPS page, then a broken HTTPS page, and then go back,
 // and test that the observed security style matches.
-#if defined(OS_CHROMEOS)
-// Flaky on Chrome OS. See https://crbug.com/638576.
-#define MAYBE_DidChangeVisibleSecurityStateObserverGoBack \
-  DISABLED_DidChangeVisibleSecurityStateObserverGoBack
-#else
-#define MAYBE_DidChangeVisibleSecurityStateObserverGoBack \
-  DidChangeVisibleSecurityStateObserverGoBack
-#endif
+// TODO(https://crbug.com/638576) disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
-                       MAYBE_DidChangeVisibleSecurityStateObserverGoBack) {
+                       DISABLED_DidChangeVisibleSecurityStateObserverGoBack) {
   ASSERT_TRUE(https_server_.Start());
 
   net::EmbeddedTestServer https_test_server_expired(

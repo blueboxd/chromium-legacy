@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "net/base/net_errors.h"
 #include "net/cert/caching_cert_verifier.h"
+#include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/coalescing_cert_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
@@ -60,15 +61,9 @@ CertVerifierWithTrustAnchors::~CertVerifierWithTrustAnchors() {
 }
 
 void CertVerifierWithTrustAnchors::InitializeOnIOThread(
-    const scoped_refptr<net::CertVerifyProc>& verify_proc) {
+    std::unique_ptr<net::CertVerifier> delegate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!verify_proc->SupportsAdditionalTrustAnchors()) {
-    LOG(WARNING)
-        << "Additional trust anchors not supported on the current platform!";
-  }
-  delegate_ = std::make_unique<net::CachingCertVerifier>(
-      std::make_unique<net::CoalescingCertVerifier>(
-          std::make_unique<net::MultiThreadedCertVerifier>(verify_proc.get())));
+  delegate_ = std::move(delegate);
   delegate_->SetConfig(ExtendTrustAnchors(orig_config_, trust_anchors_));
 }
 

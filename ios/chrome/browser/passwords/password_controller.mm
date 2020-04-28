@@ -58,6 +58,7 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_password_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -634,7 +635,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 - (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType
                                   URL:(const GURL&)URL {
-  [self.dispatcher showPasswordBreachForLeakType:leakType URL:URL];
+  [self.passwordBreachDispatcher showPasswordBreachForLeakType:leakType
+                                                           URL:URL];
 }
 
 #pragma mark - PasswordManagerDriverDelegate
@@ -682,6 +684,22 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 }
 
 #pragma mark - Private methods
+
+// The dispatcher used for ApplicationCommands.
+- (id<ApplicationCommands>)applicationDispatcher {
+  DCHECK(self.browser);
+  DCHECK(self.browser->GetCommandDispatcher());
+  return HandlerForProtocol(self.browser->GetCommandDispatcher(),
+                            ApplicationCommands);
+}
+
+// The dispatcher used for PasswordBreachCommands.
+- (id<PasswordBreachCommands>)passwordBreachDispatcher {
+  DCHECK(self.browser);
+  DCHECK(self.browser->GetCommandDispatcher());
+  return HandlerForProtocol(self.browser->GetCommandDispatcher(),
+                            PasswordBreachCommands);
+}
 
 - (void)didFinishPasswordFormExtraction:(const std::vector<FormData>&)forms
                         withMaxUniqueID:(uint32_t)maxID {
@@ -782,7 +800,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     case PasswordInfoBarType::SAVE: {
       auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
           isSyncUser, /*password_update*/ false, std::move(form));
-      delegate->set_dispatcher(self.dispatcher);
+      delegate->set_dispatcher(self.applicationDispatcher);
 
       if (IsInfobarUIRebootEnabled()) {
         std::unique_ptr<InfoBarIOS> infobar;
@@ -815,7 +833,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       if (IsInfobarUIRebootEnabled()) {
         auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
             isSyncUser, /*password_update*/ true, std::move(form));
-        delegate->set_dispatcher(self.dispatcher);
+        delegate->set_dispatcher(self.applicationDispatcher);
         InfobarPasswordCoordinator* coordinator = [[InfobarPasswordCoordinator
             alloc]
             initWithInfoBarDelegate:delegate.get()
@@ -828,7 +846,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       } else if (!manual) {
         IOSChromeUpdatePasswordInfoBarDelegate::Create(
             isSyncUser, infoBarManager, std::move(form),
-            self.baseViewController, self.dispatcher);
+            self.baseViewController, self.applicationDispatcher);
       }
       break;
     }

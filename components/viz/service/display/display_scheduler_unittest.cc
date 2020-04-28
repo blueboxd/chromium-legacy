@@ -4,7 +4,7 @@
 
 #include "components/viz/service/display/display_scheduler.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"

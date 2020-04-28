@@ -4,9 +4,10 @@
 
 #include "components/history/core/browser/domain_mixing_metrics.h"
 
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace history {

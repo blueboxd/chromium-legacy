@@ -303,8 +303,6 @@ void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
 #if defined(OS_ANDROID)
     if (!sessions_invalidation_enabled_) {
       invalidation_enabled_types.Remove(syncer::SESSIONS);
-      invalidation_enabled_types.Remove(syncer::FAVICON_IMAGES);
-      invalidation_enabled_types.Remove(syncer::FAVICON_TRACKING);
     }
 #endif
     bool success = invalidator_->UpdateInterestedTopics(
@@ -463,8 +461,6 @@ void SyncEngineImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
       Difference(last_enabled_types_, CommitOnlyTypes()));
   if (!enabled) {
     enabled_for_invalidation.Remove(syncer::SESSIONS);
-    enabled_for_invalidation.Remove(syncer::FAVICON_IMAGES);
-    enabled_for_invalidation.Remove(syncer::FAVICON_TRACKING);
   }
   bool success = invalidator_->UpdateInterestedTopics(
       this, ModelTypeSetToTopicSet(enabled_for_invalidation));

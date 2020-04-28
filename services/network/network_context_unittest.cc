@@ -113,6 +113,7 @@
 #include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/net_log.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -6158,10 +6159,12 @@ TEST_F(NetworkContextTest, UseCertVerifierBuiltin) {
     SCOPED_TRACE(builtin_verifier_enabled);
 
     mojom::NetworkContextParamsPtr params = CreateContextParams();
-    params->use_builtin_cert_verifier =
+    auto creation_params = mojom::CertVerifierCreationParams::New();
+    creation_params->use_builtin_cert_verifier =
         builtin_verifier_enabled
-            ? mojom::NetworkContextParams::CertVerifierImpl::kBuiltin
-            : mojom::NetworkContextParams::CertVerifierImpl::kSystem;
+            ? mojom::CertVerifierCreationParams::CertVerifierImpl::kBuiltin
+            : mojom::CertVerifierCreationParams::CertVerifierImpl::kSystem;
+    params->cert_verifier_creation_params = std::move(creation_params);
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(params));
 

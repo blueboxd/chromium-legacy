@@ -20,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/login/localized_values_builder.h"
 #include "components/strings/grit/components_strings.h"
 #include "rlz/buildflags/buildflags.h"
@@ -28,8 +29,6 @@
 namespace chromeos {
 
 constexpr StaticOobeScreenId EulaView::kScreenId;
-
-const char* EulaScreenHandler::eula_url_for_testing_ = nullptr;
 
 EulaScreenHandler::EulaScreenHandler(JSCallsContainer* js_calls_container,
                                      CoreOobeView* core_oobe_view)
@@ -67,8 +66,10 @@ void EulaScreenHandler::Unbind() {
 }
 
 std::string EulaScreenHandler::GetEulaOnlineUrl() {
-  if (EulaScreenHandler::eula_url_for_testing_) {
-    return std::string(EulaScreenHandler::eula_url_for_testing_);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kOobeEulaUrlForTests)) {
+    return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kOobeEulaUrlForTests);
   }
 
   return base::StringPrintf(chrome::kOnlineEulaURLPath,

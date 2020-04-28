@@ -1,0 +1,141 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.browserservices.trustedwebactivityui.view;
+
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_SCOPE;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_NOT_SHOWN;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_SHOWN;
+import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
+import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE;
+
+import android.content.Context;
+import android.content.res.Resources;
+
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
+import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
+import org.chromium.components.browser_ui.notifications.ChromeNotification;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyObservable;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+
+/**
+ * Displays a notification when the user is on the verified domain. The first such notification (per
+ * TWA) is urgent priority, subsequent ones are low priority.
+ */
+public class DisclosureNotification implements
+        PropertyObservable.PropertyObserver<PropertyKey>, StartStopWithNativeObserver {
+    private final Context mContext;
+    private final Resources mResources;
+    private final TrustedWebActivityModel mModel;
+    private final NotificationManagerProxy mNotificationManager;
+    private String mCurrentScope;
+
+    @Inject
+    DisclosureNotification(
+            @Named(APP_CONTEXT) Context context,
+            Resources resources,
+            TrustedWebActivityModel model,
+            ActivityLifecycleDispatcher lifecycleDispatcher) {
+        mContext = context;
+        mResources = resources;
+        mNotificationManager = new NotificationManagerProxyImpl(mContext);
+        mModel = model;
+        mModel.addObserver(this);
+        lifecycleDispatcher.register(this);
+    }
+
+    private void show() {
+        String mCurrentScope = mModel.get(DISCLOSURE_SCOPE);
+        // TODO(https://crbug.com/1068106): Determine whether this is the first display.
+        ChromeNotification notification = createNotification(true, mCurrentScope);
+        mNotificationManager.notify(notification);
+    }
+
+    private void dismiss() {
+        mNotificationManager.cancel(mCurrentScope, NOTIFICATION_ID_TWA_DISCLOSURE);
+        mCurrentScope = null;
+    }
+
+    private ChromeNotification createNotification(boolean firstTime, String scope) {
+        int umaType;
+        int preOPriority;
+        String channelId;
+        if (firstTime) {
+            umaType = NotificationUmaTracker.SystemNotificationType.TWA_DISCLOSURE_INITIAL;
+            preOPriority = NotificationCompat.PRIORITY_MAX;
+            channelId = ChromeChannelDefinitions.ChannelId.TWA_DISCLOSURE_INITIAL;
+        } else {
+            umaType = NotificationUmaTracker.SystemNotificationType.TWA_DISCLOSURE_SUBSEQUENT;
+            preOPriority = NotificationCompat.PRIORITY_MIN;
+            channelId = ChromeChannelDefinitions.ChannelId.TWA_DISCLOSURE_SUBSEQUENT;
+        }
+
+        // We use the TWA's package name as the notification tag so that multiple different TWAs
+        // don't interfere with each other.
+        NotificationMetadata metadata =
+                new NotificationMetadata(umaType, scope, NOTIFICATION_ID_TWA_DISCLOSURE);
+
+        String title = mResources.getString(R.string.twa_running_in_chrome);
+        String text = mResources.getString(R.string.twa_running_in_chrome_v2, scope);
+
+        boolean preferCompat = true;
+        // The notification is being displayed by Chrome, so we don't need to provide a
+        // remoteAppPackageName.
+        String remoteAppPackageName = null;
+
+        // TODO(https://crbug.com/1068106): Add intent for tapping on the content.
+        // TODO(https://crbug.com/1068106): Add actions.
+        return NotificationBuilderFactory
+                .createChromeNotificationBuilder(
+                        preferCompat, channelId, remoteAppPackageName, metadata)
+                .setSmallIcon(R.drawable.ic_chrome)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setShowWhen(false)
+                .setAutoCancel(false)
+                .setOngoing(!firstTime)
+                .setPriorityBeforeO(preOPriority)
+                .buildChromeNotification();
+    }
+
+    @Override
+    public void onPropertyChanged(PropertyObservable<PropertyKey> source,
+            @Nullable PropertyKey propertyKey) {
+        if (propertyKey != DISCLOSURE_STATE) return;
+
+        switch (mModel.get(DISCLOSURE_STATE)) {
+            case DISCLOSURE_STATE_SHOWN:
+                show();
+                break;
+            case DISCLOSURE_STATE_NOT_SHOWN:
+                dismiss();
+                break;
+        }
+    }
+
+    @Override
+    public void onStartWithNative() {
+        if (mModel.get(DISCLOSURE_STATE) == DISCLOSURE_STATE_SHOWN) show();
+    }
+
+    @Override
+    public void onStopWithNative() {
+        dismiss();
+    }
+}

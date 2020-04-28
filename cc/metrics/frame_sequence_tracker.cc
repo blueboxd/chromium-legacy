@@ -27,6 +27,10 @@
 
 namespace cc {
 
+// In the |TRACKER_TRACE_STREAM|, we mod the numbers such as frame sequence
+// number, or frame token, such that the debug string is not too long.
+constexpr int kDebugStrMod = 1000;
+
 const char* FrameSequenceTracker::GetFrameSequenceTrackerTypeName(
     FrameSequenceTrackerType type) {
   switch (type) {
@@ -97,7 +101,8 @@ void FrameSequenceTracker::ReportBeginImplFrame(
   if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
 
-  TRACKER_TRACE_STREAM << "b(" << args.frame_id.sequence_number << ")";
+  TRACKER_TRACE_STREAM << "b(" << args.frame_id.sequence_number % kDebugStrMod
+                       << ")";
 
   DCHECK(!is_inside_frame_) << TRACKER_DCHECK_MSG;
   is_inside_frame_ = true;
@@ -137,8 +142,11 @@ void FrameSequenceTracker::ReportBeginMainFrame(
   if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
 
-  TRACKER_TRACE_STREAM << "B(" << begin_main_frame_data_.previous_sequence
-                       << "," << args.frame_id.sequence_number << ")";
+  TRACKER_TRACE_STREAM << "B("
+                       << begin_main_frame_data_.previous_sequence %
+                              kDebugStrMod
+                       << "," << args.frame_id.sequence_number % kDebugStrMod
+                       << ")";
 
   if (first_received_main_sequence_ &&
       first_received_main_sequence_ > args.frame_id.sequence_number) {
@@ -180,7 +188,8 @@ void FrameSequenceTracker::ReportMainFrameProcessed(
   if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
 
-  TRACKER_TRACE_STREAM << "E(" << args.frame_id.sequence_number << ")";
+  TRACKER_TRACE_STREAM << "E(" << args.frame_id.sequence_number % kDebugStrMod
+                       << ")";
 
   const bool previous_main_frame_submitted_or_no_damage =
       previous_begin_main_sequence_ != 0 &&
@@ -254,7 +263,7 @@ void FrameSequenceTracker::ReportSubmitFrame(
   last_submitted_frame_ = frame_token;
   compositor_frame_submitted_ = true;
 
-  TRACKER_TRACE_STREAM << "s(" << frame_token << ")";
+  TRACKER_TRACE_STREAM << "s(" << frame_token % kDebugStrMod << ")";
   had_impl_frame_submitted_between_commits_ = true;
 
   const bool main_changes_after_sequence_started =
@@ -274,7 +283,9 @@ void FrameSequenceTracker::ReportSubmitFrame(
     if (main_changes_after_sequence_started &&
         main_changes_include_new_changes && !main_change_had_no_damage) {
       submitted_frame_had_new_main_content_ = true;
-      TRACKER_TRACE_STREAM << "S(" << origin_args.frame_id.sequence_number
+      TRACKER_TRACE_STREAM << "S("
+                           << origin_args.frame_id.sequence_number %
+                                  kDebugStrMod
                            << ")";
 
       last_submitted_main_sequence_ = origin_args.frame_id.sequence_number;
@@ -305,8 +316,10 @@ void FrameSequenceTracker::ReportFrameEnd(
   if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
 
-  TRACKER_TRACE_STREAM << "e(" << args.frame_id.sequence_number << ","
-                       << main_args.frame_id.sequence_number << ")";
+  TRACKER_TRACE_STREAM << "e(" << args.frame_id.sequence_number % kDebugStrMod
+                       << ","
+                       << main_args.frame_id.sequence_number % kDebugStrMod
+                       << ")";
 
   bool should_ignore_sequence =
       ShouldIgnoreSequence(args.frame_id.sequence_number);
@@ -400,7 +413,7 @@ void FrameSequenceTracker::ReportFramePresented(
     return;
   }
 
-  TRACKER_TRACE_STREAM << "P(" << frame_token << ")";
+  TRACKER_TRACE_STREAM << "P(" << frame_token % kDebugStrMod << ")";
 
   base::EraseIf(ignored_frame_tokens_, [frame_token](const uint32_t& token) {
     return viz::FrameTokenGT(frame_token, token);
@@ -514,7 +527,8 @@ void FrameSequenceTracker::ReportImplFrameCausedNoDamage(
   if (ShouldIgnoreBeginFrameSource(ack.frame_id.source_id))
     return;
 
-  TRACKER_TRACE_STREAM << "n(" << ack.frame_id.sequence_number << ")";
+  TRACKER_TRACE_STREAM << "n(" << ack.frame_id.sequence_number % kDebugStrMod
+                       << ")";
 
   // This tracker would be scheduled to terminate, and this frame doesn't belong
   // to that tracker.
@@ -539,8 +553,11 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
   if (ShouldIgnoreBeginFrameSource(args.frame_id.source_id))
     return;
 
-  TRACKER_TRACE_STREAM << "N(" << begin_main_frame_data_.previous_sequence
-                       << "," << args.frame_id.sequence_number << ")";
+  TRACKER_TRACE_STREAM << "N("
+                       << begin_main_frame_data_.previous_sequence %
+                              kDebugStrMod
+                       << "," << args.frame_id.sequence_number % kDebugStrMod
+                       << ")";
 
   if (!first_received_main_sequence_ ||
       first_received_main_sequence_ > args.frame_id.sequence_number) {

@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/at_exit.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/payments/core/error_logger.h"
 #include "url/gurl.h"

@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -43,7 +44,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   // Check if members in |headers| are permitted by |allowed_exempt_headers|.
   static bool IsValidCorsExemptHeaders(
-      const std::unordered_set<std::string>& allowed_exempt_headers,
+      const base::flat_set<std::string>& allowed_exempt_headers,
       const net::HttpRequestHeaders& headers);
 
   // |origin_access_list| should always outlive this factory instance.

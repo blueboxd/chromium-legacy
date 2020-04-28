@@ -238,7 +238,7 @@ const struct DictionaryTestCase {
                   {"da", {Item("hello", Item::kByteSequenceType), {}}}}}}},
     {"tab separated dictionary", "a=1\t,\tb=2", base::nullopt},
     {"missing value with params dictionary",
-     "a=1, b=?1;foo=9, c=3",
+     "a=1, b;foo=9, c=3",
      {Dictionary{{{"a", {Integer(1L), {}}},
                   {"b", {Item(true), {Param("foo", 9)}}},
                   {"c", {Integer(3L), {}}}}}}},
@@ -249,6 +249,16 @@ const struct DictionaryTestCase {
                    {{{Item("1"), {Param("b", 1), BooleanParam("c", false)}},
                      {Item("2"), {}}},
                     {Param("d", "e")}}}}}}},
+    {"explicit true value with parameter",
+     "a=?1;b=1",
+     {Dictionary{{{"a", {Item(true), {Param("b", 1)}}}}}},
+     "a;b=1"},
+    {"implicit true value with parameter",
+     "a;b=1",
+     {Dictionary{{{"a", {Item(true), {Param("b", 1)}}}}}}},
+    {"implicit true value with implicitly-valued parameter",
+     "a;b",
+     {Dictionary{{{"a", {Item(true), {BooleanParam("b", true)}}}}}}},
 };
 }  // namespace
 

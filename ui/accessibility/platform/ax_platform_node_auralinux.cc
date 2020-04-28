@@ -3736,6 +3736,16 @@ void AXPlatformNodeAuraLinux::OnDescriptionChanged() {
   g_value_unset(&property_values.new_value);
 }
 
+void AXPlatformNodeAuraLinux::OnSortDirectionChanged() {
+  // TODO(crbug.com/1074380) fire correct event for aria-sort change.
+  // AtkObject* atk_object = GetOrCreateAtkObject();
+  // if (!atk_object)
+  //   return;
+
+  // std::string sort;
+  // GetStringAttribute(ax::mojom::StringAttribute::kSortDirection, &sort);
+}
+
 void AXPlatformNodeAuraLinux::OnValueChanged() {
   // For the AtkText interface to work on non-web content nodes, we need to
   // update the nodes' hypertext and trigger text change signals when the value

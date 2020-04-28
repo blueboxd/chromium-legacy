@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/task_runner_util.h"
 #include "components/sync/model/model_error.h"

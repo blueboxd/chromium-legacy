@@ -13,8 +13,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "components/zucchini/buffer_view.h"
 #include "components/zucchini/image_utils.h"

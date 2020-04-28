@@ -826,10 +826,6 @@ TEST_F(NudgeTrackerTest, NudgeDelayTest) {
   EXPECT_EQ(nudge_tracker_.RecordLocalChange(ModelTypeSet(SESSIONS)),
             nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS)));
 
-  // Favicons have the same delay as sessions.
-  EXPECT_EQ(nudge_tracker_.RecordLocalChange(ModelTypeSet(SESSIONS)),
-            nudge_tracker_.RecordLocalChange(ModelTypeSet(FAVICON_TRACKING)));
-
   // Autofill has the longer delay of all.
   EXPECT_GT(nudge_tracker_.RecordLocalChange(ModelTypeSet(AUTOFILL)),
             nudge_tracker_.RecordLocalChange(ModelTypeSet(SESSIONS)));

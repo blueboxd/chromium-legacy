@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/metrics/call_stack_profile_encoding.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace metrics {
 

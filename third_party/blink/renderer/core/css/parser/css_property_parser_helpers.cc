@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/css/css_image_set_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
-#include "third_party/blink/renderer/core/css/css_light_dark_color_pair.h"
+#include "third_party/blink/renderer/core/css/css_light_dark_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
@@ -883,13 +883,12 @@ static bool ParseColorFunction(CSSParserTokenRange& range,
   return true;
 }
 
-static CSSLightDarkColorPair* ParseLightDarkColor(
+static CSSLightDarkValuePair* ParseLightDarkColor(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
-  if (range.Peek().FunctionId() != CSSValueID::kInternalLightDarkColor)
+  if (range.Peek().FunctionId() != CSSValueID::kInternalLightDark)
     return nullptr;
-  if (!isValueAllowedInMode(CSSValueID::kInternalLightDarkColor,
-                            context.Mode()))
+  if (!isValueAllowedInMode(CSSValueID::kInternalLightDark, context.Mode()))
     return nullptr;
   CSSParserContext::ParserModeOverridingScope scope(context, kUASheetMode);
   CSSParserTokenRange args = ConsumeFunction(range);
@@ -899,7 +898,7 @@ static CSSLightDarkColorPair* ParseLightDarkColor(
   CSSValue* dark_color = ConsumeColor(args, context);
   if (!dark_color || !args.AtEnd())
     return nullptr;
-  return MakeGarbageCollected<CSSLightDarkColorPair>(light_color, dark_color);
+  return MakeGarbageCollected<CSSLightDarkValuePair>(light_color, dark_color);
 }
 
 CSSValue* ConsumeColor(CSSParserTokenRange& range,

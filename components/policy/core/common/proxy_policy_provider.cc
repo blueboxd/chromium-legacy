@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/policy/core/common/policy_bundle.h"
 
 namespace policy {

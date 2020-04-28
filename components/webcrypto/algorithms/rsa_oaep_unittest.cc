@@ -6,7 +6,6 @@
 #include <stdint.h>
 
 #include "base/base64url.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/algorithms/test_helpers.h"

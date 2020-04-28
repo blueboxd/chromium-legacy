@@ -11,7 +11,7 @@
 #include "base/base64.h"
 #include "base/base64url.h"
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/safe_browsing/core/db/util.h"
 #include "components/safe_browsing/core/db/v4_test_util.h"
 #include "net/base/url_util.h"

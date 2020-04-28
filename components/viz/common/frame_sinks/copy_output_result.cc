@@ -4,7 +4,8 @@
 
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/color_space.h"
 

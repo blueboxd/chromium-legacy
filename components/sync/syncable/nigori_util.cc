@@ -283,8 +283,10 @@ void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
   nigori->set_encrypt_extension_settings(
       encrypted_types.Has(EXTENSION_SETTINGS));
   nigori->set_encrypt_dictionary(encrypted_types.Has(DICTIONARY));
-  nigori->set_encrypt_favicon_images(encrypted_types.Has(FAVICON_IMAGES));
-  nigori->set_encrypt_favicon_tracking(encrypted_types.Has(FAVICON_TRACKING));
+  nigori->set_encrypt_favicon_images(
+      encrypted_types.Has(DEPRECATED_FAVICON_IMAGES));
+  nigori->set_encrypt_favicon_tracking(
+      encrypted_types.Has(DEPRECATED_FAVICON_TRACKING));
   nigori->set_encrypt_app_list(encrypted_types.Has(APP_LIST));
   nigori->set_encrypt_arc_package(encrypted_types.Has(ARC_PACKAGE));
   nigori->set_encrypt_printers(encrypted_types.Has(PRINTERS));
@@ -331,9 +333,9 @@ ModelTypeSet GetEncryptedTypesFromNigori(
   if (nigori.encrypt_dictionary())
     encrypted_types.Put(DICTIONARY);
   if (nigori.encrypt_favicon_images())
-    encrypted_types.Put(FAVICON_IMAGES);
+    encrypted_types.Put(DEPRECATED_FAVICON_IMAGES);
   if (nigori.encrypt_favicon_tracking())
-    encrypted_types.Put(FAVICON_TRACKING);
+    encrypted_types.Put(DEPRECATED_FAVICON_TRACKING);
   if (nigori.encrypt_app_list())
     encrypted_types.Put(APP_LIST);
   if (nigori.encrypt_arc_package())

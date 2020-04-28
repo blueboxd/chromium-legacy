@@ -68,7 +68,8 @@ public class ChromeChannelDefinitions extends ChannelDefinitions {
             ChannelId.SCREEN_CAPTURE, ChannelId.CONTENT_SUGGESTIONS, ChannelId.WEBAPP_ACTIONS,
             ChannelId.SITES, ChannelId.SHARING, ChannelId.UPDATES, ChannelId.COMPLETED_DOWNLOADS,
             ChannelId.PERMISSION_REQUESTS, ChannelId.PERMISSION_REQUESTS_HIGH,
-            ChannelId.ANNOUNCEMENT})
+            ChannelId.ANNOUNCEMENT, ChannelId.TWA_DISCLOSURE_INITIAL,
+            ChannelId.TWA_DISCLOSURE_SUBSEQUENT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {
         String BROWSER = "browser";
@@ -87,6 +88,8 @@ public class ChromeChannelDefinitions extends ChannelDefinitions {
         String PERMISSION_REQUESTS = "permission_requests";
         String PERMISSION_REQUESTS_HIGH = "permission_requests_high";
         String ANNOUNCEMENT = "announcement";
+        String TWA_DISCLOSURE_INITIAL = "twa_disclosure_initial";
+        String TWA_DISCLOSURE_SUBSEQUENT = "twa_disclosure_subsequent";
     }
 
     @StringDef({ChannelGroupId.GENERAL, ChannelGroupId.SITES})
@@ -194,6 +197,16 @@ public class ChromeChannelDefinitions extends ChannelDefinitions {
                             R.string.notification_category_announcement,
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL,
                             true /* showNotificationBadges */));
+
+            // Not added to startup channels as not all users will use Trusted Web Activities.
+            map.put(ChannelId.TWA_DISCLOSURE_INITIAL,
+                    new PredefinedChannel(ChannelId.TWA_DISCLOSURE_INITIAL,
+                            R.string.twa_running_in_chrome_channel_name_initial,
+                            NotificationManager.IMPORTANCE_MAX, ChannelGroupId.GENERAL));
+            map.put(ChannelId.TWA_DISCLOSURE_SUBSEQUENT,
+                    new PredefinedChannel(ChannelId.TWA_DISCLOSURE_SUBSEQUENT,
+                            R.string.twa_running_in_chrome_channel_name_subsequent,
+                            NotificationManager.IMPORTANCE_MIN, ChannelGroupId.GENERAL));
 
             MAP = Collections.unmodifiableMap(map);
             STARTUP = Collections.unmodifiableSet(startup);

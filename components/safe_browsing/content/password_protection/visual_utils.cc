@@ -7,7 +7,6 @@
 
 #include "components/safe_browsing/content/password_protection/visual_utils.h"
 
-#include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixmap.h"

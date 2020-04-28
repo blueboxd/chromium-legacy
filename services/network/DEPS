@@ -28,4 +28,3 @@ specific_include_rules = {
     "+services/proxy_resolver/proxy_resolver_factory_impl.h",
   ],
 }
-                                                                                

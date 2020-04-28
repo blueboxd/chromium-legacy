@@ -10,7 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/char_traits.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"

@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
@@ -54,14 +55,48 @@ class FakeServiceConnectionImpl : public ServiceConnection,
                const std::vector<std::string>& output_names,
                mojom::GraphExecutor::ExecuteCallback callback) override;
 
+  // Useful for simulating a failure at different stage.
+  // There are different error codes at each stage, we just randomly pick one.
+  void SetLoadModelFailure();
+  void SetCreateGraphExecutorFailure();
+  void SetExecuteFailure();
+  // Reset all the failures and make Execute succeed.
+  void SetExecuteSuccess();
+
   // Call SetOutputValue() before Execute() to set the output tensor.
   void SetOutputValue(const std::vector<int64_t>& shape,
                       const std::vector<double>& value);
 
+  // In async mode, FakeServiceConnectionImpl adds requests like
+  // LoadBuiltinModel, CreateGraphExecutor to |pending_calls_| instead of
+  // responding immediately. Calls in |pending_calls_| will run when
+  // RunPendingCalls() is called.
+  // It's useful when an unit test wants to test the async behaviour of real
+  // ml-service.
+  void SetAsyncMode(bool async_mode);
+  void RunPendingCalls();
+
  private:
+  void ScheduleCall(base::OnceClosure call);
+  void HandleLoadBuiltinModelCall(
+      mojo::PendingReceiver<mojom::Model> receiver,
+      mojom::MachineLearningService::LoadBuiltinModelCallback callback);
+  void HandleLoadFlatBufferModelCall(
+      mojo::PendingReceiver<mojom::Model> receiver,
+      mojom::MachineLearningService::LoadFlatBufferModelCallback callback);
+  void HandleCreateGraphExecutorCall(
+      mojo::PendingReceiver<mojom::GraphExecutor> receiver,
+      mojom::Model::CreateGraphExecutorCallback callback);
+  void HandleExecuteCall(mojom::GraphExecutor::ExecuteCallback callback);
+
   mojo::ReceiverSet<mojom::Model> model_receivers_;
   mojo::ReceiverSet<mojom::GraphExecutor> graph_receivers_;
-  mojom::TensorPtr execute_result_;
+  mojom::TensorPtr output_tensor_;
+  mojom::LoadModelResult load_model_result_;
+  mojom::CreateGraphExecutorResult create_graph_executor_result_;
+  mojom::ExecuteResult execute_result_;
+  bool async_mode_;
+  std::vector<base::OnceClosure> pending_calls_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServiceConnectionImpl);
 };

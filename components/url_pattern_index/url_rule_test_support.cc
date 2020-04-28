@@ -4,7 +4,7 @@
 
 #include "components/url_pattern_index/url_rule_test_support.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 #include "url/origin.h"

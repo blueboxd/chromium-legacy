@@ -4,7 +4,7 @@
 
 #include "components/sync/test/mock_invalidation.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/sync/test/mock_invalidation_tracker.h"
 
 namespace syncer {

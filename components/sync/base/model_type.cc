@@ -113,10 +113,10 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {DICTIONARY, "DICTIONARY", "dictionary", "Dictionary",
      sync_pb::EntitySpecifics::kDictionaryFieldNumber,
      ModelTypeForHistograms::kDictionary},
-    {FAVICON_IMAGES, "FAVICON_IMAGE", "favicon_images", "Favicon Images",
-     sync_pb::EntitySpecifics::kFaviconImageFieldNumber,
+    {DEPRECATED_FAVICON_IMAGES, "FAVICON_IMAGE", "favicon_images",
+     "Favicon Images", sync_pb::EntitySpecifics::kFaviconImageFieldNumber,
      ModelTypeForHistograms::kFaviconImages},
-    {FAVICON_TRACKING, "FAVICON_TRACKING", "favicon_tracking",
+    {DEPRECATED_FAVICON_TRACKING, "FAVICON_TRACKING", "favicon_tracking",
      "Favicon Tracking", sync_pb::EntitySpecifics::kFaviconTrackingFieldNumber,
      ModelTypeForHistograms::kFaviconTracking},
     {DEVICE_INFO, "DEVICE_INFO", "device_info", "Device Info",
@@ -254,10 +254,10 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case DICTIONARY:
       specifics->mutable_dictionary();
       break;
-    case FAVICON_IMAGES:
+    case DEPRECATED_FAVICON_IMAGES:
       specifics->mutable_favicon_image();
       break;
-    case FAVICON_TRACKING:
+    case DEPRECATED_FAVICON_TRACKING:
       specifics->mutable_favicon_tracking();
       break;
     case DEVICE_INFO:
@@ -400,9 +400,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_dictionary())
     return DICTIONARY;
   if (specifics.has_favicon_image())
-    return FAVICON_IMAGES;
+    return DEPRECATED_FAVICON_IMAGES;
   if (specifics.has_favicon_tracking())
-    return FAVICON_TRACKING;
+    return DEPRECATED_FAVICON_TRACKING;
   if (specifics.has_device_info())
     return DEVICE_INFO;
   if (specifics.has_priority_preference())

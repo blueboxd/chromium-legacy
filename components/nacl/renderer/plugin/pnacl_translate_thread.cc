@@ -9,7 +9,7 @@
 #include <iterator>
 #include <sstream>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/time/time.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"

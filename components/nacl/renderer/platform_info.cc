@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/cpu.h"
-#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"

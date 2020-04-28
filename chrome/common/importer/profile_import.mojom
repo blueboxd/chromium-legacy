@@ -58,7 +58,6 @@ interface ProfileImportObserver {
   OnKeywordsImportReady(
       array<SearchEngineInfo> search_engines,
       bool unique_on_host_and_path);
-  OnFirefoxSearchEngineDataReceived(array<string> search_engine_data);
   OnAutofillFormDataImportStart(uint32 total_autofill_form_data_entry_count);
   OnAutofillFormDataImportGroup(
       array<ImporterAutofillFormDataEntry> autofill_form_data_entry_group);

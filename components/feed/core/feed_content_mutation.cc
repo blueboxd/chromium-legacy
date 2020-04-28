@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "components/feed/core/feed_content_operation.h"
 
 namespace feed {

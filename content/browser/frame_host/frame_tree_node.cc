@@ -580,11 +580,11 @@ void FrameTreeNode::BeforeUnloadCanceled() {
 }
 
 bool FrameTreeNode::NotifyUserActivation() {
-  for (FrameTreeNode* node = this; node; node = node->parent()) {
-    if (!node->user_activation_state_.HasBeenActive() &&
-        node->current_frame_host())
-      node->current_frame_host()->DidReceiveFirstUserActivation();
-    node->user_activation_state_.Activate();
+  for (RenderFrameHostImpl* rfh = current_frame_host(); rfh;
+       rfh = rfh->GetParent()) {
+    if (!rfh->frame_tree_node()->user_activation_state_.HasBeenActive())
+      rfh->DidReceiveFirstUserActivation();
+    rfh->frame_tree_node()->user_activation_state_.Activate();
   }
   replication_state_.has_received_user_gesture = true;
 

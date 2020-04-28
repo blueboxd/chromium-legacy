@@ -7,8 +7,8 @@
 #include <string>
 #include <utility>
 
+#include "base/check.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/geo/address_i18n.h"

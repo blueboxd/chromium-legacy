@@ -37,7 +37,8 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "components/version_info/version_info.h"

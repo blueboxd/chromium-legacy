@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "components/crash/content/browser/crash_memory_metrics_collector_android.h"

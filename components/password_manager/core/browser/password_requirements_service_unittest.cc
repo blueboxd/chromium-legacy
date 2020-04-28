@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "base/logging.h"
 #include "base/test/bind_test_util.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "components/password_manager/core/browser/generation/password_requirements_spec_fetcher.h"

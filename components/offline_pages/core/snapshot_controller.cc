@@ -5,8 +5,8 @@
 #include "components/offline_pages/core/snapshot_controller.h"
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 

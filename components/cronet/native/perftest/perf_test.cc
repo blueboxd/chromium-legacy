@@ -6,9 +6,9 @@
 
 #include "base/at_exit.h"
 #include "base/atomic_sequence_num.h"
+#include "base/check_op.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"

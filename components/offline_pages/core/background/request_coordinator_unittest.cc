@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
 #include "base/test/bind_test_util.h"

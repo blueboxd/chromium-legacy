@@ -17,17 +17,20 @@
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "net/base/test_completion_callback.h"
+#include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_verify_proc_builtin.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/coalescing_cert_verifier.h"
+#include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/cert_verify_proc_chromeos.h"
-#include "services/network/system_trust_store_provider_chromeos.h"
+#include "services/network/public/cpp/cert_verifier/cert_verify_proc_chromeos.h"
+#include "services/network/public/cpp/cert_verifier/system_trust_store_provider_chromeos.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -65,7 +68,12 @@ class CertVerifierWithTrustAnchorsTest : public testing::TestWithParam<bool> {
       cert_verify_proc_ = base::MakeRefCounted<network::CertVerifyProcChromeOS>(
           crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash()));
     }
-    cert_verifier_->InitializeOnIOThread(cert_verify_proc_);
+
+    cert_verifier_->InitializeOnIOThread(
+        std::make_unique<net::CachingCertVerifier>(
+            std::make_unique<net::CoalescingCertVerifier>(
+                std::make_unique<net::MultiThreadedCertVerifier>(
+                    cert_verify_proc_))));
 
     test_ca_cert_ = LoadCertificate("root_ca_cert.pem", net::CA_CERT);
     ASSERT_TRUE(test_ca_cert_);

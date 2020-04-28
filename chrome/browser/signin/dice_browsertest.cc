@@ -1015,8 +1015,9 @@ IN_PROC_BROWSER_TEST_F(DiceManageAccountBrowserTest,
       prefs::kSigninAllowedOnNextStartup, false);
 }
 
+// TODO(https://crbug.com/1075896) disabling test due to flakiness
 IN_PROC_BROWSER_TEST_F(DiceManageAccountBrowserTest,
-                       ClearManagedProfileOnStartup) {
+                       DISABLED_ClearManagedProfileOnStartup) {
   // Initial profile should have been deleted as sign-in and sign out were no
   // longer allowed.
   PrefService* local_state = g_browser_process->local_state();

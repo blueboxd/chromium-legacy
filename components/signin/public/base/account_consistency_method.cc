@@ -4,7 +4,6 @@
 
 #include "components/signin/public/base/account_consistency_method.h"
 
-#include "base/logging.h"
 
 namespace signin {
 

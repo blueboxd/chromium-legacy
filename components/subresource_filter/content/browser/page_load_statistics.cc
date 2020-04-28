@@ -4,7 +4,7 @@
 
 #include "components/subresource_filter/content/browser/page_load_statistics.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/subresource_filter/core/common/time_measurements.h"
 

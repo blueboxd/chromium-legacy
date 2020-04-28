@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_namespace_constants.h"

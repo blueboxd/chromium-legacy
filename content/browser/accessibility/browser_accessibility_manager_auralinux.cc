@@ -115,6 +115,11 @@ void BrowserAccessibilityManagerAuraLinux::FireDescriptionChangedEvent(
   ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnDescriptionChanged();
 }
 
+void BrowserAccessibilityManagerAuraLinux::FireSortDirectionChangedEvent(
+    BrowserAccessibility* node) {
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnSortDirectionChanged();
+}
+
 void BrowserAccessibilityManagerAuraLinux::FireSubtreeCreatedEvent(
     BrowserAccessibility* node) {
   // Sending events during a load would create a lot of spam, don't do that.
@@ -166,6 +171,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
     case ui::AXEventGenerator::Event::SELECTED_CHANGED:
       FireSelectedEvent(node);
+      break;
+    case ui::AXEventGenerator::Event::SORT_CHANGED:
+      FireSortDirectionChangedEvent(node);
       break;
     case ui::AXEventGenerator::Event::SUBTREE_CREATED:
       FireSubtreeCreatedEvent(node);

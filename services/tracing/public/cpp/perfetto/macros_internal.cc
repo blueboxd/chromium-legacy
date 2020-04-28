@@ -28,7 +28,8 @@ base::Optional<base::trace_event::TraceEvent> CreateTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
-    unsigned int flags) {
+    unsigned int flags,
+    base::TimeTicks ts = base::TimeTicks()) {
   DCHECK(phase == TRACE_EVENT_PHASE_BEGIN || phase == TRACE_EVENT_PHASE_END ||
          phase == TRACE_EVENT_PHASE_INSTANT);
   DCHECK(category_group_enabled);
@@ -41,15 +42,18 @@ base::Optional<base::trace_event::TraceEvent> CreateTraceEvent(
     return base::nullopt;
   }
 
-  base::TimeTicks now = TRACE_TIME_TICKS_NOW();
-  base::TimeTicks offset_event_timestamp = now - base::TimeDelta();
+  if (ts.is_null()) {
+    ts = TRACE_TIME_TICKS_NOW();
+  } else {
+    flags |= TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP;
+  }
   base::ThreadTicks thread_now = ThreadNow();
   base::trace_event::ThreadInstructionCount thread_instruction_now =
       ThreadInstructionNow();
 
   return base::trace_event::TraceEvent(
-      thread_id, offset_event_timestamp, thread_now, thread_instruction_now,
-      phase, category_group_enabled, name, trace_event_internal::kGlobalScope,
+      thread_id, ts, thread_now, thread_instruction_now, phase,
+      category_group_enabled, name, trace_event_internal::kGlobalScope,
       trace_event_internal::kNoId, trace_event_internal::kNoId, nullptr, flags);
 }
 

@@ -26,12 +26,12 @@ namespace ml {
 
 namespace {
 
-using ::chromeos::machine_learning::mojom::ExecuteResult;
-using ::chromeos::machine_learning::mojom::FloatList;
-using ::chromeos::machine_learning::mojom::Int64List;
-using ::chromeos::machine_learning::mojom::Tensor;
-using ::chromeos::machine_learning::mojom::TensorPtr;
-using ::chromeos::machine_learning::mojom::ValueList;
+using chromeos::machine_learning::mojom::ExecuteResult;
+using chromeos::machine_learning::mojom::FloatList;
+using chromeos::machine_learning::mojom::Int64List;
+using chromeos::machine_learning::mojom::Tensor;
+using chromeos::machine_learning::mojom::TensorPtr;
+using chromeos::machine_learning::mojom::ValueList;
 
 int ScoreToProbability(float score) {
   const float sigmoid = 1.0f / (1.0f + exp(-score));

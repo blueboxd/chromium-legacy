@@ -96,10 +96,10 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
             sectionHeaderView =
                     (SectionHeaderView) inflater.inflate(R.layout.ss_feed_header, null, false);
         }
-        FeedSurfaceCoordinator feedSurfaceCoordinator =
-                new FeedSurfaceCoordinator(mActivity, mActivity.getSnackbarManager(),
-                        mActivity.getTabModelSelector(), mActivity.getActivityTabProvider(), null,
-                        null, sectionHeaderView, exploreSurfaceActionHandler, isInNightMode, this);
+        FeedSurfaceCoordinator feedSurfaceCoordinator = new FeedSurfaceCoordinator(mActivity,
+                mActivity.getSnackbarManager(), mActivity.getTabModelSelector(),
+                mActivity.getActivityTabProvider(), null, null, sectionHeaderView,
+                exploreSurfaceActionHandler, isInNightMode, this, null);
         feedSurfaceCoordinator.getView().setId(R.id.start_surface_explore_view);
         return feedSurfaceCoordinator;
         // TODO(crbug.com/982018): Customize surface background for incognito and dark mode.

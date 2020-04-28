@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/system/core.h"
 

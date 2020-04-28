@@ -4,8 +4,8 @@
 
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 
-#include "base/logging.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/notreached.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"

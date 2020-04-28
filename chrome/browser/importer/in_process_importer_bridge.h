@@ -43,9 +43,6 @@ class InProcessImporterBridge : public ImporterBridge {
       const std::vector<importer::SearchEngineInfo>& search_engines,
       bool unique_on_host_and_path) override;
 
-  void SetFirefoxSearchEnginesXMLData(
-      const std::vector<std::string>& search_engine_data) override;
-
   void SetPasswordForm(const autofill::PasswordForm& form) override;
 
   void SetAutofillFormData(
@@ -60,19 +57,10 @@ class InProcessImporterBridge : public ImporterBridge {
   // End ImporterBridge implementation.
 
  private:
-  class SearchEnginesParser;
-  friend class SearchEnginesParser;
-
   ~InProcessImporterBridge() override;
-
-  // Called by the SearchEnginesParser when all the search engines have been
-  // parsed. The |template_urls| vector is in the same sort order that was
-  // passed to SetFirefoxSearchEnginesXMLData().
-  void WriteSearchEngines(TemplateURL::OwnedTemplateURLVector template_urls);
 
   ProfileWriter* const writer_;  // weak
   const base::WeakPtr<ExternalProcessImporterHost> host_;
-  std::unique_ptr<SearchEnginesParser> search_engines_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessImporterBridge);
 };

@@ -94,6 +94,34 @@ struct CustomProxyConfig {
   HttpRequestHeaders connect_tunnel_headers;
 };
 
+// Parameters to specify how the net::CertVerifier and net::CertVerifyProc
+// objects should be instantiated.
+struct CertVerifierCreationParams {
+  // Specifies the path to the directory where NSS will store its database.
+  [EnableIf=is_chromeos]
+  mojo_base.mojom.FilePath? nss_path;
+
+  // This is used in combination with nss_path, to ensure that the NSS database
+  // isn't opened multiple times for NetworkContexts in the same profie.
+  [EnableIf=is_chromeos]
+  string username_hash;
+
+  // Specifies which cert verifier implementation to use.
+  //   kDefault - Decided by base::Feature
+  //   kBuiltin - Use CertVerifyProcBuiltin
+  //   kSystem  - Use the system CertVerifyProc implementation
+  [EnableIf=is_builtin_cert_verifier_feature_supported]
+  enum CertVerifierImpl {kDefault, kBuiltin, kSystem};
+  [EnableIf=is_builtin_cert_verifier_feature_supported]
+  CertVerifierImpl use_builtin_cert_verifier = kDefault;
+
+  // Parameters for the cert verifier comparison trial. This is a temporary
+  // interface and embedders should not use it.
+  // See https://crbug.com/649026
+  [EnableIf=is_trial_comparison_cert_verifier_supported]
+  TrialComparisonCertVerifierParams? trial_comparison_cert_verifier_params;
+};
+
 // Client to update the custom proxy config.
 interface CustomProxyConfigClient {
   OnCustomProxyConfigUpdated(CustomProxyConfig proxy_config);
@@ -331,34 +359,13 @@ struct NetworkContextParams {
   [EnableIf=is_ct_supported]
   mojo_base.mojom.Time ct_log_update_time;
 
-  // Specifies the path to the directory where NSS will store its database.
-  [EnableIf=is_chromeos]
-  mojo_base.mojom.FilePath? nss_path;
-
-  // This is used in combination with nss_path, to ensure that the NSS database
-  // isn't opened multiple times for NetworkContexts in the same profie.
-  [EnableIf=is_chromeos]
-  string username_hash;
+  // Contains the parameters used to instantiate a net::CertVerifier in-process.
+  CertVerifierCreationParams? cert_verifier_creation_params;
 
   // Initial additional certificates that will be used for certificate
   // validation.
   [EnableIf=is_chromeos]
   AdditionalCertificates? initial_additional_certificates;
-
-  // Specifies which cert verifier implementation to use.
-  //   kDefault - Decided by base::Feature
-  //   kBuiltin - Use CertVerifyProcBuiltin
-  //   kSystem  - Use the system CertVerifyProc implementation
-  [EnableIf=is_builtin_cert_verifier_feature_supported]
-  enum CertVerifierImpl {kDefault, kBuiltin, kSystem};
-  [EnableIf=is_builtin_cert_verifier_feature_supported]
-  CertVerifierImpl use_builtin_cert_verifier = kDefault;
-
-  // Parameters for the cert verifier comparison trial. This is a temporary
-  // interface and embedders should not use it.
-  // See https://crbug.com/649026
-  [EnableIf=is_trial_comparison_cert_verifier_supported]
-  TrialComparisonCertVerifierParams? trial_comparison_cert_verifier_params;
 
   // Parameters for constructing the cookie manager.
   CookieManagerParams? cookie_manager_params;

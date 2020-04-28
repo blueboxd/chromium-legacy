@@ -5,7 +5,7 @@
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/policy/content/policy_blacklist_service.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"

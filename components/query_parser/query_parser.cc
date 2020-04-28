@@ -7,11 +7,12 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace query_parser {

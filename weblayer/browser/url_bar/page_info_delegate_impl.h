@@ -47,6 +47,8 @@ class PageInfoDelegateImpl : public PageInfoDelegate {
   security_state::VisibleSecurityState GetVisibleSecurityState() override;
 
  private:
+  content::BrowserContext* GetBrowserContext() const;
+
   content::WebContents* web_contents_;
 };
 

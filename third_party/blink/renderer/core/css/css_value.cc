@@ -55,7 +55,7 @@
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_shorthand_value.h"
 #include "third_party/blink/renderer/core/css/css_layout_function_value.h"
-#include "third_party/blink/renderer/core/css/css_light_dark_color_pair.h"
+#include "third_party/blink/renderer/core/css/css_light_dark_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
@@ -273,8 +273,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
                                                                        other);
       case kInvalidVariableValueClass:
         return CompareCSSValues<CSSInvalidVariableValue>(*this, other);
-      case kLightDarkColorPairClass:
-        return CompareCSSValues<CSSLightDarkColorPair>(*this, other);
+      case kLightDarkValuePairClass:
+        return CompareCSSValues<CSSLightDarkValuePair>(*this, other);
     }
     NOTREACHED();
     return false;
@@ -391,8 +391,8 @@ String CSSValue::CssText() const {
       return To<cssvalue::CSSPendingSubstitutionValue>(this)->CustomCSSText();
     case kInvalidVariableValueClass:
       return To<CSSInvalidVariableValue>(this)->CustomCSSText();
-    case kLightDarkColorPairClass:
-      return To<CSSLightDarkColorPair>(this)->CustomCSSText();
+    case kLightDarkValuePairClass:
+      return To<CSSLightDarkValuePair>(this)->CustomCSSText();
   }
   NOTREACHED();
   return String();
@@ -567,8 +567,8 @@ void CSSValue::FinalizeGarbageCollectedObject() {
     case kInvalidVariableValueClass:
       To<CSSInvalidVariableValue>(this)->~CSSInvalidVariableValue();
       return;
-    case kLightDarkColorPairClass:
-      To<CSSLightDarkColorPair>(this)->~CSSLightDarkColorPair();
+    case kLightDarkValuePairClass:
+      To<CSSLightDarkValuePair>(this)->~CSSLightDarkValuePair();
       return;
   }
   NOTREACHED();
@@ -743,8 +743,8 @@ void CSSValue::Trace(Visitor* visitor) {
     case kInvalidVariableValueClass:
       To<CSSInvalidVariableValue>(this)->TraceAfterDispatch(visitor);
       return;
-    case kLightDarkColorPairClass:
-      To<CSSLightDarkColorPair>(this)->TraceAfterDispatch(visitor);
+    case kLightDarkValuePairClass:
+      To<CSSLightDarkValuePair>(this)->TraceAfterDispatch(visitor);
       return;
   }
   NOTREACHED();

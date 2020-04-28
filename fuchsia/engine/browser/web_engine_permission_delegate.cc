@@ -5,7 +5,8 @@
 #include "fuchsia/engine/browser/web_engine_permission_delegate.h"
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "fuchsia/engine/browser/frame_impl.h"

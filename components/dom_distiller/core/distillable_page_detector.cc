@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/grit/components_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 

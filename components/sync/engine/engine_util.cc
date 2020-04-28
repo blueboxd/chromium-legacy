@@ -8,7 +8,8 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "components/sync/nigori/cryptographer.h"
 #include "components/sync/protocol/password_specifics.pb.h"

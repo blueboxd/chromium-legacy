@@ -238,8 +238,15 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   self.encryptionItem =
       [[TableViewImageItem alloc] initWithType:EncryptionItemType];
   self.encryptionItem.title = GetNSString(IDS_IOS_MANAGE_SYNC_ENCRYPTION);
+  // For kSyncServiceNeedsTrustedVaultKey, the disclosure indicator should not
+  // be shown since the reauth dialog for the trusted vault is presented from
+  // the bottom, and is not part of navigation controller.
+  BOOL hasDisclosureIndicator =
+      self.syncSetupService->GetSyncServiceState() !=
+      SyncSetupService::kSyncServiceNeedsTrustedVaultKey;
   self.encryptionItem.accessoryType =
-      UITableViewCellAccessoryDisclosureIndicator;
+      hasDisclosureIndicator ? UITableViewCellAccessoryDisclosureIndicator
+                             : UITableViewCellAccessoryNone;
   [model addItem:self.encryptionItem
       toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
   [self updateEncryptionItem:NO];

@@ -5,7 +5,8 @@
 #include "components/prefs/pref_change_registrar.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "components/prefs/pref_service.h"
 
 PrefChangeRegistrar::PrefChangeRegistrar() : service_(nullptr) {}

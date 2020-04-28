@@ -4,7 +4,6 @@
 
 #include "components/link_header_util/link_header_util.h"
 
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

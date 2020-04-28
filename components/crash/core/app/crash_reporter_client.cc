@@ -9,8 +9,8 @@
 // On Windows don't use FilePath and logging.h.
 // http://crbug.com/604923
 #if !defined(OS_WIN)
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #else
 #include <assert.h>
 #define DCHECK assert

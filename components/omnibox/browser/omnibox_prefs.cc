@@ -4,7 +4,7 @@
 
 #include "components/omnibox/browser/omnibox_prefs.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/values.h"

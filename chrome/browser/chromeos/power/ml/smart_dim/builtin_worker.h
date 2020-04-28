@@ -27,7 +27,7 @@ class BuiltinWorker : public SmartDimWorker {
   // SmartDimWorker overrides:
   const assist_ranker::ExamplePreprocessorConfig* GetPreprocessorConfig()
       override;
-  const mojo::Remote<::chromeos::machine_learning::mojom::GraphExecutor>&
+  const mojo::Remote<chromeos::machine_learning::mojom::GraphExecutor>&
   GetExecutor() override;
 
  private:

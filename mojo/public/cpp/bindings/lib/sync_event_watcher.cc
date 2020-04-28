@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
+#include "base/check_op.h"
 #include "base/containers/stack_container.h"
-#include "base/logging.h"
 
 namespace mojo {
 

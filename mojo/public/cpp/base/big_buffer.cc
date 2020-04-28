@@ -4,7 +4,8 @@
 
 #include "mojo/public/cpp/base/big_buffer.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 
 namespace mojo_base {
 

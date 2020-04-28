@@ -15,6 +15,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -124,11 +125,11 @@ public class SharedClipboardShareActivity
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         DeviceInfo device = mAdapter.getItem(position);
-        String text = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        String text = IntentUtils.safeGetStringExtra(getIntent(), Intent.EXTRA_TEXT);
 
         // Log metrics for device click and text size.
         SharedClipboardMetrics.recordDeviceClick(position);
-        SharedClipboardMetrics.recordTextSize(text.length());
+        SharedClipboardMetrics.recordTextSize(text != null ? text.length() : 0);
 
         SharedClipboardMessageHandler.showSendingNotification(
                 device.guid, device.clientName, text, /*retries=*/0);

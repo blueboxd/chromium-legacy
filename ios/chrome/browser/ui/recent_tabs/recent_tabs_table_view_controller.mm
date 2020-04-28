@@ -1186,6 +1186,10 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   [self.handler showGoogleServicesSettingsFromViewController:self];
 }
 
+- (void)showTrustedVaultReauthentication {
+  [self.handler showTrustedVaultReauthenticationFromViewController:self];
+}
+
 #pragma mark - SigninPresenter
 
 - (void)showSignin:(ShowSigninCommand*)command {

@@ -4,7 +4,7 @@
 
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"

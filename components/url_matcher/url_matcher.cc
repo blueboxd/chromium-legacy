@@ -8,8 +8,9 @@
 #include <iterator>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"

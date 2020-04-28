@@ -8,7 +8,7 @@
 
 #include <cstring>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace network_hints {
 

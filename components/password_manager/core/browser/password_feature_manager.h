@@ -25,7 +25,8 @@ class PasswordFeatureManager {
 
   // Whether it makes sense to ask the user to opt-in for account-based
   // password storage. This is true if the opt-in doesn't exist yet, but all
-  // other requirements are met (i.e. there is a signed-in user etc).
+  // other requirements are met (there is a signed-in user, Sync-the-feature
+  // is not enabled, etc).
   virtual bool ShouldShowAccountStorageOptIn() const = 0;
 
   // Whether it makes sense to ask the user to signin again to access the
@@ -39,8 +40,8 @@ class PasswordFeatureManager {
 
   // Whether it makes sense to ask the user about the store when saving a
   // password (i.e. profile or account store). This is true if the user has
-  // opted-in already or hasn't opted in but all other requirements are met
-  // (i.e. there is a signed-in user etc).
+  // opted in already, or hasn't opted in but all other requirements are met
+  // (i.e. there is a signed-in user, Sync-the-feature is not enabled, etc).
   virtual bool ShouldShowPasswordStorePicker() const = 0;
 
   // Sets the default password store selected by user in prefs. This store is
@@ -48,8 +49,9 @@ class PasswordFeatureManager {
   virtual void SetDefaultPasswordStore(
       const autofill::PasswordForm::Store& store) = 0;
 
-  // Reads the default password store from pref that was set using
-  // SetDefaultPasswordStore();
+  // Returns the default storage location for signed-in but non-syncing users
+  // (i.e. will new passwords be saved to locally or to the account by default).
+  // Always returns an actual value, never kNotSet.
   virtual autofill::PasswordForm::Store GetDefaultPasswordStore() const = 0;
 
  private:

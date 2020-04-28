@@ -8,12 +8,16 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
@@ -26,10 +30,13 @@ import android.support.test.espresso.action.Press;
 import android.support.test.espresso.action.Swipe;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,6 +44,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterProvider;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -52,7 +63,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
@@ -66,17 +77,18 @@ import org.chromium.components.signin.test.util.AccountManagerTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Tests for {@link FeedNewTabPage} specifically. Other tests can be found in
  * {@link org.chromium.chrome.browser.ntp.NewTabPageTest}.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags
-        .Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-        @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
-        public class FeedNewTabPageTest {
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+@CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+@Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
+public class FeedNewTabPageTest {
     private static final int ARTICLE_SECTION_HEADER_POSITION = 1;
     private static final int SIGNIN_PROMO_POSITION = 2;
 
@@ -95,15 +107,31 @@ import java.util.List;
     @Rule
     public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
+    /** Parameter provider for enabling/disabling the signin promo card. */
+    public static class SigninPromoParams implements ParameterProvider {
+        @Override
+        public Iterable<ParameterSet> getParameters() {
+            return Collections.singletonList(
+                    new ParameterSet().value(true).name("DisableSigninPromo"));
+        }
+    }
+
     private Tab mTab;
     private FeedNewTabPage mNtp;
     private ViewGroup mTileGridLayout;
     private FakeMostVisitedSites mMostVisitedSites;
     private EmbeddedTestServer mTestServer;
     private List<SiteSuggestion> mSiteSuggestions;
+    private boolean mDisableSigninPromoCard;
+
+    @ParameterAnnotations.UseMethodParameterBefore(SigninPromoParams.class)
+    public void disableSigninPromoCard(boolean disableSigninPromoCard) {
+        mDisableSigninPromoCard = disableSigninPromoCard;
+    }
 
     @Before
     public void setUp() {
+        SignInPromo.setDisablePromoForTests(mDisableSigninPromoCard);
         mActivityTestRule.startMainActivityWithURL("about:blank");
 
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
@@ -126,6 +154,13 @@ import java.util.List;
     public void tearDown() {
         mTestServer.stopAndDestroyServer();
         FeedProcessScopeFactory.setTestNetworkClient(null);
+    }
+
+    private void waitForPopup(Matcher<View> matcher) {
+        View mainDecorView = mActivityTestRule.getActivity().getWindow().getDecorView();
+        onView(isRoot())
+                .inRoot(withDecorView(not(is(mainDecorView))))
+                .check(waitForView(matcher, ViewUtils.VIEW_VISIBLE));
     }
 
     @Test
@@ -233,6 +268,39 @@ import java.util.List;
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.FEED_HEADER_MENU)
+    @Feature({"NewTabPage", "FeedNewTabPage"})
+    @ParameterAnnotations.UseMethodParameter(SigninPromoParams.class)
+    public void testArticleSectionHeaderWithMenu(boolean disableSigninPromoCard) throws Exception {
+        // Scroll to the article section header in case it is not visible.
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.scrollToPosition(ARTICLE_SECTION_HEADER_POSITION));
+        waitForView((ViewGroup) mNtp.getView(), allOf(withId(R.id.header_title), isDisplayed()));
+
+        View sectionHeaderView = mNtp.getSectionHeaderViewForTesting();
+        TextView headerStatusView = sectionHeaderView.findViewById(R.id.header_title);
+
+        // Assert that the feed is expanded and that the header title text is correct.
+        Assert.assertTrue(mNtp.getMediatorForTesting().getSectionHeaderForTesting().isExpanded());
+        Assert.assertEquals(sectionHeaderView.getContext().getString(R.string.ntp_discover_on),
+                headerStatusView.getText());
+
+        // Toggle header on the current tab.
+        onView(withId(R.id.header_menu)).perform(click());
+        View mainDecorView = mActivityTestRule.getActivity().getWindow().getDecorView();
+        waitForPopup(withText(R.string.ntp_turn_off_feed));
+        onView(withText(R.string.ntp_turn_off_feed))
+                .inRoot(withDecorView(not(is(mainDecorView))))
+                .perform(click());
+
+        // Assert that the feed is collapsed and that the header title text is correct.
+        Assert.assertFalse(mNtp.getMediatorForTesting().getSectionHeaderForTesting().isExpanded());
+        Assert.assertEquals(sectionHeaderView.getContext().getString(R.string.ntp_discover_off),
+                headerStatusView.getText());
     }
 
     @Test

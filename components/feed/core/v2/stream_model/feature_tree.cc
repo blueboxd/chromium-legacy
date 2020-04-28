@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <sstream>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace feed {
 namespace stream_model {

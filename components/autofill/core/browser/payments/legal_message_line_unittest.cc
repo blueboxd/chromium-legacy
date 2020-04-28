@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"

@@ -609,11 +609,13 @@ IN_PROC_BROWSER_TEST_P(
   network::mojom::NetworkContextParamsPtr network_context_params_ptr =
       profile_network_context_service->CreateNetworkContextParams(
           /*in_memory=*/false, empty_relative_partition_path);
-  EXPECT_EQ(
-      GetParam()
-          ? network::mojom::NetworkContextParams::CertVerifierImpl::kBuiltin
-          : network::mojom::NetworkContextParams::CertVerifierImpl::kSystem,
-      network_context_params_ptr->use_builtin_cert_verifier);
+
+  EXPECT_EQ(GetParam() ? network::mojom::CertVerifierCreationParams::
+                             CertVerifierImpl::kBuiltin
+                       : network::mojom::CertVerifierCreationParams::
+                             CertVerifierImpl::kSystem,
+            network_context_params_ptr->cert_verifier_creation_params
+                ->use_builtin_cert_verifier);
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
   // If the BuiltinCertificateVerifierEnabled policy is set it should override
@@ -626,8 +628,10 @@ IN_PROC_BROWSER_TEST_P(
   network_context_params_ptr =
       profile_network_context_service->CreateNetworkContextParams(
           /*in_memory=*/false, empty_relative_partition_path);
-  EXPECT_EQ(network::mojom::NetworkContextParams::CertVerifierImpl::kBuiltin,
-            network_context_params_ptr->use_builtin_cert_verifier);
+  EXPECT_EQ(
+      network::mojom::CertVerifierCreationParams::CertVerifierImpl::kBuiltin,
+      network_context_params_ptr->cert_verifier_creation_params
+          ->use_builtin_cert_verifier);
 
   SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
             std::make_unique<base::Value>(false));
@@ -636,8 +640,10 @@ IN_PROC_BROWSER_TEST_P(
   network_context_params_ptr =
       profile_network_context_service->CreateNetworkContextParams(
           /*in_memory=*/false, empty_relative_partition_path);
-  EXPECT_EQ(network::mojom::NetworkContextParams::CertVerifierImpl::kSystem,
-            network_context_params_ptr->use_builtin_cert_verifier);
+  EXPECT_EQ(
+      network::mojom::CertVerifierCreationParams::CertVerifierImpl::kSystem,
+      network_context_params_ptr->cert_verifier_creation_params
+          ->use_builtin_cert_verifier);
 #endif
 }
 

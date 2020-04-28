@@ -46,6 +46,32 @@ static std::string kTestValidScript = R"(
     })();
     cr.googleTranslate.onTranslateElementLoad();)";
 
+static std::string kTestScriptInitializationError = R"(
+    var google = {};
+    google.translate = (function() {
+      return {
+        TranslateService: function() {
+          return error;
+        }
+      };
+    })();
+    cr.googleTranslate.onTranslateElementLoad();)";
+
+static std::string kTestScriptTimeout = R"(
+    var google = {};
+    google.translate = (function() {
+      return {
+        TranslateService: function() {
+          return {
+            isAvailable : function() {
+              return false;
+            },
+          };
+        }
+      };
+    })();
+    cr.googleTranslate.onTranslateElementLoad();)";
+
 TranslateClientImpl* GetTranslateClient(Shell* shell) {
   return TranslateClientImpl::FromWebContents(
       static_cast<TabImpl*>(shell->tab())->web_contents());
@@ -175,6 +201,88 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, PageTranslationSuccess) {
 
   EXPECT_FALSE(translate_client->GetLanguageState().translation_error());
   EXPECT_EQ(translate::TranslateErrors::NONE, GetPageTranslatedResult());
+}
+
+// Test if there was an error during translation.
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, PageTranslationError) {
+  SetTranslateScript(kTestValidScript);
+
+  TranslateClientImpl* translate_client = GetTranslateClient(shell());
+
+  NavigateAndWaitForCompletion(GURL("about:blank"), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("und", translate_client->GetLanguageState().original_language());
+
+  // Translate the page through TranslateManager.
+  translate::TranslateManager* manager =
+      translate_client->GetTranslateManager();
+  manager->TranslatePage(
+      translate_client->GetLanguageState().original_language(), "en", true);
+
+  WaitUntilPageTranslated(shell());
+
+  EXPECT_TRUE(translate_client->GetLanguageState().translation_error());
+  EXPECT_EQ(translate::TranslateErrors::TRANSLATION_ERROR,
+            GetPageTranslatedResult());
+}
+
+// Test if there was an error during translate library initialization.
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
+                       PageTranslationInitializationError) {
+  SetTranslateScript(kTestScriptInitializationError);
+
+  TranslateClientImpl* translate_client = GetTranslateClient(shell());
+
+  NavigateAndWaitForCompletion(GURL("about:blank"), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("und", translate_client->GetLanguageState().original_language());
+
+  // Navigate to a page in French.
+  NavigateAndWaitForCompletion(
+      GURL(embedded_test_server()->GetURL("/french_page.html")), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("fr", translate_client->GetLanguageState().original_language());
+
+  // Translate the page through TranslateManager.
+  translate::TranslateManager* manager =
+      translate_client->GetTranslateManager();
+  manager->TranslatePage(
+      translate_client->GetLanguageState().original_language(), "en", true);
+
+  WaitUntilPageTranslated(shell());
+
+  EXPECT_TRUE(translate_client->GetLanguageState().translation_error());
+  EXPECT_EQ(translate::TranslateErrors::INITIALIZATION_ERROR,
+            GetPageTranslatedResult());
+}
+
+// Test the checks translate lib never gets ready and throws timeout.
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, PageTranslationTimeoutError) {
+  SetTranslateScript(kTestScriptTimeout);
+
+  TranslateClientImpl* translate_client = GetTranslateClient(shell());
+
+  NavigateAndWaitForCompletion(GURL("about:blank"), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("und", translate_client->GetLanguageState().original_language());
+
+  // Navigate to a page in French.
+  NavigateAndWaitForCompletion(
+      GURL(embedded_test_server()->GetURL("/french_page.html")), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("fr", translate_client->GetLanguageState().original_language());
+
+  // Translate the page through TranslateManager.
+  translate::TranslateManager* manager =
+      translate_client->GetTranslateManager();
+  manager->TranslatePage(
+      translate_client->GetLanguageState().original_language(), "en", true);
+
+  WaitUntilPageTranslated(shell());
+
+  EXPECT_TRUE(translate_client->GetLanguageState().translation_error());
+  EXPECT_EQ(translate::TranslateErrors::TRANSLATION_TIMEOUT,
+            GetPageTranslatedResult());
 }
 
 }  // namespace weblayer

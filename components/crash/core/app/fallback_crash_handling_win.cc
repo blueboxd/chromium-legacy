@@ -7,8 +7,9 @@
 #include <memory>
 
 #include "base/base_switches.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "components/crash/core/app/crash_switches.h"
 #include "components/crash/core/app/fallback_crash_handler_launcher_win.h"
 #include "components/crash/core/app/fallback_crash_handler_win.h"

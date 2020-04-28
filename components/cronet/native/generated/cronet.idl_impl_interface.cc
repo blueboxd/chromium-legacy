@@ -6,7 +6,7 @@
 
 #include "components/cronet/native/generated/cronet.idl_impl_interface.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 // C functions of Cronet_Buffer that forward calls to C++ implementation.
 void Cronet_Buffer_Destroy(Cronet_BufferPtr self) {

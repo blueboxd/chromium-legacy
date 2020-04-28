@@ -5,7 +5,7 @@
 #include "components/download/database/download_db_conversions.h"
 
 #include <utility>
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/pickle.h"
 
 namespace download {

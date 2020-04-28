@@ -4,7 +4,8 @@
 
 #include "components/password_manager/core/browser/import/csv_field_parser.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 
 namespace password_manager {
 

@@ -4,7 +4,7 @@
 
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace mojo {

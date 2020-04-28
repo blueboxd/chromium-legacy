@@ -8,8 +8,8 @@
 #include <limits>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/hash/sha1.h"
-#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"

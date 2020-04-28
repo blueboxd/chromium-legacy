@@ -4,7 +4,7 @@
 
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"

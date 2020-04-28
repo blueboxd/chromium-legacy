@@ -41,8 +41,6 @@ base::TimeDelta GetDefaultDelayForType(ModelType model_type,
     case BOOKMARKS:
     case PREFERENCES:
     case SESSIONS:
-    case FAVICON_IMAGES:
-    case FAVICON_TRACKING:
       // Types with sometimes automatic changes get longer delays to allow more
       // coalescing.
       return base::TimeDelta::FromMilliseconds(kSlowNudgeDelayMilliseconds);

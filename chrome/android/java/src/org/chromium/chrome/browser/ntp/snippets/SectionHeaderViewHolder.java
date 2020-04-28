@@ -8,6 +8,7 @@ import android.content.res.Resources;
 import android.view.LayoutInflater;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
@@ -20,8 +21,10 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
 
     public SectionHeaderViewHolder(final SuggestionsRecyclerView recyclerView, UiConfig config) {
         super(LayoutInflater.from(recyclerView.getContext())
-                        .inflate(R.layout.new_tab_page_snippets_expandable_header, recyclerView,
-                                false));
+                        .inflate(ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_MENU)
+                                        ? R.layout.new_tab_page_snippets_expandable_header_with_menu
+                                        : R.layout.new_tab_page_snippets_expandable_header,
+                                recyclerView, false));
         mSectionHeaderView = (SectionHeaderView) itemView;
 
         Resources resources = recyclerView.getResources();

@@ -4,7 +4,7 @@
 
 #include "components/url_formatter/spoof_checks/idn_spoof_checker.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"

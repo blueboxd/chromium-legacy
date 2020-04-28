@@ -9,7 +9,6 @@
 #include <set>
 
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"

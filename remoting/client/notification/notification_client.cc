@@ -51,7 +51,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("notification_client",
                                         R"(
         semantics {
-          sender: "Chromoting notification client"
+          sender: "Chrome Remote Desktop"
           description:
             "Fetches new notification messages to be shown on Chrome Remote "
             "Desktop app."

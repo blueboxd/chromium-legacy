@@ -119,7 +119,7 @@
 
 - (void)webStateDidStopLoading:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  [self.consumer setLoadingState:self.webState->IsLoading()];
+  [self updateConsumer];
 }
 
 - (void)webState:(web::WebState*)webState

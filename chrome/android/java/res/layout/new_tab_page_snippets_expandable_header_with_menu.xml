@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<org.chromium.chrome.browser.ntp.snippets.SectionHeaderView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/snippets_article_header_height"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/card_padding"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/header_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textAppearance="@style/TextAppearance.TextSmall.Secondary" />
+
+    <org.chromium.components.browser_ui.widget.listmenu.ListMenuButton
+        android:id="@+id/header_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingStart="@dimen/default_list_row_padding"
+        android:paddingEnd="@dimen/default_list_row_padding"
+        android:background="@null"
+        android:src="@drawable/ic_more_vert_24dp"
+        app:tint="@color/default_icon_color_tint_list"
+        tools:ignore="ContentDescription" />
+</org.chromium.chrome.browser.ntp.snippets.SectionHeaderView>

@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -113,13 +114,14 @@ class EulaTest : public OobeBaseTest {
   EulaTest() = default;
   ~EulaTest() override = default;
 
-  void SetUpOnMainThread() override {
+  // OobeBaseTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    OobeBaseTest::SetUpCommandLine(command_line);
     // Retrieve the URL from the embedded test server and override EULA URL.
-    fake_eula_url_ =
+    std::string fake_eula_url =
         embedded_test_server()->base_url().Resolve(kFakeOnlineEulaPath).spec();
-    EulaScreenHandler::set_eula_url_for_testing(fake_eula_url_.c_str());
-
-    OobeBaseTest::SetUpOnMainThread();
+    command_line->AppendSwitchASCII(switches::kOobeEulaUrlForTests,
+                                    fake_eula_url);
   }
 
   // OobeBaseTest:
@@ -250,9 +252,6 @@ class EulaTest : public OobeBaseTest {
   // online version properly. Offline tests may change this during construction
   // of the class.
   bool force_http_unavailable_ = false;
-
-  // URL used for testing. Retrieved from the embedded server.
-  std::string fake_eula_url_;
 
   DISALLOW_COPY_AND_ASSIGN(EulaTest);
 };

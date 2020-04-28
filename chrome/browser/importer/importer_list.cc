@@ -134,9 +134,9 @@ void DetectFirefoxProfiles(const std::string locale,
 #endif
     if (firefox.app_path.empty())
       firefox.app_path = app_path;
-    firefox.services_supported =
-        importer::HISTORY | importer::FAVORITES | importer::PASSWORDS |
-        importer::SEARCH_ENGINES | importer::AUTOFILL_FORM_DATA;
+    firefox.services_supported = importer::HISTORY | importer::FAVORITES |
+                                 importer::PASSWORDS |
+                                 importer::AUTOFILL_FORM_DATA;
     firefox.locale = locale;
     profiles->push_back(firefox);
   }

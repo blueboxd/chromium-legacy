@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/test/mock_callback.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"

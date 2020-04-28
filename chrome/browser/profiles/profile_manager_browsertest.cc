@@ -243,7 +243,14 @@ class ProfileManagerBrowserTest : public InProcessBrowserTest {
 #if !defined(OS_CHROMEOS)
 
 // Delete single profile and make sure a new one is created.
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
+// TODO(https://crbug.com/1073451) flaky on windows bots
+#if defined(OS_WIN)
+#define MAYBE_DeleteSingletonProfile DISABLED_DeleteSingletonProfile
+#else
+#define MAYBE_DeleteSingletonProfile DeleteSingletonProfile
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
+                       MAYBE_DeleteSingletonProfile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
@@ -316,7 +323,13 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteInactiveProfile) {
 
 // Delete current profile in a multi profile setup and make sure an existing one
 // is loaded.
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteCurrentProfile) {
+// TODO(https://crbug.com/1073451) flaky on windows + linux bots
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_DeleteCurrentProfile DISABLED_DeleteCurrentProfile
+#else
+#define MAYBE_DeleteCurrentProfile DeleteCurrentProfile
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteCurrentProfile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
@@ -348,7 +361,13 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteCurrentProfile) {
 
 // Delete all profiles in a multi profile setup and make sure a new one is
 // created.
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteAllProfiles) {
+// TODO(https://crbug.com/1073451) flaky on windows bots
+#if defined(OS_WIN)
+#define MAYBE_DeleteAllProfiles DISABLED_DeleteAllProfiles
+#else
+#define MAYBE_DeleteAllProfiles DeleteAllProfiles
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();

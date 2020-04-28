@@ -8,7 +8,8 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "components/base32/base32.h"
 

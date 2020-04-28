@@ -4,7 +4,7 @@
 
 #include "components/bookmarks/browser/titled_url_match.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string16.h"
 
 namespace bookmarks {

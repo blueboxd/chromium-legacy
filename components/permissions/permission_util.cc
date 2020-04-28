@@ -4,7 +4,7 @@
 
 #include "components/permissions/permission_util.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "content/public/browser/permission_type.h"
 

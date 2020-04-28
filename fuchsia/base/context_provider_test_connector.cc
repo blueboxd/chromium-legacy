@@ -14,7 +14,6 @@
 
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "fuchsia/base/release_channel.h"
 

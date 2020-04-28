@@ -238,7 +238,7 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
 
  private:
   friend class base::RefCounted<URLLoaderFactoryForSystem>;
-  ~URLLoaderFactoryForSystem() override {}
+  ~URLLoaderFactoryForSystem() override = default;
 
   SEQUENCE_CHECKER(sequence_checker_);
   SystemNetworkContextManager* manager_;
@@ -630,11 +630,17 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
   }
 #endif
 
+  network_context_params->cert_verifier_creation_params =
+      network::mojom::CertVerifierCreationParams::New();
+
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-  network_context_params->use_builtin_cert_verifier =
+  network_context_params->cert_verifier_creation_params
+      ->use_builtin_cert_verifier =
       ShouldUseBuiltinCertVerifier(local_state_)
-          ? network::mojom::NetworkContextParams::CertVerifierImpl::kBuiltin
-          : network::mojom::NetworkContextParams::CertVerifierImpl::kSystem;
+          ? network::mojom::CertVerifierCreationParams::CertVerifierImpl::
+                kBuiltin
+          : network::mojom::CertVerifierCreationParams::CertVerifierImpl::
+                kSystem;
 #endif
 
   return network_context_params;

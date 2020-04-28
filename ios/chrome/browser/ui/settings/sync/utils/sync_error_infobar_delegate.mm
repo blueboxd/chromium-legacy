@@ -96,6 +96,8 @@ bool SyncErrorInfoBarDelegate::Accept() {
     [presenter_ showGoogleServicesSettings];
   } else if (ShouldShowSyncPassphraseSettings(error_state_)) {
     [presenter_ showSyncPassphraseSettings];
+  } else if (ShouldShowTrustedVaultReauthentication(error_state_)) {
+    [presenter_ showTrustedVaultReauthentication];
   }
   return false;
 }

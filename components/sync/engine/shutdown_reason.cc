@@ -4,7 +4,7 @@
 
 #include "components/sync/engine/shutdown_reason.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace syncer {
 

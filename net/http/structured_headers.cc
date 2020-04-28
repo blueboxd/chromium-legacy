@@ -178,7 +178,11 @@ class StructuredHeaderParser {
         if (!member)
           return base::nullopt;
       } else {
-        member = ParameterizedMember{Item(true), {}};
+        base::Optional<Parameters> parameters;
+        parameters = ReadParameters();
+        if (!parameters)
+          return base::nullopt;
+        member = ParameterizedMember{Item(true), std::move(*parameters)};
       }
       members[*key] = std::move(*member);
       SkipWhitespaces();
@@ -666,13 +670,16 @@ class StructuredHeaderSerializer {
       if (!WriteKey(dict.first))
         return false;
       first = false;
-      if (dict_member.params.empty() && !dict_member.member_is_inner_list &&
+      if (!dict_member.member_is_inner_list &&
           dict_member.member.front().item.is_boolean() &&
-          dict_member.member.front().item.GetBoolean())
-        continue;
-      output_ << "=";
-      if (!WriteParameterizedMember(dict_member))
-        return false;
+          dict_member.member.front().item.GetBoolean()) {
+        if (!WriteParameters(dict_member.params))
+          return false;
+      } else {
+        output_ << "=";
+        if (!WriteParameterizedMember(dict_member))
+          return false;
+      }
     }
     return true;
   }

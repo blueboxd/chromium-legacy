@@ -220,13 +220,6 @@ void ExternalProcessImporterClient::OnKeywordsImportReady(
   bridge_->SetKeywords(search_engines, unique_on_host_and_path);
 }
 
-void ExternalProcessImporterClient::OnFirefoxSearchEngineDataReceived(
-    const std::vector<std::string>& search_engine_data) {
-  if (cancelled_)
-    return;
-  bridge_->SetFirefoxSearchEnginesXMLData(search_engine_data);
-}
-
 void ExternalProcessImporterClient::OnAutofillFormDataImportStart(
     uint32_t total_autofill_form_data_entry_count) {
   if (cancelled_)

@@ -472,10 +472,6 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
       std::map<ModelType, base::TimeDelta> delay_map;
       delay_map[SESSIONS] =
           base::TimeDelta::FromSeconds(command.sessions_commit_delay_seconds());
-      delay_map[FAVICON_TRACKING] =
-          base::TimeDelta::FromSeconds(command.sessions_commit_delay_seconds());
-      delay_map[FAVICON_IMAGES] =
-          base::TimeDelta::FromSeconds(command.sessions_commit_delay_seconds());
       cycle->delegate()->OnReceivedCustomNudgeDelays(delay_map);
     }
 

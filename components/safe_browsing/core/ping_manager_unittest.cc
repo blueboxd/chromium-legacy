@@ -5,7 +5,6 @@
 
 #include "components/safe_browsing/core/ping_manager.h"
 #include "base/base64.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"

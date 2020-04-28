@@ -6,10 +6,11 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "components/feature_engagement/public/feature_list.h"
 
 namespace feature_engagement {

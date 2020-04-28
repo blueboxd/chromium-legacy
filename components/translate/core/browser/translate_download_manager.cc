@@ -4,7 +4,7 @@
 
 #include "components/translate/core/browser/translate_download_manager.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/singleton.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/common/translate_switches.h"

@@ -779,6 +779,15 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
       continue;
     }
 
+    std::string storage_key;
+    if (bridge_->SupportsGetStorageKey()) {
+      storage_key = bridge_->GetStorageKey(update.entity);
+      if (storage_key.empty()) {
+        DLOG(WARNING) << "Received entity with invalid update for "
+                      << ModelTypeToString(type_);
+        continue;
+      }
+    }
 #if DCHECK_IS_ON()
     // TODO(crbug.com/872360): The CreateEntity() call below assumes that no
     // entity with this client_tag_hash exists already, but in some cases it
@@ -788,14 +797,8 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
                   << " for " << ModelTypeToString(type_);
     }
 #endif  // DCHECK_IS_ON()
-    ProcessorEntity* entity = CreateEntity(update.entity);
-    if (!entity) {
-      DLOG(WARNING) << "Received entity with invalid update for "
-                    << ModelTypeToString(type_);
-      continue;
-    }
+    ProcessorEntity* entity = CreateEntity(storage_key, update.entity);
     entity->RecordAcceptedUpdate(update);
-    const std::string& storage_key = entity->storage_key();
     entity_data.push_back(
         EntityChange::CreateAdd(storage_key, std::move(update.entity)));
     if (!storage_key.empty())
@@ -925,24 +928,6 @@ ProcessorEntity* ClientTagBasedModelTypeProcessor::CreateEntity(
   DCHECK(entity_tracker_);
   ProcessorEntity* entity_ptr = entity_tracker_->Add(storage_key, data);
   return entity_ptr;
-}
-
-ProcessorEntity* ClientTagBasedModelTypeProcessor::CreateEntity(
-    const EntityData& data) {
-  if (bridge_->SupportsGetClientTag()) {
-    DCHECK_EQ(data.client_tag_hash,
-              ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(data)));
-  }
-  std::string storage_key;
-  if (bridge_->SupportsGetStorageKey()) {
-    storage_key = bridge_->GetStorageKey(data);
-    if (storage_key.empty()) {
-      // Ignore the creation of entity due to invalid data.
-      return nullptr;
-    }
-  }
-
-  return CreateEntity(storage_key, data);
 }
 
 size_t ClientTagBasedModelTypeProcessor::EstimateMemoryUsage() const {

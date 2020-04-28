@@ -4,7 +4,7 @@
 
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "components/subresource_filter/core/common/first_party_origin.h"

@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "components/zucchini/buffer_view.h"

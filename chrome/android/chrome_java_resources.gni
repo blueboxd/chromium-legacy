@@ -1049,6 +1049,7 @@ chrome_java_resources = [
   "java/res/layout/new_tab_page_offline_card.xml",
   "java/res/layout/new_tab_page_progress_indicator.xml",
   "java/res/layout/new_tab_page_snippets_expandable_header.xml",
+  "java/res/layout/new_tab_page_snippets_expandable_header_with_menu.xml",
   "java/res/layout/new_tab_page_tile_grid_placeholder.xml",
   "java/res/layout/new_tab_page_view.xml",
   "java/res/layout/omnibox_answer_suggestion.xml",

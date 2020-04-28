@@ -50,7 +50,6 @@ class StackSamplingConfiguration {
   enum ProfileConfiguration {
     // Chrome-wide configurations set in the browser process.
     PROFILE_DISABLED,
-    PROFILE_DISABLED_TREND_MICRO,
     PROFILE_CONTROL,
     PROFILE_ENABLED,
 

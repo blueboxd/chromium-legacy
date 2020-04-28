@@ -4,7 +4,8 @@
 
 #include "components/performance_manager/service_worker_context_adapter.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 

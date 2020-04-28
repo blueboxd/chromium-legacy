@@ -170,9 +170,6 @@ IPC_MESSAGE_ROUTED1(WidgetMsg_SetViewportIntersection,
 // https://html.spec.whatwg.org/multipage/interaction.html#inert
 IPC_MESSAGE_ROUTED1(WidgetMsg_SetIsInert, bool /* inert */)
 
-// Sets the inherited effective touch action on an out-of-process iframe.
-IPC_MESSAGE_ROUTED1(WidgetMsg_SetInheritedEffectiveTouchAction, cc::TouchAction)
-
 // Toggles render throttling for an out-of-process iframe.
 IPC_MESSAGE_ROUTED2(WidgetMsg_UpdateRenderThrottlingStatus,
                     bool /* is_throttled */,

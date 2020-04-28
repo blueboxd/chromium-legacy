@@ -4,7 +4,6 @@
 
 #include "components/os_crypt/key_storage_kwallet.h"
 
-#include "base/logging.h"
 #include "base/nix/xdg_util.h"
 #include "build/branding_buildflags.h"
 #include "dbus/message.h"

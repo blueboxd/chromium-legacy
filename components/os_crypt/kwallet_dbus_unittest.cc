@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
 #include "base/nix/xdg_util.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"

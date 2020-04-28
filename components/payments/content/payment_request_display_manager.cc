@@ -4,7 +4,7 @@
 
 #include "components/payments/content/payment_request_display_manager.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 
 namespace payments {

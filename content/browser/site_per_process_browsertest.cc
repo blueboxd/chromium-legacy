@@ -19,11 +19,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
@@ -12614,7 +12616,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 
   scoped_refptr<ShowWidgetMessageFilter> show_widget_filter =
-      new ShowWidgetMessageFilter(web_contents());
+      base::MakeRefCounted<ShowWidgetMessageFilter>(web_contents());
+  base::ScopedClosureRunner shutdown_show_widget_filter(
+      base::BindOnce(&ShowWidgetMessageFilter::Shutdown, show_widget_filter));
   child_node->current_frame_host()->GetProcess()->AddFilter(
       show_widget_filter.get());
 

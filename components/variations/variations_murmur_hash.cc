@@ -6,8 +6,8 @@
 
 #include <string.h>
 
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
 

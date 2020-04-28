@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_queue.h"
 
+#include "build/build_config.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_extent_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_2d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.h"
@@ -52,12 +55,65 @@ WGPUOrigin3D GPUOrigin2DToWGPUOrigin3D(
   return dawn_origin;
 }
 
+bool AreCompatibleFormatForImageBitmapGPUCopy(
+    SkColorType sk_color_type,
+    WGPUTextureFormat dawn_texture_format) {
+  switch (dawn_texture_format) {
+    case WGPUTextureFormat_RGBA8Unorm:
+      return sk_color_type == SkColorType::kRGBA_8888_SkColorType;
+    case WGPUTextureFormat_BGRA8Unorm:
+      return sk_color_type == SkColorType::kBGRA_8888_SkColorType;
+    case WGPUTextureFormat_RGB10A2Unorm:
+      return sk_color_type == SkColorType::kRGBA_1010102_SkColorType;
+    case WGPUTextureFormat_RGBA16Float:
+      return sk_color_type == SkColorType::kRGBA_F16_SkColorType;
+    case WGPUTextureFormat_RGBA32Float:
+      return sk_color_type == SkColorType::kRGBA_F32_SkColorType;
+    case WGPUTextureFormat_RG8Unorm:
+      return sk_color_type == SkColorType::kR8G8_unorm_SkColorType;
+    case WGPUTextureFormat_RG16Float:
+      return sk_color_type == SkColorType::kR16G16_float_SkColorType;
+    default:
+      return false;
+  }
+}
+
+bool CanUploadThroughGPU(StaticBitmapImage* image,
+                         const CanvasColorParams& color_param,
+                         GPUTexture* dest_texture) {
+  // Cannot handle top left origin image
+  if (image->CurrentFrameOrientation().Orientation() !=
+      ImageOrientationEnum::kOriginBottomLeft) {
+    return false;
+  }
+  // Cannot handle source and dest texture have uncompatible format
+  if (!AreCompatibleFormatForImageBitmapGPUCopy(color_param.GetSkColorType(),
+                                                dest_texture->Format())) {
+    return false;
+  }
+
+  // Only Windows platform can try this path now
+  // TODO(shaobo.yan@intel.com) : release this condition for all passthrough
+  // platform
+#if defined(OS_WIN)
+  // TODO(shaobo.yan@intel.com): Need to figure out color space and
+  // pre/unmultiply alpha
+  return true;
+#else
+  return false;
+#endif  // defined(OS_WIN)
+}
 }  // anonymous namespace
 
 GPUQueue::GPUQueue(GPUDevice* device, WGPUQueue queue)
-    : DawnObject<WGPUQueue>(device, queue) {}
+    : DawnObject<WGPUQueue>(device, queue) {
+  produce_dawn_texture_handler_ = base::AdoptRef(new DawnTextureFromImageBitmap(
+      GetDawnControlClient(), device_->GetClientID()));
+}
 
 GPUQueue::~GPUQueue() {
+  produce_dawn_texture_handler_ = nullptr;
+
   if (IsDawnControlClientDestroyed()) {
     return;
   }
@@ -115,13 +171,6 @@ void GPUQueue::copyImageBitmapToTexture(
 
   scoped_refptr<StaticBitmapImage> image = source->imageBitmap()->BitmapImage();
 
-  // TODO(shaobo.yan@intel.com): Implement GPU copy path
-  if (image->IsTextureBacked()) {
-    NOTIMPLEMENTED();
-    exception_state.ThrowTypeError(
-        "No support for texture backed imageBitmap yet.");
-    return;
-  }
 
   // TODO(shaobo.yan@intel.com) : Check that the destination GPUTexture has an
   // appropriate format. Now only support texture format exactly the same. The
@@ -149,11 +198,40 @@ void GPUQueue::copyImageBitmapToTexture(
     return;
   }
 
-  // Prepare for uploading CPU data.
-  IntRect image_data_rect(origin_in_image_bitmap.x, origin_in_image_bitmap.y,
-                          dawn_copy_size.width, dawn_copy_size.height);
+  WGPUTextureCopyView dawn_destination = AsDawnType(destination);
+
   const CanvasColorParams& color_params =
       source->imageBitmap()->GetCanvasColorParams();
+
+  // TODO(shaobo.yan@intel.com): Implement GPU copy path
+  // Try GPU path first.
+  if (image->IsTextureBacked()) {  // Try GPU uploading path.
+    if (CanUploadThroughGPU(image.get(), color_params,
+                            destination->texture())) {
+      if (CopyContentFromGPU(image.get(), origin_in_image_bitmap,
+                             dawn_copy_size, dawn_destination)) {
+        return;
+      }
+    }
+    // GPU path failed, fallback to CPU path
+    image = image->MakeUnaccelerated();
+  }
+  // CPU path is the fallback path and should always work.
+  if (!CopyContentFromCPU(image.get(), color_params, origin_in_image_bitmap,
+                          dawn_copy_size, dawn_destination)) {
+    exception_state.ThrowTypeError("Failed to copy content from imageBitmap.");
+    return;
+  }
+}
+
+bool GPUQueue::CopyContentFromCPU(StaticBitmapImage* image,
+                                  const CanvasColorParams& color_params,
+                                  const WGPUOrigin3D& origin,
+                                  const WGPUExtent3D& copy_size,
+                                  const WGPUTextureCopyView& destination) {
+  // Prepare for uploading CPU data.
+  IntRect image_data_rect(origin.x, origin.y, copy_size.width,
+                          copy_size.height);
   WebGPUImageUploadSizeInfo info =
       ComputeImageBitmapWebGPUUploadSizeInfo(image_data_rect, color_params);
 
@@ -172,10 +250,9 @@ void GPUQueue::copyImageBitmapToTexture(
           base::span<uint8_t>(reinterpret_cast<uint8_t*>(result.data),
                               static_cast<size_t>(result.dataLength)),
           image_data_rect, color_params)) {
-    exception_state.ThrowRangeError("Failed to copy image data");
     // Release the buffer.
     GetProcs().bufferRelease(result.buffer);
-    return;
+    return false;
   }
 
   GetProcs().bufferUnmap(result.buffer);
@@ -186,18 +263,14 @@ void GPUQueue::copyImageBitmapToTexture(
   dawn_intermediate.buffer = result.buffer;
   dawn_intermediate.offset = 0;
   dawn_intermediate.rowPitch = info.wgpu_row_pitch;
-  dawn_intermediate.imageHeight = source->imageBitmap()->height();
+  dawn_intermediate.imageHeight = image->height();
 
-  WGPUTextureCopyView dawn_destination = AsDawnType(destination);
-
-  WGPUCommandEncoderDescriptor encoder_desc = {};
-  WGPUCommandEncoder encoder = GetProcs().deviceCreateCommandEncoder(
-      device_->GetHandle(), &encoder_desc);
-  GetProcs().commandEncoderCopyBufferToTexture(
-      encoder, &dawn_intermediate, &dawn_destination, &dawn_copy_size);
-  WGPUCommandBufferDescriptor dawn_desc_command = {};
+  WGPUCommandEncoder encoder =
+      GetProcs().deviceCreateCommandEncoder(device_->GetHandle(), nullptr);
+  GetProcs().commandEncoderCopyBufferToTexture(encoder, &dawn_intermediate,
+                                               &destination, &copy_size);
   WGPUCommandBuffer commands =
-      GetProcs().commandEncoderFinish(encoder, &dawn_desc_command);
+      GetProcs().commandEncoderFinish(encoder, nullptr);
 
   // Don't need to add fence after this submit. Because if user want to use the
   // texture to do copy or render, it will trigger another queue submit. Dawn
@@ -208,6 +281,46 @@ void GPUQueue::copyImageBitmapToTexture(
   GetProcs().commandBufferRelease(commands);
   GetProcs().commandEncoderRelease(encoder);
   GetProcs().bufferRelease(result.buffer);
+
+  return true;
+}
+
+bool GPUQueue::CopyContentFromGPU(StaticBitmapImage* image,
+                                  const WGPUOrigin3D& origin,
+                                  const WGPUExtent3D& copy_size,
+                                  const WGPUTextureCopyView& destination) {
+  WGPUTexture src_texture =
+      produce_dawn_texture_handler_->ProduceDawnTextureFromImageBitmap(image);
+  // Failed to produceDawnTexture.
+  if (!src_texture) {
+    return false;
+  }
+
+  WGPUTextureCopyView src;
+  src.nextInChain = nullptr;
+  src.texture = src_texture;
+  src.mipLevel = 0;
+  src.arrayLayer = 0;
+  src.origin = origin;
+
+  WGPUCommandEncoder encoder =
+      GetProcs().deviceCreateCommandEncoder(device_->GetHandle(), nullptr);
+  GetProcs().commandEncoderCopyTextureToTexture(encoder, &src, &destination,
+                                                &copy_size);
+  WGPUCommandBuffer commands =
+      GetProcs().commandEncoderFinish(encoder, nullptr);
+
+  // Don't need to add fence after this submit. Because if user want to use the
+  // texture to do copy or render, it will trigger another queue submit. Dawn
+  // will insert the necessary resource transitions.
+  GetProcs().queueSubmit(GetHandle(), 1, &commands);
+
+  // Release intermediate resources.
+  GetProcs().commandBufferRelease(commands);
+  GetProcs().commandEncoderRelease(encoder);
+
+  produce_dawn_texture_handler_->FinishDawnTextureFromImageBitmapAccess();
+  return true;
 }
 
 }  // namespace blink

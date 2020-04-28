@@ -548,9 +548,8 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
       // to the target frame before the postMessage, as sites might implicitly
       // be relying on this ordering.
       bool target_is_descendant_of_source = false;
-      for (FrameTreeNode* node = target_rfh->frame_tree_node(); node;
-           node = node->parent()) {
-        if (node == source_rfh->frame_tree_node()) {
+      for (RenderFrameHost* rfh = target_rfh; rfh; rfh = rfh->GetParent()) {
+        if (rfh == source_rfh) {
           target_is_descendant_of_source = true;
           break;
         }

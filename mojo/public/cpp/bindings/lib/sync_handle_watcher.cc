@@ -4,7 +4,7 @@
 
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace mojo {
 

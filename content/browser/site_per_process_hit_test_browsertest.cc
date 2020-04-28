@@ -5,8 +5,10 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
@@ -5705,7 +5707,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
             child_node->current_frame_host()->GetSiteInstance());
 
   scoped_refptr<ShowWidgetMessageFilter> filter =
-      new ShowWidgetMessageFilter(web_contents());
+      base::MakeRefCounted<ShowWidgetMessageFilter>(web_contents());
+  base::ScopedClosureRunner shut_down_filter(
+      base::BindOnce(&ShowWidgetMessageFilter::Shutdown, filter));
   child_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   // Target left-click event to child frame.
@@ -5840,7 +5844,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
             c_node->current_frame_host()->GetSiteInstance());
 
   scoped_refptr<ShowWidgetMessageFilter> filter =
-      new ShowWidgetMessageFilter(shell()->web_contents());
+      base::MakeRefCounted<ShowWidgetMessageFilter>(web_contents());
+  base::ScopedClosureRunner shut_down_filter(
+      base::BindOnce(&ShowWidgetMessageFilter::Shutdown, filter));
   c_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   WaitForHitTestData(c_node->current_frame_host());
@@ -5980,7 +5986,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
               ->GetView());
 
   scoped_refptr<ShowWidgetMessageFilter> filter =
-      new ShowWidgetMessageFilter(web_contents());
+      base::MakeRefCounted<ShowWidgetMessageFilter>(web_contents());
+  base::ScopedClosureRunner shut_down_filter(
+      base::BindOnce(&ShowWidgetMessageFilter::Shutdown, filter));
   grandchild_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   // Target left-click event to the select element in the innermost frame.

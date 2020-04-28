@@ -8,7 +8,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 // Struct Cronet_Error.
 Cronet_Error::Cronet_Error() = default;

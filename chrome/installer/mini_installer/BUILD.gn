@@ -267,6 +267,7 @@ template("generate_mini_installer") {
       ":$archive_name",
       ":lib",
       ":version",
+      "//base:clang_profiling_buildflags",
       "//build/win:default_exe_manifest",
     ]
 
@@ -281,10 +282,10 @@ template("generate_mini_installer") {
     # The net result is similar to linking with /NODEFAULTLIB, but more precise
     # as it just excludes the CRT.
     #
-    # But in asan builds we need to link against the asan runtime library, which
-    # in turn depends on the standard library and relies on it to run
-    # initializers.
-    if (!is_asan) {
+    # But in asan and clang profiling builds we need to link against a runtime
+    # library, which in turn depends on the standard library and relies on it
+    # to run initializers.
+    if (!is_asan && !use_clang_profiling) {
       no_default_deps = true
       ldflags += [ "/ENTRY:MainEntryPoint" ]
     }

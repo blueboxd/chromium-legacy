@@ -4,7 +4,6 @@
 
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 
-#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
 

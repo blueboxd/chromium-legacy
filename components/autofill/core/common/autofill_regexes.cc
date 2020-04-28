@@ -8,8 +8,8 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/check.h"
 #include "base/i18n/unicodestring.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"

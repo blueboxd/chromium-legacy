@@ -74,7 +74,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
@@ -264,8 +263,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 // Returns whether the restore infobar should be displayed.
 - (bool)mustShowRestoreInfobar;
-// Returns the set of the sessions ids of the tabs in the given |tabModel|.
-- (NSMutableSet*)liveSessionsForTabModel:(TabModel*)tabModel;
+// Returns the set of the sessions ids of the tabs in the given |webStateList|.
+- (NSMutableSet*)liveSessionsForWebStateList:(WebStateList*)webStateList;
 // Purge the unused snapshots.
 - (void)purgeSnapshots;
 // Sets a LocalState pref marking the TOS EULA as accepted.
@@ -468,9 +467,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   ChromeBrowserState* chromeBrowserState =
       _browserStateManager->GetLastUsedBrowserState();
 
-  // The CrashRestoreHelper must clean up the old browser state information
-  // before the tabModels can be created.  |self.restoreHelper| must be kept
-  // alive until the BVC receives the browser state and tab model.
+  // The CrashRestoreHelper must clean up the old browser state information.
+  // |self.restoreHelper| must be kept alive until the BVC receives the
+  // browser state.
   BOOL needRestoration = NO;
   if (isPostCrashLaunch) {
     needRestoration = [CrashRestoreHelper
@@ -862,7 +861,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (cookie_util::ShouldClearSessionCookies()) {
     cookie_util::ClearSessionCookies(
         self.mainBrowserState->GetOriginalChromeBrowserState());
-    if (![self.otrTabModel isEmpty]) {
+    if (!(self.otrBrowser->GetWebStateList()->empty())) {
       cookie_util::ClearSessionCookies(
           self.mainBrowserState->GetOffTheRecordChromeBrowserState());
     }
@@ -1048,7 +1047,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // If there are no incognito tabs, then ensure the app starts in normal mode,
   // since the UI isn't supposed to ever put the user in incognito mode without
   // any incognito tabs.
-  return ![self.otrTabModel isEmpty];
+  return !(self.otrBrowser->GetWebStateList()->empty());
 }
 
 - (void)prepareForFirstRunUI {
@@ -1094,16 +1093,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return self.interfaceProvider.mainInterface.browser;
 }
 
-- (TabModel*)mainTabModel {
-  DCHECK(self.interfaceProvider);
-  return self.interfaceProvider.mainInterface.tabModel;
-}
-
-- (TabModel*)otrTabModel {
-  DCHECK(self.interfaceProvider);
-  return self.interfaceProvider.incognitoInterface.tabModel;
-}
-
 - (Browser*)otrBrowser {
   DCHECK(self.interfaceProvider);
   return self.interfaceProvider.incognitoInterface.browser;
@@ -1126,8 +1115,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return !GetApplicationContext()->WasLastShutdownClean();
 }
 
-- (NSMutableSet*)liveSessionsForTabModel:(TabModel*)tabModel {
-  WebStateList* webStateList = tabModel.webStateList;
+- (NSMutableSet*)liveSessionsForWebStateList:(WebStateList*)webStateList {
   NSMutableSet* result = [NSMutableSet setWithCapacity:webStateList->count()];
   for (int index = 0; index < webStateList->count(); ++index) {
     web::WebState* webState = webStateList->GetWebStateAt(index);
@@ -1136,10 +1124,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return result;
 }
 
-
 - (void)purgeSnapshots {
-  NSMutableSet* liveSessions = [self liveSessionsForTabModel:self.mainTabModel];
-  [liveSessions unionSet:[self liveSessionsForTabModel:self.otrTabModel]];
+  NSMutableSet* liveSessions =
+      [self liveSessionsForWebStateList:self.mainBrowser->GetWebStateList()];
+  [liveSessions
+      unionSet:[self liveSessionsForWebStateList:self.otrBrowser
+                                                     ->GetWebStateList()]];
 
   // Keep snapshots that are less than one minute old, to prevent a concurrency
   // issue if they are created while the purge is running.

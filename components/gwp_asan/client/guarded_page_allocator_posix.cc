@@ -6,7 +6,7 @@
 
 #include <sys/mman.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace gwp_asan {
 namespace internal {

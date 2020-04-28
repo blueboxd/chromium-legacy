@@ -17,6 +17,8 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
+import org.chromium.components.version_info.Channel;
+import org.chromium.components.version_info.VersionConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +42,27 @@ abstract class AwDataDirLock {
     static void lock(final Context appContext) {
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwDataDirLock.lock");
                 StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            if (sExclusiveFileLock != null) {
+                // We have already called lock() and successfully acquired the lock in this process.
+                // This shouldn't happen, but may be the result of an app catching an exception
+                // thrown during initialization and discarding it, causing us to later attempt to
+                // initialize WebView again. By continuing, we are racing with the file being closed
+                // by the finalizer (releasing the lock), and so we may or may not crash with
+                // OverlappingFileLockException. Ideally we'd explicitly crash here but we don't
+                // want to make this problem worse until we fully understand it, so on stable we
+                // just log and then let execution continue; the app will either be lucky or not
+                // with roughly the same chance/conditions as before these checks were implemented.
+                throwIfNotStableChannel("Data directory already locked by current process - "
+                        + "https://crbug.com/1054774");
+            } else if (sLockFile != null) {
+                // We have already called lock() but didn't succeed in getting the lock. As above
+                // this shouldn't happen, but this won't lead to OverlappingFileLockException.
+                // Again, we just log and then let execution continue on stable; if the app fails to
+                // acquire the lock again we'll crash from that anyway.
+                throwIfNotStableChannel("Previous data directory lock attempt in current process - "
+                        + "https://crbug.com/1054744");
+            }
+
             String dataPath = PathUtils.getDataDirectory();
             File lockFile = new File(dataPath, EXCLUSIVE_LOCK_FILE);
 
@@ -114,12 +137,15 @@ abstract class AwDataDirLock {
     }
 
     private static String getLockFailureReason(final RandomAccessFile file) {
-        final String baseError = "Using WebView from more than one process at once with the "
-                + "same data directory is not supported. https://crbug.com/558377 : Lock owner ";
+        final StringBuilder error = new StringBuilder("Using WebView from more than one process at "
+                + "once with the same data directory is not supported. https://crbug.com/558377 "
+                + ": Current process ");
+        error.append(ContextUtils.getProcessName());
+        error.append(" (pid ").append(Process.myPid()).append("), lock owner ");
         try {
             int pid = file.readInt();
             String processName = file.readUTF();
-            String lockOwner = processName + " (pid " + pid + ")";
+            error.append(processName).append(" (pid ").append(pid).append(")");
 
             // Check the status of the pid holding the lock by sending it a null signal.
             // This doesn't actually send a signal, just runs the kernel access checks.
@@ -127,27 +153,35 @@ abstract class AwDataDirLock {
                 Os.kill(pid, 0);
 
                 // No exception means the process exists and has the same uid as us, so is
-                // probably an instance of the same app.
-                return baseError + lockOwner;
+                // probably an instance of the same app. Leave the message alone.
             } catch (ErrnoException e) {
                 if (e.errno == OsConstants.ESRCH) {
                     // pid did not exist - the lock should have been released by the kernel,
                     // so this process info is probably wrong.
-                    return baseError + lockOwner + " doesn't exist!";
+                    error.append(" doesn't exist!");
                 } else if (e.errno == OsConstants.EPERM) {
                     // pid existed but didn't have the same uid as us.
                     // Most likely the pid has just been recycled for a new process
-                    return baseError + lockOwner + " pid has been reused!";
+                    error.append(" pid has been reused!");
                 } else {
                     // EINVAL is the only other documented return value for kill(2) and should never
                     // happen for signal 0, so just complain generally.
-                    return baseError + lockOwner + " status unknown!";
+                    error.append(" status unknown!");
                 }
             }
         } catch (IOException e) {
             // We'll get IOException if we failed to read the pid and process name; e.g. if the
             // lockfile is from an old version of WebView or an IO error occurred somewhere.
-            return baseError + "unknown";
+            error.append(" unknown");
+        }
+        return error.toString();
+    }
+
+    private static void throwIfNotStableChannel(String error) {
+        if (VersionConstants.CHANNEL == Channel.STABLE) {
+            Log.e(TAG, error);
+        } else {
+            throw new RuntimeException(error);
         }
     }
 }

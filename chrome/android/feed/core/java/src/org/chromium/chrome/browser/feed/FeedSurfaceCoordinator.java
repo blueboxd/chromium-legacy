@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
 import org.chromium.chrome.browser.feed.v2.FeedStreamSurface;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
@@ -82,6 +83,7 @@ public class FeedSurfaceCoordinator {
     private @Nullable SectionHeaderView mSectionHeaderView;
     private @Nullable PersonalizedSigninPromoView mSigninPromoView;
     private @Nullable ViewResizer mStreamViewResizer;
+    private @Nullable NativePageNavigationDelegate mPageNavigationDelegate;
 
     // Used when Feed is disabled by policy.
     private @Nullable ScrollView mScrollViewForPolicy;
@@ -279,12 +281,15 @@ public class FeedSurfaceCoordinator {
      * @param actionApi The {@link ActionApi} implementation to handle actions.
      * @param showDarkBackground Whether is shown on dark background.
      * @param delegate The constructing {@link FeedSurfaceDelegate}.
+     * @param pageNavigationDelegate The {@link NativePageNavigationDelegate}
+     *                               that handles page navigation.
      */
     public FeedSurfaceCoordinator(Activity activity, SnackbarManager snackbarManager,
             TabModelSelector tabModelSelector, Supplier<Tab> tabProvider,
             @Nullable SnapScrollHelper snapScrollHelper, @Nullable View ntpHeader,
             @Nullable SectionHeaderView sectionHeaderView, ActionApi actionApi,
-            boolean showDarkBackground, FeedSurfaceDelegate delegate) {
+            boolean showDarkBackground, FeedSurfaceDelegate delegate,
+            @Nullable NativePageNavigationDelegate pageNavigationDelegate) {
         mActivity = activity;
         mSnackbarManager = snackbarManager;
         mNtpHeader = ntpHeader;
@@ -292,6 +297,7 @@ public class FeedSurfaceCoordinator {
         mActionApi = actionApi;
         mShowDarkBackground = showDarkBackground;
         mDelegate = delegate;
+        mPageNavigationDelegate = pageNavigationDelegate;
 
         Resources resources = mActivity.getResources();
         mDefaultMargin =
@@ -303,7 +309,7 @@ public class FeedSurfaceCoordinator {
         mUiConfig = new UiConfig(mRootView);
 
         // Mediator should be created before any Stream changes.
-        mMediator = new FeedSurfaceMediator(this, snapScrollHelper);
+        mMediator = new FeedSurfaceMediator(this, snapScrollHelper, mPageNavigationDelegate);
 
         // Native should already have been loaded because of FeedSurfaceMediator.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {

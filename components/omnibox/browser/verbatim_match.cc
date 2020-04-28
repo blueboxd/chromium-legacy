@@ -4,7 +4,6 @@
 
 #include "components/omnibox/browser/verbatim_match.h"
 
-#include "base/logging.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"

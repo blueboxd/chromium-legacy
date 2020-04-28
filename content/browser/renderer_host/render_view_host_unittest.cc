@@ -102,6 +102,8 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
  private:
   void DragSourceSystemDragEnded() override {}
   void SetBackgroundOpaque(bool value) override { value_ = value; }
+  void SetInheritedEffectiveTouchActionForSubFrame(
+      const cc::TouchAction touch_action) override {}
 
   mojo::AssociatedReceiver<blink::mojom::FrameWidget> receiver_;
   int value_ = -1;

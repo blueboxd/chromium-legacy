@@ -195,6 +195,11 @@ class NET_EXPORT CertVerifier {
   // Creates a CertVerifier implementation that verifies certificates using
   // the preferred underlying cryptographic libraries.  |cert_net_fetcher| may
   // not be used, depending on the platform.
+  static std::unique_ptr<CertVerifier> CreateDefaultWithoutCaching(
+      scoped_refptr<CertNetFetcher> cert_net_fetcher);
+
+  // Wraps the result of |CreateDefaultWithoutCaching| in a CachingCertVerifier
+  // and a CoalescingCertVerifier.
   static std::unique_ptr<CertVerifier> CreateDefault(
       scoped_refptr<CertNetFetcher> cert_net_fetcher);
 };

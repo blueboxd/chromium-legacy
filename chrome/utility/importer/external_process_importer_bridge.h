@@ -55,9 +55,6 @@ class ExternalProcessImporterBridge : public ImporterBridge {
       const std::vector<importer::SearchEngineInfo>& search_engines,
       bool unique_on_host_and_path) override;
 
-  void SetFirefoxSearchEnginesXMLData(
-      const std::vector<std::string>& seach_engine_data) override;
-
   void SetPasswordForm(const autofill::PasswordForm& form) override;
 
   void SetAutofillFormData(

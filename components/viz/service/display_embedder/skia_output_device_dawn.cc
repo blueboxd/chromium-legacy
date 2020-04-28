@@ -4,7 +4,8 @@
 
 #include "components/viz/service/display_embedder/skia_output_device_dawn.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/dawn_context_provider.h"
 #include "ui/gfx/presentation_feedback.h"

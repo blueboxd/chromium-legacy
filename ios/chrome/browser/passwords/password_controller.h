@@ -63,11 +63,6 @@ class PasswordManagerClient;
 // The base view controller from which to present UI.
 @property(nonatomic, readwrite, weak) UIViewController* baseViewController;
 
-// The dispatcher used for the PasswordController. This property can return nil
-// even after being set to a non-nil object.
-@property(nonatomic, weak) id<ApplicationCommands, PasswordBreachCommands>
-    dispatcher;
-
 // Delegate used by this PasswordController to show UI on BVC.
 @property(weak, nonatomic) id<PasswordControllerDelegate> delegate;
 

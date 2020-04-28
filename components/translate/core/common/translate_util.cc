@@ -11,7 +11,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/translate/core/common/translate_switches.h"

@@ -392,7 +392,6 @@ TestNetworkDelegate::TestNetworkDelegate()
       before_start_transaction_count_(0),
       headers_received_count_(0),
       has_load_timing_info_before_redirect_(false),
-      experimental_cookie_features_enabled_(false),
       cancel_request_with_policy_violating_referrer_(false),
       before_start_transaction_fails_(false),
       add_header_to_first_response_(false),

@@ -111,11 +111,14 @@ const char kEnableSandboxLogging[] = "enable-sandbox-logging";
 
 // Flags spied upon from other layers.
 const char kGpuProcess[] = "gpu-process";
+const char kNaClBrokerProcess[] = "nacl-broker";
 const char kNaClLoaderProcess[] = "nacl-loader";
 const char kPpapiBrokerProcess[] = "ppapi-broker";
 const char kPpapiPluginProcess[] = "ppapi";
 const char kRendererProcess[] = "renderer";
 const char kUtilityProcess[] = "utility";
+const char kCloudPrintServiceProcess[] = "service";
+const char kZygoteProcessType[] = "zygote";
 
 }  // namespace switches
 

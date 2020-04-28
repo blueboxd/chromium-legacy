@@ -570,8 +570,7 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
   auto* ua_context = MakeGarbageCollected<CSSParserContext>(
       kUASheetMode, SecureContextMode::kInsecureContext);
   const CSSValue* internal_light_dark = CSSParser::ParseSingleValue(
-      CSSPropertyID::kColor, "-internal-light-dark-color(black, white)",
-      ua_context);
+      CSSPropertyID::kColor, "-internal-light-dark(black, white)", ua_context);
 
   ColorSchemeHelper color_scheme_helper(dummy_page_holder_->GetDocument());
   color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
@@ -611,7 +610,7 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
     ScopedCSSCascadeForTest scoped_cascade_enabled(true);
 
     auto* color_declaration =
-        ParseDeclarationBlock("color:-internal-light-dark-color(black, white)");
+        ParseDeclarationBlock("color:-internal-light-dark(black, white)");
     auto* dark_declaration = ParseDeclarationBlock("color-scheme:dark");
     auto* light_declaration = ParseDeclarationBlock("color-scheme:light");
 

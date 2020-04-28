@@ -8,7 +8,7 @@
 #include <iterator>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/zucchini/algorithm.h"
 #include "components/zucchini/equivalence_map.h"
 

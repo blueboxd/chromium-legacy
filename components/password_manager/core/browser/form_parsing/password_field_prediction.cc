@@ -4,7 +4,6 @@
 
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 
-#include "base/logging.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/signatures_util.h"

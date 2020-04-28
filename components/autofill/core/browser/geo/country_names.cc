@@ -8,8 +8,8 @@
 
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

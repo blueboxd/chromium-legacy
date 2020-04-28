@@ -96,9 +96,10 @@ public class WebappIntentDataProviderFactory {
         int defaultBackgroundColor =
                 SplashLayout.getDefaultBackgroundColor(ContextUtils.getApplicationContext());
 
-        WebappExtras webappExtras = new WebappExtras(id, url, scope, new WebappIcon(icon), name,
-                shortName, displayMode, orientation, source, backgroundColor,
-                defaultBackgroundColor, isIconGenerated, isIconAdaptive, forceNavigation);
+        WebappExtras webappExtras =
+                new WebappExtras(id, url, scope, new WebappIcon(icon, true /* isTrusted */), name,
+                        shortName, displayMode, orientation, source, backgroundColor,
+                        defaultBackgroundColor, isIconGenerated, isIconAdaptive, forceNavigation);
         return new WebappIntentDataProvider(toolbarColor, hasValidToolbarColor,
                 null /* shareData */, webappExtras, null /* webApkExtras */);
     }

@@ -754,6 +754,8 @@ public class WebApkInfoTest {
         res.addStringForTesting("shortcut_2_name",
                 WebApkIntentDataProviderFactory.RESOURCE_STRING_TYPE, WEBAPK_PACKAGE_NAME, 5,
                 "name2");
+        res.addStringForTesting("shortcut_1_icon", "drawable", WEBAPK_PACKAGE_NAME, 6, null);
+        res.addStringForTesting("shortcut_2_icon", "drawable", WEBAPK_PACKAGE_NAME, 7, null);
         WebApkTestHelper.setResource(WEBAPK_PACKAGE_NAME, res);
 
         Intent intent = WebApkTestHelper.createMinimalWebApkIntent(WEBAPK_PACKAGE_NAME, START_URL);
@@ -787,6 +789,8 @@ public class WebApkInfoTest {
         Assert.assertEquals(item.launchUrl, "https://example.com/launch1");
         Assert.assertEquals(item.iconUrl, "https://example.com/icon1.png");
         Assert.assertEquals(item.iconHash, "1234");
+        Assert.assertNotNull(item.icon);
+        Assert.assertEquals(item.icon.resourceIdForTesting(), 6);
 
         // Multiple shortcuts case.
         String twoShortcuts =
@@ -820,5 +824,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(item.launchUrl, "https://example.com/launch2");
         Assert.assertEquals(item.iconUrl, "https://example.com/icon2.png");
         Assert.assertEquals(item.iconHash, "2345");
+        Assert.assertNotNull(item.icon);
+        Assert.assertEquals(item.icon.resourceIdForTesting(), 7);
     }
 }

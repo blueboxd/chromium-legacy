@@ -579,8 +579,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_SetViewportIntersection,
                         OnSetViewportIntersection)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetIsInert, OnSetIsInert)
-    IPC_MESSAGE_HANDLER(WidgetMsg_SetInheritedEffectiveTouchAction,
-                        OnSetInheritedEffectiveTouchAction)
     IPC_MESSAGE_HANDLER(WidgetMsg_UpdateRenderThrottlingStatus,
                         OnUpdateRenderThrottlingStatus)
     IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
@@ -2119,12 +2117,6 @@ void RenderWidget::OnSetViewportIntersection(
 void RenderWidget::OnSetIsInert(bool inert) {
   if (auto* frame_widget = GetFrameWidget())
     frame_widget->SetIsInert(inert);
-}
-
-void RenderWidget::OnSetInheritedEffectiveTouchAction(
-    cc::TouchAction touch_action) {
-  if (auto* frame_widget = GetFrameWidget())
-    frame_widget->SetInheritedEffectiveTouchAction(touch_action);
 }
 
 void RenderWidget::OnUpdateRenderThrottlingStatus(bool is_throttled,

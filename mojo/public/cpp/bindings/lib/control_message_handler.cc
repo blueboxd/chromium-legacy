@@ -8,8 +8,8 @@
 #include <stdint.h>
 #include <utility>
 
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/lib/validation_util.h"

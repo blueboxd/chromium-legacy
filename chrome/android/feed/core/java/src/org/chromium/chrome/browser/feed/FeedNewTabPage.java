@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -96,11 +97,21 @@ public class FeedNewTabPage
                 FeedProcessScopeFactory.getFeedLoggingBridge(), activity, profile);
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
-        SectionHeaderView sectionHeaderView = (SectionHeaderView) inflater.inflate(
-                R.layout.new_tab_page_snippets_expandable_header, null, false);
+
+        // Determine the feed header to use.
+        final SectionHeaderView sectionHeaderView;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_MENU)) {
+            sectionHeaderView = (SectionHeaderView) inflater.inflate(
+                    R.layout.new_tab_page_snippets_expandable_header_with_menu, null, false);
+        } else {
+            sectionHeaderView = (SectionHeaderView) inflater.inflate(
+                    R.layout.new_tab_page_snippets_expandable_header, null, false);
+        }
+
         mCoordinator = new FeedSurfaceCoordinator(activity, snackbarManager, tabModelSelector,
                 tabProvider, new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout),
-                mNewTabPageLayout, sectionHeaderView, actionApi, isInNightMode, this);
+                mNewTabPageLayout, sectionHeaderView, actionApi, isInNightMode, this,
+                mNewTabPageManager.getNavigationDelegate());
 
         // Record the timestamp at which the new tab page's construction started.
         uma.trackTimeToFirstDraw(mCoordinator.getView(), mConstructedTimeNs);

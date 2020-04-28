@@ -4,10 +4,11 @@
 
 #include "components/content_settings/core/common/cookie_settings_base.h"
 
+#include "base/check.h"
 #include "base/debug/stack_trace.h"
 #include "base/debug/task_trace.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/features.h"
 #include "net/base/net_errors.h"

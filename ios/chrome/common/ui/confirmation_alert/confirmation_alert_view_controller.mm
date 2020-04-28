@@ -269,6 +269,9 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
     [self.imageView setHidden:isVerticalCompact];
   }
 
+  // Allow toolbar to update its height based on new layout.
+  [self.topToolbar invalidateIntrinsicContentSize];
+
   [super updateViewConstraints];
 }
 

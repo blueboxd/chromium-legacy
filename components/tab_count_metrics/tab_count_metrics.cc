@@ -6,7 +6,8 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 
 namespace tab_count_metrics {

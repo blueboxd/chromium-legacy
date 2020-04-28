@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/platform/platform_handle.h"
+#include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/platform_file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"

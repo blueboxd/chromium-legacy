@@ -4,7 +4,7 @@
 
 #include "components/zucchini/disassembler.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace zucchini {
 

@@ -4,7 +4,6 @@
 
 #include "components/infobars/core/infobar_delegate.h"
 
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"

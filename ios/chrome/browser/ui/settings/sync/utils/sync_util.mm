@@ -134,6 +134,11 @@ bool ShouldShowSyncPassphraseSettings(
   return syncState == SyncSetupService::kSyncServiceNeedsPassphrase;
 }
 
+bool ShouldShowTrustedVaultReauthentication(
+    SyncSetupService::SyncServiceState syncState) {
+  return syncState == SyncSetupService::kSyncServiceNeedsTrustedVaultKey;
+}
+
 bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState) {
   switch (syncState) {
     case SyncSetupService::kSyncServiceCouldNotConnect:

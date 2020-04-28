@@ -4,7 +4,7 @@
 
 #include "components/password_manager/core/browser/multi_store_form_fetcher.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_feature_manager.h"

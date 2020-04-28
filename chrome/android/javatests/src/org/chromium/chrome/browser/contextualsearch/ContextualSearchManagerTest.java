@@ -1567,6 +1567,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisabledTest(message = "https://crbug.com/1075895")
     public void testTapGesturesNearbyKeepSelecting() throws Exception {
         clickWordNode("states");
         Assert.assertEquals("States", getSelectedText());
@@ -1828,6 +1829,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisabledTest(message = "https://crbug.com/1075895")
     public void testHttpsBeforeAcceptForOptOut() throws Exception {
         mPolicy.overrideDecidedStateForTesting(false);
         mFakeServer.setShouldUseHttps(true);
@@ -2960,9 +2962,8 @@ public class ContextualSearchManagerTest {
      */
     @Test
     @SmallTest
-    @DisableIf.
-    Build(sdk_is_less_than = Build.VERSION_CODES.M, message = "Flaky on Lollipop crbug.com/933092")
     @Feature({"ContextualSearch"})
+    @DisabledTest(message = "https://crbug.com/1075895")
     public void testQuickActionUrl() throws Exception {
         final String testUrl = mTestServer.getURL("/chrome/test/data/android/google.html");
 

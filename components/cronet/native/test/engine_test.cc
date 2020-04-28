@@ -4,9 +4,9 @@
 
 #include "cronet_c.h"
 
+#include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/cronet/native/test/test_util.h"

@@ -4,7 +4,7 @@
 
 #include "components/autofill/core/browser/autofill_type.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace autofill {
 

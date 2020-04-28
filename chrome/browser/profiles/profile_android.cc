@@ -5,9 +5,10 @@
 #include "chrome/browser/profiles/profile_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/android/jni_headers/Profile_jni.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_key_android.h"
@@ -85,18 +86,46 @@ base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetOriginalProfile(
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-ProfileAndroid::GetOffTheRecordProfile(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj) {
+ProfileAndroid::GetOffTheRecordProfile(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_otr_profile_id) {
+  Profile::OTRProfileID otr_profile_id =
+      Profile::OTRProfileID::ConvertFromJavaOTRProfileID(env, j_otr_profile_id);
   ProfileAndroid* otr_profile = ProfileAndroid::FromProfile(
-      profile_->GetOffTheRecordProfile());
+      profile_->GetOffTheRecordProfile(otr_profile_id));
   DCHECK(otr_profile);
   return otr_profile->GetJavaObject();
 }
 
-jboolean ProfileAndroid::HasOffTheRecordProfile(
+base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetPrimaryOTRProfile(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return profile_->HasOffTheRecordProfile();
+  ProfileAndroid* otr_profile = ProfileAndroid::FromProfile(
+      profile_->GetOffTheRecordProfile(Profile::OTRProfileID::PrimaryID()));
+  DCHECK(otr_profile);
+  return otr_profile->GetJavaObject();
+}
+
+base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetOTRProfileID(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return profile_->GetOTRProfileID().ConvertToJavaOTRProfileID(env);
+}
+
+jboolean ProfileAndroid::HasOffTheRecordProfile(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_otr_profile_id) {
+  Profile::OTRProfileID otr_profile_id =
+      Profile::OTRProfileID::ConvertFromJavaOTRProfileID(env, j_otr_profile_id);
+  return profile_->HasOffTheRecordProfile(otr_profile_id);
+}
+
+jboolean ProfileAndroid::HasPrimaryOTRProfile(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return profile_->HasPrimaryOTRProfile();
 }
 
 base::android::ScopedJavaLocalRef<jobject> ProfileAndroid::GetProfileKey(

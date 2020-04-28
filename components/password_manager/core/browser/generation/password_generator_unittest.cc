@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

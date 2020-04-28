@@ -21,6 +21,10 @@
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
+
 #if !defined(OS_ANDROID)
 class ChromeZoomLevelPrefs;
 #endif
@@ -130,9 +134,20 @@ class Profile : public content::BrowserContext {
       return profile_id_ < other.profile_id_;
     }
 
+#if defined(OS_ANDROID)
+    // Constructs a Java OTRProfileID from the provided C++ OTRProfileID
+    base::android::ScopedJavaLocalRef<jobject> ConvertToJavaOTRProfileID(
+        JNIEnv* env) const;
+
+    // Constructs a C++ OTRProfileID from the provided Java OTRProfileID
+    static OTRProfileID ConvertFromJavaOTRProfileID(
+        JNIEnv* env,
+        const base::android::JavaRef<jobject>& j_otr_profile_id);
+#endif
+
    private:
     friend std::ostream& operator<<(std::ostream& out,
-                                    const Profile::OTRProfileID& profile_id);
+                                    const OTRProfileID& profile_id);
 
     OTRProfileID() = default;
 

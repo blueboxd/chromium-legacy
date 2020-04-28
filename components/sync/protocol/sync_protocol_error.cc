@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace syncer {
 #define ENUM_CASE(x) \

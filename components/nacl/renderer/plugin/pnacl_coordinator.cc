@@ -8,7 +8,7 @@
 #include <sstream>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/numerics/ranges.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"

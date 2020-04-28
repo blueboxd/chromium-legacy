@@ -410,13 +410,36 @@ void ForEachFrame(RenderFrameHostImpl* root_frame_host,
   }
 }
 
-void LookupRenderFrameHostOrProxy(int process_id,
-                                  int routing_id,
-                                  RenderFrameHostImpl** rfh,
-                                  RenderFrameProxyHost** rfph) {
-  *rfh = RenderFrameHostImpl::FromID(process_id, routing_id);
-  if (*rfh == nullptr)
-    *rfph = RenderFrameProxyHost::FromID(process_id, routing_id);
+struct RenderFrameHostOrProxy {
+  RenderFrameHostImpl* const frame;
+  RenderFrameProxyHost* const proxy;
+
+  RenderFrameHostOrProxy(RenderFrameHostImpl* frame,
+                         RenderFrameProxyHost* proxy)
+      : frame(frame), proxy(proxy) {
+    DCHECK(!frame || !proxy)
+        << "Both frame and proxy can't be non-null at the same time";
+  }
+
+  explicit operator bool() { return frame || proxy; }
+
+  FrameTreeNode* GetFrameTreeNode() {
+    if (frame)
+      return frame->frame_tree_node();
+    if (proxy)
+      return proxy->frame_tree_node();
+    return nullptr;
+  }
+};
+
+RenderFrameHostOrProxy LookupRenderFrameHostOrProxy(int process_id,
+                                                    int routing_id) {
+  RenderFrameHostImpl* rfh =
+      RenderFrameHostImpl::FromID(process_id, routing_id);
+  RenderFrameProxyHost* proxy = nullptr;
+  if (!rfh)
+    proxy = RenderFrameProxyHost::FromID(process_id, routing_id);
+  return RenderFrameHostOrProxy(rfh, proxy);
 }
 
 // Takes the lower 31 bits of the metric-name-hash of a Mojo interface |name|.
@@ -802,12 +825,11 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   process_->AddObserver(this);
   GetSiteInstance()->IncrementActiveFrameCount();
 
-  if (frame_tree_node_->parent()) {
+  if (parent_) {
     cross_origin_embedder_policy_ = parent_->cross_origin_embedder_policy();
 
     // New child frames should inherit the nav_entry_id of their parent.
-    set_nav_entry_id(
-        frame_tree_node_->parent()->current_frame_host()->nav_entry_id());
+    set_nav_entry_id(parent_->nav_entry_id());
   }
 
   SetUpMojoIfNeeded();
@@ -856,7 +878,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 #endif  // defined(OS_ANDROID)
     }
 
-    if (!frame_tree_node_->parent())
+    if (is_main_frame())
       GetLocalRenderWidgetHost()->SetIntersectsViewport(true);
     GetLocalRenderWidgetHost()->SetFrameDepth(frame_tree_node_->depth());
     GetLocalRenderWidgetHost()->SetFrameInputHandler(
@@ -1705,7 +1727,7 @@ RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
   // Only the main frame's current frame host is connected to the native
   // widget tree for accessibility, so return null if this is queried on
   // any other frame.
-  if (!is_active() || frame_tree_node()->parent() || !IsCurrent())
+  if (!is_active() || !is_main_frame() || !IsCurrent())
     return gfx::kNullAcceleratedWidget;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -3565,18 +3587,33 @@ void RenderFrameHostImpl::EnforceInsecureNavigationsSet(
   frame_tree_node()->SetInsecureNavigationsSet(set);
 }
 
-FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
+RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChild(
     int32_t child_frame_routing_id,
     bad_message::BadMessageReason reason) {
-  FrameTreeNode* child = frame_tree_node()->frame_tree()->FindByRoutingID(
+  auto child_frame_or_proxy = LookupRenderFrameHostOrProxy(
       GetProcess()->GetID(), child_frame_routing_id);
   // A race can result in |child| to be nullptr. Avoid killing the renderer in
   // that case.
-  if (child && child->parent() != frame_tree_node()) {
+  if (!child_frame_or_proxy)
+    return nullptr;
+
+  if (child_frame_or_proxy.GetFrameTreeNode()->frame_tree() !=
+      frame_tree_node()->frame_tree()) {
+    // Ignore the cases when the child lives in a different frame tree.
+    // This is possible when we create a proxy for inner WebContents (e.g.
+    // for portals) so the |child_frame_or_proxy| points to the root frame
+    // of the nested WebContents, which is in a different tree.
+    // TODO(altimin, lfg): Reconsider what the correct behaviour here should be.
+    return nullptr;
+  }
+  if (child_frame_or_proxy.GetFrameTreeNode()->parent() != frame_tree_node()) {
     bad_message::ReceivedBadMessage(GetProcess(), reason);
     return nullptr;
   }
-  return child;
+  return child_frame_or_proxy.proxy
+             ? child_frame_or_proxy.proxy->frame_tree_node()
+                   ->current_frame_host()
+             : child_frame_or_proxy.frame;
 }
 
 void RenderFrameHostImpl::OnDidChangeFramePolicy(
@@ -3585,46 +3622,43 @@ void RenderFrameHostImpl::OnDidChangeFramePolicy(
   // Ensure that a frame can only update sandbox flags or feature policy for its
   // immediate children.  If this is not the case, the renderer is considered
   // malicious and is killed.
-  FrameTreeNode* child = FindAndVerifyChild(
+  RenderFrameHostImpl* child = FindAndVerifyChild(
       // TODO(iclelland): Rename this message
       frame_routing_id, bad_message::RFH_SANDBOX_FLAGS);
   if (!child)
     return;
 
-  child->SetPendingFramePolicy(frame_policy);
+  child->frame_tree_node()->SetPendingFramePolicy(frame_policy);
 
   // Notify the RenderFrame if it lives in a different process from its parent.
   // The frame's proxies in other processes also need to learn about the updated
   // flags and policy, but these notifications are sent later in
   // RenderFrameHostManager::CommitPendingFramePolicy(), when the frame
   // navigates and the new policies take effect.
-  RenderFrameHost* child_rfh = child->current_frame_host();
-  if (child_rfh->GetSiteInstance() != GetSiteInstance()) {
-    static_cast<RenderFrameHostImpl*>(child_rfh)
-        ->GetAssociatedLocalFrame()
-        ->DidUpdateFramePolicy(frame_policy);
+  if (child->GetSiteInstance() != GetSiteInstance()) {
+    child->GetAssociatedLocalFrame()->DidUpdateFramePolicy(frame_policy);
   }
 }
 
 void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
     int32_t frame_routing_id,
     const blink::mojom::FrameOwnerProperties& properties) {
-  FrameTreeNode* child =
+  RenderFrameHostImpl* child =
       FindAndVerifyChild(frame_routing_id, bad_message::RFH_OWNER_PROPERTY);
   if (!child)
     return;
 
   bool has_display_none_property_changed =
       properties.is_display_none !=
-      child->frame_owner_properties().is_display_none;
+      child->frame_tree_node()->frame_owner_properties().is_display_none;
 
-  child->set_frame_owner_properties(properties);
+  child->frame_tree_node()->set_frame_owner_properties(properties);
 
-  child->render_manager()->OnDidUpdateFrameOwnerProperties(properties);
+  child->frame_tree_node()->render_manager()->OnDidUpdateFrameOwnerProperties(
+      properties);
   if (has_display_none_property_changed) {
     delegate_->DidChangeDisplayState(
-        child->current_frame_host(),
-        properties.is_display_none /* is_display_none */);
+        child, properties.is_display_none /* is_display_none */);
   }
 }
 
@@ -3632,7 +3666,7 @@ void RenderFrameHostImpl::UpdateTitle(
     const base::Optional<::base::string16>& title,
     base::i18n::TextDirection title_direction) {
   // This message should only be sent for top-level frames.
-  if (frame_tree_node_->parent())
+  if (!is_main_frame())
     return;
 
   base::string16 received_title;
@@ -4040,15 +4074,15 @@ void RenderFrameHostImpl::EnterFullscreen(
   // necessary changes to the other two ancestors.
   std::set<SiteInstance*> notified_instances;
   notified_instances.insert(GetSiteInstance());
-  for (FrameTreeNode* node = frame_tree_node_; node->parent();
-       node = node->parent()) {
-    SiteInstance* parent_site_instance =
-        node->parent()->current_frame_host()->GetSiteInstance();
+  for (RenderFrameHostImpl* rfh = this; rfh->GetParent();
+       rfh = rfh->GetParent()) {
+    SiteInstance* parent_site_instance = rfh->GetParent()->GetSiteInstance();
     if (base::Contains(notified_instances, parent_site_instance))
       continue;
 
     RenderFrameProxyHost* child_proxy =
-        node->render_manager()->GetRenderFrameProxyHost(parent_site_instance);
+        rfh->frame_tree_node()->render_manager()->GetRenderFrameProxyHost(
+            parent_site_instance);
     child_proxy->GetAssociatedRemoteFrame()->WillEnterFullscreen();
     notified_instances.insert(parent_site_instance);
   }
@@ -4580,7 +4614,7 @@ void RenderFrameHostImpl::CreatePortal(
   }
 
   // We don't support attaching a portal inside a nested browsing context.
-  if (frame_tree_node()->parent()) {
+  if (!is_main_frame()) {
     mojo::ReportBadMessage(
         "RFHI::CreatePortal called in a nested browsing context");
     frame_host_associated_receiver_.reset();
@@ -6294,9 +6328,8 @@ RenderFrameHostImpl::GetOrCreateBrowserAccessibilityManager() {
   RenderWidgetHostViewBase* view = GetViewForAccessibility();
   if (view && !browser_accessibility_manager_ &&
       !no_create_browser_accessibility_manager_for_testing_) {
-    bool is_root_frame = !frame_tree_node()->parent();
     browser_accessibility_manager_.reset(
-        view->CreateBrowserAccessibilityManager(this, is_root_frame));
+        view->CreateBrowserAccessibilityManager(this, is_main_frame()));
   }
   return browser_accessibility_manager_.get();
 }
@@ -6560,14 +6593,9 @@ bool RenderFrameHostImpl::CanExecuteJavaScript() {
 // static
 int RenderFrameHost::GetFrameTreeNodeIdForRoutingId(int process_id,
                                                     int routing_id) {
-  RenderFrameHostImpl* rfh = nullptr;
-  RenderFrameProxyHost* rfph = nullptr;
-  LookupRenderFrameHostOrProxy(process_id, routing_id, &rfh, &rfph);
-  if (rfh) {
-    return rfh->GetFrameTreeNodeId();
-  } else if (rfph) {
-    return rfph->frame_tree_node()->frame_tree_node_id();
-  }
+  auto frame_or_proxy = LookupRenderFrameHostOrProxy(process_id, routing_id);
+  if (frame_or_proxy)
+    return frame_or_proxy.GetFrameTreeNode()->frame_tree_node_id();
   return kNoFrameTreeNodeId;
 }
 
@@ -6582,17 +6610,16 @@ RenderFrameHost* RenderFrameHost::FromPlaceholderId(
 }
 
 ui::AXTreeID RenderFrameHostImpl::RoutingIDToAXTreeID(int routing_id) {
-  RenderFrameHostImpl* rfh = nullptr;
-  RenderFrameProxyHost* rfph = nullptr;
-  LookupRenderFrameHostOrProxy(GetProcess()->GetID(), routing_id, &rfh, &rfph);
-  if (rfph) {
-    rfh = rfph->frame_tree_node()->current_frame_host();
+  auto frame_or_proxy =
+      LookupRenderFrameHostOrProxy(GetProcess()->GetID(), routing_id);
+  if (frame_or_proxy.frame)
+    return frame_or_proxy.frame->GetAXTreeID();
+  if (frame_or_proxy.proxy) {
+    return frame_or_proxy.proxy->frame_tree_node()
+        ->current_frame_host()
+        ->GetAXTreeID();
   }
-
-  if (!rfh)
-    return ui::AXTreeIDUnknown();
-
-  return rfh->GetAXTreeID();
+  return ui::AXTreeIDUnknown();
 }
 
 void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
@@ -6628,7 +6655,7 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
     dst->parent_tree_id = browser_plugin_embedder_ax_tree_id_;
 
   // If this is not the root frame tree node, we're done.
-  if (frame_tree_node()->parent())
+  if (!is_main_frame())
     return;
 
   // For the root frame tree node, also store the AXTreeID of the focused frame.
@@ -6650,13 +6677,12 @@ void RenderFrameHostImpl::RequestAXHitTestCallback(
 
   // A child frame was found while hit testing on this frame, and so we need to
   // request a new hit test over such child frame now.
-  RenderFrameHostImpl* child_frame = nullptr;
-  RenderFrameProxyHost* rfph = nullptr;
-  LookupRenderFrameHostOrProxy(
-      GetProcess()->GetID(), child_frame_hit_test_info->child_frame_routing_id,
-      &child_frame, &rfph);
-  if (rfph)
-    child_frame = rfph->frame_tree_node()->current_frame_host();
+  auto frame_or_proxy = LookupRenderFrameHostOrProxy(
+      GetProcess()->GetID(), child_frame_hit_test_info->child_frame_routing_id);
+  RenderFrameHostImpl* child_frame =
+      frame_or_proxy.proxy
+          ? frame_or_proxy.proxy->frame_tree_node()->current_frame_host()
+          : frame_or_proxy.frame;
 
   if (!child_frame || !child_frame->is_active())
     return;

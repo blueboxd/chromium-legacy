@@ -4,7 +4,7 @@
 
 #include "components/download/public/common/rate_estimator.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 using base::TimeDelta;
 using base::TimeTicks;

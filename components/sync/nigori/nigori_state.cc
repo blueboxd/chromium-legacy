@@ -80,9 +80,10 @@ void UpdateNigoriSpecificsFromEncryptedTypes(
   specifics->set_encrypt_extension_settings(
       encrypted_types.Has(EXTENSION_SETTINGS));
   specifics->set_encrypt_dictionary(encrypted_types.Has(DICTIONARY));
-  specifics->set_encrypt_favicon_images(encrypted_types.Has(FAVICON_IMAGES));
+  specifics->set_encrypt_favicon_images(
+      encrypted_types.Has(DEPRECATED_FAVICON_IMAGES));
   specifics->set_encrypt_favicon_tracking(
-      encrypted_types.Has(FAVICON_TRACKING));
+      encrypted_types.Has(DEPRECATED_FAVICON_TRACKING));
   specifics->set_encrypt_app_list(encrypted_types.Has(APP_LIST));
   specifics->set_encrypt_arc_package(encrypted_types.Has(ARC_PACKAGE));
   specifics->set_encrypt_printers(encrypted_types.Has(PRINTERS));

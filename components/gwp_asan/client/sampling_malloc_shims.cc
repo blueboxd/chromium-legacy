@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/allocator/allocator_shim.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_metrics.h"

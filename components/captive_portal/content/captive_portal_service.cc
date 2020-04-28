@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
 #include "components/captive_portal/core/captive_portal_metrics.h"

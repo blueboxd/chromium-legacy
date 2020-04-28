@@ -656,7 +656,6 @@ class CONTENT_EXPORT RenderWidget
   void OnSetViewportIntersection(
       const blink::ViewportIntersectionState& intersection_state);
   void OnSetIsInert(bool);
-  void OnSetInheritedEffectiveTouchAction(cc::TouchAction touch_action);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,
                                       bool subtree_throttled);
   void OnDragTargetDragEnter(

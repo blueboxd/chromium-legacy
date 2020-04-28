@@ -6,7 +6,7 @@
 
 #include <time.h>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"

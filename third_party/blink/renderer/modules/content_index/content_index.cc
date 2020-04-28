@@ -67,7 +67,9 @@ WTF::String ValidateDescription(const ContentDescription& description,
 
 ContentIndex::ContentIndex(ServiceWorkerRegistration* registration,
                            scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : registration_(registration), task_runner_(std::move(task_runner)) {
+    : registration_(registration),
+      task_runner_(std::move(task_runner)),
+      content_index_service_(registration->GetExecutionContext()) {
   DCHECK(registration_);
 }
 
@@ -272,11 +274,12 @@ void ContentIndex::DidGetDescriptions(
 
 void ContentIndex::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
+  visitor->Trace(content_index_service_);
   ScriptWrappable::Trace(visitor);
 }
 
 mojom::blink::ContentIndexService* ContentIndex::GetService() {
-  if (!content_index_service_) {
+  if (!content_index_service_.is_bound()) {
     registration_->GetExecutionContext()
         ->GetBrowserInterfaceBroker()
         .GetInterface(

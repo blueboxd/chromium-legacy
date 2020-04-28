@@ -23,14 +23,11 @@ import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.NavigationController;
-import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
@@ -185,6 +182,14 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return true;
     }
 
+    // This method should never be invoked as WebLayer does not handle incoming intents.
+    @Override
+    public @OverrideUrlLoadingResult int handleIncognitoIntentTargetingSelf(
+            final Intent intent, final String referrerUrl, final String fallbackUrl) {
+        assert false;
+        return OverrideUrlLoadingResult.NO_OVERRIDE;
+    }
+
     @Override
     public boolean shouldRequestFileAccess(String url) {
         // If the tab is null, then do not attempt to prompt for access.
@@ -298,24 +303,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public void maybeSetPendingIncognitoUrl(Intent intent) {}
 
     @Override
-    public boolean isSerpReferrer() {
-        // TODO (thildebr): Investigate whether or not we can use getLastCommittedUrl() instead of
-        // the NavigationController.
-        if (!hasValidTab() || mTab.getWebContents() == null) return false;
-
-        NavigationController nController = mTab.getWebContents().getNavigationController();
-        int index = nController.getLastCommittedEntryIndex();
-        if (index == -1) return false;
-
-        NavigationEntry entry = nController.getEntryAtIndex(index);
-        if (entry == null) return false;
-
-        return UrlUtilitiesJni.get().isGoogleSearchUrl(entry.getUrl());
-    }
-
-    @Override
     public boolean maybeLaunchInstantApp(
-            String url, String referrerUrl, boolean isIncomingRedirect) {
+            String url, String referrerUrl, boolean isIncomingRedirect, boolean isSerpReferrer) {
         return false;
     }
 
@@ -325,10 +314,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return mTab.getWebContents();
     }
 
-    /**
-     * @return Whether or not we have a valid {@link Tab} available.
-     */
-    private boolean hasValidTab() {
+    @Override
+    public boolean hasValidTab() {
         assert mTab != null;
         return !mTabDestroyed;
     }
@@ -355,8 +342,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean handleWithAutofillAssistant(
-            ExternalNavigationParams params, Intent targetIntent, String browserFallbackUrl) {
+    public boolean handleWithAutofillAssistant(ExternalNavigationParams params, Intent targetIntent,
+            String browserFallbackUrl, boolean isGoogleReferrer) {
         return false;
     }
 }

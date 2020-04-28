@@ -269,6 +269,18 @@ class CCAWindow {
     this.state_ = WindowState.CLOSING;
     this.appWindow_.close();
   }
+
+  /**
+   * Minimize or restore the app window.
+   */
+  minimizeOrRestore() {
+    if (this.appWindow_.isMinimized()) {
+      this.appWindow_.restore();
+      this.appWindow_.focus();
+    } else {
+      this.appWindow_.minimize();
+    }
+  }
 }
 
 /**
@@ -416,6 +428,11 @@ class Background {
    */
   launchApp() {
     if (this.launcherWindow_ || this.intentWindow_) {
+      const activeWindow = [this.launcherWindow_, this.intentWindow_].find(
+          (wnd) => wnd !== null && wnd.state_ === WindowState.ACTIVE);
+      if (activeWindow !== undefined) {
+        activeWindow.minimizeOrRestore();
+      }
       return;
     }
     this.assert_(

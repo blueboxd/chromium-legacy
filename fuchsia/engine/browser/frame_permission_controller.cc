@@ -4,7 +4,7 @@
 
 #include "fuchsia/engine/browser/frame_permission_controller.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "url/origin.h"
 
 using PermissionState = blink::mojom::PermissionStatus;

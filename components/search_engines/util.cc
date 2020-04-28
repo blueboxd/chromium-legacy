@@ -15,7 +15,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"

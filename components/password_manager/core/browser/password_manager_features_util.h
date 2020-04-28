@@ -23,6 +23,7 @@ namespace features_util {
 // |pref_service| must not be null.
 // |sync_service| may be null (commonly the case in incognito mode), in which
 // case this will simply return false.
+// See PasswordFeatureManager::IsOptedInForAccountStorage.
 bool IsOptedInForAccountStorage(const PrefService* pref_service,
                                 const syncer::SyncService* sync_service);
 
@@ -33,17 +34,21 @@ bool IsOptedInForAccountStorage(const PrefService* pref_service,
 // |pref_service| must not be null.
 // |sync_service| may be null (commonly the case in incognito mode), in which
 // case this will simply return false.
+// See PasswordFeatureManager::ShouldShowAccountStorageOptIn.
 bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
                                    const syncer::SyncService* sync_service);
 
-// Returns true if no user is signed in but at least one account on this device
-// opted into using the account-based passwords storage before.
+// Whether it makes sense to ask the user to signin again to access the
+// account-based password storage. This is true if a user on this device
+// previously opted into using the account store but is signed-out now.
+// See PasswordFeatureManager::ShouldShowAccountStorageReSignin.
 bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
                                       const syncer::SyncService* sync_service);
 
 // Sets or clears the opt-in to using account storage for passwords for the
 // current signed-in user (unconsented primary account).
 // |pref_service| and |sync_service| must not be null.
+// See PasswordFeatureManager::SetAccountStorageOptIn.
 void SetAccountStorageOptIn(PrefService* pref_service,
                             const syncer::SyncService* sync_service,
                             bool opt_in);
@@ -55,8 +60,17 @@ void SetAccountStorageOptIn(PrefService* pref_service,
 // |pref_service| must not be null.
 // |sync_service| may be null (commonly the case in incognito mode), in which
 // case this will simply return false.
+// See PasswordFeatureManager::ShouldShowPasswordStorePicker.
 bool ShouldShowPasswordStorePicker(const PrefService* pref_service,
                                    const syncer::SyncService* sync_service);
+
+// Sets the default storage location for signed-in but non-syncing users. This
+// store is used for saving new credentials and adding blacking listing entries.
+// |pref_service| and |sync_service| must not be null.
+// See PasswordFeatureManager::SetDefaultPasswordStore.
+void SetDefaultPasswordStore(PrefService* pref_service,
+                             const syncer::SyncService* sync_service,
+                             autofill::PasswordForm::Store default_store);
 
 // Returns the default storage location for signed-in but non-syncing users
 // (i.e. will new passwords be saved to locally or to the account by default).
@@ -64,16 +78,10 @@ bool ShouldShowPasswordStorePicker(const PrefService* pref_service,
 // |pref_service| must not be null.
 // |sync_service| may be null (commonly the case in incognito mode), in which
 // case this will return kProfileStore.
+// See PasswordFeatureManager::GetDefaultPasswordStore.
 autofill::PasswordForm::Store GetDefaultPasswordStore(
     const PrefService* pref_service,
     const syncer::SyncService* sync_service);
-
-// Sets the default storage location for signed-in but non-syncing users (i.e.
-// will new passwords be saved locally or to the account by default).
-// |pref_service| and |sync_service| must not be null.
-void SetDefaultPasswordStore(PrefService* pref_service,
-                             const syncer::SyncService* sync_service,
-                             autofill::PasswordForm::Store default_store);
 
 // Clears all account-storage-related settings for all users. Most notably, this
 // includes the opt-in, but also all other related settings like the default

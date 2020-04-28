@@ -271,6 +271,7 @@ executable("remoting_console") {
     ":dpi_aware_exe_manifest",
     ":remoting_core",
     ":remoting_windows_resources",
+    "//base:clang_profiling_buildflags",
   ]
 
   sources = [
@@ -278,7 +279,7 @@ executable("remoting_console") {
     "entry_point.cc",
   ]
 
-  if (!is_asan) {
+  if (!is_asan && !use_clang_profiling) {
     no_default_deps = true
     ldflags = [
       "/ENTRY:HostEntryPoint",
@@ -309,7 +310,7 @@ executable("remoting_me2me_host") {
 
   output_name = "remoting_host"
 
-  if (!is_asan) {
+  if (!is_asan && !use_clang_profiling) {
     no_default_deps = true
     ldflags = [
       "/ENTRY:HostEntryPoint",
@@ -456,7 +457,7 @@ executable("remoting_desktop") {
     "entry_point.cc",
   ]
 
-  if (!is_asan) {
+  if (!is_asan && !use_clang_profiling) {
     no_default_deps = true
     ldflags = [
       "/ENTRY:HostEntryPoint",

@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "components/mirroring/service/message_dispatcher.h"
 
 namespace mirroring {

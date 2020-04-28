@@ -7,7 +7,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
 
 namespace syncer {

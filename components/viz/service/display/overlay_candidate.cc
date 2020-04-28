@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"

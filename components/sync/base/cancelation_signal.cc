@@ -4,7 +4,7 @@
 
 #include "components/sync/base/cancelation_signal.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/sync/base/cancelation_observer.h"
 
 namespace syncer {

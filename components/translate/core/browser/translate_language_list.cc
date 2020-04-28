@@ -9,9 +9,10 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

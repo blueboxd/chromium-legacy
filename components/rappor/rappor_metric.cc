@@ -4,7 +4,7 @@
 
 #include "components/rappor/rappor_metric.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/rand_util.h"
 #include "components/rappor/public/rappor_parameters.h"
 #include "components/rappor/reports.h"

@@ -262,13 +262,17 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
 
     auto it = hashes->find(chosen_icon_url.spec());
     std::string chosen_icon_hash;
-    if (it != hashes->end())
+    std::string chosen_icon_data;
+    if (it != hashes->end()) {
       chosen_icon_hash = it->second.hash;
+      chosen_icon_data = std::move(it->second.unsafe_data);
+    }
 
     shortcuts.push_back({shortcut.name, shortcut.short_name.string(),
                          base::UTF8ToUTF16(shortcut.url.spec()),
                          base::UTF8ToUTF16(chosen_icon_url.spec()),
-                         base::UTF8ToUTF16(chosen_icon_hash)});
+                         base::UTF8ToUTF16(chosen_icon_hash),
+                         base::UTF8ToUTF16(chosen_icon_data)});
   }
 
   Java_WebApkUpdateDataFetcher_onDataAvailable(

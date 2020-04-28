@@ -5,7 +5,6 @@
 #include "components/arc/net/always_on_vpn_manager.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_method_call_status.h"

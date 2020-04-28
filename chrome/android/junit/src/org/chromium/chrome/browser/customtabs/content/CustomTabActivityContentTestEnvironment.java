@@ -117,7 +117,8 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
         when(intentDataProvider.getIntent()).thenReturn(intent);
         when(intentDataProvider.getSession()).thenReturn(session);
         when(intentDataProvider.getUrlToLoad()).thenReturn(INITIAL_URL);
-        when(tabFactory.createTab(webContentsCaptor.capture(), any())).thenReturn(tabFromFactory);
+        when(tabFactory.createTab(webContentsCaptor.capture(), any(), any()))
+                .thenReturn(tabFromFactory);
         when(tabFactory.getTabModelSelector()).thenReturn(tabModelSelector);
         when(tabModelSelector.getModel(anyBoolean())).thenReturn(tabModel);
         when(connection.getSpeculatedUrl(any())).thenReturn(SPECULATED_URL);

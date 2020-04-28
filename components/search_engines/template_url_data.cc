@@ -4,9 +4,9 @@
 
 #include "components/search_engines/template_url_data.h"
 
+#include "base/check.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

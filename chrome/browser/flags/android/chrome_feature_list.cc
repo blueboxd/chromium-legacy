@@ -95,6 +95,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &feed::kInterestFeedFeedback,
     &feed::kInterestFeedV2,
     &feed::kReportFeedUserActions,
+    &feed::kFeedHeaderMenu,
     &kAdjustWebApkInstallationSpace,
     &kAllowNewIncognitoTabIntents,
     &kAllowRemoteContextForNotifications,

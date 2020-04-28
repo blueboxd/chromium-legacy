@@ -21,11 +21,18 @@ public class WebappIcon {
     private Bitmap mBitmap;
     private String mWebApkPackageName;
     private int mResourceId;
+    private boolean mIsTrusted;
 
     public WebappIcon() {}
 
-    public WebappIcon(String encoded) {
+    /**
+     * @param encoded The encoded data of a bitmap.
+     * @param isTrusted Whether the encoded data came from a trusted source. If false, the data
+     *     won't be used to generate a bitmap.
+     */
+    public WebappIcon(String encoded, boolean isTrusted) {
         mEncoded = encoded;
+        mIsTrusted = isTrusted;
     }
 
     public WebappIcon(Bitmap bitmap) {
@@ -57,7 +64,7 @@ public class WebappIcon {
     }
 
     private Bitmap generateBitmap() {
-        if (mEncoded != null) {
+        if (mEncoded != null && mIsTrusted) {
             return ShortcutHelper.decodeBitmapFromString(mEncoded);
         }
         if (mWebApkPackageName != null && mResourceId != 0) {

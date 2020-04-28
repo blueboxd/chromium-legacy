@@ -4,7 +4,8 @@
 
 #include "components/zucchini/reference_bytes_mixer.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "components/zucchini/disassembler.h"
 
 namespace zucchini {

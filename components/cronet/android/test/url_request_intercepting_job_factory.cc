@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "net/url_request/url_request_interceptor.h"
 
 namespace cronet {

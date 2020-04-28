@@ -4,7 +4,7 @@
 
 #include "components/signin/internal/identity_manager/device_accounts_synchronizer_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 
 namespace signin {

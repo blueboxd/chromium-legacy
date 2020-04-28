@@ -4,7 +4,7 @@
 
 #include "components/sync/syncable/syncable_enum_conversions.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace syncer {
 namespace syncable {

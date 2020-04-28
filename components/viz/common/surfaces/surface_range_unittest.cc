@@ -5,7 +5,6 @@
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/common/surfaces/surface_id.h"
 
-#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Verifies that SurfaceId::IsInRangeExclusive and SurfaceId::IsInRangeInclusive

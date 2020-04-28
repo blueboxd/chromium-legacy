@@ -5,7 +5,7 @@
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 
 #include "base/auto_reset.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"

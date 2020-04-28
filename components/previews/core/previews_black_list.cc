@@ -5,10 +5,11 @@
 #include "components/previews/core/previews_black_list.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"

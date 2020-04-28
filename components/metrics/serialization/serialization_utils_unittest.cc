@@ -7,9 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "components/metrics/serialization/metric_sample.h"
 #include "testing/gtest/include/gtest/gtest.h"

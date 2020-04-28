@@ -119,4 +119,10 @@
     <item type="id" name="item_animator" />
     <item type="id" name="highlight_color" />
     <item type="id" name="context_menu_delegate" />
+
+    <!-- NTP-->
+    <item type="id" name="ntp_feed_header_menu_item_activity" />
+    <item type="id" name="ntp_feed_header_menu_item_interest" />
+    <item type="id" name="ntp_feed_header_menu_item_learn" />
+    <item type="id" name="ntp_feed_header_menu_item_toggle_switch" />
 </resources>

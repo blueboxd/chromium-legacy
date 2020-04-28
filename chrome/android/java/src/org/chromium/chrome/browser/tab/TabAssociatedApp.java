@@ -41,7 +41,7 @@ public final class TabAssociatedApp extends TabWebContentsUserData implements Im
             @Override
             public void onInitialized(
                     Tab tab, String appId, @Nullable Boolean hasThemeColor, int themeColor) {
-                setAppId(appId);
+                if (appId != null) setAppId(appId);
             }
 
             @Override

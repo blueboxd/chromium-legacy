@@ -5,7 +5,6 @@
 #include "components/browsing_data/content/mock_shared_worker_helper.h"
 
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"

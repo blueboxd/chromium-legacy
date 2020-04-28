@@ -4,7 +4,7 @@
 
 #include "components/cronet/android/io_buffer_with_byte_buffer.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace cronet {
 

@@ -7,8 +7,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/test/task_environment.h"

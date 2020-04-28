@@ -4,7 +4,6 @@
 
 #include "components/captive_portal/core/captive_portal_testing_utils.h"
 
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_errors.h"

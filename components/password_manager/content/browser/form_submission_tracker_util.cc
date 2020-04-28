@@ -4,7 +4,7 @@
 
 #include "components/password_manager/content/browser/form_submission_tracker_util.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
 
 namespace password_manager {

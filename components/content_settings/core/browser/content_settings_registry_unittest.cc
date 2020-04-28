@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_info.h"

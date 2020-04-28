@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/zucchini/equivalence_map.h"
 
 namespace zucchini {

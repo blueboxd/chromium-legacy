@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/i18n/case_conversion.h"
-#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"

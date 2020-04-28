@@ -8,7 +8,7 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "build/build_config.h"

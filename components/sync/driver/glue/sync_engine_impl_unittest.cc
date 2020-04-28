@@ -734,18 +734,14 @@ TEST_F(SyncEngineImplTest,
   // Making sure that the noisy types we're interested in are in the
   // |enabled_types_|.
   enabled_types_.Put(SESSIONS);
-  enabled_types_.Put(FAVICON_IMAGES);
-  enabled_types_.Put(FAVICON_TRACKING);
 
   ModelTypeSet invalidation_enabled_types(
       Difference(enabled_types_, CommitOnlyTypes()));
 
 #if defined(OS_ANDROID)
-  // SESSIONS, FAVICON_IMAGES, FAVICON_TRACKING are noisy data types whose
-  // invalidations aren't enabled by default on Android.
+  // SESSIONS is a noisy data type whose invalidations aren't enabled by default
+  // on Android.
   invalidation_enabled_types.Remove(SESSIONS);
-  invalidation_enabled_types.Remove(FAVICON_IMAGES);
-  invalidation_enabled_types.Remove(FAVICON_TRACKING);
 #endif
 
   InitializeBackend(true);
@@ -764,8 +760,6 @@ TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabled) {
   // they're disabled in Sync, hence removing noisy datatypes from
   // |enabled_types_|.
   enabled_types_.Remove(SESSIONS);
-  enabled_types_.Remove(FAVICON_IMAGES);
-  enabled_types_.Remove(FAVICON_TRACKING);
 
   InitializeBackend(true);
   EXPECT_CALL(invalidator_,
@@ -783,8 +777,6 @@ TEST_F(SyncEngineImplTest,
   // Making sure that the noisy types we're interested in are in the
   // |enabled_types_|.
   enabled_types_.Put(SESSIONS);
-  enabled_types_.Put(FAVICON_IMAGES);
-  enabled_types_.Put(FAVICON_TRACKING);
 
   InitializeBackend(true);
   ConfigureDataTypes();
@@ -797,8 +789,6 @@ TEST_F(SyncEngineImplTest,
 
   ModelTypeSet enabled_types(enabled_types_);
   enabled_types.Remove(SESSIONS);
-  enabled_types.Remove(FAVICON_IMAGES);
-  enabled_types.Remove(FAVICON_TRACKING);
 
   EXPECT_CALL(invalidator_,
               UpdateInterestedTopics(backend_.get(),

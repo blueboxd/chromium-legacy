@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
 #include "base/values.h"
 
 PrefValueMap::PrefValueMap() {}

@@ -4,7 +4,7 @@
 
 #include "components/viz/common/quads/tile_draw_quad.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"
 

@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/message.h"

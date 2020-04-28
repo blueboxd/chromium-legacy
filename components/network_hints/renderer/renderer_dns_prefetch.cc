@@ -9,8 +9,8 @@
 #include <ctype.h>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/network_hints/renderer/dns_prefetch_queue.h"
 

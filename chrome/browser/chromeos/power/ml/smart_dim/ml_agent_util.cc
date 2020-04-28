@@ -83,18 +83,6 @@ bool ParseMetaInfoFromJsonObject(const base::Value& root,
   return true;
 }
 
-void LoadModelCallback(LoadModelResult result) {
-  if (result != LoadModelResult::OK) {
-    DVLOG(1) << "Failed to load Smart Dim flatbuffer model.";
-  }
-}
-
-void CreateGraphExecutorCallback(CreateGraphExecutorResult result) {
-  if (result != CreateGraphExecutorResult::OK) {
-    DVLOG(1) << "Failed to create a Smart Dim graph executor.";
-  }
-}
-
 }  // namespace ml
 }  // namespace power
 }  // namespace chromeos

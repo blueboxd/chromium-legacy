@@ -134,7 +134,7 @@ class TopControlsContainerView extends FrameLayout {
         TopControlsContainerViewJni.get().deleteTopControlsContainerView(
                 mNativeTopControlsContainerView, TopControlsContainerView.this);
         if (mSystemUiFullscreenResizeRunnable != null) {
-            getHandler().removeCallbacks(mSystemUiFullscreenResizeRunnable);
+            removeCallbacks(mSystemUiFullscreenResizeRunnable);
             mSystemUiFullscreenResizeRunnable = null;
         }
     }
@@ -312,7 +312,7 @@ class TopControlsContainerView extends FrameLayout {
     private void didToggleFullscreenModeForTab(final boolean isFullscreen) {
         // Delay hiding until after the animation. This comes from Chrome code.
         if (mSystemUiFullscreenResizeRunnable != null) {
-            getHandler().removeCallbacks(mSystemUiFullscreenResizeRunnable);
+            removeCallbacks(mSystemUiFullscreenResizeRunnable);
         }
         mSystemUiFullscreenResizeRunnable = () -> processFullscreenChanged(isFullscreen);
         long delay = isFullscreen ? SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS : 0;

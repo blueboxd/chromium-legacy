@@ -21,14 +21,19 @@ class GPUTexture : public DawnObject<WGPUTexture> {
   static GPUTexture* Create(GPUDevice* device,
                             const GPUTextureDescriptor* webgpu_desc,
                             ExceptionState& exception_state);
-  explicit GPUTexture(GPUDevice* device, WGPUTexture texture);
+  explicit GPUTexture(GPUDevice* device,
+                      WGPUTexture texture,
+                      WGPUTextureFormat format);
   ~GPUTexture() override;
 
   // gpu_texture.idl
   GPUTextureView* createView(const GPUTextureViewDescriptor* webgpu_desc);
   void destroy();
 
+  WGPUTextureFormat Format() { return format_; }
+
  private:
+  WGPUTextureFormat format_;
   DISALLOW_COPY_AND_ASSIGN(GPUTexture);
 };
 

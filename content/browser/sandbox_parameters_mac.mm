@@ -244,7 +244,6 @@ void SetupSandboxParameters(service_manager::SandboxType sandbox_type,
       SetupUtilitySandboxParameters(client, command_line);
       break;
     case service_manager::SandboxType::kNoSandbox:
-    case service_manager::SandboxType::kInvalid:
       CHECK(false) << "Unhandled parameters for sandbox_type "
                    << static_cast<int>(sandbox_type);
   }

@@ -109,6 +109,21 @@ UserActivityEvent::Features DefaultFeatures() {
   return features;
 }
 
+// Checks that |prediction| contains the specified expected decision threshold,
+// score, and response. Sets |callback_done| to true so that this can be used to
+// check RequestDimDecision runs its callback.
+void CheckResult(bool* callback_done,
+                 const int expected_threshold,
+                 const int expected_score,
+                 UserActivityEvent::ModelPrediction::Response expected_response,
+                 UserActivityEvent::ModelPrediction prediction) {
+  EXPECT_EQ(expected_response, prediction.response());
+  EXPECT_EQ(expected_threshold, prediction.decision_threshold());
+  EXPECT_EQ(expected_score, prediction.inactivity_score());
+
+  *callback_done = true;
+}
+
 }  // namespace
 
 class SmartDimMlAgentTest : public testing::Test {
@@ -161,19 +176,11 @@ TEST_F(SmartDimMlAgentTest, SwitchBetweenWorkers) {
   // know that builtin worker is at work. This threshold is high, so the
   // decision is NO_DIM.
   agent->RequestDimDecision(
-      DefaultFeatures(), base::BindOnce(
-                             [](bool* callback_done,
-                                UserActivityEvent::ModelPrediction prediction) {
-                               EXPECT_EQ(
-                                   UserActivityEvent::ModelPrediction::NO_DIM,
-                                   prediction.response());
-                               EXPECT_EQ(kQuantizedBuiltinThreshold,
-                                         prediction.decision_threshold());
-                               EXPECT_EQ(kQuantizedTestInactivityScore,
-                                         prediction.inactivity_score());
-                               *callback_done = true;
-                             },
-                             &callback_done));
+      DefaultFeatures(),
+      base::BindOnce(&CheckResult, &callback_done, kQuantizedBuiltinThreshold,
+                     kQuantizedTestInactivityScore,
+                     UserActivityEvent::ModelPrediction::NO_DIM));
+
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_done);
 
@@ -187,19 +194,10 @@ TEST_F(SmartDimMlAgentTest, SwitchBetweenWorkers) {
   // know that download worker is at work. This threshold is low, so the
   // decision is DIM.
   agent->RequestDimDecision(
-      DefaultFeatures(), base::BindOnce(
-                             [](bool* callback_done,
-                                UserActivityEvent::ModelPrediction prediction) {
-                               EXPECT_EQ(
-                                   UserActivityEvent::ModelPrediction::DIM,
-                                   prediction.response());
-                               EXPECT_EQ(kQuantizedLowDimThreshold,
-                                         prediction.decision_threshold());
-                               EXPECT_EQ(kQuantizedTestInactivityScore,
-                                         prediction.inactivity_score());
-                               *callback_done = true;
-                             },
-                             &callback_done));
+      DefaultFeatures(),
+      base::BindOnce(&CheckResult, &callback_done, kQuantizedLowDimThreshold,
+                     kQuantizedTestInactivityScore,
+                     UserActivityEvent::ModelPrediction::DIM));
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_done);
 }
@@ -208,9 +206,6 @@ TEST_F(SmartDimMlAgentTest, SwitchBetweenWorkers) {
 // case two RequestDimDecision() calls were made before any callback ran.
 TEST_F(SmartDimMlAgentTest, CheckCancelableCallback) {
   SmartDimMlAgent::GetInstance()->ResetForTesting();
-  LoadDownloadableSmartDimComponent(kLowDimThreshold);
-  task_environment_.RunUntilIdle();
-  ASSERT_TRUE(SmartDimMlAgent::GetInstance()->IsDownloadWorkerReady());
 
   bool callback_done = false;
   int num_callbacks_run = 0;
@@ -220,12 +215,6 @@ TEST_F(SmartDimMlAgentTest, CheckCancelableCallback) {
         base::BindOnce(
             [](bool* callback_done, int* num_callbacks_run,
                UserActivityEvent::ModelPrediction prediction) {
-              EXPECT_EQ(UserActivityEvent::ModelPrediction::DIM,
-                        prediction.response());
-              EXPECT_EQ(kQuantizedLowDimThreshold,
-                        prediction.decision_threshold());
-              EXPECT_EQ(kQuantizedTestInactivityScore,
-                        prediction.inactivity_score());
               *callback_done = true;
               (*num_callbacks_run)++;
             },
@@ -240,9 +229,6 @@ TEST_F(SmartDimMlAgentTest, CheckCancelableCallback) {
 // requested dim decision request from running.
 TEST_F(SmartDimMlAgentTest, CheckCanceledRequest) {
   SmartDimMlAgent::GetInstance()->ResetForTesting();
-  LoadDownloadableSmartDimComponent(kLowDimThreshold);
-  task_environment_.RunUntilIdle();
-  ASSERT_TRUE(SmartDimMlAgent::GetInstance()->IsDownloadWorkerReady());
 
   bool callback_done = false;
   SmartDimMlAgent::GetInstance()->RequestDimDecision(
@@ -255,6 +241,55 @@ TEST_F(SmartDimMlAgentTest, CheckCanceledRequest) {
   SmartDimMlAgent::GetInstance()->CancelPreviousRequest();
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(callback_done);
+}
+
+// Check that when ML service fails to load model or create graph executor,
+// download_worker is initially ready, then eventually marked not ready.
+TEST_F(SmartDimMlAgentTest, LoadModelFailure) {
+  SmartDimMlAgent::GetInstance()->ResetForTesting();
+
+  // Make fake_service_connection_ fail to load models and turn it to async_mode
+  // to fake the real ml-service loading a bad flatbuffer model.
+  fake_service_connection_.SetLoadModelFailure();
+  fake_service_connection_.SetAsyncMode(true);
+
+  // Before ml-service responds loading failure, OnConnectionError isn't
+  // invoked, download_worker_ is set to ready (fake-ready).
+  LoadDownloadableSmartDimComponent(kLowDimThreshold);
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(SmartDimMlAgent::GetInstance()->IsDownloadWorkerReady());
+
+  // Requests during the fake-ready status doesn't crash.
+  bool callback_done = false;
+  SmartDimMlAgent::GetInstance()->RequestDimDecision(
+      DefaultFeatures(), base::BindOnce(
+                             [](bool* callback_done,
+                                UserActivityEvent::ModelPrediction prediction) {
+                               *callback_done = true;
+                             },
+                             &callback_done));
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(callback_done);
+
+  // Ml-service responds loading failure, OnConnectionError is invoked,
+  // download_worker_ is set to not ready.
+  fake_service_connection_.RunPendingCalls();
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(SmartDimMlAgent::GetInstance()->IsDownloadWorkerReady());
+
+  // Reset fake_service_connection_ so that builtin_worker can process requests.
+  fake_service_connection_.SetAsyncMode(false);
+  fake_service_connection_.SetExecuteSuccess();
+  // Requests after the fake-ready status can be processed successfully.
+  SmartDimMlAgent::GetInstance()->RequestDimDecision(
+      DefaultFeatures(), base::BindOnce(
+                             [](bool* callback_done,
+                                UserActivityEvent::ModelPrediction prediction) {
+                               *callback_done = true;
+                             },
+                             &callback_done));
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_done);
 }
 
 }  // namespace ml

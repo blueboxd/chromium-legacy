@@ -7,10 +7,11 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -62,7 +63,9 @@ class ContentIndex final : public ScriptWrappable {
 
   Member<ServiceWorkerRegistration> registration_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  mojo::Remote<mojom::blink::ContentIndexService> content_index_service_;
+  HeapMojoRemote<mojom::blink::ContentIndexService,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      content_index_service_;
 };
 
 }  // namespace blink

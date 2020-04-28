@@ -4,7 +4,8 @@
 
 #include "components/proxy_config/proxy_prefs.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 
 namespace ProxyPrefs {

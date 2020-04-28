@@ -6,7 +6,8 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "components/history/core/browser/page_usage_data.h"
 

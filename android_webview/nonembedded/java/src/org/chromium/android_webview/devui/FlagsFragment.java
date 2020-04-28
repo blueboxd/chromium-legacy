@@ -236,8 +236,6 @@ public class FlagsFragment extends Fragment {
 
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            Intent intent = new Intent();
-            intent.setClassName(mContext.getPackageName(), ServiceNames.DEVELOPER_UI_SERVICE);
             try {
                 IDeveloperUiService.Stub.asInterface(service).setFlagOverrides(mOverriddenFlags);
             } catch (RemoteException e) {

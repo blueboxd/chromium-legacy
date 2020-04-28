@@ -139,7 +139,13 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, OpenNewWindowForProfile) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteSoleProfile) {
+// TODO(https://crbug.com/1073451) flaky on windows bots
+#if defined(OS_WIN)
+#define MAYBE_DeleteSoleProfile DISABLED_DeleteSoleProfile
+#else
+#define MAYBE_DeleteSoleProfile DeleteSoleProfile
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileHelperTest, MAYBE_DeleteSoleProfile) {
   content::TestWebUI web_ui;
   Browser* original_browser = browser();
   ProfileAttributesStorage& storage =
@@ -163,7 +169,13 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteSoleProfile) {
   EXPECT_EQ(1u, storage.GetNumberOfProfiles());
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteActiveProfile) {
+// TODO(https://crbug.com/1073451) flaky on windows bots
+#if defined(OS_WIN)
+#define MAYBE_DeleteActiveProfile DISABLED_DeleteActiveProfile
+#else
+#define MAYBE_DeleteActiveProfile DeleteActiveProfile
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileHelperTest, MAYBE_DeleteActiveProfile) {
   content::TestWebUI web_ui;
   Browser* original_browser = browser();
   ProfileAttributesStorage& storage =

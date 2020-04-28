@@ -4,7 +4,7 @@
 
 #include "components/ui_devtools/root_element.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/ui_element_delegate.h"
 

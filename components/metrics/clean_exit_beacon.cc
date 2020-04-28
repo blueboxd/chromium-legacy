@@ -4,7 +4,7 @@
 
 #include "components/metrics/clean_exit_beacon.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"

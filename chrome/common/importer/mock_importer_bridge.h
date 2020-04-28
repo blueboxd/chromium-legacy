@@ -27,8 +27,6 @@ class MockImporterBridge : public ImporterBridge {
                void(const std::vector<ImporterURLRow>&, importer::VisitSource));
   MOCK_METHOD2(SetKeywords,
                void(const std::vector<importer::SearchEngineInfo>&, bool));
-  MOCK_METHOD1(SetFirefoxSearchEnginesXMLData,
-               void(const std::vector<std::string>&));
   MOCK_METHOD1(SetPasswordForm, void(const autofill::PasswordForm&));
   MOCK_METHOD1(SetAutofillFormData,
                void(const std::vector<ImporterAutofillFormDataEntry>&));

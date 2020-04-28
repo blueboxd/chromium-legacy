@@ -199,7 +199,6 @@ source_set("app_internal") {
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/suggestions",
     "//ios/chrome/browser/sync",
-    "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/appearance",
     "//ios/chrome/browser/ui/authentication",

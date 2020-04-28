@@ -129,7 +129,8 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
         for (String[] shortcutData : shortcuts) {
             shortcutItems.add(new WebApkExtras.ShortcutItem(shortcutData[0] /* name */,
                     shortcutData[1] /* shortName */, shortcutData[2] /* launchUrl */,
-                    shortcutData[3] /* iconUrl */, shortcutData[4] /* iconHash */));
+                    shortcutData[3] /* iconUrl */, shortcutData[4] /* iconHash */,
+                    new WebappIcon(shortcutData[5], false /* isTrusted */)));
         }
 
         // When share action is empty, we use a default empty share target

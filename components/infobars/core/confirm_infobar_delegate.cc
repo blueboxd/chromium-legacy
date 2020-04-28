@@ -4,7 +4,6 @@
 
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
-#include "base/logging.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 

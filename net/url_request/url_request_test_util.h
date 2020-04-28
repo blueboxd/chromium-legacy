@@ -307,10 +307,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int blocked_set_cookie_count() const { return blocked_set_cookie_count_; }
   int set_cookie_count() const { return set_cookie_count_; }
 
-  void set_experimental_cookie_features_enabled(bool val) {
-    experimental_cookie_features_enabled_ = val;
-  }
-
   void set_cancel_request_with_policy_violating_referrer(bool val) {
     cancel_request_with_policy_violating_referrer_ = val;
   }
@@ -394,7 +390,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   LoadTimingInfo load_timing_info_before_redirect_;
   bool has_load_timing_info_before_redirect_;
 
-  bool experimental_cookie_features_enabled_;           // false by default
   bool cancel_request_with_policy_violating_referrer_;  // false by default
   bool before_start_transaction_fails_;
   bool add_header_to_first_response_;

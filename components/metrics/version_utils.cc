@@ -4,7 +4,7 @@
 
 #include "components/metrics/version_utils.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/version_info/version_info.h"

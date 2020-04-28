@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace safe_browsing {

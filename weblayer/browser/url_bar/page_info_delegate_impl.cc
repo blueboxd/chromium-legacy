@@ -4,10 +4,16 @@
 
 #include "weblayer/browser/url_bar/page_info_delegate_impl.h"
 
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_state/content/content_utils.h"
+#include "content/public/browser/browser_context.h"
+#include "weblayer/browser/permissions/permission_decision_auto_blocker_factory.h"
+#include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
 
 PageInfoDelegateImpl::PageInfoDelegateImpl(content::WebContents* web_contents)
-    : web_contents_(web_contents) {}
+    : web_contents_(web_contents) {
+  DCHECK(web_contents_);
+}
 
 permissions::ChooserContextBase* PageInfoDelegateImpl::GetChooserContext(
     ContentSettingsType type) {
@@ -60,16 +66,14 @@ void PageInfoDelegateImpl::ShowSiteSettings(const GURL& site_url) {
 
 permissions::PermissionDecisionAutoBlocker*
 PageInfoDelegateImpl::GetPermissionDecisionAutoblocker() {
-  // TODO(crbug.com/1052375): Implement.
-  NOTREACHED();
-  return nullptr;
+  return weblayer::PermissionDecisionAutoBlockerFactory::GetForBrowserContext(
+      GetBrowserContext());
 }
 
 StatefulSSLHostStateDelegate*
 PageInfoDelegateImpl::GetStatefulSSLHostStateDelegate() {
-  // TODO(crbug.com/1052375): Implement.
-  NOTREACHED();
-  return nullptr;
+  return weblayer::StatefulSSLHostStateDelegateFactory::GetInstance()
+      ->GetForBrowserContext(GetBrowserContext());
 }
 
 HostContentSettingsMap* PageInfoDelegateImpl::GetContentSettings() {
@@ -102,4 +106,8 @@ PageInfoDelegateImpl::GetTabSpecificContentSettingsDelegate() {
   // TODO(crbug.com/1052375): Implement.
   NOTREACHED();
   return nullptr;
+}
+
+content::BrowserContext* PageInfoDelegateImpl::GetBrowserContext() const {
+  return web_contents_->GetBrowserContext();
 }

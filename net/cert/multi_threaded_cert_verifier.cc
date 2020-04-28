@@ -193,6 +193,12 @@ int MultiThreadedCertVerifier::Verify(const RequestParams& params,
 }
 
 void MultiThreadedCertVerifier::SetConfig(const CertVerifier::Config& config) {
+  LOG_IF(DFATAL, verify_proc_ &&
+                     !verify_proc_->SupportsAdditionalTrustAnchors() &&
+                     !config.additional_trust_anchors.empty())
+      << "Attempted to set a CertVerifier::Config with additional trust "
+         "anchors, but |verify_proc_| does not support additional trust "
+         "anchors.";
   config_ = config;
   if (!config_.crl_set)
     config_.crl_set = CRLSet::BuiltinCRLSet();

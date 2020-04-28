@@ -7,7 +7,7 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 #include "components/base32/base32.h"
 #include "components/base32/base32_test_util.h"

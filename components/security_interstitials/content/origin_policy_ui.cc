@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 #include "components/security_interstitials/content/origin_policy_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"

@@ -4,7 +4,7 @@
 
 #include "components/history/content/browser/web_contents_top_sites_observer.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "components/history/core/browser/top_sites.h"
 #include "content/public/browser/navigation_details.h"

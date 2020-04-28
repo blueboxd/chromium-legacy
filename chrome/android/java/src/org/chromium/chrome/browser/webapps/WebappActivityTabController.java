@@ -157,7 +157,7 @@ public class WebappActivityTabController implements BrowserServicesActivityTabCo
     private Tab createTab() {
         WebContents webContents =
                 mWebContentsFactory.createWebContentsWithWarmRenderer(false /* incognito */, false);
-        Tab tab = mTabFactory.createTab(webContents, mTabDelegateFactory.get());
+        Tab tab = mTabFactory.createTab(webContents, mTabDelegateFactory.get(), null);
         initializeTab(tab);
         return tab;
     }

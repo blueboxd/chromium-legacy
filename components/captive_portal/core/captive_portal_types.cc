@@ -4,7 +4,7 @@
 
 #include "components/captive_portal/core/captive_portal_types.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 
 namespace captive_portal {

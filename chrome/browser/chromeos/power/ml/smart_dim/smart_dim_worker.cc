@@ -12,7 +12,7 @@ namespace ml {
 
 namespace {
 
-using ::chromeos::machine_learning::mojom::FlatBufferModelSpec;
+using chromeos::machine_learning::mojom::FlatBufferModelSpec;
 
 }  // namespace
 

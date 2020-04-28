@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <iterator>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"

@@ -29,7 +29,7 @@ shared_library("eventlog_provider") {
     "eventlog_provider.cc",
   ]
 
-  if (!is_asan) {
+  if (!is_asan && !use_clang_profiling) {
     no_default_deps = true
     ldflags = [ "/NOENTRY" ]
   }

@@ -7,7 +7,6 @@
 #include <memory>
 #include <ostream>
 
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

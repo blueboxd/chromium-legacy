@@ -54,6 +54,7 @@
 #include "net/ssl/client_cert_store.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 #if defined(OS_CHROMEOS)
@@ -282,7 +283,7 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
                           base::Unretained(this)));
 }
 
-ProfileNetworkContextService::~ProfileNetworkContextService() {}
+ProfileNetworkContextService::~ProfileNetworkContextService() = default;
 
 mojo::Remote<network::mojom::NetworkContext>
 ProfileNetworkContextService::CreateNetworkContext(
@@ -642,6 +643,16 @@ ProfileNetworkContextService::CreateNetworkContextParams(
       g_browser_process->system_network_context_manager()
           ->CreateDefaultNetworkContextParams();
 
+  network::mojom::CertVerifierCreationParamsPtr cert_verifier_creation_params;
+  // Grab the existing CertVerifierCreationParams, if any.
+  if (network_context_params->cert_verifier_creation_params) {
+    cert_verifier_creation_params =
+        std::move(network_context_params->cert_verifier_creation_params);
+  } else {
+    cert_verifier_creation_params =
+        network::mojom::CertVerifierCreationParams::New();
+  }
+
   network_context_params->context_name = std::string("main");
 
   network_context_params->accept_language = ComputeAcceptLanguage();
@@ -758,18 +769,21 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   // Require the use_builtin_cert_verifier to be explicitly initialized, as
   // using the TrialComparisonCertVerifier requires knowing whether Chrome is
   // using the system verifier.
-  DCHECK_NE(network_context_params->use_builtin_cert_verifier,
-            network::mojom::NetworkContextParams::CertVerifierImpl::kDefault);
+  DCHECK(cert_verifier_creation_params);
+  DCHECK_NE(
+      cert_verifier_creation_params->use_builtin_cert_verifier,
+      network::mojom::CertVerifierCreationParams::CertVerifierImpl::kDefault);
   if (!in_memory &&
-      network_context_params->use_builtin_cert_verifier ==
-          network::mojom::NetworkContextParams::CertVerifierImpl::kSystem &&
+      cert_verifier_creation_params->use_builtin_cert_verifier ==
+          network::mojom::CertVerifierCreationParams::CertVerifierImpl::
+              kSystem &&
       TrialComparisonCertVerifierController::MaybeAllowedForProfile(profile_)) {
     mojo::PendingRemote<network::mojom::TrialComparisonCertVerifierConfigClient>
         config_client;
     auto config_client_receiver =
         config_client.InitWithNewPipeAndPassReceiver();
 
-    network_context_params->trial_comparison_cert_verifier_params =
+    cert_verifier_creation_params->trial_comparison_cert_verifier_params =
         network::mojom::TrialComparisonCertVerifierParams::New();
 
     if (!trial_comparison_cert_verifier_controller_) {
@@ -778,12 +792,12 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     }
     trial_comparison_cert_verifier_controller_->AddClient(
         std::move(config_client),
-        network_context_params->trial_comparison_cert_verifier_params
+        cert_verifier_creation_params->trial_comparison_cert_verifier_params
             ->report_client.InitWithNewPipeAndPassReceiver());
-    network_context_params->trial_comparison_cert_verifier_params
+    cert_verifier_creation_params->trial_comparison_cert_verifier_params
         ->initial_allowed =
         trial_comparison_cert_verifier_controller_->IsAllowed();
-    network_context_params->trial_comparison_cert_verifier_params
+    cert_verifier_creation_params->trial_comparison_cert_verifier_params
         ->config_client_receiver = std::move(config_client_receiver);
   }
 #endif
@@ -813,10 +827,12 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 #if defined(OS_CHROMEOS)
   // Note: On non-ChromeOS platforms, the |use_builtin_cert_verifier| param
   // value is inherited from CreateDefaultNetworkContextParams.
-  network_context_params->use_builtin_cert_verifier =
+  cert_verifier_creation_params->use_builtin_cert_verifier =
       using_builtin_cert_verifier_
-          ? network::mojom::NetworkContextParams::CertVerifierImpl::kBuiltin
-          : network::mojom::NetworkContextParams::CertVerifierImpl::kSystem;
+          ? network::mojom::CertVerifierCreationParams::CertVerifierImpl::
+                kBuiltin
+          : network::mojom::CertVerifierCreationParams::CertVerifierImpl::
+                kSystem;
 
   bool profile_supports_policy_certs = false;
   if (chromeos::ProfileHelper::IsSigninProfile(profile_))
@@ -830,8 +846,8 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     // username hash is empty, even when the NSS is not initialized for the
     // user.
     if (user && !user->username_hash().empty()) {
-      network_context_params->username_hash = user->username_hash();
-      network_context_params->nss_path = profile_->GetPath();
+      cert_verifier_creation_params->username_hash = user->username_hash();
+      cert_verifier_creation_params->nss_path = profile_->GetPath();
       profile_supports_policy_certs = true;
     }
   }
@@ -854,6 +870,9 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
   network_context_params->reset_http_cache_backend =
       GetHttpCacheBackendResetParam(g_browser_process->local_state());
+
+  network_context_params->cert_verifier_creation_params =
+      std::move(cert_verifier_creation_params);
 
   return network_context_params;
 }

@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/zucchini/address_translator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -554,6 +554,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // will have the JS bindings enabled.
   void EnableMojoJsBindings();
 
+  // Returns true if this is a main RenderFrameHost. True if and only if this
+  // RenderFrameHost doesn't have a parent.
+  bool is_main_frame() const { return !parent_; }
+
   // Returns this RenderFrameHost's loading state. This method is only used by
   // FrameTreeNode. The proper way to check whether a frame is loading is to
   // call FrameTreeNode::IsLoading.
@@ -1853,12 +1857,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // frames, it will return the current frame's view.
   RenderWidgetHostViewBase* GetViewForAccessibility();
 
-  // Returns the child FrameTreeNode if |child_frame_routing_id| is an
+  // Returns the child RenderFrameHostImpl if |child_frame_routing_id| is an
   // immediate child of this FrameTreeNode.  |child_frame_routing_id| is
   // considered untrusted, so the renderer process is killed if it refers to a
-  // FrameTreeNode that is not a child of this node.
-  FrameTreeNode* FindAndVerifyChild(int32_t child_frame_routing_id,
-                                    bad_message::BadMessageReason reason);
+  // RenderFrameHostImpl that is not a child of this node.
+  RenderFrameHostImpl* FindAndVerifyChild(int32_t child_frame_routing_id,
+                                          bad_message::BadMessageReason reason);
 
   // Returns a raw pointer to the Web Bluetooth Service owned by the frame. Used
   // for testing purposes only (see |TestRenderFrameHost|).

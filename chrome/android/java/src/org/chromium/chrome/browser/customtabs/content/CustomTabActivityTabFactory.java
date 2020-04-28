@@ -9,6 +9,7 @@ import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -91,7 +92,8 @@ public class CustomTabActivityTabFactory {
     }
 
     /** Creates a new tab for a Custom Tab activity */
-    public Tab createTab(WebContents webContents, TabDelegateFactory delegateFactory) {
+    public Tab createTab(
+            WebContents webContents, TabDelegateFactory delegateFactory, Callback<Tab> action) {
         Intent intent = mIntentDataProvider.getIntent();
         int assignedTabId =
                 IntentUtils.safeGetIntExtra(intent, IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
@@ -102,6 +104,7 @@ public class CustomTabActivityTabFactory {
                 .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
                 .setWebContents(webContents)
                 .setDelegateFactory(delegateFactory)
+                .setPreInitializeAction(action)
                 .build();
     }
 

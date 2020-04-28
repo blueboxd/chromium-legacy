@@ -26,8 +26,14 @@ class DownloadWorker : public SmartDimWorker {
   // SmartDimWorker overrides:
   const assist_ranker::ExamplePreprocessorConfig* GetPreprocessorConfig()
       override;
-  const mojo::Remote<::chromeos::machine_learning::mojom::GraphExecutor>&
+  const mojo::Remote<chromeos::machine_learning::mojom::GraphExecutor>&
   GetExecutor() override;
+
+  // Remotes used to execute functions in the ML service side.
+  void LoadModelCallback(
+      chromeos::machine_learning::mojom::LoadModelResult result);
+  void CreateGraphExecutorCallback(
+      chromeos::machine_learning::mojom::CreateGraphExecutorResult result);
 
   // Returns true if it has loaded components successfully.
   bool IsReady();

@@ -4,7 +4,8 @@
 
 #include "components/sync/base/syncer_error.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"

@@ -9,7 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/cronet/android/cronet_tests_jni_headers/CronetUrlRequestContextTest_jni.h"
 #include "components/cronet/url_request_context_config.h"
 #include "components/cronet/version.h"

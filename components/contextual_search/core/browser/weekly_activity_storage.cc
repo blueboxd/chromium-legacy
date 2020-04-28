@@ -6,7 +6,7 @@
 
 #include <algorithm>  // std::min
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace {
 

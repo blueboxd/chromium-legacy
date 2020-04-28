@@ -7,8 +7,8 @@
 #include <lib/vfs/cpp/pseudo_dir.h>
 #include <lib/vfs/cpp/pseudo_file.h>
 
+#include "base/check.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/logging.h"
 
 namespace cr_fuchsia {
 

@@ -4,7 +4,7 @@
 
 #include "components/viz/service/frame_sinks/surface_resource_holder.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/viz/service/frame_sinks/surface_resource_holder_client.h"
 
 namespace viz {

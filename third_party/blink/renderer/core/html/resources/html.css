@@ -407,7 +407,7 @@ input, textarea, select, button {
     margin: 0__qem;
     font: -webkit-small-control;
     text-rendering: auto; /* FIXME: Remove when tabs work with optimizeLegibility. */
-    color: -internal-light-dark-color(black, white);
+    color: -internal-light-dark(black, white);
     letter-spacing: normal;
     word-spacing: normal;
     line-height: normal;
@@ -425,7 +425,7 @@ input[type="hidden" i] {
 input {
     -webkit-appearance: textfield; /* AutoAppearanceFor() should match to this. */
     padding: 1px;
-    background-color: -internal-light-dark-color(white, black);
+    background-color: -internal-light-dark(white, black);
     border: 2px inset;
     -webkit-rtl-ordering: logical;
     cursor: text;
@@ -498,7 +498,7 @@ select {
 
 textarea {
     -webkit-appearance: textarea; /* AutoAppearanceFor() should match to this. */
-    background-color: -internal-light-dark-color(white, black);
+    background-color: -internal-light-dark(white, black);
     border: 1px solid;
     -webkit-rtl-ordering: logical;
     flex-direction: column;
@@ -575,7 +575,7 @@ select:-internal-autofill-previewed {
   -webkit-appearance:menulist-button;
   background-color: #E8F0FE !important;
   background-image:none !important;
-  color: -internal-light-dark-color(black, white) !important;
+  color: -internal-light-dark(black, white) !important;
 }
 
 input:-internal-autofill-selected,
@@ -584,7 +584,7 @@ select:-internal-autofill-selected {
   -webkit-appearance:menulist-button;
   background-color: #E8F0FE !important;
   background-image:none !important;
-  color: -internal-light-dark-color(black, white) !important;
+  color: -internal-light-dark(black, white) !important;
 }
 
 input[type="radio" i], input[type="checkbox" i] {
@@ -614,7 +614,7 @@ input[type="button" i], input[type="submit" i], input[type="reset" i], input[typ
     align-items: flex-start;
     text-align: center;
     cursor: default;
-    color: -internal-light-dark-color(ButtonText, #AAAAAA);
+    color: -internal-light-dark(ButtonText, #AAAAAA);
     padding: 2px 6px 3px 6px;
     border: 2px outset ButtonFace;
     background-color: ButtonFace;
@@ -660,7 +660,7 @@ input[type="button" i]:disabled, input[type="submit" i]:disabled, input[type="re
 input[type="file" i]:disabled::-webkit-file-upload-button, button:disabled,
 select:disabled, optgroup:disabled, option:disabled,
 select[disabled]>option {
-    color: -internal-light-dark-color(GrayText, #aaa);
+    color: -internal-light-dark(GrayText, #aaa);
 }
 
 input[type="button" i]:active, input[type="submit" i]:active, input[type="reset" i]:active, input[type="file" i]:active::-webkit-file-upload-button, button:active {
@@ -672,12 +672,12 @@ input[type="button" i]:active:disabled, input[type="submit" i]:active:disabled, 
 }
 
 input:disabled, textarea:disabled {
-    color: -internal-light-dark-color(#545454, #aaa);
+    color: -internal-light-dark(#545454, #aaa);
     cursor: default;
 }
 
 option:-internal-spatial-navigation-focus {
-    outline: -internal-light-dark-color(black, white) dashed 1px;
+    outline: -internal-light-dark(black, white) dashed 1px;
     outline-offset: -1px;
 }
 
@@ -799,8 +799,8 @@ select {
     border: 1px solid;
     white-space: pre;
     -webkit-rtl-ordering: logical;
-    color: -internal-light-dark-color(black, white);
-    background-color: -internal-light-dark-color(white, black);
+    color: -internal-light-dark(black, white);
+    background-color: -internal-light-dark(white, black);
     cursor: default;
 }
 
@@ -1160,8 +1160,8 @@ dialog {
     margin: auto;
     border: solid;
     padding: 1em;
-    background: -internal-light-dark-color(white, black);
-    color: -internal-light-dark-color(black, white);
+    background: -internal-light-dark(white, black);
+    color: -internal-light-dark(black, white);
 }
 
 /* TODO(foolip): In the Fullscreen spec, there's a ::backdrop block with the

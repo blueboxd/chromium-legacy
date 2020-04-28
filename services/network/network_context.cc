@@ -39,12 +39,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "crypto/sha2.h"
-#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cert/caching_cert_verifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/coalescing_cert_verifier.h"
 #include "net/cert/ct_verify_result.h"
@@ -85,9 +85,12 @@
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/proxy_lookup_request.h"
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
+#include "services/network/public/cpp/cert_verifier/cert_verifier_creation.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/parsed_headers.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/quic_transport.h"
 #include "services/network/resolve_host_request.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
@@ -120,16 +123,9 @@
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 #if defined(OS_CHROMEOS)
-#include "crypto/nss_util_internal.h"
-#include "net/cert/caching_cert_verifier.h"
-#include "net/cert/cert_verify_proc_builtin.h"
-#include "net/cert/internal/system_trust_store.h"
-#include "net/cert/multi_threaded_cert_verifier.h"
 #include "services/network/cert_verifier_with_trust_anchors.h"
-#include "services/network/cert_verify_proc_chromeos.h"
 #include "services/network/nss_temp_certs_cache_chromeos.h"
-#include "services/network/system_trust_store_provider_chromeos.h"
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_IOS)
 #include "services/network/websocket_factory.h"
@@ -156,18 +152,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
-#endif
-
-#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED) || \
-    BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-#include "net/cert/caching_cert_verifier.h"
-#include "net/cert/cert_verify_proc.h"
-#include "net/cert/cert_verify_proc_builtin.h"
-#include "net/cert/multi_threaded_cert_verifier.h"
-#endif
-
-#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-#include "services/network/trial_comparison_cert_verifier_mojo.h"
 #endif
 
 namespace network {
@@ -339,21 +323,6 @@ std::string HashesToBase64String(const net::HashValueVector& hashes) {
   return str;
 }
 
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-bool UsingBuiltinCertVerifier(
-    mojom::NetworkContextParams::CertVerifierImpl mode) {
-  switch (mode) {
-    case mojom::NetworkContextParams::CertVerifierImpl::kDefault:
-      return base::FeatureList::IsEnabled(
-          net::features::kCertVerifierBuiltinFeature);
-    case mojom::NetworkContextParams::CertVerifierImpl::kBuiltin:
-      return true;
-    case mojom::NetworkContextParams::CertVerifierImpl::kSystem:
-      return false;
-  }
-}
-#endif
-
 }  // namespace
 
 constexpr uint32_t NetworkContext::kMaxOutstandingRequestsPerProcess;
@@ -450,7 +419,7 @@ NetworkContext::~NetworkContext() {
       base::MessageLoopCurrentForIO::IsSet()) {  // null in some unit tests.
     net::SetURLRequestContextForNSSHttpIO(nullptr);
   }
-#endif
+#endif  // defined(USE_NSS_CERTS)
 
   if (cert_net_fetcher_)
     cert_net_fetcher_->Shutdown();
@@ -977,7 +946,8 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
 void NetworkContext::UpdateAdditionalCertificates(
     mojom::AdditionalCertificatesPtr additional_certificates) {
   if (!cert_verifier_with_trust_anchors_) {
-    CHECK(g_cert_verifier_for_testing || params_->username_hash.empty());
+    CHECK(g_cert_verifier_for_testing ||
+          params_->cert_verifier_creation_params->username_hash.empty());
     return;
   }
   if (!additional_certificates) {
@@ -990,7 +960,7 @@ void NetworkContext::UpdateAdditionalCertificates(
   cert_verifier_with_trust_anchors_->SetTrustAnchors(
       additional_certificates->trust_anchors);
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
 void NetworkContext::SetCTPolicy(
@@ -1717,64 +1687,31 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   if (g_cert_verifier_for_testing) {
     cert_verifier = std::make_unique<WrappedTestingCertVerifier>();
   } else {
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(OS_CHROMEOS) || \
-    BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED) ||                \
-    BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-    cert_net_fetcher_ = base::MakeRefCounted<net::CertNetFetcherURLRequest>();
-#endif
-#if defined(OS_CHROMEOS)
-    scoped_refptr<net::CertVerifyProc> verify_proc;
-    if (params_->username_hash.empty()) {
-      verify_proc = CreateCertVerifyProcWithoutUserSlots(cert_net_fetcher_);
-    } else {
-      // Make sure NSS is initialized for the user.
-      crypto::InitializeNSSForChromeOSUser(params_->username_hash,
-                                           params_->nss_path.value());
+    mojom::CertVerifierCreationParams* creation_params = nullptr;
+    if (params_->cert_verifier_creation_params)
+      creation_params = params_->cert_verifier_creation_params.get();
 
-      crypto::ScopedPK11Slot public_slot =
-          crypto::GetPublicSlotForChromeOSUser(params_->username_hash);
-      verify_proc = CreateCertVerifyProcForUser(cert_net_fetcher_,
-                                                std::move(public_slot));
-    }
+    if (IsUsingCertNetFetcher())
+      cert_net_fetcher_ = base::MakeRefCounted<net::CertNetFetcherURLRequest>();
+
+    cert_verifier = CreateCertVerifier(creation_params, cert_net_fetcher_);
+
+    // Wrap the cert verifier in caching and coalescing layers to avoid extra
+    // verifications.
+    cert_verifier = std::make_unique<net::CachingCertVerifier>(
+        std::make_unique<net::CoalescingCertVerifier>(
+            std::move(cert_verifier)));
+
+#if defined(OS_CHROMEOS)
     cert_verifier_with_trust_anchors_ =
         new CertVerifierWithTrustAnchors(base::BindRepeating(
             &NetworkContext::TrustAnchorUsed, base::Unretained(this)));
     UpdateAdditionalCertificates(
         std::move(params_->initial_additional_certificates));
-    cert_verifier_with_trust_anchors_->InitializeOnIOThread(verify_proc);
+    cert_verifier_with_trust_anchors_->InitializeOnIOThread(
+        std::move(cert_verifier));
     cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_);
-#endif
-#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-    if (!cert_verifier && params_->trial_comparison_cert_verifier_params) {
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<net::CoalescingCertVerifier>(
-              std::make_unique<TrialComparisonCertVerifierMojo>(
-                  params_->trial_comparison_cert_verifier_params
-                      ->initial_allowed,
-                  std::move(params_->trial_comparison_cert_verifier_params
-                                ->config_client_receiver),
-                  std::move(params_->trial_comparison_cert_verifier_params
-                                ->report_client),
-                  net::CertVerifyProc::CreateSystemVerifyProc(
-                      cert_net_fetcher_),
-                  net::CertVerifyProc::CreateBuiltinVerifyProc(
-                      cert_net_fetcher_))));
-    }
-#endif
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-    if (!cert_verifier) {
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<net::CoalescingCertVerifier>(
-              std::make_unique<net::MultiThreadedCertVerifier>(
-                  UsingBuiltinCertVerifier(params_->use_builtin_cert_verifier)
-                      ? net::CertVerifyProc::CreateBuiltinVerifyProc(
-                            cert_net_fetcher_)
-                      : net::CertVerifyProc::CreateSystemVerifyProc(
-                            cert_net_fetcher_))));
-    }
-#endif
-    if (!cert_verifier)
-      cert_verifier = net::CertVerifier::CreateDefault(cert_net_fetcher_);
+#endif  // defined(OS_CHROMEOS)
   }
 
   builder.SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
@@ -2344,30 +2281,6 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
 #if defined(OS_CHROMEOS)
 void NetworkContext::TrustAnchorUsed() {
   client_->OnTrustAnchorUsed();
-}
-
-scoped_refptr<net::CertVerifyProc> NetworkContext::CreateCertVerifyProcForUser(
-    scoped_refptr<net::CertNetFetcher> net_fetcher,
-    crypto::ScopedPK11Slot user_public_slot) {
-  if (UsingBuiltinCertVerifier(params_->use_builtin_cert_verifier)) {
-    return net::CreateCertVerifyProcBuiltin(
-        std::move(net_fetcher),
-        std::make_unique<SystemTrustStoreProviderChromeOS>(
-            std::move(user_public_slot)));
-  }
-  return base::MakeRefCounted<CertVerifyProcChromeOS>(
-      std::move(user_public_slot));
-}
-
-scoped_refptr<net::CertVerifyProc>
-NetworkContext::CreateCertVerifyProcWithoutUserSlots(
-    scoped_refptr<net::CertNetFetcher> net_fetcher) {
-  if (UsingBuiltinCertVerifier(params_->use_builtin_cert_verifier)) {
-    return net::CreateCertVerifyProcBuiltin(
-        std::move(net_fetcher),
-        std::make_unique<SystemTrustStoreProviderChromeOS>());
-  }
-  return base::MakeRefCounted<CertVerifyProcChromeOS>();
 }
 #endif
 

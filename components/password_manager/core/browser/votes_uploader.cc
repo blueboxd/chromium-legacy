@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <iostream>
 #include <utility>
+#include "base/check_op.h"
 #include "base/hash/hash.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"

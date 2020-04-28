@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "components/webcrypto/algorithms/aes.h"
 #include "components/webcrypto/algorithms/util.h"

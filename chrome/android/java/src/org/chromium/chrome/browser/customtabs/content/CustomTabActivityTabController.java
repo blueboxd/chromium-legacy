@@ -365,11 +365,13 @@ public class CustomTabActivityTabController
 
     private Tab createTab() {
         WebContents webContents = takeWebContents();
-        Tab tab = mTabFactory.createTab(webContents, mCustomTabDelegateFactory.get());
+        // clang-format off
+        Tab tab = mTabFactory.createTab(webContents, mCustomTabDelegateFactory.get(),
+                (preInitTab) -> TabAssociatedApp.from(preInitTab).setAppId(
+                                mConnection.getClientPackageNameForSession(mSession)));
+        // clang-format on
 
         mConnection.setClientDataHeaderForNewTab(mSession, webContents);
-
-        TabAssociatedApp.from(tab).setAppId(mConnection.getClientPackageNameForSession(mSession));
 
         initializeTab(tab);
 

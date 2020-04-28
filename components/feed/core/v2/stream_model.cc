@@ -8,8 +8,8 @@
 #include <sstream>
 #include <utility>
 
+#include "base/check.h"
 #include "base/json/string_escape.h"
-#include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/feed/core/proto/v2/store.pb.h"

@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 
+#include "base/check_op.h"
 #include "base/containers/span.h"
 #include "base/hash/legacy_hash.h"
-#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 
 namespace rappor {

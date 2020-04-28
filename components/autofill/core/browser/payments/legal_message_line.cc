@@ -4,8 +4,8 @@
 
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 
+#include "base/check.h"
 #include "base/i18n/message_formatter.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"

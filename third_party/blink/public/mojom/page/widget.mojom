@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "cc/mojom/touch_action.mojom";
 
 // Implemented in Blink, this interface defines frame-widget-specific methods that
 // will be invoked from the browser process (e.g. blink::WebFrameWidget).
@@ -14,6 +15,9 @@ interface FrameWidget {
 
   // Makes the Widget background transparent or opaque.
   SetBackgroundOpaque(bool opaque);
+
+  // Sets the inherited effective touch action on an out-of-process iframe.
+  SetInheritedEffectiveTouchActionForSubFrame(cc.mojom.TouchAction touch_action);
 };
 
 // Implemented in Browser, this interface defines frame-widget-specific methods that

@@ -4,7 +4,7 @@
 
 #include "chromeos/services/device_sync/cryptauth_v2_device_sync_test_devices.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"

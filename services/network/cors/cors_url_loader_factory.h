@@ -36,13 +36,13 @@ namespace cors {
 class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
     : public mojom::URLLoaderFactory {
  public:
-  // Set whether the factory allows CORS preflights. See IsSane.
+  // Set whether the factory allows CORS preflights. See IsValidRequest.
   static void SetAllowExternalPreflightsForTesting(bool allow) {
     allow_external_preflights_for_testing_ = allow;
   }
 
   // Check if members in |headers| are permitted by |allowed_exempt_headers|.
-  static bool IsCorsExemptHeadersSane(
+  static bool IsValidCorsExemptHeaders(
       const std::unordered_set<std::string>& allowed_exempt_headers,
       const net::HttpRequestHeaders& headers);
 
@@ -82,7 +82,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   void DeleteIfNeeded();
 
-  bool IsSane(const ResourceRequest& request, uint32_t options);
+  bool IsValidRequest(const ResourceRequest& request, uint32_t options);
 
   InitiatorLockCompatibility VerifyRequestInitiatorLockWithPluginCheck(
       uint32_t process_id,

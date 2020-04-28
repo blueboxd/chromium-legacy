@@ -488,9 +488,12 @@ std::string ClientAndroid::GetLocale() const {
 }
 
 std::string ClientAndroid::GetCountryCode() const {
-  return base::android::ConvertJavaStringToUTF8(
-      Java_AutofillAssistantClient_getCountryCode(AttachCurrentThread(),
-                                                  java_object_));
+  JNIEnv* env = AttachCurrentThread();
+  auto code = Java_AutofillAssistantClient_getCountryCode(env, java_object_);
+  // Use fallback "ZZ". It is an unused country code.
+  if (!code)
+    return "ZZ";
+  return base::android::ConvertJavaStringToUTF8(env, code);
 }
 
 DeviceContext ClientAndroid::GetDeviceContext() const {

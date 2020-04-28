@@ -347,6 +347,11 @@ void AppServiceImpl::OnPublisherDisconnected(apps::mojom::AppType app_type) {
 
 void AppServiceImpl::InitializePreferredApps() {
   ReadFromJSON(profile_dir_);
+
+  // Remove "app_service.preferred_apps" from perf if exists.
+  // TODO(crbug.com/853604): Remove this in M86.
+  DCHECK(pref_service_);
+  pref_service_->ClearPref(kAppServicePreferredApps);
 }
 
 void AppServiceImpl::WriteToJSON(

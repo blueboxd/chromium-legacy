@@ -4,8 +4,8 @@
 
 #include "chromeos/settings/timezone_settings_helper.h"
 
+#include "base/check.h"
 #include "base/component_export.h"
-#include "base/logging.h"
 
 namespace chromeos {
 namespace system {

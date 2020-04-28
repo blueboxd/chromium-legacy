@@ -223,13 +223,8 @@ void NGInlineLayoutStateStack::EndBoxState(
     NGInlineBoxState* box,
     NGLineBoxFragmentBuilder::ChildList* line_box,
     FontBaseline baseline_type) {
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    if (box->needs_box_fragment)
-      AddBoxData(box, line_box);
-  } else {
-    if (box->has_box_placeholder)
-      AddBoxData(box, line_box);
-  }
+  if (box->needs_box_fragment)
+    AddBoxData(box, line_box);
 
   PositionPending position_pending =
       ApplyBaselineShift(box, line_box, baseline_type);
@@ -700,11 +695,9 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
     }
   }
 
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    // Inline boxes that produce DisplayItemClient should do full paint
-    // invalidations.
-    item->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
-  }
+  // Inline boxes that produce DisplayItemClient should do full paint
+  // invalidations.
+  item->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 
   box.MoveOutOfFlowDescendantCandidatesToDescendants();
   return box.ToInlineBoxFragment();

@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chromeos/services/assistant/test_support/fake_platform_api.h"
 #include "libassistant/shared/public/platform_audio_output.h"
 

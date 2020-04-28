@@ -5,6 +5,7 @@
 #include "ui/gfx/x/x11_types.h"
 
 #include <X11/Xlib.h>
+#include <string.h>
 
 #include "base/command_line.h"
 #include "base/logging.h"

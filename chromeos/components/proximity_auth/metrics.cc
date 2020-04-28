@@ -8,8 +8,8 @@
 
 #include <algorithm>
 
+#include "base/check_op.h"
 #include "base/hash/md5.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"

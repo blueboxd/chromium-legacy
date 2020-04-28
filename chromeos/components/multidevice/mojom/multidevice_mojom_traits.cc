@@ -4,7 +4,7 @@
 
 #include "chromeos/components/multidevice/mojom/multidevice_mojom_traits.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 

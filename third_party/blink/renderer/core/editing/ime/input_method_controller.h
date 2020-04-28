@@ -59,7 +59,7 @@ class CORE_EXPORT InputMethodController final
     kKeepSelection,
   };
 
-  explicit InputMethodController(LocalDOMWindow&);
+  explicit InputMethodController(LocalDOMWindow&, LocalFrame&);
   virtual ~InputMethodController();
   void Trace(Visitor*) override;
 
@@ -130,6 +130,7 @@ class CORE_EXPORT InputMethodController final
   Document& GetDocument() const;
   bool IsAvailable() const;
 
+  Member<LocalFrame> frame_;
   Member<Range> composition_range_;
   Member<EditContext> active_edit_context_;
   bool has_composition_;

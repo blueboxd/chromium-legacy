@@ -119,9 +119,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  content::ConsoleObserverDelegate console_observer(
-      web_contents(), kActivationWarningConsoleMessage);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(kActivationWarningConsoleMessage);
 
   // Open up devtools and trigger forced activation.
   {
@@ -130,7 +129,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
     console_observer.Wait();
-    EXPECT_EQ(console_observer.message(), kActivationWarningConsoleMessage);
+    EXPECT_EQ(kActivationWarningConsoleMessage,
+              console_observer.GetMessageAt(0u));
     // Close devtools, should stop forced activation.
   }
   ui_test_utils::NavigateToURL(browser(), url);
@@ -139,9 +139,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterDevtoolsBrowserTest,
                        ForceActivation_SubresourceLogging) {
-  content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    kActivationConsoleMessage);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(kActivationConsoleMessage);
   const GURL url(
       GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ASSERT_NO_FATAL_FAILURE(
@@ -151,8 +150,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterDevtoolsBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-  EXPECT_FALSE(console_observer.message().empty());
-  console_observer.Wait();
+  EXPECT_FALSE(console_observer.messages().empty());
 }
 
 class SubresourceFilterDevtoolsBrowserTestWithSitePerProcess

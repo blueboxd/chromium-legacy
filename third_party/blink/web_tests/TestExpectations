@@ -3441,7 +3441,6 @@ crbug.com/626703 external/wpt/css/css-animations/animationevent-marker-pseudoele
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-normal-keep-all-001.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/media-elements/src_object_blob.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-lists/list-item-definition.html [ Failure ]
-crbug.com/626703 [ Win7 ] external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Failure Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-same-url-allow.html [ Timeout ]
 crbug.com/626703 external/wpt/media-source/mediasource-correct-frames-after-reappend.html [ Pass Failure Timeout ]
 crbug.com/626703 external/wpt/media-source/mediasource-correct-frames.html [ Pass Failure Timeout ]
@@ -6097,6 +6096,10 @@ crbug.com/1038656 [ Win ] http/tests/devtools/coverage/coverage-view-unused.js [
 
 # Temporarily disabled to land Linkifier changes in DevTools
 crbug.com/963183 http/tests/devtools/jump-to-previous-editing-location.js [ Pass Failure ]
+
+# Awaiting DevTools roll.
+crbug.com/1075437 http/tests/devtools/sources/autocomplete-css.js [ Pass Failure ]
+crbug.com/1075437 http/tests/devtools/sources/autocomplete-scss.js [ Pass Failure ]
 
 # Sheriff 2020-01-09
 crbug.com/1040270 http/tests/devtools/elements/styles-1/disable-property-workingcopy-update.js [ Pass Timeout ]

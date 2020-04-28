@@ -294,8 +294,12 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   $('button-reset-drive-filesystem').addEventListener('click', function() {
-    $('reset-status-text').textContent = 'resetting...';
-    chrome.send('resetDriveFileSystem');
+    if (window.confirm(
+            'Warning: Any local changes not yet uploaded to the Drive server ' +
+            'will be lost, continue?')) {
+      $('reset-status-text').textContent = 'resetting...';
+      chrome.send('resetDriveFileSystem');
+    }
   });
 
   $('button-export-logs').addEventListener('click', function() {

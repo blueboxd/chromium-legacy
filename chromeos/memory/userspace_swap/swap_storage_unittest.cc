@@ -12,7 +12,6 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "chromeos/memory/userspace_swap/region.h"
 #include "testing/gtest/include/gtest/gtest.h"

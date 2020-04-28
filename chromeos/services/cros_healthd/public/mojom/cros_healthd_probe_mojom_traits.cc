@@ -4,7 +4,7 @@
 
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe_mojom_traits.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace em = enterprise_management;
 

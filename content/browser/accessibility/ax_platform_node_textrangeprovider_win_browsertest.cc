@@ -2098,6 +2098,72 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       ExpandToEnclosingWordWhenBeforeFirstWordBoundary) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <p aria-label="space">&nbsp;</p>
+        <p>3.14</p>
+      </body>
+      </html>)HTML");
+
+  // Case 1: test on degenerate range before whitespace.
+  auto* node = FindNode(ax::mojom::Role::kParagraph, "space")
+                   ->PlatformDeepestFirstChild();
+  ASSERT_NE(nullptr, node);
+  EXPECT_TRUE(node->PlatformIsLeaf());
+  EXPECT_EQ(0u, node->PlatformChildCount());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*node, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0");
+
+  // Make the range degenerate.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ -1,
+      /*expected_text*/ L"",
+      /*expected_count*/ -1);
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0\n");
+
+  // Case 2: test on range that includes the whitespace and the following word.
+  GetTextRangeProviderFromTextNode(*node, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0");
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
+                                   TextPatternRangeEndpoint_End, TextUnit_Word,
+                                   /*count*/ 1,
+                                   /*expected_text*/ L"\xA0\n3.14",
+                                   /*expected_count*/ 1);
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0\n");
+
+  // Case 3: test on degenerate range after whitespace.
+  node = FindNode(ax::mojom::Role::kStaticText, "3.14");
+  ASSERT_NE(nullptr, node);
+  EXPECT_TRUE(node->PlatformIsLeaf());
+  EXPECT_EQ(0u, node->PlatformChildCount());
+
+  GetTextRangeProviderFromTextNode(*node, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"3.14");
+  // Make the range degenerate.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
+                                   TextPatternRangeEndpoint_End, TextUnit_Word,
+                                   /*count*/ -1,
+                                   /*expected_text*/ L"",
+                                   /*expected_count*/ -1);
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"3.14");
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                        EntireMarkupSuccessiveMoveByCharacter) {
   AssertMoveByUnitForMarkup(
       TextUnit_Character, "Test ing.",
@@ -2148,9 +2214,11 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       TextUnit_Word, "<ol><li>item one</li><li>item two</li></ol>",
       {L"1. ", L"item ", L"one", L"2. ", L"item ", L"two"});
 
-  AssertMoveByUnitForMarkup(TextUnit_Word,
-                            "<ul><li>item one</li><li>item two</li></ul>",
-                            {L"• ", L"item ", L"one", L"• ", L"item ", L"two"});
+  // The following test should be enabled when crbug.com/1028830 is fixed.
+  // AssertMoveByUnitForMarkup(TextUnit_Word,
+  //                           "<ul><li>item one</li><li>item two</li></ul>",
+  //                           {L"• ", L"item ", L"one", L"• ", L"item ",
+  //                           L"two"});
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,

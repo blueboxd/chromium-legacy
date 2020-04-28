@@ -240,8 +240,7 @@ TEST_F(FileSequenceHelperTest, RulesetFormatVersionMismatch) {
   TestLoadRulesets(test_cases);
 
   // Now simulate a flatbuffer version mismatch.
-  int current_format_version = GetIndexedRulesetFormatVersionForTesting();
-  SetIndexedRulesetFormatVersionForTesting(current_format_version + 1);
+  ScopedIncrementIndexedRulesetFormatVersion scoped_version_change;
 
   // Version mismatch will cause reindexing and updated checksums.
   for (auto& test_case : test_cases) {
@@ -251,9 +250,6 @@ TEST_F(FileSequenceHelperTest, RulesetFormatVersionMismatch) {
   }
 
   TestLoadRulesets(test_cases);
-
-  // Reset the indexed ruleset format version.
-  SetIndexedRulesetFormatVersionForTesting(current_format_version);
 }
 
 TEST_F(FileSequenceHelperTest, JSONAndIndexedRulesetDeleted) {

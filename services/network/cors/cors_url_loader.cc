@@ -195,7 +195,7 @@ void CorsURLLoader::FollowRedirect(
   }
   request_.headers.MergeFrom(modified_headers);
 
-  if (!CorsURLLoaderFactory::IsCorsExemptHeadersSane(
+  if (!CorsURLLoaderFactory::IsValidCorsExemptHeaders(
           *allowed_exempt_headers_, modified_cors_exempt_headers)) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
     return;

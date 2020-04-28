@@ -5969,6 +5969,14 @@ void RenderFrameHostImpl::HandleRendererDebugURL(const GURL& url) {
   }
 
   GetNavigationControl()->HandleRendererDebugURL(url);
+
+  // Ensure that the renderer process is marked as used after processing a
+  // renderer debug URL, since this process is now unsafe to be reused by sites
+  // that require a dedicated process.  Usually this happens at ready-to-commit
+  // (NavigationRequest::OnResponseStarted) time for regular navigations, but
+  // renderer debug URLs don't go through that path.  This matters for initial
+  // navigations to renderer debug URLs.  See https://crbug.com/1074108.
+  GetProcess()->SetIsUsed();
 }
 
 void RenderFrameHostImpl::SetUpMojoIfNeeded() {

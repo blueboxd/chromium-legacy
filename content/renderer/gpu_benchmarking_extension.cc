@@ -306,6 +306,25 @@ base::Optional<gfx::Vector2dF> ToVector(const std::string& direction,
   return base::nullopt;
 }
 
+int ToKeyModifiers(const base::StringPiece& key) {
+  if (key == "Alt")
+    return blink::WebInputEvent::kAltKey;
+  if (key == "Control")
+    return blink::WebInputEvent::kControlKey;
+  if (key == "Meta")
+    return blink::WebInputEvent::kMetaKey;
+  if (key == "Shift")
+    return blink::WebInputEvent::kShiftKey;
+  if (key == "CapsLock")
+    return blink::WebInputEvent::kCapsLockOn;
+  if (key == "NumLock")
+    return blink::WebInputEvent::kNumLockOn;
+  if (key == "AltGraph")
+    return blink::WebInputEvent::kAltGrKey;
+  NOTREACHED() << "invalid key modifier";
+  return 0;
+}
+
 // BeginSmoothScroll takes pixels_to_scroll_x and pixels_to_scroll_y, positive
 // pixels_to_scroll_y means scroll down, positive pixels_to_scroll_x means
 // scroll right.
@@ -323,7 +342,8 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
                        bool precise_scrolling_deltas,
                        bool scroll_by_page,
                        bool cursor_visible,
-                       bool scroll_by_percentage) {
+                       bool scroll_by_percentage,
+                       int key_modifiers) {
   DCHECK(!(precise_scrolling_deltas && scroll_by_page));
   DCHECK(!(precise_scrolling_deltas && scroll_by_percentage));
   DCHECK(!(scroll_by_page && scroll_by_percentage));
@@ -385,6 +405,8 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
   gesture_params.fling_velocity_x = fling_velocity.x();
   gesture_params.fling_velocity_y = fling_velocity.y();
   gesture_params.distances.push_back(-pixels_to_scroll);
+
+  gesture_params.key_modifiers = key_modifiers;
 
   injector->QueueSyntheticSmoothScroll(
       gesture_params, base::BindOnce(&OnSyntheticGestureCompleted,
@@ -692,6 +714,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   bool scroll_by_page = false;
   bool cursor_visible = true;
   bool scroll_by_percentage = false;
+  std::string keys_value;
 
   if (!GetOptionalArg(args, &pixels_to_scroll) ||
       !GetOptionalArg(args, &callback) || !GetOptionalArg(args, &start_x) ||
@@ -702,7 +725,8 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
       !GetOptionalArg(args, &precise_scrolling_deltas) ||
       !GetOptionalArg(args, &scroll_by_page) ||
       !GetOptionalArg(args, &cursor_visible) ||
-      !GetOptionalArg(args, &scroll_by_percentage)) {
+      !GetOptionalArg(args, &scroll_by_percentage) ||
+      !GetOptionalArg(args, &keys_value)) {
     return false;
   }
 
@@ -723,13 +747,23 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   if (!pixels_to_scrol_vector.has_value())
     return false;
   gfx::Vector2dF fling_velocity(0, 0);
+  int key_modifiers = 0;
+  std::vector<base::StringPiece> key_list = base::SplitStringPiece(
+      keys_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (const base::StringPiece& key : key_list) {
+    int key_modifier = ToKeyModifiers(key);
+    if (key_modifier == 0) {
+      return false;
+    }
+    key_modifiers |= key_modifier;
+  }
 
   EnsureRemoteInterface();
   return BeginSmoothScroll(
       &context, args, input_injector_, pixels_to_scrol_vector.value(), callback,
       gesture_source_type, speed_in_pixels_s, true /* prevent_fling */, start_x,
       start_y, fling_velocity, precise_scrolling_deltas, scroll_by_page,
-      cursor_visible, scroll_by_percentage);
+      cursor_visible, scroll_by_percentage, key_modifiers);
 }
 
 // SmoothScrollByXY does not take direction as one of the arguments, and
@@ -752,6 +786,7 @@ bool GpuBenchmarking::SmoothScrollByXY(gin::Arguments* args) {
   bool scroll_by_page = false;
   bool cursor_visible = true;
   bool scroll_by_percentage = false;
+  std::string keys_value;
 
   if (!GetOptionalArg(args, &pixels_to_scroll_x) ||
       !GetOptionalArg(args, &pixels_to_scroll_y) ||
@@ -762,7 +797,8 @@ bool GpuBenchmarking::SmoothScrollByXY(gin::Arguments* args) {
       !GetOptionalArg(args, &precise_scrolling_deltas) ||
       !GetOptionalArg(args, &scroll_by_page) ||
       !GetOptionalArg(args, &cursor_visible) ||
-      !GetOptionalArg(args, &scroll_by_percentage)) {
+      !GetOptionalArg(args, &scroll_by_percentage) ||
+      !GetOptionalArg(args, &keys_value)) {
     return false;
   }
 
@@ -776,14 +812,25 @@ bool GpuBenchmarking::SmoothScrollByXY(gin::Arguments* args) {
   DCHECK(!scroll_by_percentage ||
          gesture_source_type == SyntheticGestureParams::MOUSE_INPUT);
 
-  EnsureRemoteInterface();
   gfx::Vector2dF distances(pixels_to_scroll_x, pixels_to_scroll_y);
   gfx::Vector2dF fling_velocity(0, 0);
+  int key_modifiers = 0;
+  std::vector<base::StringPiece> key_list = base::SplitStringPiece(
+      keys_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (const base::StringPiece& key : key_list) {
+    int key_modifier = ToKeyModifiers(key);
+    if (key_modifier == 0) {
+      return false;
+    }
+    key_modifiers |= key_modifier;
+  }
+
+  EnsureRemoteInterface();
   return BeginSmoothScroll(
       &context, args, input_injector_, distances, callback, gesture_source_type,
       speed_in_pixels_s, true /* prevent_fling */, start_x, start_y,
       fling_velocity, precise_scrolling_deltas, scroll_by_page, cursor_visible,
-      scroll_by_percentage);
+      scroll_by_percentage, key_modifiers);
 }
 
 bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
@@ -861,7 +908,7 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
       false /* prevent_fling */, start_x, start_y,
       fling_velocity_vector.value(), true /* precise_scrolling_deltas */,
       false /* scroll_by_page */, true /* cursor_visible */,
-      false /* scroll_by_percentage */);
+      false /* scroll_by_percentage */, 0 /* key_modifiers */);
 }
 
 bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {

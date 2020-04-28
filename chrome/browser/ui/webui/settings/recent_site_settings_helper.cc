@@ -145,9 +145,9 @@ std::vector<RecentSitePermissions> GetRecentSitePermissions(
       GetAllSettingsForProfile(profile, content_types);
   std::map<GURL, std::vector<TimestampedSetting>> incognito_settings;
 
-  if (profile->HasOffTheRecordProfile()) {
+  if (profile->HasPrimaryOTRProfile()) {
     incognito_settings = GetAllSettingsForProfile(
-        profile->GetOffTheRecordProfile(), content_types);
+        profile->GetPrimaryOTRProfile(), content_types);
 
     // Remove all permission entries in the incognito map which also have
     // an entry in the regular settings. This may result in an empty setting

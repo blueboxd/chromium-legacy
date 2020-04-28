@@ -1394,9 +1394,12 @@ TEST_F(StreamMixerTest, OneStreamOutputRedirection) {
   const int kNumFrames = 32;
   input.SetData(GetTestData(0));
 
-  EXPECT_CALL(*redirected_output,
-              OnRedirectedAudio(_, kTestSamplesPerSecond, _, kOutputFrames))
-      .Times(2);
+  testing::Expectation set_sample_rate_is_called =
+      EXPECT_CALL(*redirected_output, SetSampleRate(kTestSamplesPerSecond))
+          .Times(testing::AtLeast(1));
+  EXPECT_CALL(*redirected_output, OnRedirectedAudio(_, _, kOutputFrames))
+      .Times(2)
+      .After(set_sample_rate_is_called);
   PlaybackOnce();  // First buffer is faded in, so don't try to compare it.
   input.SetData(GetTestData(0));
   PlaybackOnce();
@@ -1430,9 +1433,9 @@ TEST_F(StreamMixerTest, OutputRedirectionOrder) {
   const int kNumFrames = 32;
   input.SetData(GetTestData(0));
 
-  EXPECT_CALL(*redirected_output1, OnRedirectedAudio(_, _, _, kOutputFrames))
+  EXPECT_CALL(*redirected_output1, OnRedirectedAudio(_, _, kOutputFrames))
       .Times(2);
-  EXPECT_CALL(*redirected_output2, OnRedirectedAudio(_, _, _, kOutputFrames))
+  EXPECT_CALL(*redirected_output2, OnRedirectedAudio(_, _, kOutputFrames))
       .Times(0);
   PlaybackOnce();  // First buffer is faded in, so don't try to compare it.
   input.SetData(GetTestData(0));

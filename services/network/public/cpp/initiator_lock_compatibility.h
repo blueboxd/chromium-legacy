@@ -78,8 +78,8 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
 //
 // TODO(lukasza): Remove this function if https://crrev.com/c/1661114 sticks
 // (i.e. if ResourceRequest::request_initiator is sanitized and made trustworthy
-// by CorsURLLoaderFactory::CreateLoaderAndStart and IsSane). Once we remove
-// this, this header can be moved to non-public directory.
+// by CorsURLLoaderFactory::CreateLoaderAndStart and IsValidRequest). Once we
+// remove this, this header can be moved to non-public directory.
 COMPONENT_EXPORT(NETWORK_CPP)
 url::Origin GetTrustworthyInitiator(
     const base::Optional<url::Origin>& request_initiator_site_lock,

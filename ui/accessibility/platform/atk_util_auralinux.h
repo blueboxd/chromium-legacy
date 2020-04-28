@@ -11,10 +11,6 @@
 #include "base/memory/singleton.h"
 #include "ui/accessibility/ax_export.h"
 
-#if defined(USE_X11)
-#include "ui/gfx/x/x11.h"
-#endif
-
 namespace ui {
 
 // These values are duplicates of the GDK values that can be found in

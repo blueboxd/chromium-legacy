@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -31,6 +33,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -41,51 +44,27 @@ namespace subresource_filter {
 
 namespace {
 
-base::LazyInstance<std::vector<std::string>>::DestructorAtExit error_messages_ =
-    LAZY_INSTANCE_INITIALIZER;
+// Checks console messages.
+void RoundTripAndVerifyLogMessages(
+    const content::WebContentsConsoleObserver& observer,
+    content::WebContents* web_contents,
+    std::set<std::string> messages_expected,
+    std::set<std::string> messages_not_expected) {
+  // Round trip to the renderer to ensure the message would have gotten sent.
+  EXPECT_TRUE(content::ExecuteScript(web_contents, "var a = 1;"));
 
-class ScopedLoggingObserver {
- public:
-  ScopedLoggingObserver() {
-    logging::SetLogMessageHandler(&ScopedLoggingObserver::LogHandler);
-  }
-
-  void RoundTripAndVerifyLogMessages(
-      content::WebContents* web_contents,
-      std::vector<std::string> messages_expected,
-      std::vector<std::string> messages_not_expected) {
-    // Round trip to the renderer to ensure the message would have gotten sent.
-    EXPECT_TRUE(content::ExecuteScript(web_contents, "var a = 1;"));
-    std::deque<bool> verify_messages_expected(messages_expected.size(), false);
-    for (size_t i = 0; i < messages_expected.size(); i++)
-      verify_messages_expected[i] = false;
-
-    for (const auto& message : error_messages_.Get()) {
-      for (size_t i = 0; i < messages_expected.size(); i++) {
-        verify_messages_expected[i] |=
-            (message.find(messages_expected[i]) != std::string::npos);
-      }
-      for (const auto& message_not_expected : messages_not_expected)
-        EXPECT_EQ(std::string::npos, message.find(message_not_expected))
-            << message_not_expected;
+  for (size_t i = 0u; i < observer.messages().size(); ++i) {
+    std::string message = observer.GetMessageAt(i);
+    if (base::Contains(messages_expected, message)) {
+      messages_expected.erase(message);
+      continue;
     }
-    for (size_t i = 0; i < messages_expected.size(); i++)
-      EXPECT_TRUE(verify_messages_expected[i]) << messages_expected[i];
+    if (base::Contains(messages_not_expected, message))
+      ADD_FAILURE() << "Saw anti-expected message: " << message;
   }
-
- private:
-  // Intercepts all console messages. Only used when the ConsoleObserverDelegate
-  // cannot be (e.g. when we need the standard delegate).
-  static bool LogHandler(int severity,
-                         const char* file,
-                         int line,
-                         size_t message_start,
-                         const std::string& str) {
-    if (file && std::string("CONSOLE") == file)
-      error_messages_.Get().push_back(str);
-    return false;
-  }
-};
+  EXPECT_THAT(messages_expected, ::testing::IsEmpty())
+      << "Missing expected messages.";
+}
 
 }  // namespace
 
@@ -231,9 +210,8 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                        BlockCreatingNewWindows_LogsToConsole) {
-  content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    kAbusiveEnforceMessage);
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(kAbusiveEnforceMessage);
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
   ConfigureAsAbusiveAndBetterAds(
@@ -247,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
       web_contents(), "openWindow()", &opened_window));
   EXPECT_FALSE(opened_window);
   console_observer.Wait();
-  EXPECT_EQ(kAbusiveEnforceMessage, console_observer.message());
+  EXPECT_EQ(kAbusiveEnforceMessage, console_observer.GetMessageAt(0u));
 
   EXPECT_TRUE(AreDisallowedRequestsBlocked());
 }
@@ -261,20 +239,18 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
       a_url, SubresourceFilterLevel::WARN /* abusive_level */,
       SubresourceFilterLevel::WARN /* bas_level */);
 
+  content::WebContentsConsoleObserver console_observer(web_contents());
+
   // Navigate to a_url, should log a warning and not trigger the popup blocker.
-  ScopedLoggingObserver log_observer;
-
   ui_test_utils::NavigateToURL(browser(), a_url);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
 
-  log_observer.RoundTripAndVerifyLogMessages(
-      web_contents, {kActivationWarningConsoleMessage, kAbusiveWarnMessage},
-      {});
+  RoundTripAndVerifyLogMessages(
+      console_observer, web_contents(),
+      {kActivationWarningConsoleMessage, kAbusiveWarnMessage}, {});
 
   bool opened_window = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
-                                                   &opened_window));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents(), "openWindow()", &opened_window));
   EXPECT_TRUE(opened_window);
   EXPECT_FALSE(AreDisallowedRequestsBlocked());
 }
@@ -294,9 +270,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
       a_url, a_url, ContentSettingsType::POPUPS, std::string(),
       CONTENT_SETTING_ALLOW);
 
-  // Navigate to a_url, should not trigger the popup blocker.
-  ScopedLoggingObserver log_observer;
+  content::WebContentsConsoleObserver console_observer(web_contents());
 
+  // Navigate to a_url, should not trigger the popup blocker.
   ui_test_utils::NavigateToURL(browser(), a_url);
   bool opened_window = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -305,9 +281,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
 
   EXPECT_FALSE(AreDisallowedRequestsBlocked());
 
-  log_observer.RoundTripAndVerifyLogMessages(
-      web_contents(), {kAbusiveWarnMessage, kActivationWarningConsoleMessage},
-      {});
+  RoundTripAndVerifyLogMessages(
+      console_observer, web_contents(),
+      {kAbusiveWarnMessage, kActivationWarningConsoleMessage}, {});
 }
 
 // Whitelisted sites should not have console logging.
@@ -327,8 +303,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
       a_url, a_url, ContentSettingsType::POPUPS, std::string(),
       CONTENT_SETTING_ALLOW);
 
+  content::WebContentsConsoleObserver console_observer(web_contents());
+
   // Navigate to a_url, should not trigger the popup blocker.
-  ScopedLoggingObserver log_observer;
   ui_test_utils::NavigateToURL(browser(), a_url);
   EXPECT_TRUE(AreDisallowedRequestsBlocked());
 
@@ -340,8 +317,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   // On the new window, requests should be allowed.
   EXPECT_FALSE(AreDisallowedRequestsBlocked());
 
-  log_observer.RoundTripAndVerifyLogMessages(
-      web_contents(), {kActivationConsoleMessage}, {kAbusiveEnforceMessage});
+  RoundTripAndVerifyLogMessages(console_observer, web_contents(),
+                                {kActivationConsoleMessage},
+                                {kAbusiveEnforceMessage});
 }
 
 IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,

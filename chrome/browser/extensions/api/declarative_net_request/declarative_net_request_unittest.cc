@@ -760,8 +760,7 @@ TEST_P(SingleRulesetTest, DynamicRulesetRace) {
   // on subsequent extension load. Since this will further delay the initial
   // ruleset load, it helps test that the ruleset loading doesn't race with
   // updating dynamic rules.
-  int current_format_version = GetIndexedRulesetFormatVersionForTesting();
-  SetIndexedRulesetFormatVersionForTesting(current_format_version + 1);
+  ScopedIncrementIndexedRulesetFormatVersion scoped_version_change;
 
   TestExtensionRegistryObserver registry_observer(registry());
 
@@ -785,9 +784,6 @@ TEST_P(SingleRulesetTest, DynamicRulesetRace) {
   CompositeMatcher* matcher = manager()->GetMatcherForExtension(extension_id);
   ASSERT_TRUE(matcher);
   EXPECT_EQ(2u, matcher->matchers().size());
-
-  // Reset the ruleset format version since this updates global state.
-  SetIndexedRulesetFormatVersionForTesting(current_format_version);
 }
 
 // Tests that multiple static rulesets are correctly indexed.

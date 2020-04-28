@@ -22,8 +22,7 @@ namespace {
 
 class DeferredSequencedTaskRunnerTest : public testing::Test {
  public:
-  class ExecuteTaskOnDestructor
-      : public RefCountedThreadSafe<ExecuteTaskOnDestructor> {
+  class ExecuteTaskOnDestructor : public RefCounted<ExecuteTaskOnDestructor> {
    public:
     ExecuteTaskOnDestructor(
         DeferredSequencedTaskRunnerTest* executor,
@@ -32,7 +31,7 @@ class DeferredSequencedTaskRunnerTest : public testing::Test {
           task_id_(task_id) {
     }
   private:
-   friend class RefCountedThreadSafe<ExecuteTaskOnDestructor>;
+   friend class RefCounted<ExecuteTaskOnDestructor>;
    virtual ~ExecuteTaskOnDestructor() { executor_->ExecuteTask(task_id_); }
    DeferredSequencedTaskRunnerTest* executor_;
    int task_id_;

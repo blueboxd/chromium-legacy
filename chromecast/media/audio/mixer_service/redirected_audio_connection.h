@@ -65,9 +65,12 @@ class RedirectedAudioConnection : public MixerConnection,
     // audio data in |data|. The data is always in planar float format, with the
     // number of channels as specified in the config.
     virtual void OnRedirectedAudio(int64_t timestamp,
-                                   int sample_rate,
                                    float* data,
                                    int frames) = 0;
+
+    // This will be called before OnRedirectedAudio is called for the first
+    // time, and subsequently whenever the sample rate changes.
+    virtual void SetSampleRate(int sample_rate) = 0;
 
    protected:
     virtual ~Delegate() = default;

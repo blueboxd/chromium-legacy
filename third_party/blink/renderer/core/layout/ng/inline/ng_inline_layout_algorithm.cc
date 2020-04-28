@@ -109,14 +109,10 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::HandleCloseTag(
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
   box = box_states_->OnCloseTag(&line_box_, box, baseline_type_,
                                 item.HasEndEdge());
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    // Just clear |NeedsLayout| flags. Culled inline boxes do not need paint
-    // invalidations. If this object produces box fragments,
-    // |NGInlineBoxStateStack| takes care of invalidations.
-    item.GetLayoutObject()->ClearNeedsLayoutWithoutPaintInvalidation();
-  } else {
-    item.GetLayoutObject()->ClearNeedsLayout();
-  }
+  // Just clear |NeedsLayout| flags. Culled inline boxes do not need paint
+  // invalidations. If this object produces box fragments,
+  // |NGInlineBoxStateStack| takes care of invalidations.
+  item.GetLayoutObject()->ClearNeedsLayoutWithoutPaintInvalidation();
   return box;
 }
 

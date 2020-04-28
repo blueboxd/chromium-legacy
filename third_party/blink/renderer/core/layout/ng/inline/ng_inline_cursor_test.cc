@@ -220,10 +220,7 @@ TEST_P(NGInlineCursorTest, CulledInlineWithAtomicInline) {
     list.push_back(ToDebugString(cursor));
     cursor.MoveToNextForSameLayoutObject();
   }
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    EXPECT_THAT(list, ElementsAre("#culled", "#culled"));
-  else
-    EXPECT_THAT(list, ElementsAre("abc", "ABC", "", "XYZ", "xyz"));
+  EXPECT_THAT(list, ElementsAre("abc", "ABC", "", "XYZ", "xyz"));
 }
 
 // We should not have float:right fragment, because it isn't in-flow in
@@ -241,10 +238,7 @@ TEST_P(NGInlineCursorTest, CulledInlineWithFloat) {
     list.push_back(ToDebugString(cursor));
     cursor.MoveToNextForSameLayoutObject();
   }
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    EXPECT_THAT(list, ElementsAre("#culled"));
-  else
-    EXPECT_THAT(list, ElementsAre("abc", "xyz"));
+  EXPECT_THAT(list, ElementsAre("abc", "xyz"));
 }
 
 TEST_P(NGInlineCursorTest, CulledInlineWithRoot) {
@@ -258,10 +252,7 @@ TEST_P(NGInlineCursorTest, CulledInlineWithRoot) {
     list.push_back(ToDebugString(cursor));
     cursor.MoveToNextForSameLayoutObject();
   }
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    EXPECT_THAT(list, ElementsAre("#a", "#a"));
-  else
-    EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
+  EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
 }
 
 TEST_P(NGInlineCursorTest, CulledInlineWithoutRoot) {
@@ -276,10 +267,7 @@ TEST_P(NGInlineCursorTest, CulledInlineWithoutRoot) {
     list.push_back(ToDebugString(cursor));
     cursor.MoveToNextForSameLayoutObject();
   }
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    EXPECT_THAT(list, ElementsAre("#a", "#a"));
-  else
-    EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
+  EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
 }
 
 TEST_P(NGInlineCursorTest, FirstChild) {

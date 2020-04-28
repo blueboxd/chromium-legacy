@@ -720,7 +720,7 @@ class CORE_EXPORT LocalFrameView final
     ~DisallowLayoutInvalidationScope();
 
    private:
-    UntracedMember<LocalFrameView> local_frame_view_;
+    LocalFrameView* local_frame_view_;
   };
 #endif
 

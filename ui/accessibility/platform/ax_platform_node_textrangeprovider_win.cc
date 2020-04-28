@@ -213,9 +213,19 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
       end_ = start_->CreateNextFormatEndPosition(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       break;
-    case TextUnit_Word:
+    case TextUnit_Word: {
+      AXPositionInstance start_backup = start_->Clone();
       start_ = start_->CreatePreviousWordStartPosition(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      // Since we use AXBoundaryBehavior::StopIfAlreadyAtBoundary, the only case
+      // possible where CreatePreviousWordStartPosition can return a
+      // NullPosition is when it's called on a node before the first word
+      // boundary. This can happen when the document starts with nodes that have
+      // no word boundaries, like whitespaces and punctuation. When it happens,
+      // move the position back to the start of the document.
+      if (start_->IsNullPosition())
+        start_ = start_backup->CreatePositionAtStartOfDocument();
+
       // Since start_ is already located at a word boundary, we need to cross it
       // in order to move to the next one. Because Windows ATs behave
       // undesirably when the start and end endpoints are not in the same anchor
@@ -223,6 +233,7 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
       end_ = start_->CreateNextWordStartPosition(
           AXBoundaryBehavior::StopAtAnchorBoundary);
       break;
+    }
     case TextUnit_Line:
       start_ = start_->CreateBoundaryStartPosition(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary,
@@ -261,6 +272,8 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
     default:
       return UIA_E_NOTSUPPORTED;
   }
+  DCHECK(!start_->IsNullPosition());
+  DCHECK(!end_->IsNullPosition());
   return S_OK;
 }
 

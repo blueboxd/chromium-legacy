@@ -400,7 +400,9 @@ void LayoutObject::AssertClearedPaintInvalidationFlags() const {
     return;
   // NG text objects are exempt, as pre-paint walking doesn't visit those with
   // no paint effects (only white-space, for instance).
-  if (IsText() && IsLayoutNGObject())
+  if ((IsText() && IsLayoutNGObject()) ||
+      // and culled inline boxes too.
+      (IsInLayoutNGInlineFormattingContext() && IsLayoutInline()))
     return;
   ShowLayoutTreeForThis();
   NOTREACHED();

@@ -533,7 +533,17 @@ std::string DefaultContainerUserNameForProfile(Profile* profile) {
   if (!user) {
     return kCrostiniDefaultUsername;
   }
-  return user->GetAccountName(/*use_display_email=*/false);
+  std::string username = user->GetAccountName(/*use_display_email=*/false);
+
+  // For gmail accounts, dots are already stripped away in the canonical
+  // username. But for other accounts (e.g. managedchrome), we need to do this
+  // manually.
+  std::string::size_type index;
+  while ((index = username.find('.')) != std::string::npos) {
+    username.erase(index, 1);
+  }
+
+  return username;
 }
 
 base::FilePath ContainerChromeOSBaseDirectory() {

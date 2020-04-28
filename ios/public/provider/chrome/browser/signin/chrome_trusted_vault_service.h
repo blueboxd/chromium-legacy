@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/macros.h"
 
 @class ChromeIdentity;
@@ -23,6 +24,9 @@ class ChromeTrustedVaultService {
  public:
   ChromeTrustedVaultService();
   virtual ~ChromeTrustedVaultService();
+
+  using CallbackList = base::CallbackList<void()>;
+  using Subscription = CallbackList::Subscription;
 
   // Asynchronously fetch the shared keys for |identity|
   // and returns them by calling |callback|.
@@ -40,6 +44,8 @@ class ChromeTrustedVaultService {
   // If no reauthentication dialog is not present, |callback| is called
   // synchronously.
   virtual void CancelReauthentication(BOOL animated, void (^callback)(void));
+  virtual std::unique_ptr<Subscription> AddKeysChangedObserver(
+      const base::RepeatingClosure& cb);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeTrustedVaultService);

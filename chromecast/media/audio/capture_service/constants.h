@@ -34,8 +34,13 @@ enum class StreamType : uint8_t {
   kSoftwareEchoCancelledLinear,
   // Hardware echo cancelled capture, e.g., from DSP.
   kHardwareEchoCancelled,
+  // Echo rescaled capture that balances the volume of both far-end and near-end
+  // captures. The far-end sound is the echo voice that travels out from the
+  // loudspeaker and then is picked up by the system microphone, whereas the
+  // near-end sound is the remaining capture sound without the echo voice.
+  kEchoRescaled,
   // Mark the last type.
-  kLastType = kHardwareEchoCancelled,
+  kLastType = kEchoRescaled,
 };
 
 enum class MessageType : uint8_t {

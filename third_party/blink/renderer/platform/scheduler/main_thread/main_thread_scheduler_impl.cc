@@ -659,8 +659,8 @@ void MainThreadSchedulerImpl::Shutdown() {
   ShutdownAllQueues();
   task_queue_throttler_.reset();
 
-  // Shut down |helper_| first, so that the ForceUpdatePolicy() |idle_helper_|
-  // early-outs and doesn't do anything.
+  // Shut down |helper_| first, so that the ForceUpdatePolicy() call
+  // from |idle_helper_| early-outs and doesn't do anything.
   helper_.Shutdown();
   idle_helper_.Shutdown();
   sequence_manager_.reset();

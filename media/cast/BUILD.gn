@@ -406,6 +406,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
   executable("cast_receiver_app") {
     testonly = true
     sources = [ "test/receiver.cc" ]
+    public_deps = []
     deps = [
       ":common",
       ":net",
@@ -427,6 +428,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
         "//build/config/linux:x11",
         "//build/config/linux:xext",
       ]
+      public_deps += [ "//ui/gfx/x" ]
       deps += [ "//third_party/libyuv" ]
     }
   }

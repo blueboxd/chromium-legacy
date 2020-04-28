@@ -4,7 +4,6 @@
 
 #include "chromeos/system/factory_ping_embargo_check.h"
 
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chromeos/system/fake_statistics_provider.h"

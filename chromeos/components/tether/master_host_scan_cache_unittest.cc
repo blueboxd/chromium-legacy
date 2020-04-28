@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"

@@ -387,7 +387,7 @@ group("polymer3_elements") {
     "settings_main:polymer3_elements",
     "settings_menu:polymer3_elements",
     "settings_page:polymer3_elements",
-    "settings_ui:polymer3_elements",
+    "settings_ui:web_components",
     "site_settings:web_components",
     "site_settings_page:web_components",
 

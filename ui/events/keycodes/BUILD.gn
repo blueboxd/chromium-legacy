@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 
 jumbo_source_set("xkb") {
@@ -20,6 +21,10 @@ jumbo_source_set("xkb") {
     "//base",
     "//ui/events:dom_keycode_converter",
   ]
+
+  if (!use_xkbcommon) {
+    public_deps += [ "//ui/gfx/x" ]
+  }
 }
 
 if (use_x11 || ozone_platform_x11) {

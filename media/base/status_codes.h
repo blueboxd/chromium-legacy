@@ -44,6 +44,7 @@ enum class StatusCode : StatusCodeType {
   // Windows Errors: 0x02
   kWindowsWrappedHresult = 0x00000201,
   kWindowsApiNotAvailible = 0x00000202,
+  kWindowsD3D11Error = 0x00000203,
 
   // D3D11VideoDecoder Errors: 0x03
   kCantMakeContextCurrent = 0x00000301,

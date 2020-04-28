@@ -58,17 +58,25 @@ void LaunchApp(Profile* profile, std::string app_id) {
       apps::AppServiceProxyFactory::GetForProfile(profile);
   DCHECK(proxy);
 
-  // Any user for whom the Help app launches after OOBE should see the getting
-  // started module.
-  profile->GetPrefs()->SetBoolean(prefs::kHelpAppShouldShowGetStarted, true);
-  // This is only used by the getting started module, so we can set it here.
-  profile->GetPrefs()->SetBoolean(prefs::kHelpAppTabletModeDuringOobe,
-                                  ash::TabletMode::Get()->InTabletMode());
-
   proxy->Launch(app_id, ui::EventFlags::EF_NONE,
                 apps::mojom::LaunchSource::kFromChromeInternal,
                 display::kInvalidDisplayId);
   profile->GetPrefs()->SetBoolean(prefs::kFirstRunTutorialShown, true);
+}
+
+// Getting started module is shown to  unmanaged regular and child accounts.
+bool ShouldShowGetStarted(Profile* profile,
+                          user_manager::UserManager* user_manager) {
+  if (profile->GetProfilePolicyConnector()->IsManaged())
+    return false;
+
+  switch (user_manager->GetActiveUser()->GetType()) {
+    case user_manager::USER_TYPE_REGULAR:
+    case user_manager::USER_TYPE_CHILD:
+      return true;
+    default:
+      return false;
+  }
 }
 
 // Object of this class waits for system web apps to load. Then it launches the
@@ -121,6 +129,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 bool ShouldLaunchHelpApp(Profile* profile) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  // Even if we don't launch the help app now, define the preferences for what
+  // should be shown in the app when it is launched.
+  profile->GetPrefs()->SetBoolean(prefs::kHelpAppShouldShowGetStarted,
+                                  ShouldShowGetStarted(profile, user_manager));
+  profile->GetPrefs()->SetBoolean(prefs::kHelpAppTabletModeDuringOobe,
+                                  ash::TabletMode::Get()->InTabletMode());
 
   if (user_manager->GetActiveUser()->GetType() !=
       user_manager::USER_TYPE_REGULAR)

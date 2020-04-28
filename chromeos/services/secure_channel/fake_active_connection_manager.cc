@@ -4,7 +4,7 @@
 
 #include "chromeos/services/secure_channel/fake_active_connection_manager.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
 

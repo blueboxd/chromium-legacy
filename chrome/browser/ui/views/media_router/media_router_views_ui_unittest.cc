@@ -703,7 +703,7 @@ class MediaRouterViewsUIIncognitoTest : public MediaRouterViewsUITest {
 
   content::BrowserContext* GetBrowserContext() override {
     return static_cast<Profile*>(MediaRouterViewsUITest::GetBrowserContext())
-        ->GetOffTheRecordProfile();
+        ->GetPrimaryOTRProfile();
   }
 };
 

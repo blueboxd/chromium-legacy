@@ -29,7 +29,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
-        "test_target": "//weblayer/shell/android:weblayer_shell_wpt"
+        "test_id_prefix": "ninja://weblayer/shell/android:weblayer_shell_wpt/"
       }
     ]
   },
@@ -81,7 +81,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_webview_unittests",
-        "test_target": "//android_webview/test:android_webview_unittests"
+        "test_id_prefix": "ninja://android_webview/test:android_webview_unittests/"
       },
       {
         "args": [
@@ -129,7 +129,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "system_webview_shell_layout_test_apk",
-        "test_target": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk"
+        "test_id_prefix": "ninja://android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk/"
       },
       {
         "args": [
@@ -183,7 +183,7 @@
           "shards": 2
         },
         "test": "webview_cts_tests",
-        "test_target": "//android_webview/test:webview_cts_tests"
+        "test_id_prefix": "ninja://android_webview/test:webview_cts_tests/"
       },
       {
         "args": [
@@ -239,7 +239,7 @@
           "shards": 2
         },
         "test": "webview_cts_tests",
-        "test_target": "//android_webview/test:webview_cts_tests"
+        "test_id_prefix": "ninja://android_webview/test:webview_cts_tests/"
       },
       {
         "args": [
@@ -288,7 +288,7 @@
           "shards": 12
         },
         "test": "webview_instrumentation_test_apk",
-        "test_target": "//android_webview/test:webview_instrumentation_test_apk"
+        "test_id_prefix": "ninja://android_webview/test:webview_instrumentation_test_apk/"
       },
       {
         "args": [
@@ -336,7 +336,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "webview_ui_test_app_test_apk",
-        "test_target": "//android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk"
+        "test_id_prefix": "ninja://android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk/"
       }
     ],
     "isolated_scripts": [
@@ -369,7 +369,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
-        "test_target": "//chrome/android:chrome_public_wpt"
+        "test_id_prefix": "ninja://chrome/android:chrome_public_wpt/"
       },
       {
         "args": [
@@ -400,7 +400,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
-        "test_target": "//android_webview/test:system_webview_wpt"
+        "test_id_prefix": "ninja://android_webview/test:system_webview_wpt/"
       }
     ]
   },
@@ -454,7 +454,7 @@
           "shards": 12
         },
         "test": "webview_instrumentation_test_apk",
-        "test_target": "//android_webview/test:webview_instrumentation_test_apk"
+        "test_id_prefix": "ninja://android_webview/test:webview_instrumentation_test_apk/"
       }
     ],
     "isolated_scripts": [
@@ -484,7 +484,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
-        "test_target": "//chrome/android:chrome_public_wpt"
+        "test_id_prefix": "ninja://chrome/android:chrome_public_wpt/"
       },
       {
         "isolate_name": "system_webview_wpt",
@@ -512,7 +512,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 15
         },
-        "test_target": "//android_webview/test:system_webview_wpt"
+        "test_id_prefix": "ninja://android_webview/test:system_webview_wpt/"
       }
     ]
   },
@@ -565,7 +565,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_browsertests",
-        "test_target": "//chrome/test:android_browsertests"
+        "test_id_prefix": "ninja://chrome/test:android_browsertests/"
       },
       {
         "args": [
@@ -621,7 +621,7 @@
           "shards": 20
         },
         "test": "chrome_public_test_apk",
-        "test_target": "//chrome/android:chrome_public_test_apk"
+        "test_id_prefix": "ninja://chrome/android:chrome_public_test_apk/"
       },
       {
         "args": [
@@ -671,7 +671,7 @@
           "shards": 20
         },
         "test": "content_browsertests",
-        "test_target": "//content/test:content_browsertests"
+        "test_id_prefix": "ninja://content/test:content_browsertests/"
       },
       {
         "args": [
@@ -721,7 +721,7 @@
           "shards": 5
         },
         "test": "content_shell_test_apk",
-        "test_target": "//content/shell/android:content_shell_test_apk"
+        "test_id_prefix": "ninja://content/shell/android:content_shell_test_apk/"
       },
       {
         "args": [
@@ -771,7 +771,7 @@
           "shards": 10
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       },
       {
         "args": [
@@ -821,7 +821,7 @@
           "shards": 10
         },
         "test": "unit_tests",
-        "test_target": "//chrome/test:unit_tests"
+        "test_id_prefix": "ninja://chrome/test:unit_tests/"
       }
     ]
   },
@@ -884,7 +884,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_browsertests",
-        "test_target": "//chrome/test:android_browsertests"
+        "test_id_prefix": "ninja://chrome/test:android_browsertests/"
       },
       {
         "args": [
@@ -943,7 +943,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_webview_unittests",
-        "test_target": "//android_webview/test:android_webview_unittests"
+        "test_id_prefix": "ninja://android_webview/test:android_webview_unittests/"
       },
       {
         "args": [
@@ -1002,7 +1002,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
-        "test_target": "//third_party/angle/src/tests:angle_unittests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/"
       },
       {
         "args": [
@@ -1061,7 +1061,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "args": [
@@ -1120,7 +1120,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_util_unittests",
-        "test_target": "//base/util:base_util_unittests"
+        "test_id_prefix": "ninja://base/util:base_util_unittests/"
       },
       {
         "args": [
@@ -1179,7 +1179,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_common_unittests",
-        "test_target": "//third_party/blink/common:blink_common_unittests"
+        "test_id_prefix": "ninja://third_party/blink/common:blink_common_unittests/"
       },
       {
         "args": [
@@ -1238,7 +1238,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
-        "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform/heap:blink_heap_unittests/"
       },
       {
         "args": [
@@ -1297,7 +1297,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_platform_unittests",
-        "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform:blink_platform_unittests/"
       },
       {
         "args": [
@@ -1358,7 +1358,7 @@
           "shards": 4
         },
         "test": "blink_unittests",
-        "test_target": "//third_party/blink/renderer/controller:blink_unittests"
+        "test_id_prefix": "ninja://third_party/blink/renderer/controller:blink_unittests/"
       },
       {
         "args": [
@@ -1417,7 +1417,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
-        "test_target": "//third_party/boringssl:boringssl_crypto_tests"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/"
       },
       {
         "args": [
@@ -1476,7 +1476,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
-        "test_target": "//third_party/boringssl:boringssl_ssl_tests"
+        "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/"
       },
       {
         "args": [
@@ -1535,7 +1535,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "breakpad_unittests",
-        "test_target": "//third_party/breakpad:breakpad_unittests"
+        "test_id_prefix": "ninja://third_party/breakpad:breakpad_unittests/"
       },
       {
         "args": [
@@ -1594,7 +1594,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cacheinvalidation_unittests",
-        "test_target": "//third_party/cacheinvalidation:cacheinvalidation_unittests"
+        "test_id_prefix": "ninja://third_party/cacheinvalidation:cacheinvalidation_unittests/"
       },
       {
         "args": [
@@ -1654,7 +1654,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
-        "test_target": "//media/capture:capture_unittests"
+        "test_id_prefix": "ninja://media/capture:capture_unittests/"
       },
       {
         "args": [
@@ -1713,7 +1713,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_unittests",
-        "test_target": "//media/cast:cast_unittests"
+        "test_id_prefix": "ninja://media/cast:cast_unittests/"
       },
       {
         "args": [
@@ -1773,7 +1773,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cc_unittests",
-        "test_target": "//cc:cc_unittests"
+        "test_id_prefix": "ninja://cc:cc_unittests/"
       },
       {
         "args": [
@@ -1832,7 +1832,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_modern_public_bundle_fake_modules_smoke_test",
-        "test_target": "//chrome/android:chrome_modern_public_bundle_fake_modules_smoke_test"
+        "test_id_prefix": "ninja://chrome/android:chrome_modern_public_bundle_fake_modules_smoke_test/"
       },
       {
         "args": [
@@ -1891,7 +1891,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_modern_public_bundle_smoke_test",
-        "test_target": "//chrome/android:chrome_modern_public_bundle_smoke_test"
+        "test_id_prefix": "ninja://chrome/android:chrome_modern_public_bundle_smoke_test/"
       },
       {
         "args": [
@@ -1950,7 +1950,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_modern_public_smoke_test",
-        "test_target": "//chrome/android:chrome_modern_public_smoke_test"
+        "test_id_prefix": "ninja://chrome/android:chrome_modern_public_smoke_test/"
       },
       {
         "args": [
@@ -2009,7 +2009,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_public_smoke_test",
-        "test_target": "//chrome/android:chrome_public_smoke_test"
+        "test_id_prefix": "ninja://chrome/android:chrome_public_smoke_test/"
       },
       {
         "args": [
@@ -2075,7 +2075,7 @@
           "shards": 20
         },
         "test": "chrome_public_test_apk",
-        "test_target": "//chrome/android:chrome_public_test_apk"
+        "test_id_prefix": "ninja://chrome/android:chrome_public_test_apk/"
       },
       {
         "args": [
@@ -2143,7 +2143,7 @@
           "shards": 20
         },
         "test": "chrome_public_test_apk",
-        "test_target": "//chrome/android:chrome_public_test_apk"
+        "test_id_prefix": "ninja://chrome/android:chrome_public_test_apk/"
       },
       {
         "args": [
@@ -2202,7 +2202,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
-        "test_target": "//components:components_browsertests"
+        "test_id_prefix": "ninja://components:components_browsertests/"
       },
       {
         "args": [
@@ -2263,7 +2263,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_browsertests",
-        "test_target": "//components:components_browsertests"
+        "test_id_prefix": "ninja://components:components_browsertests/"
       },
       {
         "args": [
@@ -2323,7 +2323,7 @@
           "shards": 4
         },
         "test": "components_unittests",
-        "test_target": "//components:components_unittests"
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "args": [
@@ -2384,7 +2384,7 @@
           "shards": 9
         },
         "test": "content_browsertests",
-        "test_target": "//content/test:content_browsertests"
+        "test_id_prefix": "ninja://content/test:content_browsertests/"
       },
       {
         "args": [
@@ -2447,7 +2447,7 @@
           "shards": 5
         },
         "test": "content_browsertests",
-        "test_target": "//content/test:content_browsertests"
+        "test_id_prefix": "ninja://content/test:content_browsertests/"
       },
       {
         "args": [
@@ -2508,7 +2508,7 @@
           "shards": 3
         },
         "test": "content_shell_test_apk",
-        "test_target": "//content/shell/android:content_shell_test_apk"
+        "test_id_prefix": "ninja://content/shell/android:content_shell_test_apk/"
       },
       {
         "args": [
@@ -2571,7 +2571,7 @@
           "shards": 5
         },
         "test": "content_shell_test_apk",
-        "test_target": "//content/shell/android:content_shell_test_apk"
+        "test_id_prefix": "ninja://content/shell/android:content_shell_test_apk/"
       },
       {
         "args": [
@@ -2631,7 +2631,7 @@
           "shards": 3
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       },
       {
         "args": [
@@ -2690,7 +2690,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
-        "test_target": "//crypto:crypto_unittests"
+        "test_id_prefix": "ninja://crypto:crypto_unittests/"
       },
       {
         "args": [
@@ -2749,7 +2749,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "device_unittests",
-        "test_target": "//device:device_unittests"
+        "test_id_prefix": "ninja://device:device_unittests/"
       },
       {
         "args": [
@@ -2808,7 +2808,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "display_unittests",
-        "test_target": "//ui/display:display_unittests"
+        "test_id_prefix": "ninja://ui/display:display_unittests/"
       },
       {
         "args": [
@@ -2867,7 +2867,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
-        "test_target": "//ui/events:events_unittests"
+        "test_id_prefix": "ninja://ui/events:events_unittests/"
       },
       {
         "args": [
@@ -2926,7 +2926,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gcm_unit_tests",
-        "test_target": "//google_apis/gcm:gcm_unit_tests"
+        "test_id_prefix": "ninja://google_apis/gcm:gcm_unit_tests/"
       },
       {
         "args": [
@@ -2985,7 +2985,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gfx_unittests",
-        "test_target": "//ui/gfx:gfx_unittests"
+        "test_id_prefix": "ninja://ui/gfx:gfx_unittests/"
       },
       {
         "args": [
@@ -3044,7 +3044,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gin_unittests",
-        "test_target": "//gin:gin_unittests"
+        "test_id_prefix": "ninja://gin:gin_unittests/"
       },
       {
         "args": [
@@ -3104,7 +3104,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_target": "//gpu:gl_tests"
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -3163,7 +3163,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_target": "//ui/gl:gl_unittests"
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       },
       {
         "args": [
@@ -3222,7 +3222,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
-        "test_target": "//google_apis:google_apis_unittests"
+        "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
       {
         "args": [
@@ -3281,7 +3281,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gpu_unittests",
-        "test_target": "//gpu:gpu_unittests"
+        "test_id_prefix": "ninja://gpu:gpu_unittests/"
       },
       {
         "args": [
@@ -3340,7 +3340,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gwp_asan_unittests",
-        "test_target": "//components/gwp_asan:gwp_asan_unittests"
+        "test_id_prefix": "ninja://components/gwp_asan:gwp_asan_unittests/"
       },
       {
         "args": [
@@ -3399,7 +3399,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ipc_tests",
-        "test_target": "//ipc:ipc_tests"
+        "test_id_prefix": "ninja://ipc:ipc_tests/"
       },
       {
         "args": [
@@ -3458,7 +3458,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "jingle_unittests",
-        "test_target": "//jingle:jingle_unittests"
+        "test_id_prefix": "ninja://jingle:jingle_unittests/"
       },
       {
         "args": [
@@ -3517,7 +3517,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "latency_unittests",
-        "test_target": "//ui/latency:latency_unittests"
+        "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
       {
         "args": [
@@ -3576,7 +3576,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "libjingle_xmpp_unittests",
-        "test_target": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests"
+        "test_id_prefix": "ninja://third_party/libjingle_xmpp:libjingle_xmpp_unittests/"
       },
       {
         "args": [
@@ -3635,7 +3635,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_blink_unittests",
-        "test_target": "//media/blink:media_blink_unittests"
+        "test_id_prefix": "ninja://media/blink:media_blink_unittests/"
       },
       {
         "args": [
@@ -3695,7 +3695,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_unittests",
-        "test_target": "//media:media_unittests"
+        "test_id_prefix": "ninja://media:media_unittests/"
       },
       {
         "args": [
@@ -3754,7 +3754,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "midi_unittests",
-        "test_target": "//media/midi:midi_unittests"
+        "test_id_prefix": "ninja://media/midi:midi_unittests/"
       },
       {
         "args": [
@@ -3813,7 +3813,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_test_apk",
-        "test_target": "//mojo/public/java/system:mojo_test_apk"
+        "test_id_prefix": "ninja://mojo/public/java/system:mojo_test_apk/"
       },
       {
         "args": [
@@ -3872,7 +3872,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_unittests",
-        "test_target": "//mojo:mojo_unittests"
+        "test_id_prefix": "ninja://mojo:mojo_unittests/"
       },
       {
         "args": [
@@ -3933,7 +3933,7 @@
           "shards": 3
         },
         "test": "net_unittests",
-        "test_target": "//net:net_unittests"
+        "test_id_prefix": "ninja://net:net_unittests/"
       },
       {
         "args": [
@@ -3993,7 +3993,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sandbox_linux_unittests",
-        "test_target": "//sandbox/linux:sandbox_linux_unittests"
+        "test_id_prefix": "ninja://sandbox/linux:sandbox_linux_unittests/"
       },
       {
         "args": [
@@ -4052,7 +4052,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
-        "test_target": "//services:services_unittests"
+        "test_id_prefix": "ninja://services:services_unittests/"
       },
       {
         "args": [
@@ -4111,7 +4111,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "shell_dialogs_unittests",
-        "test_target": "//ui/shell_dialogs:shell_dialogs_unittests"
+        "test_id_prefix": "ninja://ui/shell_dialogs:shell_dialogs_unittests/"
       },
       {
         "args": [
@@ -4170,7 +4170,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
-        "test_target": "//skia:skia_unittests"
+        "test_id_prefix": "ninja://skia:skia_unittests/"
       },
       {
         "args": [
@@ -4229,7 +4229,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
-        "test_target": "//sql:sql_unittests"
+        "test_id_prefix": "ninja://sql:sql_unittests/"
       },
       {
         "args": [
@@ -4288,7 +4288,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "storage_unittests",
-        "test_target": "//storage:storage_unittests"
+        "test_id_prefix": "ninja://storage:storage_unittests/"
       },
       {
         "args": [
@@ -4347,7 +4347,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_android_unittests",
-        "test_target": "//ui/android:ui_android_unittests"
+        "test_id_prefix": "ninja://ui/android:ui_android_unittests/"
       },
       {
         "args": [
@@ -4406,7 +4406,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
-        "test_target": "//ui/base:ui_base_unittests"
+        "test_id_prefix": "ninja://ui/base:ui_base_unittests/"
       },
       {
         "args": [
@@ -4465,7 +4465,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_touch_selection_unittests",
-        "test_target": "//ui/touch_selection:ui_touch_selection_unittests"
+        "test_id_prefix": "ninja://ui/touch_selection:ui_touch_selection_unittests/"
       },
       {
         "args": [
@@ -4525,7 +4525,7 @@
           "shards": 2
         },
         "test": "unit_tests",
-        "test_target": "//chrome/test:unit_tests"
+        "test_id_prefix": "ninja://chrome/test:unit_tests/"
       },
       {
         "args": [
@@ -4584,7 +4584,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
-        "test_target": "//url:url_unittests"
+        "test_id_prefix": "ninja://url:url_unittests/"
       },
       {
         "args": [
@@ -4644,7 +4644,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "viz_unittests",
-        "test_target": "//components/viz:viz_unittests"
+        "test_id_prefix": "ninja://components/viz:viz_unittests/"
       },
       {
         "args": [
@@ -4703,7 +4703,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_browsertests",
-        "test_target": "//weblayer/test:weblayer_browsertests"
+        "test_id_prefix": "ninja://weblayer/test:weblayer_browsertests/"
       },
       {
         "args": [
@@ -4762,7 +4762,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_instrumentation_test_apk",
-        "test_target": "//weblayer/browser/android/javatests:weblayer_instrumentation_test_apk"
+        "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_instrumentation_test_apk/"
       },
       {
         "args": [
@@ -4821,7 +4821,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_private_instrumentation_test_apk",
-        "test_target": "//weblayer/browser/android/javatests:weblayer_private_instrumentation_test_apk"
+        "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_private_instrumentation_test_apk/"
       },
       {
         "args": [
@@ -4881,7 +4881,7 @@
           "shards": 7
         },
         "test": "webview_instrumentation_test_apk",
-        "test_target": "//android_webview/test:webview_instrumentation_test_apk"
+        "test_id_prefix": "ninja://android_webview/test:webview_instrumentation_test_apk/"
       },
       {
         "args": [
@@ -4944,7 +4944,7 @@
           "shards": 20
         },
         "test": "webview_instrumentation_test_apk",
-        "test_target": "//android_webview/test:webview_instrumentation_test_apk"
+        "test_id_prefix": "ninja://android_webview/test:webview_instrumentation_test_apk/"
       },
       {
         "args": [
@@ -5003,7 +5003,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wtf_unittests",
-        "test_target": "//third_party/blink/renderer/platform/wtf:wtf_unittests"
+        "test_id_prefix": "ninja://third_party/blink/renderer/platform/wtf:wtf_unittests/"
       }
     ],
     "isolated_scripts": [
@@ -5044,7 +5044,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//components:components_perftests"
+        "test_id_prefix": "ninja://components:components_perftests/"
       },
       {
         "args": [
@@ -5081,7 +5081,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//content/shell:content_shell_crash_test"
+        "test_id_prefix": "ninja://content/shell:content_shell_crash_test/"
       },
       {
         "args": [
@@ -5117,7 +5117,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/android/monochrome:monochrome_apk_checker"
+        "test_id_prefix": "ninja://chrome/android/monochrome:monochrome_apk_checker/"
       },
       {
         "args": [
@@ -5155,7 +5155,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_target": "//chrome/test:telemetry_perf_unittests"
+        "test_id_prefix": "ninja://chrome/test:telemetry_perf_unittests/"
       }
     ]
   },
@@ -5218,7 +5218,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_instrumentation_test_apk",
-        "test_target": "//weblayer/browser/android/javatests:weblayer_instrumentation_test_apk"
+        "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_instrumentation_test_apk/"
       },
       {
         "args": [
@@ -5289,7 +5289,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_instrumentation_test_versions_apk",
-        "test_target": "//weblayer/browser/android/javatests:weblayer_instrumentation_test_versions_apk"
+        "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_instrumentation_test_versions_apk/"
       },
       {
         "args": [
@@ -5360,7 +5360,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "weblayer_instrumentation_test_versions_apk",
-        "test_target": "//weblayer/browser/android/javatests:weblayer_instrumentation_test_versions_apk"
+        "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_instrumentation_test_versions_apk/"
       }
     ]
   }

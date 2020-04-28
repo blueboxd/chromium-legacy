@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/fake_arc_camera_client.h"
 #include "dbus/bus.h"

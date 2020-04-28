@@ -4,7 +4,6 @@
 
 #include "chromeos/network/managed_network_configuration_handler.h"
 
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"

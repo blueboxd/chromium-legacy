@@ -101,6 +101,7 @@ jumbo_component("x") {
 
   sources = [
     "../gfx_export.h",
+    "x11.h",
     "x11_atom_cache.cc",
     "x11_atom_cache.h",
     "x11_error_tracker.cc",

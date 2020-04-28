@@ -2427,6 +2427,11 @@
     "expiry_milestone": 84
   },
   {
+    "name": "files-zip-no-nacl",
+    "owners": [ "fdegros", "jboulic", "dats" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "fill-on-account-select",
     "owners": [ "jdoerrie" ],
     "expiry_milestone": 87

@@ -427,9 +427,13 @@ class CORE_EXPORT NGInlineCursor {
   void MoveToPreviousPaintFragment();
   void MoveToPreviousSiblingPaintFragment();
 
-  ItemsSpan::iterator SlowFirstItemIteratorFor(
-      const LayoutObject& layout_object) const;
-  unsigned SpanIndexFromItemIndex(unsigned index) const;
+  static ItemsSpan::iterator SlowFirstItemIteratorFor(
+      const LayoutObject& layout_object,
+      const ItemsSpan& items);
+  static wtf_size_t SlowFirstItemIndexFor(const LayoutObject& layout_object,
+                                          const ItemsSpan& items);
+  wtf_size_t SpanBeginItemIndex() const;
+  wtf_size_t SpanIndexFromItemIndex(unsigned index) const;
 
   PositionWithAffinity PositionForPointInChild(
       const PhysicalOffset& point,

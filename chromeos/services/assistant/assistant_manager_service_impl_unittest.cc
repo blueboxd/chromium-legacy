@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"

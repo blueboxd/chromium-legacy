@@ -323,6 +323,7 @@ class AutofillAssistantClient {
      * the LocationManager together with the Geocoder.
      */
     @CalledByNative
+    @Nullable
     private String getCountryCode() {
         TelephonyManager telephonyManager =
                 (TelephonyManager) ContextUtils.getApplicationContext().getSystemService(

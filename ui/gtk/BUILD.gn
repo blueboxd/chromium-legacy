@@ -86,6 +86,7 @@ jumbo_component("gtk") {
     "//ui/gfx",
     "//ui/gfx:native_widget_types",
     "//ui/gfx/geometry",
+    "//ui/gfx/x",
     "//ui/native_theme",
     "//ui/shell_dialogs",
     "//ui/strings",

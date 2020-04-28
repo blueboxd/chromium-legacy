@@ -30,6 +30,10 @@ class WithIdentifier(object):
     def identifier(self):
         return self._identifier
 
+    def change_identifier(self, new_identifier):
+        assert isinstance(new_identifier, Identifier)
+        self._identifier = new_identifier
+
 
 class WithExtendedAttributes(object):
     """Implements |extended_attributes| as a readonly attribute."""

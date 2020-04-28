@@ -36,12 +36,9 @@ bool IsValidRulesetData(base::span<const uint8_t> data, int expected_checksum);
 // testing.
 std::string GetVersionHeaderForTesting();
 
-// Returns the indexed ruleset format version.
+// Get/Set the ruleset format version for testing. Note: Instead of using these
+// directly, use ScopedIncrementRulesetFormatVersion.
 int GetIndexedRulesetFormatVersionForTesting();
-
-// Override the ruleset format version for testing.
-// TODO(karandeepb): Introduce a scoped update class for this to ensure tests
-// don't have to manually reset this every time.
 void SetIndexedRulesetFormatVersionForTesting(int version);
 
 // Strips the version header from |ruleset_data|. Returns false on version

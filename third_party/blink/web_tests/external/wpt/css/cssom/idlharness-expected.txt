@@ -42,7 +42,7 @@ PASS ShadowRoot includes DocumentOrShadowRoot: member names are unique
 PASS Element includes ParentNode: member names are unique
 PASS Element includes NonDocumentTypeChildNode: member names are unique
 PASS Element includes ChildNode: member names are unique
-PASS Element includes Slotable: member names are unique
+PASS Element includes Slottable: member names are unique
 PASS CharacterData includes NonDocumentTypeChildNode: member names are unique
 PASS CharacterData includes ChildNode: member names are unique
 PASS MediaList interface: existence and properties of interface object

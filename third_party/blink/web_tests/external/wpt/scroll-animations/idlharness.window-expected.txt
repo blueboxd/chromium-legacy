@@ -6,7 +6,7 @@ PASS Element includes Animatable: member names are unique
 PASS Element includes ParentNode: member names are unique
 PASS Element includes NonDocumentTypeChildNode: member names are unique
 PASS Element includes ChildNode: member names are unique
-PASS Element includes Slotable: member names are unique
+PASS Element includes Slottable: member names are unique
 PASS ScrollTimeline interface: existence and properties of interface object
 PASS ScrollTimeline interface object length
 PASS ScrollTimeline interface object name

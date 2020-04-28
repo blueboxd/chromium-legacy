@@ -21,7 +21,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -38,7 +38,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -62,7 +62,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -79,7 +79,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -103,7 +103,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -120,7 +120,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -145,7 +145,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -162,7 +162,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -181,7 +181,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -193,7 +193,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -213,7 +213,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -225,7 +225,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -244,7 +244,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -256,7 +256,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -276,7 +276,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -288,7 +288,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -357,7 +357,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -374,7 +374,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -398,7 +398,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -415,7 +415,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -439,7 +439,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -456,7 +456,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -480,7 +480,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -497,7 +497,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   },
@@ -516,7 +516,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
-        "test_target": "//base:base_unittests"
+        "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
         "merge": {
@@ -528,7 +528,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
-        "test_target": "//content/test:content_unittests"
+        "test_id_prefix": "ninja://content/test:content_unittests/"
       }
     ]
   }

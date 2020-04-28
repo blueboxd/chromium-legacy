@@ -27,7 +27,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
-        "test_target": "//:blink_web_tests"
+        "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
         "args": [
@@ -54,7 +54,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
-        "test_target": "//:devtools_web_tests"
+        "test_id_prefix": "ninja://:devtools_web_tests/"
       }
     ]
   },
@@ -83,7 +83,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
-        "test_target": "//:blink_web_tests"
+        "test_id_prefix": "ninja://:blink_web_tests/"
       },
       {
         "args": [
@@ -110,7 +110,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
         },
-        "test_target": "//:devtools_web_tests"
+        "test_id_prefix": "ninja://:devtools_web_tests/"
       }
     ]
   }

@@ -12,7 +12,7 @@ PASS HTMLElement includes HTMLOrSVGElement: member names are unique
 PASS Element includes ParentNode: member names are unique
 PASS Element includes NonDocumentTypeChildNode: member names are unique
 PASS Element includes ChildNode: member names are unique
-PASS Element includes Slotable: member names are unique
+PASS Element includes Slottable: member names are unique
 PASS CanvasCaptureMediaStreamTrack interface: existence and properties of interface object
 PASS CanvasCaptureMediaStreamTrack interface object length
 PASS CanvasCaptureMediaStreamTrack interface object name

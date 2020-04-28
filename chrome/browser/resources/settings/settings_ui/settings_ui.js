@@ -10,20 +10,38 @@
  *
  *    <settings-ui prefs="{{prefs}}"></settings-ui>
  */
-cr.define('settings', function() {
-  /** Defined when the main Settings script runs. */
-  let defaultResourceLoaded = true;  // eslint-disable-line prefer-const
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-  /* #ignore */ assert(
-      /* #ignore */ !window.settings || !window.settings.defaultResourceLoaded,
-      /* #ignore */ 'settings_ui.js run twice. ' +
-          /* #ignore */ 'You probably have an invalid import.');
+import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
+import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.m.js';
+import 'chrome://resources/cr_elements/cr_page_host_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {FindShortcutBehavior} from 'chrome://resources/js/find_shortcut_behavior.m.js';
+import {listenOnce} from 'chrome://resources/js/util.m.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import {setGlobalScrollTarget, resetGlobalScrollTargetForTesting} from '../global_scroll_target_behavior.m.js';
+import {loadTimeData} from '../i18n_setup.m.js';
+import '../icons.m.js';
+import '../settings_main/settings_main.js';
+import '../settings_menu/settings_menu.js';
+import '../settings_shared_css.m.js';
+import {PageVisibility, pageVisibility} from '../page_visibility.m.js';
+import '../prefs/prefs.m.js';
+import {routes} from '../route.m.js';
+import {Route, Router, RouteObserverBehavior} from '../router.m.js';
+import '../settings_vars_css.m.js';
 
   Polymer({
     is: 'settings-ui',
 
+    _template: html`{__html_template__}`,
+
     behaviors: [
-      settings.RouteObserverBehavior,
+      RouteObserverBehavior,
       CrContainerShadowBehavior,
       FindShortcutBehavior,
     ],
@@ -65,7 +83,7 @@ cr.define('settings', function() {
       /**
        * @private {!PageVisibility}
        */
-      pageVisibility_: {type: Object, value: settings.pageVisibility},
+      pageVisibility_: {type: Object, value: pageVisibility},
 
       /** @private */
       lastSearchQuery_: {
@@ -80,7 +98,7 @@ cr.define('settings', function() {
 
     /** @override */
     created() {
-      settings.Router.getInstance().initializeRouteFromUrl();
+      Router.getInstance().initializeRouteFromUrl();
     },
 
     /**
@@ -144,7 +162,7 @@ cr.define('settings', function() {
 
       // Preload bold Roboto so it doesn't load and flicker the first time used.
       document.fonts.load('bold 12px Roboto');
-      settings.setGlobalScrollTarget(
+      setGlobalScrollTarget(
           /** @type {HTMLElement} */ (this.$.container));
 
       const scrollToTop = top => new Promise(resolve => {
@@ -157,7 +175,7 @@ cr.define('settings', function() {
         // using 'smooth' scroll here results in the scroll changing to whatever
         // is last value of |top|. This happens even after setting the scroll
         // position the UI or programmatically.
-        const behavior = cr.isChromeOS ? 'auto' : 'smooth';
+        const behavior = isChromeOS ? 'auto' : 'smooth';
         this.$.container.scrollTo({top: top, behavior: behavior});
         const onScroll = () => {
           this.debounce('scrollEnd', () => {
@@ -178,14 +196,14 @@ cr.define('settings', function() {
 
     /** @override */
     detached() {
-      settings.Router.getInstance().resetRouteForTesting();
-      settings.resetGlobalScrollTargetForTesting();
+      Router.getInstance().resetRouteForTesting();
+      resetGlobalScrollTargetForTesting();
     },
 
-    /** @param {!settings.Route} route */
+    /** @param {!Route} route */
     currentRouteChanged(route) {
       const urlSearchQuery =
-          settings.Router.getInstance().getQueryParameters().get('search') ||
+          Router.getInstance().getQueryParameters().get('search') ||
           '';
       if (urlSearchQuery == this.lastSearchQuery_) {
         return;
@@ -238,8 +256,8 @@ cr.define('settings', function() {
      */
     onSearchChanged_(e) {
       const query = e.detail;
-      settings.Router.getInstance().navigateTo(
-          settings.routes.BASIC,
+      Router.getInstance().navigateTo(
+          routes.BASIC,
           query.length > 0 ?
               new URLSearchParams('search=' + encodeURIComponent(query)) :
               undefined,
@@ -306,6 +324,3 @@ cr.define('settings', function() {
     },
   });
 
-  // #cr_define_end
-  return {defaultResourceLoaded};
-});

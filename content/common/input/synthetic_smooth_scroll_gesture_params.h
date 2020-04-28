@@ -32,6 +32,8 @@ struct CONTENT_EXPORT SyntheticSmoothScrollGestureParams
   float fling_velocity_x;
   float fling_velocity_y;
   ui::ScrollGranularity granularity;
+  // A bitfield of values from blink::WebInputEvent::Modifiers.
+  int key_modifiers;
 
   static const SyntheticSmoothScrollGestureParams* Cast(
       const SyntheticGestureParams* gesture_params);

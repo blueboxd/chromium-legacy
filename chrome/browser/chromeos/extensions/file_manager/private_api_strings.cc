@@ -50,6 +50,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean(
       "UNIFIED_MEDIA_VIEW_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kUnifiedMediaView));
+  dict->SetBoolean("ZIP_NO_NACL", base::FeatureList::IsEnabled(
+                                      chromeos::features::kFilesZipNoNaCl));
 
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
 

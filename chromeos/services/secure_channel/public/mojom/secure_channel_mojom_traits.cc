@@ -4,7 +4,7 @@
 
 #include "chromeos/services/secure_channel/public/mojom/secure_channel_mojom_traits.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace mojo {
 

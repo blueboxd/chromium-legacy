@@ -230,7 +230,7 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
                              &LocalDOMWindow::WarnUnusedPreloads),
       should_print_when_finished_loading_(false),
       input_method_controller_(
-          MakeGarbageCollected<InputMethodController>(*this)),
+          MakeGarbageCollected<InputMethodController>(*this, frame)),
       spell_checker_(MakeGarbageCollected<SpellChecker>(*this)),
       text_suggestion_controller_(
           MakeGarbageCollected<TextSuggestionController>(*this)) {}

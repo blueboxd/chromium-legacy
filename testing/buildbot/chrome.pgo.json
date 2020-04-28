@@ -21,7 +21,7 @@
           "can_use_on_swarming_builders": true,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:performance_test_suite"
+        "test_id_prefix": "ninja://chrome/test:performance_test_suite/"
       }
     ]
   },
@@ -45,7 +45,7 @@
           "can_use_on_swarming_builders": true,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:performance_test_suite"
+        "test_id_prefix": "ninja://chrome/test:performance_test_suite/"
       }
     ]
   },
@@ -69,7 +69,7 @@
           "can_use_on_swarming_builders": true,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:performance_test_suite"
+        "test_id_prefix": "ninja://chrome/test:performance_test_suite/"
       }
     ]
   },
@@ -93,7 +93,7 @@
           "can_use_on_swarming_builders": true,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:performance_test_suite"
+        "test_id_prefix": "ninja://chrome/test:performance_test_suite/"
       }
     ]
   },
@@ -117,7 +117,7 @@
           "can_use_on_swarming_builders": true,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:performance_test_suite"
+        "test_id_prefix": "ninja://chrome/test:performance_test_suite/"
       }
     ]
   },
@@ -141,7 +141,7 @@
           "can_use_on_swarming_builders": true,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:performance_test_suite"
+        "test_id_prefix": "ninja://chrome/test:performance_test_suite/"
       }
     ]
   },
@@ -165,7 +165,7 @@
           "can_use_on_swarming_builders": true,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:performance_test_suite"
+        "test_id_prefix": "ninja://chrome/test:performance_test_suite/"
       }
     ]
   },
@@ -189,7 +189,7 @@
           "can_use_on_swarming_builders": true,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:performance_test_suite"
+        "test_id_prefix": "ninja://chrome/test:performance_test_suite/"
       }
     ]
   },
@@ -213,7 +213,7 @@
           "can_use_on_swarming_builders": true,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:performance_test_suite"
+        "test_id_prefix": "ninja://chrome/test:performance_test_suite/"
       }
     ]
   }

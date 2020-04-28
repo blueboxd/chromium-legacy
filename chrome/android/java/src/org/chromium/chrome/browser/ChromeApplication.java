@@ -28,7 +28,6 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.memory.MemoryPressureMonitor;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.build.BuildHooksAndroid;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.chrome.browser.crash.ApplicationStatusTracker;
 import org.chromium.chrome.browser.crash.FirebaseConfig;
@@ -111,9 +110,6 @@ public class ChromeApplication extends Application {
             ApplicationStatusTracker tracker = new ApplicationStatusTracker();
             tracker.onApplicationStateChange(ApplicationStatus.getStateForApplication());
             ApplicationStatus.registerApplicationStateListener(tracker);
-
-            // Only browser process requires custom resources.
-            BuildHooksAndroid.initCustomResources(this);
 
             // Disable MemoryPressureMonitor polling when Chrome goes to the background.
             ApplicationStatus.registerApplicationStateListener(

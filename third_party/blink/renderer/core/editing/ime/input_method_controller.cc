@@ -391,8 +391,11 @@ int ComputeAutocapitalizeFlags(const Element* element) {
 
 enum class InputMethodController::TypingContinuation { kContinue, kEnd };
 
-InputMethodController::InputMethodController(LocalDOMWindow& window)
-    : ExecutionContextLifecycleObserver(&window), has_composition_(false) {}
+InputMethodController::InputMethodController(LocalDOMWindow& window,
+                                             LocalFrame& frame)
+    : ExecutionContextLifecycleObserver(&window),
+      frame_(frame),
+      has_composition_(false) {}
 
 InputMethodController::~InputMethodController() = default;
 
@@ -415,8 +418,7 @@ inline Editor& InputMethodController::GetEditor() const {
 }
 
 LocalFrame& InputMethodController::GetFrame() const {
-  DCHECK(IsAvailable());
-  return *To<LocalDOMWindow>(GetExecutionContext())->GetFrame();
+  return *frame_;
 }
 
 void InputMethodController::Clear() {
@@ -1618,6 +1620,7 @@ void InputMethodController::WillChangeFocus() {
 }
 
 void InputMethodController::Trace(Visitor* visitor) {
+  visitor->Trace(frame_);
   visitor->Trace(composition_range_);
   visitor->Trace(active_edit_context_);
   ExecutionContextLifecycleObserver::Trace(visitor);

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // TODO(https://crbug.com/1062766): Update spec documents with objects as implemented.
-// https://wicg.github.io/local-font-access/
+// https://inexorabletash.github.io/font-enumeration/
 [
     Exposed=(Window,Worker),
     SecureContext,

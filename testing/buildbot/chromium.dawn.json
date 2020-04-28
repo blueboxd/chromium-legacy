@@ -26,7 +26,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -52,7 +52,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -77,7 +77,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -103,7 +103,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -129,7 +129,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -154,7 +154,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -179,7 +179,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -201,7 +201,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_target": "//gpu:gl_tests"
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -224,7 +224,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_target": "//ui/gl:gl_unittests"
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       }
     ],
     "isolated_scripts": [
@@ -253,7 +253,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       },
       {
         "args": [
@@ -281,7 +281,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//:webgpu_blink_web_tests"
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -308,7 +308,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -334,7 +334,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -359,7 +359,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -385,7 +385,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -411,7 +411,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -436,7 +436,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -461,7 +461,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -483,7 +483,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_target": "//gpu:gl_tests"
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -506,7 +506,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_target": "//ui/gl:gl_unittests"
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       }
     ],
     "isolated_scripts": [
@@ -535,7 +535,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       },
       {
         "args": [
@@ -563,7 +563,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//:webgpu_blink_web_tests"
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -590,7 +590,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -616,7 +616,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -641,7 +641,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -667,7 +667,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -693,7 +693,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -718,7 +718,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -743,7 +743,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       }
     ],
     "isolated_scripts": [
@@ -772,7 +772,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       }
     ]
   },
@@ -799,7 +799,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -825,7 +825,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -850,7 +850,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -876,7 +876,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -902,7 +902,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -927,7 +927,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -952,7 +952,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       }
     ],
     "isolated_scripts": [
@@ -981,7 +981,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       }
     ]
   },
@@ -1011,7 +1011,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1038,7 +1038,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1064,7 +1064,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1091,7 +1091,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1118,7 +1118,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1144,7 +1144,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1170,7 +1170,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1193,7 +1193,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_target": "//gpu:gl_tests"
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -1216,7 +1216,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_target": "//ui/gl:gl_unittests"
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       }
     ],
     "isolated_scripts": [
@@ -1246,7 +1246,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       },
       {
         "args": [
@@ -1274,7 +1274,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//:webgpu_blink_web_tests"
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -1300,7 +1300,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1325,7 +1325,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1349,7 +1349,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1374,7 +1374,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1399,7 +1399,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1423,7 +1423,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1447,7 +1447,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1468,7 +1468,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_target": "//gpu:gl_tests"
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -1489,7 +1489,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_target": "//ui/gl:gl_unittests"
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       }
     ],
     "isolated_scripts": [
@@ -1517,7 +1517,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       },
       {
         "args": [
@@ -1543,7 +1543,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//:webgpu_blink_web_tests"
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -1571,7 +1571,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1598,7 +1598,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1624,7 +1624,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1651,7 +1651,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1678,7 +1678,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1704,7 +1704,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1730,7 +1730,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       }
     ],
     "isolated_scripts": [
@@ -1760,7 +1760,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       }
     ]
   },
@@ -1786,7 +1786,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1811,7 +1811,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1835,7 +1835,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1860,7 +1860,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1885,7 +1885,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1909,7 +1909,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1933,7 +1933,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       }
     ],
     "isolated_scripts": [
@@ -1961,7 +1961,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       }
     ]
   },
@@ -1990,7 +1990,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2016,7 +2016,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2041,7 +2041,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2067,7 +2067,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2093,7 +2093,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2118,7 +2118,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2143,7 +2143,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2165,7 +2165,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_target": "//gpu:gl_tests"
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -2187,7 +2187,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_target": "//ui/gl:gl_unittests"
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       }
     ],
     "isolated_scripts": [
@@ -2216,7 +2216,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       },
       {
         "args": [
@@ -2244,7 +2244,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//:webgpu_blink_web_tests"
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -2271,7 +2271,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2297,7 +2297,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2322,7 +2322,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2348,7 +2348,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2374,7 +2374,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2399,7 +2399,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2424,7 +2424,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2446,7 +2446,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_target": "//gpu:gl_tests"
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -2468,7 +2468,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_target": "//ui/gl:gl_unittests"
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       }
     ],
     "isolated_scripts": [
@@ -2497,7 +2497,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       },
       {
         "args": [
@@ -2525,7 +2525,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//:webgpu_blink_web_tests"
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -2552,7 +2552,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2578,7 +2578,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2603,7 +2603,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2629,7 +2629,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2655,7 +2655,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2680,7 +2680,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2705,7 +2705,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       }
     ],
     "isolated_scripts": [
@@ -2734,7 +2734,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       }
     ]
   },
@@ -2761,7 +2761,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2787,7 +2787,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2812,7 +2812,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2838,7 +2838,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2864,7 +2864,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2889,7 +2889,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2914,7 +2914,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       }
     ],
     "isolated_scripts": [
@@ -2943,7 +2943,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       }
     ]
   },
@@ -2972,7 +2972,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2998,7 +2998,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3023,7 +3023,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3049,7 +3049,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3075,7 +3075,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3100,7 +3100,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3125,7 +3125,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3147,7 +3147,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_target": "//gpu:gl_tests"
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -3169,7 +3169,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_target": "//ui/gl:gl_unittests"
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       }
     ],
     "isolated_scripts": [
@@ -3198,7 +3198,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       },
       {
         "args": [
@@ -3225,7 +3225,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//:webgpu_blink_web_tests"
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -3252,7 +3252,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3278,7 +3278,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3303,7 +3303,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3329,7 +3329,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3355,7 +3355,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3380,7 +3380,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3405,7 +3405,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3427,7 +3427,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_target": "//gpu:gl_tests"
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -3449,7 +3449,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_target": "//ui/gl:gl_unittests"
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       }
     ],
     "isolated_scripts": [
@@ -3478,7 +3478,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       },
       {
         "args": [
@@ -3505,7 +3505,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//:webgpu_blink_web_tests"
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -3532,7 +3532,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3558,7 +3558,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3583,7 +3583,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3609,7 +3609,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3635,7 +3635,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3660,7 +3660,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3685,7 +3685,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       }
     ],
     "isolated_scripts": [
@@ -3714,7 +3714,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       }
     ]
   },
@@ -3741,7 +3741,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3767,7 +3767,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3792,7 +3792,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3818,7 +3818,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3844,7 +3844,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3869,7 +3869,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3894,7 +3894,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_target": "//third_party/dawn/src/tests:dawn_end2end_tests"
+        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
       }
     ],
     "isolated_scripts": [
@@ -3923,7 +3923,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_target": "//chrome/test:dawn_perf_tests"
+        "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
       }
     ]
   }

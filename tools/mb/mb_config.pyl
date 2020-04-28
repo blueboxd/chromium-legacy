@@ -2023,7 +2023,7 @@
     ],
 
     'official_goma_x64_pgo': [
-      'official', 'goma', 'x64', 'static', 'minimal_symbols', 'pgo_phase_1'
+      'official', 'goma', 'x64', 'static', 'no_symbols', 'pgo_phase_1', 'no_resource_whitelisting',
     ],
 
     'official_goma_x86': [
@@ -2031,7 +2031,7 @@
     ],
 
     'official_goma_x86_pgo': [
-      'official', 'goma', 'x86', 'static', 'minimal_symbols', 'pgo_phase_1'
+      'official', 'goma', 'x86', 'static', 'no_symbols', 'pgo_phase_1', 'no_resource_whitelisting',
     ],
 
     'ozone_linux_release_bot': [
@@ -2616,6 +2616,10 @@
 
     'no_keystone_registration_framework': {
       'gn_args': 'enable_keystone_registration_framework=false',
+    },
+
+    'no_resource_whitelisting': {
+      'gn_args': 'enable_resource_whitelist_generation=false',
     },
 
     'no_symbols': {

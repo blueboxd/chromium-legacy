@@ -5,7 +5,6 @@
 #include "chromeos/settings/cros_settings_provider.h"
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/constants/chromeos_switches.h"

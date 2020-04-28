@@ -585,7 +585,6 @@ if (is_android) {
     deps = [
       "//base:base_java",
       "//base:base_java_test_support",
-      "//build/android/buildhooks:build_hooks_android_java",
       "//chrome/android:chrome_all_java",
       "//components/crash/android:handler_java",
       "//components/crash/android:java",
@@ -1984,7 +1983,6 @@ if (!is_android) {
         "../browser/ui/views/payments/modifiers_browsertest.cc",
         "../browser/ui/views/payments/order_summary_view_controller_browsertest.cc",
         "../browser/ui/views/payments/payment_handler_change_payment_method_browsertest.cc",
-        "../browser/ui/views/payments/payment_handler_window_size_browsertest.cc",
         "../browser/ui/views/payments/payment_method_view_controller_browsertest.cc",
         "../browser/ui/views/payments/payment_request_blob_url_browsertest.cc",
         "../browser/ui/views/payments/payment_request_browsertest.cc",

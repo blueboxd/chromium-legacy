@@ -4,7 +4,7 @@
 
 #include "chromeos/login/auth/cryptohome_parameter_utils.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/login/auth/challenge_response/key_label_utils.h"
 #include "chromeos/login/auth/key.h"

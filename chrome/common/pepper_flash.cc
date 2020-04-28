@@ -5,6 +5,7 @@
 #include "chrome/common/pepper_flash.h"
 
 #include <stddef.h>
+#include <string.h>
 
 #include "base/strings/string_split.h"
 #include "base/values.h"

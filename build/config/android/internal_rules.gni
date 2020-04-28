@@ -1573,7 +1573,6 @@ if (enable_java_templates) {
   #  build_config:
   #  input_jar_path:
   #  output_jar_path:
-  #  enable_build_hooks_android:
   #  supports_android:
   #  jacoco_instrument: Use Jacoco-instrumented classes to generate Java
   #    coverage data.
@@ -1602,17 +1601,13 @@ if (enable_java_templates) {
     _input_jar_path = invoker.input_jar_path
     _output_jar_path = invoker.output_jar_path
 
-    _enable_custom_resources = defined(invoker.enable_build_hooks_android) &&
-                               invoker.enable_build_hooks_android
-
     # Turned off because of existing code which fails the assertion
     _enable_thread_annotations = false
 
     _jacoco_instrument = invoker.jacoco_instrument
     _skip_jetify = defined(invoker.skip_jetify) && invoker.skip_jetify
 
-    _enable_bytecode_rewriter =
-        _enable_custom_resources || _enable_thread_annotations
+    _enable_bytecode_rewriter = _enable_thread_annotations
     _is_prebuilt = defined(invoker.is_prebuilt) && invoker.is_prebuilt
     _enable_bytecode_checks = !defined(invoker.enable_bytecode_checks) ||
                               invoker.enable_bytecode_checks
@@ -3125,8 +3120,6 @@ if (enable_java_templates) {
   #    ones.
   #  deps: Dependencies for this target.
   #  testonly: True iff target should only be used for tests.
-  #  no_build_hooks: Disables bytecode rewriting of asserts and android
-  #    resources methods.
   #  enable_turbine: If exists then will be used to determine whether to run
   #    turbine or not. Useful for disabling turbine headers for problematic
   #    targets.
@@ -3213,6 +3206,8 @@ if (enable_java_templates) {
   #    generated wrapper script.
   #
   template("java_library_impl") {
+    # TODO(crbug.com/1042017): Remove.
+    not_needed(invoker, [ "no_build_hooks" ])
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
     _is_prebuilt = defined(invoker.jar_path)
@@ -3329,23 +3324,10 @@ if (enable_java_templates) {
       }
     }
 
-    # Some testonly targets use their own resources and the code being
-    # tested will use custom resources so there's no need to enable this
-    # for testonly targets.
-    _enable_build_hooks_android =
-        (!defined(invoker.no_build_hooks) || !invoker.no_build_hooks) &&
-        _requires_android && (!defined(invoker.testonly) || !invoker.testonly)
-    if (_enable_build_hooks_android) {
-      _java_full_deps +=
-          [ "//build/android/buildhooks:build_hooks_android_java" ]
-      _java_header_deps +=
-          [ "//build/android/buildhooks:build_hooks_android_java__header" ]
-      _java_impl_deps +=
-          [ "//build/android/buildhooks:build_hooks_android_java__impl" ]
-    }
-
+    # TODO(agrieve): We should add in this dep during apk step rather than
+    #     adding a dep from every library to trim down dependency graph.
     if (_supports_android &&
-        (!defined(invoker.no_build_hooks) || !invoker.no_build_hooks)) {
+        (!defined(invoker.no_desugar_dep) || !invoker.no_desugar_dep)) {
       # Android targets that are desugared rely on the desugar runtime library.
       _java_full_deps += [ "//third_party/bazel/desugar:desugar_runtime_java" ]
       _java_header_deps +=
@@ -3718,7 +3700,6 @@ if (enable_java_templates) {
                                  ])
           enable_desugar = _enable_desugar && enable_bazel_desugar
           is_prebuilt = _is_prebuilt
-          enable_build_hooks_android = _enable_build_hooks_android
           build_config = _build_config
           input_jar_path = _unprocessed_jar_path
           jacoco_instrument = _jacoco_instrument

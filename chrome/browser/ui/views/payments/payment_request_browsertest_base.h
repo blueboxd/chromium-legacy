@@ -92,7 +92,6 @@ class PaymentRequestBrowserTestBase
     ABORT_CALLED,
     PROCESSING_SPINNER_SHOWN,
     PROCESSING_SPINNER_HIDDEN,
-    PAYMENT_HANDLER_WINDOW_OPENED,
   };
 
  protected:
@@ -138,7 +137,6 @@ class PaymentRequestBrowserTestBase
   void OnCvcPromptShown() override;
   void OnProcessingSpinnerShown() override;
   void OnProcessingSpinnerHidden() override;
-  void OnPaymentHandlerWindowOpened() override;
 
   // Will call JavaScript to invoke the PaymentRequest dialog and verify that
   // it's open and ready for input.

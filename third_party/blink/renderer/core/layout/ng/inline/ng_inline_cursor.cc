@@ -252,6 +252,8 @@ bool NGInlineCursorPosition::IsInlineLeaf() const {
 
 bool NGInlineCursorPosition::IsPartOfCulledInlineBox(
     const LayoutInline& layout_inline) const {
+  DCHECK(!layout_inline.ShouldCreateBoxFragment());
+  DCHECK(*this);
   const LayoutObject* const layout_object = GetLayoutObject();
   // We use |IsInline()| to exclude floating and out-of-flow objects.
   if (!layout_object || !layout_object->IsInline() ||
@@ -259,7 +261,19 @@ bool NGInlineCursorPosition::IsPartOfCulledInlineBox(
     return false;
   DCHECK(!layout_object->IsFloatingOrOutOfFlowPositioned());
   DCHECK(!BoxFragment() || !BoxFragment()->IsFormattingContextRoot());
-  return layout_object->IsDescendantOf(&layout_inline);
+  for (const LayoutObject* parent = layout_object->Parent(); parent;
+       parent = parent->Parent()) {
+    // Children of culled inline should be included.
+    if (parent == &layout_inline)
+      return true;
+    // Grand children should be included only if children are also culled.
+    if (const auto* parent_layout_inline = ToLayoutInlineOrNull(parent)) {
+      if (!parent_layout_inline->ShouldCreateBoxFragment())
+        continue;
+    }
+    return false;
+  }
+  return false;
 }
 
 bool NGInlineCursor::IsLastLineInInlineBlock() const {
@@ -874,26 +888,42 @@ void NGInlineCursor::MoveTo(const NGInlineCursorPosition& position) {
   current_ = position;
 }
 
-inline unsigned NGInlineCursor::SpanIndexFromItemIndex(unsigned index) const {
+inline wtf_size_t NGInlineCursor::SpanBeginItemIndex() const {
+  DCHECK(IsItemCursor());
+  DCHECK(!items_.empty());
+  DCHECK(fragment_items_->IsSubSpan(items_));
+  const wtf_size_t delta = items_.data() - fragment_items_->Items().data();
+  DCHECK_LT(delta, fragment_items_->Items().size());
+  return delta;
+}
+
+inline wtf_size_t NGInlineCursor::SpanIndexFromItemIndex(unsigned index) const {
   DCHECK(IsItemCursor());
   DCHECK(!items_.empty());
   DCHECK(fragment_items_->IsSubSpan(items_));
   if (items_.data() == fragment_items_->Items().data())
     return index;
-  unsigned span_index = fragment_items_->Items().data() - items_.data() + index;
+  const wtf_size_t span_index =
+      fragment_items_->Items().data() - items_.data() + index;
   DCHECK_LT(span_index, items_.size());
   return span_index;
 }
 
 NGInlineCursor::ItemsSpan::iterator NGInlineCursor::SlowFirstItemIteratorFor(
-    const LayoutObject& layout_object) const {
-  DCHECK(IsItemCursor());
-  for (ItemsSpan::iterator iter = items_.begin(); iter != items_.end();
-       ++iter) {
+    const LayoutObject& layout_object,
+    const ItemsSpan& items) {
+  for (ItemsSpan::iterator iter = items.begin(); iter != items.end(); ++iter) {
     if ((*iter)->GetLayoutObject() == &layout_object)
       return iter;
   }
-  return items_.end();
+  return items.end();
+}
+
+wtf_size_t NGInlineCursor::SlowFirstItemIndexFor(
+    const LayoutObject& layout_object,
+    const ItemsSpan& items) {
+  ItemsSpan::iterator iter = SlowFirstItemIteratorFor(layout_object, items);
+  return iter - items.begin();
 }
 
 void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
@@ -921,16 +951,34 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
     }
   }
   if (fragment_items_) {
-    const wtf_size_t item_index = layout_object.FirstInlineFragmentItemIndex();
+    wtf_size_t item_index = layout_object.FirstInlineFragmentItemIndex();
     if (!item_index) {
-      DCHECK(items_.end() == SlowFirstItemIteratorFor(layout_object));
+      DCHECK_EQ(SlowFirstItemIndexFor(layout_object, fragment_items_->Items()),
+                fragment_items_->Size());
       MakeNull();
       return;
     }
-    const unsigned span_index = SpanIndexFromItemIndex(item_index);
-    DCHECK_EQ(span_index,
-              static_cast<unsigned>(SlowFirstItemIteratorFor(layout_object) -
-                                    items_.begin()));
+    DCHECK_EQ(SlowFirstItemIndexFor(layout_object, fragment_items_->Items()),
+              item_index);
+
+    // Skip items before |items_|, in case |this| is part of IFC.
+    const wtf_size_t span_begin_item_index = SpanBeginItemIndex();
+    while (item_index < span_begin_item_index) {
+      const NGFragmentItem& item = *fragment_items_->Items()[item_index];
+      const wtf_size_t next_delta = item.DeltaToNextForSameLayoutObject();
+      if (!next_delta) {
+        MakeNull();
+        return;
+      }
+      item_index += next_delta;
+    }
+    if (item_index >= span_begin_item_index + items_.size()) {
+      MakeNull();
+      return;
+    }
+
+    const wtf_size_t span_index = item_index - span_begin_item_index;
+    DCHECK_LT(span_index, items_.size());
     return MoveToItem(items_.begin() + span_index);
   }
   if (root_paint_fragment_) {
@@ -945,15 +993,10 @@ void NGInlineCursor::MoveToIncludingCulledInline(
     const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext()) << layout_object;
   MoveTo(layout_object);
-  if (*this || !HasRoot() ||
-      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+  if (*this || !HasRoot()) {
     layout_inline_ = nullptr;
     return;
   }
-
-  // This |layout_object| did not produce any fragments.
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-    return;
 
   // Try to find ancestors if this is a culled inline.
   layout_inline_ = ToLayoutInlineOrNull(&layout_object);
@@ -1127,7 +1170,6 @@ void NGInlineCursor::MoveToNext() {
 
 void NGInlineCursor::MoveToNextForSameLayoutObject() {
   if (layout_inline_) {
-    DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
     // Move to next fragment in culled inline box undef |layout_inline_|.
     do {
       MoveToNext();

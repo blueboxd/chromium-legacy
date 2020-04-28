@@ -215,8 +215,7 @@ void PaymentHandlerWebFlowViewController::FillContentView(
   // time of first layout (nothing has loaded yet). Because of this, set it to.
   // total_dialog_height - header_height. On the other hand, the width will be
   // properly set so it can be 0 here.
-  web_view->SetPreferredSize(
-      gfx::Size(0, dialog()->GetActualPaymentHandlerDialogHeight() - 75));
+  web_view->SetPreferredSize(gfx::Size(0, kDialogHeight - 75));
   content_view->AddChildView(web_view.release());
 }
 

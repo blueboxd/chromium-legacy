@@ -4,7 +4,7 @@
 
 #include "chromeos/network/network_ip_config.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace chromeos {
 

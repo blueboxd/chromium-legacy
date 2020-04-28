@@ -4,7 +4,7 @@
 
 #include "chromeos/services/device_sync/fake_cryptauth_scheduler.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace chromeos {
 

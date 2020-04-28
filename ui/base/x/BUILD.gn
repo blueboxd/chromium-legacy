@@ -98,6 +98,7 @@ source_set("gl") {
     ":x",
     "//base",
     "//third_party/angle:includes",
+    "//ui/gfx/x",
     "//ui/gl",
   ]
 }

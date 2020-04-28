@@ -10,7 +10,7 @@
 
 #include "ash/public/cpp/assistant/test_support/mock_assistant_controller.h"
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"

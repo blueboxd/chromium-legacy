@@ -94,8 +94,8 @@ void NavigateToGoogleAccountPage(Profile* profile, const std::string& email) {
 // Note: For regular profiles this includes incognito sessions.
 int CountBrowsersFor(Profile* profile) {
   int browser_count = chrome::GetBrowserCount(profile);
-  if (!profile->IsOffTheRecord() && profile->HasOffTheRecordProfile())
-    browser_count += chrome::GetBrowserCount(profile->GetOffTheRecordProfile());
+  if (!profile->IsOffTheRecord() && profile->HasPrimaryOTRProfile())
+    browser_count += chrome::GetBrowserCount(profile->GetPrimaryOTRProfile());
   return browser_count;
 }
 

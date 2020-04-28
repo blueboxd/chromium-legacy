@@ -201,7 +201,6 @@ _CONFIG = [
 
             # Byte order
             'base::ByteSwap',
-            'base::ReadBigEndian',
             'base::NetToHost(16|32|64)',
             'base::HostToNet(16|32|64)',
 

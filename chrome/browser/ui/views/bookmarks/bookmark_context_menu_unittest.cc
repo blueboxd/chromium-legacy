@@ -300,7 +300,7 @@ TEST_F(BookmarkContextMenuTest, DisableIncognito) {
   std::vector<const BookmarkNode*> nodes = {
       model_->bookmark_bar_node()->children().front().get(),
   };
-  Profile* incognito = profile_->GetOffTheRecordProfile();
+  Profile* incognito = profile_->GetPrimaryOTRProfile();
   BookmarkContextMenu controller(nullptr, nullptr, incognito, nullptr,
                                  BOOKMARK_LAUNCH_LOCATION_NONE,
                                  nodes[0]->parent(), nodes, false);

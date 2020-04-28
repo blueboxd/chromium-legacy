@@ -6,7 +6,7 @@
 
 #include "chromeos/services/multidevice_setup/multidevice_setup_initializer.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"

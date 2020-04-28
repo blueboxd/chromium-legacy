@@ -7,7 +7,6 @@
 #include <sstream>
 
 #include "base/base64url.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/components/tether/proto_test_util.h"

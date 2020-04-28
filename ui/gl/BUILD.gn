@@ -512,7 +512,10 @@ jumbo_static_library("test_support") {
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
-    deps += [ "//ui/platform_window/x11" ]
+    deps += [
+      "//ui/gfx/x",
+      "//ui/platform_window/x11",
+    ]
   }
 
   if (use_ozone) {

@@ -177,6 +177,11 @@ const base::Feature kExoPointerLock{"ExoPointerLock",
 // Enables the next generation file manager.
 const base::Feature kFilesNG{"FilesNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables new ZIP archive handling in Files App.
+// https://crbug.com/912236
+const base::Feature kFilesZipNoNaCl{"FilesZipNoNaCl",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the use of Mojo by Chrome-process code to communicate with Power
 // Manager. In order to use mojo, this feature must be turned on and a callsite
 // must use PowerManagerMojoClient::Get().

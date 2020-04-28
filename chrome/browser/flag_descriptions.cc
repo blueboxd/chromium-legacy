@@ -3528,6 +3528,10 @@ const char kFilesNGName[] = "Enable Files App. NG.";
 const char kFilesNGDescription[] =
     "Enable the next generation UI style of the file manager.";
 
+const char kFilesZipNoNaClName[] = "New ZIP handling in Files App";
+const char kFilesZipNoNaClDescription[] =
+    "Enable new ZIP archive handling in Files App which does not rely on NaCl.";
+
 const char kFsNosymfollowName[] =
     "Prevent symlink traversal on user-supplied filesystems.";
 const char kFsNosymfollowDescription[] =

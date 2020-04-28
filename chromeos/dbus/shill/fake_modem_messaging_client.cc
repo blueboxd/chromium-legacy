@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/logging.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {

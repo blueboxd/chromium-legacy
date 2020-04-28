@@ -15751,4 +15751,29 @@ INSTANTIATE_TEST_SUITE_P(SitePerProcess,
                          testing::Values(1.0, 1.5, 2.0));
 #endif
 
+// Check that initial navigations to renderer debug URLs mark the renderer
+// process as used, so that future navigations to sites that require a
+// dedicated process do not reuse that process.
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessBrowserTest,
+    ProcessNotReusedAfterInitialNavigationToRendererDebugURL) {
+  // Load a javascript URL, which is a renderer debug URL.  This navigation
+  // won't commit, but the renderer process will synchronously process the
+  // javascript URL and install an HTML document that contains "foo".
+  GURL javascript_url("javascript:'foo'");
+  shell()->LoadURL(javascript_url);
+  EXPECT_EQ("foo", EvalJs(shell(), "document.body.innerText"));
+
+  RenderProcessHost* js_process = web_contents()->GetMainFrame()->GetProcess();
+
+  // Because the javascript URL can run arbitrary scripts in the renderer
+  // process, it is unsafe to reuse the renderer process later for navigations
+  // to sites that require a dedicated process.  Ensure that this is the case.
+  EXPECT_FALSE(js_process->IsUnused());
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  EXPECT_NE(js_process, web_contents()->GetMainFrame()->GetProcess());
+}
+
 }  // namespace content

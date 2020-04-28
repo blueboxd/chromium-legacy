@@ -124,19 +124,15 @@ const breadCrumbTemplate = `
       background-color: rgba(0, 0, 0, 12%);
     }
 
-    /**
-     * Drop-down menu button style: match non-file-ng menu item
-     * style until all app menus have been updated to files-ng.
-     */
     #elider-menu button {
-      border: 1px solid transparent;
-      border-radius: 0;
+      border: unset;
       color: rgb(51, 51, 51);
       display: block;
       font-family: 'Roboto';
       font-size: 13px;
       min-width: 14em;  /* menu width */
       max-width: 14em;
+      padding: 0 16px;
       text-align: start;
     }
 

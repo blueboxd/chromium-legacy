@@ -4,7 +4,7 @@
 
 #include "chromeos/services/secure_channel/fake_ble_advertiser.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 
 namespace chromeos {

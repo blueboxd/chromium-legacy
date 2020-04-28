@@ -6,6 +6,7 @@ import itertools
 
 from .attribute import Attribute
 from .code_generator_info import CodeGeneratorInfo
+from .composition_parts import Identifier
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
@@ -216,11 +217,17 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self._indexed_and_named_properties = IndexedAndNamedProperties(
                 indexed_and_named_property_operations, owner=self)
         self._stringifier = None
-        stringifier_operations = filter(lambda x: x.is_stringifier,
-                                        self._operations)
-        if stringifier_operations:
-            assert len(stringifier_operations) == 1
-            operation = stringifier_operations[0]
+        stringifier_operation_irs = filter(lambda x: x.is_stringifier,
+                                           ir.operations)
+        if stringifier_operation_irs:
+            assert len(stringifier_operation_irs) == 1
+            op_ir = make_copy(stringifier_operation_irs[0])
+            if not op_ir.code_generator_info.property_implemented_as:
+                if op_ir.identifier:
+                    op_ir.code_generator_info.set_property_implemented_as(
+                        str(op_ir.identifier))
+                op_ir.change_identifier(Identifier('toString'))
+            operation = Operation(op_ir, owner=self)
             attribute = None
             if operation.stringifier_attribute:
                 attr_id = operation.stringifier_attribute

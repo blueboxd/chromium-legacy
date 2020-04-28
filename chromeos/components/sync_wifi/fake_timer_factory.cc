@@ -4,7 +4,6 @@
 
 #include "chromeos/components/sync_wifi/fake_timer_factory.h"
 
-#include "base/logging.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/sync_wifi/fake_one_shot_timer.h"
 

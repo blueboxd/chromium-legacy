@@ -2208,8 +2208,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // Now change the current indexed ruleset format version. This should cause a
   // version mismatch when the extension is loaded again, but re-indexing should
   // still succeed.
-  int current_format_version = GetIndexedRulesetFormatVersionForTesting();
-  SetIndexedRulesetFormatVersionForTesting(current_format_version + 1);
+  ScopedIncrementIndexedRulesetFormatVersion scoped_version_change;
 
   // Also override the checksum value for the indexed ruleset to simulate a
   // flatbuffer schema change. This will ensure that the checksum of the
@@ -2290,8 +2289,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // Now change the current indexed ruleset format version. This should cause a
   // version mismatch when the extension is loaded again, but re-indexing should
   // still succeed.
-  int current_format_version = GetIndexedRulesetFormatVersionForTesting();
-  SetIndexedRulesetFormatVersionForTesting(current_format_version + 1);
+  ScopedIncrementIndexedRulesetFormatVersion scoped_version_change;
 
   // Also override the checksum value for the indexed ruleset to simulate a
   // flatbuffer schema change. This will ensure that the checksum of the

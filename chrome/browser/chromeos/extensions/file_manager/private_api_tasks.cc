@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/api/file_handlers/directory_util.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
@@ -102,12 +104,18 @@ void MaybeAdjustTaskForGalleryAppRemoval(
   base::Optional<web_app::AppId> optional_app_id =
       provider->system_web_app_manager().GetAppIdForSystemApp(
           web_app::SystemAppType::MEDIA);
-  DCHECK(optional_app_id);
 
-  // Even if the flag is enabled, app installation can sometimes fail. Don't
-  // crash in that case. See https://crbug.com/1024042.
-  if (!optional_app_id)
+  // In tests, the SystemWebAppManager constructor early-exits without
+  // configuring any apps to install. So even if the MediaApp is enabled, it
+  // might not be installed.
+  // But note that even if the flag is enabled, app installation can sometimes
+  // fail. Don't crash in that case. See https://crbug.com/1024042.
+  if (!optional_app_id) {
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        ::switches::kTestType))
+        << "MediaApp should only be missing in tests.";
     return;
+  }
 
   task->task_type = file_manager::file_tasks::TASK_TYPE_WEB_APP;
   task->app_id = *optional_app_id;

@@ -4,7 +4,7 @@
 
 #include "chromeos/dbus/dbus_clients_browser.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chromeos/dbus/anomaly_detector_client.h"
 #include "chromeos/dbus/arc_appfuse_provider_client.h"
 #include "chromeos/dbus/arc_keymaster_client.h"

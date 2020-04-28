@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chromeos/components/sync_wifi/pending_network_configuration_tracker_impl.h"

@@ -4,7 +4,7 @@
 
 #include "chromeos/services/secure_channel/connection_medium.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace chromeos {
 

@@ -4,7 +4,6 @@
 
 #include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
 
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 
 SmartLockMetricsRecorder::SmartLockMetricsRecorder() = default;

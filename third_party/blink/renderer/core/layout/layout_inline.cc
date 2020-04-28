@@ -1125,6 +1125,7 @@ bool LayoutInline::HitTestCulledInline(HitTestResult& result,
   // right thing. Legacy is wrong.
   if (parent_cursor) {
     DCHECK(ContainingNGBlockFlow());
+    DCHECK_EQ(ContainingNGBlockFlow(), parent_cursor->GetLayoutBlockFlow());
     NGInlineCursor cursor(*parent_cursor);
     cursor.MoveToIncludingCulledInline(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject())
@@ -1794,8 +1795,7 @@ void LayoutInline::InvalidateDisplayItemClients(
   }
 
   if (IsInLayoutNGInlineFormattingContext()) {
-    if (!ShouldCreateBoxFragment() &&
-        !RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    if (!ShouldCreateBoxFragment())
       return;
     NGInlineCursor cursor;
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {

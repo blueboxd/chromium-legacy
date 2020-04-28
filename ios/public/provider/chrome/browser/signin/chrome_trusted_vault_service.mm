@@ -34,4 +34,11 @@ void ChromeTrustedVaultService::CancelReauthentication(BOOL animated,
   NOTREACHED();
 }
 
+std::unique_ptr<ChromeTrustedVaultService::Subscription>
+ChromeTrustedVaultService::AddKeysChangedObserver(
+    const base::RepeatingClosure& cb) {
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace ios

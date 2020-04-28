@@ -185,13 +185,16 @@ assigning it to someone else.
 A few components have their own triage processes or points of contact who can
 help.
 
-* V8 bugs can be assigned to the [V8 ClusterFuzz
+* V8 ClusterFuzz bugs can be assigned to the [V8 ClusterFuzz
   Sheriff](https://rotation.googleplex.com/status?id=5714662985302016) for
   triage. Note that V8 CHECK failure crashes can have security implications, so
   don't triage it yourself and instead assign it to V8 ClusterFuzz Sheriff. They
   can make an informed decision on whether it is a security vulnerability or not
   and whether it is safe to strip the security tags (**Type=Bug-Security**,
   **Restrict-View-SecurityTeam**).
+* V8 non-ClusterFuzz bugs shouldn't be assigned to the V8 ClusterFuzz sheriff.
+  Instead, Googlers should refer to [the V8 security bug triage instructions](http://go/v8-security-issue-triage-how-to)
+  for lists of component owners.
 * Skia bugs can be assigned to hcm@chromium.org. Be careful while triaging
   these! The place where we're crashing isn't necessarily the place where the
   bug was introduced, so blame may be misleading. Skia fuzzing bugs can be

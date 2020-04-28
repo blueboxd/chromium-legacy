@@ -138,20 +138,25 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterInterceptingBrowserTest,
       response_map, safe_browsing_test_server());
   safe_browsing_test_server()->StartAcceptingConnections();
 
-  content::ConsoleObserverDelegate enforce_console_observer(
-      web_contents(), kActivationConsoleMessage);
-  web_contents()->SetDelegate(&enforce_console_observer);
-  ui_test_utils::NavigateToURL(browser(), enforce_url);
-  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-  EXPECT_EQ(enforce_console_observer.message(), kActivationConsoleMessage);
+  {
+    content::WebContentsConsoleObserver enforce_console_observer(
+        web_contents());
+    enforce_console_observer.SetPattern(kActivationConsoleMessage);
+    ui_test_utils::NavigateToURL(browser(), enforce_url);
+    EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+    EXPECT_EQ(kActivationConsoleMessage,
+              enforce_console_observer.GetMessageAt(0u));
+  }
 
-  content::ConsoleObserverDelegate warn_console_observer(
-      web_contents(), kActivationWarningConsoleMessage);
-  web_contents()->SetDelegate(&warn_console_observer);
-  ui_test_utils::NavigateToURL(browser(), warn_url);
-  warn_console_observer.Wait();
-  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-  EXPECT_EQ(warn_console_observer.message(), kActivationWarningConsoleMessage);
+  {
+    content::WebContentsConsoleObserver warn_console_observer(web_contents());
+    warn_console_observer.SetPattern(kActivationWarningConsoleMessage);
+    ui_test_utils::NavigateToURL(browser(), warn_url);
+    warn_console_observer.Wait();
+    EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+    EXPECT_EQ(kActivationWarningConsoleMessage,
+              warn_console_observer.GetMessageAt(0u));
+  }
 }
 
 // Verify that the navigation waits on all safebrowsing results to be retrieved,

@@ -545,8 +545,10 @@ bool MarkupAccumulator::SerializeAsHTML() const {
 std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
     const Element& element) const {
   ShadowRoot* shadow_root = element.GetShadowRoot();
-  if (!shadow_root || include_shadow_roots_ != kIncludeShadowRoots)
+  if (!shadow_root || include_shadow_roots_ != kIncludeShadowRoots ||
+      shadow_root->GetType() != ShadowRootType::kOpen) {
     return std::pair<Node*, Element*>();
+  }
   DCHECK(RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled());
   AtomicString shadowroot_type;
   switch (shadow_root->GetType()) {

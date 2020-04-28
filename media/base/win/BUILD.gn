@@ -49,6 +49,14 @@ source_set("d3d11") {
   deps = [ "//base" ]
 }
 
+source_set("hresult_status_helper") {
+  sources = [
+    "hresult_status_helper.cc",
+    "hresult_status_helper.h",
+  ]
+  deps = [ "//media" ]
+}
+
 source_set("d3d11_test_support") {
   testonly = true
   sources = [

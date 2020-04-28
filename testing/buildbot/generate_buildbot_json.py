@@ -796,11 +796,11 @@ class BBJSONGenerator(object):
     result['isolate_name'] = test_config.get(
       'isolate_name', 'telemetry_gpu_integration_test')
 
-    # Populate test_target.
+    # Populate test_id_prefix.
     gn_entry = (
         self.gn_isolate_map.get(result['isolate_name']) or
         self.gn_isolate_map.get('telemetry_gpu_integration_test'))
-    result['test_target'] = '%s/%s' % (gn_entry['label'], step_name)
+    result['test_id_prefix'] = 'ninja:%s/%s/' % (gn_entry['label'], step_name)
 
     args = result.get('args', [])
     test_to_run = result.pop('telemetry_test_name', test_name)
@@ -906,7 +906,7 @@ class BBJSONGenerator(object):
         new_test_suites[name] = value
     self.test_suites = new_test_suites
 
-  def resolve_full_test_targets(self):
+  def resolve_test_id_prefixes(self):
     for suite in self.test_suites['basic_suites'].itervalues():
       for key, test in suite.iteritems():
         if not isinstance(test, dict):
@@ -933,7 +933,7 @@ class BBJSONGenerator(object):
               ' label "%s" see http://crbug.com/1071091 for details.' %
               (isolate_name, label))
 
-          test['test_target'] = label
+          test['test_id_prefix'] = 'ninja:%s/' % label
         else:  # pragma: no cover
           # Some tests do not have an entry gn_isolate_map.pyl, such as
           # telemetry tests.
@@ -1063,7 +1063,7 @@ class BBJSONGenerator(object):
     self.variants = self.load_pyl_file('variants.pyl')
 
   def resolve_configuration_files(self):
-    self.resolve_full_test_targets()
+    self.resolve_test_id_prefixes()
     self.resolve_composition_test_suites()
     self.resolve_matrix_compound_test_suites()
     self.flatten_test_suites()
@@ -1379,7 +1379,7 @@ class BBJSONGenerator(object):
     self.check_composition_type_test_suites('compound_suites')
     self.check_composition_type_test_suites('matrix_compound_suites',
                                             [check_matrix_identifier])
-    self.resolve_full_test_targets()
+    self.resolve_test_id_prefixes()
     self.flatten_test_suites()
 
     # All bots should exist.

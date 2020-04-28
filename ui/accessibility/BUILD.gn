@@ -239,6 +239,10 @@ jumbo_component("accessibility") {
     if (use_glib) {
       configs += [ "//build/config/linux:glib" ]
     }
+
+    if (use_x11) {
+      public_deps += [ "//ui/gfx/x" ]
+    }
   }
 
   if (use_aura) {

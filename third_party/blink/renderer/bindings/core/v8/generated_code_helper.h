@@ -98,6 +98,16 @@ void V8SetReflectedNullableDOMStringAttribute(
 
 namespace bindings {
 
+// Returns the length of arguments ignoring the undefined values at the end.
+inline int NonUndefinedArgumentLength(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  for (int index = info.Length() - 1; 0 <= index; --index) {
+    if (!info[index]->IsUndefined())
+      return index + 1;
+  }
+  return 0;
+}
+
 template <typename T, typename... ExtraArgs>
 typename IDLSequence<T>::ImplType VariadicArgumentsToNativeValues(
     v8::Isolate* isolate,

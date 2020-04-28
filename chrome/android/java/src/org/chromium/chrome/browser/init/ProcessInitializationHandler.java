@@ -28,7 +28,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
-import org.chromium.build.BuildHooksAndroid;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AfterStartupTaskUtils;
 import org.chromium.chrome.browser.AppHooks;
@@ -427,9 +426,6 @@ public class ProcessInitializationHandler {
 
         deferredStartupHandler.addDeferredTask(
                 ProcessInitializationHandler::logEGLShaderCacheSizeHistogram);
-
-        deferredStartupHandler.addDeferredTask(
-                BuildHooksAndroid::maybeRecordResourceMetrics);
 
         deferredStartupHandler.addDeferredTask(
                 () -> MediaViewerUtils.updateMediaLauncherActivityEnabled());

@@ -4,7 +4,7 @@
 
 #include "chromeos/components/multidevice/software_feature.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace chromeos {
 

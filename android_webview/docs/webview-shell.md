@@ -22,35 +22,22 @@ at the top. This can be helpful for checking which WebView version is installed
 
 ## Setting up the build
 
-The bare minimum GN args is just `target_os = "android"`. It's simplest to just
-reuse the same out/ folder you use for WebView or Chrome for Android.
+WebView shell only requires `target_os = "android"`. The simplest option is to
+just reuse the same out/ folder and GN args you would normally use for WebView
+or Chrome for Android.
 
-If you're building for an emulator, be aware WebView shell is preinstalled with
-a different signing key. If you just need a WebView app, the preinstalled
-WebView shell may be sufficient (and you don't need to build your own).
+*** note
+**For the emulator:** the emulator comes with WebView shell preinstalled with a
+different signing key, so installation will fail with
+`INSTALL_FAILED_UPDATE_INCOMPATIBLE: Package ... signatures do not match
+previously installed version`. You can workaround this in your GN args with
+`system_webview_shell_package_name = "org.chromium.my_webview_shell"`.
 
-If you want a more up-to-date WebView shell or you want to use the convenience
-scripts in this guide (ex. `.../system_webview_shell_apk launch <url>`), then
-you can workaround the signature mismatch by changing your local WebView shell's
-package name. Simply add the following to your GN args (run `gn args
-out/Default`):
-
-```gn
-# Change the package name to anything that won't conflict. If you're not sure
-# what to use, here's a safe choice:
-system_webview_shell_package_name = "org.chromium.my_webview_shell"
-```
-
-This will let your local build install alongside the preinstalled WebView shell.
-If you'd like, you can disable the preinstalled shell to avoid confusing the two
-apps. In a terminal:
-
-```sh
-$ adb root
-# Make sure to specify the default package name ("org.chromium.webview_shell"),
-# not the one you used in the GN args above!
-$ adb shell pm disable org.chromium.webview_shell
-```
+Your local build will install alongside the preinstalled WebView shell. You may
+hide the preinstalled shell by running `adb root` followed by `adb shell pm
+disable org.chromium.webview_shell` in your terminal (copy-paste the command
+as-written, **don't** use the package name from the GN arg above).
+***
 
 ## Building the shell
 

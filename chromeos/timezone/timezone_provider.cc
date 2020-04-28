@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/geolocation/geoposition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

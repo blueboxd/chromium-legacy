@@ -174,7 +174,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   debug::ScopedRequestCrashKeys request_crash_keys(resource_request);
 
-  if (!IsSane(resource_request, options)) {
+  if (!IsValidRequest(resource_request, options)) {
     mojo::Remote<mojom::URLLoaderClient>(std::move(client))
         ->OnComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
     return;
@@ -225,7 +225,7 @@ void CorsURLLoaderFactory::DeleteIfNeeded() {
 }
 
 // static
-bool CorsURLLoaderFactory::IsCorsExemptHeadersSane(
+bool CorsURLLoaderFactory::IsValidCorsExemptHeaders(
     const std::unordered_set<std::string>& allowed_exempt_headers,
     const net::HttpRequestHeaders& headers) {
   for (const auto& header : headers.GetHeaderVector()) {
@@ -240,8 +240,8 @@ bool CorsURLLoaderFactory::IsCorsExemptHeadersSane(
   return true;
 }
 
-bool CorsURLLoaderFactory::IsSane(const ResourceRequest& request,
-                                  uint32_t options) {
+bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
+                                          uint32_t options) {
   // CORS needs a proper origin (including a unique opaque origin). If the
   // request doesn't have one, CORS cannot work.
   if (!request.request_initiator &&
@@ -344,8 +344,8 @@ bool CorsURLLoaderFactory::IsSane(const ResourceRequest& request,
   if (context_ &&
       (process_id_ != mojom::kBrowserProcessId ||
        !context_->allow_any_cors_exempt_header_for_browser()) &&
-      !IsCorsExemptHeadersSane(*context_->cors_exempt_header_list(),
-                               request.cors_exempt_headers)) {
+      !IsValidCorsExemptHeaders(*context_->cors_exempt_header_list(),
+                                request.cors_exempt_headers)) {
     return false;
   }
 

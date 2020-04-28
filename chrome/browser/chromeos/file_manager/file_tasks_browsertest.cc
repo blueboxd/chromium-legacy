@@ -93,7 +93,7 @@ scoped_refptr<const extensions::Extension> InstallTiffHandlerChromeApp(
   return extension;
 }
 
-class FileTasksBrowserTest : public InProcessBrowserTest {
+class FileTasksBrowserTestBase : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
     test::AddDefaultComponentExtensionsOnMainThread(browser()->profile());
@@ -133,7 +133,18 @@ class FileTasksBrowserTest : public InProcessBrowserTest {
   }
 };
 
-class FileTasksBrowserTestWithMediaApp : public FileTasksBrowserTest {
+class FileTasksBrowserTest : public FileTasksBrowserTestBase {
+ public:
+  FileTasksBrowserTest() {
+    // Disable Media App.
+    scoped_feature_list_.InitWithFeatures({}, {chromeos::features::kMediaApp});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class FileTasksBrowserTestWithMediaApp : public FileTasksBrowserTestBase {
  public:
   FileTasksBrowserTestWithMediaApp() {
     // Enable Media App.

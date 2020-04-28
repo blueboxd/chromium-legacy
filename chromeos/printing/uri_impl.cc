@@ -9,8 +9,8 @@
 #include <map>
 #include <set>
 
+#include "base/check_op.h"
 #include "base/i18n/streaming_utf8_validator.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "chromeos/printing/uri.h"

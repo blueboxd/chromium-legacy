@@ -109,7 +109,7 @@ class MediaClientTest : public BrowserWithTestWindowTest {
 
   TestMediaController* controller() { return test_media_controller_.get(); }
 
-  Profile* alt_profile() { return profile()->GetOffTheRecordProfile(); }
+  Profile* alt_profile() { return profile()->GetPrimaryOTRProfile(); }
 
   Browser* alt_browser() { return alt_browser_.get(); }
 

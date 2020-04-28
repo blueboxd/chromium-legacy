@@ -123,7 +123,8 @@ TEST_F(NGFragmentItemTest, BasicInlineBox) {
 }
 
 // Same as |BasicInlineBox| but `<span>`s do not have background.
-// They will not need box fragments, but all operations should work the same.
+// They will not produce fragment items, but all operations should work the
+// same.
 TEST_F(NGFragmentItemTest, CulledInlineBox) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
@@ -150,21 +151,15 @@ TEST_F(NGFragmentItemTest, CulledInlineBox) {
   const LayoutObject* span1 = GetLayoutObjectByElementId("span1");
   ASSERT_NE(span1, nullptr);
   Vector<const NGFragmentItem*> items_for_span1 = ItemsForAsVector(*span1);
-  EXPECT_EQ(items_for_span1.size(), 2u);
-  EXPECT_EQ(IntRect(0, 0, 80, 20), span1->FragmentsVisualRectBoundingBox());
+  EXPECT_EQ(items_for_span1.size(), 0u);
+  EXPECT_EQ(IntRect(0, 0, 80, 20), span1->AbsoluteBoundingBoxRect());
 
   // "span2" doesn't wrap, produces only one fragment.
   const LayoutObject* span2 = GetLayoutObjectByElementId("span2");
   ASSERT_NE(span2, nullptr);
   Vector<const NGFragmentItem*> items_for_span2 = ItemsForAsVector(*span2);
-  EXPECT_EQ(items_for_span2.size(), 1u);
-  EXPECT_EQ(IntRect(0, 20, 80, 10), span2->FragmentsVisualRectBoundingBox());
-
-  // Except that they do not produce box fragments.
-  for (const NGFragmentItem* item : items_for_span1)
-    EXPECT_EQ(item->BoxFragment(), nullptr);
-  for (const NGFragmentItem* item : items_for_span2)
-    EXPECT_EQ(item->BoxFragment(), nullptr);
+  EXPECT_EQ(items_for_span2.size(), 0u);
+  EXPECT_EQ(IntRect(0, 20, 80, 10), span2->AbsoluteBoundingBoxRect());
 }
 
 }  // namespace blink

@@ -4,7 +4,6 @@
 
 #include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
 
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"

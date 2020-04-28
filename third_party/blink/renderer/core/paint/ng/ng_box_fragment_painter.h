@@ -226,6 +226,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   bool HitTestChildren(const HitTestContext& hit_test,
                        const PhysicalOffset& physical_offset);
   bool HitTestChildren(const HitTestContext& hit_test,
+                       const NGPhysicalBoxFragment& container,
                        const NGInlineCursor& children,
                        const PhysicalOffset& physical_offset);
   bool HitTestBlockChildren(HitTestResult&,
@@ -236,6 +237,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                     const NGInlineCursor& children,
                                     const PhysicalOffset& physical_offset);
   bool HitTestItemsChildren(const HitTestContext& hit_test,
+                            const NGPhysicalBoxFragment& container,
                             const NGInlineCursor& children);
   bool HitTestFloatingChildren(const HitTestContext& hit_test,
                                const NGPhysicalContainerFragment& container,
@@ -253,6 +255,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                const NGInlineBackwardCursor& cursor,
                                const PhysicalOffset& physical_offset);
   bool HitTestChildBoxItem(const HitTestContext& hit_test,
+                           const NGPhysicalBoxFragment& container,
                            const NGFragmentItem& item,
                            const NGInlineBackwardCursor& cursor);
 

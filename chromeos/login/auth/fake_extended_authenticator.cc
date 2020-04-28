@@ -4,7 +4,7 @@
 
 #include "chromeos/login/auth/fake_extended_authenticator.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "components/account_id/account_id.h"
 

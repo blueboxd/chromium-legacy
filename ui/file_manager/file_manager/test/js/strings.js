@@ -20,6 +20,7 @@ loadTimeData.overrideValues({
   'ARC_USB_STORAGE_UI_ENABLED': true,
   'PLUGIN_VM_ENABLED': true,
   'UI_LOCALE': 'en_US',
+  'ZIP_NO_NACL': false,
   'language': 'en-US',
   'textdirection': 'ltr',
 });

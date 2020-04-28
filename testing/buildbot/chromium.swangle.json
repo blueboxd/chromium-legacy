@@ -27,7 +27,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -53,7 +53,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -79,7 +79,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -105,7 +105,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -130,7 +130,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -155,7 +155,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -180,7 +180,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -206,7 +206,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   },
@@ -235,7 +235,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -261,7 +261,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -287,7 +287,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -313,7 +313,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -338,7 +338,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -363,7 +363,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -388,7 +388,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -414,7 +414,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   },
@@ -443,7 +443,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -469,7 +469,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -495,7 +495,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -521,7 +521,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -546,7 +546,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -571,7 +571,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -596,7 +596,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -622,7 +622,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   },
@@ -651,7 +651,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -677,7 +677,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -703,7 +703,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -729,7 +729,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -754,7 +754,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -779,7 +779,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -804,7 +804,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -830,7 +830,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   },
@@ -859,7 +859,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -885,7 +885,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -911,7 +911,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -937,7 +937,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -962,7 +962,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -987,7 +987,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -1012,7 +1012,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -1038,7 +1038,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   },
@@ -1067,7 +1067,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -1093,7 +1093,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -1119,7 +1119,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -1145,7 +1145,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -1170,7 +1170,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -1195,7 +1195,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -1220,7 +1220,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -1246,7 +1246,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   },
@@ -1277,7 +1277,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -1303,7 +1303,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -1329,7 +1329,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -1355,7 +1355,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -1380,7 +1380,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -1405,7 +1405,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -1430,7 +1430,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -1456,7 +1456,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   },
@@ -1485,7 +1485,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -1511,7 +1511,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -1537,7 +1537,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -1563,7 +1563,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -1588,7 +1588,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -1613,7 +1613,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -1638,7 +1638,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -1664,7 +1664,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   },
@@ -1693,7 +1693,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -1719,7 +1719,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -1745,7 +1745,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -1771,7 +1771,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -1796,7 +1796,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -1821,7 +1821,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -1846,7 +1846,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -1872,7 +1872,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   },
@@ -1901,7 +1901,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -1927,7 +1927,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -1953,7 +1953,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -1979,7 +1979,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -2004,7 +2004,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -2029,7 +2029,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -2054,7 +2054,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -2080,7 +2080,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   },
@@ -2109,7 +2109,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -2135,7 +2135,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -2161,7 +2161,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -2187,7 +2187,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -2212,7 +2212,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -2237,7 +2237,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -2262,7 +2262,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -2288,7 +2288,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   },
@@ -2317,7 +2317,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_egl_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_egl_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_egl_tests/"
       },
       {
         "args": [
@@ -2343,7 +2343,7 @@
           "shards": 2
         },
         "test": "angle_deqp_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles2_tests/"
       },
       {
         "args": [
@@ -2369,7 +2369,7 @@
           "shards": 3
         },
         "test": "angle_deqp_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles31_tests/"
       },
       {
         "args": [
@@ -2395,7 +2395,7 @@
           "shards": 6
         },
         "test": "angle_deqp_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_gles3_tests/"
       },
       {
         "args": [
@@ -2420,7 +2420,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles2_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles2_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles2_tests/"
       },
       {
         "args": [
@@ -2445,7 +2445,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles31_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles31_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles31_tests/"
       },
       {
         "args": [
@@ -2470,7 +2470,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_deqp_khr_gles3_tests",
-        "test_target": "//third_party/angle/src/tests:angle_deqp_khr_gles3_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_deqp_khr_gles3_tests/"
       },
       {
         "args": [
@@ -2496,7 +2496,7 @@
           "shards": 2
         },
         "test": "angle_end2end_tests",
-        "test_target": "//third_party/angle/src/tests:angle_end2end_tests"
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_end2end_tests/"
       }
     ]
   }

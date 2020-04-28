@@ -299,23 +299,8 @@ std::vector<int32_t> AXNodePosition::GetWordStartOffsets() const {
   if (IsEmptyObjectReplacedByCharacter())
     return {0};
 
-  std::vector<int32_t> offsets = GetAnchor()->data().GetIntListAttribute(
+  return GetAnchor()->data().GetIntListAttribute(
       ax::mojom::IntListAttribute::kWordStarts);
-  if (!offsets.empty() ||
-      GetAnchor()
-          ->data()
-          .GetIntListAttribute(ax::mojom::IntListAttribute::kCharacterOffsets)
-          .empty() ||
-      IsInWhiteSpace()) {
-    return offsets;
-  }
-
-  // When the position is on a node that has character offsets but has no word
-  // boundary, treat the entire node content as a word. This can happen when
-  // the node contains only "skippable words", like whitespaces, punctuation or
-  // other special characters. E.g., "•" or any emoji.
-  // TODO: This should not be needed once https://crbug.com/1028830 is fixed.
-  return {0};
 }
 
 std::vector<int32_t> AXNodePosition::GetWordEndOffsets() const {
@@ -332,23 +317,8 @@ std::vector<int32_t> AXNodePosition::GetWordEndOffsets() const {
   if (IsEmptyObjectReplacedByCharacter())
     return {1};
 
-  std::vector<int32_t> offsets = GetAnchor()->data().GetIntListAttribute(
+  return GetAnchor()->data().GetIntListAttribute(
       ax::mojom::IntListAttribute::kWordEnds);
-  if (!offsets.empty() ||
-      GetAnchor()
-          ->data()
-          .GetIntListAttribute(ax::mojom::IntListAttribute::kCharacterOffsets)
-          .empty() ||
-      IsInWhiteSpace()) {
-    return offsets;
-  }
-
-  // When the position is on a node that has character offsets but has no word
-  // boundary, treat the entire node content as a word. This can happen when
-  // the node contains only "skippable words", like whitespaces, punctuation or
-  // other special characters. E.g., "•" or any emoji.
-  // TODO: This should not be needed once https://crbug.com/1028830 is fixed.
-  return {MaxTextOffset()};
 }
 
 AXNode::AXID AXNodePosition::GetNextOnLineID(AXNode::AXID node_id) const {

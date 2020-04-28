@@ -55,15 +55,14 @@ IN_PROC_BROWSER_TEST_F(HeavyAdHelperBrowserTest,
   content::RenderFrameHost* child =
       ChildFrameAt(web_contents->GetMainFrame(), 0);
 
-  content::ConsoleObserverDelegate console_delegate(web_contents, "*");
-  web_contents->SetDelegate(&console_delegate);
+  content::WebContentsConsoleObserver console_observer(web_contents);
 
   content::TestNavigationObserver error_observer(web_contents);
   controller.LoadPostCommitErrorPage(
       child, url, heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
   error_observer.Wait();
 
-  EXPECT_TRUE(console_delegate.messages().empty());
+  EXPECT_TRUE(console_observer.messages().empty());
 }
 
 // Checks that the heavy ad strings are in the html content of the rendered

@@ -6,7 +6,6 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_FACTORY_H_
 
 #include "base/callback.h"
-#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -40,6 +39,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
       mojo::PendingRemote<data_decoder::mojom::BleScanParser>()>;
 #endif  // defined(OS_CHROMEOS)
 
+  BluetoothAdapterFactory();
   ~BluetoothAdapterFactory();
 
   static BluetoothAdapterFactory* Get();
@@ -128,12 +128,28 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   std::unique_ptr<GlobalValuesForTesting> InitGlobalValuesForTesting();
 
  private:
-  // Friend LazyInstance to permit access to private constructor.
-  friend base::LazyInstanceTraitsBase<BluetoothAdapterFactory>;
-
-  BluetoothAdapterFactory();
+  void AdapterInitialized();
+#if defined(OS_WIN)
+  void ClassicAdapterInitialized();
+#endif
 
   base::WeakPtr<GlobalValuesForTesting> values_for_testing_;
+
+  // While a new BluetoothAdapter is being initialized the factory retains a
+  // reference to it. After initialization is complete |adapter_callbacks_|
+  // are run and, to allow the class to be destroyed if nobody is using it,
+  // that reference is dropped and |adapter_| is used instead.
+  scoped_refptr<BluetoothAdapter> adapter_under_initialization_;
+  std::vector<AdapterCallback> adapter_callbacks_;
+  base::WeakPtr<BluetoothAdapter> adapter_;
+
+#if defined(OS_WIN)
+  // On Windows different implementations of BluetoothAdapter are used for
+  // supporting Classic and Low Energy devices. The factory logic is duplicated.
+  scoped_refptr<BluetoothAdapter> classic_adapter_under_initialization_;
+  std::vector<AdapterCallback> classic_adapter_callbacks_;
+  base::WeakPtr<BluetoothAdapter> classic_adapter_;
+#endif
 
 #if defined(OS_CHROMEOS)
   BleScanParserCallback ble_scan_parser_;

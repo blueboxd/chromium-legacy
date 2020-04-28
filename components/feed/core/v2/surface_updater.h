@@ -16,7 +16,7 @@
 
 namespace feedui {
 class StreamUpdate;
-}
+}  // namespace feedui
 namespace feed {
 
 // Keeps the UI up to date by calling |SurfaceInterface::StreamUpdate()|.

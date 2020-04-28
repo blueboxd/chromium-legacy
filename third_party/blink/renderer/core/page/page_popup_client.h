@@ -103,6 +103,7 @@ class CORE_EXPORT PagePopupClient {
                           const Vector<String>& values,
                           SharedBuffer*);
   static void AddProperty(const char* name, const IntRect&, SharedBuffer*);
+  void AddLocalizedProperty(const char* name, int resource_id, SharedBuffer*);
 };
 
 inline void PagePopupClient::AddString(const String& str, SharedBuffer* data) {

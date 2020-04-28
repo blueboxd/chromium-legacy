@@ -19,6 +19,7 @@ struct QuickAnswer;
 
 namespace views {
 class ImageButton;
+class Label;
 class LabelButton;
 }  // namespace views
 
@@ -64,6 +65,7 @@ class ASH_EXPORT QuickAnswersView : public views::Button,
   void InitWidget();
   void AddDogfoodButton();
   void AddAssistantIcon();
+  void ResetContentView();
   void UpdateBounds();
   void UpdateQuickAnswerResult(
       const chromeos::quick_answers::QuickAnswer& quick_answer);
@@ -74,6 +76,7 @@ class ASH_EXPORT QuickAnswersView : public views::Button,
   std::string title_;
   views::View* main_view_ = nullptr;
   views::View* content_view_ = nullptr;
+  views::Label* first_answer_label_ = nullptr;
   views::LabelButton* retry_label_ = nullptr;
   views::ImageButton* dogfood_button_ = nullptr;
   std::unique_ptr<QuickAnswersViewHandler> quick_answers_view_handler_;

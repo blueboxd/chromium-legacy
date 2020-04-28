@@ -48,6 +48,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
 
   bool IsInitialized() const override { return true; }
 
+  void Initialize(base::OnceClosure callback) override;
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   void Shutdown() override;
 #endif

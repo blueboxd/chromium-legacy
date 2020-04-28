@@ -2575,7 +2575,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       </translation>
 <translation id="4787763197941188108">Anula el tamaño predeterminado de la página de impresión.
 
-      <ph name="PAGE_SIZE_NAME" /> debe contener uno de los formatos incluidos o "personalizado" si el tamaño del papel necesario no está en la lista. Si se proporciona un valor "personalizado", se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Describe el ancho y altura deseados en micrómetros. De lo contrario, no se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Se ignorará la política que infrinja estas reglas.
+      <ph name="PAGE_SIZE_NAME" /> debe contener uno de los formatos incluidos en la lista, o "personalizado" si el tamaño del papel necesario no está en la lista. Si se proporciona un valor "personalizado", se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Describe el ancho y altura deseados en micrómetros. De lo contrario, no se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Se ignorará la política que infrinja estas reglas.
 
       Si el tamaño de la página no está disponible en la impresora que elija el usuario, se ignorará esta política.</translation>
 <translation id="4788252609789586009">Habilita la función Autocompletar de <ph name="PRODUCT_NAME" /> y permite que los usuarios rellenen automáticamente formularios web con información almacenada anteriormente, como la información de la tarjeta de crédito.
@@ -4689,9 +4689,9 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7895553628261067384">Acceso remoto</translation>
 <translation id="7898879331506985900">Esta política de empresa sirve para una adaptación a corto plazo y se eliminará en la versión M86.
 
-      Se refuerza la política de referer predeterminada de Chrome a partir de su valor actual de no-referrer-when-downgrade para mejorar la seguridad con strict-origin-when-cross-origin mediante un lanzamiento gradual orientado a la versión estable M80.
+      Se refuerza la política de referrer predeterminada de Chrome a partir de su valor actual de no-referrer-when-downgrade para mejorar la seguridad con strict-origin-when-cross-origin mediante un lanzamiento gradual orientado a la versión estable M80.
 
-      Esta política de empresa no tendrá ningún efecto antes del lanzamiento. Después del lanzamiento, cuando se habilite esta política de empresa, a la política de referer predeterminada de Chrome se le asignará el valor de no-referrer-when-downgrade anterior al de la versión M80.
+      Esta política de empresa no tendrá ningún efecto antes del lanzamiento. Después del lanzamiento, cuando se habilite esta política de empresa, a la política de referrer predeterminada de Chrome se le asignará el valor de no-referrer-when-downgrade anterior al de la versión M80.
 
       Esta política de empresa está inhabilitada de forma predeterminada.</translation>
 <translation id="7902040092815978832">Muestra el teclado numérico para introducir la contraseña</translation>
@@ -5201,6 +5201,11 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="8665314828727504286">Nivel de protección de Navegación Segura</translation>
 <translation id="8672321184841719703">Versión de destino de actualizaciones automáticas</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8680488165461049026">Esta política da permiso a la función de respuestas rápidas para acceder al contenido seleccionado y enviar la información al servidor.
+
+      Si se habilita la política, la función de respuestas rápidas podrá acceder al contenido seleccionado.
+      Si se inhabilita, la función de respuestas rápidas no podrá acceder al contenido seleccionado.
+      Si no se establece la política, los usuarios podrán decidir si permiten o no que la función de respuestas rápidas acceda al contenido seleccionado.</translation>
 <translation id="8685024486845674965">La advertencia de protección de contraseña se activa al reutilizar la contraseña</translation>
 <translation id="8687958770985542440">Volver a habilitar la API v0 de componentes web hasta M84.</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS integrado</translation>
@@ -5572,6 +5577,7 @@ Los controladores de protocolos registrados por la política se combinan con los
 
       Si se le asigna el valor "True" o no se configura, se permitirá crear nuevas cuentas de usuario siempre que <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> no impida que el usuario inicie sesión.</translation>
 <translation id="974349541138387272">Especifica la plantilla URI de resolución de DNS-over-HTTPS deseada</translation>
+<translation id="974479807614498635">"Permitir que la función de respuestas rápidas acceda al contenido seleccionado"</translation>
 <translation id="981346395360763138">Los servicios de ubicación de Google están inhabilitados</translation>
 <translation id="982497069985795632">Habilitar corrector ortográfico</translation>
 <translation id="991560005425213776">Enviar los nombres de usuario y de archivo a impresoras nativas</translation>

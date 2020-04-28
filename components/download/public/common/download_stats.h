@@ -448,10 +448,6 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionRestartCount(
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadResumed(
     bool has_strong_validators);
 
-// Records connection info of the download.
-COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadConnectionInfo(
-    net::HttpResponseInfo::ConnectionInfo connection_info);
-
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadManagerCreationTimeSinceStartup(
     base::TimeDelta elapsed_time);
 

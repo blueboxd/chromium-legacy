@@ -51,9 +51,8 @@ class PageActionIconView : public IconLabelBubbleView {
     virtual gfx::Insets GetPageActionIconInsets(
         const PageActionIconView* icon_view) const;
 
-    // Delegate should override and return true when the user is editing the
-    // location bar contents.
-    virtual bool IsLocationBarUserInputInProgress() const;
+    // Delegate should return true if the page action icons should be hidden.
+    virtual bool ShouldHidePageActionIcons() const;
 
     virtual const OmniboxView* GetOmniboxView() const;
   };

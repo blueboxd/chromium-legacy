@@ -10,11 +10,11 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/performance_manager_registry_impl.h"
 #include "components/performance_manager/render_process_user_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -101,8 +101,8 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
 
   // Ideally, creation would not be required here, but it is possible in tests
   // for the RenderProcessUserData to not have attached at this point.
-  PerformanceManagerRegistry::GetInstance()
-      ->CreateProcessNodeForRenderProcessHost(render_frame_host->GetProcess());
+  PerformanceManagerRegistryImpl::GetInstance()
+      ->EnsureProcessNodeForRenderProcessHost(render_frame_host->GetProcess());
 
   auto* process_node = RenderProcessUserData::GetForRenderProcessHost(
                            render_frame_host->GetProcess())

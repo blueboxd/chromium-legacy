@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
 #include "content/common/content_export.h"
 
@@ -31,10 +30,6 @@ class SmsFetcher {
   // Retrieval for devices that exclusively listen for SMSes coming from other
   // telephony devices. (eg. desktop)
   CONTENT_EXPORT static SmsFetcher* Get(BrowserContext* context);
-  // Retrieval for devices that have telephony capabilities and can receive
-  // SMSes coming from the installed device locally. (eg. Android phones)
-  CONTENT_EXPORT static SmsFetcher* Get(BrowserContext* context,
-                                        base::WeakPtr<RenderFrameHost> rfh);
 
   class Subscriber : public base::CheckedObserver {
    public:
@@ -44,13 +39,18 @@ class SmsFetcher {
     virtual void OnReceive(const std::string& one_time_code) = 0;
   };
 
-  // Idempotent function that subscribes to incoming SMSes from SmsProvider.
+  // Subscribes to incoming SMSes from SmsProvider for subscribers that do not
+  // have telephony capabilities and exclusively listen for SMSes received
+  // on other devices.
   virtual void Subscribe(const url::Origin& origin, Subscriber* subscriber) = 0;
+  // Subscribes to incoming SMSes from SmsProvider for telephony
+  // devices that can receive SMSes locally and can show a permission prompt.
+  virtual void Subscribe(const url::Origin& origin,
+                         Subscriber* subscriber,
+                         RenderFrameHost* render_frame_host) = 0;
   virtual void Unsubscribe(const url::Origin& origin,
                            Subscriber* subscriber) = 0;
   virtual bool HasSubscribers() = 0;
-  // Checks if the device can receive SMSes.
-  virtual bool CanReceiveSms() = 0;
 };
 
 }  // namespace content

@@ -100,6 +100,9 @@ vars = {
   # the gn arg 'use_clang_coverage').
   'checkout_clang_coverage_tools': False,
 
+  # Fetch the pgo profiles to optimize official builds.
+  'checkout_pgo_profiles': False,
+
   # Fetch clang-tidy into the same bin/ directory as our clang binary.
   'checkout_clang_tidy': False,
 
@@ -175,11 +178,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3088c69b5fa7627f9ea6bfd7fd4fe8b4617081ce',
+  'skia_revision': '5f56cb1d3b4f3baf70d723fd2226ae649404c4a1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '7b4650e0e739ae21656e4e9b84417f8e3a63c6fc',
+  'v8_revision': 'c696fd2d77c1b03dffa2e1aaf00559f957580130',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -187,11 +190,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '226bba3c755ec8105c895c87450c1ebb0d8159e1',
+  'angle_revision': '4395170e60913efabc0a532bcc7ec394ce1d9101',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '7483e56f9fd0fe13dd14fc26ccf4f3cf20429f6b',
+  'swiftshader_revision': '002b7c194dd6b8bc155f7925953d296978f5f865',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -246,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '5305bfcfbc3744328da31f499936851669dd7aa6',
+  'devtools_frontend_revision': '006b8c05bc612b717ab6610c014d6b2379cd3a3d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -302,7 +305,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '9dcfaca2379924506d3f59d8e6b45c30f3f329ba',
+  'quiche_revision': '1c124a59cfd7a54c9782b808e16329f01e4ed9a6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -804,7 +807,7 @@ deps = {
   },
 
   'src/third_party/breakpad/breakpad':
-    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + 'a2d3e8b2d5f8f3de06eefec50566c9a54d7cf0a6',
+    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + 'a7b621f8107a94d8cdcd49d49bca645aa3bae098',
 
   'src/third_party/byte_buddy': {
       'packages': [
@@ -868,7 +871,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '7a5b03ad4ac10c559635465a6c6d83c283c73124',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '26b02c109bceebf96be85f119309a0fb750b8a63',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1117,7 +1120,7 @@ deps = {
   },
 
   'src/third_party/libvpx/source/libvpx':
-    Var('chromium_git') + '/webm/libvpx.git' + '@' +  '8dc6f353c6d04329cf59529f41a6f46d9dbfcafa',
+    Var('chromium_git') + '/webm/libvpx.git' + '@' +  'ae145ca3a403c817c6392cfc92446f0fc57a50a8',
 
   'src/third_party/libwebm/source':
     Var('chromium_git') + '/webm/libwebm.git' + '@' + '51ca718c3adf0ddedacd7df25fe45f67dc5a9ce1',
@@ -1200,7 +1203,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'a5473711f3e20c6bd1c33d81b6c7b9a0618aa18f',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'f3152ffe484c8b562fb01c6fcd404c7c15d41056',
+    Var('chromium_git') + '/openscreen' + '@' + '9ef8412c42379ac23184e344d742b3cd3ef45778',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1519,7 +1522,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2469df63e9e59e0d08a0e03c17e59c0e4aaf22ce',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@39b69f7bf27871cc57063fe95c8609be3fcaea1f',
     'condition': 'checkout_src_internal',
   },
 
@@ -4358,6 +4361,41 @@ hooks = [
       '--cache-dir=src/build/cros_cache/',
       '--log-level=error',
       '--no-shell',
+    ],
+  },
+
+  # Download PGO profiles.
+  {
+    'name': 'Fetch PGO profiles for win32',
+    'pattern': '.',
+    'condition': 'checkout_pgo_profiles and checkout_win',
+    'action': [ 'vpython3',
+                'src/tools/update_pgo_profiles.py',
+                '--target=win32',
+                'update',
+                '--gs-url-base=chromium-optimization-profiles/pgo_profiles',
+    ],
+  },
+  {
+    'name': 'Fetch PGO profiles for win64',
+    'pattern': '.',
+    'condition': 'checkout_pgo_profiles and checkout_win',
+    'action': [ 'vpython3',
+                'src/tools/update_pgo_profiles.py',
+                '--target=win64',
+                'update',
+                '--gs-url-base=chromium-optimization-profiles/pgo_profiles',
+    ],
+  },
+  {
+    'name': 'Fetch PGO profiles for mac',
+    'pattern': '.',
+    'condition': 'checkout_pgo_profiles and checkout_mac',
+    'action': [ 'vpython3',
+                'src/tools/update_pgo_profiles.py',
+                '--target=mac',
+                'update',
+                '--gs-url-base=chromium-optimization-profiles/pgo_profiles',
     ],
   },
 

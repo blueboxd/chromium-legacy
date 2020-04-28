@@ -6,8 +6,18 @@
  * @fileoverview
  * `settings-checkbox` is a checkbox that controls a supplied preference.
  */
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
+import '../settings_shared_css.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {SettingsBooleanControlBehavior} from './settings_boolean_control_behavior.m.js';
+
 Polymer({
   is: 'settings-checkbox',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [SettingsBooleanControlBehavior],
 

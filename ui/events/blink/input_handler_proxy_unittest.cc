@@ -743,6 +743,84 @@ TEST_P(InputHandlerProxyTest,
   VERIFY_AND_RESET_MOCKS();
 }
 
+// Tests that changing source devices when an animated scroll is in progress
+// ends the current scroll offset animation and ensures that a new one gets
+// created.
+TEST_P(InputHandlerProxyTest, ScrollbarScrollEndOnDeviceChange) {
+  // A scrollbar scroll begins.
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(
+      mock_input_handler_,
+      RecordScrollBegin(cc::ScrollInputType::kScrollbar,
+                        cc::ScrollBeginThreadState::kScrollingOnCompositor))
+      .Times(0);
+  EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(1);
+  EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+      .WillOnce(testing::Return(false));
+  WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
+                            WebInputEvent::kNoModifiers,
+                            WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.SetPositionInWidget(gfx::PointF(0, 20));
+  mouse_event.button = blink::WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(InputHandlerProxy::DID_NOT_HANDLE,
+            HandleInputEventAndFlushEventQueue(
+                mock_input_handler_, input_handler_.get(), mouse_event));
+
+  EXPECT_EQ(input_handler_->currently_active_gesture_device(),
+            blink::WebGestureDevice::kScrollbar);
+  VERIFY_AND_RESET_MOCKS();
+
+  // A mousewheel tick takes place before the scrollbar scroll ends.
+  EXPECT_CALL(mock_input_handler_,
+              RecordScrollEnd(cc::ScrollInputType::kScrollbar))
+      .Times(1);
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(true)).Times(1);
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(
+      mock_input_handler_,
+      RecordScrollBegin(cc::ScrollInputType::kWheel,
+                        cc::ScrollBeginThreadState::kScrollingOnCompositor))
+      .Times(1);
+
+  gesture_.SetType(WebInputEvent::Type::kGestureScrollBegin);
+  gesture_.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
+  EXPECT_EQ(InputHandlerProxy::DID_HANDLE,
+            HandleInputEventAndFlushEventQueue(mock_input_handler_,
+                                               input_handler_.get(), gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+  EXPECT_EQ(input_handler_->currently_active_gesture_device(),
+            blink::WebGestureDevice::kTouchpad);
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Mousewheel GSE is then fired and the mousewheel scroll ends.
+  EXPECT_CALL(mock_input_handler_, RecordScrollEnd(cc::ScrollInputType::kWheel))
+      .Times(1);
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(true)).Times(1);
+
+  gesture_.SetType(WebInputEvent::Type::kGestureScrollEnd);
+  gesture_.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
+  EXPECT_EQ(InputHandlerProxy::DID_HANDLE,
+            HandleInputEventAndFlushEventQueue(mock_input_handler_,
+                                               input_handler_.get(), gesture_));
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Mouse up gets ignored as the scrollbar scroll already ended before the
+  // mousewheel tick took place.
+  EXPECT_CALL(mock_input_handler_,
+              RecordScrollEnd(cc::ScrollInputType::kScrollbar))
+      .Times(1);
+  mouse_event.SetType(WebInputEvent::Type::kMouseUp);
+  EXPECT_EQ(InputHandlerProxy::DID_NOT_HANDLE,
+            HandleInputEventAndFlushEventQueue(
+                mock_input_handler_, input_handler_.get(), mouse_event));
+
+  VERIFY_AND_RESET_MOCKS();
+}
+
 void InputHandlerProxyTest::GestureScrollStarted() {
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
@@ -2353,7 +2431,7 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
       mock_input_handler_,
       RecordScrollBegin(_, cc::ScrollBeginThreadState::kScrollingOnCompositor))
       .Times(1);
-  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(1);
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(2);
   EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
       .WillOnce(testing::Return(false));
   EXPECT_CALL(
@@ -2377,6 +2455,7 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
   auto result = GestureScrollEventPredictionAvailable();
   EXPECT_TRUE(result);
   EXPECT_NE(0, result->pos.y());
+  HandleGestureEvent(WebInputEvent::Type::kGestureScrollEnd);
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 
@@ -2384,6 +2463,8 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
       .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(_)).Times(1);
+  EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
   EXPECT_CALL(
       mock_input_handler_,
       RecordScrollBegin(_, cc::ScrollBeginThreadState::kScrollingOnCompositor))
@@ -2392,6 +2473,7 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
   HandleGestureEvent(WebInputEvent::Type::kGestureScrollBegin);
   DeliverInputForBeginFrame();
   EXPECT_FALSE(GestureScrollEventPredictionAvailable());
+  HandleGestureEvent(WebInputEvent::Type::kGestureScrollEnd);
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }

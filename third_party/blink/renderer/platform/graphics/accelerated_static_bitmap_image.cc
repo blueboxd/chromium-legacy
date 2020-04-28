@@ -17,6 +17,7 @@
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/mailbox_texture_backing.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -133,7 +134,7 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
   DCHECK(mailbox_.IsSharedImage());
 
   if (shared_image_texture_id)
-    InitializeSkImage(shared_image_texture_id);
+    InitializeTextureBacking(shared_image_texture_id);
 }
 
 AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
@@ -148,7 +149,8 @@ scoped_refptr<StaticBitmapImage>
 AcceleratedStaticBitmapImage::MakeUnaccelerated() {
   CreateImageFromMailboxIfNeeded();
   return UnacceleratedStaticBitmapImage::Create(
-      sk_image_->makeNonTextureImage(), orientation_);
+      texture_backing_->GetAcceleratedSkImage()->makeNonTextureImage(),
+      orientation_);
 }
 
 bool AcceleratedStaticBitmapImage::CopyToTexture(
@@ -206,7 +208,7 @@ PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
   CreateImageFromMailboxIfNeeded();
 
   return CreatePaintImageBuilder()
-      .set_image(sk_image_, paint_image_content_id_)
+      .set_texture_backing(texture_backing_, paint_image_content_id_)
       .set_completion_state(PaintImage::CompletionState::DONE)
       .TakePaintImage();
 }
@@ -235,8 +237,9 @@ void AcceleratedStaticBitmapImage::Draw(
 }
 
 bool AcceleratedStaticBitmapImage::IsValid() const {
-  if (sk_image_ && (!skia_context_provider_wrapper_ ||
-                    !sk_image_->isValid(ContextProvider()->GetGrContext()))) {
+  if (texture_backing_ && (!skia_context_provider_wrapper_ ||
+                           !texture_backing_->GetAcceleratedSkImage()->isValid(
+                               ContextProvider()->GetGrContext()))) {
     return false;
   }
 
@@ -257,17 +260,18 @@ WebGraphicsContext3DProvider* AcceleratedStaticBitmapImage::ContextProvider()
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
 AcceleratedStaticBitmapImage::ContextProviderWrapper() const {
-  return sk_image_ ? skia_context_provider_wrapper_ : context_provider_wrapper_;
+  return texture_backing_ ? skia_context_provider_wrapper_
+                          : context_provider_wrapper_;
 }
 
 void AcceleratedStaticBitmapImage::CreateImageFromMailboxIfNeeded() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (sk_image_)
+  if (texture_backing_)
     return;
-  InitializeSkImage(0u);
+  InitializeTextureBacking(0u);
 }
 
-void AcceleratedStaticBitmapImage::InitializeSkImage(
+void AcceleratedStaticBitmapImage::InitializeTextureBacking(
     GLuint shared_image_texture_id) {
   DCHECK(!shared_image_texture_id || !mailbox_ref_->is_cross_thread());
 
@@ -316,14 +320,18 @@ void AcceleratedStaticBitmapImage::InitializeSkImage(
     release_ctx->texture_id = shared_context_texture_id;
   release_ctx->context_provider_wrapper = context_provider_wrapper;
 
-  sk_image_ = SkImage::MakeFromTexture(
+  sk_sp<SkImage> sk_image = SkImage::MakeFromTexture(
       shared_gr_context, backend_texture, origin, sk_image_info_.colorType(),
       sk_image_info_.alphaType(), sk_image_info_.refColorSpace(),
       &ReleaseTexture, release_ctx);
-  if (!sk_image_)
+
+  if (!sk_image) {
     ReleaseTexture(release_ctx);
-  else
+  } else {
     skia_context_provider_wrapper_ = std::move(context_provider_wrapper);
+    texture_backing_ = sk_sp<MailboxTextureBacking>(
+        new MailboxTextureBacking(std::move(sk_image)));
+  }
 }
 
 void AcceleratedStaticBitmapImage::EnsureSyncTokenVerified() {
@@ -365,7 +373,7 @@ void AcceleratedStaticBitmapImage::Transfer() {
 
   // SkImage is bound to the current thread so is no longer valid to use
   // cross-thread.
-  sk_image_.reset();
+  texture_backing_.reset();
 
   DETACH_FROM_THREAD(thread_checker_);
 }

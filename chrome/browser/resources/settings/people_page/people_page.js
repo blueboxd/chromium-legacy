@@ -6,11 +6,54 @@
  * @fileoverview
  * 'settings-people-page' is the settings page containing sign-in settings.
  */
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
+import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '../controls/settings_toggle_button.m.js';
+import './sync_account_control.m.js';
+import '../icons.m.js';
+import '../settings_page/settings_animated_pages.m.js';
+import '../settings_page/settings_subpage.m.js';
+import '../settings_shared_css.m.js';
+
+// <if expr="chromeos">
+import {convertImageSequenceToPng} from 'chrome://resources/cr_elements/chromeos/cr_picture/png.m.js';
+// </if>
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {getImage} from 'chrome://resources/js/icon.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from '../i18n_setup.m.js';
+import {OpenWindowProxyImpl} from '../open_window_proxy.m.js';
+import {PageVisibility} from '../page_visibility.m.js';
+import {routes} from '../route.m.js';
+import {RouteObserverBehavior, Router} from '../router.m.js';
+
+// <if expr="chromeos">
+import {AccountManagerBrowserProxyImpl} from './account_manager_browser_proxy.m.js';
+// </if>
+import {ProfileInfo, ProfileInfoBrowserProxy, ProfileInfoBrowserProxyImpl} from './profile_info_browser_proxy.m.js';
+import {StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from './sync_browser_proxy.m.js';
+
 Polymer({
   is: 'settings-people-page',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
-    settings.RouteObserverBehavior, I18nBehavior, WebUIListenerBehavior,
+    RouteObserverBehavior,
+    I18nBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -39,14 +82,14 @@ Polymer({
     // <if expr="not chromeos">
     /**
      * Stored accounts to the system, supplied by SyncBrowserProxy.
-     * @type {?Array<!settings.StoredAccount>}
+     * @type {?Array<!StoredAccount>}
      */
     storedAccounts: Object,
     // </if>
 
     /**
      * The current sync status, supplied by SyncBrowserProxy.
-     * @type {?settings.SyncStatus}
+     * @type {?SyncStatus}
      */
     syncStatus: Object,
 
@@ -79,7 +122,7 @@ Polymer({
     isProfileActionable_: {
       type: Boolean,
       value() {
-        if (!cr.isChromeOS) {
+        if (!isChromeOS) {
           // Opens profile manager.
           return true;
         }
@@ -119,13 +162,13 @@ Polymer({
       type: Object,
       value() {
         const map = new Map();
-        if (settings.routes.SYNC) {
-          map.set(settings.routes.SYNC.path, '#sync-setup');
+        if (routes.SYNC) {
+          map.set(routes.SYNC.path, '#sync-setup');
         }
         // <if expr="not chromeos">
-        if (settings.routes.MANAGE_PROFILE) {
+        if (routes.MANAGE_PROFILE) {
           map.set(
-              settings.routes.MANAGE_PROFILE.path,
+              routes.MANAGE_PROFILE.path,
               this.signinAllowed_ ? '#edit-profile .subpage-arrow' :
                                     '#profile-row .subpage-arrow');
         }
@@ -135,7 +178,7 @@ Polymer({
     },
   },
 
-  /** @private {?settings.SyncBrowserProxy} */
+  /** @private {?SyncBrowserProxy} */
   syncBrowserProxy_: null,
 
   /** @override */
@@ -152,15 +195,15 @@ Polymer({
     }
     // </if>
     if (useProfileNameAndIcon) {
-      /** @type {!settings.ProfileInfoBrowserProxy} */ (
-          settings.ProfileInfoBrowserProxyImpl.getInstance())
+      /** @type {!ProfileInfoBrowserProxy} */ (
+          ProfileInfoBrowserProxyImpl.getInstance())
           .getProfileInfo()
           .then(this.handleProfileInfo_.bind(this));
       this.addWebUIListener(
           'profile-info-changed', this.handleProfileInfo_.bind(this));
     }
 
-    this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
+    this.syncBrowserProxy_ = SyncBrowserProxyImpl.getInstance();
     this.syncBrowserProxy_.getSyncStatus().then(
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
@@ -182,16 +225,14 @@ Polymer({
   /** @protected */
   currentRouteChanged() {
     this.showImportDataDialog_ =
-        settings.Router.getInstance().getCurrentRoute() ==
-        settings.routes.IMPORT_DATA;
+        Router.getInstance().getCurrentRoute() == routes.IMPORT_DATA;
 
-    if (settings.Router.getInstance().getCurrentRoute() ==
-        settings.routes.SIGN_OUT) {
+    if (Router.getInstance().getCurrentRoute() == routes.SIGN_OUT) {
       // If the sync status has not been fetched yet, optimistically display
       // the sign-out dialog. There is another check when the sync status is
       // fetched. The dialog will be closed when the user is not signed in.
       if (this.syncStatus && !this.syncStatus.signedIn) {
-        settings.Router.getInstance().navigateToPreviousRoute();
+        Router.getInstance().navigateToPreviousRoute();
       } else {
         this.showSignoutDialog_ = true;
       }
@@ -222,7 +263,7 @@ Polymer({
   /**
    * Handler for when the profile's icon and name is updated.
    * @private
-   * @param {!settings.ProfileInfo} info
+   * @param {!ProfileInfo} info
    */
   handleProfileInfo_(info) {
     this.profileName_ = info.name;
@@ -232,7 +273,7 @@ Polymer({
      */
     // <if expr="chromeos">
     if (info.iconUrl.startsWith('data:image/png;base64')) {
-      this.profileIconUrl_ = cr.png.convertImageSequenceToPng([info.iconUrl]);
+      this.profileIconUrl_ = convertImageSequenceToPng([info.iconUrl]);
       return;
     }
     // </if>
@@ -247,9 +288,8 @@ Polymer({
    * Closure doesn't understand the <if> above.
    */
   updateAccounts_: async function() {
-    const /** @type {!Array<{settings.Account}>} */ accounts =
-        await settings.AccountManagerBrowserProxyImpl.getInstance()
-            .getAccounts();
+    const /** @type {!Array<{Account}>} */ accounts =
+        await AccountManagerBrowserProxyImpl.getInstance().getAccounts();
     // The user might not have any GAIA accounts (e.g. guest mode, Kerberos,
     // Active Directory). In these cases the profile row is hidden, so there's
     // nothing to do.
@@ -263,7 +303,7 @@ Polymer({
 
   /**
    * Handler for when the sync state is pushed from the browser.
-   * @param {?settings.SyncStatus} syncStatus
+   * @param {?SyncStatus} syncStatus
    * @private
    */
   handleSyncStatus_(syncStatus) {
@@ -306,7 +346,7 @@ Polymer({
     }
     // </if>
     // <if expr="not chromeos">
-    settings.Router.getInstance().navigateTo(settings.routes.MANAGE_PROFILE);
+    Router.getInstance().navigateTo(routes.MANAGE_PROFILE);
     // </if>
   },
 
@@ -314,28 +354,27 @@ Polymer({
   onDisconnectDialogClosed_(e) {
     this.showSignoutDialog_ = false;
 
-    if (settings.Router.getInstance().getCurrentRoute() ==
-        settings.routes.SIGN_OUT) {
-      settings.Router.getInstance().navigateToPreviousRoute();
+    if (Router.getInstance().getCurrentRoute() == routes.SIGN_OUT) {
+      Router.getInstance().navigateToPreviousRoute();
     }
   },
 
   /** @private */
   onSyncTap_() {
     // Users can go to sync subpage regardless of sync status.
-    settings.Router.getInstance().navigateTo(settings.routes.SYNC);
+    Router.getInstance().navigateTo(routes.SYNC);
   },
 
   // <if expr="not chromeos">
   /** @private */
   onImportDataTap_() {
-    settings.Router.getInstance().navigateTo(settings.routes.IMPORT_DATA);
+    Router.getInstance().navigateTo(routes.IMPORT_DATA);
   },
 
   /** @private */
   onImportDataDialogClosed_() {
-    settings.Router.getInstance().navigateToPreviousRoute();
-    cr.ui.focusWithoutInk(assert(this.$.importDataDialogTrigger));
+    Router.getInstance().navigateToPreviousRoute();
+    focusWithoutInk(assert(this.$.importDataDialogTrigger));
   },
   // </if>
 
@@ -344,7 +383,7 @@ Polymer({
    * @private
    */
   openGoogleAccount_() {
-    settings.OpenWindowProxyImpl.getInstance().openURL(
+    OpenWindowProxyImpl.getInstance().openURL(
         loadTimeData.getString('googleAccountUrl'));
     chrome.metricsPrivate.recordUserAction('ManageGoogleAccount_Clicked');
   },
@@ -371,6 +410,6 @@ Polymer({
    * @private
    */
   getIconImageSet_(iconUrl) {
-    return cr.icon.getImage(iconUrl);
+    return getImage(iconUrl);
   },
 });

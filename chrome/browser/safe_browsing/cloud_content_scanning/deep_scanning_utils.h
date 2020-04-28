@@ -37,7 +37,8 @@ void ReportSensitiveDataWarningBypass(Profile* profile,
                                       const std::string& download_digest_sha256,
                                       const std::string& mime_type,
                                       const std::string& trigger,
-                                      const int64_t content_size);
+                                      const int64_t content_size,
+                                      const DlpDeepScanningVerdict& verdict);
 
 // Access points used to record UMA metrics and specify which code location is
 // initiating a deep scan. Any new caller of

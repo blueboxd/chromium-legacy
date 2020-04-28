@@ -67,7 +67,7 @@ InteractiveDetector::InteractiveDetector(
     Document& document,
     NetworkActivityChecker* network_activity_checker)
     : Supplement<Document>(document),
-      ExecutionContextLifecycleObserver(&document),
+      ExecutionContextLifecycleObserver(document.GetExecutionContext()),
       clock_(base::DefaultTickClock::GetInstance()),
       network_activity_checker_(network_activity_checker),
       time_to_interactive_timer_(

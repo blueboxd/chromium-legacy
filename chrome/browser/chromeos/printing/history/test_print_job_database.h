@@ -25,6 +25,7 @@ class TestPrintJobDatabase : public PrintJobDatabase {
                     SavePrintJobCallback callback) override;
   void DeletePrintJobs(const std::vector<std::string>& ids,
                        DeletePrintJobsCallback callback) override;
+  void Clear(DeletePrintJobsCallback callback) override;
   void GetPrintJobs(GetPrintJobsCallback callback) override;
 
  private:

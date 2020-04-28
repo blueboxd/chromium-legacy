@@ -21,6 +21,9 @@ class URLRequestContextGetter;
 
 namespace domain_reliability {
 
+// Forward declared so that deprecated URLFetcher class can friend it.
+class DomainReliabilityUploaderImpl;
+
 class MockableTime;
 
 // Uploads Domain Reliability reports to collectors.

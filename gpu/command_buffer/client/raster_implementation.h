@@ -130,6 +130,12 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                    const SkImageInfo& src_info,
                    const void* src_pixels) override;
 
+  void ConvertYUVMailboxesToRGB(const gpu::Mailbox& dest_mailbox,
+                                SkYUVColorSpace planes_yuv_color_space,
+                                const gpu::Mailbox& y_plane_mailbox,
+                                const gpu::Mailbox& u_plane_mailbox,
+                                const gpu::Mailbox& v_plane_mailbox) override;
+
   void BeginRasterCHROMIUM(GLuint sk_color,
                            GLuint msaa_sample_count,
                            GLboolean can_use_lcd_text,

@@ -5,8 +5,8 @@
 #include "net/quic/quic_chromium_alarm_factory.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"

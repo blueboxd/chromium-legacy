@@ -382,6 +382,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     storage_partition_remove_mask |=
         StoragePartition::REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA;
   }
+  if (remove_mask & DATA_TYPE_CONVERSIONS) {
+    storage_partition_remove_mask |=
+        StoragePartition::REMOVE_DATA_MASK_CONVERSIONS;
+  }
 
   StoragePartition* storage_partition;
   if (storage_partition_for_testing_) {

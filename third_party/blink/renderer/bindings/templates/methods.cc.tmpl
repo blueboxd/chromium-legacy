@@ -253,8 +253,8 @@ ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
 {% endif %}
 {% if method.is_call_with_document %}
 {# [ConstructorCallWith=Document] #}
-Document& document = *Document::From(ToExecutionContext(
-    info.NewTarget().As<v8::Object>()->CreationContext()));
+Document& document = *ToLocalDOMWindow(
+    info.NewTarget().As<v8::Object>()->CreationContext())->document();
 {% endif %}
 {# Call #}
 {% if method.idl_type == 'void' %}

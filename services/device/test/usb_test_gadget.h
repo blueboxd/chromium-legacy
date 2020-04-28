@@ -20,6 +20,9 @@ namespace device {
 class UsbDevice;
 class UsbService;
 
+// Declared here so that the deprecated URLFetcher class can friend it.
+class UsbTestGadgetImpl;
+
 class UsbTestGadget {
  public:
   enum Type {

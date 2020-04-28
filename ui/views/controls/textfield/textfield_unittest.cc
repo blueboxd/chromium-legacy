@@ -3796,4 +3796,14 @@ TEST_F(TextfieldTest, TextChangedCallbackTest) {
   EXPECT_TRUE(text_changed);
 }
 
+// Tests that invalid characters like non-displayable characters are filtered
+// out when inserted into the text field.
+TEST_F(TextfieldTest, InsertInvalidCharsTest) {
+  InitTextfield();
+
+  textfield_->InsertText(ASCIIToUTF16("\babc\ndef\t"));
+
+  EXPECT_EQ(textfield_->GetText(), ASCIIToUTF16("abcdef"));
+}
+
 }  // namespace views

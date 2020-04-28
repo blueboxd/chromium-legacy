@@ -390,8 +390,8 @@ void URLRequestHttpJob::StartTransaction() {
 }
 
 void URLRequestHttpJob::NotifyBeforeStartTransactionCallback(int result) {
-  // Check that there are no callbacks to already canceled requests.
-  DCHECK_NE(URLRequestStatus::CANCELED, GetStatus().status());
+  // The request should not have been cancelled or have already completed.
+  DCHECK(!is_done());
 
   MaybeStartTransactionInternal(result);
 }
@@ -405,10 +405,8 @@ void URLRequestHttpJob::MaybeStartTransactionInternal(int result) {
                                                  "source", "delegate");
     // Don't call back synchronously to the delegate.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&URLRequestHttpJob::NotifyStartError,
-                       weak_factory_.GetWeakPtr(),
-                       URLRequestStatus(URLRequestStatus::FAILED, result)));
+        FROM_HERE, base::BindOnce(&URLRequestHttpJob::NotifyStartError,
+                                  weak_factory_.GetWeakPtr(), result));
   }
 }
 
@@ -660,7 +658,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   if (result != OK) {
     request_->net_log().AddEventWithStringParams(NetLogEventType::CANCELLED,
                                                  "source", "delegate");
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
+    NotifyStartError(result);
     return;
   }
 
@@ -878,7 +876,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
           request_->net_log().AddEventWithStringParams(
               NetLogEventType::CANCELLED, "source", "delegate");
           OnCallToDelegateComplete();
-          NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, error));
+          NotifyStartError(error);
         }
         return;
       }
@@ -901,15 +899,15 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     // info (e.g. whether there's a cached copy).
     if (transaction_.get())
       response_info_ = transaction_->GetResponseInfo();
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
+    NotifyStartError(result);
   }
 }
 
 void URLRequestHttpJob::OnHeadersReceivedCallback(int result) {
-  awaiting_callback_ = false;
+  // The request should not have been cancelled or have already completed.
+  DCHECK(!is_done());
 
-  // Check that there are no callbacks to already canceled requests.
-  DCHECK_NE(URLRequestStatus::CANCELED, GetStatus().status());
+  awaiting_callback_ = false;
 
   SaveCookiesAndNotifyHeadersComplete(result);
 }

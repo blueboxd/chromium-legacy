@@ -242,28 +242,51 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptBlobFetch) {
   ASSERT_TRUE(RunExtensionTest("content_scripts/blob_fetch")) << message_;
 }
 
-class ContentScriptCssInjectionTest : public ExtensionApiTest {
- protected:
-  // TODO(rdevlin.cronin): Make a testing switch that looks like FeatureSwitch,
-  // but takes in an optional value so that we don't have to do this.
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    // We change the Webstore URL to be http://cws.com. We need to do this so
-    // we can check that css injection is not allowed on the webstore (which
-    // could lead to spoofing). Unfortunately, host_resolver seems to have
-    // problems with redirecting "chrome.google.com" to the test server, so we
-    // can't use the real Webstore's URL. If this changes, we could clean this
-    // up.
-    command_line->AppendSwitchASCII(
-        ::switches::kAppsGalleryURL,
-        base::StringPrintf("http://%s", kWebstoreDomain));
-  }
+// Test that content scripts set to run at different timings are loaded as
+// expected for a few different types of pages.
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, RunAtTimingsAllFire) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
 
-  void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
-    host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(
+      LoadExtension(test_data_dir_.AppendASCII("content_scripts/load_timing")));
+
+  std::string test_paths[] = {"/extensions/test_file.html",
+                              "/extensions/test_xml.xml",
+                              "/extensions/test_xsl.xml"};
+
+  for (const auto& path : test_paths) {
+    ExtensionTestMessageListener listener_start("document-start-success",
+                                                false);
+    ExtensionTestMessageListener listener_end("document-end-success", false);
+    listener_end.set_failure_message("document-end-failure");
+    ExtensionTestMessageListener listener_idle("document-idle-success", false);
+    listener_idle.set_failure_message("document-idle-failure");
+
+    // Load the URL and make sure each script set for the different timings have
+    // fired.
+    const GURL url = embedded_test_server()->GetURL(path);
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    // Note: These checks don't ensure the correct ordering of injection, but
+    // that is verified in the JS files themselves.
+    EXPECT_TRUE(listener_start.WaitUntilSatisfied());
+    EXPECT_TRUE(listener_end.WaitUntilSatisfied());
+    EXPECT_TRUE(listener_idle.WaitUntilSatisfied());
+
+    // Load the page a second time to check for any issues with cached XSL
+    // resources. See: crbug.com/1041916. Note that test_xsl.xsl has
+    // mock-http-headers to make sure it is cached.
+    listener_start.Reset();
+    listener_end.Reset();
+    listener_idle.Reset();
+
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    EXPECT_TRUE(listener_start.WaitUntilSatisfied());
+    EXPECT_TRUE(listener_end.WaitUntilSatisfied());
+    EXPECT_TRUE(listener_idle.WaitUntilSatisfied());
   }
-};
+}
 
 IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
                        ContentScriptDuplicateScriptInjection) {
@@ -300,6 +323,29 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
       &scripts_injected_twice));
   ASSERT_TRUE(scripts_injected_twice);
 }
+
+class ContentScriptCssInjectionTest : public ExtensionApiTest {
+ protected:
+  // TODO(rdevlin.cronin): Make a testing switch that looks like FeatureSwitch,
+  // but takes in an optional value so that we don't have to do this.
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    // We change the Webstore URL to be http://cws.com. We need to do this so
+    // we can check that css injection is not allowed on the webstore (which
+    // could lead to spoofing). Unfortunately, host_resolver seems to have
+    // problems with redirecting "chrome.google.com" to the test server, so we
+    // can't use the real Webstore's URL. If this changes, we could clean this
+    // up.
+    command_line->AppendSwitchASCII(
+        ::switches::kAppsGalleryURL,
+        base::StringPrintf("http://%s", kWebstoreDomain));
+  }
+
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+};
 
 IN_PROC_BROWSER_TEST_F(ContentScriptCssInjectionTest,
                        ContentScriptInjectsStyles) {

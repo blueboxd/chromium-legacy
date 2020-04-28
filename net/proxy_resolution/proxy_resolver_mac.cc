@@ -6,8 +6,8 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
+#include "base/check.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_util.h"

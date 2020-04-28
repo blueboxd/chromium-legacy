@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.qrcode.QrCodeShareActivity;
@@ -265,7 +266,8 @@ public class ShareDelegateImpl implements ShareDelegate {
                 ShareSheetCoordinator coordinator =
                         new ShareSheetCoordinator(controller, tabProvider,
                                 new ShareSheetPropertyModelBuilder(controller,
-                                        ContextUtils.getApplicationContext().getPackageManager()));
+                                        ContextUtils.getApplicationContext().getPackageManager()),
+                                PrefServiceBridge.getInstance());
                 // TODO(crbug/1009124): open custom share sheet.
                 coordinator.showShareSheet(params, shareStartTime);
             } else {

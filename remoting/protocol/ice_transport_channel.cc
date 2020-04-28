@@ -84,7 +84,7 @@ void IceTransportChannel::Connect(const std::string& name,
 
   port_allocator_ =
       transport_context_->port_allocator_factory()->CreatePortAllocator(
-          transport_context_);
+          transport_context_, nullptr);
 
   // Create P2PTransportChannel, attach signal handlers and connect it.
   // TODO(sergeyu): Specify correct component ID for the channel.

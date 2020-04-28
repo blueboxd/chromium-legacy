@@ -27,9 +27,4 @@ bool IsReceivingEnabledByUserOnThisDevice(PrefService* prefs) {
   return sync_prefs.IsSyncRequested() && sync_prefs.IsFirstSetupComplete() &&
          sync_prefs.GetSelectedTypes().Has(syncer::UserSelectableType::kTabs);
 }
-
-bool EnabledOnSignIn() {
-  return base::FeatureList::IsEnabled(kSendTabToSelfWhenSignedIn);
-}
-
 }  // namespace send_tab_to_self

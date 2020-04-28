@@ -44,8 +44,8 @@
 #include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/feed/buildflags.h"
-#include "components/performance_manager/performance_manager_tab_helper.h"
-#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
+#include "components/performance_manager/embedder/binders.h"
+#include "components/performance_manager/public/performance_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/security_state/content/content_utils.h"
@@ -270,25 +270,6 @@ void BindPrerenderCanceler(
   prerender_contents->AddPrerenderCancelerReceiver(std::move(receiver));
 }
 
-void BindDocumentCoordinationUnit(
-    content::RenderFrameHost* host,
-    mojo::PendingReceiver<performance_manager::mojom::DocumentCoordinationUnit>
-        receiver) {
-  auto* content = content::WebContents::FromRenderFrameHost(host);
-  // |content| can be nullable if RenderFrameHost's delegate is not
-  // WebContents.
-  if (!content)
-    return;
-  auto* helper =
-      performance_manager::PerformanceManagerTabHelper::FromWebContents(
-          content);
-  // This condition is for testing-only. We should handle a bind request after
-  // PerformanceManagerTabHelper is attached to WebContents.
-  if (!helper)
-    return;
-  return helper->BindDocumentCoordinationUnit(host, std::move(receiver));
-}
-
 #if defined(OS_ANDROID)
 template <typename Interface>
 void ForwardToJavaWebContents(content::RenderFrameHost* frame_host,
@@ -382,8 +363,11 @@ void PopulateChromeFrameBinders(
   map->Add<blink::mojom::PrerenderProcessor>(
       base::BindRepeating(&prerender::PrerenderProcessorImpl::Create));
 
-  map->Add<performance_manager::mojom::DocumentCoordinationUnit>(
-      base::BindRepeating(&BindDocumentCoordinationUnit));
+  if (performance_manager::PerformanceManager::IsAvailable()) {
+    map->Add<performance_manager::mojom::DocumentCoordinationUnit>(
+        base::BindRepeating(
+            &performance_manager::BindDocumentCoordinationUnit));
+  }
 
   map->Add<translate::mojom::ContentTranslateDriver>(
       base::BindRepeating(&language::BindContentTranslateDriver));

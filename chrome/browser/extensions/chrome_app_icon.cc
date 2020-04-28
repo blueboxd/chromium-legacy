@@ -73,16 +73,17 @@ void ChromeAppIcon::ApplyEffects(int resource_size_in_dip,
                         image_skia);
   }
 
-#if defined(OS_CHROMEOS)
-  if (badge_type != Badge::kNone)
-    util::ApplyBadge(image_skia, badge_type);
-#endif
-
   if (!app_launchable) {
     constexpr color_utils::HSL shift = {-1, 0, 0.6};
     *image_skia =
         gfx::ImageSkiaOperations::CreateHSLShiftedImage(*image_skia, shift);
   }
+
+#if defined(OS_CHROMEOS)
+  // Badge should be added after graying out the icon to have a crisp look.
+  if (badge_type != Badge::kNone)
+    util::ApplyBadge(image_skia, badge_type);
+#endif
 
   if (from_bookmark) {
     *image_skia =

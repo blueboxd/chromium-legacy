@@ -118,6 +118,35 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     int child_id_;
   };
 
+  // This scoped class is used to temporarily store an origin requesting
+  // opt-in isolation in scoped_isolation_request_origin_, while the request is
+  // being processed. This is only necessary because it is difficult to plumb
+  // the parameter through the site URL computations that need it, and it is
+  // safe because overlapping and nested occurrences cannot occur. Callers
+  // should stack allocate the result so that the temporary result is
+  // automatically cleared when the result goes out of scope. The stored
+  // scoped_isolation_request_origin_ value is only safe to access from the UI
+  // thread, where this object must be created.
+  class CONTENT_EXPORT ScopedOriginIsolationOptInRequest {
+   public:
+    // This returns a new unique_ptr to ScopedOriginIsolationOptInRequest if
+    // no origin is already scoped for an isolation request, or a null
+    // unique_ptr if |origin_to_isolate| has already been scoped. If
+    // a second call occurs while this is set, this will fail on a CHECK.
+    static std::unique_ptr<ScopedOriginIsolationOptInRequest>
+    GetScopedOriginIsolationOptInRequest(const url::Origin& origin_to_isolate);
+
+    ~ScopedOriginIsolationOptInRequest();
+
+   private:
+    explicit ScopedOriginIsolationOptInRequest(
+        const url::Origin& origin_to_isolate);
+
+    friend class ChildProcessSecurityPolicyImpl;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedOriginIsolationOptInRequest);
+  };
+
   // Object can only be created through GetInstance() so the constructor is
   // private.
   ~ChildProcessSecurityPolicyImpl() override;
@@ -247,24 +276,27 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // |isolation_context|. It is different from IsIsolatedOrigin() in that it
   // only deals with OriginPolicy isolation status, whereas IsIsolatedOrigin()
   // considers all possible mechanisms for requesting isolation.
-  // It will check for two things: 1) whether |origin|
-  // already has a site instance in the |isolation_context|
-  //    in which case we follow the same policy, or
-  // 2) if it's not currently listed, whether |origin| is listed in the master
-  //    list of origins requesting isolation via an OriginPolicy opt-in.
-  bool DoesOriginRequestOptInIsolation(
-      const IsolationContext& isolation_context,
-      const url::Origin& origin);
+  // It will check for two things:
+  // 1) whether |origin| already is assigned to a SiteInstance in the
+  //    |isolation_context| by being tracked in either
+  //    |origin_isolation_non_isolated_by_browsing_instance_| or
+  //    |origin_isolation_by_browsing_instance_|, in which case we follow the
+  //    same policy, or
+  // 2) if it's not currently tracked as described above, whether |origin| is
+  //    currently requesting isolation via |scoped_isolation_request_origin_|,
+  //    as part of an in-progress navigation.
+  bool ShouldOriginGetOptInIsolation(const IsolationContext& isolation_context,
+                                     const url::Origin& origin);
 
   // Returns true if web-exposed mechanisms for opting in to isolated origins
   // are enabled (namely, either via origin policy or via the Origin-Isolation
   // header).
   static bool IsOptInOriginIsolationEnabled();
 
-  // This function manages updates to the master list of origins requesting
-  // isolation, e.g. via an OriginPolicy.
-  void UpdateOriginIsolationOptInListIfNecessary(const url::Origin& origin,
-                                                 bool requests_isolation);
+  // This function adds |origin| to the master list of origins that have
+  // ever requested opt-in isolation, either via an OriginPolicy or opt-in
+  // header. Returns true if |origin| is not already in the list.
+  bool UpdateOriginIsolationOptInListIfNecessary(const url::Origin& origin);
 
   // A version of GetMatchingIsolatedOrigin that takes in both the |origin| and
   // the |site_url| that |origin| corresponds to.  |site_url| is the key by
@@ -441,6 +473,19 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // |security_state_|. Otherwise it returns a Handle that returns false for
   // all policy checks.
   Handle CreateHandle(int child_id);
+
+  // Returns true if we have seen an isolation request for this origin before
+  // in any BrowsingInstance.
+  bool HasOriginEverRequestedOptInIsolation(const url::Origin& origin);
+
+  // Adds |origin| to the non-isolated list for the BrowsingInstance specified
+  // by |isolation_context|, if it's not already in the list. |is_global_walk|
+  // should only be set to true during the global walk that is triggered when
+  // |origin| first requests opt-in isolation, so that the function can skip
+  // safety checks that will be unnecessary during the global walk.
+  void AddNonIsolatedOriginIfNeeded(const IsolationContext& isolation_context,
+                                    const url::Origin& origin,
+                                    bool is_global_walk);
 
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
@@ -707,16 +752,37 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   base::flat_map<GURL, std::vector<IsolatedOriginEntry>> isolated_origins_
       GUARDED_BY(isolated_origins_lock_);
 
-  // Two maps, one to track an up-to-date set of Origins requesting opt-in
-  // isolation, and the other to track the current opt-in status of an Origin
-  // within a BrowsingInstance, so that that status can be made consistent over
-  // the lifetime of the BrowsingInstance.
+  // TODO(wjmaclean): Move these lists into a per-BrowserContext container, to
+  // prevent any record of sites visible in one profile from being visible to
+  // another profile.
   base::Lock origins_isolation_opt_in_lock_;
+  // The set of all origins that have ever requested opt-in isolation. This is
+  // tracked so we know which origins need to be tracked when non-isolated in
+  // any given BrowsingInstance. Origins requesting isolation, if successful,
+  // are marked as isolated via ShouldOriginGetOptInIsolation's checking
+  // |scoped_isolation_request_origin_|.
   base::flat_set<url::Origin> origin_isolation_opt_ins_
       GUARDED_BY(origins_isolation_opt_in_lock_);
+  // A map to track origins that have been isolated within a given
+  // BrowsingInstance.
   base::flat_map<BrowsingInstanceId, std::vector<url::Origin>>
       origin_isolation_by_browsing_instance_
           GUARDED_BY(origins_isolation_opt_in_lock_);
+  // A map to track origins that have been loaded in a BrowsingInstance without
+  // isolation, but that have requested isolation in at least one other
+  // BrowsingInstance. This map makes sure we don't try to isolate the origin
+  // in the associated BrowsingInstance at a later time, in order to keep the
+  // isolation consistent over the lifetime of the BrowsingInstance.
+  base::flat_map<BrowsingInstanceId, std::vector<url::Origin>>
+      origin_isolation_non_isolated_by_browsing_instance_
+          GUARDED_BY(origins_isolation_opt_in_lock_);
+
+  // This origin is set during a call to NavigationRequest::OnResponseStarted
+  // that requests isolation for an origin, via the creation of a
+  // ScopedOriginIsolationOptInRequest object. This value's state is read by
+  // ShouldOriginGetOptInIsolation(), and it is only safe to access on the UI
+  // thread.
+  base::Optional<url::Origin> scoped_isolation_request_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicyImpl);
 };

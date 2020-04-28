@@ -25,11 +25,6 @@ extern const base::Feature kSendTabToSelfWhenSignedIn;
 // because it doesn't rely on the SendTabToSelfSyncService to be actively up and
 // ready.
 bool IsReceivingEnabledByUserOnThisDevice(PrefService* prefs);
-
-// Returns whether we should use ephemeral sign-in data, rather than full,
-// persistent sync data. Then the feature may be used by signed-in users,
-// regardless of whether they have full sync enabled.
-bool EnabledOnSignIn();
 }  // namespace send_tab_to_self
 
 #endif  // COMPONENTS_SEND_TAB_TO_SELF_FEATURES_H_

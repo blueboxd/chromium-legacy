@@ -49,14 +49,12 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   void CallSlotChangeAfterRemoved(HTMLSlotElement& slot);
   void CallSlotChangeIfNeeded(HTMLSlotElement& slot, Node& child);
 
-  HTMLSlotElement* FindSlotChange(HTMLSlotElement& slot, Node& child);
-
   void Trace(Visitor*);
 
   bool NeedsAssignmentRecalc() const { return needs_assignment_recalc_; }
   void SetNeedsAssignmentRecalc();
   void RecalcAssignment();
-  void UpdateCandidateNodeAssignedSlot(Node&, HTMLSlotElement&);
+  bool UpdateCandidateNodeAssignedSlot(Node&, HTMLSlotElement&);
   void ClearCandidateNodes(const HeapLinkedHashSet<Member<Node>>& candidates);
 
  private:

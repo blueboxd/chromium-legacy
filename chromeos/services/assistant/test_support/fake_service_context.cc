@@ -59,7 +59,7 @@ FakeServiceContext::assistant_alarm_timer_controller() {
   return assistant_alarm_timer_controller_;
 }
 
-mojom::AssistantController* FakeServiceContext::assistant_controller() {
+ash::AssistantController* FakeServiceContext::assistant_controller() {
   NOTIMPLEMENTED();
   return nullptr;
 }

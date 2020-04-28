@@ -62,7 +62,6 @@ class CC_EXPORT RenderSurfaceImpl {
   }
 
   SkBlendMode BlendMode() const;
-  bool UsesDefaultBlendMode() const;
 
   void SetNearestOcclusionImmuneAncestor(const RenderSurfaceImpl* surface) {
     nearest_occlusion_immune_ancestor_ = surface;

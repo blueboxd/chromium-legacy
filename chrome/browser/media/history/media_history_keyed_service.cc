@@ -268,13 +268,15 @@ void MediaHistoryKeyedService::StoreMediaFeedFetchResult(
     const bool was_fetched_from_cache,
     const std::vector<media_session::MediaImage>& logos,
     const std::string& display_name,
+    const std::vector<url::Origin>& associated_origins,
     base::OnceClosure callback) {
   if (auto* store = store_->GetForWrite()) {
     store->db_task_runner_->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&MediaHistoryStore::StoreMediaFeedFetchResult, store,
                        feed_id, std::move(items), result,
-                       was_fetched_from_cache, logos, display_name),
+                       was_fetched_from_cache, logos, display_name,
+                       associated_origins),
         std::move(callback));
   }
 }
@@ -411,6 +413,16 @@ void MediaHistoryKeyedService::ResetMediaFeed(
     store->db_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaHistoryStore::ResetMediaFeed, store,
                                   feed_id, reason));
+  }
+}
+
+void MediaHistoryKeyedService::DeleteMediaFeed(const int64_t feed_id,
+                                               base::OnceClosure callback) {
+  if (auto* store = store_->GetForDelete()) {
+    store->db_task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&MediaHistoryStore::DeleteMediaFeed, store, feed_id),
+        std::move(callback));
   }
 }
 

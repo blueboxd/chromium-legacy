@@ -5,8 +5,8 @@
 #include "net/test/url_request/url_request_failed_job.h"
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -184,7 +184,7 @@ URLRequestFailedJob::~URLRequestFailedJob() = default;
 void URLRequestFailedJob::StartAsync() {
   if (phase_ == START) {
     if (net_error_ != ERR_IO_PENDING) {
-      NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, net_error_));
+      NotifyStartError(net_error_);
       return;
     }
     return;

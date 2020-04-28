@@ -1317,6 +1317,22 @@ JsJavaConfiguratorHost* AwContents::GetJsJavaConfiguratorHost() {
   return js_java_configurator_host_.get();
 }
 
+jint AwContents::AddDocumentStartJavascript(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& script,
+    const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules) {
+  return GetJsJavaConfiguratorHost()->AddDocumentStartJavascript(
+      env, script, allowed_origin_rules);
+}
+
+void AwContents::RemoveDocumentStartJavascript(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint script_id) {
+  GetJsJavaConfiguratorHost()->RemoveDocumentStartJavascript(env, script_id);
+}
+
 base::android::ScopedJavaLocalRef<jstring> AwContents::AddWebMessageListener(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,

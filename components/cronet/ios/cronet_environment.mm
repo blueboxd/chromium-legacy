@@ -23,7 +23,7 @@
 #include "components/cronet/cronet_buildflags.h"
 #include "components/cronet/cronet_global_state.h"
 #include "components/cronet/cronet_prefs_manager.h"
-#include "components/cronet/histogram_manager.h"
+#include "components/metrics/library_support/histogram_manager.h"
 #include "components/prefs/pref_filter.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/net/cookies/cookie_store_ios_client.h"
@@ -447,7 +447,7 @@ std::vector<uint8_t> CronetEnvironment::GetHistogramDeltas() {
 #if BUILDFLAG(DISABLE_HISTOGRAM_SUPPORT)
   NOTREACHED() << "Histogram support is disabled";
 #else   // BUILDFLAG(DISABLE_HISTOGRAM_SUPPORT)
-  if (!HistogramManager::GetInstance()->GetDeltas(&data))
+  if (!metrics::HistogramManager::GetInstance()->GetDeltas(&data))
     return std::vector<uint8_t>();
 #endif  // BUILDFLAG(DISABLE_HISTOGRAM_SUPPORT)
   return data;

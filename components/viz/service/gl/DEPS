@@ -13,6 +13,7 @@ include_rules = [
   "+gpu/ipc/service",
   "+gpu/vulkan",
   "+ipc",
+  "+media/base/android/media_codec_util.h",
   "+media/gpu",
   "+media/mojo",
   "+mojo/public/cpp",

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 
 import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM;
@@ -92,13 +94,12 @@ public class ReturnToChromeTest {
 
     /**
      * Test that overview mode is triggered if the delay is shorter than the interval between
-     * stop and start. Also test the first meaningful paint UMA.
+     * stop and start.
      */
     @Test
     @SmallTest
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
-    @FlakyTest(message = "crbug.com/1040895")
     public void testTabSwitcherModeTriggeredBeyondThreshold() throws Exception {
         TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, 2, 0, mUrl);
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
@@ -120,26 +121,6 @@ public class ReturnToChromeTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
-
-        if (!mActivityTestRule.getActivity().isTablet()) {
-            CriteriaHelper.pollUiThread(Criteria.equals(1,
-                    ()
-                            -> RecordHistogram.getHistogramTotalCountForTesting(
-                                    ReturnToChromeExperimentsUtil
-                                            .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
-            assertEquals(1,
-                    RecordHistogram.getHistogramTotalCountForTesting(
-                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                            + ReturnToChromeExperimentsUtil.coldStartBucketName(true)));
-            assertEquals(1,
-                    RecordHistogram.getHistogramTotalCountForTesting(
-                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                            + ReturnToChromeExperimentsUtil.coldStartBucketName(true)
-                            + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
-                                    mActivityTestRule.getActivity()
-                                            .getTabModelSelector()
-                                            .getTotalTabCount())));
-        }
     }
 
     /**
@@ -147,10 +128,42 @@ public class ReturnToChromeTest {
      * stop and start. Also test the first meaningful paint UMA.
      */
     @Test
+    @SmallTest
+    @Feature({"ReturnToChrome"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
+    @FlakyTest(message = "crbug.com/1040896")
+    public void testTabSwitcherModeTriggeredBeyondThreshold_UMA() throws Exception {
+        testTabSwitcherModeTriggeredBeyondThreshold();
+
+        assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
+        CriteriaHelper.pollUiThread(Criteria.equals(1,
+                ()
+                        -> RecordHistogram.getHistogramTotalCountForTesting(
+                                ReturnToChromeExperimentsUtil
+                                        .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
+        assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                        + ReturnToChromeExperimentsUtil.coldStartBucketName(true)));
+        assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                        + ReturnToChromeExperimentsUtil.coldStartBucketName(true)
+                        + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
+                                mActivityTestRule.getActivity()
+                                        .getTabModelSelector()
+                                        .getTotalTabCount())));
+    }
+
+    /**
+     * Test that overview mode is triggered if the delay is shorter than the interval between
+     * stop and start.
+     */
+    @Test
     @MediumTest
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
-    @FlakyTest(message = "crbug.com/1040896")
     public void testTabSwitcherModeTriggeredBeyondThreshold_WarmStart() throws Exception {
         testTabSwitcherModeTriggeredBeyondThreshold();
 
@@ -169,26 +182,39 @@ public class ReturnToChromeTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(2, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+    }
 
-        if (!mActivityTestRule.getActivity().isTablet()) {
-            CriteriaHelper.pollUiThread(Criteria.equals(2,
-                    ()
-                            -> RecordHistogram.getHistogramTotalCountForTesting(
-                                    ReturnToChromeExperimentsUtil
-                                            .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
-            assertEquals(1,
-                    RecordHistogram.getHistogramTotalCountForTesting(
-                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                            + ReturnToChromeExperimentsUtil.coldStartBucketName(false)));
-            assertEquals(1,
-                    RecordHistogram.getHistogramTotalCountForTesting(
-                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                            + ReturnToChromeExperimentsUtil.coldStartBucketName(false)
-                            + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
-                                    mActivityTestRule.getActivity()
-                                            .getTabModelSelector()
-                                            .getTotalTabCount())));
-        }
+    /**
+     * Test that overview mode is triggered if the delay is shorter than the interval between
+     * stop and start. Also test the first meaningful paint UMA.
+     */
+    @Test
+    @MediumTest
+    @Feature({"ReturnToChrome"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
+    @FlakyTest(message = "crbug.com/1040896")
+    public void testTabSwitcherModeTriggeredBeyondThreshold_WarmStart_UMA() throws Exception {
+        testTabSwitcherModeTriggeredBeyondThreshold_WarmStart();
+
+        assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
+        CriteriaHelper.pollUiThread(Criteria.equals(2,
+                ()
+                        -> RecordHistogram.getHistogramTotalCountForTesting(
+                                ReturnToChromeExperimentsUtil
+                                        .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
+        assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                        + ReturnToChromeExperimentsUtil.coldStartBucketName(false)));
+        assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                        + ReturnToChromeExperimentsUtil.coldStartBucketName(false)
+                        + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
+                                mActivityTestRule.getActivity()
+                                        .getTabModelSelector()
+                                        .getTotalTabCount())));
     }
 
     /**
@@ -205,13 +231,12 @@ public class ReturnToChromeTest {
 
     /**
      * Test that overview mode is triggered if the delay is shorter than the interval between
-     * stop and start. Also test the first meaningful paint UMA for the no-tab condition.
+     * stop and start.
      */
     @Test
     @SmallTest
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
-    @DisabledTest(message = "http://crbug.com/1027315")
     public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getTabModelSelector().closeAllTabs());
@@ -236,26 +261,39 @@ public class ReturnToChromeTest {
                         .getCurrentTabModelFilter()::isTabModelRestored));
 
         assertEquals(0, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+    }
 
-        if (!mActivityTestRule.getActivity().isTablet()) {
-            CriteriaHelper.pollUiThread(Criteria.equals(1,
-                    ()
-                            -> RecordHistogram.getHistogramTotalCountForTesting(
-                                    ReturnToChromeExperimentsUtil
-                                            .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
-            assertEquals(1,
-                    RecordHistogram.getHistogramTotalCountForTesting(
-                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                            + ReturnToChromeExperimentsUtil.coldStartBucketName(true)));
-            assertEquals(1,
-                    RecordHistogram.getHistogramTotalCountForTesting(
-                            ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
-                            + ReturnToChromeExperimentsUtil.coldStartBucketName(true)
-                            + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
-                                    mActivityTestRule.getActivity()
-                                            .getTabModelSelector()
-                                            .getTotalTabCount())));
-        }
+    /**
+     * Test that overview mode is triggered if the delay is shorter than the interval between
+     * stop and start. Also test the first meaningful paint UMA for the no-tab condition.
+     */
+    @Test
+    @SmallTest
+    @Feature({"ReturnToChrome"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
+    @DisabledTest(message = "http://crbug.com/1027315")
+    public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs_UMA() throws Exception {
+        testTabSwitcherModeTriggeredBeyondThreshold_NoTabs();
+
+        assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
+        CriteriaHelper.pollUiThread(Criteria.equals(1,
+                ()
+                        -> RecordHistogram.getHistogramTotalCountForTesting(
+                                ReturnToChromeExperimentsUtil
+                                        .UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT)));
+        assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                        + ReturnToChromeExperimentsUtil.coldStartBucketName(true)));
+        assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        ReturnToChromeExperimentsUtil.UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                        + ReturnToChromeExperimentsUtil.coldStartBucketName(true)
+                        + ReturnToChromeExperimentsUtil.numThumbnailsBucketName(
+                                mActivityTestRule.getActivity()
+                                        .getTabModelSelector()
+                                        .getTotalTabCount())));
     }
 
     @Test

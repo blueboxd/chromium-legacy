@@ -28,6 +28,8 @@
 #include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
+#include "content/browser/conversions/conversion_manager_impl.h"
+#include "content/browser/conversions/conversion_test_utils.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -727,7 +729,9 @@ class StoragePartitionImplTest : public testing::Test {
  public:
   StoragePartitionImplTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
-        browser_context_(new TestBrowserContext()) {}
+        browser_context_(new TestBrowserContext()) {
+    feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
+  }
 
   storage::MockQuotaManager* GetMockManager() {
     if (!quota_manager_.get()) {
@@ -749,6 +753,8 @@ class StoragePartitionImplTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   scoped_refptr<storage::MockQuotaManager> quota_manager_;
+
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImplTest);
 };
@@ -1662,6 +1668,130 @@ TEST(StoragePartitionImplStaticTest, CreatePredicateForHostCookies) {
     EXPECT_FALSE(FilterMatchesCookie(deletion_filter, *cookie))
         << cookie->DebugString();
   }
+}
+
+TEST_F(StoragePartitionImplTest, ConversionsClearDataForOrigin) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  ConversionManagerImpl* conversion_manager = partition->GetConversionManager();
+
+  base::Time now = base::Time::Now();
+  auto impression =
+      ImpressionBuilder(now).SetExpiry(base::TimeDelta::FromDays(2)).Build();
+  conversion_manager->HandleImpression(impression);
+  conversion_manager->HandleConversion(DefaultConversion());
+
+  base::RunLoop run_loop;
+  partition->ClearData(StoragePartition::REMOVE_DATA_MASK_CONVERSIONS, 0,
+                       impression.impression_origin().GetURL(), now, now,
+                       run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_TRUE(
+      GetConversionsToReportForTesting(conversion_manager, base::Time::Max())
+          .empty());
+}
+
+TEST_F(StoragePartitionImplTest, ConversionsClearDataWrongMask) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  ConversionManagerImpl* conversion_manager = partition->GetConversionManager();
+
+  base::Time now = base::Time::Now();
+  auto impression =
+      ImpressionBuilder(now).SetExpiry(base::TimeDelta::FromDays(2)).Build();
+  conversion_manager->HandleImpression(impression);
+  conversion_manager->HandleConversion(DefaultConversion());
+
+  EXPECT_FALSE(
+      GetConversionsToReportForTesting(conversion_manager, base::Time::Max())
+          .empty());
+
+  // Arbitrary non-conversions mask.
+  base::RunLoop run_loop;
+  partition->ClearData(StoragePartition::REMOVE_DATA_MASK_COOKIES, 0,
+                       impression.impression_origin().GetURL(), now, now,
+                       run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_FALSE(
+      GetConversionsToReportForTesting(conversion_manager, base::Time::Max())
+          .empty());
+}
+
+TEST_F(StoragePartitionImplTest, ConversionsClearAllData) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  ConversionManagerImpl* conversion_manager = partition->GetConversionManager();
+
+  base::Time now = base::Time::Now();
+  for (int i = 0; i < 20; i++) {
+    auto origin = url::Origin::Create(
+        GURL(base::StringPrintf("https://www.%d.test/", i)));
+    auto impression = ImpressionBuilder(now)
+                          .SetExpiry(base::TimeDelta::FromDays(2))
+                          .SetImpressionOrigin(origin)
+                          .SetReportingOrigin(origin)
+                          .SetConversionOrigin(origin)
+                          .Build();
+    conversion_manager->HandleImpression(impression);
+  }
+  base::RunLoop run_loop;
+  partition->ClearData(StoragePartition::REMOVE_DATA_MASK_CONVERSIONS, 0,
+                       GURL(), now, now, run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_TRUE(
+      GetConversionsToReportForTesting(conversion_manager, base::Time::Max())
+          .empty());
+}
+
+TEST_F(StoragePartitionImplTest, ConversionsClearDataForFilter) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+
+  ConversionManagerImpl* conversion_manager = partition->GetConversionManager();
+
+  base::Time now = base::Time::Now();
+  for (int i = 0; i < 5; i++) {
+    auto impression =
+        url::Origin::Create(GURL(base::StringPrintf("https://imp-%d.com/", i)));
+    auto reporter = url::Origin::Create(
+        GURL(base::StringPrintf("https://reporter-%d.com/", i)));
+    auto conv = url::Origin::Create(
+        GURL(base::StringPrintf("https://conv-%d.com/", i)));
+    conversion_manager->HandleImpression(
+        ImpressionBuilder(now)
+            .SetImpressionOrigin(impression)
+            .SetReportingOrigin(reporter)
+            .SetConversionOrigin(conv)
+            .SetExpiry(base::TimeDelta::FromDays(2))
+            .Build());
+    conversion_manager->HandleConversion(
+        StorableConversion("123", conv, reporter));
+  }
+
+  EXPECT_EQ(5u, GetConversionsToReportForTesting(conversion_manager,
+                                                 base::Time::Max())
+                    .size());
+
+  // Match against enough Origins to delete three of the imp/conv pairs.
+  base::RunLoop run_loop;
+  StoragePartition::OriginMatcherFunction func = base::BindRepeating(
+      [](const url::Origin& origin, storage::SpecialStoragePolicy* policy) {
+        return origin == url::Origin::Create(GURL("https://imp-2.com/")) ||
+               origin == url::Origin::Create(GURL("https://conv-3.com/")) ||
+               origin == url::Origin::Create(GURL("https://rep-4.com/")) ||
+               origin == url::Origin::Create(GURL("https://imp-4.com/"));
+      });
+  partition->ClearData(StoragePartition::REMOVE_DATA_MASK_CONVERSIONS, 0, func,
+                       nullptr, false, now, now, run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_EQ(2u, GetConversionsToReportForTesting(conversion_manager,
+                                                 base::Time::Max())
+                    .size());
 }
 
 }  // namespace content

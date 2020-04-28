@@ -145,13 +145,6 @@ std::unique_ptr<ElementAnimator> UiElementContainerView::HandleUiElement(
 }
 
 void UiElementContainerView::OnAllViewsAnimatedIn() {
-  if (!chromeos::assistant::features::IsResponseProcessingV2Enabled()) {
-    // TODO(dmblack): Figure out how best to handle A11Y notification of this
-    // event in response processing V2. We may need to debounce it to prevent
-    // dispatching too many accessibility events in quick succession.
-    return;
-  }
-
   const auto* response =
       AssistantInteractionController::Get()->GetModel()->response();
   DCHECK(response);

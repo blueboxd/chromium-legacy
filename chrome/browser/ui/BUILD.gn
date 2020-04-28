@@ -1569,10 +1569,8 @@ jumbo_static_library("ui") {
       "app_list/search/launcher_search/launcher_search_result.h",
       "ash/accessibility/accessibility_controller_client.cc",
       "ash/accessibility/accessibility_controller_client.h",
-      "ash/ambient/photo_client.cc",
-      "ash/ambient/photo_client.h",
-      "ash/ambient/photo_controller_impl.cc",
-      "ash/ambient/photo_controller_impl.h",
+      "ash/ambient/ambient_client_impl.cc",
+      "ash/ambient/ambient_client_impl.h",
       "ash/arc_chrome_actions_client.cc",
       "ash/arc_chrome_actions_client.h",
       "ash/arc_custom_tab_modal_dialog_host.cc",
@@ -2214,16 +2212,7 @@ jumbo_static_library("ui") {
     }
 
     if (enable_cros_libassistant) {
-      sources += [
-        "ash/ambient/backdrop/photo_client_impl.cc",
-        "ash/ambient/backdrop/photo_client_impl.h",
-      ]
-
-      deps += [
-        "//chromeos/assistant/internal",
-        "//chromeos/assistant/internal/ambient",
-        "//chromeos/assistant/internal/proto/google3",
-      ]
+      deps += [ "//chromeos/assistant/internal" ]
     }
   }
 

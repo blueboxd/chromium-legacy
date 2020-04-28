@@ -837,6 +837,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnServiceWorkerAccessed(NavigationHandle* navigation,
                                const GURL& scope,
                                AllowServiceWorkerResult allowed) override;
+  void RegisterExistingOriginToPreventOptInIsolation(
+      const url::Origin& origin) override;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 

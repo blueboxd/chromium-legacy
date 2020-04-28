@@ -1830,10 +1830,82 @@ class OcclusionTrackerTestReduceOcclusionWhenBkgdFilterIsPartiallyOccluded
 ALL_OCCLUSIONTRACKER_TEST(
     OcclusionTrackerTestReduceOcclusionWhenBkgdFilterIsPartiallyOccluded)
 
-class OcclusionTrackerTestRenderSurfaceBlendModeDoesNotOcclude
+class OcclusionTrackerTestRenderSurfaceOccludingBlendMode
     : public OcclusionTrackerTest {
  protected:
-  explicit OcclusionTrackerTestRenderSurfaceBlendModeDoesNotOcclude(
+  explicit OcclusionTrackerTestRenderSurfaceOccludingBlendMode(
+      bool opaque_layers,
+      SkBlendMode blend_mode)
+      : OcclusionTrackerTest(opaque_layers), blend_mode_(blend_mode) {}
+
+  void RunMyTest() override {
+    TestContentLayerImpl* parent = CreateRoot(gfx::Size(100, 100));
+    LayerImpl* blend_mode_layer =
+        CreateDrawingSurface(parent, identity_matrix, gfx::PointF(0.f, 0.f),
+                             gfx::Size(100, 100), true);
+    LayerImpl* top_layer =
+        CreateDrawingLayer(parent, identity_matrix, gfx::PointF(10.f, 12.f),
+                           gfx::Size(20, 22), true);
+
+    GetEffectNode(blend_mode_layer)->render_surface_reason =
+        RenderSurfaceReason::kTest;
+    GetEffectNode(blend_mode_layer)->blend_mode = blend_mode_;
+
+    this->CalcDrawEtc();
+
+    TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 1000, 1000));
+
+    ASSERT_NO_FATAL_FAILURE(VisitLayer(top_layer, &occlusion));
+    // |top_layer| occludes.
+    EXPECT_EQ(gfx::Rect(10, 12, 20, 22).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
+    EXPECT_TRUE(occlusion.occlusion_from_outside_target().IsEmpty());
+
+    ASSERT_NO_FATAL_FAILURE(VisitLayer(blend_mode_layer, &occlusion));
+    // |top_layer| and |blend_mode_layer| both occlude.
+    EXPECT_EQ(gfx::Rect(100, 100).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
+    EXPECT_EQ(gfx::Rect(10, 12, 20, 22).ToString(),
+              occlusion.occlusion_from_outside_target().ToString());
+
+    ASSERT_NO_FATAL_FAILURE(
+        this->VisitContributingSurface(blend_mode_layer, &occlusion));
+    // |top_layer| and |blend_mode_layer| still both occlude.
+    EXPECT_EQ(gfx::Rect(100, 100).ToString(),
+              occlusion.occlusion_from_inside_target().ToString());
+    EXPECT_TRUE(occlusion.occlusion_from_outside_target().IsEmpty());
+  }
+
+ private:
+  SkBlendMode blend_mode_;
+};
+
+class OcclusionTrackerTestRenderSurfaceBlendModeSrcOver
+    : public OcclusionTrackerTestRenderSurfaceOccludingBlendMode {
+ protected:
+  explicit OcclusionTrackerTestRenderSurfaceBlendModeSrcOver(bool opaque_layers)
+      : OcclusionTrackerTestRenderSurfaceOccludingBlendMode(
+            opaque_layers,
+            SkBlendMode::kSrcOver) {}
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestRenderSurfaceBlendModeSrcOver)
+
+class OcclusionTrackerTestRenderSurfaceBlendModeSrc
+    : public OcclusionTrackerTestRenderSurfaceOccludingBlendMode {
+ protected:
+  explicit OcclusionTrackerTestRenderSurfaceBlendModeSrc(bool opaque_layers)
+      : OcclusionTrackerTestRenderSurfaceOccludingBlendMode(opaque_layers,
+                                                            SkBlendMode::kSrc) {
+  }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestRenderSurfaceBlendModeSrc)
+
+class OcclusionTrackerTestRenderSurfaceNonOccludingBlendMode
+    : public OcclusionTrackerTest {
+ protected:
+  explicit OcclusionTrackerTestRenderSurfaceNonOccludingBlendMode(
       bool opaque_layers)
       : OcclusionTrackerTest(opaque_layers) {}
   void RunMyTest() override {
@@ -1877,12 +1949,16 @@ class OcclusionTrackerTestRenderSurfaceBlendModeDoesNotOcclude
 };
 
 ALL_OCCLUSIONTRACKER_TEST(
-    OcclusionTrackerTestRenderSurfaceBlendModeDoesNotOcclude)
+    OcclusionTrackerTestRenderSurfaceNonOccludingBlendMode)
 
-class OcclusionTrackerTestNonRenderSurfaceBlendModeDoesNotOcclude
+// No OcclusionTrackerTestNonRenderSurfaceOccludingBlendMode because kSrcOver is
+// default and is tested in many other tests, and kSrc always creates a render
+// surface.
+
+class OcclusionTrackerTestNonRenderSurfaceNonOccludingBlendMode
     : public OcclusionTrackerTest {
  protected:
-  explicit OcclusionTrackerTestNonRenderSurfaceBlendModeDoesNotOcclude(
+  explicit OcclusionTrackerTestNonRenderSurfaceNonOccludingBlendMode(
       bool opaque_layers)
       : OcclusionTrackerTest(opaque_layers) {}
   void RunMyTest() override {
@@ -1908,7 +1984,7 @@ class OcclusionTrackerTestNonRenderSurfaceBlendModeDoesNotOcclude
 };
 
 ALL_OCCLUSIONTRACKER_TEST(
-    OcclusionTrackerTestNonRenderSurfaceBlendModeDoesNotOcclude)
+    OcclusionTrackerTestNonRenderSurfaceNonOccludingBlendMode)
 
 class OcclusionTrackerTestMinimumTrackingSize : public OcclusionTrackerTest {
  protected:

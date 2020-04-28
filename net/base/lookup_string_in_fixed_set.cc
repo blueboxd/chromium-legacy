@@ -4,7 +4,7 @@
 
 #include "net/base/lookup_string_in_fixed_set.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace net {
 

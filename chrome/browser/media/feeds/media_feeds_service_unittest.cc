@@ -112,6 +112,24 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
     return out;
   }
 
+  std::vector<media_feeds::mojom::MediaFeedPtr> GetMediaFeedsSync(
+      const media_history::MediaHistoryKeyedService::GetMediaFeedsRequest&
+          request =
+              media_history::MediaHistoryKeyedService::GetMediaFeedsRequest()) {
+    base::RunLoop run_loop;
+    std::vector<media_feeds::mojom::MediaFeedPtr> out;
+
+    GetMediaHistoryService()->GetMediaFeeds(
+        request, base::BindLambdaForTesting(
+                     [&](std::vector<media_feeds::mojom::MediaFeedPtr> rows) {
+                       out = std::move(rows);
+                       run_loop.Quit();
+                     }));
+
+    run_loop.Run();
+    return out;
+  }
+
   void SetSafeSearchEnabled(bool enabled) {
     profile()->GetPrefs()->SetBoolean(prefs::kMediaFeedsSafeSearchEnabled,
                                       enabled);
@@ -129,6 +147,14 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
         feed_url, network::URLLoaderCompletionStatus(net::OK),
         network::CreateURLResponseHead(net::HttpStatusCode::HTTP_OK),
         response_body);
+    return rv;
+  }
+
+  bool RespondToPendingFeedFetchWithStatus(const GURL& feed_url,
+                                           net::HttpStatusCode code) {
+    bool rv = url_loader_factory_.SimulateResponseForPendingRequest(
+        feed_url, network::URLLoaderCompletionStatus(net::OK),
+        network::CreateURLResponseHead(code), std::string());
     return rv;
   }
 
@@ -222,7 +248,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_AllSafe) {
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -276,7 +303,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_AllUnsafe) {
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -330,7 +358,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Request) {
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -381,7 +410,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Pref) {
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -432,7 +462,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Inflight) {
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -478,7 +509,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Committed) {
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   auto pending_items_a = GetPendingSafeSearchCheckMediaFeedItemsSync();
@@ -532,7 +564,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUnsafe) {
   items.push_back(GetSingleExpectedItem());
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, std::move(items), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -579,7 +612,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUncertain) {
   items.push_back(GetSingleExpectedItem());
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, std::move(items), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -626,7 +660,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_UnsafeUncertain) {
   items.push_back(GetSingleExpectedItem());
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, std::move(items), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -675,7 +710,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Feature) {
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -756,18 +792,20 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
   }
 }
 
-TEST_F(MediaFeedsServiceTest, PrefChangeShouldTriggerSafeSearchCheck) {
+TEST_F(MediaFeedsServiceTest, FetcherShouldDeleteFeedIfGone) {
+  const GURL feed_url("https://www.google.com/feed");
+
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -807,17 +845,9 @@ TEST_F(MediaFeedsServiceTest, PrefChangeShouldTriggerSafeSearchCheck) {
   // Store some new media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess, false,
-      std::vector<media_session::MediaImage>(), "test", base::DoNothing());
+      std::vector<media_session::MediaImage>(), "test",
+      std::vector<url::Origin>(), base::DoNothing());
   WaitForDB();
-
-  {
-    // Check there are pending items.
-    auto pending_items = GetPendingSafeSearchCheckMediaFeedItemsSync();
-    EXPECT_EQ(3u, pending_items.size());
-  }
-
-  // Disable the Safe Search pref. This should not trigger a check.
-  SetSafeSearchEnabled(false);
 
   {
     // Check there are pending items.

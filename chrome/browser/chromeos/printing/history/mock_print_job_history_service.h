@@ -25,6 +25,11 @@ class MockPrintJobHistoryService : public PrintJobHistoryService {
               GetPrintJobs,
               (PrintJobDatabase::GetPrintJobsCallback callback),
               (override));
+
+  MOCK_METHOD(void,
+              DeleteAllPrintJobs,
+              (PrintJobDatabase::DeletePrintJobsCallback callback),
+              (override));
 };
 
 }  // namespace chromeos

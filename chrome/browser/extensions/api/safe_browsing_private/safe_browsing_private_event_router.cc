@@ -68,6 +68,54 @@ const char kChromeBrowserCloudManagementClientDescription[] =
     "a machine-level user";
 #endif
 
+void AddDlpVerdictToEvent(const safe_browsing::DlpDeepScanningVerdict& verdict,
+                          base::Value* event) {
+  DCHECK(event);
+  base::ListValue triggered_rule_info;
+  for (const auto& rule : verdict.triggered_rules()) {
+    base::Value triggered_rule(base::Value::Type::DICTIONARY);
+    triggered_rule.SetIntKey(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId,
+        rule.rule_id());
+    triggered_rule.SetStringKey(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName,
+        rule.rule_name());
+    triggered_rule.SetStringKey(extensions::SafeBrowsingPrivateEventRouter::
+                                    kKeyTriggeredRuleResourceName,
+                                rule.rule_resource_name());
+    triggered_rule.SetStringKey(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleSeverity,
+        rule.rule_severity());
+    triggered_rule.SetIntKey(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleAction,
+        rule.action());
+
+    base::ListValue matched_detectors;
+    for (const auto& detector : rule.matched_detectors()) {
+      base::Value matched_detector(base::Value::Type::DICTIONARY);
+      matched_detector.SetStringKey(
+          extensions::SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorId,
+          detector.detector_id());
+      matched_detector.SetStringKey(
+          extensions::SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorName,
+          detector.display_name());
+      matched_detector.SetStringKey(
+          extensions::SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorType,
+          detector.detector_type());
+
+      matched_detectors.Append(std::move(matched_detector));
+    }
+    triggered_rule.SetKey(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyMatchedDetectors,
+        std::move(matched_detectors));
+
+    triggered_rule_info.Append(std::move(triggered_rule));
+  }
+  event->SetKey(
+      extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleInfo,
+      std::move(triggered_rule_info));
+}
+
 }  // namespace
 
 namespace extensions {
@@ -445,36 +493,7 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
             event.SetStringKey(kKeyTrigger, trigger);
             event.SetBoolKey(kKeyClickedThrough, false);
 
-            base::ListValue triggered_rule_info;
-            for (const auto& rule : verdict.triggered_rules()) {
-              base::Value triggered_rule(base::Value::Type::DICTIONARY);
-              triggered_rule.SetIntKey(kKeyTriggeredRuleId, rule.rule_id());
-              triggered_rule.SetStringKey(kKeyTriggeredRuleName,
-                                          rule.rule_name());
-              triggered_rule.SetStringKey(kKeyTriggeredRuleResourceName,
-                                          rule.rule_resource_name());
-              triggered_rule.SetStringKey(kKeyTriggeredRuleSeverity,
-                                          rule.rule_severity());
-              triggered_rule.SetIntKey(kKeyTriggeredRuleAction, rule.action());
-
-              base::ListValue matched_detectors;
-              for (const auto& detector : rule.matched_detectors()) {
-                base::Value matched_detector(base::Value::Type::DICTIONARY);
-                matched_detector.SetStringKey(kKeyMatchedDetectorId,
-                                              detector.detector_id());
-                matched_detector.SetStringKey(kKeyMatchedDetectorName,
-                                              detector.display_name());
-                matched_detector.SetStringKey(kKeyMatchedDetectorType,
-                                              detector.detector_type());
-
-                matched_detectors.Append(std::move(matched_detector));
-              }
-              triggered_rule.SetKey(kKeyMatchedDetectors,
-                                    std::move(matched_detectors));
-
-              triggered_rule_info.Append(std::move(triggered_rule));
-            }
-            event.SetKey(kKeyTriggeredRuleInfo, std::move(triggered_rule_info));
+            AddDlpVerdictToEvent(verdict, &event);
 
             return event;
           },
@@ -483,6 +502,7 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
 }
 
 void SafeBrowsingPrivateEventRouter::OnSensitiveDataWarningBypassed(
+    const safe_browsing::DlpDeepScanningVerdict& verdict,
     const GURL& url,
     const std::string& file_name,
     const std::string& download_digest_sha256,
@@ -495,7 +515,8 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataWarningBypassed(
   ReportRealtimeEvent(
       kKeySensitiveDataEvent,
       base::BindOnce(
-          [](const std::string& url, const std::string& file_name,
+          [](const safe_browsing::DlpDeepScanningVerdict& verdict,
+             const std::string& url, const std::string& file_name,
              const std::string& download_digest_sha256,
              const std::string& profile_user_name, const std::string& mime_type,
              const std::string& trigger, const int64_t content_size) {
@@ -514,10 +535,13 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataWarningBypassed(
               event.SetIntKey(kKeyContentSize, content_size);
             event.SetStringKey(kKeyTrigger, trigger);
             event.SetBoolKey(kKeyClickedThrough, true);
+
+            AddDlpVerdictToEvent(verdict, &event);
+
             return event;
           },
-          url.spec(), file_name, download_digest_sha256, GetProfileUserName(),
-          mime_type, trigger, content_size));
+          verdict, url.spec(), file_name, download_digest_sha256,
+          GetProfileUserName(), mime_type, trigger, content_size));
 }
 
 void SafeBrowsingPrivateEventRouter::OnUnscannedFileEvent(

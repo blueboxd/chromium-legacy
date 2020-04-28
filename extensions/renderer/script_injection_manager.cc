@@ -96,7 +96,7 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
 
   // Indicate that the frame is no longer valid because it is starting
   // a new load or closing.
-  void InvalidateAndResetFrame();
+  void InvalidateAndResetFrame(bool force_reset);
 
   // The owning ScriptInjectionManager.
   ScriptInjectionManager* manager_;
@@ -131,12 +131,11 @@ bool ScriptInjectionManager::RFOHelper::OnMessageReceived(
 
 void ScriptInjectionManager::RFOHelper::DidCreateNewDocument() {
   // A new document is going to be shown, so invalidate the old document state.
-  // Check that the frame's state is known before invalidating the frame,
-  // because it is possible that a script injection was scheduled before the
-  // page was loaded, e.g. by navigating to a javascript: URL before the page
-  // has loaded.
-  if (manager_->frame_statuses_.count(render_frame()) != 0)
-    InvalidateAndResetFrame();
+  // Don't force-reset the frame, because it is possible that a script injection
+  // was scheduled before the page was loaded, e.g. by navigating to a
+  // javascript: URL before the page has loaded.
+  constexpr bool kForceReset = false;
+  InvalidateAndResetFrame(kForceReset);
 }
 
 void ScriptInjectionManager::RFOHelper::DidCreateDocumentElement() {
@@ -160,7 +159,8 @@ void ScriptInjectionManager::RFOHelper::DidFailProvisionalLoad() {
     // are not triggered after a failed provisional load.
     // This assumption is verified in the checkDOMContentLoadedEvent subtest of
     // ExecuteScriptApiTest.FrameWithHttp204 (browser_tests).
-    InvalidateAndResetFrame();
+    constexpr bool kForceReset = true;
+    InvalidateAndResetFrame(kForceReset);
     should_run_idle_ = false;
     manager_->frame_statuses_[render_frame()] = UserScript::DOCUMENT_IDLE;
   }
@@ -198,7 +198,8 @@ void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
 
 void ScriptInjectionManager::RFOHelper::FrameDetached() {
   // The frame is closing - invalidate.
-  InvalidateAndResetFrame();
+  constexpr bool kForceReset = true;
+  InvalidateAndResetFrame(kForceReset);
 }
 
 void ScriptInjectionManager::RFOHelper::OnDestruct() {
@@ -240,8 +241,8 @@ void ScriptInjectionManager::RFOHelper::OnPermitScriptInjection(
 }
 
 void ScriptInjectionManager::RFOHelper::RunIdle() {
-  // Only notify the manager if the frame hasn't either been removed or already
-  // had idle run since the task to RunIdle() was posted.
+  // Only notify the manager if the frame hasn't already had idle run since the
+  // task to RunIdle() was posted.
   if (should_run_idle_) {
     should_run_idle_ = false;
     manager_->StartInjectScripts(render_frame(), UserScript::DOCUMENT_IDLE);
@@ -253,13 +254,19 @@ void ScriptInjectionManager::RFOHelper::StartInjectScripts(
   manager_->StartInjectScripts(render_frame(), run_location);
 }
 
-void ScriptInjectionManager::RFOHelper::InvalidateAndResetFrame() {
+void ScriptInjectionManager::RFOHelper::InvalidateAndResetFrame(
+    bool force_reset) {
   // Invalidate any pending idle injections, and reset the frame inject on idle.
   weak_factory_.InvalidateWeakPtrs();
   // We reset to inject on idle, because the frame can be reused (in the case of
   // navigation).
   should_run_idle_ = true;
-  manager_->InvalidateForFrame(render_frame());
+
+  // Reset the frame if either |force_reset| is true, or if the manager is
+  // keeping track of the state of the frame (in which case we need to clean it
+  // up).
+  if (force_reset || manager_->frame_statuses_.count(render_frame()) != 0)
+    manager_->InvalidateForFrame(render_frame());
 }
 
 ScriptInjectionManager::ScriptInjectionManager(

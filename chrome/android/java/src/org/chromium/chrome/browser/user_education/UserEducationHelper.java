@@ -49,7 +49,10 @@ public class UserEducationHelper {
      * should.
      */
     public void requestShowIPH(IPHCommand iphCommand) {
-        Profile profile = Profile.getLastUsedProfile();
+        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+        // incognito profile) instead of always using regular profile. Currently always original 
+        // profile is used not to start popping IPH messages as soon as opening an incognito tab. 
+        Profile profile = Profile.getLastUsedRegularProfile();
         final Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
         tracker.addOnInitializedCallback(success -> showIPH(tracker, iphCommand));
     }

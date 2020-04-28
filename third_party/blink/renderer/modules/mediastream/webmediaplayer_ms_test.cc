@@ -426,6 +426,7 @@ class MockWebVideoFrameSubmitter : public WebVideoFrameSubmitter {
   MOCK_METHOD1(SetIsSurfaceVisible, void(bool));
   MOCK_METHOD1(SetIsPageVisible, void(bool));
   MOCK_METHOD1(SetForceSubmit, void(bool));
+  MOCK_METHOD1(SetForceBeginFrames, void(bool));
   MOCK_CONST_METHOD0(IsDrivingFrameUpdates, bool());
 
   void Initialize(cc::VideoFrameProvider* provider,

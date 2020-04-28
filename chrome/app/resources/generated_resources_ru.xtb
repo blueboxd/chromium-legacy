@@ -125,7 +125,6 @@
 <translation id="1164899421101904659">Введите PUK-код</translation>
 <translation id="1165039591588034296">Ошибка</translation>
 <translation id="1166212789817575481">Закрыть вкладки справа</translation>
-<translation id="1167199480815330007">Найдите на обратной стороне электронного ключа шестизначный PIN-код.</translation>
 <translation id="1168020859489941584">Открытие через <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Серверы имен Google</translation>
 <translation id="1171135284592304528">Выделять элементы, выбранные с помощью клавиатуры</translation>
@@ -613,7 +612,6 @@
 <translation id="1802931390041703523">Flash-контент на этой странице заблокирован</translation>
 <translation id="1803531841600994172">Язык перевода</translation>
 <translation id="1803545009660609783">Перезаписать образец голоса</translation>
-<translation id="1805472176602625930">Нажмите кнопку на электронном ключе</translation>
 <translation id="1805738995123446102">На фоновой вкладке используется микрофон.</translation>
 <translation id="1805822111539868586">Отладка страниц</translation>
 <translation id="1805888043020974594">Сервер печати</translation>
@@ -674,9 +672,9 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> готов к завершению установки.</translation>
 <translation id="1868193363684582383">"Окей, Google"</translation>
 <translation id="1870629042957780127">Предоставить доступ к микрофону</translation>
+<translation id="1871534214638631766">Показывать информацию о контенте, когда вы выбираете его с помощью правого клика или долгого нажатия</translation>
 <translation id="1871615898038944731">Вы используете последнюю версию <ph name="DEVICE_TYPE" /></translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Открыть вкладку в другом окне}one{Открыть вкладки в другом окне}few{Открыть вкладки в другом окне}many{Открыть вкладки в другом окне}other{Открыть вкладки в другом окне}}</translation>
-<translation id="1875312262568496299">Начать</translation>
 <translation id="1875386316419689002">Эта вкладка подключена к HID-устройству</translation>
 <translation id="1875387611427697908">Это приложение или расширение можно установить только из сервиса "<ph name="CHROME_WEB_STORE" />".</translation>
 <translation id="1877520246462554164">Не удалось получить токен аутентификации. Чтобы повторить попытку, выйдите из аккаунта и войдите снова.</translation>
@@ -696,7 +694,6 @@
 <translation id="189358972401248634">Другие языки</translation>
 <translation id="1895658205118569222">Завершение работы</translation>
 <translation id="1895934970388272448">Чтобы завершить операцию, подтвердите регистрацию на принтере.</translation>
-<translation id="1899826437968063457">Необходимо разрешение для запуска Plugin VM</translation>
 <translation id="1900305421498694955">Приложения из Google Play могут запрашивать разрешение на полный доступ к чтению и записи файлов на внешних запоминающих устройствах. При этом созданные на устройстве файлы и папки будут видны всем пользователям внешнего запоминающего устройства. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Выделить &amp;все</translation>
 <translation id="1905375423839394163">Название устройства Chromebook</translation>
@@ -732,6 +729,7 @@
 <translation id="1944528062465413897">Код Bluetooth-подключения:</translation>
 <translation id="1944921356641260203">Найдено обновление</translation>
 <translation id="1946577776959096882">Посмотреть аккаунты</translation>
+<translation id="1949584741547056205">Быстрые ответы</translation>
 <translation id="1951012854035635156">Ассистент</translation>
 <translation id="1954813140452229842">Не удалось подключить ресурс. Проверьте учетные данные и повторите попытку.</translation>
 <translation id="1956050014111002555">Файл содержит несколько сертификатов, ни один из которых не был импортирован:</translation>
@@ -991,7 +989,6 @@
 <translation id="2299734369537008228">Ползунок с минимальным значением "<ph name="MIN_LABEL" />" и максимальным значением "<ph name="MAX_LABEL" />"</translation>
 <translation id="2300383962156589922">Настройка приложения "<ph name="APP_NAME" />" и управление им</translation>
 <translation id="2301382460326681002">Недействительный корневой каталог расширения.</translation>
-<translation id="2302444155926798584">Плагин Plugin VM удален.</translation>
 <translation id="23030561267973084">Приложение "<ph name="EXTENSION_NAME" />" запросило дополнительные разрешения.</translation>
 <translation id="23055578400314116">Выберите имя пользователя.</translation>
 <translation id="2307462900900812319">Настройка сети</translation>
@@ -1035,7 +1032,6 @@
 <translation id="2353297238722298836">Доступ к камере и микрофону разрешен</translation>
 <translation id="2356070529366658676">Спрашивать</translation>
 <translation id="2357330829548294574">Удалить пользователя <ph name="USER_NAME" /></translation>
-<translation id="235798134753548762">Будут синхронизированы приложения, настройки и параметры сети Wi-Fi. Изменить свой выбор можно в любое время в настройках.</translation>
 <translation id="2359345697448000899">Управлять расширениями можно на вкладке "Расширения" в меню "Инструменты".</translation>
 <translation id="2359808026110333948">Продолжить</translation>
 <translation id="236117173274098341">Оптимизировать</translation>
@@ -1072,7 +1068,6 @@
 <translation id="2408955596600435184">Введите PIN-код</translation>
 <translation id="241082044617551207">Неизвестный плагин</translation>
 <translation id="2412593942846481727">Доступно обновление</translation>
-<translation id="2417206894320497232">Установка плагина Plugin VM завершена.</translation>
 <translation id="241727068219398187">Данные зашифрованы с помощью пароля вашего аккаунта Google от <ph name="TIME" />. Шифрование не применяется к способам оплаты и адресам из Google Pay.</translation>
 <translation id="2419706071571366386">Если вы закончили работу на компьютере, рекомендуем выйти из аккаунта.</translation>
 <translation id="2422125132043002186">Восстановление контейнера Linux отменено.</translation>
@@ -1355,7 +1350,6 @@
 <translation id="2773802008104670137">Файлы этого типа могут нанести вред вашему компьютеру.</translation>
 <translation id="2775104091073479743">Настроить отпечатки</translation>
 <translation id="2776441542064982094">Устройства для регистрации в сети не найдены. Если ваше устройство включено и подключено к Интернету, зарегистрируйте его согласно инструкциям, содержащимся в его руководстве по эксплуатации.</translation>
-<translation id="2780009105947267877">Настройка Plugin VM…</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2782104745158847185">Не удалось установить приложение для Linux</translation>
 <translation id="2783298271312924866">Сохранено</translation>
@@ -1399,7 +1393,6 @@
 <translation id="2822910719211888134">Не удалось сохранить резервную копию Linux</translation>
 <translation id="2824942875887026017">В <ph name="IDS_SHORT_PRODUCT_NAME" /> используются настройки прокси-сервера, установленные администратором.</translation>
 <translation id="2825758591930162672">Открытый ключ субъекта</translation>
-<translation id="2825848369316359348">Найдите на обратной стороне электронного ключа его название.</translation>
 <translation id="2828650939514476812">Подключитесь к сети Wi-Fi</translation>
 <translation id="2835294513443818940">Невозможно скачать безопасно этот файл.</translation>
 <translation id="2835547721736623118">Сервис распознавания речи</translation>
@@ -1778,7 +1771,6 @@
 <translation id="3347086966102161372">&amp;Копировать URL картинки</translation>
 <translation id="3348038390189153836">Обнаружено съемное устройство</translation>
 <translation id="3349933790966648062">Объем потребляемой памяти</translation>
-<translation id="3350117557200012647">Перейдите в режим подключения</translation>
 <translation id="3355936511340229503">Ошибка подключения</translation>
 <translation id="3356580349448036450">Готово</translation>
 <translation id="3359256513598016054">Ограничения политики сертификатов</translation>
@@ -1850,7 +1842,6 @@
 <translation id="3449393517661170867">Новое окно с вкладками</translation>
 <translation id="3449839693241009168">Нажмите <ph name="SEARCH_KEY" /> для отправки команд в <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Продолжительность состояния бездействия в процентах</translation>
-<translation id="3451332697983754369">Синхронизировать устройство <ph name="DEVICE_TYPE" /></translation>
 <translation id="3453612417627951340">Требуется авторизация</translation>
 <translation id="3454157711543303649">Активация завершена</translation>
 <translation id="3454213325559396544">Это последнее автоматическое обновление ПО и безопасности для устройства <ph name="DEVICE_TYPE" />. Если вы хотите получать обновления в дальнейшем, перейдите на более новую модель.</translation>
@@ -2029,7 +2020,6 @@
 <translation id="3677657024345889897">Минимальная громкость</translation>
 <translation id="3677911431265050325">Мобильная версия</translation>
 <translation id="3678156199662914018">Расширение: <ph name="EXTENSION_NAME" /></translation>
-<translation id="3678613690490567106">Синхронизация данных на разных устройствах</translation>
 <translation id="3681311097828166361">Благодарим за отзыв. Отчет будет отправлен, когда вы подключитесь к Интернету.</translation>
 <translation id="3682824389861648626">Порог перемещения</translation>
 <translation id="3683524264665795342">Запрос доступа к экрану от <ph name="APP_NAME" /></translation>
@@ -2077,7 +2067,6 @@
 <translation id="372722114124766626">Один раз</translation>
 <translation id="3729303374699765035">Запрашивать для сайтов разрешение на поиск Bluetooth-устройств поблизости</translation>
 <translation id="3729506734996624908">Разрешенные сайты</translation>
-<translation id="3731997362820527097">Выберите электронный ключ</translation>
 <translation id="3732078975418297900">Ошибка в строке <ph name="ERROR_LINE" /></translation>
 <translation id="3732530910372558017">PIN-код должен содержать не более 63 символов.</translation>
 <translation id="3733127536501031542">SSL-сервер с повышением</translation>
@@ -2088,7 +2077,6 @@
 <translation id="3742666961763734085">Не удалось найти организационное подразделение с таким названием. Повторите попытку.</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
 <translation id="3746127522257263495">В приложениях для Android нельзя добавить аккаунт G Suite for Education.</translation>
-<translation id="3747039297326604768">Не удалось открыть Plugin VM</translation>
 <translation id="3747077776423672805">Чтобы удалить приложение, нажмите "Настройки &gt; Google Play Маркет &gt; Управление настройками Android &gt; Приложения (или Диспетчер приложений)" и найдите его в списке (возможно, придется пролистать экран вправо или влево). Выберите приложение и нажмите "Удалить" или "Отключить".</translation>
 <translation id="3748026146096797577">Нет соединения</translation>
 <translation id="3752582316358263300">ОК...</translation>
@@ -2151,7 +2139,6 @@
 <translation id="3816118180265633665">Цвета Chrome</translation>
 <translation id="3817524650114746564">Открыть настройки прокси-сервера для компьютера</translation>
 <translation id="3817579325494460411">Не указано</translation>
-<translation id="381892968844315516">Использование Plugin VM запрещено на этом устройстве. Обратитесь к администратору устройств в вашей организации. Код ошибки: <ph name="ERROR_CODE" />.</translation>
 <translation id="3819257035322786455">Резервное копирование</translation>
 <translation id="3819261658055281761">Системе не удалось сохранить токен доступа для API на этом устройстве.</translation>
 <translation id="3819800052061700452">Полно&amp;экранный режим</translation>
@@ -2344,7 +2331,6 @@
 <translation id="4056908315660577142">Время, установленное родителями для приложения Chrome "<ph name="APP_NAME" />", истекло. Лимит на завтра: <ph name="TIME_LIMIT" />.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Открыть в Интернет-магазине</translation>
-<translation id="4058647953897694817">Подтвердить через Bluetooth</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Проверить документ</translation>
 <translation id="406070391919917862">Фоновые приложения</translation>
@@ -2353,7 +2339,6 @@
 <translation id="4068506536726151626">Эта страница содержит элементы со следующих сайтов, которые отслеживают ваше местоположение:</translation>
 <translation id="4068776064906523561">Сохраненные отпечатки пальцев</translation>
 <translation id="407173827865827707">При нажатии</translation>
-<translation id="4073520450811433493">Синхронизация настроек</translation>
 <translation id="4074900173531346617">Сертификат для подписи электронной почты</translation>
 <translation id="407520071244661467">Масштаб</translation>
 <translation id="4075639477629295004">Невозможно транслировать файл "<ph name="FILE_NAME" />"</translation>
@@ -2436,7 +2421,6 @@
 <translation id="4181841719683918333">Языки</translation>
 <translation id="4184885522552335684">Перетащите дисплей на новое место</translation>
 <translation id="4194570336751258953">Включить нажатие от прикосновения</translation>
-<translation id="4194595472342532425">Не удалось настроить Plugin VM из-за проблем с конфигурацией. Обратитесь к администратору устройства. Код ошибки: <ph name="ERROR_CODE" />.</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
 <translation id="4195814663415092787">Ранее открытые вкладки</translation>
 <translation id="4198146608511578238">Чтобы поговорить с Google Ассистентом, просто удерживайте значок панели запуска.</translation>
@@ -3073,7 +3057,6 @@
 <translation id="5117930984404104619">Отслеживание режима работы других расширений, в том числе посещаемых URL</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Недостаточно места на диске. Выберите другой каталог или освободите место на диске.</translation>
-<translation id="5122384452788334261">На устройстве осталось мало места. Для использования Plugin VM рекомендуется как минимум <ph name="RECOMMENDED_SPACE" /> свободного пространства. Удалите с устройства файлы, которые больше не нужны.</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
 <translation id="5125751979347152379">Недопустимый URL.</translation>
 <translation id="5126611267288187364">Посмотреть изменения</translation>
@@ -3129,7 +3112,6 @@
 <translation id="520621735928254154">Ошибка при импорте сертификата</translation>
 <translation id="5209307736170827035">Данные вашего ребенка в сервисе "Google Класс" будут защищены. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Устройства не найдены</translation>
-<translation id="5210990770352357081">Не удалось удалить Plugin VM.</translation>
 <translation id="5213481667492808996">Служба передачи данных "<ph name="NAME" />" готова к работе.</translation>
 <translation id="5213891612754844763">Показать настройки прокси-сервера</translation>
 <translation id="5215502535566372932">Выберите страну</translation>
@@ -3478,7 +3460,6 @@
 <translation id="5658415415603568799">В целях безопасности через 20 часов вам потребуется ввести пароль.</translation>
 <translation id="5659593005791499971">Электронная почта</translation>
 <translation id="5659833766619490117">Не удалось перевести страницу</translation>
-<translation id="5660204307954428567">Подключение к устройству <ph name="DEVICE_NAME" /></translation>
 <translation id="5662513737565158057">Измените параметры работы приложений для Linux.</translation>
 <translation id="5667546120811588575">Настройка Google Play…</translation>
 <translation id="5669267381087807207">Активация</translation>
@@ -3738,7 +3719,6 @@
 <translation id="6020431688553761150">Сервер не разрешил вам доступ к этому ресурсу.</translation>
 <translation id="6022526133015258832">Открыть в полноэкранном режиме</translation>
 <translation id="6022659036123304283">Настройте Chrome для себя</translation>
-<translation id="6022705094403139349">Подключите электронный ключ</translation>
 <translation id="6023643151125006053">Устройство (серийный номер <ph name="SERIAL_NUMBER" />) заблокировано администратором домена <ph name="SAML_DOMAIN" />.</translation>
 <translation id="6025215716629925253">Трассировка стека</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" />: подключено USB-устройство</translation>
@@ -3813,7 +3793,6 @@
 <translation id="6103681770816982672">Внимание! Вы переходите на версию для разработчиков.</translation>
 <translation id="6104068876731806426">Аккаунты Google</translation>
 <translation id="6104311680260824317">Не удалось подключить устройство к домену. Сервер не поддерживает выбранные типы шифрования Kerberos. В настройках шифрования установите флажок "Другие параметры".</translation>
-<translation id="6106186653986077033">Требуется лицензия для Plugin VM</translation>
 <translation id="6112294629795967147">Коснитесь для изменения размера</translation>
 <translation id="6112727384379533756">Добавить билет</translation>
 <translation id="6112931163620622315">Проверьте телефон</translation>
@@ -4088,7 +4067,6 @@
 <translation id="6478248366783946499">Сохранить опасный файл?</translation>
 <translation id="6483485061007832714">Открыть скачанный файл?</translation>
 <translation id="6483805311199035658">Открывается <ph name="FILE" />...</translation>
-<translation id="6485092675191826776">Срок действия лицензии Plugin VM истек</translation>
 <translation id="6488384360522318064">Выбрать язык</translation>
 <translation id="648927581764831596">Отсутствуют</translation>
 <translation id="6490471652906364588">Устройство USB-C (порт справа)</translation>
@@ -4283,7 +4261,6 @@
 <translation id="6770664076092644100">Подтвердить через NFC</translation>
 <translation id="6771503742377376720">Является центром сертификации</translation>
 <translation id="6772339735733515807">Управление расширениями</translation>
-<translation id="6774271858705413900">Произошла ошибка. Запустите Plugin VM снова через несколько минут.</translation>
 <translation id="6775163072363532304">Здесь будут появляться доступные устройства.</translation>
 <translation id="6777817260680419853">Попытка переадресации заблокирована</translation>
 <translation id="6778737459546443941">Ещё не одобрено родителем</translation>
@@ -4361,7 +4338,6 @@
 <translation id="686664946474413495">Цветовая температура</translation>
 <translation id="6871644448911473373">Ответчик OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Сервер отклонил введенный пароль.</translation>
-<translation id="6874170800191969835">Вы перешли к результату поиска "<ph name="SEARCH_RESULT_TEXT" />".</translation>
 <translation id="6876155724392614295">Велосипед</translation>
 <translation id="6876469544038980967">Бесполезно</translation>
 <translation id="6878422606530379992">Использование датчиков разрешено</translation>
@@ -4615,7 +4591,6 @@
 <translation id="7207631048330366454">Поиск приложений</translation>
 <translation id="7210499381659830293">Принтеры, работающие через расширение</translation>
 <translation id="7212097698621322584">Сначала введите текущий PIN-код. Если вы его не знаете, сбросьте настройки электронного ключа и установите новый PIN-код.</translation>
-<translation id="721467499098558573">Нажмите кнопку на электронном ключе и удерживайте ее в течение пяти секунд.</translation>
 <translation id="7216409898977639127">Оператор сотовой связи</translation>
 <translation id="7216595297012131718">Расположите языки, исходя из своих предпочтений</translation>
 <translation id="7220019174139618249">Не удалось экспортировать пароли в папку "<ph name="FOLDER" />"</translation>
@@ -4636,7 +4611,6 @@
 <translation id="7240339475467890413">Подключиться к новой точке доступа?</translation>
 <translation id="7240847845291869311">Ваш ребенок хочет добавить на это устройство аккаунт G Suite for Education. Информацию о том, какие данные собирает G Suite for Education, а также как и для чего они используются, можно найти в <ph name="LINK_BEGIN" />Примечании о конфиденциальности<ph name="LINK_END" />.</translation>
 <translation id="7241389281993241388">Войдите в <ph name="TOKEN_NAME" />, чтобы импортировать сертификат клиента.</translation>
-<translation id="7241443820034350811">Если электронного ключа нет в списке, нажмите и удерживайте его кнопку в течение пяти секунд.</translation>
 <translation id="7243632151880336635">Стереть данные и выйти</translation>
 <translation id="7243784282103630670">При обновлении Linux произошла ошибка. Контейнер будет восстановлен из резервной копии.</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (оптимальное)</translation>
@@ -4851,7 +4825,6 @@
 <translation id="7531779363494549572">Откройте настройки устройства и выберите "Приложения и уведомления &gt; Уведомления".</translation>
 <translation id="7532009420053991888">Приложение "<ph name="LINUX_APP_NAME" />" не отвечает. Чтобы выйти из него, нажмите "Закрыть принудительно".</translation>
 <translation id="7537451260744431038">Сайты не могут использовать файлы cookie, чтобы сделать работу в браузере более удобной, например запоминая товары в корзине или информацию о том, что вы вошли в аккаунт</translation>
-<translation id="7539856059004947393">Электронный Bluetooth-ключ</translation>
 <translation id="7540972813190816353">При проверке обновлений произошла ошибка: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> в приложении "<ph name="APP_NAME" />"</translation>
 <translation id="7543104066686362383">Включите функции отладки на устройстве <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
@@ -4975,7 +4948,6 @@
 <translation id="7704305437604973648">Задача</translation>
 <translation id="7704317875155739195">Заполнять поисковые запросы и URL автоматически</translation>
 <translation id="7704521324619958564">Открыть Play Маркет</translation>
-<translation id="7704628569466676326">Подключите физический ключ безопасности к этому устройству, чтобы использовать его для входа в аккаунт.</translation>
 <translation id="7705276765467986571">Не удалось загрузить модель закладок.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7706963867324547089">Включить или отключить режим чтения</translation>
@@ -5065,7 +5037,6 @@
 <translation id="7817361223956157679">Экранная клавиатура пока не работает в приложениях для Linux.</translation>
 <translation id="7818135753970109980">Добавлена новая тема (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA или RSN)</translation>
-<translation id="7819992334107904369">Синхронизация Chrome</translation>
 <translation id="782057141565633384">&amp;Копировать URL видео</translation>
 <translation id="7824864914877854148">При сохранении резервной копии произошла ошибка.</translation>
 <translation id="782590969421016895">Использовать текущие страницы</translation>
@@ -5219,7 +5190,6 @@
 <translation id="7988355189918024273">Включить функции для людей с ограниченными возможностями</translation>
 <translation id="7991296728590311172">Настройки функции Switch Access</translation>
 <translation id="7992202128769240372">Превышено ограничение: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" />.</translation>
-<translation id="7994350303002908848">Не удалось установить Plugin VM. Повторите попытку или обратитесь к администратору устройства. Код ошибки: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Метод EAP</translation>
 <translation id="7997826902155442747">Приоритет процессов</translation>
 <translation id="7999229196265990314">Созданы следующие файлы:
@@ -5318,7 +5288,6 @@
 <translation id="8118488170956489476">Этим браузером <ph name="BEGIN_LINK" />управляет<ph name="END_LINK" /> ваша организация.</translation>
 <translation id="8118860139461251237">Управление скачанными файлами</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" />, а также внесены другие изменения.</translation>
-<translation id="8120715633374652536">На устройстве осталось мало места. Чтобы использовать Plugin VM, нужно как минимум <ph name="MINIMUM_SPACE" /> свободного пространства (рекомендуется более <ph name="RECOMMENDED_SPACE" />). Удалите с устройства файлы, которые больше не нужны.</translation>
 <translation id="8123590694679414600">Данные зашифрованы с помощью кодовой фразы <ph name="TIME" />. Шифрование не применяется к способам оплаты и адресам из Google Pay.</translation>
 <translation id="81238879832906896">Цветок (желтый с белым)</translation>
 <translation id="8124313775439841391">Управляемый ONC</translation>
@@ -5631,7 +5600,6 @@
 <translation id="8551388862522347954">Лицензии</translation>
 <translation id="8553342806078037065">Другие пользователи</translation>
 <translation id="8554899698005018844">Язык не указан</translation>
-<translation id="8556135141412663091">Прежде чем использовать Plugin VM, установите на устройство системное обновление.</translation>
 <translation id="8557022314818157177">Продолжайте прикасаться к сканеру отпечатков пальцев на электронном ключе, пока отпечаток не будет сохранен.</translation>
 <translation id="855773602626431402">На этой странице был предотвращен запуск плагина, работающего вне тестовой среды.</translation>
 <translation id="8557930019681227453">Манифест</translation>
@@ -5704,7 +5672,6 @@
 <translation id="8655295600908251630">Канал</translation>
 <translation id="8655319619291175901">Ошибка</translation>
 <translation id="8655972064210167941">Ошибка входа: не удалось подтвердить пароль. Обратитесь к администратору или повторите попытку.</translation>
-<translation id="8656619792520327915">Добавить другой электронный Bluetooth-ключ</translation>
 <translation id="8656768832129462377">Не проверять</translation>
 <translation id="8658645149275195032">Приложение "<ph name="APP_NAME" />" предоставило сайту <ph name="TAB_NAME" /> доступ к экрану и аудио.</translation>
 <translation id="8661290697478713397">Открыть ссылку в режиме инкогнито</translation>
@@ -5893,13 +5860,11 @@
 <translation id="8871696467337989339">Вы используете неподдерживаемый флаг командной строки: <ph name="BAD_FLAG" />. Стабильность и безопасность будут нарушены.</translation>
 <translation id="8871974300055371298">Настройки контента</translation>
 <translation id="8872155268274985541">Обнаружен недопустимый файл манифеста. Не удалось установить внешние обновления для киоск-приложения. Извлеките USB-накопитель.</translation>
-<translation id="8872187374998143710">Чтобы использовать Plugin VM, перезапустите устройство.</translation>
 <translation id="8872777911145321141">Запрашивать разрешение на использование сайтами устройств и данных виртуальной реальности (рекомендуется)</translation>
 <translation id="8874184842967597500">Не подключено</translation>
 <translation id="8875775314572167244">Настройки подключения к Ethernet</translation>
 <translation id="8876307312329369159">Эту настройку нельзя изменить в демонстрационном сеансе.</translation>
 <translation id="8877448029301136595">[родительский каталог]</translation>
-<translation id="8878384954777710821">Удаление Plugin VM…</translation>
 <translation id="8879284080359814990">Показать как вкладку</translation>
 <translation id="8879921471468674457">Запомнить учетные данные</translation>
 <translation id="8881020143150461183">Повторите попытку. За технической поддержкой обратитесь к оператору "<ph name="CARRIER_NAME" />".</translation>
@@ -5930,7 +5895,6 @@
 <translation id="8912810933860534797">Включить автосканирование</translation>
 <translation id="8915370057835397490">Загрузка подсказки</translation>
 <translation id="8916476537757519021">Субфрейм в режиме инкогнито: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8921366488406707015">Проверка электронного ключа</translation>
 <translation id="8922013791253848639">Всегда разрешать рекламу на этом сайте</translation>
 <translation id="8923880975836399332">Темно-бирюзовый</translation>
 <translation id="8925458182817574960">&amp;Настройки</translation>

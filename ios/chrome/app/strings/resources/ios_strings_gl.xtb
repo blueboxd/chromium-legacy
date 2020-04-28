@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">Enderezo 1</translation>
 <translation id="1545749641540134597">Escanear código QR</translation>
 <translation id="1552525382687785070">O teu administrador desactivou a sincronización</translation>
+<translation id="1554477036522844996">Nova ventá</translation>
 <translation id="1580783302095112590">Correo enviado.</translation>
 <translation id="1582732959743469162">Esta acción deterá o progreso da túa descarga actual.</translation>
 <translation id="1605658421715042784">Copiar imaxe</translation>
@@ -104,6 +105,7 @@
 <translation id="2239626343334228536">Borrando datos de navegación…</translation>
 <translation id="2245545499420671379">Bloquear cookies de terceiros no modo de incógnito</translation>
 <translation id="2257567812274161158">A sincronización non funciona.</translation>
+<translation id="225943865679747347">Código de erro: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Engadir conta</translation>
 <translation id="2268044343513325586">Refina</translation>
 <translation id="2273327106802955778">Menú Máis</translation>
@@ -187,6 +189,7 @@
 <translation id="3328801116991980348">Información do sitio</translation>
 <translation id="3329904751041170572">Non se puido conectar ao servidor.</translation>
 <translation id="3335947283844343239">Abrir de novo a pestana pechada</translation>
+<translation id="3343651535143698944">Engadir excepción para un sitio</translation>
 <translation id="3371831930909698441">A tradución está dispoñible. Hai opcións dispoñibles na parte inferior da pantalla.</translation>
 <translation id="3393920035788932672">Ventás emerxentes permitidas</translation>
 <translation id="3443810440409579745">Recibiuse unha pestana.</translation>
@@ -555,6 +558,7 @@ Ademais, dado que a conta está xestionada por <ph name="HOSTED_DOMAIN" />, os t
 <translation id="8319076807703933069">Nova busca</translation>
 <translation id="8323906514956095947">Mantén premido o botón para ver máis opcións da pestana</translation>
 <translation id="8328777765163860529">Pechar todo</translation>
+<translation id="8332159733957009464">Excepcións para sitios</translation>
 <translation id="8386068868580335421">Restablecer</translation>
 <translation id="8407669440184693619">Non se atopou ningún contrasinal para este sitio</translation>
 <translation id="842017693807136194">Sesión iniciada con</translation>

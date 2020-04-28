@@ -5051,6 +5051,11 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8665314828727504286">Livello di protezione Navigazione sicura</translation>
 <translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8680488165461049026">Questo criterio consente di autorizzare Risposte rapide ad accedere ai contenuti selezionati e a inviare le informazioni al server.
+
+      Se il criterio è attivato, Risposte rapide potrà accedere ai contenuti selezionati.
+      Se il criterio è disattivato, Risposte rapide non potrà accedere ai contenuti selezionati.
+      Se il criterio non viene impostato, gli utenti possono decidere se autorizzare Risposte rapide ad accedere ai contenuti selezionati.</translation>
 <translation id="8685024486845674965">L'avviso di protezione tramite password viene attivato se vengono riutilizzate password</translation>
 <translation id="8687958770985542440">Riattiva l'API Web Components v0 fino alla versione M84</translation>
 <translation id="8693243869659262736">Utilizza client DNS integrato</translation>
@@ -5391,6 +5396,7 @@ https://www.w3.org/TR/secure-contexts/
 
       Se la norma viene impostata su true o non è configurata, sarà possibile creare nuovi account utente purché <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> non impedisca all'utente di accedere.</translation>
 <translation id="974349541138387272">Specifica il modello URI del resolver DNS over HTTPS desiderato</translation>
+<translation id="974479807614498635">"Consenti a Risposte rapide di accedere ai contenuti selezionati"</translation>
 <translation id="981346395360763138">Servizi di geolocalizzazione di Google disabilitati</translation>
 <translation id="982497069985795632">Attiva il controllo ortografico</translation>
 <translation id="991560005425213776">Invia nome utente e nome file alle stampanti native</translation>

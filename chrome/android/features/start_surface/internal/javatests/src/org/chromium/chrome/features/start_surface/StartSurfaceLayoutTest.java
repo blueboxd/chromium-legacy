@@ -369,6 +369,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
+    @FlakyTest(message = "crbug.com/1075804")
     public void testTabToGridFromNtp() throws InterruptedException {
         prepareTabs(2, 0, NTP_URL);
         testTabToGrid(NTP_URL);
@@ -603,6 +604,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/2000/cleanup-delay/10000"})
+    @FlakyTest(message = "crbug.com/1075804")
     public void testInvisibleTabsDontFetchWarm() throws InterruptedException {
         // Get the GTS in the warm state.
         prepareTabs(2, 0, NTP_URL);
@@ -626,6 +628,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
+    @FlakyTest(message = "crbug.com/1075804")
     public void testInvisibleTabsDontFetchSoft() throws InterruptedException {
         // Get the GTS in the soft cleaned up state.
         prepareTabs(2, 0, NTP_URL);
@@ -1230,12 +1233,9 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    // clang-format off
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
-        message = "https://crbug.com/1023833")
+    @DisabledTest(message = "crbug.com/1075787")
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testRecycling_defaultAspectRatio() throws InterruptedException {
-        // clang-format on
         prepareTabs(10, 0, mUrl);
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         enterGTSWithThumbnailChecking();

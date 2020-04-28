@@ -348,6 +348,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // for this instance (i.e. GetSiteURL()). Otherwise returns false.
   bool DoesSiteForURLMatch(const GURL& url);
 
+  // Adds |origin| as a non-isolated origin within this BrowsingInstance due to
+  // an existing instance at the time of opt-in, so that future instances of it
+  // here won't be origin isolated.
+  void PreventOptInOriginIsolation(
+      const url::Origin& previously_visited_origin);
+
  private:
   friend class BrowsingInstance;
   friend class SiteInstanceTestBrowserClient;

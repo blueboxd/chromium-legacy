@@ -5,7 +5,7 @@
 #include "net/test/embedded_test_server/controllable_http_response.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 

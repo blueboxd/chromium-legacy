@@ -89,9 +89,7 @@ void SharedGpuContext::CreateContextProviderIfNeeded(
   // TODO(danakj): This needs to check that the context is being used on the
   // thread it was made on, or else lock it.
   if (context_provider_wrapper_ &&
-      context_provider_wrapper_->ContextProvider()
-              ->RasterInterface()
-              ->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
+      !context_provider_wrapper_->ContextProvider()->IsContextLost()) {
     // If the context isn't lost then |is_gpu_compositing_disabled_| state
     // hasn't changed yet. RenderThreadImpl::CompositingModeFallbackToSoftware()
     // will lose the context to let us know if it changes.

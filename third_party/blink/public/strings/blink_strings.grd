@@ -315,6 +315,43 @@ below:
         <ph name="WEEK">$1<ex>Week 38, 2014</ex></ph>, starting on <ph name="WEEK_START_DATE">$2<ex>September 15, 2014</ex></ph>
       </message>
 
+      <!-- Localized labels for the color input popup.  Exclude from Android to save binary size since Android uses a native popup. -->
+      <if expr="not is_android">
+        <message name="IDS_AX_COLOR_EDIT_BLUE" desc="Accessibility label of the blue channel edit box in a color picker popup">
+          Blue channel
+        </message>
+        <message name="IDS_AX_COLOR_EDIT_GREEN" desc="Accessibility label of the green channel edit box in a color picker popup">
+          Green channel
+        </message>
+        <message name="IDS_AX_COLOR_EDIT_HEXADECIMAL" desc="Accessibility label of the hexadecimal color value edit box in a color picker popup">
+          Hexadecimal color value
+        </message>
+        <message name="IDS_AX_COLOR_EDIT_HUE" desc="Accessibility label of the hue edit box in a color picker popup">
+          Hue
+        </message>
+        <message name="IDS_AX_COLOR_EDIT_LIGHTNESS" desc="Accessibility label of the lightness edit box in a color picker popup">
+          Lightness
+        </message>
+        <message name="IDS_AX_COLOR_EDIT_RED" desc="Accessibility label of the red channel edit box in a color picker popup">
+          Red channel
+        </message>
+        <message name="IDS_AX_COLOR_EDIT_SATURATION" desc="Accessibility label of the saturation edit box in a color picker popup">
+          Saturation
+        </message>
+        <message name="IDS_AX_COLOR_FORMAT_TOGGLER" desc="Accessibility label of the format toggler spinbutton in a color picker popup">
+          Format toggler
+        </message>
+        <message name="IDS_AX_COLOR_HUE_SLIDER" desc="Accessibility label of the color well in a color picker poup">
+          Hue slider
+        </message>
+        <message name="IDS_AX_COLOR_WELL" desc="Accessibility label of the color well in a color picker poup">
+          Color well
+        </message>
+        <message name="IDS_AX_COLOR_WELL_ROLEDESCRIPTION" desc="Accessibility description of the color well for choosing saturation and lighness in a color picker popup">
+          Color well with two-dimensional slider for selecting saturation and lightness
+        </message>
+      </if>
+
       <!-- Localized names for accessibility roles -->
       <message name="IDS_AX_ROLE_ARTICLE" desc="Accessibility role description for article">
         article

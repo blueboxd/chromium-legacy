@@ -72,13 +72,19 @@ void LazyImageHelper::StartMonitoring(blink::Element* element) {
   using DeferralMessage = LazyLoadImageObserver::DeferralMessage;
   auto deferral_message = DeferralMessage::kNone;
   if (auto* html_image = DynamicTo<HTMLImageElement>(element)) {
-    LoadingAttributeValue loading_attr = GetLoadingAttributeValue(
+    LoadingAttributeValue effective_loading_attr = GetLoadingAttributeValue(
         html_image->FastGetAttribute(html_names::kLoadingAttr));
-    DCHECK_NE(loading_attr, LoadingAttributeValue::kEager);
-    if (loading_attr == LoadingAttributeValue::kAuto) {
+    // If the 'lazyload' feature policy is enforced, the attribute value
+    // loading='eager' is considered as 'auto'.
+    if (effective_loading_attr == LoadingAttributeValue::kEager &&
+        document->IsLazyLoadPolicyEnforced()) {
+      effective_loading_attr = LoadingAttributeValue::kAuto;
+    }
+    DCHECK_NE(effective_loading_attr, LoadingAttributeValue::kEager);
+    if (effective_loading_attr == LoadingAttributeValue::kAuto) {
       deferral_message = DeferralMessage::kLoadEventsDeferred;
     } else if (!IsDimensionAbsoluteLarge(*html_image)) {
-      DCHECK_EQ(loading_attr, LoadingAttributeValue::kLazy);
+      DCHECK_EQ(effective_loading_attr, LoadingAttributeValue::kLazy);
       deferral_message = DeferralMessage::kMissingDimensionForLazy;
     }
   }

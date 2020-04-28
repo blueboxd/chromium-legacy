@@ -44,9 +44,21 @@ void BoundsAnimator::AnimateViewTo(
   Data existing_data;
 
   if (IsAnimating(view)) {
-    // Don't immediately delete the animation, that might trigger a callback
-    // from the animation container.
-    existing_data = RemoveFromMaps(view);
+    DCHECK(base::Contains(data_, view));
+    const bool used_transforms = data_[view].target_transform.has_value();
+    if (used_transforms) {
+      // Using transforms means a view does not have the proper bounds until an
+      // animation is complete or canceled. So here we cancel the animation so
+      // that the bounds can be updated. Note that this means that callers who
+      // want to set bounds (i.e. View::SetBoundsRect()) directly before calling
+      // this function will have to explicitly call StopAnimatingView() before
+      // doing so.
+      StopAnimatingView(view);
+    } else {
+      // Don't immediately delete the animation, that might trigger a callback
+      // from the animation container.
+      existing_data = RemoveFromMaps(view);
+    }
   }
 
   // NOTE: we don't check if the view is already at the target location. Doing
@@ -60,7 +72,11 @@ void BoundsAnimator::AnimateViewTo(
   data.animation = CreateAnimation();
   data.delegate = std::move(delegate);
 
-  if (use_transforms_ && !data.start_bounds.IsEmpty()) {
+  // If the start bounds are empty we cannot derive a transform from start to
+  // target. Views with existing transforms are not supported. Default back to
+  // using the bounds update animation in these cases.
+  if (use_transforms_ && !data.start_bounds.IsEmpty() &&
+      view->GetTransform().IsIdentity()) {
     // Calculate the target transform. Note that we don't reset the transform if
     // there already was one, otherwise users will end up with visual bounds
     // different than what they set.
@@ -91,28 +107,6 @@ void BoundsAnimator::SetTargetBounds(View* view, const gfx::Rect& target) {
 gfx::Rect BoundsAnimator::GetTargetBounds(const View* view) const {
   const auto i = data_.find(view);
   return (i == data_.end()) ? view->bounds() : i->second.target_bounds;
-}
-
-void BoundsAnimator::SetAnimationForView(
-    View* view,
-    std::unique_ptr<gfx::SlideAnimation> animation) {
-  DCHECK(animation);
-
-  const auto i = data_.find(view);
-  if (i == data_.end())
-    return;
-
-  // We delay deleting the animation until the end so that we don't prematurely
-  // send out notification that we're done.
-  std::unique_ptr<gfx::Animation> old_animation = ResetAnimationForView(view);
-
-  gfx::SlideAnimation* animation_ptr = animation.get();
-  i->second.animation = std::move(animation);
-  animation_to_view_[animation_ptr] = view;
-
-  animation_ptr->set_delegate(this);
-  animation_ptr->SetContainer(container_.get());
-  animation_ptr->Show();
 }
 
 const gfx::SlideAnimation* BoundsAnimator::GetAnimationForView(View* view) {
@@ -228,10 +222,20 @@ void BoundsAnimator::AnimationEndedOrCanceled(const gfx::Animation* animation,
   Data data = RemoveFromMaps(view);
 
   if (data.target_transform) {
-    // Set the bounds at the end of the animation and reset the transform.
-    view->SetTransform(gfx::Transform());
-    if (type == AnimationEndType::kEnded)
+    if (type == AnimationEndType::kEnded) {
+      // Set the bounds at the end of the animation and reset the transform.
       view->SetBoundsRect(data.target_bounds);
+    } else {
+      DCHECK_EQ(AnimationEndType::kCanceled, type);
+      // Get the existing transform and apply it to the start bounds which is
+      // the current bounds of the view. This will place the bounds at the place
+      // where the animation stopped.
+      const gfx::Transform transform = view->GetTransform();
+      gfx::RectF bounds_f(view->bounds());
+      transform.TransformRect(&bounds_f);
+      view->SetBoundsRect(gfx::ToRoundedRect(bounds_f));
+    }
+    view->SetTransform(gfx::Transform());
   }
 
   if (data.delegate) {

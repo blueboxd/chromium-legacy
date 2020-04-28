@@ -4,7 +4,7 @@
 
 #include "net/base/winsock_util.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "net/base/net_errors.h"
 
 namespace net {

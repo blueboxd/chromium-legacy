@@ -9,9 +9,9 @@
 #include <unordered_set>
 
 #include "base/base64.h"
+#include "base/check_op.h"
 #include "base/containers/span.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

@@ -125,7 +125,6 @@
 <translation id="1164899421101904659">Introducir código PUK</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1166212789817575481">Cerrar pestañas a la derecha</translation>
-<translation id="1167199480815330007">El PIN de 6 dígitos está en la parte trasera de la llave de seguridad</translation>
 <translation id="1168020859489941584">Abriendo en <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Servidores de nombres de Google</translation>
 <translation id="1171135284592304528">Resaltar el objeto con el foco del teclado cuando cambie</translation>
@@ -349,7 +348,7 @@
 <translation id="1465176863081977902">C&amp;opiar dirección de audio</translation>
 <translation id="1465827627707997754">Porción de pizza</translation>
 <translation id="1468571364034902819">No se puede utilizar este perfil</translation>
-<translation id="1470084204649225129">{NUM_TABS,plural, =1{Añadir pestaña a nuevo grupo}other{Añadir pestañas a nuevo grupo}}</translation>
+<translation id="1470084204649225129">{NUM_TABS,plural, =1{Añadir pestaña al nuevo grupo}other{Añadir pestañas al nuevo grupo}}</translation>
 <translation id="1472675084647422956">Mostrar más</translation>
 <translation id="1475502736924165259">Tienes certificados registrados que no corresponden a ninguna otra categoría</translation>
 <translation id="1476088332184200792">Copiar en tu dispositivo</translation>
@@ -614,7 +613,6 @@
 <translation id="1802931390041703523">Se ha bloqueado Flash en esta página</translation>
 <translation id="1803531841600994172">Idioma al que quieres traducir</translation>
 <translation id="1803545009660609783">Reeducar</translation>
-<translation id="1805472176602625930">Pulsa el botón de la llave de seguridad</translation>
 <translation id="1805738995123446102">La pestaña en segundo plano está usando el micrófono</translation>
 <translation id="1805822111539868586">Inspeccionar vistas</translation>
 <translation id="1805888043020974594">Servidor de impresión</translation>
@@ -675,9 +673,9 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> está listo para completar la instalación.</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">Dar acceso al micrófono</translation>
+<translation id="1871534214638631766">Mostrar información relacionada cuando mantengas pulsado o hagas clic con el botón derecho en contenido</translation>
 <translation id="1871615898038944731">Tu <ph name="DEVICE_TYPE" /> está actualizado</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Mover pestaña a otra ventana}other{Mover pestañas a otra ventana}}</translation>
-<translation id="1875312262568496299">Empezar</translation>
 <translation id="1875386316419689002">Esta pestaña está conectada a un dispositivo HID.</translation>
 <translation id="1875387611427697908">Este elemento solo se puede añadir desde <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">No se ha podido obtener el token de autenticación. Cierra la sesión y vuelve a iniciarla para intentarlo de nuevo.</translation>
@@ -697,7 +695,6 @@
 <translation id="189358972401248634">Otros idiomas</translation>
 <translation id="1895658205118569222">Cierre del navegador</translation>
 <translation id="1895934970388272448">Debes confirmar el registro de tu impresora para finalizar este proceso. Compruébalo ahora.</translation>
-<translation id="1899826437968063457">El complemento de VM necesita permiso para ejecutarse</translation>
 <translation id="1900305421498694955">Es posible que las aplicaciones de Google Play necesiten acceso completo al sistema de archivos para leer y escribir archivos en dispositivos de almacenamiento externo. Los usuarios de la unidad externa podrán ver los archivos y las carpetas que se hayan creado en el dispositivo. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
 <translation id="1905375423839394163">Nombre del dispositivo Chromebook</translation>
@@ -733,6 +730,7 @@
 <translation id="1944528062465413897">Código de sincronización por Bluetooth:</translation>
 <translation id="1944921356641260203">Actualización encontrada</translation>
 <translation id="1946577776959096882">Ver cuentas</translation>
+<translation id="1949584741547056205">Respuestas rápidas</translation>
 <translation id="1951012854035635156">Asistente</translation>
 <translation id="1954813140452229842">No se ha podido activar el recurso compartido. Comprueba tus credenciales y vuelve a intentarlo.</translation>
 <translation id="1956050014111002555">El archivo contenía varios certificados, pero no se ha importado ninguno de ellos:</translation>
@@ -992,7 +990,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2299734369537008228">Control deslizante: de <ph name="MIN_LABEL" /> a <ph name="MAX_LABEL" /></translation>
 <translation id="2300383962156589922">Personalizar y controlar <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">El directorio raíz de la extensión no es válido.</translation>
-<translation id="2302444155926798584">Se ha desinstalado Plugin VM</translation>
 <translation id="23030561267973084"><ph name="EXTENSION_NAME" /> ha solicitado permisos adicionales.</translation>
 <translation id="23055578400314116">Selecciona un nombre de usuario</translation>
 <translation id="2307462900900812319">Configurar red</translation>
@@ -1036,7 +1033,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2353297238722298836">Cámara y micrófono permitidos</translation>
 <translation id="2356070529366658676">Preguntar</translation>
 <translation id="2357330829548294574">Quitar a <ph name="USER_NAME" /></translation>
-<translation id="235798134753548762">Se sincronizarán tus aplicaciones, ajustes y preferencias de Wi‑Fi. Si quieres realizar cambios, ve a Ajustes en cualquier momento cuando haya terminado la configuración.</translation>
 <translation id="2359345697448000899">Para administrar tus extensiones, haz clic en la opción Extensiones del menú Herramientas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="236117173274098341">Optimizar</translation>
@@ -1073,7 +1069,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2408955596600435184">Introduce tu PIN</translation>
 <translation id="241082044617551207">Complemento desconocido</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
-<translation id="2417206894320497232">Ya puedes usar Plugin VM.</translation>
 <translation id="241727068219398187">Se han cifrado los datos con tu contraseña de Google desde el
           <ph name="TIME" />. El cifrado no incluye los métodos de pago ni las direcciones de Google Pay.</translation>
 <translation id="2419706071571366386">Por motivos de seguridad, cierra la sesión cuando termines de utilizar tu ordenador.</translation>
@@ -1206,7 +1201,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="258095186877893873">Largo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">No se ha podido obtener el ticket de Kerberos. Vuelve a intentarlo o ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
-<translation id="2585013490795742997">Se muestra 1 resultado de búsqueda de <ph name="QUERY" /></translation>
+<translation id="2585013490795742997">Mostrando 1 resultado de búsqueda de <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Esta pestaña está compartiendo tu pantalla.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
 <translation id="2586672484245266891">Introduce una URL más corta</translation>
@@ -1357,7 +1352,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2773802008104670137">Este tipo de archivo puede dañar tu ordenador.</translation>
 <translation id="2775104091073479743">Editar huellas digitales</translation>
 <translation id="2776441542064982094">Parece que no hay dispositivos disponibles para registrarse en la red. Si tu dispositivo está activado y conectado a Internet, prueba a registrarlo siguiendo las instrucciones que se incluyen en su manual.</translation>
-<translation id="2780009105947267877">Configurando el complemento de VM...</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2782104745158847185">Error al instalar la aplicación de Linux</translation>
 <translation id="2783298271312924866">Descargado</translation>
@@ -1401,7 +1395,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2822910719211888134">Error al crear una copia de seguridad de Linux</translation>
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> está usando los ajustes de proxy de tu administrador</translation>
 <translation id="2825758591930162672">Clave pública de la entidad receptora</translation>
-<translation id="2825848369316359348">El nombre está en la parte trasera de la llave de seguridad</translation>
 <translation id="2828650939514476812">Conectar a la red Wi-Fi</translation>
 <translation id="2835294513443818940">Este archivo no se puede descargar de forma segura.</translation>
 <translation id="2835547721736623118">Servicio de reconocimiento de voz</translation>
@@ -1780,7 +1773,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3347086966102161372">C&amp;opiar dirección de imagen</translation>
 <translation id="3348038390189153836">Se ha detectado un dispositivo extraíble.</translation>
 <translation id="3349933790966648062">Uso de memoria</translation>
-<translation id="3350117557200012647">Acceder al modo de vinculación</translation>
 <translation id="3355936511340229503">Error de conexión</translation>
 <translation id="3356580349448036450">Completo</translation>
 <translation id="3359256513598016054">Restricciones de políticas de certificados</translation>
@@ -1852,7 +1844,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3449393517661170867">Nueva ventana con pestañas</translation>
 <translation id="3449839693241009168">Pulsa <ph name="SEARCH_KEY" /> para enviar comandos a <ph name="EXTENSION_NAME" />.</translation>
 <translation id="3450157232394774192">Porcentaje de ocupación de estado de inactividad</translation>
-<translation id="3451332697983754369">Sincronizar mi <ph name="DEVICE_TYPE" /></translation>
 <translation id="3453612417627951340">Necesita autorización</translation>
 <translation id="3454157711543303649">Activación completa</translation>
 <translation id="3454213325559396544">Esta es la última actualización automática de software y seguridad que recibirá este <ph name="DEVICE_TYPE" />. Para recibir las actualizaciones posteriores, cambia este modelo por otro más reciente.</translation>
@@ -2031,7 +2022,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3677657024345889897">El más bajo</translation>
 <translation id="3677911431265050325">Solicitar sitio web móvil</translation>
 <translation id="3678156199662914018">Extensión: <ph name="EXTENSION_NAME" /></translation>
-<translation id="3678613690490567106">Sincroniza para disfrutar de una experiencia personalizada en todos tus dispositivos</translation>
 <translation id="3681311097828166361">Gracias por tus comentarios. Ahora no tienes conexión, por lo que el informe se enviará más tarde.</translation>
 <translation id="3682824389861648626">Umbral de movimiento</translation>
 <translation id="3683524264665795342">Solicitud de <ph name="APP_NAME" /> para compartir pantalla</translation>
@@ -2079,7 +2069,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="372722114124766626">Solo una vez</translation>
 <translation id="3729303374699765035">Preguntar cuando un sitio web quiera buscar dispositivos Bluetooth cercanos</translation>
 <translation id="3729506734996624908">Sitios web permitidos</translation>
-<translation id="3731997362820527097">Seleccionar la llave de seguridad</translation>
 <translation id="3732078975418297900">Error en la línea <ph name="ERROR_LINE" /></translation>
 <translation id="3732530910372558017">El PIN debe tener 63 caracteres como máximo</translation>
 <translation id="3733127536501031542">Servidor SSL con certificado Step-Up</translation>
@@ -2090,7 +2079,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3742666961763734085">No se puede encontrar una unidad organizativa con ese nombre. Inténtalo de nuevo.</translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
 <translation id="3746127522257263495">No es posible añadir una cuenta de G Suite para Centros Educativos en aplicaciones Android, porque no es compatible.</translation>
-<translation id="3747039297326604768">No se ha podido abrir Plugin VM</translation>
 <translation id="3747077776423672805">Para desinstalar aplicaciones, ve a Ajustes &gt; Google Play Store &gt; Gestionar las preferencias de Android &gt; Aplicaciones o Administrador de aplicaciones. A continuación, toca la aplicación que quieras desinstalar (es posible que tengas que deslizar el dedo hacia la derecha o hacia la izquierda para encontrar la aplicación) y toca Desinstalar o Inhabilitar.</translation>
 <translation id="3748026146096797577">No conectado</translation>
 <translation id="3752582316358263300">Aceptar...</translation>
@@ -2153,7 +2141,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3816118180265633665">Colores de Chrome</translation>
 <translation id="3817524650114746564">Abrir la configuración de proxy de tu ordenador</translation>
 <translation id="3817579325494460411">No proporcionada</translation>
-<translation id="381892968844315516">Plugin VM no está permitido en este dispositivo. Ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="3819257035322786455">Copia de seguridad</translation>
 <translation id="3819261658055281761">El sistema no ha podido almacenar el token de acceso a la API a largo plazo de este dispositivo.</translation>
 <translation id="3819800052061700452">&amp;Pantalla completa</translation>
@@ -2345,7 +2332,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4056908315660577142">Has llegado al límite de tiempo de uso que ha establecido tu padre o madre para la aplicación de Chrome <ph name="APP_NAME" />. Podrás usarla mañana durante <ph name="TIME_LIMIT" />.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Ver en Chrome Web Store</translation>
-<translation id="4058647953897694817">Verificar mediante Bluetooth</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Comprobar el documento ahora</translation>
 <translation id="406070391919917862">Aplicaciones en segundo plano</translation>
@@ -2354,7 +2340,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4068506536726151626">Esta página contiene elementos de los siguientes sitios que hacen un seguimiento de tu ubicación:</translation>
 <translation id="4068776064906523561">Huellas digitales guardadas</translation>
 <translation id="407173827865827707">Al hacer clic</translation>
-<translation id="4073520450811433493">Sincronización de ajustes</translation>
 <translation id="4074900173531346617">Certificado de firma de correo electrónico</translation>
 <translation id="407520071244661467">Escala</translation>
 <translation id="4075639477629295004">No se puede enviar <ph name="FILE_NAME" />.</translation>
@@ -2437,7 +2422,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4184885522552335684">Arrastra una pantalla para moverla</translation>
 <translation id="4194570336751258953">Habilitar la función Tocar para hacer clic</translation>
-<translation id="4194595472342532425">No se ha podido configurar Plugin VM por un problema de configuración. Ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="4195814663415092787">Abrir todo como estaba antes de cerrar</translation>
 <translation id="4198146608511578238">Solo tienes que mantener pulsado el icono del menú de aplicaciones para hablar con el Asistente de Google.</translation>
@@ -3074,7 +3058,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5117930984404104619">Controlar el comportamiento de otras extensiones, incluidas las URL visitadas</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Tu disco duro está lleno. Guarda el archivo en otra ubicación o libera espacio en el disco duro.</translation>
-<translation id="5122384452788334261">Queda poco espacio de almacenamiento en el dispositivo. Se recomienda tener al menos <ph name="RECOMMENDED_SPACE" /> de espacio libre para usar Plugin VM. Para liberar espacio, elimina archivos del almacenamiento del dispositivo.</translation>
 <translation id="5123433949759960244">Balón de baloncesto</translation>
 <translation id="5125751979347152379">La URL no es válida.</translation>
 <translation id="5126611267288187364">Ver cambios</translation>
@@ -3130,7 +3113,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="520621735928254154">Error al importar el certificado</translation>
 <translation id="5209307736170827035">Los datos de tu hijo/a en Classroom estarán protegidos. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">No se ha encontrado ningún dispositivo.</translation>
-<translation id="5210990770352357081">No se ha podido desinstalar Plugin VM</translation>
 <translation id="5213481667492808996">Ya puedes usar tu servicio de datos de "<ph name="NAME" />"</translation>
 <translation id="5213891612754844763">Mostrar configuración de proxy</translation>
 <translation id="5215502535566372932">Selecciona un país</translation>
@@ -3388,7 +3370,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5542949973455282971">Conectando con <ph name="CARRIER_NAME" /></translation>
 <translation id="5543983818738093899">Comprobando el estado...</translation>
 <translation id="554517032089923082">GTC</translation>
-<translation id="5545335608717746497">{NUM_TABS,plural, =1{Añadir pestaña a grupo}other{Añadir pestañas a grupo}}</translation>
+<translation id="5545335608717746497">{NUM_TABS,plural, =1{Añadir pestaña al grupo}other{Añadir pestañas al grupo}}</translation>
 <translation id="5546865291508181392">Buscar</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" y 1 pestaña más}other{"<ph name="TAB_TITLE" />" y # pestañas más}}</translation>
 <translation id="5548606607480005320">Comprobación de seguridad</translation>
@@ -3479,7 +3461,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5658415415603568799">Para mayor seguridad, Smart Lock te pedirá que introduzcas la contraseña después de 20 horas.</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5659833766619490117">No se ha podido traducir la página</translation>
-<translation id="5660204307954428567">Vincular con <ph name="DEVICE_NAME" /></translation>
 <translation id="5662513737565158057">Cambia el funcionamiento de las aplicaciones de Linux.</translation>
 <translation id="5667546120811588575">Configurando Google Play...</translation>
 <translation id="5669267381087807207">Activando</translation>
@@ -3739,7 +3720,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6020431688553761150">El servidor no te ha autorizado a acceder a este recurso.</translation>
 <translation id="6022526133015258832">Abrir en pantalla completa</translation>
 <translation id="6022659036123304283">Personaliza Chrome</translation>
-<translation id="6022705094403139349">¿Todo listo para vincular tu llave de seguridad?</translation>
 <translation id="6023643151125006053">El administrador de <ph name="SAML_DOMAIN" /> ha bloqueado este dispositivo (número de serie: <ph name="SERIAL_NUMBER" />).</translation>
 <translation id="6025215716629925253">Seguimiento de la pila</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" />: dispositivo USB conectado</translation>
@@ -3814,7 +3794,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6103681770816982672">Advertencia: Vas a cambiar al canal para desarrolladores</translation>
 <translation id="6104068876731806426">Cuentas de Google</translation>
 <translation id="6104311680260824317">No se puede vincular el dispositivo con el dominio. El servidor no admite los tipos de cifrado Kerberos específicos. Marca Más opciones para configurar el cifrado.</translation>
-<translation id="6106186653986077033">Para usar el complemento de VM, es necesario adquirir una licencia</translation>
 <translation id="6112294629795967147">Tocar para cambiar el tamaño</translation>
 <translation id="6112727384379533756">Añadir un ticket</translation>
 <translation id="6112931163620622315">Comprueba tu teléfono</translation>
@@ -4089,7 +4068,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6478248366783946499">¿Quieres conservar el archivo peligroso?</translation>
 <translation id="6483485061007832714">Abrir descarga</translation>
 <translation id="6483805311199035658">Abriendo <ph name="FILE" />...</translation>
-<translation id="6485092675191826776">La licencia de Plugin VM ha caducado</translation>
 <translation id="6488384360522318064">Seleccionar idioma</translation>
 <translation id="648927581764831596">Ningún medio disponible</translation>
 <translation id="6490471652906364588">Dispositivo USB-C (puerto derecho)</translation>
@@ -4114,7 +4092,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
 <ph name="FILE_INFO" />
 <ph name="EVENT_NAME" /></translation>
-<translation id="6520876759015997832">Resultado de búsqueda <ph name="LIST_POSITION" /> de <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Pulsa Intro para desplazarte a la sección.</translation>
+<translation id="6520876759015997832">Resultado de búsqueda <ph name="LIST_POSITION" /> de <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Pulsa Intro para ir a esa sección.</translation>
 <translation id="652492607360843641">Estás conectado a una red <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">Compartir</translation>
 <translation id="6528513914570774834">Permitir que otros usuarios de este dispositivo usen esta red</translation>
@@ -4284,7 +4262,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6770664076092644100">Verificar mediante NFC</translation>
 <translation id="6771503742377376720">Es una entidad emisora de certificados.</translation>
 <translation id="6772339735733515807">Gestiona tus extensiones</translation>
-<translation id="6774271858705413900">Se ha producido un error. Espera unos minutos y vuelve a ejecutar Plugin VM.</translation>
 <translation id="6775163072363532304">Aquí aparecerán los dispositivos disponibles.</translation>
 <translation id="6777817260680419853">Redirección bloqueada</translation>
 <translation id="6778737459546443941">Uno de tus padres aún no lo ha aprobado</translation>
@@ -4362,7 +4339,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="686664946474413495">Temperatura del color</translation>
 <translation id="6871644448911473373">Respuesta de OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">El servidor ha rechazado la contraseña que has introducido.</translation>
-<translation id="6874170800191969835">Se ha desplazado a <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Bici</translation>
 <translation id="6876469544038980967">No es útil</translation>
 <translation id="6878422606530379992">Sensores permitidos</translation>
@@ -4543,7 +4519,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7108668606237948702">intro</translation>
 <translation id="7109543803214225826">Se ha quitado el acceso directo</translation>
-<translation id="7110644433780444336">{NUM_TABS,plural, =1{Añadir pestaña a grupo}other{Añadir pestañas a grupo}}</translation>
+<translation id="7110644433780444336">{NUM_TABS,plural, =1{Añadir pestaña al grupo}other{Añadir pestañas al grupo}}</translation>
 <translation id="7113502843173351041">Conocer tu dirección de correo electrónico</translation>
 <translation id="7114054701490058191">Las contraseñas no coinciden</translation>
 <translation id="7114648273807173152">Si quieres usar Smart Lock para iniciar sesión en tu cuenta de Google, ve a Configuración &gt; Dispositivos conectados &gt; Tu teléfono &gt; Smart Lock.</translation>
@@ -4587,7 +4563,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7170041865419449892">Fuera del alcance</translation>
 <translation id="7171259390164035663">No registrar</translation>
 <translation id="7171559745792467651">Instala aplicaciones de tus otros dispositivos</translation>
-<translation id="7172470549472604877">{NUM_TABS,plural, =1{Añadir pestaña a nuevo grupo}other{Añadir pestañas a nuevo grupo}}</translation>
+<translation id="7172470549472604877">{NUM_TABS,plural, =1{Añadir pestaña al nuevo grupo}other{Añadir pestañas al nuevo grupo}}</translation>
 <translation id="7174199383876220879">¡Nuevo! Controla tu música, tus vídeos y otras muchas cosas.</translation>
 <translation id="7175037578838465313">Configurar <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Cargado desde:</translation>
@@ -4616,7 +4592,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7207631048330366454">Buscar aplicaciones</translation>
 <translation id="7210499381659830293">Impresoras de extensiones</translation>
 <translation id="7212097698621322584">Introduce tu PIN actual para cambiarlo. Si no sabes cuál es tu PIN, tendrás que restablecer la llave de seguridad y crear un nuevo PIN.</translation>
-<translation id="721467499098558573">Mantén pulsado el botón de la llave de seguridad durante al menos 5 segundos</translation>
 <translation id="7216409898977639127">Proveedor de servicios móviles</translation>
 <translation id="7216595297012131718">Ordena los idiomas según tus preferencias</translation>
 <translation id="7220019174139618249">No se pueden exportar contraseñas a la carpeta "<ph name="FOLDER" />"</translation>
@@ -4637,7 +4612,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7240339475467890413">¿Quieres conectarte a un nuevo punto de acceso?</translation>
 <translation id="7240847845291869311">Tu hijo/a quiere añadir en este dispositivo una cuenta de Google de G Suite para Centros Educativos. El objetivo del <ph name="LINK_BEGIN" />Aviso de Privacidad de G Suite para Centros Educativos<ph name="LINK_END" /> es informar a padres y usuarios de G Suite para Centros Educativos sobre los datos que recoge el producto, los motivos por los que se recogen y lo que se hace con ellos.</translation>
 <translation id="7241389281993241388">Inicia sesión en <ph name="TOKEN_NAME" /> para importar el certificado de cliente.</translation>
-<translation id="7241443820034350811">Si no aparece tu llave de seguridad, pulsa el botón de la llave durante al menos 5 segundos.</translation>
 <translation id="7243632151880336635">Borrar y cerrar sesión</translation>
 <translation id="7243784282103630670">No se ha podido actualizar Linux. Vamos a restaurar el contenedor utilizando tu copia de seguridad.</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (recomendado)</translation>
@@ -4852,7 +4826,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7531779363494549572">Accede a Ajustes &gt; Aplicaciones y notificaciones &gt; Notificaciones.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> no responde. Selecciona "Forzar cierre" para cerrar la aplicación.</translation>
 <translation id="7537451260744431038">Los sitios web no pueden usar cookies para mejorar tu experiencia de navegación, por ejemplo, para mantener tu sesión iniciada o recordar los artículos de tu carrito de la compra</translation>
-<translation id="7539856059004947393">Llave de seguridad Bluetooth</translation>
 <translation id="7540972813190816353">Se ha producido un error al comprobar las actualizaciones: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> con la aplicación <ph name="APP_NAME" /></translation>
 <translation id="7543104066686362383">Se habilitarán las funciones de depurado en este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
@@ -4976,7 +4949,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7704305437604973648">Tarea</translation>
 <translation id="7704317875155739195">Autocompletar búsquedas y URLs</translation>
 <translation id="7704521324619958564">Abrir Play Store</translation>
-<translation id="7704628569466676326">Si quieres iniciar sesión en tu cuenta con la llave de seguridad, vincúlala con este dispositivo</translation>
 <translation id="7705276765467986571">No se ha podido cargar el modelo de marcador.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7706963867324547089">Activar/Desactivar modo de lectura</translation>
@@ -5066,7 +5038,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7817361223956157679">El teclado en pantalla aún no funciona en las aplicaciones de Linux</translation>
 <translation id="7818135753970109980">Nuevo tema añadido (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA o RSN)</translation>
-<translation id="7819992334107904369">Sincronización de Chrome</translation>
 <translation id="782057141565633384">C&amp;opiar dirección de vídeo</translation>
 <translation id="7824864914877854148">No se ha podido completar la copia de seguridad debido a un error</translation>
 <translation id="782590969421016895">Utilizar páginas actuales</translation>
@@ -5220,7 +5191,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7988355189918024273">Habilita las funciones de accesibilidad</translation>
 <translation id="7991296728590311172">Ajustes de accesibilidad mediante interruptores</translation>
 <translation id="7992202128769240372">Supera el límite de <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="7994350303002908848">No se ha podido instalar Plugin VM. Vuelve a intentarlo o ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="7997826902155442747">Prioridad del proceso</translation>
 <translation id="7999229196265990314">Se han creado los siguientes archivos:
@@ -5319,7 +5289,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8118488170956489476">Tu organización es la encargada de <ph name="BEGIN_LINK" />gestionar tu navegador<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">Gestionar tus descargas</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> y otros permisos</translation>
-<translation id="8120715633374652536">Queda poco espacio de almacenamiento en el dispositivo. Se necesitan al menos <ph name="MINIMUM_SPACE" /> de espacio libre para usar Plugin VM, pero se recomienda tener más de <ph name="RECOMMENDED_SPACE" />. Para liberar espacio, elimina archivos del almacenamiento del dispositivo.</translation>
 <translation id="8123590694679414600">Los datos se cifraron con tu frase de contraseña de sincronización el
           <ph name="TIME" />. El cifrado no incluye los métodos de pago ni las direcciones de Google Pay.</translation>
 <translation id="81238879832906896">Flor blanca y amarilla</translation>
@@ -5633,7 +5602,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8551388862522347954">Licencias</translation>
 <translation id="8553342806078037065">Gestionar otros usuarios</translation>
 <translation id="8554899698005018844">Sin idioma</translation>
-<translation id="8556135141412663091">Debes actualizar el dispositivo para usar Plugin VM.</translation>
 <translation id="8557022314818157177">Sigue pulsando tu llave de seguridad hasta que tu huella digital quede registrada.</translation>
 <translation id="855773602626431402">Se ha evitado que un complemento no incluido en la zona de pruebas se ejecutara en esta página.</translation>
 <translation id="8557930019681227453">Archivo de manifiesto</translation>
@@ -5706,7 +5674,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8655295600908251630">Canal</translation>
 <translation id="8655319619291175901">Vaya, algo ha salido mal...</translation>
 <translation id="8655972064210167941">Se ha producido un error al iniciar sesión porque no ha sido posible verificar la contraseña. Ponte en contacto con el administrador o vuelve a intentarlo.</translation>
-<translation id="8656619792520327915">Añadir otra llave de seguridad Bluetooth</translation>
 <translation id="8656768832129462377">No comprobar</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> está compartiendo la pantalla y el audio con <ph name="TAB_NAME" />.</translation>
 <translation id="8661290697478713397">Abrir enlace en una ventana de incó&amp;gnito</translation>
@@ -5895,13 +5862,11 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8871696467337989339">No se admite el indicador de línea de comandos (<ph name="BAD_FLAG" />) que estás utilizando, ya que afecta a la estabilidad y a la seguridad</translation>
 <translation id="8871974300055371298">Configuración de contenido</translation>
 <translation id="8872155268274985541">El archivo de manifiesto de la actualización externa de kiosco no es válido. Se ha producido un error al actualizar la aplicación de kiosco. Extrae el dispositivo USB.</translation>
-<translation id="8872187374998143710">Reinicia el dispositivo para usar Plugin VM.</translation>
 <translation id="8872777911145321141">Preguntar cuando un sitio web quiera usar tus dispositivos y datos de realidad virtual (recomendado)</translation>
 <translation id="8874184842967597500">No conectado</translation>
 <translation id="8875775314572167244">Configuración de Ethernet</translation>
 <translation id="8876307312329369159">Este ajuste no se puede cambiar en una sesión de demostración.</translation>
 <translation id="8877448029301136595">[directorio principal]</translation>
-<translation id="8878384954777710821">Desinstalando Plugin VM...</translation>
 <translation id="8879284080359814990">&amp;Mostrar como pestaña</translation>
 <translation id="8879921471468674457">Recordar información de inicio de sesión</translation>
 <translation id="8881020143150461183">Vuelve a intentarlo. Si necesitas asistencia técnica, ponte en contacto con <ph name="CARRIER_NAME" />.</translation>
@@ -5932,7 +5897,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8912810933860534797">Habilitar búsqueda automática</translation>
 <translation id="8915370057835397490">Cargando sugerencia</translation>
 <translation id="8916476537757519021">Submarco incógnito: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8921366488406707015">Verificando la llave de seguridad...</translation>
 <translation id="8922013791253848639">Permite los anuncios siempre en este sitio web</translation>
 <translation id="8923880975836399332">Turquesa oscuro</translation>
 <translation id="8925458182817574960">&amp;Configuración</translation>

@@ -10,7 +10,7 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace gpu {
-class Mailbox;
+struct Mailbox;
 }  // namespace gpu
 
 namespace cc {
@@ -19,6 +19,7 @@ namespace cc {
 // This class must be created, used and destroyed on the same thread.
 class CC_PAINT_EXPORT TextureBacking : public SkRefCnt {
  public:
+  TextureBacking() = default;
   TextureBacking(const TextureBacking&) = delete;
   ~TextureBacking() override = default;
 

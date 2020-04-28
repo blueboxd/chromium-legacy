@@ -106,19 +106,18 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
     UserMediaRequest::MediaType media_type,
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  auto* callbacks = MakeGarbageCollected<PromiseResolverCallbacks>(resolver);
-
-  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
-  UserMediaController* user_media =
-      UserMediaController::From(window->GetFrame());
-  if (!user_media) {
+  if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "No media device controller available; "
                                       "is this a detached window?");
     return ScriptPromise();
   }
 
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* callbacks = MakeGarbageCollected<PromiseResolverCallbacks>(resolver);
+
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  UserMediaController* user_media = UserMediaController::From(window);
   MediaErrorState error_state;
   UserMediaRequest* request = UserMediaRequest::Create(
       window, user_media, media_type, options, callbacks, error_state);

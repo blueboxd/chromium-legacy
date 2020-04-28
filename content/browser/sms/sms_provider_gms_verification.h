@@ -15,15 +15,19 @@
 
 namespace content {
 
+class RenderFrameHost;
+
 class CONTENT_EXPORT SmsProviderGmsVerification : public SmsProvider {
  public:
   SmsProviderGmsVerification();
   ~SmsProviderGmsVerification() override;
 
-  void Retrieve() override;
+  void Retrieve(RenderFrameHost* rfh) override;
 
+  // Implements JNI method SmsVerificationReceiver.Natives.onReceive().
   void OnReceive(JNIEnv*, jstring message);
 
+  // Implements JNI method SmsVerificationReceiver.Natives.onTimeout().
   void OnTimeout(JNIEnv* env);
 
   base::android::ScopedJavaGlobalRef<jobject> GetSmsReceiverForTesting() const;

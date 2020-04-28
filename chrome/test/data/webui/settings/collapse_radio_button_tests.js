@@ -4,9 +4,11 @@
 
 // clang-format off
 import 'chrome://settings/lazy_load.js';
+
+import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {isChildVisible} from 'chrome://test/test_util.m.js';
-import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
+
 // clang-format on
 
 suite('CrCollapseRadioButton', function() {
@@ -66,14 +68,12 @@ suite('CrCollapseRadioButton', function() {
   });
 
   test('expansionHiddenWhenNoCollapseSet', function() {
-    assertTrue(
-        isChildVisible(collapseRadioButton, 'cr-expand-button'));
+    assertTrue(isChildVisible(collapseRadioButton, 'cr-expand-button'));
     assertTrue(isChildVisible(collapseRadioButton, '.separator'));
 
     collapseRadioButton.noCollapse = true;
     flush();
-    assertFalse(
-        isChildVisible(collapseRadioButton, 'cr-expand-button'));
+    assertFalse(isChildVisible(collapseRadioButton, 'cr-expand-button'));
     assertFalse(isChildVisible(collapseRadioButton, '.separator'));
   });
 
@@ -91,15 +91,13 @@ suite('CrCollapseRadioButton', function() {
   });
 
   test('displayPolicyIndicator', function() {
-    assertFalse(
-        isChildVisible(collapseRadioButton, '#policyIndicator'));
+    assertFalse(isChildVisible(collapseRadioButton, '#policyIndicator'));
     assertEquals(
         collapseRadioButton.policyIndicatorType, CrPolicyIndicatorType.NONE);
 
     collapseRadioButton.policyIndicatorType =
         CrPolicyIndicatorType.DEVICE_POLICY;
     flush();
-    assertTrue(
-        isChildVisible(collapseRadioButton, '#policyIndicator'));
+    assertTrue(isChildVisible(collapseRadioButton, '#policyIndicator'));
   });
 });

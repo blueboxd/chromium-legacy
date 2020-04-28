@@ -511,9 +511,6 @@ external/wpt/event-timing/retrieve-firstInput.html [ Pass ] # wpt_subtest_failur
 external/wpt/event-timing/timingconditions.html [ Timeout ] # wpt_subtest_failure
 external/wpt/event-timing/toJSON.html [ Timeout ] # wpt_subtest_failure
 external/wpt/eventsource/eventsource-constructor-url-bogus.any.html [ Pass Failure ]
-external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-tentative.sub.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-tentative.sub.html [ Pass Failure ]
-external/wpt/feature-policy/experimental-features/lazyload/loading-frame-default-eager-disabled-tentative.sub.html [ Pass Failure ]
 external/wpt/feature-policy/experimental-features/trust-token-redemption-default-feature-policy.tentative.https.sub.html [ Pass ] # wpt_subtest_failure
 external/wpt/feature-policy/experimental-features/trust-token-redemption-supported-by-feature-policy.tentative.html [ Pass ] # wpt_subtest_failure
 external/wpt/feature-policy/reporting/fullscreen-report-only.html [ Timeout ] # wpt_subtest_failure

@@ -179,6 +179,12 @@ void OcclusionTracker::EnterRenderTarget(
           gfx::Rect(), old_target_to_new_target_transform));
 }
 
+// A blend mode is occluding if a fully opaque source can fully occlude the
+// destination and the result is also fully opaque.
+static bool IsOccludingBlendMode(SkBlendMode blend_mode) {
+  return blend_mode == SkBlendMode::kSrc || blend_mode == SkBlendMode::kSrcOver;
+}
+
 void OcclusionTracker::FinishedRenderTarget(
     const RenderSurfaceImpl* finished_target_surface) {
   // Make sure we know about the target surface.
@@ -198,7 +204,7 @@ void OcclusionTracker::FinishedRenderTarget(
   // the surface's subtree, then clear the occlusion here so it won't be used.
   if (finished_target_surface->HasMaskingContributingSurface() ||
       finished_target_surface->draw_opacity() < 1 ||
-      !finished_target_surface->UsesDefaultBlendMode() ||
+      !IsOccludingBlendMode(finished_target_surface->BlendMode()) ||
       target_is_only_for_copy_request_or_force_render_surface ||
       finished_target_surface->Filters().HasFilterThatAffectsOpacity()) {
     stack_.back().occlusion_from_outside_target.Clear();
@@ -351,7 +357,7 @@ void OcclusionTracker::MarkOccludedBehindLayer(const LayerImpl* layer) {
   if (opaque_layer_region.IsEmpty())
     return;
 
-  // If the blend mode is not kSrcOver and the effect doesn't have a render
+  // If the blend mode is not occluding and the effect doesn't have a render
   // surface, then the layer should not occlude. An example of this would
   // otherwise be wrong is that this layer is a non-render-surface mask layer
   // with kDstIn blend mode.
@@ -359,7 +365,7 @@ void OcclusionTracker::MarkOccludedBehindLayer(const LayerImpl* layer) {
       layer->layer_tree_impl()->property_trees()->effect_tree.Node(
           layer->effect_tree_index());
   if (!effect_node->HasRenderSurface() &&
-      effect_node->blend_mode != SkBlendMode::kSrcOver)
+      !IsOccludingBlendMode(effect_node->blend_mode))
     return;
 
   DCHECK(layer->visible_layer_rect().Contains(opaque_layer_region.bounds()));

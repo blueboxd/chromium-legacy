@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/feedback_private/feedback_service.h"
 
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -17,7 +19,7 @@
 #include "net/base/network_change_notifier.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/assistant/assistant_interface_binder.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "extensions/browser/api/feedback_private/log_source_access_manager.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -96,11 +98,7 @@ void FeedbackService::CompleteSendFeedback(
 #if defined(OS_CHROMEOS)
     // Send feedback to Assistant server if triggered from Google Assistant.
     if (feedback_data->from_assistant()) {
-      mojo::Remote<chromeos::assistant::mojom::AssistantController>
-          assistant_controller;
-      ash::AssistantInterfaceBinder::GetInstance()->BindController(
-          assistant_controller.BindNewPipeAndPassReceiver());
-      assistant_controller->SendAssistantFeedback(
+      ash::AssistantController::Get()->SendAssistantFeedback(
           feedback_data->assistant_debug_info_allowed(),
           feedback_data->description(), feedback_data->image());
     }

@@ -12,6 +12,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_script_source.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -22,8 +23,15 @@ struct JsJavaConfigurator::JsObjectInfo {
   mojo::AssociatedRemote<mojom::JsToJavaMessaging> js_to_java_messaging;
 };
 
+struct JsJavaConfigurator::DocumentStartJavascript {
+  AwOriginMatcher origin_matcher;
+  blink::WebString script;
+  int32_t script_id;
+};
+
 JsJavaConfigurator::JsJavaConfigurator(content::RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame) {
+    : RenderFrameObserver(render_frame),
+      RenderFrameObserverTracker<JsJavaConfigurator>(render_frame) {
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::BindRepeating(&JsJavaConfigurator::BindPendingReceiver,
                           base::Unretained(this)));
@@ -44,6 +52,23 @@ void JsJavaConfigurator::SetJsObjects(
             std::move(js_object->js_to_java_messaging));
   }
   js_objects_.swap(js_objects);
+}
+
+void JsJavaConfigurator::AddDocumentStartScript(
+    mojom::DocumentStartJavascriptPtr script_ptr) {
+  DocumentStartJavascript* script = new DocumentStartJavascript{
+      script_ptr->origin_matcher,
+      blink::WebString::FromUTF16(script_ptr->script), script_ptr->script_id};
+  scripts_.push_back(std::unique_ptr<DocumentStartJavascript>(script));
+}
+
+void JsJavaConfigurator::RemoveDocumentStartScript(int32_t script_id) {
+  for (auto it = scripts_.begin(); it != scripts_.end(); ++it) {
+    if ((*it)->script_id == script_id) {
+      scripts_.erase(it);
+      break;
+    }
+  }
 }
 
 void JsJavaConfigurator::DidClearWindowObject() {
@@ -79,6 +104,17 @@ void JsJavaConfigurator::WillReleaseScriptContext(
 
 void JsJavaConfigurator::OnDestruct() {
   delete this;
+}
+
+void JsJavaConfigurator::RunScriptsAtDocumentStart() {
+  url::Origin frame_origin =
+      url::Origin(render_frame()->GetWebFrame()->GetSecurityOrigin());
+  for (const auto& script : scripts_) {
+    if (!script->origin_matcher.Matches(frame_origin))
+      continue;
+    render_frame()->GetWebFrame()->ExecuteScript(
+        blink::WebScriptSource(script->script));
+  }
 }
 
 void JsJavaConfigurator::BindPendingReceiver(

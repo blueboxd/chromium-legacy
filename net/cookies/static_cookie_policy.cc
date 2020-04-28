@@ -4,7 +4,7 @@
 
 #include "net/cookies/static_cookie_policy.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/site_for_cookies.h"
 #include "url/gurl.h"

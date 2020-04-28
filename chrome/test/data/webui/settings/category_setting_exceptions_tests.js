@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {ContentSetting,ContentSettingProvider,ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl,SiteSettingSource} from 'chrome://settings/lazy_load.js';
-import {createContentSettingTypeToValuePair,createDefaultContentSetting,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ContentSetting,ContentSettingProvider,ContentSettingsTypes,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {createContentSettingTypeToValuePair,createDefaultContentSetting,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for category-setting-exceptions. */
@@ -85,8 +85,7 @@ suite('CategorySettingExceptions', function() {
       });
 
   test('allow site list is hidden for NATIVE_FILE_SYSTEM_WRITE', function() {
-    testElement.category =
-        ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
+    testElement.category = ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
 
     // Flush to be sure that the container is updated.
     flush();
@@ -118,8 +117,7 @@ suite('CategorySettingExceptions', function() {
         const policyPref = createSiteSettingsPrefs(
             [
               createContentSettingTypeToValuePair(
-                  ContentSettingsTypes.COOKIES,
-                  createDefaultContentSetting({
+                  ContentSettingsTypes.COOKIES, createDefaultContentSetting({
                     setting: ContentSetting.ALLOW,
                     source: SiteSettingSource.POLICY
                   })),
@@ -156,8 +154,7 @@ suite('CategorySettingExceptions', function() {
         const dummyPref = createSiteSettingsPrefs(
             [
               createContentSettingTypeToValuePair(
-                  ContentSettingsTypes.COOKIES,
-                  createDefaultContentSetting({
+                  ContentSettingsTypes.COOKIES, createDefaultContentSetting({
                     setting: ContentSetting.ALLOW,
                   })),
             ],

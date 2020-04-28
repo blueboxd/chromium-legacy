@@ -4,7 +4,7 @@
 
 #include "net/test/net_test_suite.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_stream_factory.h"
 #include "net/spdy/spdy_session.h"

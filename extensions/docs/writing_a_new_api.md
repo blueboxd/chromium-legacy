@@ -30,7 +30,7 @@ channels, or even to specific extension IDs, as well as specify required
 permissions.
 
 Read more about the features files
-[here](chrome/common/extensions/api/_features.md).
+[here](/chrome/common/extensions/api/_features.md).
 
 ### API Functions
 Extension functions are called by the extension in order to perform some action
@@ -39,14 +39,14 @@ is called by an extension to create a tab, and is implemented in C++ by the
 `TabsCreateFunction`, and instance of the `ExtensionFunction` class.  Generally,
 each API function will map to an instance of the `ExtensionFunction` class.
 
-Read more about extension functions [here](extensions/docs/api_functions.md).
+Read more about extension functions [here](/extensions/docs/api_functions.md).
 
 ### API Events
 Events are dispatched by Chrome to inform the extension of an occurrence.  For
 instance, the `chrome.tabs.onCreated()` event is dispatched when a new tab is
 created.
 
-Read more about extension events [here](extensions/docs/events.md).
+Read more about extension events [here](/extensions/docs/events.md).
 
 ### API Properties
 Properties on the API are exposed as JavaScript properties on the API object
@@ -64,7 +64,7 @@ in extension API bindings, and custom bindings are generally discouraged.**
 Custom bindings are only required if an API has behavior that is unique enough
 to not be built into the general extension API system.
 
-Read more about extension bindings [here](extensions/renderer/bindings.md).
+Read more about extension bindings [here](/extensions/renderer/bindings.md).
 
 ## Implementation Process
 What is the best way to approach writing a new API implementation?

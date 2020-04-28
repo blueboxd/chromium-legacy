@@ -13,21 +13,19 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.FaviconImageCallback;
-import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
-
-import java.util.Set;
 
 /**
  * A SiteSettingsClient instance that contains Chrome-specific Site Settings logic.
  */
 public class ChromeSiteSettingsClient implements SiteSettingsClient {
-    private ChromeNotificationSettingsClient mChromeNotificationSettingsClient;
+    private ChromeWebappSettingsClient mChromeWebappSettingsClient;
     private ChromeSiteSettingsPrefClient mChromeSiteSettingsPrefClient;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
@@ -59,11 +57,11 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
     }
 
     @Override
-    public NotificationSettingsClient getNotificationSettingsClient() {
-        if (mChromeNotificationSettingsClient == null) {
-            mChromeNotificationSettingsClient = new ChromeNotificationSettingsClient();
+    public WebappSettingsClient getWebappSettingsClient() {
+        if (mChromeWebappSettingsClient == null) {
+            mChromeWebappSettingsClient = new ChromeWebappSettingsClient();
         }
-        return mChromeNotificationSettingsClient;
+        return mChromeWebappSettingsClient;
     }
 
     @Override
@@ -123,9 +121,7 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
     }
 
     @Override
-    public boolean originHasInstalledWebapp(String origin) {
-        WebappRegistry registry = WebappRegistry.getInstance();
-        Set<String> originsWithApps = registry.getOriginsWithInstalledApp();
-        return originsWithApps.contains(origin);
+    public String getChannelIdForOrigin(String origin) {
+        return SiteChannelsManager.getInstance().getChannelIdForOrigin(origin);
     }
 }

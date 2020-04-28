@@ -127,17 +127,6 @@ LayoutBoxModelObject::ComputeBackgroundPaintLocationIfComposited(
   if (HasClip())
     return kBackgroundPaintInGraphicsLayer;
 
-  // TODO(flackr): Remove this when box shadows are still painted correctly when
-  // painting into the composited scrolling contents layer.
-  // https://crbug.com/646464
-  if (StyleRef().BoxShadow()) {
-    if (main_thread_scrolling_reasons) {
-      *main_thread_scrolling_reasons |=
-          cc::MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer;
-    }
-    return kBackgroundPaintInGraphicsLayer;
-  }
-
   // Assume optimistically that the background can be painted in the scrolling
   // contents until we find otherwise.
   BackgroundPaintLocation paint_location = kBackgroundPaintInScrollingContents;

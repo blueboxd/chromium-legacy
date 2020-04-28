@@ -194,8 +194,8 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/controls/settings_boolean_control_behavior.m.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_CONTROLS_SETTINGS_CHECKBOX_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/controls/settings_checkbox.m.js"
+  <include name="IDR_SETTINGS_CONTROLS_SETTINGS_CHECKBOX_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/controls/settings_checkbox.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_CONTROLS_SETTINGS_DROPDOWN_MENU_M_JS"
@@ -357,21 +357,19 @@
            preprocess="true"
            compress="false" type="BINDATA" />
   <if expr="not chromeos">
-    <include name="IDR_SETTINGS_PEOPLE_PAGE_IMPORT_DATA_DIALOG_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/people_page/import_data_dialog.m.js"
+    <include name="IDR_SETTINGS_PEOPLE_PAGE_IMPORT_DATA_DIALOG_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/people_page/import_data_dialog.js"
              use_base_dir="false"
              compress="false" type="BINDATA" />
-    <include name="IDR_SETTINGS_PEOPLE_PAGE_IMPORT_DATA_BROWSER_PROXY_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/people_page/import_data_browser_proxy.m.js"
+    <include name="IDR_SETTINGS_PEOPLE_PAGE_IMPORT_DATA_BROWSER_PROXY_JS"
+             file="people_page/import_data_browser_proxy.js"
+             compress="false" type="BINDATA" />
+    <include name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/people_page/manage_profile.js"
              use_base_dir="false"
              compress="false" type="BINDATA" />
-    <include name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/people_page/manage_profile.m.js"
-             use_base_dir="false"
-             compress="false" type="BINDATA" />
-    <include name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_BROWSER_PROXY_M_JS"
-             file="${root_gen_dir}/chrome/browser/resources/settings/people_page/manage_profile_browser_proxy.m.js"
-             use_base_dir="false"
+    <include name="IDR_SETTINGS_PEOPLE_PAGE_MANAGE_PROFILE_BROWSER_PROXY_JS"
+             file="people_page/manage_profile_browser_proxy.js"
              compress="false" type="BINDATA" />
   </if>
   <if expr="chromeos">
@@ -394,8 +392,8 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/people_page/sync_encryption_options.m.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PEOPLE_PAGE_PEOPLE_PAGE_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/people_page.m.js"
+  <include name="IDR_SETTINGS_PEOPLE_PAGE_PEOPLE_PAGE_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/people_page/people_page.js"
            use_base_dir="false"
            preprocess="true"
            compress="false" type="BINDATA" />

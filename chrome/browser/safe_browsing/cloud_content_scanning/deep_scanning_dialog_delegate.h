@@ -329,9 +329,10 @@ class DeepScanningDialogDelegate {
 
   // Set to true if the full text got a DLP warning verdict.
   bool text_warning_ = false;
+  DeepScanningClientResponse text_response_;
 
-  // Indexes of files that got DLP warning verdicts.
-  std::set<size_t> file_warnings_;
+  // Scanning responses of files that got DLP warning verdicts.
+  std::map<size_t, DeepScanningClientResponse> file_warnings_;
 
   // Set to true once the scan of text has completed.  If the scan request has
   // no text requiring deep scanning, this is set to true immediately.

@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
-import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
 import {PrivacyPageBrowserProxyImpl, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.m.js';
+import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
 import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
 import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-import {isChromeOS} from 'chrome://resources/js/cr.m.js';
-import {simulateStoredAccounts} from 'chrome://test/settings/sync_test_util.m.js';
+
 // clang-format on
 
 suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
@@ -78,8 +79,7 @@ suite('CrSettingsPasswordsLeakDetectionToggleTest', function() {
     testElement.$$('#passwordsLeakDetectionCheckbox').click();
     return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
         .then(result => {
-          assertEquals(
-              PrivacyElementInteractions.PASSWORD_CHECK, result);
+          assertEquals(PrivacyElementInteractions.PASSWORD_CHECK, result);
         });
   });
 

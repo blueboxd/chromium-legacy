@@ -296,7 +296,7 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
 
   ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);
-  EXPECT_EQ(text_child_of_text_text_provider_raw_.Get(),
+  EXPECT_EQ(text_child_of_root_text_provider_raw_.Get(),
             enclosing_element.Get());
 }
 
@@ -353,7 +353,7 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
 
   ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);
-  EXPECT_EQ(text_child_of_text_text_provider_raw_.Get(),
+  EXPECT_EQ(text_child_of_root_text_provider_raw_.Get(),
             enclosing_element.Get());
 }
 

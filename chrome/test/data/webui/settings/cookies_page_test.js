@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {ContentSetting, SiteSettingsPrefsBrowserProxyImpl, CookieControlsMode, ContentSettingsTypes, SiteSettingSource} from 'chrome://settings/lazy_load.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ContentSetting, ContentSettingsTypes, CookieControlsMode, SiteSettingSource, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
 import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
 import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
-import {createRawSiteException, createDefaultContentSetting,createSiteSettingsPrefs,createContentSettingTypeToValuePair} from 'chrome://test/settings/test_util.js';
-import {isChildVisible, isVisible, flushTasks} from 'chrome://test/test_util.m.js';
+import {createContentSettingTypeToValuePair, createDefaultContentSetting,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
+import {flushTasks, isChildVisible, isVisible} from 'chrome://test/test_util.m.js';
+
 // clang-format on
 
 suite('CrSettingsCookiesPageTest', function() {
@@ -53,8 +54,7 @@ suite('CrSettingsCookiesPageTest', function() {
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    SiteSettingsPrefsBrowserProxyImpl.instance_ =
-        siteSettingsBrowserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
     PolymerTest.clearBody();
     page = document.createElement('settings-cookies-page');
     page.prefs = {
@@ -87,8 +87,7 @@ suite('CrSettingsCookiesPageTest', function() {
   async function updateTestCookieContentSetting(setting) {
     const defaultPrefs = createSiteSettingsPrefs(
         [createContentSettingTypeToValuePair(
-            ContentSettingsTypes.COOKIES,
-            createDefaultContentSetting({
+            ContentSettingsTypes.COOKIES, createDefaultContentSetting({
               setting: setting,
             }))],
         []);
@@ -228,8 +227,7 @@ suite('CrSettingsCookiesPageTest', function() {
     networkPrediction.click();
     const result =
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        PrivacyElementInteractions.NETWORK_PREDICTION, result);
+    assertEquals(PrivacyElementInteractions.NETWORK_PREDICTION, result);
   });
 
   test('CookieSettingExceptions_Search', async function() {
@@ -280,8 +278,7 @@ suite('CrSettingsCookiesPageTest', function() {
     };
     const managedPrefs = createSiteSettingsPrefs(
         [createContentSettingTypeToValuePair(
-            ContentSettingsTypes.COOKIES,
-            createDefaultContentSetting({
+            ContentSettingsTypes.COOKIES, createDefaultContentSetting({
               setting: ContentSetting.SESSION_ONLY,
               source: SiteSettingSource.POLICY
             }))],
@@ -302,8 +299,7 @@ suite('CrSettingsCookiesPageTest', function() {
     // Check the clear on exit toggle is correctly indicating it is managed.
     assertTrue(clearOnExit.checked);
     assertTrue(clearOnExit.controlDisabled());
-    assertTrue(
-        isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
+    assertTrue(isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
     let exceptionLists = page.shadowRoot.querySelectorAll('site-list');
 
     // Check all exception lists are read only.
@@ -322,8 +318,7 @@ suite('CrSettingsCookiesPageTest', function() {
     };
     const unmanagedPrefs = createSiteSettingsPrefs(
         [createContentSettingTypeToValuePair(
-            ContentSettingsTypes.COOKIES,
-            createDefaultContentSetting({
+            ContentSettingsTypes.COOKIES, createDefaultContentSetting({
               setting: ContentSetting.ALLOW,
             }))],
         []);
@@ -344,8 +339,7 @@ suite('CrSettingsCookiesPageTest', function() {
     // Check the clear on exit toggle no longer indicates it is managed.
     assertFalse(clearOnExit.checked);
     assertFalse(clearOnExit.controlDisabled());
-    assertFalse(
-        isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
+    assertFalse(isChildVisible(clearOnExit, 'cr-policy-pref-indicator'));
 
     // Check all exception lists are no longer read only.
     exceptionLists = page.shadowRoot.querySelectorAll('site-list');
@@ -371,8 +365,7 @@ suite('CrSettingsCookiesPageTest_ImprovedCookieControlsDisabled', function() {
 
   setup(function() {
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    SiteSettingsPrefsBrowserProxyImpl.instance_ =
-        siteSettingsBrowserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
     PolymerTest.clearBody();
     page = document.createElement('settings-cookies-page');
     page.prefs = {

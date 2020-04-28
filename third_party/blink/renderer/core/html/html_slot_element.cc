@@ -198,14 +198,34 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes,
 
   ContainingShadowRoot()->GetSlotAssignment().ClearCandidateNodes(
       assigned_nodes_candidates_);
-  assigned_nodes_candidates_.clear();
+  HeapLinkedHashSet<Member<Node>> candidates;
+  bool updated = false;
   for (auto& node : nodes) {
     // Before assignment, see if this node belongs to another slot.
-    ContainingShadowRoot()->GetSlotAssignment().UpdateCandidateNodeAssignedSlot(
-        *node, *this);
-    assigned_nodes_candidates_.AppendOrMoveToLast(node);
+    updated |= ContainingShadowRoot()
+                   ->GetSlotAssignment()
+                   .UpdateCandidateNodeAssignedSlot(*node, *this);
+    candidates.AppendOrMoveToLast(node);
   }
-  ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
+
+  bool candidates_changed =
+      (updated || (candidates.size() != assigned_nodes_candidates_.size()));
+  if (!candidates_changed) {
+    for (auto it1 = candidates.begin(),
+              it2 = assigned_nodes_candidates_.begin();
+         it1 != candidates.end(); ++it1, ++it2) {
+      if (!(*it1 == *it2)) {
+        candidates_changed = true;
+        break;
+      }
+    }
+  }
+
+  if (candidates_changed) {
+    assigned_nodes_candidates_.Swap(candidates);
+    ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
+    DidSlotChange(SlotChangeType::kSignalSlotChangeEvent);
+  }
 }
 
 void HTMLSlotElement::AppendAssignedNode(Node& host_child) {
@@ -231,8 +251,10 @@ void HTMLSlotElement::UpdateManuallyAssignedNodesOrdering() {
 
 void HTMLSlotElement::RemoveAssignedNodeCandidate(Node& node) {
   auto it = assigned_nodes_candidates_.find(&node);
-  if (it != assigned_nodes_candidates_.end())
+  if (it != assigned_nodes_candidates_.end()) {
     assigned_nodes_candidates_.erase(it);
+    DidSlotChange(SlotChangeType::kSignalSlotChangeEvent);
+  }
 }
 
 void HTMLSlotElement::ClearAssignedNodesCandidates() {

@@ -294,6 +294,7 @@
 <translation id="4565377596337484307">Fela aðgangsorð</translation>
 <translation id="4570957409596482333">Hnappur fyrir textaupplestur</translation>
 <translation id="4585337515783392668">Hætta að senda út í óþekkt tæki</translation>
+<translation id="4588090240171750605">Fletta til hægri</translation>
 <translation id="4628757576491864469">Tæki</translation>
 <translation id="4659419629803378708">ChromeVox virkjað</translation>
 <translation id="4665114317261903604">Kveikja/slökkva á „Ónáðið ekki“. <ph name="STATE_TEXT" /></translation>
@@ -415,6 +416,7 @@
 <translation id="6288235558961782912">Hægt er að bæta <ph name="USER_EMAIL_ADDRESS" /> við aftur síðar með leyfi foreldris.</translation>
 <translation id="6297287540776456956">Notaðu pennann til að velja svæði</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> var snúið í <ph name="ROTATION" /></translation>
+<translation id="6364916375976753737">Fletta til vinstri</translation>
 <translation id="6376931439017688372">Kveikt er á Bluetooth</translation>
 <translation id="6381109794406942707">Til að opna tækið skaltu slá inn PIN-númerið þitt.</translation>
 <translation id="639644700271529076">Slökkt er á HÁSTAFALÁS</translation>
@@ -473,6 +475,7 @@
 <translation id="698231206551913481">Öllum skrám og staðbundnum gögnum sem tengjast notandanum verður varanlega eytt þegar notandinn er fjarlægður.</translation>
 <translation id="7015766095477679451">Komdu aftur klukkan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Tengdu <ph name="DEVICE_NAME" /> við símann þinn</translation>
+<translation id="7026338066939101231">Minnka</translation>
 <translation id="7029814467594812963">Loka lotu</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Google hjálpari</translation>
 <translation id="7042322267639375032">Minnka stöðusvæði</translation>
@@ -544,6 +547,7 @@
 <translation id="7984197416080286869">Of margar tilraunir til að nota fingrafar</translation>
 <translation id="7994370417837006925">Innskráning á marga reikninga</translation>
 <translation id="8000066093800657092">Ekkert net</translation>
+<translation id="8004512796067398576">Auka</translation>
 <translation id="8029629653277878342">Krafa er um PIN-númer eða aðgangsorð fyrir aukið öryggi</translation>
 <translation id="8030169304546394654">Aftengt</translation>
 <translation id="8048123526339889627">Bluetooth-stillingar</translation>
@@ -570,6 +574,7 @@
 <translation id="8261506727792406068">Eyða</translation>
 <translation id="8297006494302853456">Veikur</translation>
 <translation id="8308637677604853869">Fyrri valmynd</translation>
+<translation id="8331626408530291785">Fletta upp</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Búa til glósu</translation>
 <translation id="8375916635258623388">Þetta <ph name="DEVICE_NAME" /> og síminn þinn tengjast sjálfkrafa</translation>

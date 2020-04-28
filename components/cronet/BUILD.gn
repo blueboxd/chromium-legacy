@@ -46,8 +46,6 @@ source_set("cronet_common") {
     "cronet_url_request.h",
     "cronet_url_request_context.cc",
     "cronet_url_request_context.h",
-    "histogram_manager.cc",
-    "histogram_manager.h",
     "host_cache_persistence_manager.cc",
     "host_cache_persistence_manager.h",
     "stale_host_resolver.cc",
@@ -59,21 +57,13 @@ source_set("cronet_common") {
     ":cronet_buildflags",
     ":cronet_version_header",
     "//base",
-    "//components/metrics:metrics",
     "//components/prefs:prefs",
     "//net",
     "//third_party/metrics_proto",
   ]
 
-  if (disable_histogram_support) {
-    sources -= [
-      "histogram_manager.cc",
-      "histogram_manager.h",
-    ]
-    deps -= [
-      "//components/metrics:metrics",
-      "//third_party/metrics_proto",
-    ]
+  if (!disable_histogram_support) {
+    public_deps = [ "//components/metrics:library_support" ]
   }
 }
 
@@ -96,15 +86,10 @@ source_set("cronet_common_unittests") {
   ]
 
   sources = [
-    "histogram_manager_unittest.cc",
     "host_cache_persistence_manager_unittest.cc",
     "stale_host_resolver_unittest.cc",
     "url_request_context_config_unittest.cc",
   ]
-
-  if (disable_histogram_support) {
-    sources -= [ "histogram_manager_unittest.cc" ]
-  }
 }
 
 # For platforms on which the native Cronet library is used, build the library,

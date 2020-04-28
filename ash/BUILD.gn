@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//chromeos/assistant/ambient.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
@@ -164,8 +165,12 @@ component("ash") {
     "ambient/ambient_constants.h",
     "ambient/ambient_controller.cc",
     "ambient/ambient_controller.h",
+    "ambient/ambient_photo_controller.cc",
+    "ambient/ambient_photo_controller.h",
     "ambient/ambient_view_delegate_impl.cc",
     "ambient/ambient_view_delegate_impl.h",
+    "ambient/fake_ambient_backend_controller_impl.cc",
+    "ambient/fake_ambient_backend_controller_impl.h",
     "ambient/model/ambient_backend_model.cc",
     "ambient/model/ambient_backend_model.h",
     "ambient/model/ambient_backend_model_observer.h",
@@ -1567,6 +1572,7 @@ component("ash") {
     "//services/content/public/cpp",
     "//services/data_decoder/public/cpp",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/network/public/cpp:cpp",
     "//services/preferences/public/cpp",
 
     # TODO(msw): Remove this; ash should not depend on blink/webkit.
@@ -1632,6 +1638,18 @@ component("ash") {
     "//components/exo",
     "//components/exo/wayland",
   ]
+
+  if (enable_cros_ambient_mode_backend) {
+    sources += [
+      "ambient/backdrop/ambient_backend_controller_impl.cc",
+      "ambient/backdrop/ambient_backend_controller_impl.h",
+    ]
+
+    deps += [
+      "//chromeos/assistant/internal/ambient",
+      "//chromeos/assistant/internal/proto/google3",
+    ]
+  }
 }
 
 static_library("ash_shell_lib") {
@@ -1784,6 +1802,7 @@ test("ash_unittests") {
     "accessibility/touch_exploration_controller_unittest.cc",
     "accessibility/touch_exploration_manager_unittest.cc",
     "ambient/ambient_controller_unittest.cc",
+    "ambient/ambient_photo_controller_unittest.cc",
     "ambient/model/ambient_backend_model_unittest.cc",
     "ambient/ui/ambient_container_view_unittest.cc",
     "app_list/app_list_controller_impl_unittest.cc",

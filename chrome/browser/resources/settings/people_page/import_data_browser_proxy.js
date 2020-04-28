@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
-cr.define('settings', function() {
   /**
    * An object describing a source browser profile that may be imported.
    * The structure of this data must be kept in sync with C++ ImportDataHandler.
@@ -21,13 +20,13 @@ cr.define('settings', function() {
    *   autofillFormData: boolean,
    * }}
    */
-  /* #export */ let BrowserProfile;
+  export let BrowserProfile;
 
   /**
    * @enum {string}
    * These string values must be kept in sync with the C++ ImportDataHandler.
    */
-  /* #export */ const ImportDataStatus = {
+  export const ImportDataStatus = {
     INITIAL: 'initial',
     IN_PROGRESS: 'inProgress',
     SUCCEEDED: 'succeeded',
@@ -35,10 +34,10 @@ cr.define('settings', function() {
   };
 
   /** @interface */
-  /* #export */ class ImportDataBrowserProxy {
+  export class ImportDataBrowserProxy {
     /**
      * Returns the source profiles available for importing from other browsers.
-     * @return {!Promise<!Array<!settings.BrowserProfile>>}
+     * @return {!Promise<!Array<!BrowserProfile>>}
      */
     initializeImportDialog() {}
 
@@ -56,11 +55,11 @@ cr.define('settings', function() {
     importFromBookmarksFile() {}
   }
 
-  /** @implements {settings.ImportDataBrowserProxy} */
-  /* #export */ class ImportDataBrowserProxyImpl {
+  /** @implements {ImportDataBrowserProxy} */
+  export class ImportDataBrowserProxyImpl {
     /** @override */
     initializeImportDialog() {
-      return cr.sendWithPromise('initializeImportDialog');
+      return sendWithPromise('initializeImportDialog');
     }
 
     /** @override */
@@ -76,13 +75,5 @@ cr.define('settings', function() {
 
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
-  cr.addSingletonGetter(ImportDataBrowserProxyImpl);
+  addSingletonGetter(ImportDataBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    BrowserProfile,
-    ImportDataStatus,
-    ImportDataBrowserProxy,
-    ImportDataBrowserProxyImpl,
-  };
-});

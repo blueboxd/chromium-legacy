@@ -126,10 +126,9 @@ bool Canvas2DLayerBridge::ShouldAccelerate(AccelerationHint hint) const {
 
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       SharedGpuContext::ContextProviderWrapper();
-  if (accelerate && (!context_provider_wrapper ||
-                     context_provider_wrapper->ContextProvider()
-                             ->RasterInterface()
-                             ->GetGraphicsResetStatusKHR() != GL_NO_ERROR)) {
+  if (accelerate &&
+      (!context_provider_wrapper ||
+       context_provider_wrapper->ContextProvider()->IsContextLost())) {
     accelerate = false;
   }
   return accelerate;
@@ -614,17 +613,11 @@ bool Canvas2DLayerBridge::Restore() {
     return false;
   DCHECK(!ResourceProvider());
 
-  gpu::raster::RasterInterface* shared_raster_interface = nullptr;
   layer_->ClearTexture();
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       SharedGpuContext::ContextProviderWrapper();
-  if (context_provider_wrapper) {
-    shared_raster_interface =
-        context_provider_wrapper->ContextProvider()->RasterInterface();
-  }
 
-  if (shared_raster_interface &&
-      shared_raster_interface->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
+  if (!context_provider_wrapper->ContextProvider()->IsContextLost()) {
     CanvasResourceProvider* resource_provider =
         resource_host_->GetOrCreateCanvasResourceProviderImpl(
             kPreferAcceleration);

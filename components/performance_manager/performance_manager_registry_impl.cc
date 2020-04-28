@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/stl_util.h"
+#include "components/performance_manager/embedder/binders.h"
 #include "components/performance_manager/performance_manager_tab_helper.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/performance_manager_main_thread_observer.h"
 #include "components/performance_manager/service_worker_context_adapter.h"
@@ -78,20 +80,6 @@ void PerformanceManagerRegistryImpl::CreatePageNodeForWebContents(
   }
 }
 
-void PerformanceManagerRegistryImpl::CreateProcessNodeForRenderProcessHost(
-    content::RenderProcessHost* render_process_host) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  auto result = render_process_hosts_.insert(render_process_host);
-  if (result.second) {
-    // Create a RenderProcessUserData if |render_process_host| doesn't already
-    // have one.
-    RenderProcessUserData* user_data =
-        RenderProcessUserData::CreateForRenderProcessHost(render_process_host);
-    user_data->SetDestructionObserver(this);
-  }
-}
-
 void PerformanceManagerRegistryImpl::NotifyBrowserContextAdded(
     content::BrowserContext* browser_context) {
   content::StoragePartition* storage_partition =
@@ -115,6 +103,27 @@ void PerformanceManagerRegistryImpl::NotifyBrowserContextAdded(
       worker_watchers_.emplace(browser_context, std::move(worker_watcher))
           .second;
   DCHECK(inserted);
+}
+
+void PerformanceManagerRegistryImpl::
+    CreateProcessNodeAndExposeInterfacesToRendererProcess(
+        service_manager::BinderRegistry* registry,
+        content::RenderProcessHost* render_process_host) {
+  registry->AddInterface(base::BindRepeating(&BindProcessCoordinationUnit,
+                                             render_process_host->GetID()),
+                         base::SequencedTaskRunnerHandle::Get());
+
+  // Ideally this would strictly be a "Create", but when a
+  // RenderFrameHost is "resurrected" with a new process it will
+  // already have user data attached. This will happen on renderer
+  // crash.
+  EnsureProcessNodeForRenderProcessHost(render_process_host);
+}
+
+void PerformanceManagerRegistryImpl::ExposeInterfacesToRenderFrame(
+    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
+  map->Add<performance_manager::mojom::DocumentCoordinationUnit>(
+      base::BindRepeating(&BindDocumentCoordinationUnit));
 }
 
 void PerformanceManagerRegistryImpl::NotifyBrowserContextRemoved(
@@ -183,6 +192,20 @@ void PerformanceManagerRegistryImpl::OnRenderProcessUserDataDestroying(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const size_t num_removed = render_process_hosts_.erase(render_process_host);
   DCHECK_EQ(1U, num_removed);
+}
+
+void PerformanceManagerRegistryImpl::EnsureProcessNodeForRenderProcessHost(
+    content::RenderProcessHost* render_process_host) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto result = render_process_hosts_.insert(render_process_host);
+  if (result.second) {
+    // Create a RenderProcessUserData if |render_process_host| doesn't already
+    // have one.
+    RenderProcessUserData* user_data =
+        RenderProcessUserData::CreateForRenderProcessHost(render_process_host);
+    user_data->SetDestructionObserver(this);
+  }
 }
 
 }  // namespace performance_manager

@@ -42,6 +42,8 @@ namespace frame_scheduler_impl_unittest {
 using FeatureHandle = FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle;
 using PrioritisationType = MainThreadTaskQueue::QueueTraits::PrioritisationType;
 
+using testing::Return;
+
 void AppendToVectorTestTask(Vector<String>* vector, String value) {
   vector->push_back(std::move(value));
 }
@@ -85,18 +87,18 @@ class FrameSchedulerImplTest : public testing::Test {
   ~FrameSchedulerImplTest() override = default;
 
   void SetUp() override {
-    scheduler_.reset(new MainThreadSchedulerImpl(
+    scheduler_ = std::make_unique<MainThreadSchedulerImpl>(
         base::sequence_manager::SequenceManagerForTest::Create(
             nullptr, task_environment_.GetMainThreadTaskRunner(),
             task_environment_.GetMockTickClock()),
-        base::nullopt));
-    page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
+        base::nullopt);
+    page_scheduler_ =
+        std::make_unique<PageSchedulerImpl>(nullptr, scheduler_.get());
     frame_scheduler_delegate_ = std::make_unique<
         testing::StrictMock<FrameSchedulerDelegateForTesting>>();
     frame_scheduler_ = FrameSchedulerImpl::Create(
         page_scheduler_.get(), frame_scheduler_delegate_.get(), nullptr,
         FrameScheduler::FrameType::kSubframe);
-    EnsureUseCaseNone();
   }
 
   void ResetFrameScheduler(FrameScheduler::FrameType frame_type) {
@@ -114,21 +116,6 @@ class FrameSchedulerImplTest : public testing::Test {
     scheduler_->Shutdown();
     scheduler_.reset();
     frame_scheduler_delegate_.reset();
-  }
-
-  void EnsureUseCaseNone() {
-    // Make sure we're not in UseCase::kLoading.
-    scheduler_->OnFirstContentfulPaint();
-    scheduler_->OnFirstMeaningfulPaint();
-
-    ASSERT_EQ(scheduler_->main_thread_only().current_use_case, UseCase::kNone);
-  }
-
-  void EnsureUseCaseLoading() {
-    scheduler_->DidStartProvisionalLoad(true);
-    scheduler_->OnFirstContentfulPaint();
-    ASSERT_EQ(scheduler_->main_thread_only().current_use_case,
-              UseCase::kLoading);
   }
 
   // Helper for posting several tasks of specific prioritisation types for
@@ -1090,7 +1077,11 @@ class LowPriorityHiddenFrameDuringLoadingExperimentTest
 TEST_F(LowPriorityHiddenFrameDuringLoadingExperimentTest,
        FrameQueuesPriorities) {
   // Main thread scheduler is in the loading use case.
-  EnsureUseCaseLoading();
+  auto main_frame_scheduler = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), frame_scheduler_delegate_.get(), nullptr,
+      FrameScheduler::FrameType::kMainFrame);
+  main_frame_scheduler->OnFirstContentfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kLoading);
 
   // Hidden Frame Task Queues.
   frame_scheduler_->SetFrameVisible(false);
@@ -1108,7 +1099,8 @@ TEST_F(LowPriorityHiddenFrameDuringLoadingExperimentTest,
             TaskQueue::QueuePriority::kLowPriority);
 
   // Main thread scheduler is no longer in loading use case.
-  EnsureUseCaseNone();
+  main_frame_scheduler->OnFirstMeaningfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kNone);
   EXPECT_FALSE(page_scheduler_->IsLoading());
 
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -1177,7 +1169,11 @@ class LowPrioritySubFrameDuringLoadingExperimentTest
 
 TEST_F(LowPrioritySubFrameDuringLoadingExperimentTest, FrameQueuesPriorities) {
   // Main thread scheduler is in the loading use case.
-  EnsureUseCaseLoading();
+  auto main_frame_scheduler = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), frame_scheduler_delegate_.get(), nullptr,
+      FrameScheduler::FrameType::kMainFrame);
+  main_frame_scheduler->OnFirstContentfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kLoading);
 
   // Sub-Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -1194,7 +1190,8 @@ TEST_F(LowPrioritySubFrameDuringLoadingExperimentTest, FrameQueuesPriorities) {
             TaskQueue::QueuePriority::kLowPriority);
 
   // Main thread scheduler is no longer in loading use case.
-  EnsureUseCaseNone();
+  main_frame_scheduler->OnFirstMeaningfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kNone);
   EXPECT_FALSE(page_scheduler_->IsLoading());
 
   // Sub-Frame Task Queues.
@@ -1267,7 +1264,11 @@ class LowPrioritySubFrameThrottleableTaskDuringLoadingExperimentTest
 TEST_F(LowPrioritySubFrameThrottleableTaskDuringLoadingExperimentTest,
        FrameQueuesPriorities) {
   // Main thread scheduler is in the loading use case.
-  EnsureUseCaseLoading();
+  auto main_frame_scheduler = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), frame_scheduler_delegate_.get(), nullptr,
+      FrameScheduler::FrameType::kMainFrame);
+  main_frame_scheduler->OnFirstContentfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kLoading);
 
   // Sub-Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -1284,7 +1285,8 @@ TEST_F(LowPrioritySubFrameThrottleableTaskDuringLoadingExperimentTest,
             TaskQueue::QueuePriority::kNormalPriority);
 
   // Main thread scheduler is no longer in loading use case.
-  EnsureUseCaseNone();
+  main_frame_scheduler->OnFirstMeaningfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kNone);
   EXPECT_FALSE(page_scheduler_->IsLoading());
 
   // Sub-Frame Task Queues.
@@ -1356,7 +1358,11 @@ class LowPriorityThrottleableTaskDuringLoadingExperimentTest
 TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
        SubFrameQueuesPriorities) {
   // Main thread is in the loading use case.
-  EnsureUseCaseLoading();
+  auto main_frame_scheduler = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), frame_scheduler_delegate_.get(), nullptr,
+      FrameScheduler::FrameType::kMainFrame);
+  main_frame_scheduler->OnFirstContentfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kLoading);
 
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
@@ -1372,7 +1378,9 @@ TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
             TaskQueue::QueuePriority::kNormalPriority);
 
   // Main thread is no longer in loading use case.
-  EnsureUseCaseNone();
+  main_frame_scheduler->OnFirstMeaningfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kNone);
+
   EXPECT_FALSE(page_scheduler_->IsLoading());
 
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -1391,14 +1399,15 @@ TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
 
 TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
        MainFrameQueuesPriorities) {
-  EnsureUseCaseNone();
+  frame_scheduler_->OnFirstContentfulPaint();
+  frame_scheduler_->OnFirstMeaningfulPaint();
 
   frame_scheduler_ =
       FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
                                  FrameScheduler::FrameType::kMainFrame);
 
   // Main thread is in the loading use case.
-  EnsureUseCaseLoading();
+  frame_scheduler_->OnFirstContentfulPaint();
 
   // Main Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -1415,7 +1424,7 @@ TEST_F(LowPriorityThrottleableTaskDuringLoadingExperimentTest,
             TaskQueue::QueuePriority::kNormalPriority);
 
   // Main thread is no longer in loading use case.
-  EnsureUseCaseNone();
+  frame_scheduler_->OnFirstMeaningfulPaint();
   EXPECT_FALSE(page_scheduler_->IsLoading());
 
   // Main Frame Task Queues.
@@ -1489,7 +1498,11 @@ TEST_F(LowPriorityAdFrameDuringLoadingExperimentTest, FrameQueuesPriorities) {
   EXPECT_TRUE(frame_scheduler_->IsAdFrame());
 
   // Main thread scheduler is in the loading use case.
-  EnsureUseCaseLoading();
+  auto main_frame_scheduler = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), frame_scheduler_delegate_.get(), nullptr,
+      FrameScheduler::FrameType::kMainFrame);
+  main_frame_scheduler->OnFirstContentfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kLoading);
 
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kLowPriority);
@@ -1505,7 +1518,8 @@ TEST_F(LowPriorityAdFrameDuringLoadingExperimentTest, FrameQueuesPriorities) {
             TaskQueue::QueuePriority::kLowPriority);
 
   // Main thread scheduler is no longer in loading use case.
-  EnsureUseCaseNone();
+  main_frame_scheduler->OnFirstMeaningfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kNone);
 
   EXPECT_FALSE(page_scheduler_->IsLoading());
 
@@ -1580,7 +1594,11 @@ TEST_F(BestEffortPriorityAdFrameDuringLoadingExperimentTest,
   EXPECT_TRUE(frame_scheduler_->IsAdFrame());
 
   // Main thread scheduler is in the loading use case.
-  EnsureUseCaseLoading();
+  auto main_frame_scheduler = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), frame_scheduler_delegate_.get(), nullptr,
+      FrameScheduler::FrameType::kMainFrame);
+  main_frame_scheduler->OnFirstContentfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kLoading);
 
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kBestEffortPriority);
@@ -1596,7 +1614,8 @@ TEST_F(BestEffortPriorityAdFrameDuringLoadingExperimentTest,
             TaskQueue::QueuePriority::kBestEffortPriority);
 
   // Main thread scheduler is no longer in loading use case.
-  EnsureUseCaseNone();
+  main_frame_scheduler->OnFirstMeaningfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kNone);
 
   EXPECT_FALSE(page_scheduler_->IsLoading());
 
@@ -1665,19 +1684,25 @@ class ResourceFetchPriorityExperimentOnlyWhenLoadingTest
 };
 
 TEST_F(ResourceFetchPriorityExperimentOnlyWhenLoadingTest, DidChangePriority) {
+  auto main_frame_scheduler = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), frame_scheduler_delegate_.get(), nullptr,
+      FrameScheduler::FrameType::kMainFrame);
+
   std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl> handle =
       GetResourceLoadingTaskRunnerHandleImpl();
   scoped_refptr<MainThreadTaskQueue> task_queue = handle->task_queue();
 
-  TaskQueue::QueuePriority priority = task_queue->GetQueuePriority();
-  EXPECT_EQ(priority, TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(task_queue->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
 
   // Experiment is only enabled during the loading phase.
   DidChangeResourceLoadingPriority(task_queue, net::RequestPriority::LOWEST);
-  EXPECT_EQ(task_queue->GetQueuePriority(), priority);
+  EXPECT_EQ(task_queue->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
 
   // Main thread scheduler is in the loading use case.
-  EnsureUseCaseLoading();
+  main_frame_scheduler->OnFirstContentfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kLoading);
 
   handle = GetResourceLoadingTaskRunnerHandleImpl();
   task_queue = handle->task_queue();
@@ -1761,7 +1786,12 @@ class LowPriorityCrossOriginTaskDuringLoadingExperimentTest
 TEST_F(LowPriorityCrossOriginTaskDuringLoadingExperimentTest,
        FrameQueuesPriorities) {
   // Main thread is in the loading use case.
-  EnsureUseCaseLoading();
+  auto main_frame_scheduler = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), frame_scheduler_delegate_.get(), nullptr,
+      FrameScheduler::FrameType::kMainFrame);
+
+  main_frame_scheduler->OnFirstContentfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kLoading);
 
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
@@ -1793,7 +1823,8 @@ TEST_F(LowPriorityCrossOriginTaskDuringLoadingExperimentTest,
             TaskQueue::QueuePriority::kLowPriority);
 
   // Main thread is no longer in loading use case.
-  EnsureUseCaseNone();
+  main_frame_scheduler->OnFirstMeaningfulPaint();
+  ASSERT_EQ(scheduler_->current_use_case(), UseCase::kNone);
   EXPECT_FALSE(page_scheduler_->IsLoading());
 
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),

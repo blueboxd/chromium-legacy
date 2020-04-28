@@ -325,3 +325,8 @@ fuzzer_test("printer_configuration_fuzzer") {
     "//base",
   ]
 }
+
+fuzzer_test("uri_fuzzer") {
+  sources = [ "printing/uri_fuzzer.cc" ]
+  deps = [ ":chromeos" ]
+}

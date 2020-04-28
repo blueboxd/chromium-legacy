@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">Хаяг 1</translation>
 <translation id="1545749641540134597">Хурдан хариу үйлдлийн кодыг скан хийх</translation>
 <translation id="1552525382687785070">Таны админ синк хийхийг идэвхгүй болгосон байна</translation>
+<translation id="1554477036522844996">Шинэ цонх</translation>
 <translation id="1580783302095112590">Шуудан илгээгдсэн байна.</translation>
 <translation id="1582732959743469162">Энэ нь таны одоогийн татан авалтын бүх үйл явцыг зогсооно.</translation>
 <translation id="1605658421715042784">Зураг хуулах</translation>
@@ -104,6 +105,7 @@
 <translation id="2239626343334228536">Хөтчийн өгөгдлийг устгаж байна...</translation>
 <translation id="2245545499420671379">Нууцлалтай горимд гуравдагч талын күүкиг блоклох</translation>
 <translation id="2257567812274161158">Синк хийх ажиллахгүй байна.</translation>
+<translation id="225943865679747347">Алдааны код: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Бүртгэл нэмэх</translation>
 <translation id="2268044343513325586">Боловсронгуй болгох</translation>
 <translation id="2273327106802955778">Дэлгэрэнгүй цэс</translation>
@@ -114,6 +116,7 @@
 <translation id="2359043044084662842">Орчуулах</translation>
 <translation id="2359808026110333948">Цааш</translation>
 <translation id="2360196772093551345">Мобайл сайтын хүсэлт тавих</translation>
+<translation id="2379896346847637748">Шинэ цонхонд нээх</translation>
 <translation id="2381405137052800939">Үндэс</translation>
 <translation id="2386793615875593361">1 сонгогдсон</translation>
 <translation id="2421004566762153674">Гуравдагч талын күүкиг блоклож байна</translation>
@@ -187,6 +190,7 @@
 <translation id="3328801116991980348">Сайтын мэдээлэл</translation>
 <translation id="3329904751041170572">Сервертэй холбогдож чадсангүй.</translation>
 <translation id="3335947283844343239">Хаасан Tab-г дахин нээнэ үү.</translation>
+<translation id="3343651535143698944">Сайтын гажих нөхцөл нэмэх</translation>
 <translation id="3371831930909698441">Орчуулах боломжтой байна. Дэлгэцийн доод хэсгийн ойролцоо сонголт хийх боломжтой.</translation>
 <translation id="3393920035788932672">Мэдээллийн цонх харуулахыг зөвшөөрсөн</translation>
 <translation id="3443810440409579745">Табыг хүлээн авлаа.</translation>
@@ -554,6 +558,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8319076807703933069">Шинэ хайлт</translation>
 <translation id="8323906514956095947">Табын бусад сонголтыг харахын тулд удаан дарна уу</translation>
 <translation id="8328777765163860529">Бүгдийг хаах</translation>
+<translation id="8332159733957009464">Сайтын гажих нөхцөл</translation>
 <translation id="8386068868580335421">Шинэчлэх</translation>
 <translation id="8407669440184693619">Энэ сайтад нууц үг олдсонгүй</translation>
 <translation id="842017693807136194">Дараахаар нэвтэрсэн</translation>

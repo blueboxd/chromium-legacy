@@ -8,12 +8,13 @@
  */
 
 // clang-format off
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
-import {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from 'chrome://settings/settings.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {flushTasks} from 'chrome://test/test_util.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from 'chrome://settings/settings.js';
+import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
+import {flushTasks} from 'chrome://test/test_util.m.js';
+
 // clang-format on
 
 suite('SettingsSecureDnsInput', function() {
@@ -171,10 +172,8 @@ suite('SettingsSecureDns', function() {
     PolymerTest.clearBody();
     testElement = document.createElement('settings-secure-dns');
     testElement.prefs = {
-      dns_over_https: {
-        mode: {value: SecureDnsMode.AUTOMATIC},
-        templates: {value: ''}
-      },
+      dns_over_https:
+          {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
     };
     document.body.appendChild(testElement);
 
@@ -215,8 +214,7 @@ suite('SettingsSecureDns', function() {
     assertRadioButtonsShown();
     assertEquals(defaultDescription, secureDnsToggle.subLabel);
     assertFalse(!!secureDnsToggle.$$('cr-policy-pref-indicator'));
-    assertEquals(
-        SecureDnsMode.AUTOMATIC, secureDnsRadioGroup.selected);
+    assertEquals(SecureDnsMode.AUTOMATIC, secureDnsRadioGroup.selected);
   });
 
   test('SecureDnsSecure', function() {
@@ -253,8 +251,7 @@ suite('SettingsSecureDns', function() {
     webUIListenerCallback('secure-dns-setting-changed', {
       mode: SecureDnsMode.OFF,
       templates: [],
-      managementMode:
-          SecureDnsUiManagementMode.DISABLED_PARENTAL_CONTROLS,
+      managementMode: SecureDnsUiManagementMode.DISABLED_PARENTAL_CONTROLS,
     });
     flush();
     assertFalse(secureDnsToggle.hasAttribute('checked'));

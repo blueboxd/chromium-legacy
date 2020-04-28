@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {ContentSetting,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {isChildVisible,isVisible} from 'chrome://test/test_util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ContentSetting,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {routes} from 'chrome://settings/settings.js';
 import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {isChildVisible,isVisible} from 'chrome://test/test_util.m.js';
+
 // clang-format on
 
 suite('CrSettingsRecentSitePermissionsTest', function() {
@@ -52,9 +53,8 @@ suite('CrSettingsRecentSitePermissionsTest', function() {
       },
       {
         origin: 'https://bar.com',
-        recentPermissions: [
-          {setting: ContentSetting.ALLOW, displayName: 'notifications'}
-        ]
+        recentPermissions:
+            [{setting: ContentSetting.ALLOW, displayName: 'notifications'}]
       },
       {
         origin: 'http://foo.com',

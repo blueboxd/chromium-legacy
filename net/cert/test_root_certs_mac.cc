@@ -6,7 +6,6 @@
 
 #include <Security/Security.h>
 
-#include "base/logging.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"

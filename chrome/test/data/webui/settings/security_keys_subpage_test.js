@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {BioEnrollDialogPage, CredentialManagementDialogPage, Ctap2Status, ResetDialogPage, SampleStatus, SecurityKeysBioEnrollProxyImpl, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysPINBrowserProxyImpl,SecurityKeysResetBrowserProxyImpl, SetPINDialogPage} from 'chrome://settings/lazy_load.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 import {eventToPromise} from 'chrome://test/test_util.m.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-import {SecurityKeysResetBrowserProxyImpl, SecurityKeysPINBrowserProxyImpl, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysBioEnrollProxyImpl, ResetDialogPage, SetPINDialogPage, CredentialManagementDialogPage, BioEnrollDialogPage, SampleStatus, Ctap2Status} from 'chrome://settings/lazy_load.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /**
@@ -748,8 +748,7 @@ suite('SecurityKeysBioEnrollment', function() {
     assertShown(allDivs, dialog, 'initial');
 
     // Simulate PIN entry.
-    let uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    let uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     startResolver.resolve();
     await uiReady;
     assertShown(allDivs, dialog, 'pinPrompt');
@@ -761,8 +760,7 @@ suite('SecurityKeysBioEnrollment', function() {
     // Show a list of three enrollments.
     pinResolver.resolve();
     await browserProxy.whenCalled('enumerateEnrollments');
-    uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     const enrollments = [
       {
         name: 'Fingerprint00',
@@ -810,8 +808,7 @@ suite('SecurityKeysBioEnrollment', function() {
     assertShown(allDivs, dialog, 'initial');
 
     // Simulate PIN entry.
-    let uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    let uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     startResolver.resolve();
     await uiReady;
     assertShown(allDivs, dialog, 'pinPrompt');
@@ -823,8 +820,7 @@ suite('SecurityKeysBioEnrollment', function() {
     // Ensure no enrollments exist.
     pinResolver.resolve();
     await browserProxy.whenCalled('enumerateEnrollments');
-    uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     enumerateResolver.resolve([]);
     await uiReady;
     assertShown(allDivs, dialog, 'enrollments');
@@ -832,8 +828,7 @@ suite('SecurityKeysBioEnrollment', function() {
 
     // Simulate add enrollment.
     assertFalse(dialog.$.addButton.hidden);
-    uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     dialog.$.addButton.click();
     await browserProxy.whenCalled('startEnrolling');
     await uiReady;
@@ -847,8 +842,7 @@ suite('SecurityKeysBioEnrollment', function() {
     assertFalse(dialog.$.cancelButton.hidden);
     assertTrue(dialog.$.confirmButton.hidden);
 
-    uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     const enrollmentId = 'someId';
     const enrollmentName = 'New Fingerprint';
     enrollingResolver.resolve({
@@ -864,8 +858,7 @@ suite('SecurityKeysBioEnrollment', function() {
     assertFalse(dialog.$.confirmButton.hidden);
 
     // Proceeding brings up rename dialog page.
-    uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     dialog.$.confirmButton.click();
     await uiReady;
 
@@ -877,8 +870,7 @@ suite('SecurityKeysBioEnrollment', function() {
     assertFalse(dialog.$.confirmButton.disabled);
 
     // Proceeding renames the enrollment and returns to the enrollment overview.
-    uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     const renameEnrollmentResolver = new PromiseResolver();
     browserProxy.setResponseFor(
         'renameEnrollment', renameEnrollmentResolver.promise);
@@ -907,8 +899,7 @@ suite('SecurityKeysBioEnrollment', function() {
     dialog.cancelButtonDisabled_ = true;
     dialog.cancelButtonVisible_ = false;
 
-    let uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    let uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     dialog.$.addButton.click();
     await browserProxy.whenCalled('startEnrolling');
     await uiReady;
@@ -917,8 +908,7 @@ suite('SecurityKeysBioEnrollment', function() {
     assertFalse(dialog.$.cancelButton.disabled);
     assertFalse(dialog.$.cancelButton.hidden);
 
-    uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     dialog.$.cancelButton.click();
     await browserProxy.whenCalled('cancelEnrollment');
     enrollResolver.resolve({code: Ctap2Status.ERR_KEEPALIVE_CANCEL});
@@ -939,14 +929,12 @@ suite('SecurityKeysBioEnrollment', function() {
 
     dialog.dialogPage_ = 'enrollments';
 
-    let uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    let uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     dialog.$.addButton.click();
     await browserProxy.whenCalled('startEnrolling');
     await uiReady;
 
-    uiReady =
-        eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    uiReady = eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
 
     enrollResolver.resolve({code: Ctap2Status.ERR_INVALID_OPTION});
 

@@ -28,10 +28,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantClient {
   virtual void OnAssistantStatusChanged(
       ash::mojom::AssistantState new_state) = 0;
 
-  // Requests an AssistantController implementation from Ash, via the browser.
-  virtual void RequestAssistantController(
-      mojo::PendingReceiver<mojom::AssistantController> receiver) = 0;
-
   // Requests Ash's AssistantAlarmTimerController interface from the browser.
   virtual void RequestAssistantAlarmTimerController(
       mojo::PendingReceiver<ash::mojom::AssistantAlarmTimerController>

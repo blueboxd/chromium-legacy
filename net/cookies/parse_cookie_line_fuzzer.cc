@@ -7,7 +7,7 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "net/cookies/parsed_cookie.h"
 
 const std::string GetArbitraryString(FuzzedDataProvider* data_provider) {

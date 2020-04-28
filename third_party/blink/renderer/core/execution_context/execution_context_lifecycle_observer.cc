@@ -37,13 +37,6 @@ void ExecutionContextClient::Trace(Visitor* visitor) {
 }
 
 ExecutionContextLifecycleObserver::ExecutionContextLifecycleObserver(
-    Document* document,
-    Type type)
-    : ExecutionContextLifecycleObserver(
-          document ? document->GetExecutionContext() : nullptr,
-          type) {}
-
-ExecutionContextLifecycleObserver::ExecutionContextLifecycleObserver(
     ExecutionContext* execution_context,
     Type type)
     : observer_type_(type) {
@@ -61,8 +54,8 @@ void ExecutionContextLifecycleObserver::SetExecutionContext(
 }
 
 LocalFrame* ExecutionContextLifecycleObserver::GetFrame() const {
-  auto* document = Document::DynamicFrom(GetExecutionContext());
-  return document ? document->GetFrame() : nullptr;
+  auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext());
+  return window ? window->GetFrame() : nullptr;
 }
 
 void ExecutionContextLifecycleObserver::Trace(Visitor* visitor) {

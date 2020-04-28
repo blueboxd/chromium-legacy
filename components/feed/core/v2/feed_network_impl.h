@@ -16,13 +16,13 @@
 class PrefService;
 namespace base {
 class TickClock;
-}
+}  // namespace base
 namespace signin {
 class IdentityManager;
-}
+}  // namespace signin
 namespace network {
 class SharedURLLoaderFactory;
-}
+}  // namespace network
 
 namespace feed {
 

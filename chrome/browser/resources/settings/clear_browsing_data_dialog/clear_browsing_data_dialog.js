@@ -15,7 +15,7 @@ import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './history_deletion_dialog.js';
 import './installed_app_checkbox.js';
-import '../controls/settings_checkbox.m.js';
+import '../controls/settings_checkbox.js';
 import '../icons.m.js';
 import '../settings_shared_css.m.js';
 

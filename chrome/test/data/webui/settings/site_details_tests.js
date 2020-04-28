@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl,WebsiteUsageBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {createContentSettingTypeToValuePair,createRawChooserException,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
-import {flush,Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {listenOnce} from 'chrome://resources/js/util.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {listenOnce} from 'chrome://resources/js/util.m.js';
+import {flush,Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl,WebsiteUsageBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {Route,Router,routes} from 'chrome://settings/settings.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {createContentSettingTypeToValuePair,createRawChooserException,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
 // clang-format on
 
 class TestWebsiteUsageBrowserProxy extends TestBrowserProxy {
@@ -58,113 +59,116 @@ suite('SiteDetails', function() {
 
   // Initialize a site-details before each test.
   setup(function() {
-    prefs = createSiteSettingsPrefs([], [
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.COOKIES,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.IMAGES,
-          [createRawSiteException('https://foo.com:443', {
-            source: SiteSettingSource.DEFAULT,
-          })]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.JAVASCRIPT,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.SOUND,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.PLUGINS,
-          [createRawSiteException('https://foo.com:443', {
-            source: SiteSettingSource.EXTENSION,
-          })]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.POPUPS,
-          [createRawSiteException('https://foo.com:443', {
-            setting: ContentSetting.BLOCK,
-            source: SiteSettingSource.DEFAULT,
-          })]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.GEOLOCATION,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.NOTIFICATIONS,
-          [createRawSiteException('https://foo.com:443', {
-            setting: ContentSetting.ASK,
-            source: SiteSettingSource.POLICY,
-          })]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.MIC,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.CAMERA,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.UNSANDBOXED_PLUGINS,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.AUTOMATIC_DOWNLOADS,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.BACKGROUND_SYNC,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.MIDI_DEVICES,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.PROTECTED_CONTENT,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.ADS,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.CLIPBOARD,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.SENSORS,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.PAYMENT_HANDLER,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.SERIAL_PORTS,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.BLUETOOTH_SCANNING,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
-          [createRawSiteException('https://foo.com:443', {
-            setting: ContentSetting.BLOCK,
-          })]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.MIXEDSCRIPT,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.HID_DEVICES,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.BLUETOOTH_DEVICES,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.AR,
-          [createRawSiteException('https://foo.com:443')]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.VR,
-          [createRawSiteException('https://foo.com:443')]),
+    prefs = createSiteSettingsPrefs(
+        [],
+        [
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.COOKIES,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.IMAGES,
+              [createRawSiteException('https://foo.com:443', {
+                source: SiteSettingSource.DEFAULT,
+              })]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.JAVASCRIPT,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.SOUND,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.PLUGINS,
+              [createRawSiteException('https://foo.com:443', {
+                source: SiteSettingSource.EXTENSION,
+              })]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.POPUPS,
+              [createRawSiteException('https://foo.com:443', {
+                setting: ContentSetting.BLOCK,
+                source: SiteSettingSource.DEFAULT,
+              })]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.GEOLOCATION,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.NOTIFICATIONS,
+              [createRawSiteException('https://foo.com:443', {
+                setting: ContentSetting.ASK,
+                source: SiteSettingSource.POLICY,
+              })]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.MIC,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.CAMERA,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.UNSANDBOXED_PLUGINS,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.AUTOMATIC_DOWNLOADS,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.BACKGROUND_SYNC,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.MIDI_DEVICES,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.PROTECTED_CONTENT,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.ADS,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.CLIPBOARD,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.SENSORS,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.PAYMENT_HANDLER,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.SERIAL_PORTS,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.BLUETOOTH_SCANNING,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
+              [createRawSiteException('https://foo.com:443', {
+                setting: ContentSetting.BLOCK,
+              })]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.MIXEDSCRIPT,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.HID_DEVICES,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.BLUETOOTH_DEVICES,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.AR,
+              [createRawSiteException('https://foo.com:443')]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.VR,
+              [createRawSiteException('https://foo.com:443')]),
 
-    ], [
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.USB_DEVICES,
-          [createRawChooserException(
-              ChooserType.USB_DEVICES,
-              [createRawSiteException('https://foo.com:443')])]),
-      createContentSettingTypeToValuePair(
-          ContentSettingsTypes.BLUETOOTH_DEVICES,
-          [createRawChooserException(
-              ChooserType.BLUETOOTH_DEVICES,
-              [createRawSiteException('https://foo.com:443')])]),
-    ]);
+        ],
+        [
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.USB_DEVICES,
+              [createRawChooserException(
+                  ChooserType.USB_DEVICES,
+                  [createRawSiteException('https://foo.com:443')])]),
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.BLUETOOTH_DEVICES,
+              [createRawChooserException(
+                  ChooserType.BLUETOOTH_DEVICES,
+                  [createRawSiteException('https://foo.com:443')])]),
+        ]);
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
@@ -211,14 +215,12 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
                                                 .NATIVE_FILE_SYSTEM_WRITE] =
         'enableNativeFileSystemWriteContentSetting';
-    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
-                                                .MIXEDSCRIPT] =
+    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.MIXEDSCRIPT] =
         'enableInsecureContentContentSetting';
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
                                                 .BLUETOOTH_SCANNING] =
         'enableExperimentalWebPlatformFeatures';
-    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
-                                                .HID_DEVICES] =
+    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.HID_DEVICES] =
         'enableExperimentalWebPlatformFeatures';
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.AR] =
         'enableWebXrContentSetting';
@@ -243,22 +245,21 @@ suite('SiteDetails', function() {
     // First, explicitly set all the optional settings to false.
     for (const contentSetting in optionalSiteDetailsContentSettingsTypes) {
       const loadTimeDataOverride = {};
-      loadTimeDataOverride
-          [optionalSiteDetailsContentSettingsTypes[contentSetting]] = false;
+      loadTimeDataOverride[optionalSiteDetailsContentSettingsTypes
+                               [contentSetting]] = false;
       loadTimeData.overrideValues(loadTimeDataOverride);
     }
 
     // Iterate over each flag in on / off state, assuming that the on state
     // means the content setting will show, and off hides it.
     for (const contentSetting in optionalSiteDetailsContentSettingsTypes) {
-      const numContentSettings =
-          Object.keys(ContentSettingsTypes).length -
+      const numContentSettings = Object.keys(ContentSettingsTypes).length -
           nonSiteDetailsContentSettingsTypes.length -
           Object.keys(optionalSiteDetailsContentSettingsTypes).length;
 
       const loadTimeDataOverride = {};
-      loadTimeDataOverride
-          [optionalSiteDetailsContentSettingsTypes[contentSetting]] = true;
+      loadTimeDataOverride[optionalSiteDetailsContentSettingsTypes
+                               [contentSetting]] = true;
       loadTimeData.overrideValues(loadTimeDataOverride);
       testElement = createSiteDetails('https://foo.com:443');
       assertEquals(
@@ -269,8 +270,8 @@ suite('SiteDetails', function() {
 
       // Check for setting = off at the end to ensure that the setting does
       // not carry over for the next iteration.
-      loadTimeDataOverride
-          [optionalSiteDetailsContentSettingsTypes[contentSetting]] = false;
+      loadTimeDataOverride[optionalSiteDetailsContentSettingsTypes
+                               [contentSetting]] = false;
       loadTimeData.overrideValues(loadTimeDataOverride);
       testElement = createSiteDetails('https://foo.com:443');
       assertEquals(numContentSettings, testElement.getCategoryList().length);
@@ -400,8 +401,7 @@ suite('SiteDetails', function() {
                     siteDetailsPermission.category ==
                         ContentSettingsTypes.POPUPS ||
                     siteDetailsPermission.category ==
-                        ContentSettingsTypes
-                            .NATIVE_FILE_SYSTEM_WRITE) {
+                        ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE) {
                   expectedSetting =
                       prefs.exceptions[siteDetailsPermission.category][0]
                           .setting;
@@ -479,14 +479,11 @@ suite('SiteDetails', function() {
         })
         .then(() => {
           // Make sure initial state is as expected.
+          assertEquals(ContentSetting.ASK, siteDetailsPermission.site.setting);
           assertEquals(
-              ContentSetting.ASK, siteDetailsPermission.site.setting);
+              SiteSettingSource.POLICY, siteDetailsPermission.site.source);
           assertEquals(
-              SiteSettingSource.POLICY,
-              siteDetailsPermission.site.source);
-          assertEquals(
-              ContentSetting.ASK,
-              siteDetailsPermission.$.permission.value);
+              ContentSetting.ASK, siteDetailsPermission.$.permission.value);
 
           // Set new prefs and make sure only that permission is updated.
           const newException = {
@@ -503,19 +500,15 @@ suite('SiteDetails', function() {
         .then((args) => {
           // The notification pref was just updated, so make sure the call to
           // getOriginPermissions was to check notifications.
-          assertTrue(
-              args[1].includes(ContentSettingsTypes.NOTIFICATIONS));
+          assertTrue(args[1].includes(ContentSettingsTypes.NOTIFICATIONS));
 
           // Check |siteDetailsPermission| now shows the new permission value.
           assertEquals(
-              ContentSetting.BLOCK,
-              siteDetailsPermission.site.setting);
+              ContentSetting.BLOCK, siteDetailsPermission.site.setting);
           assertEquals(
-              SiteSettingSource.DEFAULT,
-              siteDetailsPermission.site.source);
+              SiteSettingSource.DEFAULT, siteDetailsPermission.site.source);
           assertEquals(
-              ContentSetting.DEFAULT,
-              siteDetailsPermission.$.permission.value);
+              ContentSetting.DEFAULT, siteDetailsPermission.$.permission.value);
         });
   });
 
@@ -549,5 +542,4 @@ suite('SiteDetails', function() {
     testElement = createSiteDetails(origin);
     return browserProxy.whenCalled('fetchBlockAutoplayStatus');
   });
-
 });

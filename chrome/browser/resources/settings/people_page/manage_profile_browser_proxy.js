@@ -8,24 +8,23 @@
  */
 
 // clang-format off
-// #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
-// #import {AvatarIcon} from 'chrome://resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {AvatarIcon} from 'chrome://resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.m.js';
 // clang-format on
 
-cr.define('settings', function() {
   /**
    * Contains the possible profile shortcut statuses. These strings must be kept
    * in sync with the C++ Manage Profile handler.
    * @enum {string}
    */
-  /* #export */ const ProfileShortcutStatus = {
+  export const ProfileShortcutStatus = {
     PROFILE_SHORTCUT_SETTING_HIDDEN: 'profileShortcutSettingHidden',
     PROFILE_SHORTCUT_NOT_FOUND: 'profileShortcutNotFound',
     PROFILE_SHORTCUT_FOUND: 'profileShortcutFound',
   };
 
   /** @interface */
-  /* #export */ class ManageProfileBrowserProxy {
+  export class ManageProfileBrowserProxy {
     /**
      * Gets the available profile icons to choose from.
      * @return {!Promise<!Array<!AvatarIcon>>}
@@ -51,7 +50,7 @@ cr.define('settings', function() {
 
     /**
      * Returns whether the current profile has a shortcut.
-     * @return {!Promise<settings.ProfileShortcutStatus>}
+     * @return {!Promise<ProfileShortcutStatus>}
      */
     getProfileShortcutStatus() {}
 
@@ -67,12 +66,12 @@ cr.define('settings', function() {
   }
 
   /**
-   * @implements {settings.ManageProfileBrowserProxy}
+   * @implements {ManageProfileBrowserProxy}
    */
-  /* #export */ class ManageProfileBrowserProxyImpl {
+  export class ManageProfileBrowserProxyImpl {
     /** @override */
     getAvailableIcons() {
-      return cr.sendWithPromise('getAvailableIcons');
+      return sendWithPromise('getAvailableIcons');
     }
 
     /** @override */
@@ -92,7 +91,7 @@ cr.define('settings', function() {
 
     /** @override */
     getProfileShortcutStatus() {
-      return cr.sendWithPromise('requestProfileShortcutStatus');
+      return sendWithPromise('requestProfileShortcutStatus');
     }
 
     /** @override */
@@ -108,12 +107,5 @@ cr.define('settings', function() {
 
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
-  cr.addSingletonGetter(ManageProfileBrowserProxyImpl);
+  addSingletonGetter(ManageProfileBrowserProxyImpl);
 
-  // #cr_define_end
-  return {
-    ManageProfileBrowserProxy,
-    ManageProfileBrowserProxyImpl,
-    ProfileShortcutStatus
-  };
-});

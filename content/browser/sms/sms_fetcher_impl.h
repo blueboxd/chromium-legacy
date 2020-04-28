@@ -33,7 +33,14 @@ class CONTENT_EXPORT SmsFetcherImpl : public content::SmsFetcher,
                  std::unique_ptr<SmsProvider> provider);
   ~SmsFetcherImpl() override;
 
+  // Called by devices that do not have telephony capabilities and exclusively
+  // listen for SMSes received on other devices.
   void Subscribe(const url::Origin& origin, Subscriber* subscriber) override;
+  // Called by |SmsService| to fetch SMSes retrieved by the SmsProvider from the
+  // requested device.
+  void Subscribe(const url::Origin& origin,
+                 Subscriber* subscriber,
+                 RenderFrameHost* rfh) override;
   void Unsubscribe(const url::Origin& origin, Subscriber* subscriber) override;
 
   // content::SmsProvider::Observer:
@@ -41,7 +48,6 @@ class CONTENT_EXPORT SmsFetcherImpl : public content::SmsFetcher,
                  const std::string& one_time_code) override;
 
   bool HasSubscribers() override;
-  bool CanReceiveSms() override;
 
   void SetSmsProviderForTesting(std::unique_ptr<SmsProvider> provider);
 

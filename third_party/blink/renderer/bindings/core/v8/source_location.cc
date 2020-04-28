@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
@@ -56,7 +57,8 @@ std::unique_ptr<SourceLocation> SourceLocation::Capture(
     return SourceLocation::CreateFromNonEmptyV8StackTrace(
         std::move(stack_trace), 0);
 
-  if (Document* document = Document::DynamicFrom(execution_context)) {
+  if (LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+    Document* document = window->document();
     unsigned line_number = 0;
     if (document->GetScriptableDocumentParser() &&
         !document->IsInDocumentWrite()) {

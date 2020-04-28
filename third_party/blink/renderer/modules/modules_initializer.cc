@@ -189,7 +189,6 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   DCHECK(client);
   ProvidePushMessagingClientTo(
       frame, MakeGarbageCollected<PushMessagingClient>(frame));
-  ProvideUserMediaTo(frame);
   ProvideLocalFileSystemTo(frame);
 
   ScreenOrientationControllerImpl::ProvideTo(frame);

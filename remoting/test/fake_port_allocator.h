@@ -49,7 +49,9 @@ class FakePortAllocatorFactory : public protocol::PortAllocatorFactory {
 
    // PortAllocatorFactory interface.
   std::unique_ptr<cricket::PortAllocator> CreatePortAllocator(
-      scoped_refptr<protocol::TransportContext> transport_context) override;
+      scoped_refptr<protocol::TransportContext> transport_context,
+      base::WeakPtr<protocol::SessionOptionsProvider> session_options_provider)
+      override;
 
  private:
   std::unique_ptr<rtc::NetworkManager> network_manager_;

@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Програм</translation>
 <translation id="2872961005593481000">Унтраах</translation>
 <translation id="3008341117444806826">ДАХИН ШИНЭЧЛЭХ</translation>
+<translation id="3749289110408117711">Файлын нэр</translation>
 <translation id="3820172043799983114">ПИН буруу байна.</translation>
 <translation id="3838338534323494292">Шинэ нууц үг</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> энэ төхөөрөмжийг удирддаг бөгөөд хэрэглэгчийн зочилсон вэб хуудас, нууц үг болон имэйл зэрэг бүх үйл ажиллагаанд хандах эрхтэй.</translation>
+<translation id="4034824040120875894">Хэвлэгч</translation>
 <translation id="4227825898293920515">Нууц үгний хугацаа <ph name="TIME" />-н дотор дуусна</translation>
 <translation id="4429881212383817840">Kerberos тасалбарын хугацаа удахгүй дуусна</translation>
 <translation id="445059817448385655">Хуучин нууц үг</translation>
 <translation id="467510802200863975">Нууц үг таарахгүй байна</translation>
 <translation id="4731797938093519117">Эцэг эхийн хандалт</translation>
 <translation id="4890353053343094602">Нэн даруй шинийг сонгоно уу</translation>
+<translation id="4932733599132424254">Огноо</translation>
 <translation id="5212543919916444558">Би таны дэлгэцээс туслах боломжтой зүйл олсонгүй.
 Асуух зүйл байвал микрофоныг товшиж үзнэ үү.</translation>
 <translation id="5222676887888702881">Гарах</translation>
@@ -40,6 +43,7 @@
 <translation id="6146993107019042706">Дуусгахын тулд шинэ нууц үгээ оруулна уу</translation>
 <translation id="7658239707568436148">Болих</translation>
 <translation id="7690294790491645610">Шинэ нууц үг баталгаажуулна уу</translation>
+<translation id="7805768142964895445">Байр байдал</translation>
 <translation id="808894953321890993">Нууц үгийг солих</translation>
 <translation id="8208861521865154048">Нэмэлтүүд</translation>
 <translation id="8747900814994928677">Өөрчлөлтийг баталгаажуулах</translation>

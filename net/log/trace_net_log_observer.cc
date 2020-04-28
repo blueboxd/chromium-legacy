@@ -10,8 +10,8 @@
 #include <string>
 #include <utility>
 
+#include "base/check.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/log/net_log_entry.h"

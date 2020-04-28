@@ -2971,11 +2971,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   //
   // root
   // |
-  // paragraph_______
-  // |               |
-  // static_text     link
-  // |               |
-  // text_node       static_text
+  // paragraph________________________
+  // |               |                |
+  // static_text     link             search input
+  // |               |                |
+  // text_node       static_text      text_node
   //                 |
   //                 text_node
 
@@ -3013,6 +3013,17 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   inline_text_data2.role = ax::mojom::Role::kInlineTextBox;
   static_text_data2.child_ids.push_back(inline_text_data2.id);
 
+  ui::AXNodeData search_box;
+  search_box.id = 8;
+  search_box.role = ax::mojom::Role::kSearchBox;
+  paragraph_data.child_ids.push_back(search_box.id);
+
+  ui::AXNodeData search_text;
+  search_text.id = 9;
+  search_text.role = ax::mojom::Role::kStaticText;
+  search_text.SetName("placeholder");
+  search_box.child_ids.push_back(search_text.id);
+
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
   tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
@@ -3026,6 +3037,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   update.nodes.push_back(link_data);
   update.nodes.push_back(static_text_data2);
   update.nodes.push_back(inline_text_data2);
+  update.nodes.push_back(search_box);
+  update.nodes.push_back(search_text);
 
   Init(update);
 
@@ -3036,6 +3049,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   AXNode* inline_text_node1 = static_text_node1->children()[0];
   AXNode* static_text_node2 = link_node->children()[0];
   AXNode* inline_text_node2 = static_text_node2->children()[0];
+  AXNode* search_box_node = paragraph_node->children()[2];
+  AXNode* search_text_node = search_box_node->children()[0];
 
   ComPtr<IRawElementProviderSimple> link_node_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(link_node);
@@ -3045,6 +3060,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node1);
   ComPtr<IRawElementProviderSimple> inline_text_node_raw2 =
       QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node2);
+  ComPtr<IRawElementProviderSimple> search_box_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(search_box_node);
+  ComPtr<IRawElementProviderSimple> search_text_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(search_text_node);
 
   // Test GetEnclosingElement for the two leaves text nodes. The enclosing
   // element of the first one should be its static text parent (because inline
@@ -3072,6 +3091,21 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetEnclosingElement(&enclosing_element));
   EXPECT_EQ(link_node_raw.Get(), enclosing_element.Get());
+
+  // The enclosing element of a text range in the search text should give the
+  // search box
+  EXPECT_HRESULT_SUCCEEDED(search_text_node_raw->GetPatternProvider(
+      UIA_TextPatternId, &text_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Character));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetEnclosingElement(&enclosing_element));
+  EXPECT_EQ(search_box_node_raw.Get(), enclosing_element.Get());
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,

@@ -20,6 +20,7 @@ class SingleReleaseCallback;
 }  // namespace viz
 
 namespace blink {
+class MailboxTextureBacking;
 class WebGraphicsContext3DProviderWrapper;
 
 class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
@@ -164,7 +165,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   void CreateImageFromMailboxIfNeeded();
-  void InitializeSkImage(GLuint shared_image_texture_id);
+  void InitializeTextureBacking(GLuint shared_image_texture_id);
 
   const gpu::Mailbox mailbox_;
   const SkImageInfo sk_image_info_;
@@ -177,7 +178,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   // The context this SkImage is bound to.
   base::WeakPtr<WebGraphicsContext3DProviderWrapper>
       skia_context_provider_wrapper_;
-  sk_sp<SkImage> sk_image_;
+  sk_sp<MailboxTextureBacking> texture_backing_;
 
   PaintImage::ContentId paint_image_content_id_;
   THREAD_CHECKER(thread_checker_);

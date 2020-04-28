@@ -984,18 +984,6 @@ ContentSecurityPolicy* Document::GetContentSecurityPolicyForWorld() {
   return policy;
 }
 
-// static
-Document& Document::From(ExecutionContext& context) {
-  SECURITY_DCHECK(context.IsDocument());
-  return *static_cast<LocalDOMWindow&>(context).document();
-}
-
-// static
-const Document& Document::From(const ExecutionContext& context) {
-  SECURITY_DCHECK(context.IsDocument());
-  return *static_cast<const LocalDOMWindow&>(context).document();
-}
-
 bool Document::FeatureEnabled(OriginTrialFeature feature) const {
   return GetOriginTrialContext()->IsFeatureEnabled(feature);
 }

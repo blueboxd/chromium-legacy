@@ -12,8 +12,9 @@
 #include "base/task/task_traits.h"
 #include "base/test/bind_test_util.h"
 #include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/performance_manager_tab_helper.h"
-#include "components/performance_manager/performance_manager_test_harness.h"
+#include "components/performance_manager/test_support/performance_manager_test_harness.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 

@@ -467,6 +467,10 @@ void FakeCentral::GetLastWrittenDescriptorValue(
                           fake_remote_gatt_descriptor->last_written_value());
 }
 
+void FakeCentral::Initialize(base::OnceClosure callback) {
+  std::move(callback).Run();
+}
+
 std::string FakeCentral::GetAddress() const {
   NOTREACHED();
   return std::string();

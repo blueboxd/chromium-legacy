@@ -5,7 +5,7 @@
 #include "net/base/elements_upload_data_stream.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"

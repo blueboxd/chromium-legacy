@@ -48,8 +48,11 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace main_thread_scheduler_impl_unittest {
 
+using testing::InSequence;
 using testing::Mock;
+using testing::NiceMock;
 using testing::NotNull;
+using testing::Return;
 using InputEventState = WebThreadScheduler::InputEventState;
 using base::sequence_manager::FakeTask;
 using base::sequence_manager::FakeTaskTiming;
@@ -234,6 +237,27 @@ void AnticipationTestTask(MainThreadSchedulerImpl* scheduler,
   *is_anticipated_after = scheduler->IsHighPriorityWorkAnticipated();
 }
 
+class MockPageSchedulerImpl : public PageSchedulerImpl {
+ public:
+  explicit MockPageSchedulerImpl(MainThreadSchedulerImpl* scheduler)
+      : PageSchedulerImpl(nullptr, scheduler) {
+    ON_CALL(*this, IsWaitingForMainFrameContentfulPaint)
+        .WillByDefault(Return(true));
+    ON_CALL(*this, IsWaitingForMainFrameMeaningfulPaint)
+        .WillByDefault(Return(true));
+    ON_CALL(*this, IsMainFrameLocal).WillByDefault(Return(true));
+  }
+  ~MockPageSchedulerImpl() override = default;
+
+  MockPageSchedulerImpl(const MockPageSchedulerImpl&) = delete;
+  MockPageSchedulerImpl& operator=(const MockPageSchedulerImpl&) = delete;
+
+  MOCK_METHOD(bool, RequestBeginMainFrameNotExpected, (bool));
+  MOCK_METHOD(bool, IsWaitingForMainFrameContentfulPaint, (), (const));
+  MOCK_METHOD(bool, IsWaitingForMainFrameMeaningfulPaint, (), (const));
+  MOCK_METHOD(bool, IsMainFrameLocal, (), (const));
+};
+
 class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
  public:
   using MainThreadSchedulerImpl::CompositorTaskQueue;
@@ -286,11 +310,6 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
   bool BeginMainFrameOnCriticalPath() {
     base::AutoLock lock(any_thread_lock_);
     return any_thread().begin_main_frame_on_critical_path;
-  }
-
-  bool waiting_for_meaningful_paint() const {
-    base::AutoLock lock(any_thread_lock_);
-    return any_thread().waiting_for_meaningful_paint;
   }
 
   VirtualTimePolicy virtual_time_policy() const {
@@ -365,7 +384,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
     v8_task_runner_ = scheduler_->V8TaskQueue()->task_runner();
 
     page_scheduler_ =
-        std::make_unique<PageSchedulerImpl>(nullptr, scheduler_.get());
+        std::make_unique<NiceMock<MockPageSchedulerImpl>>(scheduler_.get());
     main_frame_scheduler_ =
         FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr, nullptr,
                                    FrameScheduler::FrameType::kMainFrame);
@@ -767,8 +786,10 @@ class MainThreadSchedulerImplTest : public testing::Test {
 
   void EnsureUseCaseNone() {
     // Make sure we're not in UseCase::kLoading.
-    scheduler_->OnFirstContentfulPaint();
-    scheduler_->OnFirstMeaningfulPaint();
+    ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
+        .WillByDefault(Return(false));
+    ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
+        .WillByDefault(Return(false));
 
     EXPECT_EQ(ForceUpdatePolicyAndGetCurrentUseCase(), UseCase::kNone);
 
@@ -835,7 +856,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 
   std::unique_ptr<MainThreadSchedulerImplForTest> scheduler_;
-  std::unique_ptr<PageSchedulerImpl> page_scheduler_;
+  std::unique_ptr<MockPageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> main_frame_scheduler_;
   std::unique_ptr<WebWidgetScheduler> widget_scheduler_;
 
@@ -1325,13 +1346,19 @@ class DefaultUseCaseTest : public MainThreadSchedulerImplTest {
 };
 
 TEST_F(DefaultUseCaseTest, InitiallyInEarlyLoadingUseCase) {
+  scheduler_->OnMainFramePaint();
+
   // Should be early loading by default.
   EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
 
-  scheduler_->OnFirstContentfulPaint();
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
+      .WillByDefault(Return(false));
+  scheduler_->OnMainFramePaint();
   EXPECT_EQ(UseCase::kLoading, CurrentUseCase());
 
-  scheduler_->OnFirstMeaningfulPaint();
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
+      .WillByDefault(Return(false));
+  scheduler_->OnMainFramePaint();
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
@@ -1348,6 +1375,10 @@ TEST_F(PrioritizeCompositingAndLoadingInUseCaseLoadingTest, LoadingUseCase) {
   Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
 
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
+      .WillByDefault(Return(true));
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
+      .WillByDefault(Return(true));
   scheduler_->DidStartProvisionalLoad(true);
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
@@ -1360,8 +1391,11 @@ TEST_F(PrioritizeCompositingAndLoadingInUseCaseLoadingTest, LoadingUseCase) {
               testing::ElementsAreArray(early_loading_policy_expected));
   EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
 
-  // After OnFirstContentfulPaint we should transition to UseCase::kLoading.
-  scheduler_->OnFirstContentfulPaint();
+  // After OnMainFrameFirstContentfulPaint we should transition to
+  // UseCase::kLoading.
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
+      .WillByDefault(Return(false));
+  scheduler_->OnMainFramePaint();
 
   run_order.clear();
   PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
@@ -1376,7 +1410,9 @@ TEST_F(PrioritizeCompositingAndLoadingInUseCaseLoadingTest, LoadingUseCase) {
   // Advance 15s and try again, the loading policy should have ended and the
   // task order should return to the NONE use case where loading tasks are no
   // longer prioritized.
-  scheduler_->OnFirstMeaningfulPaint();
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
+      .WillByDefault(Return(false));
+  scheduler_->OnMainFramePaint();
   test_task_runner_->AdvanceMockTickClock(
       base::TimeDelta::FromMilliseconds(150000));
   run_order.clear();
@@ -2425,7 +2461,6 @@ TEST_F(MainThreadSchedulerImplTest, MismatchedDidHandleInputEventOnMainThread) {
 
 TEST_F(MainThreadSchedulerImplTest, BeginMainFrameOnCriticalPath) {
   ASSERT_FALSE(scheduler_->BeginMainFrameOnCriticalPath());
-
   viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, Now(),
       base::TimeTicks(), base::TimeDelta::FromMilliseconds(1000),
@@ -2467,6 +2502,10 @@ TEST_F(MainThreadSchedulerImplTest,
 
 TEST_F(MainThreadSchedulerImplTest,
        EstimateLongestJankFreeTaskDuration_UseCase_EarlyLoading) {
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
+      .WillByDefault(Return(true));
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
+      .WillByDefault(Return(true));
   scheduler_->DidStartProvisionalLoad(true);
   EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(rails_response_time(),
@@ -2475,8 +2514,11 @@ TEST_F(MainThreadSchedulerImplTest,
 
 TEST_F(MainThreadSchedulerImplTest,
        EstimateLongestJankFreeTaskDuration_UseCase_Loading) {
-  scheduler_->DidStartProvisionalLoad(true);
-  scheduler_->OnFirstContentfulPaint();
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
+      .WillByDefault(Return(false));
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
+      .WillByDefault(Return(true));
+  scheduler_->OnMainFramePaint();
   EXPECT_EQ(UseCase::kLoading, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(rails_response_time(),
             scheduler_->EstimateLongestJankFreeTaskDuration());
@@ -2558,26 +2600,6 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(11),
             scheduler_->EstimateLongestJankFreeTaskDuration());
 }
-
-class PageSchedulerImplForTest : public PageSchedulerImpl {
- public:
-  explicit PageSchedulerImplForTest(MainThreadSchedulerImpl* scheduler)
-      : PageSchedulerImpl(nullptr, scheduler) {}
-  ~PageSchedulerImplForTest() override = default;
-
-  void ReportIntervention(const String& message) override {
-    interventions_.push_back(message);
-  }
-
-  const Vector<String>& Interventions() const { return interventions_; }
-
-  MOCK_METHOD1(RequestBeginMainFrameNotExpected, bool(bool));
-
- private:
-  Vector<String> interventions_;
-
-  DISALLOW_COPY_AND_ASSIGN(PageSchedulerImplForTest);
-};
 
 namespace {
 void SlowCountingTask(size_t* count,
@@ -2848,7 +2870,7 @@ TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_GESTURE) {
 
 class MockRAILModeObserver : public RAILModeObserver {
  public:
-  MOCK_METHOD1(OnRAILModeChanged, void(RAILMode rail_mode));
+  MOCK_METHOD(void, OnRAILModeChanged, (RAILMode rail_mode));
 };
 
 TEST_F(MainThreadSchedulerImplTest, TestResponseRAILMode) {
@@ -2889,17 +2911,27 @@ TEST_F(MainThreadSchedulerImplTest, TestIdleRAILMode) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, TestLoadRAILMode) {
+  InSequence s;
   MockRAILModeObserver observer;
-  scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(RAILMode::kAnimation));
   EXPECT_CALL(observer, OnRAILModeChanged(RAILMode::kLoad));
+  EXPECT_CALL(observer, OnRAILModeChanged(RAILMode::kAnimation));
+  scheduler_->AddRAILModeObserver(&observer);
 
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
+      .WillByDefault(Return(true));
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
+      .WillByDefault(Return(true));
   scheduler_->DidStartProvisionalLoad(true);
   EXPECT_EQ(RAILMode::kLoad, GetRAILMode());
   EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
-  scheduler_->OnFirstContentfulPaint();
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
+      .WillByDefault(Return(false));
+  scheduler_->OnMainFramePaint();
   EXPECT_EQ(UseCase::kLoading, ForceUpdatePolicyAndGetCurrentUseCase());
-  scheduler_->OnFirstMeaningfulPaint();
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
+      .WillByDefault(Return(false));
+  scheduler_->OnMainFramePaint();
   EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
   EXPECT_EQ(RAILMode::kAnimation, GetRAILMode());
   scheduler_->RemoveRAILModeObserver(&observer);
@@ -2911,6 +2943,10 @@ TEST_F(MainThreadSchedulerImplTest, InputTerminatesLoadRAILMode) {
   EXPECT_CALL(observer, OnRAILModeChanged(RAILMode::kAnimation));
   EXPECT_CALL(observer, OnRAILModeChanged(RAILMode::kLoad));
 
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
+      .WillByDefault(Return(true));
+  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
+      .WillByDefault(Return(true));
   scheduler_->DidStartProvisionalLoad(true);
   EXPECT_EQ(RAILMode::kLoad, GetRAILMode());
   EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
@@ -3256,60 +3292,6 @@ TEST_F(MainThreadSchedulerImplTest, MaxQueueingTimeMetricRecordTheMax) {
   tester.ExpectUniqueSample("RendererScheduler.MaxQueueingTime", 500, 1);
 }
 
-TEST_F(MainThreadSchedulerImplTest, DidCommitProvisionalLoad) {
-  scheduler_->OnFirstMeaningfulPaint();
-  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
-
-  // Check that we only clear state for main frame navigations that are either
-  // not history inert or are reloads.
-  scheduler_->DidCommitProvisionalLoad(false /* is_web_history_inert_commit */,
-                                       false /* is_reload */,
-                                       false /* is_main_frame */);
-  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
-
-  scheduler_->OnFirstMeaningfulPaint();
-  scheduler_->DidCommitProvisionalLoad(false /* is_web_history_inert_commit */,
-                                       false /* is_reload */,
-                                       true /* is_main_frame */);
-  EXPECT_TRUE(scheduler_->waiting_for_meaningful_paint());  // State cleared.
-
-  scheduler_->OnFirstMeaningfulPaint();
-  scheduler_->DidCommitProvisionalLoad(false /* is_web_history_inert_commit */,
-                                       true /* is_reload */,
-                                       false /* is_main_frame */);
-  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
-
-  scheduler_->OnFirstMeaningfulPaint();
-  scheduler_->DidCommitProvisionalLoad(false /* is_web_history_inert_commit */,
-                                       true /* is_reload */,
-                                       true /* is_main_frame */);
-  EXPECT_TRUE(scheduler_->waiting_for_meaningful_paint());  // State cleared.
-
-  scheduler_->OnFirstMeaningfulPaint();
-  scheduler_->DidCommitProvisionalLoad(true /* is_web_history_inert_commit */,
-                                       false /* is_reload */,
-                                       false /* is_main_frame */);
-  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
-
-  scheduler_->OnFirstMeaningfulPaint();
-  scheduler_->DidCommitProvisionalLoad(true /* is_web_history_inert_commit */,
-                                       false /* is_reload */,
-                                       true /* is_main_frame */);
-  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
-
-  scheduler_->OnFirstMeaningfulPaint();
-  scheduler_->DidCommitProvisionalLoad(true /* is_web_history_inert_commit */,
-                                       true /* is_reload */,
-                                       false /* is_main_frame */);
-  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
-
-  scheduler_->OnFirstMeaningfulPaint();
-  scheduler_->DidCommitProvisionalLoad(true /* is_web_history_inert_commit */,
-                                       true /* is_reload */,
-                                       true /* is_main_frame */);
-  EXPECT_TRUE(scheduler_->waiting_for_meaningful_paint());  // State cleared.
-}
-
 TEST_F(MainThreadSchedulerImplTest, LoadingControlTasks) {
   // Expect control loading tasks (M) to jump ahead of any regular loading
   // tasks (L).
@@ -3321,42 +3303,34 @@ TEST_F(MainThreadSchedulerImplTest, LoadingControlTasks) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, RequestBeginMainFrameNotExpected) {
-  std::unique_ptr<PageSchedulerImplForTest> page_scheduler =
-      std::make_unique<PageSchedulerImplForTest>(scheduler_.get());
-  scheduler_->AddPageScheduler(page_scheduler.get());
-
   scheduler_->OnPendingTasksChanged(true);
-  EXPECT_CALL(*page_scheduler, RequestBeginMainFrameNotExpected(true))
+  EXPECT_CALL(*page_scheduler_, RequestBeginMainFrameNotExpected(true))
       .Times(1)
       .WillRepeatedly(testing::Return(true));
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(page_scheduler.get());
+  Mock::VerifyAndClearExpectations(page_scheduler_.get());
 
   scheduler_->OnPendingTasksChanged(false);
-  EXPECT_CALL(*page_scheduler, RequestBeginMainFrameNotExpected(false))
+  EXPECT_CALL(*page_scheduler_, RequestBeginMainFrameNotExpected(false))
       .Times(1)
       .WillRepeatedly(testing::Return(true));
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(page_scheduler.get());
+  Mock::VerifyAndClearExpectations(page_scheduler_.get());
 }
 
 TEST_F(MainThreadSchedulerImplTest,
        RequestBeginMainFrameNotExpected_MultipleCalls) {
-  std::unique_ptr<PageSchedulerImplForTest> page_scheduler =
-      std::make_unique<PageSchedulerImplForTest>(scheduler_.get());
-  scheduler_->AddPageScheduler(page_scheduler.get());
-
   scheduler_->OnPendingTasksChanged(true);
   scheduler_->OnPendingTasksChanged(true);
   // Multiple calls should result in only one call.
-  EXPECT_CALL(*page_scheduler, RequestBeginMainFrameNotExpected(true))
+  EXPECT_CALL(*page_scheduler_, RequestBeginMainFrameNotExpected(true))
       .Times(1)
       .WillRepeatedly(testing::Return(true));
   base::RunLoop().RunUntilIdle();
 
-  Mock::VerifyAndClearExpectations(page_scheduler.get());
+  Mock::VerifyAndClearExpectations(page_scheduler_.get());
 }
 
 #if defined(OS_ANDROID)

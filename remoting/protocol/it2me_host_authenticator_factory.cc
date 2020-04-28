@@ -19,11 +19,11 @@ It2MeHostAuthenticatorFactory::It2MeHostAuthenticatorFactory(
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
     const std::string& access_code_hash,
-    ValidatingAuthenticator::ValidationCallback callback)
+    const ValidatingAuthenticator::ValidationCallback& callback)
     : local_cert_(local_cert),
       key_pair_(key_pair),
       access_code_hash_(access_code_hash),
-      validation_callback_(std::move(callback)) {}
+      validation_callback_(callback) {}
 
 It2MeHostAuthenticatorFactory::~It2MeHostAuthenticatorFactory() = default;
 

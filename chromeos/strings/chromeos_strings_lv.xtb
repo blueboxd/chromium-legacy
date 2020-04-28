@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Lietotnes</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="3008341117444806826">ATSVAIDZINĀT</translation>
+<translation id="3749289110408117711">Faila nosaukums</translation>
 <translation id="3820172043799983114">PIN nav derīgs.</translation>
 <translation id="3838338534323494292">Jaunā parole</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> pārvalda šo ierīci un tam ir piekļuve visām lietotāja darbībām, tostarp tīmekļa lapām, kuras apmeklējāt, parolēm un e-pastam.</translation>
+<translation id="4034824040120875894">Printeris</translation>
 <translation id="4227825898293920515">Paroles derīguma termiņš: <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos biļetes termiņš drīz beigsies</translation>
 <translation id="445059817448385655">Iepriekšējā parole</translation>
 <translation id="467510802200863975">Paroles nav vienādas</translation>
 <translation id="4731797938093519117">Vecāku piekļuve</translation>
 <translation id="4890353053343094602">Nekavējoties izvēlieties jaunu</translation>
+<translation id="4932733599132424254">Datums</translation>
 <translation id="5212543919916444558">Ekrānā neredzu neko, ar ko varētu palīdzēt.
 Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
@@ -40,6 +43,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="6146993107019042706">Lai pabeigtu, ievadiet savu jauno paroli</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7690294790491645610">Apstipriniet jauno paroli</translation>
+<translation id="7805768142964895445">Statuss</translation>
 <translation id="808894953321890993">Mainīt paroli</translation>
 <translation id="8208861521865154048">Priekšrocības</translation>
 <translation id="8747900814994928677">Apstiprināt izmaiņas</translation>

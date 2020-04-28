@@ -1783,6 +1783,7 @@ Dodatne podrobnosti:
 <translation id="8606726445206553943">Uporaba naprav MIDI</translation>
 <translation id="861775596732816396">Velikost 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
+<translation id="8623885649813806493">Ni gesel, ki bi se ujemala. Prikaži vsa shranjena gesla.</translation>
 <translation id="8625384913736129811">Shrani to kartico v tej napravi</translation>
 <translation id="8663226718884576429">Povzetek naročila, <ph name="TOTAL_LABEL" />, več podrobnosti</translation>
 <translation id="867224526087042813">Podpis</translation>
@@ -1834,7 +1835,7 @@ Dodatne podrobnosti:
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="890493561996401738">Gumb za odstranitev predloga, pritisnite Enter za odstranitev <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Uporabljate način brez beleženja dejavnosti</translation>
-<translation id="8912362522468806198">Google Račun</translation>
+<translation id="8912362522468806198">Račun Google</translation>
 <translation id="8918231688545606538">Ta stran je sumljiva</translation>
 <translation id="892588693504540538">Luknjanje zgoraj desno</translation>
 <translation id="8931333241327730545">Ali želite to kartico shraniti v Google Račun?</translation>

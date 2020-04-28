@@ -149,6 +149,20 @@ void AssistantInteractionControllerImpl::RemoveModelObserver(
   model_.RemoveObserver(observer);
 }
 
+void AssistantInteractionControllerImpl::StartTextInteraction(
+    const std::string& text,
+    bool allow_tts,
+    AssistantQuerySource query_source) {
+  DCHECK(assistant_);
+
+  StopActiveInteraction(false);
+
+  model_.SetPendingQuery(
+      std::make_unique<AssistantTextQuery>(text, query_source));
+
+  assistant_->StartTextInteraction(text, query_source, allow_tts);
+}
+
 void AssistantInteractionControllerImpl::OnAssistantControllerConstructed() {
   AssistantUiController::Get()->AddModelObserver(this);
   assistant_controller_->view_delegate()->AddObserver(this);
@@ -670,6 +684,9 @@ void AssistantInteractionControllerImpl::OnSpeechLevelUpdated(
 }
 
 void AssistantInteractionControllerImpl::OnTtsStarted(bool due_to_error) {
+  // When Assistant is talking, ChromeVox should not be.
+  Shell::Get()->accessibility_controller()->SilenceSpokenFeedback();
+
   if (!HasActiveInteraction())
     return;
 
@@ -996,20 +1013,6 @@ void AssistantInteractionControllerImpl::StartScreenContextInteraction(
                 std::move(assistant_structure), screenshot);
           },
           screen_context_request_factory_.GetWeakPtr()));
-}
-
-void AssistantInteractionControllerImpl::StartTextInteraction(
-    const std::string& text,
-    bool allow_tts,
-    AssistantQuerySource query_source) {
-  DCHECK(assistant_);
-
-  StopActiveInteraction(false);
-
-  model_.SetPendingQuery(
-      std::make_unique<AssistantTextQuery>(text, query_source));
-
-  assistant_->StartTextInteraction(text, query_source, allow_tts);
 }
 
 void AssistantInteractionControllerImpl::StartVoiceInteraction() {

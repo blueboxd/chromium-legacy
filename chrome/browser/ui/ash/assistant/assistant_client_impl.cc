@@ -136,13 +136,6 @@ void AssistantClientImpl::OnAssistantStatusChanged(
   ash::AssistantState::Get()->NotifyStatusChanged(new_state);
 }
 
-void AssistantClientImpl::RequestAssistantController(
-    mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
-        receiver) {
-  ash::AssistantInterfaceBinder::GetInstance()->BindController(
-      std::move(receiver));
-}
-
 void AssistantClientImpl::RequestAssistantAlarmTimerController(
     mojo::PendingReceiver<ash::mojom::AssistantAlarmTimerController> receiver) {
   ash::AssistantInterfaceBinder::GetInstance()->BindAlarmTimerController(

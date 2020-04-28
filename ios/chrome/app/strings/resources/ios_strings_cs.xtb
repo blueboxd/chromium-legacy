@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">První řádek adresy</translation>
 <translation id="1545749641540134597">Naskenovat QR kód</translation>
 <translation id="1552525382687785070">Synchronizaci administrátor zakázal</translation>
+<translation id="1554477036522844996">Nové okno</translation>
 <translation id="1580783302095112590">E-mail byl odeslán.</translation>
 <translation id="1582732959743469162">Tímto zastavíte veškerý postup aktuálního stahování.</translation>
 <translation id="1605658421715042784">Kopírovat obrázek</translation>
@@ -104,6 +105,7 @@
 <translation id="2239626343334228536">Mazání údajů o prohlížení...</translation>
 <translation id="2245545499420671379">V anonymním režimu blokovat soubory cookie třetích stran</translation>
 <translation id="2257567812274161158">Synchronizace nefunguje.</translation>
+<translation id="225943865679747347">Kód chyby: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Přidat účet</translation>
 <translation id="2268044343513325586">Upřesnit</translation>
 <translation id="2273327106802955778">Nabídka Další</translation>
@@ -114,6 +116,7 @@
 <translation id="2359043044084662842">Přeložit</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2360196772093551345">Vyžádat web pro mobily</translation>
+<translation id="2379896346847637748">Otevřít v novém okně</translation>
 <translation id="2381405137052800939">Základní nastavení</translation>
 <translation id="2386793615875593361">Vybrána 1 fotka</translation>
 <translation id="2421004566762153674">Blokování souborů cookie třetích stran</translation>
@@ -187,6 +190,7 @@
 <translation id="3328801116991980348">Informace o stránkách</translation>
 <translation id="3329904751041170572">Nelze se připojit k serveru.</translation>
 <translation id="3335947283844343239">Znovu otevřít zavřenou kartu</translation>
+<translation id="3343651535143698944">Přidat výjimku pro konkrétní web</translation>
 <translation id="3371831930909698441">Je k dispozici Překladač. Možnosti jsou k dispozici ve spodní části obrazovky.</translation>
 <translation id="3393920035788932672">Vyskakovací okna povolena</translation>
 <translation id="3443810440409579745">Byla přijata karta.</translation>
@@ -555,6 +559,7 @@ Protože váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, při odhlá�
 <translation id="8319076807703933069">Nové vyhledávání</translation>
 <translation id="8323906514956095947">Přidržením zobrazíte další možnosti karet</translation>
 <translation id="8328777765163860529">Zavřít vše</translation>
+<translation id="8332159733957009464">Výjimky webů</translation>
 <translation id="8386068868580335421">Obnovit</translation>
 <translation id="8407669440184693619">Pro tento web nebyla nalezena žádná hesla</translation>
 <translation id="842017693807136194">Poskytovatel přihlášení</translation>

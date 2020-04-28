@@ -64,6 +64,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
       base::TimeTicks local_surface_id_allocation_time) override;
   void SetIsSurfaceVisible(bool is_visible) override;
   void SetIsPageVisible(bool is_visible) override;
+  void SetForceBeginFrames(bool force_begin_frames) override;
   void SetForceSubmit(bool) override;
 
   // viz::ContextLostObserver implementation.
@@ -154,6 +155,10 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // submitting in the background causes the VideoFrameProvider to enter a
   // background rendering mode using lower frequency artificial BeginFrames.
   bool is_page_visible_ = true;
+
+  // Whether BeginFrames should be generated regardless of visibility. Does not
+  // submit unless submission is expected.
+  bool force_begin_frames_ = false;
 
   // Whether frames should always be submitted, even if we're not visible. Used
   // by Picture-in-Picture mode to ensure submission occurs even off-screen.

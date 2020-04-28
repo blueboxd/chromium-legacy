@@ -393,13 +393,17 @@ HTMLSlotElement* SlotAssignment::GetCachedFirstSlotWithoutAccessingNodeTree(
   return nullptr;
 }
 
-void SlotAssignment::UpdateCandidateNodeAssignedSlot(Node& node,
+bool SlotAssignment::UpdateCandidateNodeAssignedSlot(Node& node,
                                                      HTMLSlotElement& slot) {
+  bool updated = false;
   auto* prev_slot = candidate_assigned_slot_map_.at(&node);
-  if (prev_slot && prev_slot != &slot)
+  if (prev_slot && prev_slot != &slot) {
     prev_slot->RemoveAssignedNodeCandidate(node);
+    updated = true;
+  }
 
   candidate_assigned_slot_map_.Set(&node, &slot);
+  return updated;
 }
 
 void SlotAssignment::ClearCandidateNodes(

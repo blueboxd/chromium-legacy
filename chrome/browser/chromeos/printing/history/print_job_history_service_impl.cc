@@ -40,6 +40,11 @@ void PrintJobHistoryServiceImpl::GetPrintJobs(
                      base::Unretained(this), std::move(callback)));
 }
 
+void PrintJobHistoryServiceImpl::DeleteAllPrintJobs(
+    PrintJobDatabase::DeletePrintJobsCallback callback) {
+  print_job_database_->Clear(std::move(callback));
+}
+
 void PrintJobHistoryServiceImpl::OnPrintJobDone(
     base::WeakPtr<CupsPrintJob> job) {
   SavePrintJob(job);

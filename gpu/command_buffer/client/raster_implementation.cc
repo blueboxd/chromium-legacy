@@ -91,6 +91,47 @@ namespace {
 
 const uint32_t kMaxTransferCacheEntrySizeForTransferBuffer = 1024;
 
+class ScopedSharedMemoryPtr {
+ public:
+  ScopedSharedMemoryPtr(size_t size,
+                        TransferBufferInterface* transfer_buffer,
+                        MappedMemoryManager* mapped_memory,
+                        RasterCmdHelper* helper) {
+    // Prefer transfer buffer but fall back to MappedMemory if there's not
+    // enough free space.
+    if (transfer_buffer->GetFreeSize() < size) {
+      scoped_mapped_ptr_.emplace(size, helper, mapped_memory);
+    } else {
+      scoped_transfer_ptr_.emplace(size, helper, transfer_buffer);
+    }
+  }
+  ~ScopedSharedMemoryPtr() = default;
+
+  GLuint size() {
+    return scoped_transfer_ptr_ ? scoped_transfer_ptr_->size()
+                                : scoped_mapped_ptr_->size();
+  }
+
+  GLint shm_id() {
+    return scoped_transfer_ptr_ ? scoped_transfer_ptr_->shm_id()
+                                : scoped_mapped_ptr_->shm_id();
+  }
+
+  GLuint offset() {
+    return scoped_transfer_ptr_ ? scoped_transfer_ptr_->offset()
+                                : scoped_mapped_ptr_->offset();
+  }
+
+  void* address() {
+    return scoped_transfer_ptr_ ? scoped_transfer_ptr_->address()
+                                : scoped_mapped_ptr_->address();
+  }
+
+ private:
+  base::Optional<ScopedMappedMemoryPtr> scoped_mapped_ptr_;
+  base::Optional<ScopedTransferBufferPtr> scoped_transfer_ptr_;
+};
+
 }  // namespace
 
 // Helper to copy data to the GPU service over the transfer cache.
@@ -1090,24 +1131,11 @@ void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
   GLuint total_size =
       pixels_offset + base::bits::Align(src_size, sizeof(uint64_t));
 
-  GLint shm_id;
-  GLuint shm_offset;
-  void* address;
-  base::Optional<ScopedMappedMemoryPtr> mapped_ptr;
-  base::Optional<ScopedTransferBufferPtr> transfer_ptr;
-  // Prefer transfer buffer but fall back to MappedMemory if there's not enough
-  // free space.
-  if (transfer_buffer_->GetFreeSize() < total_size) {
-    mapped_ptr.emplace(total_size, helper(), mapped_memory_.get());
-    shm_id = mapped_ptr->shm_id();
-    shm_offset = mapped_ptr->offset();
-    address = mapped_ptr->address();
-  } else {
-    transfer_ptr.emplace(total_size, helper(), transfer_buffer_);
-    shm_id = transfer_ptr->shm_id();
-    shm_offset = transfer_ptr->offset();
-    address = transfer_ptr->address();
-  }
+  ScopedSharedMemoryPtr scoped_shared_memory(total_size, transfer_buffer_,
+                                             mapped_memory_.get(), helper());
+  GLint shm_id = scoped_shared_memory.shm_id();
+  GLuint shm_offset = scoped_shared_memory.offset();
+  void* address = scoped_shared_memory.address();
 
   if (src_info.colorSpace()) {
     size_t bytes_written = src_info.colorSpace()->writeToMemory(address);
@@ -1119,6 +1147,19 @@ void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
       dst_x_offset, dst_y_offset, src_info.width(), src_info.height(),
       row_bytes, src_info.colorType(), src_info.alphaType(), shm_id, shm_offset,
       pixels_offset, dest_mailbox.name);
+}
+
+void RasterImplementation::ConvertYUVMailboxesToRGB(
+    const gpu::Mailbox& dest_mailbox,
+    SkYUVColorSpace planes_yuv_color_space,
+    const gpu::Mailbox& y_plane_mailbox,
+    const gpu::Mailbox& u_plane_mailbox,
+    const gpu::Mailbox& v_plane_mailbox) {
+  constexpr size_t NUM_MAILBOXES = 4;
+  gpu::Mailbox mailboxes[NUM_MAILBOXES] = {y_plane_mailbox, u_plane_mailbox,
+                                           v_plane_mailbox, dest_mailbox};
+  helper_->ConvertYUVMailboxesToRGBINTERNALImmediate(
+      planes_yuv_color_space, reinterpret_cast<GLbyte*>(mailboxes));
 }
 
 void RasterImplementation::BeginRasterCHROMIUM(

@@ -294,6 +294,7 @@
 <translation id="4565377596337484307">លាក់​ពាក្យ​សម្ងាត់</translation>
 <translation id="4570957409596482333">ប៊ូតុង​ជ្រើសរើស​ដើម្បី​អាន</translation>
 <translation id="4585337515783392668">ឈប់បញ្ជូន​​ទៅឧបករណ៍ទទួលដែល​មិនស្គាល់</translation>
+<translation id="4588090240171750605">ទាញចុះទៅខាងស្តាំ</translation>
 <translation id="4628757576491864469">ឧបករណ៍</translation>
 <translation id="4659419629803378708">បានបើក ChromeVox</translation>
 <translation id="4665114317261903604">បិទ/បើក​មុខងារ​ "កុំរំខាន"។ <ph name="STATE_TEXT" /></translation>
@@ -415,6 +416,7 @@
 <translation id="6288235558961782912">អាចបញ្ចូល <ph name="USER_EMAIL_ADDRESS" /> ឡើងវិញ​នៅពេលក្រោយ​ដោយមាន​ការអនុញ្ញាតពីមាតាបិតា។</translation>
 <translation id="6297287540776456956">ប្រើប៊ិចដើម្បីជ្រើសរើសតំបន់</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ត្រូវបានបង្វិលទៅ <ph name="ROTATION" /></translation>
+<translation id="6364916375976753737">ទាញទៅឆ្វេង</translation>
 <translation id="6376931439017688372">ប៊្លូធូស​ត្រូវបាន​បើក</translation>
 <translation id="6381109794406942707">ដើម្បីដោះសោឧបករណ៍នេះ សូមបញ្ចូលកូដ PIN របស់អ្នក។</translation>
 <translation id="639644700271529076">CAPS LOCK ត្រូវបានបិទ</translation>
@@ -473,6 +475,7 @@
 <translation id="698231206551913481">ឯកសារ និងទិន្នន័យមូលដ្ឋានទាំងអស់ដែលប្រើជាមួយអ្នកប្រើនេះនឹងត្រូវបានលុបជាអចិន្ត្រៃយ៍ បន្ទាប់ពីអ្នកប្រើនេះត្រូវបានលុប។</translation>
 <translation id="7015766095477679451">ត្រឡប់​មកវិញ​នៅម៉ោង <ph name="COME_BACK_TIME" />។</translation>
 <translation id="7025533177575372252">ភ្ជាប់ <ph name="DEVICE_NAME" /> ជាមួយ​ទូរសព្ទរបស់អ្នក</translation>
+<translation id="7026338066939101231">ការបន្ថយ</translation>
 <translation id="7029814467594812963">ចាកចេញពីវេន</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Google ជំនួយការ</translation>
 <translation id="7042322267639375032">បង្រួម​តំបន់​ស្ថានភាព</translation>
@@ -544,6 +547,7 @@
 <translation id="7984197416080286869">ព្យាយាមដោះសោ​តាមរយៈស្នាមម្រាមដៃច្រើនដងពេក</translation>
 <translation id="7994370417837006925">ការចូលច្រើន</translation>
 <translation id="8000066093800657092">គ្មានបណ្តាញទេ</translation>
+<translation id="8004512796067398576">ការបន្ថែម</translation>
 <translation id="8029629653277878342">តម្រូវឱ្យបញ្ចូលកូដ PIN ឬពាក្យសម្ងាត់សម្រាប់សុវត្ថិភាពបន្ថែម</translation>
 <translation id="8030169304546394654">បានផ្ដាច់</translation>
 <translation id="8048123526339889627">ការកំណត់​ប៊្លូធូស</translation>
@@ -570,6 +574,7 @@
 <translation id="8261506727792406068">លុប</translation>
 <translation id="8297006494302853456">ខ្សោយ</translation>
 <translation id="8308637677604853869">ម៉ឺនុយពីមុន</translation>
+<translation id="8331626408530291785">ទាញឡើង</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">បង្កើត​កំណត់​ចំណាំ</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> នេះ និងទូរសព្ទរបស់អ្នក​នឹងភ្ជាប់ដោយស្វ័យប្រវត្តិ</translation>

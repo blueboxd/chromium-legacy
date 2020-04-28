@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.library.api.internal.common;
 
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,8 +19,8 @@ public final class Model {
     public final int schemaVersion;
 
     private Model(List<StreamDataOperation> streamDataOperations, int schemaVersion) {
-        this.streamDataOperations = Collections.unmodifiableList(
-                Collections.list(Collections.enumeration(streamDataOperations)));
+        this.streamDataOperations =
+                Collections.unmodifiableList(new ArrayList(streamDataOperations));
         this.schemaVersion = schemaVersion;
     }
 

@@ -5389,6 +5389,39 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Media.EME.ApiPromiseRejection">
+  <owner>xhwang@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Event recorded when an Encrypted Media Extensions (EME) API promise is
+    rejected. In most cases this indicates a failure.
+  </summary>
+  <metric name="Api" enum="EmeApiType">
+    <summary>
+      The EME API for which the promise is rejected.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SystemCode" enum="CdmSystemCode">
+    <summary>
+      A CDM specific code providing more details about the cause of rejection.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="Media.EME.RequestMediaKeySystemAccess">
   <owner>xhwang@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
@@ -7707,6 +7740,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="IsSignedExchangeInnerResponse">
+    <obsolete>
+      Migrated to the PageLoad.SignedExchange event. The presence of that event
+      indicates the associated source was served via signed exchange.
+    </obsolete>
     <summary>
       Set to 1 if the main resource is an inner response of a signed exchange.
     </summary>
@@ -8135,6 +8172,19 @@ be describing additional metrics about the same event.
   <summary>
     Recorded for page loads controlled by a service worker.
   </summary>
+</event>
+
+<event name="PageLoad.SignedExchange" singular="True">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    Recorded for page loads which main resource is an inner response of a signed
+    exchange.
+  </summary>
+  <metric name="ServedFromGoogleCache">
+    <summary>
+      Set to 1 if the main resource was served from Google's cache server.
+    </summary>
+  </metric>
 </event>
 
 <event name="PageLoadCapping" singular="True">

@@ -15,12 +15,7 @@ namespace {
 const NSInteger kSigninPromoMargin = 8;
 }
 
-@implementation BookmarkTableSigninPromoCell {
-  SigninPromoView* _signinPromoView;
-  UIButton* _closeButton;
-}
-
-@synthesize signinPromoView = _signinPromoView;
+@implementation BookmarkTableSigninPromoCell
 
 + (NSString*)reuseIdentifier {
   return @"BookmarkTableSigninPromoCell";

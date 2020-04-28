@@ -60,15 +60,15 @@ js_library("add_smb_share_dialog.m") {
   extra_deps = [ ":add_smb_share_dialog_module" ]
 }
 
-js_modulizer("smb_browser_proxy_module") {
-  input_files = [ "smb_browser_proxy.js" ]
-  namespace_rewrites = [ "smb_shares.SmbBrowserProxy|SmbBrowserProxy" ]
-}
-
 js_library("smb_browser_proxy.m") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
   sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/smb_shares/smb_browser_proxy.m.js" ]
   extra_deps = [ ":smb_browser_proxy_module" ]
+}
+
+js_modulizer("smb_browser_proxy_module") {
+  input_files = [ "smb_browser_proxy.js" ]
+  namespace_rewrites = [ "smb_shares.SmbBrowserProxy|SmbBrowserProxy" ]
 }
 
 polymer_modulizer("add_smb_share_dialog") {
@@ -77,4 +77,11 @@ polymer_modulizer("add_smb_share_dialog") {
   html_type = "dom-module"
   namespace_rewrites = [ "smb_shares.SmbBrowserProxy|SmbBrowserProxy" ]
   auto_imports = [ "ui/webui/resources/cr_components/chromeos/smb_shares/smb_browser_proxy.html|SmbAuthMethod,SmbBrowserProxy,SmbBrowserProxyImpl,SmbMountResult" ]
+}
+
+group("polymer3_elements") {
+  public_deps = [
+    ":add_smb_share_dialog_module",
+    ":smb_browser_proxy_module",
+  ]
 }

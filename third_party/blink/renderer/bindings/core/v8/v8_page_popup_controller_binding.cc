@@ -39,8 +39,8 @@ void PagePopupControllerAttributeGetterCallback(
 void V8PagePopupControllerBinding::InstallPagePopupController(
     v8::Local<v8::Context> context,
     v8::Local<v8::Object> window_wrapper) {
-  Document* document = Document::DynamicFrom(
-      ToExecutionContext(window_wrapper->CreationContext()));
+  Document* document =
+      ToLocalDOMWindow(window_wrapper->CreationContext())->document();
   if (!document || !ContextFeatures::PagePopupEnabled(document))
     return;
 

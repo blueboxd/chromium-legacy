@@ -141,6 +141,7 @@ class FakeCentral final : public mojom::FakeCentral,
       GetLastWrittenDescriptorValueCallback callback) override;
 
   // BluetoothAdapter overrides:
+  void Initialize(base::OnceClosure callback) override;
   std::string GetAddress() const override;
   std::string GetName() const override;
   void SetName(const std::string& name,

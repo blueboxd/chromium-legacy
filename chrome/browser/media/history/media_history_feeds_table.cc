@@ -454,4 +454,11 @@ bool MediaHistoryFeedsTable::Reset(
   return statement.Run() && DB()->GetLastChangeCount() == 1;
 }
 
+bool MediaHistoryFeedsTable::Delete(const int64_t feed_id) {
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM mediaFeed WHERE id = ?"));
+  statement.BindInt64(0, feed_id);
+  return statement.Run() && DB()->GetLastChangeCount() >= 1;
+}
+
 }  // namespace media_history

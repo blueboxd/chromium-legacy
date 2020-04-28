@@ -9,8 +9,8 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/fullscreen/scoped_allow_fullscreen.h"
@@ -37,7 +37,7 @@ ScreenOrientationControllerImpl* ScreenOrientationControllerImpl::From(
 ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
     LocalFrame& frame)
     : ScreenOrientationController(frame),
-      ExecutionContextLifecycleObserver(frame.GetDocument()),
+      ExecutionContextLifecycleObserver(frame.DomWindow()),
       PageVisibilityObserver(frame.GetPage()) {
   AssociatedInterfaceProvider* provider =
       frame.GetRemoteNavigationAssociatedInterfaces();

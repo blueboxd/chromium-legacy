@@ -44,6 +44,7 @@ import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.ClickUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -150,7 +151,8 @@ public class LocationBarLayoutTest {
         try {
             return TestThreadUtils.runOnUiThreadBlocking(() -> urlBar.getText().toString());
         } catch (ExecutionException ex) {
-            throw new RuntimeException(ex);
+            throw new RuntimeException(
+                    "Failed to get the UrlBar's text! Exception below:\n" + ex.toString());
         }
     }
 
@@ -170,20 +172,26 @@ public class LocationBarLayoutTest {
         return mActivityTestRule.getActivity().findViewById(R.id.mic_button);
     }
 
-    private ImageButton getSecurityButton() {
-        return mActivityTestRule.getActivity().findViewById(R.id.security_button);
+    private View getStatusIconView() {
+        return mActivityTestRule.getActivity().findViewById(R.id.location_bar_status_icon);
     }
 
-    private void setUrlBarTextAndFocus(String text) throws ExecutionException {
-        ClickUtils.clickButton(getUrlBar());
+    private void setUrlBarTextAndFocus(String text) {
+        final UrlBar urlBar = getUrlBar();
+        TestThreadUtils.runOnUiThreadBlocking(() -> { urlBar.requestFocus(); });
+        CriteriaHelper.pollUiThread(() -> urlBar.hasFocus());
 
-        TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
-            @Override
-            public Void call() throws InterruptedException {
-                mActivityTestRule.typeInOmnibox(text, false);
-                return null;
-            }
-        });
+        try {
+            TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
+                @Override
+                public Void call() throws InterruptedException {
+                    mActivityTestRule.typeInOmnibox(text, false);
+                    return null;
+                }
+            });
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Failed to type \"" + text + "\" into the omnibox!");
+        }
     }
 
     @Test
@@ -262,95 +270,9 @@ public class LocationBarLayoutTest {
         });
     }
 
-    @Test
-    @SmallTest
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
-    @Feature({"OmniboxSearchEngineLogo"})
-    public void testOmniboxSearchEngineLogo_unfocusedOnNTP_whenIncognito() {
-        final LocationBarLayout locationBar = getLocationBar();
-        final View iconView = locationBar.getSecurityIconView();
-        updateSearchEngineLogoWithGoogle(locationBar);
-        loadUrlInNewTabAndUpdateModels(UrlConstants.NTP_URL, true);
-
-        onView(withId(R.id.location_bar_status))
-                .check((view, e) -> Assert.assertEquals(iconView.getVisibility(), GONE));
-    }
-
-    @Test
-    @SmallTest
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
-    @Feature({"OmniboxSearchEngineLogo"})
-    public void testOmniboxSearchEngineLogo_backAndForthFromIncognito() {
-        final LocationBarLayout locationBar = getLocationBar();
-        final View iconView = locationBar.getSecurityIconView();
-        updateSearchEngineLogoWithGoogle(locationBar);
-
-        loadUrlInNewTabAndUpdateModels(UrlConstants.NTP_URL, true);
-        TestThreadUtils.runOnUiThreadBlocking(() -> { locationBar.updateVisualsForState(); });
-        loadUrlInNewTabAndUpdateModels(UrlConstants.ABOUT_URL, false);
-        TestThreadUtils.runOnUiThreadBlocking(() -> { locationBar.updateVisualsForState(); });
-
-        onView(withId(R.id.location_bar_status)).check((view, e) -> {
-            Assert.assertEquals(1.0f, view.getAlpha(), 0f);
-        });
-    }
-
-    @Test
-    @SmallTest
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
-    @Feature({"OmniboxSearchEngineLogo"})
-    public void testOmniboxSearchEngineLogo_unfocusedOnNTP() {
-        final LocationBarLayout locationBar = getLocationBar();
-        final View iconView = locationBar.getSecurityIconView();
-        updateSearchEngineLogoWithGoogle(locationBar);
-        loadUrlInNewTabAndUpdateModels(UrlConstants.NTP_URL, false);
-        TestThreadUtils.runOnUiThreadBlocking(() -> { locationBar.updateVisualsForState(); });
-
-        onView(withId(R.id.location_bar_status))
-                .check((view, e) -> Assert.assertEquals(GONE, iconView.getVisibility()));
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
-    @Feature({"OmniboxSearchEngineLogo"})
-    public void testOmniboxSearchEngineLogo_focusedOnNTP() throws ExecutionException {
-        final LocationBarLayout locationBar = getLocationBar();
-        final ImageView iconView = (ImageView) locationBar.getSecurityIconView();
-        updateSearchEngineLogoWithGoogle(locationBar);
-        loadUrlInNewTabAndUpdateModels(UrlConstants.NTP_URL, false);
-        setUrlBarTextAndFocus("");
-
-        onView(withId(R.id.location_bar_status)).check((view, e) -> {
-            Assert.assertEquals(VISIBLE, iconView.getVisibility());
-            Assert.assertEquals(R.drawable.ic_logo_googleg_20dp,
-                    locationBar.getStatusViewCoordinatorForTesting()
-                            .getSecurityIconResourceIdForTesting());
-        });
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
-    @Feature({"OmniboxSearchEngineLogo"})
-    public void testOmniboxSearchEngineLogo_focusedOnNTP_nonGoogleEngine()
-            throws ExecutionException {
-        final LocationBarLayout locationBar = getLocationBar();
-        final ImageView iconView = (ImageView) locationBar.getSecurityIconView();
-        updateSearchEngineLogoWithYahoo(locationBar);
-        loadUrlInNewTabAndUpdateModels(UrlConstants.NTP_URL, false);
-        setUrlBarTextAndFocus("");
-
-        onView(withId(R.id.location_bar_status)).check((view, e) -> {
-            Assert.assertEquals(VISIBLE, iconView.getVisibility());
-            Assert.assertEquals(R.drawable.ic_search,
-                    locationBar.getStatusViewCoordinatorForTesting()
-                            .getSecurityIconResourceIdForTesting());
-        });
-    }
+    /*
+     *  Search engine logo tests.
+     */
 
     @Test
     @SmallTest
@@ -358,7 +280,7 @@ public class LocationBarLayoutTest {
     @Feature({"OmniboxSearchEngineLogo"})
     public void testOmniboxSearchEngineLogo_unfocusedOnSRP_withQIO() {
         final LocationBarLayout locationBar = getLocationBar();
-        final ImageView iconView = (ImageView) locationBar.getSecurityIconView();
+        final View statusIconView = getStatusIconView();
         updateSearchEngineLogoWithGoogle(locationBar);
 
         mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
@@ -367,7 +289,7 @@ public class LocationBarLayoutTest {
         setUrlToPageUrl(locationBar);
 
         onView(withId(R.id.location_bar_status)).check((view, e) -> {
-            Assert.assertEquals(iconView.getVisibility(), VISIBLE);
+            Assert.assertEquals(statusIconView.getVisibility(), VISIBLE);
             Assert.assertEquals(R.drawable.ic_logo_googleg_20dp,
                     locationBar.getStatusViewCoordinatorForTesting()
                             .getSecurityIconResourceIdForTesting());
@@ -402,7 +324,7 @@ public class LocationBarLayoutTest {
     public void
     testOmniboxSearchEngineLogo_focusedOnSRP() throws ExecutionException {
         final LocationBarLayout locationBar = getLocationBar();
-        final ImageView iconView = (ImageView) locationBar.getSecurityIconView();
+        final View statusIconView = getStatusIconView();
         updateSearchEngineLogoWithGoogle(locationBar);
         mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
         mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
@@ -411,54 +333,265 @@ public class LocationBarLayoutTest {
         setUrlBarTextAndFocus("");
 
         onView(withId(R.id.location_bar_status)).check((view, e) -> {
-            Assert.assertEquals(iconView.getVisibility(), VISIBLE);
+            Assert.assertEquals(statusIconView.getVisibility(), VISIBLE);
             Assert.assertEquals(R.drawable.ic_logo_googleg_20dp,
                     locationBar.getStatusViewCoordinatorForTesting()
                             .getSecurityIconResourceIdForTesting());
         });
     }
 
-    @Test
-    @SmallTest
-    @EnableFeatures({ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO})
-    @Feature({"OmniboxSearchEngineLogo"})
-    public void testOmniboxSearchEngineLogo_unfocusedOnChromeVersion() throws ExecutionException {
-        final LocationBarLayout locationBar = getLocationBar();
-        final ImageView iconView = (ImageView) locationBar.getSecurityIconView();
-        updateSearchEngineLogoWithGoogle(locationBar);
-        mTestLocationBarModel.setCurrentUrl("chrome://version");
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.NONE);
-        mTestLocationBarModel.setDisplaySearchTerms(null);
-        setUrlToPageUrl(locationBar);
-
-        onView(withId(R.id.location_bar_status)).check((view, e) -> {
-            Assert.assertEquals(iconView.getVisibility(), VISIBLE);
-            Assert.assertEquals(R.drawable.omnibox_info,
-                    locationBar.getStatusViewCoordinatorForTesting()
-                            .getSecurityIconResourceIdForTesting());
-        });
-    }
+    /*
+     * End-to-end scenarios for search engine logo testing.
+     */
 
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO})
-    @Feature({"OmniboxSearchEngineLogo"})
-    public void testOmniboxSearchEngineLogo_focusedOnChromeVersion() throws ExecutionException {
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_ntp() {
         final LocationBarLayout locationBar = getLocationBar();
-        final ImageView iconView = (ImageView) locationBar.getSecurityIconView();
+        final View statusIconView = getStatusIconView();
         updateSearchEngineLogoWithGoogle(locationBar);
-        mTestLocationBarModel.setCurrentUrl("chrome://version");
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.NONE);
-        mTestLocationBarModel.setDisplaySearchTerms(null);
-        setUrlToPageUrl(locationBar);
+        loadUrlInNewTabAndUpdateModels(UrlConstants.NTP_URL, /* incognito= */ false, locationBar);
+
+        onView(withId(R.id.location_bar_status))
+                .check((view, e) -> Assert.assertEquals(GONE, statusIconView.getVisibility()));
+
+        // Focus the UrlBar and check that the status view is VISIBLE.
         setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status))
+                .check((view, e) -> Assert.assertEquals(VISIBLE, statusIconView.getVisibility()));
+    }
 
-        onView(withId(R.id.location_bar_status)).check((view, e) -> {
-            Assert.assertEquals(iconView.getVisibility(), VISIBLE);
-            Assert.assertEquals(R.drawable.ic_logo_googleg_20dp,
-                    locationBar.getStatusViewCoordinatorForTesting()
-                            .getSecurityIconResourceIdForTesting());
-        });
+    @Test
+    @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_ntpIncognito() {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View statusIconView = getStatusIconView();
+        updateSearchEngineLogoWithGoogle(locationBar);
+        loadUrlInNewTabAndUpdateModels(UrlConstants.NTP_URL, /* incognito= */ true, locationBar);
+
+        // The status view should be hidden in both focused/unfocused while incognito.
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e)
+                                -> Assert.assertEquals("Should be gone when unfocused", GONE,
+                                        statusIconView.getVisibility()));
+
+        setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e)
+                                -> Assert.assertEquals("Should be gone when focused", GONE,
+                                        statusIconView.getVisibility()));
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_ntpToSite() throws ExecutionException {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View statusIconView = getStatusIconView();
+        updateSearchEngineLogoWithGoogle(locationBar);
+        Tab tab = loadUrlInNewTabAndUpdateModels(
+                UrlConstants.NTP_URL, /* incognito= */ false, locationBar);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> tab.loadUrl(new LoadUrlParams(UrlConstants.ABOUT_URL)));
+
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(VISIBLE, statusIconView.getVisibility()));
+
+        setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(VISIBLE, statusIconView.getVisibility()));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_site() {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View statusIconView = getStatusIconView();
+        updateSearchEngineLogoWithGoogle(locationBar);
+        loadUrlInNewTabAndUpdateModels(UrlConstants.ABOUT_URL, /* incognito= */ false, locationBar);
+
+        // The status view should be hidden in both focused/unfocused while incognito.
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e)
+                                -> Assert.assertEquals(
+                                        "Status should be visible when unfocused on a site.",
+                                        VISIBLE, statusIconView.getVisibility()));
+
+        setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e)
+                                -> Assert.assertEquals(
+                                        "Status should be visible when focused on a site.", VISIBLE,
+                                        statusIconView.getVisibility()));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_siteIncognito() {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View statusIconView = getStatusIconView();
+        updateSearchEngineLogoWithGoogle(locationBar);
+        loadUrlInNewTabAndUpdateModels(UrlConstants.ABOUT_URL, /* incognito= */ true, locationBar);
+
+        // The status view should be hidden in both focused/unfocused while incognito.
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(GONE, statusIconView.getVisibility()));
+
+        setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(GONE, statusIconView.getVisibility()));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_siteToSite() throws ExecutionException {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View statusIconView = getStatusIconView();
+        updateSearchEngineLogoWithGoogle(locationBar);
+        Tab tab = loadUrlInNewTabAndUpdateModels(
+                UrlConstants.CHROME_BLANK_URL, /* incognito= */ false, locationBar);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> tab.loadUrl(new LoadUrlParams(UrlConstants.ABOUT_URL)));
+
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(VISIBLE, statusIconView.getVisibility()));
+
+        setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(VISIBLE, statusIconView.getVisibility()));
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_ntp_nonGoogle() {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View statusIconView = getStatusIconView();
+        updateSearchEngineLogoWithYahoo(locationBar);
+        loadUrlInNewTabAndUpdateModels(UrlConstants.NTP_URL, /* incognito= */ false, locationBar);
+
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(GONE, statusIconView.getVisibility()));
+
+        // Focus the UrlBar and check that the status view is VISIBLE.
+        setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(VISIBLE, statusIconView.getVisibility()));
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_ntpIncognito_nonGoogle() {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View statusIconView = getStatusIconView();
+        updateSearchEngineLogoWithYahoo(locationBar);
+        loadUrlInNewTabAndUpdateModels(UrlConstants.NTP_URL, /* incognito= */ true, locationBar);
+
+        // The status view should be hidden in both focused/unfocused while incognito.
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e)
+                                -> Assert.assertEquals("Should be gone when unfocused", GONE,
+                                        statusIconView.getVisibility()));
+
+        setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e)
+                                -> Assert.assertEquals("Should be gone when focused", GONE,
+                                        statusIconView.getVisibility()));
+    }
+
+    @Test
+    @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_ntpToSite_nonGoogle() throws ExecutionException {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View statusIconView = getStatusIconView();
+        updateSearchEngineLogoWithYahoo(locationBar);
+        Tab tab = loadUrlInNewTabAndUpdateModels(
+                UrlConstants.NTP_URL, /* incognito= */ false, locationBar);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> tab.loadUrl(new LoadUrlParams(UrlConstants.ABOUT_URL)));
+
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(VISIBLE, statusIconView.getVisibility()));
+
+        setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(VISIBLE, statusIconView.getVisibility()));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_site_nonGoogle() {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View statusIconView = getStatusIconView();
+        updateSearchEngineLogoWithYahoo(locationBar);
+        loadUrlInNewTabAndUpdateModels(UrlConstants.ABOUT_URL, /* incognito= */ false, locationBar);
+
+        // The status view should be hidden in both focused/unfocused while incognito.
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e)
+                                -> Assert.assertEquals(
+                                        "Status should be visible when unfocused on a site.",
+                                        VISIBLE, statusIconView.getVisibility()));
+
+        setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e)
+                                -> Assert.assertEquals(
+                                        "Status should be visible when focused on a site.", VISIBLE,
+                                        statusIconView.getVisibility()));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_siteIncognito_nonGoogle() {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View statusIconView = getStatusIconView();
+        updateSearchEngineLogoWithYahoo(locationBar);
+        loadUrlInNewTabAndUpdateModels(UrlConstants.ABOUT_URL, /* incognito= */ true, locationBar);
+
+        // The status view should be hidden in both focused/unfocused while incognito.
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(GONE, statusIconView.getVisibility()));
+
+        setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(GONE, statusIconView.getVisibility()));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void testOmniboxSearchEngineLogo_siteToSite_nonGoogle() throws ExecutionException {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View statusIconView = getStatusIconView();
+        updateSearchEngineLogoWithYahoo(locationBar);
+        Tab tab = loadUrlInNewTabAndUpdateModels(
+                UrlConstants.CHROME_BLANK_URL, /* incognito= */ false, locationBar);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> tab.loadUrl(new LoadUrlParams(UrlConstants.ABOUT_URL)));
+
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(VISIBLE, statusIconView.getVisibility()));
+
+        setUrlBarTextAndFocus("");
+        onView(withId(R.id.location_bar_status_icon))
+                .check((view, e) -> Assert.assertEquals(VISIBLE, statusIconView.getVisibility()));
     }
 
     @Test
@@ -528,20 +661,30 @@ public class LocationBarLayoutTest {
                 WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, softInputModeCallable));
     }
 
-    private void loadUrlInNewTabAndUpdateModels(String url, boolean incognito) {
-        mActivityTestRule.loadUrlInNewTab(url, incognito);
+    /** Load a new URL and also update the locaiton bar models. */
+    private Tab loadUrlInNewTabAndUpdateModels(
+            String url, boolean incognito, LocationBarLayout locationBar) {
+        Tab tab = mActivityTestRule.loadUrlInNewTab(url, incognito);
         setupModelsForCurrentTab();
+        setUrlToPageUrl(locationBar);
+        TestThreadUtils.runOnUiThreadBlocking(() -> { locationBar.updateVisualsForState(); });
+        return tab;
     }
 
     /** Performs an update on {@link LocationBar} to show the Google logo. */
-    private void updateSearchEngineLogoWithGoogle(LocationBar locationBar) {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { locationBar.updateSearchEngineStatusIcon(true, true, GOOGLE_URL); });
+    private void updateSearchEngineLogoWithGoogle(LocationBarLayout locationBar) {
+        updateSearchEngineLogo(locationBar, GOOGLE_URL);
     }
 
     /** Performs an update on {@link LocationBar} to show the Yahoo logo. */
-    private void updateSearchEngineLogoWithYahoo(LocationBar locationBar) {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { locationBar.updateSearchEngineStatusIcon(true, false, YAHOO_URL); });
+    private void updateSearchEngineLogoWithYahoo(LocationBarLayout locationBar) {
+        updateSearchEngineLogo(locationBar, YAHOO_URL);
+    }
+
+    private void updateSearchEngineLogo(LocationBarLayout locationBar, String url) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBar.updateSearchEngineStatusIcon(
+                    /* shouldShow= */ true, /* isGoogle= */ url.equals(GOOGLE_URL), url);
+        });
     }
 }

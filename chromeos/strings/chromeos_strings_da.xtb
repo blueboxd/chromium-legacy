@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="3008341117444806826">OPDATER</translation>
+<translation id="3749289110408117711">Filnavn</translation>
 <translation id="3820172043799983114">Ugyldig pinkode.</translation>
 <translation id="3838338534323494292">Ny adgangskode</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> administrerer denne enhed og har adgang til al brugeraktivitet, bl.a. besøgte websider, adgangskoder og mails.</translation>
+<translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Adgangskoden udløber om <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Din Kerberos-billet er ved at udløbe</translation>
 <translation id="445059817448385655">Gammel adgangskode</translation>
 <translation id="467510802200863975">Adgangskoderne stemmer ikke overens</translation>
 <translation id="4731797938093519117">Forældreadgang</translation>
 <translation id="4890353053343094602">Vælg omgående en ny adgangskode</translation>
+<translation id="4932733599132424254">Dato</translation>
 <translation id="5212543919916444558">Jeg kan ikke finde noget på skærmen, jeg kan hjælpe med. Prøv at trykke på mikrofonen for at spørge mig om noget.</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="5317780077021120954">Gem</translation>
@@ -39,6 +42,7 @@
 <translation id="6146993107019042706">Angiv din nye adgangskode for at afslutte</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7690294790491645610">Bekræft den nye adgangskode</translation>
+<translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Skift adgangskode</translation>
 <translation id="8208861521865154048">Fordele</translation>
 <translation id="8747900814994928677">Bekræft ændring</translation>

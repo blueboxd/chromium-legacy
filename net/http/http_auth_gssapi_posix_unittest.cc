@@ -8,8 +8,8 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"

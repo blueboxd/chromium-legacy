@@ -20,6 +20,7 @@ namespace media {
 // Amount of time to wait between UpdateCurrentFrame() callbacks before starting
 // background rendering to keep the Render() callbacks moving.
 const int kBackgroundRenderingTimeoutMs = 250;
+const int kForceBeginFramesTimeoutMs = 250;
 
 // static
 constexpr const char VideoFrameCompositor::kTracingCategory[];
@@ -33,6 +34,11 @@ VideoFrameCompositor::VideoFrameCompositor(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kBackgroundRenderingTimeoutMs),
           base::Bind(&VideoFrameCompositor::BackgroundRender,
+                     base::Unretained(this))),
+      force_begin_frames_timer_(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kForceBeginFramesTimeoutMs),
+          base::Bind(&VideoFrameCompositor::StopForceBeginFrames,
                      base::Unretained(this))),
       submitter_(std::move(submitter)) {
   if (submitter_) {
@@ -276,6 +282,24 @@ void VideoFrameCompositor::SetOnFramePresentedCallback(
     OnNewFramePresentedCB present_cb) {
   base::AutoLock lock(current_frame_lock_);
   new_presented_frame_cb_ = std::move(present_cb);
+
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VideoFrameCompositor::StartForceBeginFrames,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void VideoFrameCompositor::StartForceBeginFrames() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (!submitter_)
+    return;
+
+  submitter_->SetForceBeginFrames(true);
+  force_begin_frames_timer_.Reset();
+}
+
+void VideoFrameCompositor::StopForceBeginFrames() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  submitter_->SetForceBeginFrames(false);
 }
 
 std::unique_ptr<blink::WebMediaPlayer::VideoFramePresentationMetadata>

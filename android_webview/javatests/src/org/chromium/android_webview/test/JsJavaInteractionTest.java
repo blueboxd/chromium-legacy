@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
+import android.webkit.JavascriptInterface;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -18,6 +19,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.JsReplyProxy;
+import org.chromium.android_webview.ScriptReference;
 import org.chromium.android_webview.WebMessageListener;
 import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedTitleHelper;
 import org.chromium.android_webview.test.util.CommonResources;
@@ -48,6 +50,7 @@ public class JsJavaInteractionTest {
     private static final String POST_MESSAGE_REPLY_HTML =
             RESOURCE_PATH + "/post_message_receives_reply.html";
     private static final String FILE_URI = "file:///android_asset/asset_file.html";
+    private static final String HELLO_WORLD_HTML = RESOURCE_PATH + "/hello_world.html";
 
     private static final String HELLO = "Hello";
     private static final String NEW_TITLE = "new_title";
@@ -526,11 +529,7 @@ public class JsJavaInteractionTest {
             Assert.fail("allowedOriginRules shouldn't be url like");
         } catch (RuntimeException e) {
             // Should catch IllegalArgumentException in the end of the re-throw chain.
-            Throwable ex = e;
-            while (ex.getCause() != null) {
-                ex = ex.getCause();
-            }
-            Assert.assertTrue(ex instanceof IllegalArgumentException);
+            Assert.assertTrue(getRootCauseException(e) instanceof IllegalArgumentException);
         }
         Assert.assertFalse(
                 isJsObjectInjectedWhenLoadingUrl("https://www.example.com", jsObjectName5));
@@ -547,11 +546,7 @@ public class JsJavaInteractionTest {
             Assert.fail("Shouldn't allow the same Js object name be added more than once.");
         } catch (RuntimeException e) {
             // Should catch IllegalArgumentException in the end of the re-throw chain.
-            Throwable ex = e;
-            while (ex.getCause() != null) {
-                ex = ex.getCause();
-            }
-            Assert.assertTrue(ex instanceof IllegalArgumentException);
+            Assert.assertTrue(getRootCauseException(e) instanceof IllegalArgumentException);
         }
     }
 
@@ -1004,6 +999,251 @@ public class JsJavaInteractionTest {
         checkInjectAndAccessJsObjectNameAsWindowProperty("var");
     }
 
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testDocumentStartJavaScript_addJavascriptInterfaceShouldBeAvaliable()
+            throws Throwable {
+        final LinkedBlockingQueue<String> javascriptInterfaceQueue = new LinkedBlockingQueue<>();
+        AwActivityTestRule.addJavascriptInterfaceOnUiThread(mAwContents, new Object() {
+            @JavascriptInterface
+            public void send(String message) {
+                javascriptInterfaceQueue.add(message);
+            }
+        }, "javaBridge");
+        addDocumentStartJavascriptOnUiThread(
+                mAwContents, "javaBridge.send('" + HELLO + "');", new String[] {"*"});
+
+        loadUrlFromPath(HELLO_WORLD_HTML);
+
+        String message = AwActivityTestRule.waitForNextQueueElement(javascriptInterfaceQueue);
+
+        Assert.assertEquals(HELLO, message);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testDocumentStartJavaScript_jsObjectShouldBeAvaliable() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        addDocumentStartJavascriptOnUiThread(
+                mAwContents, JS_OBJECT_NAME + ".postMessage('" + HELLO + "');", new String[] {"*"});
+
+        String url = loadUrlFromPath(HELLO_WORLD_HTML);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        assertUrlHasOrigin(url, data.mSourceOrigin);
+        Assert.assertEquals(HELLO, data.mMessage);
+        Assert.assertTrue(data.mIsMainFrame);
+        Assert.assertEquals(0, data.mPorts.length);
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testDocumentStartJavaScript_runBeforeUserScript() throws Throwable {
+        addDocumentStartJavascriptOnUiThread(mAwContents,
+                JS_OBJECT_NAME + ".postMessage('" + HELLO + "1');", new String[] {"*"});
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+
+        // POST_MESSAGE_SIMPLE_HTML will post HELLO message.
+        String url = loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        assertUrlHasOrigin(url, data.mSourceOrigin);
+        Assert.assertEquals(HELLO + "1", data.mMessage);
+        Assert.assertTrue(data.mIsMainFrame);
+        Assert.assertEquals(0, data.mPorts.length);
+
+        TestWebMessageListener.Data data2 = mListener.waitForOnPostMessage();
+        Assert.assertEquals(HELLO, data2.mMessage);
+        Assert.assertTrue(data2.mIsMainFrame);
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testDocumentStartJavaScript_multipleScripts() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        addDocumentStartJavascriptOnUiThread(mAwContents,
+                JS_OBJECT_NAME + ".postMessage('" + HELLO + "0');", new String[] {"*"});
+        addDocumentStartJavascriptOnUiThread(mAwContents,
+                JS_OBJECT_NAME + ".postMessage('" + HELLO + "1');", new String[] {"*"});
+
+        String url = loadUrlFromPath(HELLO_WORLD_HTML);
+
+        for (int i = 0; i < 2; ++i) {
+            TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+            assertUrlHasOrigin(url, data.mSourceOrigin);
+            Assert.assertEquals(HELLO + Integer.toString(i), data.mMessage);
+            Assert.assertTrue(data.mIsMainFrame);
+            Assert.assertEquals(0, data.mPorts.length);
+        }
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testDocumentStartJavaScript_callAgainAfterPageLoad() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        addDocumentStartJavascriptOnUiThread(mAwContents,
+                JS_OBJECT_NAME + ".postMessage('" + HELLO + "0');", new String[] {"*"});
+
+        String url = loadUrlFromPath(HELLO_WORLD_HTML);
+
+        addDocumentStartJavascriptOnUiThread(mAwContents,
+                JS_OBJECT_NAME + ".postMessage('" + HELLO + "1');", new String[] {"*"});
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        assertUrlHasOrigin(url, data.mSourceOrigin);
+        Assert.assertEquals(HELLO + "0", data.mMessage);
+        Assert.assertTrue(data.mIsMainFrame);
+        Assert.assertEquals(0, data.mPorts.length);
+
+        // Load the page again.
+        loadUrlFromPath(HELLO_WORLD_HTML);
+
+        for (int i = 0; i < 2; ++i) {
+            TestWebMessageListener.Data data2 = mListener.waitForOnPostMessage();
+
+            Assert.assertEquals(HELLO + Integer.toString(i), data2.mMessage);
+            Assert.assertTrue(data2.mIsMainFrame);
+        }
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testDocumentStartJavaScript_allowedOriginsRulesWithDifferentBaseUrl()
+            throws Throwable {
+        // With a standard origin rule.
+        final String testObjectName = "test";
+        addDocumentStartJavascriptOnUiThread(mAwContents, "let " + testObjectName + " = {};",
+                new String[] {"https://www.example.com:443"});
+
+        Assert.assertTrue(didScriptRunWhenLoading("https://www.example.com", testObjectName));
+        Assert.assertFalse(didScriptRunWhenLoading("https://www.example.com:8080", testObjectName));
+        Assert.assertFalse(didScriptRunWhenLoading("http://www.example.com", testObjectName));
+        Assert.assertFalse(didScriptRunWhenLoading("http://example.com", testObjectName));
+        Assert.assertFalse(didScriptRunWhenLoading("https://www.google.com", testObjectName));
+        Assert.assertFalse(didScriptRunWhenLoading("file://etc", testObjectName));
+        Assert.assertFalse(didScriptRunWhenLoading("ftp://example.com", testObjectName));
+        Assert.assertFalse(didScriptRunWhenLoading(null, testObjectName));
+
+        // Match all the origins.
+        final String testObjectName2 = testObjectName + "2";
+        addDocumentStartJavascriptOnUiThread(
+                mAwContents, "let " + testObjectName2 + " = {};", new String[] {"*"});
+
+        Assert.assertTrue(didScriptRunWhenLoading("https://www.example.com", testObjectName2));
+        Assert.assertTrue(didScriptRunWhenLoading("https://www.example.com:8080", testObjectName2));
+        Assert.assertTrue(didScriptRunWhenLoading("http://www.example.com", testObjectName2));
+        Assert.assertTrue(didScriptRunWhenLoading("http://example.com", testObjectName2));
+        Assert.assertTrue(didScriptRunWhenLoading("https://www.google.com", testObjectName2));
+        Assert.assertTrue(didScriptRunWhenLoading("file://etc", testObjectName2));
+        Assert.assertTrue(didScriptRunWhenLoading("ftp://example.com", testObjectName2));
+        Assert.assertTrue(didScriptRunWhenLoading(null, testObjectName2));
+        // data: scheme could be matched with "*".
+        final String html = "<html><body><div>data</div></body></html>";
+        mActivityTestRule.loadHtmlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), html);
+        Assert.assertTrue(hasJavaScriptObject(
+                testObjectName2, mActivityTestRule, mAwContents, mContentsClient));
+
+        // Wrong origin rule.
+        final String testObjectName5 = testObjectName + "5";
+        try {
+            addDocumentStartJavascriptOnUiThread(mAwContents, "let " + testObjectName5 + " = {};",
+                    new String[] {"https://www.example.com/index.html"});
+            Assert.fail("You cannot use a full URL for allowedOriginRules.");
+        } catch (RuntimeException e) {
+            // Should catch IllegalArgumentException in the end of the re-throw chain.
+            Assert.assertTrue("The exception should be an IllegalArgumentException",
+                    getRootCauseException(e) instanceof IllegalArgumentException);
+        }
+        Assert.assertFalse(didScriptRunWhenLoading("https://www.example.com", testObjectName5));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testDocumentStartJavaScript_willRunInIframe() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        final String script = "if (window.location.origin !== 'http://www.google.com') {"
+                + "  " + JS_OBJECT_NAME + ".postMessage('" + HELLO + "');"
+                + "}";
+        // Since we are matching both origins, the script will run in both iframe and main frame,
+        // but it will send message in only iframe.
+        addDocumentStartJavascriptOnUiThread(mAwContents, script, new String[] {"*"});
+
+        final String frameUrl = mTestServer.getURL(HELLO_WORLD_HTML);
+        final String html = createCrossOriginAccessTestPageHtml(frameUrl);
+
+        // Load a cross origin iframe page, the www.google.com page is the main frame, test server
+        // page is the iframe.
+        mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
+                mContentsClient.getOnPageFinishedHelper(), html, "text/html", false,
+                "http://www.google.com", null);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        assertUrlHasOrigin(frameUrl, data.mSourceOrigin);
+        Assert.assertEquals(HELLO, data.mMessage);
+        Assert.assertFalse(data.mIsMainFrame);
+        Assert.assertEquals(0, data.mPorts.length);
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInteraction"})
+    public void testDocumentStartJavaScript_removeScript() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        ScriptReference[] references = new ScriptReference[2];
+        for (int i = 0; i < 2; ++i) {
+            final String script =
+                    JS_OBJECT_NAME + ".postMessage('" + HELLO + Integer.toString(i) + "');";
+            // Since we are matching both origins, the script will run in both iframe and main
+            // frame, but it will send message in only iframe.
+            references[i] =
+                    addDocumentStartJavascriptOnUiThread(mAwContents, script, new String[] {"*"});
+        }
+
+        final String url = loadUrlFromPath(HELLO_WORLD_HTML);
+
+        for (int i = 0; i < 2; ++i) {
+            TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+            assertUrlHasOrigin(url, data.mSourceOrigin);
+            Assert.assertEquals(HELLO + Integer.toString(i), data.mMessage);
+        }
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> references[0].remove());
+        // Load the page again.
+        loadUrlFromPath(HELLO_WORLD_HTML);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+        Assert.assertEquals(HELLO + "1", data.mMessage);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> references[1].remove());
+        // Load the page again.
+        loadUrlFromPath(HELLO_WORLD_HTML);
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
     private void checkInjectAndAccessJsObjectNameAsWindowProperty(String jsObjName)
             throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, jsObjName, new String[] {"*"}, mListener);
@@ -1032,6 +1272,14 @@ public class JsJavaInteractionTest {
         return hasJavaScriptObject(jsObjectName, mActivityTestRule, mAwContents, mContentsClient);
     }
 
+    // The script is trying to set a global JavaScript object, so it is essentially the same
+    // with isJsObjectInjectedWhenLoadingUrl(). Having a wrapper method to make it clear for
+    // the context.
+    private boolean didScriptRunWhenLoading(final String baseUrl, final String objectName)
+            throws Throwable {
+        return isJsObjectInjectedWhenLoadingUrl(baseUrl, objectName);
+    }
+
     private String loadUrlFromPath(String path) throws Exception {
         final String url = mTestServer.getURL(path);
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
@@ -1050,6 +1298,12 @@ public class JsJavaInteractionTest {
                 + "<body><div>I have an iframe</ div>"
                 + "  <iframe src ='" + frameUrl + "'></iframe>"
                 + "</body></html>";
+    }
+
+    private static ScriptReference addDocumentStartJavascriptOnUiThread(
+            final AwContents awContents, final String script, final String[] allowedOriginRules) {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> awContents.addDocumentStartJavascript(script, allowedOriginRules));
     }
 
     private static void addWebMessageListenerOnUiThread(final AwContents awContents,
@@ -1104,5 +1358,12 @@ public class JsJavaInteractionTest {
             sb.append(port);
         }
         return sb.toString();
+    }
+
+    private static Throwable getRootCauseException(Throwable exception) {
+        while (exception.getCause() != null) {
+            exception = exception.getCause();
+        }
+        return exception;
     }
 }

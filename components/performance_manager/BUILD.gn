@@ -15,6 +15,8 @@ static_library("performance_manager") {
     "decorators/page_load_tracker_decorator.h",
     "decorators/page_load_tracker_decorator_helper.cc",
     "decorators/tab_properties_decorator.cc",
+    "embedder/binders.cc",
+    "embedder/binders.h",
     "embedder/performance_manager_lifetime.h",
     "embedder/performance_manager_registry.h",
     "frame_priority/boosting_vote_aggregator.cc",
@@ -174,8 +176,6 @@ source_set("unit_tests") {
     "performance_manager_impl_unittest.cc",
     "performance_manager_registry_impl_unittest.cc",
     "performance_manager_tab_helper_unittest.cc",
-    "performance_manager_test_harness.cc",
-    "performance_manager_test_harness.h",
     "performance_manager_unittest.cc",
     "web_contents_proxy_unittest.cc",
     "worker_watcher_unittest.cc",
@@ -183,7 +183,8 @@ source_set("unit_tests") {
 
   deps = [
     ":performance_manager",
-    "test_support",
+    "test_support:test_support",
+    "test_support:test_support_common",
     "//base/test:test_support",
     "//content/test:test_support",
     "//testing/gmock",
@@ -205,4 +206,27 @@ source_set("unit_tests") {
       "persistence/site_data/unittest_utils.h",
     ]
   }
+}
+
+source_set("browser_tests") {
+  testonly = true
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  sources = [
+    "performance_manager_browsertest.cc",
+    "render_process_host_proxy_browsertest.cc",
+  ]
+
+  deps = [
+    ":performance_manager",
+    "test_support:browsertest_support",
+    "test_support:test_support_common",
+    "//base/test:test_support",
+    "//content/shell:content_shell_lib",
+    "//content/test:browsertest_support",
+    "//content/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }

@@ -103,9 +103,10 @@ class MEDIA_EXPORT MediaCodecUtil {
 
   // Indicates if the h264 encoder is available on this device.
   //
-  // WARNING: This can't be used from the renderer process since it attempts to
-  // access MediaCodecList (which requires permissions).
-  static bool IsH264EncoderAvailable();
+  // WARNING: If |use_codec_list| is true, this can't be used from the renderer
+  // process since it attempts to access MediaCodecList (which requires
+  // permissions).
+  static bool IsH264EncoderAvailable(bool use_codec_list = true);
 
   // Returns a vector of supported codecs profiles and levels.
   //

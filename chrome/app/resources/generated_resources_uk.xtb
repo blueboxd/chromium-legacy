@@ -125,7 +125,6 @@
 <translation id="1164899421101904659">Введіть ключ для розблокування PIN-коду</translation>
 <translation id="1165039591588034296">Помилка</translation>
 <translation id="1166212789817575481">Закрити вкладки праворуч</translation>
-<translation id="1167199480815330007">Знайдіть шестизначний PIN-код на звороті ключа безпеки</translation>
 <translation id="1168020859489941584">Відкриття через <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Імена серверів – Google</translation>
 <translation id="1171135284592304528">Виділяти вибраний на клавіатурі об’єкт, коли він змінюється</translation>
@@ -614,7 +613,6 @@
 <translation id="1802931390041703523">Flash заблоковано на цій сторінці</translation>
 <translation id="1803531841600994172">Мова перекладу</translation>
 <translation id="1803545009660609783">Оновити</translation>
-<translation id="1805472176602625930">Натисніть кнопку на ключі безпеки</translation>
 <translation id="1805738995123446102">Фонова вкладка використовує мікрофон</translation>
 <translation id="1805822111539868586">Перевірити перегляди</translation>
 <translation id="1805888043020974594">Сервер для друку</translation>
@@ -675,9 +673,9 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> готовий виконати інсталяцію</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">Надати доступ до мікрофона</translation>
+<translation id="1871534214638631766">Показувати пов'язану інформацію, коли ви натискаєте правою кнопкою миші або утримуєте контент</translation>
 <translation id="1871615898038944731">Ваш пристрій <ph name="DEVICE_TYPE" /> оновлено</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Перемістити вкладку в інше вікно}one{Перемістити вкладки в інше вікно}few{Перемістити вкладки в інше вікно}many{Перемістити вкладки в інше вікно}other{Перемістити вкладки в інше вікно}}</translation>
-<translation id="1875312262568496299">Почати</translation>
 <translation id="1875386316419689002">Цю вкладку під'єднано до пристрою HID.</translation>
 <translation id="1875387611427697908">Можна додавати лише із сайту <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Не вдалось отримати маркер автентифікації. Щоб повторити спробу, вийдіть і знову ввійдіть в обліковий запис.</translation>
@@ -697,7 +695,6 @@
 <translation id="189358972401248634">Інші мови</translation>
 <translation id="1895658205118569222">Завершення роботи</translation>
 <translation id="1895934970388272448">Щоб завершити цей процес, потрібно підтвердити реєстрацію свого принтера. Зробіть це зараз.</translation>
-<translation id="1899826437968063457">Для запуску Plugin VM потрібен дозвіл</translation>
 <translation id="1900305421498694955">Додатки з Google Play можуть просити повний системний доступ до файлів, щоб переглядати й змінювати їх на зовнішніх пристроях пам'яті. Усі користувачі, які мають доступ до зовнішнього диска, можуть переглядати файли й папки, створені на пристрої. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Вибрати &amp;всі</translation>
 <translation id="1905375423839394163">Назва пристрою Chromebook</translation>
@@ -733,6 +730,7 @@
 <translation id="1944528062465413897">Код підключення через Bluetooth:</translation>
 <translation id="1944921356641260203">Знайдено оновлення</translation>
 <translation id="1946577776959096882">Переглянути облікові записи</translation>
+<translation id="1949584741547056205">Швидкі відповіді</translation>
 <translation id="1951012854035635156">Асистент</translation>
 <translation id="1954813140452229842">Помилка підключення спільного доступу. Перевірте облікові дані та повторіть спробу.</translation>
 <translation id="1956050014111002555">Файл містив декілька сертифікатів, жоден із яких не було імпортовано:</translation>
@@ -992,7 +990,6 @@
 <translation id="2299734369537008228">Повзунок: <ph name="MIN_LABEL" /> – <ph name="MAX_LABEL" /></translation>
 <translation id="2300383962156589922">Налаштування та керування <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">Кореневий каталог розширення недійсний.</translation>
-<translation id="2302444155926798584">Plugin VM видалено</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" запитує додаткові дозволи.</translation>
 <translation id="23055578400314116">Виберіть ім'я користувача</translation>
 <translation id="2307462900900812319">Установити параметри мережі</translation>
@@ -1036,7 +1033,6 @@
 <translation id="2353297238722298836">Дозволено використовувати камеру та мікрофон</translation>
 <translation id="2356070529366658676">Запитати</translation>
 <translation id="2357330829548294574">Видалити користувача <ph name="USER_NAME" /></translation>
-<translation id="235798134753548762">Ваші додатки, налаштування та параметри Wi-Fi буде синхронізовано. Зміни можна будь-коли внести в меню "Налаштування".</translation>
 <translation id="2359345697448000899">Керуйте своїми розширеннями, натиснувши вкладку "Розширення" в меню "Інструменти".</translation>
 <translation id="2359808026110333948">Продовжити</translation>
 <translation id="236117173274098341">Оптимізувати</translation>
@@ -1073,7 +1069,6 @@
 <translation id="2408955596600435184">Введіть PIN-код</translation>
 <translation id="241082044617551207">Невідомий плагін</translation>
 <translation id="2412593942846481727">Доступне оновлення</translation>
-<translation id="2417206894320497232">Plugin VM уже можна запускати.</translation>
 <translation id="241727068219398187">Дані зашифровано паролем Google від
           <ph name="TIME" />. Це не стосується способів оплати й адрес із Google Pay.</translation>
 <translation id="2419706071571366386">З міркувань безпеки виходьте з облікового запису, коли не використовуєте комп’ютер.</translation>
@@ -1357,7 +1352,6 @@
 <translation id="2773802008104670137">Цей файл може пошкодити ваш комп’ютер.</translation>
 <translation id="2775104091073479743">Редагувати відбитки пальців</translation>
 <translation id="2776441542064982094">Схоже, немає пристроїв для реєстрації в мережі. Якщо ваш пристрій увімкнено й під’єднано до Інтернету, спробуйте зареєструвати його, дотримуючись інструкцій у посібнику з експлуатації.</translation>
-<translation id="2780009105947267877">Налаштування плагіна віртуальної машини…</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2782104745158847185">Не вдалося встановити додаток Linux</translation>
 <translation id="2783298271312924866">Завантажено</translation>
@@ -1401,7 +1395,6 @@
 <translation id="2822910719211888134">Сталася помилка під час створення резервної копії Linux</translation>
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> використовує налаштування проксі-сервера, надані вашим адміністратором</translation>
 <translation id="2825758591930162672">Відкритий ключ суб'єкта</translation>
-<translation id="2825848369316359348">Знайдіть назву на звороті ключа безпеки</translation>
 <translation id="2828650939514476812">З’єднання з мережею Wi-Fi</translation>
 <translation id="2835294513443818940">Не вдається безпечно завантажити файл.</translation>
 <translation id="2835547721736623118">Сервіс розпізнавання мовлення</translation>
@@ -1780,7 +1773,6 @@
 <translation id="3347086966102161372">Копіювати адресу зображення</translation>
 <translation id="3348038390189153836">Виявлено знімний пристрій</translation>
 <translation id="3349933790966648062">Використання пам’яті</translation>
-<translation id="3350117557200012647">Увімкніть режим створення пари</translation>
 <translation id="3355936511340229503">Помилка з’єднання</translation>
 <translation id="3356580349448036450">Готово</translation>
 <translation id="3359256513598016054">Обмеження політики сертифіката</translation>
@@ -1852,7 +1844,6 @@
 <translation id="3449393517661170867">Нове вікно з вкладками</translation>
 <translation id="3449839693241009168">Натисніть <ph name="SEARCH_KEY" />, щоб надіслати команди для розширення <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Відсоток заряду акумулятора, який використовує неактивний стан</translation>
-<translation id="3451332697983754369">Синхронізувати <ph name="DEVICE_TYPE" /></translation>
 <translation id="3453612417627951340">Потрібна авторизація</translation>
 <translation id="3454157711543303649">Активацію завершено</translation>
 <translation id="3454213325559396544">Це останнє автоматичне оновлення програмного забезпечення й системи безпеки на пристрої <ph name="DEVICE_TYPE" />. Щоб отримувати оновлення надалі, придбайте новішу модель.</translation>
@@ -2031,7 +2022,6 @@
 <translation id="3677657024345889897">Найтихіше</translation>
 <translation id="3677911431265050325">Мобільний сайт</translation>
 <translation id="3678156199662914018">Розширення: <ph name="EXTENSION_NAME" /></translation>
-<translation id="3678613690490567106">Синхронізуйте, щоб персоналізувати роботу на всіх пристроях</translation>
 <translation id="3681311097828166361">Дякуємо за відгук. Звіт буде надіслано пізніше, оскільки зараз ви офлайн.</translation>
 <translation id="3682824389861648626">Мінімальна кількість рухів</translation>
 <translation id="3683524264665795342">Запит на спільний доступ до екрана від програми <ph name="APP_NAME" /></translation>
@@ -2079,7 +2069,6 @@
 <translation id="372722114124766626">Лише один раз</translation>
 <translation id="3729303374699765035">Запитувати, коли сайт хоче шукати пристрої Bluetooth поблизу</translation>
 <translation id="3729506734996624908">Дозволені сайти</translation>
-<translation id="3731997362820527097">Виберіть ключ безпеки</translation>
 <translation id="3732078975418297900">Помилка в рядку <ph name="ERROR_LINE" /></translation>
 <translation id="3732530910372558017">PIN-код має містити не більше 63 символів</translation>
 <translation id="3733127536501031542">SSL-сервер із підвищенням</translation>
@@ -2090,7 +2079,6 @@
 <translation id="3742666961763734085">Не вдається знайти організаційний підрозділ із такою назвою. Повторіть спробу.</translation>
 <translation id="3744111561329211289">Фонова синхронізація</translation>
 <translation id="3746127522257263495">У додатках для Android не можна додавати облікові записи G Suite for Education.</translation>
-<translation id="3747039297326604768">Не вдалося відкрити Plugin VM</translation>
 <translation id="3747077776423672805">Щоб видалити додатки, перейдіть у меню "Налаштування" &gt; "Google Play" &gt; "Змінити налаштування Android" &gt; "Додатки" або "Менеджер додатків". Торкніться додатка (якщо потрібно, проведіть пальцем управо або вліво, щоб знайти його) і натисніть "Видалити" або "Вимкнути".</translation>
 <translation id="3748026146096797577">Не з’єднано</translation>
 <translation id="3752582316358263300">ОК...</translation>
@@ -2153,7 +2141,6 @@
 <translation id="3816118180265633665">Кольори Chrome</translation>
 <translation id="3817524650114746564">Відкрити налаштування проксі-сервера комп'ютера</translation>
 <translation id="3817579325494460411">Не вказано</translation>
-<translation id="381892968844315516">На пристрої заборонено використовувати Plugin VM. Зв'яжіться з адміністратором пристрою у своїй організації. Код помилки: <ph name="ERROR_CODE" />.</translation>
 <translation id="3819257035322786455">Резервна копія</translation>
 <translation id="3819261658055281761">Системі не вдалося зберегти маркер довготривалого доступу API для цього пристрою.</translation>
 <translation id="3819800052061700452">&amp;На весь екран</translation>
@@ -2346,7 +2333,6 @@
 <translation id="4056908315660577142">Досягнено ліміту часу використання, який батьки встановили для додатка <ph name="APP_NAME" /> у Chrome. Завтра ти зможеш користуватися ним <ph name="TIME_LIMIT" />.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Переглянути в магазині</translation>
-<translation id="4058647953897694817">Підтвердити через Bluetooth</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Перевірити документ зараз</translation>
 <translation id="406070391919917862">Фонові програми</translation>
@@ -2355,7 +2341,6 @@
 <translation id="4068506536726151626">Ця сторінка містить елементи з таких сайтів, які відстежують ваше місцезнаходження:</translation>
 <translation id="4068776064906523561">Збережені відбитки пальців</translation>
 <translation id="407173827865827707">Після натискання</translation>
-<translation id="4073520450811433493">Налаштування синхронізації</translation>
 <translation id="4074900173531346617">Сертифікат підписувача електронної пошти</translation>
 <translation id="407520071244661467">Масштаб</translation>
 <translation id="4075639477629295004">Не вдається транслювати файл <ph name="FILE_NAME" />.</translation>
@@ -2438,7 +2423,6 @@
 <translation id="4181841719683918333">Мови</translation>
 <translation id="4184885522552335684">Потягніть, щоб перемістити дисплей</translation>
 <translation id="4194570336751258953">Увімкнути функцію "торкнутися, щоб натиснути"</translation>
-<translation id="4194595472342532425">Не вдалося налаштувати Plugin VM через проблему з конфігурацією. Зв'яжіться з адміністратором пристрою у своїй організації. Код помилки: <ph name="ERROR_CODE" />.</translation>
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="4195814663415092787">Продовжити з місця зупинки</translation>
 <translation id="4198146608511578238">Утримуйте значок "Панель запуску", щоб спілкуватися з Google Асистентом.</translation>
@@ -3075,7 +3059,6 @@
 <translation id="5117930984404104619">Відстежувати поведінку інших розширень, зокрема відвідані URL-адреси</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Ваш жорсткий диск заповнено. Збережіть в іншому місці чи звільніть місце на цьому жорстоку диску.</translation>
-<translation id="5122384452788334261">На вашому пристрої закінчується доступний обсяг пам'яті. Для використання Plugin VM рекомендовано мати принаймні <ph name="RECOMMENDED_SPACE" /> вільного місця. Щоб звільнити місце, видаліть файли з пристрою.</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
 <translation id="5125751979347152379">Недійсна URL-адреса.</translation>
 <translation id="5126611267288187364">Переглянути зміни</translation>
@@ -3131,7 +3114,6 @@
 <translation id="520621735928254154">Не вдалось імпортувати сертифікат</translation>
 <translation id="5209307736170827035">Дані вашої дитини у Класі буде захищено. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Пристрої не знайдено.</translation>
-<translation id="5210990770352357081">Не вдається видалити Plugin VM</translation>
 <translation id="5213481667492808996">Службу передавання даних "<ph name="NAME" />" активовано</translation>
 <translation id="5213891612754844763">Показати налаштування проксі</translation>
 <translation id="5215502535566372932">Вибрати країну</translation>
@@ -3480,7 +3462,6 @@
 <translation id="5658415415603568799">З міркувань безпеки Smart Lock запропонує ввести пароль через 20 годин.</translation>
 <translation id="5659593005791499971">Електронна пошта</translation>
 <translation id="5659833766619490117">Цю сторінку неможливо перекласти</translation>
-<translation id="5660204307954428567">Підключити до пристрою <ph name="DEVICE_NAME" />?</translation>
 <translation id="5662513737565158057">Налаштуйте роботу додатків Linux.</translation>
 <translation id="5667546120811588575">Налаштування Google Play…</translation>
 <translation id="5669267381087807207">Активація</translation>
@@ -3740,7 +3721,6 @@
 <translation id="6020431688553761150">Сервер не авторизував ваш доступ до цього ресурсу.</translation>
 <translation id="6022526133015258832">Відкрити на весь екран</translation>
 <translation id="6022659036123304283">Ваш персональний Chrome</translation>
-<translation id="6022705094403139349">Готові підключити ключ безпеки?</translation>
 <translation id="6023643151125006053">Адміністратор домену <ph name="SAML_DOMAIN" /> заблокував цей пристрій (серійний номер <ph name="SERIAL_NUMBER" />).</translation>
 <translation id="6025215716629925253">Запис стека</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – пристрій USB підключено</translation>
@@ -3815,7 +3795,6 @@
 <translation id="6103681770816982672">Застереження. Ви переходите на версію для розробників</translation>
 <translation id="6104068876731806426">Облікові записи Google</translation>
 <translation id="6104311680260824317">Не вдається приєднати пристрій до домену. Сервер не підтримує вказані типи шифрування Kerberos. Перегляньте розділ "Більше опцій", щоб налаштувати шифрування.</translation>
-<translation id="6106186653986077033">Для плагіна віртуальної машини потрібна ліцензія</translation>
 <translation id="6112294629795967147">Торкніться, щоб змінити розмір</translation>
 <translation id="6112727384379533756">Додати квиток</translation>
 <translation id="6112931163620622315">Перевірте телефон</translation>
@@ -4090,7 +4069,6 @@
 <translation id="6478248366783946499">Завантажити небезпечний файл?</translation>
 <translation id="6483485061007832714">Відкрити завантаження</translation>
 <translation id="6483805311199035658">Відкривається файл <ph name="FILE" />...</translation>
-<translation id="6485092675191826776">Термін дії ліцензії Plugin VM завершився</translation>
 <translation id="6488384360522318064">Виберіть мову</translation>
 <translation id="648927581764831596">Нічого не доступно</translation>
 <translation id="6490471652906364588">Пристрій із портом USB типу C (праворуч)</translation>
@@ -4285,7 +4263,6 @@
 <translation id="6770664076092644100">Підтвердити через NFC</translation>
 <translation id="6771503742377376720">Є Центром сертифікації</translation>
 <translation id="6772339735733515807">Керування розширеннями</translation>
-<translation id="6774271858705413900">Помилка. Зачекайте кілька хвилин і запустіть плагін Plugin VM ще раз.</translation>
 <translation id="6775163072363532304">Тут відображатимуться доступні пристрої.</translation>
 <translation id="6777817260680419853">Переспрямування заблоковано</translation>
 <translation id="6778737459546443941">Батьки ще не схвалили його</translation>
@@ -4363,7 +4340,6 @@
 <translation id="686664946474413495">Температура кольорів</translation>
 <translation id="6871644448911473373">Відповідач OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Сервер відхилив введений вами пароль.</translation>
-<translation id="6874170800191969835">Перейдено до результату пошуку "<ph name="SEARCH_RESULT_TEXT" />".</translation>
 <translation id="6876155724392614295">Велосипед</translation>
 <translation id="6876469544038980967">Не корисно</translation>
 <translation id="6878422606530379992">Використання датчиків дозволено</translation>
@@ -4617,7 +4593,6 @@
 <translation id="7207631048330366454">Пошук у додатках</translation>
 <translation id="7210499381659830293">Принтери розширення</translation>
 <translation id="7212097698621322584">Введіть поточний PIN-код, щоб змінити його. Якщо ви не знаєте його, необхідно скинути ключ безпеки, а тоді створити новий PIN-код.</translation>
-<translation id="721467499098558573">Утримуйте кнопку на ключі безпеки принаймні 5 секунд</translation>
 <translation id="7216409898977639127">Постачальник мобільного зв’язку</translation>
 <translation id="7216595297012131718">Розмістіть мови в бажаному порядку</translation>
 <translation id="7220019174139618249">Не вдається експортувати паролі в папку "<ph name="FOLDER" />"</translation>
@@ -4638,7 +4613,6 @@
 <translation id="7240339475467890413">Під’єднатися до нової точки доступу?</translation>
 <translation id="7240847845291869311">Ваша дитина хоче додати обліковий запис G Suite for Education на цей пристрій. У <ph name="LINK_BEGIN" />Примітці про конфіденційність для G Suite for Education<ph name="LINK_END" /> подано пояснення для користувачів і батьків про те, які дані збирає продукт, навіщо це робиться та як вони використовуються.</translation>
 <translation id="7241389281993241388">Увійдіть у <ph name="TOKEN_NAME" />, щоб імпортувати сертифікат клієнта.</translation>
-<translation id="7241443820034350811">Якщо ключ безпеки не вказано в списку, утримуйте його кнопку принаймні 5 секунд.</translation>
 <translation id="7243632151880336635">Очистити та вийти з облікового запису</translation>
 <translation id="7243784282103630670">Не вдалось оновити Linux. Ми відновимо контейнер із резервної копії.</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" />x<ph name="HEIGHT" /> (найвища)</translation>
@@ -4853,7 +4827,6 @@
 <translation id="7531779363494549572">Перейдіть у меню "Налаштування" &gt; "Додатки та сповіщення" &gt; "Сповіщення".</translation>
 <translation id="7532009420053991888">Додаток <ph name="LINUX_APP_NAME" /> не відповідає. Щоб закрити його, виберіть опцію "Примусово закрити".</translation>
 <translation id="7537451260744431038">Сайти не можуть використовувати файли cookie, щоб покращувати веб-перегляд, наприклад не виходити з облікового запису чи запам'ятовувати товари в кошику для покупок</translation>
-<translation id="7539856059004947393">Ключ безпеки Bluetooth</translation>
 <translation id="7540972813190816353">Під час перевірки наявності оновлень сталася помилка: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> у додатку <ph name="APP_NAME" /></translation>
 <translation id="7543104066686362383">Увімкнути функції налагодження на цьому пристрої <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
@@ -4977,7 +4950,6 @@
 <translation id="7704305437604973648">Завдання</translation>
 <translation id="7704317875155739195">Автоматично завершувати пошукові запити та URL-адреси</translation>
 <translation id="7704521324619958564">Відкрити Google Play</translation>
-<translation id="7704628569466676326">Підключіть ключ безпеки до цього пристрою, щоб входити на ньому в обліковий запис</translation>
 <translation id="7705276765467986571">Не вдалося завантажити модель закладки.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7706963867324547089">Режим читання</translation>
@@ -5067,7 +5039,6 @@
 <translation id="7817361223956157679">Додатки Linux ще не підтримують екранну клавіатуру</translation>
 <translation id="7818135753970109980">Додано нову тему (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA або RSN)</translation>
-<translation id="7819992334107904369">Синхронізація Chrome</translation>
 <translation id="782057141565633384">Копіювати адресу відео</translation>
 <translation id="7824864914877854148">Не вдалося створити резервну копію через помилку</translation>
 <translation id="782590969421016895">Використати поточні сторінки</translation>
@@ -5221,7 +5192,6 @@
 <translation id="7988355189918024273">Увімкнути функції доступності</translation>
 <translation id="7991296728590311172">Налаштування кнопкового доступу</translation>
 <translation id="7992202128769240372">Перевищено обмеження: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="7994350303002908848">Не вдалося встановити Plugin VM. Повторіть спробу або зв'яжіться з адміністратором пристрою у своїй організації. Код помилки: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">Метод EAP</translation>
 <translation id="7997826902155442747">Пріоритет обробки</translation>
 <translation id="7999229196265990314">Створено такі файли:
@@ -5320,7 +5290,6 @@
 <translation id="8118488170956489476">Ваша організація <ph name="BEGIN_LINK" />керує веб-переглядачем<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">Керувати вашими завантаженнями</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> та інші</translation>
-<translation id="8120715633374652536">На вашому пристрої закінчується доступний обсяг пам'яті. Щоб використовувати Plugin VM, потрібно принаймні <ph name="MINIMUM_SPACE" /> вільного місця (рекомендовано понад <ph name="RECOMMENDED_SPACE" />). Щоб звільнити місце, видаліть файли з пристрою.</translation>
 <translation id="8123590694679414600">Дані зашифровано за допомогою парольної фрази для синхронізації
           <ph name="TIME" />. Це не стосується способів оплати й адрес із Google Pay.</translation>
 <translation id="81238879832906896">Жовто-біла квітка</translation>
@@ -5634,7 +5603,6 @@
 <translation id="8551388862522347954">Ліцензії</translation>
 <translation id="8553342806078037065">Керувати іншими користувачами</translation>
 <translation id="8554899698005018844">Мову не вибрано</translation>
-<translation id="8556135141412663091">Перш ніж використовувати плагін Plugin VM, потрібно оновити пристрій.</translation>
 <translation id="8557022314818157177">Торкайтеся ключа безпеки, поки відбиток пальця не відсканується</translation>
 <translation id="855773602626431402">На цій сторінці заблоковано запуск плагіна з неізольованим програмним середовищем.</translation>
 <translation id="8557930019681227453">Маніфест</translation>
@@ -5707,7 +5675,6 @@
 <translation id="8655295600908251630">Канал</translation>
 <translation id="8655319619291175901">На жаль, сталася помилка.</translation>
 <translation id="8655972064210167941">Помилка входу. Не вдалося підтвердити ваш пароль. Зв’яжіться з адміністратором або повторіть спробу.</translation>
-<translation id="8656619792520327915">Додати інший ключ безпеки Bluetooth</translation>
 <translation id="8656768832129462377">Не перевіряти</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> транслює ваш екран і аудіо на вкладку <ph name="TAB_NAME" />.</translation>
 <translation id="8661290697478713397">Відкрити посилання в аноні&amp;мному вікні</translation>
@@ -5896,13 +5863,11 @@
 <translation id="8871696467337989339">Використовується непідтримувана позначка командного рядка: <ph name="BAD_FLAG" />. Стабільність і безпеку буде порушено.</translation>
 <translation id="8871974300055371298">Веб-контент</translation>
 <translation id="8872155268274985541">Знайдено недійсний зовнішній файл маніфесту оновлення термінала. Помилка оновлення додатка-термінала. Витягніть носій USB.</translation>
-<translation id="8872187374998143710">Перезапустіть пристрій, щоб скористатися плагіном Plugin VM.</translation>
 <translation id="8872777911145321141">Запитувати, коли сайт хоче отримати доступ до даних або пристроїв віртуальної реальності (рекомендовано)</translation>
 <translation id="8874184842967597500">Не під’єднано</translation>
 <translation id="8875775314572167244">Налаштування Ethernet</translation>
 <translation id="8876307312329369159">Це налаштування не можна змінити в демонстраційному сеансі.</translation>
 <translation id="8877448029301136595">[батьківський каталог]</translation>
-<translation id="8878384954777710821">Видалення Plugin VM…</translation>
 <translation id="8879284080359814990">&amp;Показати як вкладку</translation>
 <translation id="8879921471468674457">Запам'ятати дані для входу</translation>
 <translation id="8881020143150461183">Повторіть спробу. Щоб отримати технічну підтримку, зв'яжіться з <ph name="CARRIER_NAME" />.</translation>
@@ -5933,7 +5898,6 @@
 <translation id="8912810933860534797">Увімкнути автоматичне сканування</translation>
 <translation id="8915370057835397490">Завантаження пропозиції</translation>
 <translation id="8916476537757519021">Додатковий анонімний фрейм: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8921366488406707015">Підтвердження ключа безпеки…</translation>
 <translation id="8922013791253848639">Завжди дозволяти показ реклами на цьому сайті</translation>
 <translation id="8923880975836399332">Темно-бірюзовий</translation>
 <translation id="8925458182817574960">&amp;Налаштування</translation>

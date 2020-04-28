@@ -15,6 +15,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 
@@ -90,9 +91,12 @@ void ReportSensitiveDataWarningBypassed(download::DownloadItem* download) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (profile) {
     std::string raw_digest_sha256 = download->GetHash();
+    // TODO(crbug/1069109): Use actual DlpDeepScanningVerdict that triggered the
+    // original warning here.
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
         ->OnSensitiveDataWarningBypassed(
-            download->GetURL(), download->GetTargetFilePath().AsUTF8Unsafe(),
+            DlpDeepScanningVerdict(), download->GetURL(),
+            download->GetTargetFilePath().AsUTF8Unsafe(),
             base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
             download->GetMimeType(),
             extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,

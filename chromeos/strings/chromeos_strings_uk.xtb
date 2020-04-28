@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Додатки</translation>
 <translation id="2872961005593481000">Завершити роботу</translation>
 <translation id="3008341117444806826">ОНОВИТИ</translation>
+<translation id="3749289110408117711">Ім’я файлу</translation>
 <translation id="3820172043799983114">Недійсний PIN-код.</translation>
 <translation id="3838338534323494292">Новий пароль</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> керує цим пристроєм і має доступ до всіх дій користувача, зокрема відвіданих сторінок, паролів і електронних листів.</translation>
+<translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Термін дії пароля закінчиться через <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Термін дії квитка Kerberos незабаром минає</translation>
 <translation id="445059817448385655">Старий пароль</translation>
 <translation id="467510802200863975">Паролі не збігаються</translation>
 <translation id="4731797938093519117">Батьківський доступ</translation>
 <translation id="4890353053343094602">Негайно виберіть новий</translation>
+<translation id="4932733599132424254">Дата</translation>
 <translation id="5212543919916444558">На екрані не знайдено елементів, проблеми з якими я можу вирішити.
 Торкніться значка мікрофона, щоб поставити запитання.</translation>
 <translation id="5222676887888702881">Вийти</translation>
@@ -40,6 +43,7 @@
 <translation id="6146993107019042706">Щоб завершити, введіть новий пароль</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7690294790491645610">Підтвердьте новий пароль</translation>
+<translation id="7805768142964895445">Статус</translation>
 <translation id="808894953321890993">Змінити пароль</translation>
 <translation id="8208861521865154048">Бонуси</translation>
 <translation id="8747900814994928677">Підтвердити зміни</translation>

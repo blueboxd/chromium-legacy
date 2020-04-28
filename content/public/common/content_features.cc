@@ -582,6 +582,18 @@ const base::Feature kSignedHTTPExchangePingValidity{
 const base::Feature kSmsReceiver{"SmsReceiver",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether Site Isolation protects against spoofing of origin in
+// mojom::FileSystemManager::Open IPC from compromised renderer processes.  See
+// also https://crbug.com/917457.
+//
+// TODO(lukasza, nasko): Make that feature below enabled by default, after
+// coordinating with the remaining consumers of PPAPI.  This should be possible
+// at the end of 2020, when most PPAPI consumers (Flash, most Chrome Apps) will
+// be gone.
+const base::Feature kSiteIsolationEnforcementForFileSystemApi{
+    "SiteIsolationEnforcementForFileSystemApi",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether SpareRenderProcessHostManager tries to always have a warm
 // spare renderer process around for the most recently requested BrowserContext.
 // This feature is only consulted in site-per-process mode.

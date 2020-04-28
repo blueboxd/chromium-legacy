@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/test/task_environment.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"

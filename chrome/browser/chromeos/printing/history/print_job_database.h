@@ -50,6 +50,9 @@ class PrintJobDatabase {
   virtual void DeletePrintJobs(const std::vector<std::string>& ids,
                                DeletePrintJobsCallback callback) = 0;
 
+  // Removes all the print jobs from the storage.
+  virtual void Clear(DeletePrintJobsCallback callback) = 0;
+
   // Retrieves all print jobs from the storage.
   virtual void GetPrintJobs(GetPrintJobsCallback callback) = 0;
 };

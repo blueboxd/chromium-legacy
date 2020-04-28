@@ -15,7 +15,7 @@
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 #if defined(OS_NACL)
-#include "base/logging.h"
+#include "base/notreached.h"
 #else
 #include "net/cert/caching_cert_verifier.h"
 #include "net/cert/coalescing_cert_verifier.h"

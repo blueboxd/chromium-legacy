@@ -522,6 +522,7 @@ class WebAppFrameToolbarView::ToolbarButtonContainer
   }
 
   // ContentSettingImageView::Delegate:
+  bool ShouldHideContentSettingImage() override { return false; }
   content::WebContents* GetContentSettingWebContents() override {
     return browser_view_->GetActiveWebContents();
   }

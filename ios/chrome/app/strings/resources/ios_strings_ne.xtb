@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">ठेगाना 1</translation>
 <translation id="1545749641540134597">QR कोड स्क्यान गर्नुहोस्</translation>
 <translation id="1552525382687785070">तपाईंका प्रशासकले सिंंक सुविधा असक्षम पार्नुभएको छ</translation>
+<translation id="1554477036522844996">नयाँ विन्डो</translation>
 <translation id="1580783302095112590">पत्र पठाइयो।</translation>
 <translation id="1582732959743469162">यस कार्यले तपाईंको जारी डाउनलोडको सम्पूर्ण प्रगति रोक्ने छ।</translation>
 <translation id="1605658421715042784">तस्बिर प्रतिलिपि गर्नुहोस्</translation>
@@ -104,6 +105,7 @@
 <translation id="2239626343334228536">ब्राउजिङ डेटा खाली गर्दै...</translation>
 <translation id="2245545499420671379">इन्कोग्निटो मोडमा तेस्रो पक्षीय कुकीहरूमाथि रोक लगाउनुहोस्</translation>
 <translation id="2257567812274161158">सिंक गर्ने सुविधाले काम गरिरहेको छैन</translation>
+<translation id="225943865679747347">त्रुटि कोड: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">खाता थप्नुहोस्...</translation>
 <translation id="2268044343513325586">परिशुद्ध</translation>
 <translation id="2273327106802955778">थप मेनु</translation>
@@ -187,6 +189,7 @@
 <translation id="3328801116991980348">साइट जानकारी</translation>
 <translation id="3329904751041170572">सर्भरमा जडान हुन सकेन।</translation>
 <translation id="3335947283844343239">बन्द गरिएको ट्याब पुन: खोल्नुहोस्</translation>
+<translation id="3343651535143698944">साइटको स्तरमा अपवाद थप्नुहोस्</translation>
 <translation id="3371831930909698441">अनुवाद उपलब्ध छ। विकल्पहरू स्क्रिनका पुछारतिर उपलब्ध छन्।</translation>
 <translation id="3393920035788932672">पप-अपहरूलाई अनुमति दिइयो</translation>
 <translation id="3443810440409579745">ट्याब प्राप्त गरियो।</translation>
@@ -555,6 +558,7 @@
 <translation id="8319076807703933069">नयाँ खोज</translation>
 <translation id="8323906514956095947">ट्याबसम्बन्धी थप विकल्पहरू हेर्न छोइराख्नुहोस्</translation>
 <translation id="8328777765163860529">सबै बन्द गर्नुहोस्</translation>
+<translation id="8332159733957009464">साइट स्तरमा तय गरिएका अपवादहरू</translation>
 <translation id="8386068868580335421">रिसेट गर्नुहोस्</translation>
 <translation id="8407669440184693619">यो साइटका लागि कुनै पनि पासवर्ड फेला परेन</translation>
 <translation id="842017693807136194">निम्न प्रमाणमार्फत साइन इन ...</translation>

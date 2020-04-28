@@ -1734,7 +1734,7 @@ crbug.com/1050754 external/wpt/feature-policy/experimental-features/layout-anima
 crbug.com/1050754 external/wpt/feature-policy/experimental-features/layout-animations-disabled-violation-report-js-tentative.html [ Timeout ]
 crbug.com/1050754 external/wpt/feature-policy/experimental-features/layout-animations-disabled-violation-report-keyframes-tentative.html [ Timeout ]
 crbug.com/1050754 external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-tentative.sub.html [ Failure ]
-crbug.com/1050754 external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ Failure ]
+crbug.com/1050754 external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-loading-lazy-tentative.sub.html [ Failure ]
 crbug.com/1050754 external/wpt/feature-policy/experimental-features/lazyload/loading-frame-default-eager-disabled-tentative.sub.html [ Failure ]
 crbug.com/1050754 external/wpt/feature-policy/experimental-features/sync-script.tentative.https.sub.html [ Failure ]
 crbug.com/1050754 external/wpt/feature-policy/experimental-features/vertical-scroll-scrollintoview.tentative.html [ Failure ]

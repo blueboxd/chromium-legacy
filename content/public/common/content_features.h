@@ -127,6 +127,8 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kSignedExchangeSubresourcePrefetch;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangePingValidity;
+CONTENT_EXPORT extern const base::Feature
+    kSiteIsolationEnforcementForFileSystemApi;
 CONTENT_EXPORT extern const base::Feature kSmsReceiver;
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
 CONTENT_EXPORT extern const base::Feature kStoragePressureUI;

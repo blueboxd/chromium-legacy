@@ -5,8 +5,12 @@
 #ifndef ASH_PUBLIC_CPP_ASSISTANT_CONTROLLER_ASSISTANT_CONTROLLER_H_
 #define ASH_PUBLIC_CPP_ASSISTANT_CONTROLLER_ASSISTANT_CONTROLLER_H_
 
+#include <string>
+
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 class GURL;
 
@@ -32,6 +36,21 @@ class ASH_PUBLIC_EXPORT AssistantController {
 
   // Returns a weak pointer to this instance.
   virtual base::WeakPtr<AssistantController> GetWeakPtr() = 0;
+
+  // Provides a reference to the underlying |assistant| service.
+  virtual void SetAssistant(
+      mojo::PendingRemote<chromeos::assistant::mojom::Assistant> assistant) = 0;
+
+  // Methods below may only be called after |SetAssistant| is called.
+  // Show speaker id enrollment flow.
+  virtual void StartSpeakerIdEnrollmentFlow() = 0;
+
+  // Send Assistant feedback to Assistant server. If |pii_allowed| is
+  // true then the user gives permission to attach Assistant debug info.
+  // |feedback_description| is user's feedback input.
+  virtual void SendAssistantFeedback(bool pii_allowed,
+                                     const std::string& feedback_description,
+                                     const std::string& screenshot_png) = 0;
 
  protected:
   AssistantController();

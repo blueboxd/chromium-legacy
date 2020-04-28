@@ -4,7 +4,7 @@
 
 #include "net/nqe/effective_connection_type.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace {
 

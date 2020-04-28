@@ -1740,6 +1740,22 @@
         "flash_stage3d",
         "accelerated_2d_canvas"
       ]
+    },
+    {
+      "id": 165,
+      "description": "Accelerated video decode is broken with some older Intel drivers.",
+      "cr_bugs": [1070439],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "=",
+        "value": "10.18.10.3958"
+      },
+      "features": [
+        "accelerated_video_decode"
+      ]
     }
   ]
 }

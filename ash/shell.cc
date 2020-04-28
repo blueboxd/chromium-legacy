@@ -1074,9 +1074,8 @@ void Shell::Init(
 
   // |assistant_controller_| is put before |ambient_controller_| as it will be
   // used by the latter.
-  if (chromeos::features::IsAmbientModeEnabled()) {
+  if (chromeos::features::IsAmbientModeEnabled())
     ambient_controller_ = std::make_unique<AmbientController>();
-  }
 
   home_screen_controller_ = std::make_unique<HomeScreenController>();
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -24,6 +25,7 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -212,6 +214,14 @@ void FileSystemManagerImpl::Open(const url::Origin& origin,
                                  blink::mojom::FileSystemType file_system_type,
                                  OpenCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (base::FeatureList::IsEnabled(
+          features::kSiteIsolationEnforcementForFileSystemApi) &&
+      !security_policy_->CanAccessDataForOrigin(process_id_, origin)) {
+    receivers_.ReportBadMessage("FSMI_OPEN_INVALID_ORIGIN");
+    return;
+  }
+
   if (file_system_type == blink::mojom::FileSystemType::kTemporary) {
     RecordAction(base::UserMetricsAction("OpenFileSystemTemporary"));
   } else if (file_system_type == blink::mojom::FileSystemType::kPersistent) {

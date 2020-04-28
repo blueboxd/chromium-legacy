@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/html_to_js.gni")
 import("//tools/polymer/polymer.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../settings.gni")
@@ -15,7 +16,6 @@ js_type_check("closure_compile") {
     ":password_prompt_dialog",
     ":pref_control_behavior",
     ":settings_boolean_control_behavior",
-    ":settings_checkbox",
     ":settings_dropdown_menu",
     ":settings_idle_load",
     ":settings_radio_group",
@@ -74,10 +74,6 @@ js_library("settings_boolean_control_behavior") {
   ]
 }
 
-js_library("settings_checkbox") {
-  deps = [ ":settings_boolean_control_behavior" ]
-}
-
 js_library("settings_dropdown_menu") {
   deps = [
     ":pref_control_behavior",
@@ -126,6 +122,7 @@ js_library("settings_toggle_button") {
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
+  closure_flags = settings_closure_flags
   deps = [
     ":controlled_button.m",
     ":controlled_radio_button.m",
@@ -133,7 +130,7 @@ js_type_check("closure_compile_module") {
     ":password_prompt_dialog.m",
     ":pref_control_behavior.m",
     ":settings_boolean_control_behavior.m",
-    ":settings_checkbox.m",
+    ":settings_checkbox",
     ":settings_dropdown_menu.m",
     ":settings_idle_load.m",
     ":settings_radio_group.m",
@@ -207,13 +204,11 @@ js_library("settings_boolean_control_behavior.m") {
   extra_deps = [ ":modulize" ]
 }
 
-js_library("settings_checkbox.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/controls/settings_checkbox.m.js" ]
+js_library("settings_checkbox") {
   deps = [
     ":settings_boolean_control_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  extra_deps = [ ":settings_checkbox_module" ]
 }
 
 js_library("settings_dropdown_menu.m") {
@@ -289,14 +284,18 @@ group("polymer3_elements") {
     ":extension_controlled_indicator_module",
     ":modulize",
     ":password_prompt_dialog_module",
-    ":settings_checkbox_module",
     ":settings_dropdown_menu_module",
     ":settings_idle_load_module",
     ":settings_radio_group_module",
     ":settings_slider_module",
     ":settings_textarea_module",
     ":settings_toggle_button_module",
+    ":web_components",
   ]
+}
+
+html_to_js("web_components") {
+  js_files = [ "settings_checkbox.js" ]
 }
 
 polymer_modulizer("controlled_button") {
@@ -335,13 +334,6 @@ polymer_modulizer("password_prompt_dialog") {
   html_type = "dom-module"
 }
 
-polymer_modulizer("settings_checkbox") {
-  js_file = "settings_checkbox.js"
-  html_file = "settings_checkbox.html"
-  html_type = "dom-module"
-  auto_imports = settings_auto_imports
-}
-
 polymer_modulizer("settings_dropdown_menu") {
   js_file = "settings_dropdown_menu.js"
   html_file = "settings_dropdown_menu.html"
@@ -362,9 +354,8 @@ polymer_modulizer("settings_idle_load") {
     "ui/webui/resources/html/assert.html|assert",
     "ui/webui/resources/html/polymer.html|Polymer,html,templatize,TemplateInstanceBase",
   ]
-  namespace_rewrites = settings_namespace_rewrites + [
-    "Polymer.Templatize.templatize|templatize",
-  ]
+  namespace_rewrites = settings_namespace_rewrites +
+                       [ "Polymer.Templatize.templatize|templatize" ]
 }
 
 polymer_modulizer("settings_radio_group") {

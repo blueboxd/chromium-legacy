@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -15,6 +16,7 @@
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
@@ -56,6 +58,8 @@ PerformanceManagerImpl::~PerformanceManagerImpl() {
   // TODO(https://crbug.com/966840): Move this to a TearDown function.
   graph_.TearDown();
   g_performance_manager = nullptr;
+  if (on_destroyed_callback_)
+    std::move(on_destroyed_callback_).Run();
 }
 
 // static
@@ -171,6 +175,27 @@ void PerformanceManagerImpl::BatchDeleteNodes(
 // static
 bool PerformanceManagerImpl::OnPMTaskRunnerForTesting() {
   return GetTaskRunner()->RunsTasksInCurrentSequence();
+}
+
+// static
+void PerformanceManagerImpl::SetOnDestroyedCallbackForTesting(
+    base::OnceClosure callback) {
+  // Bind the callback in one that can be called on the PM sequence (it also
+  // binds the main thread, and bounces a task back to that thread).
+  scoped_refptr<base::SequencedTaskRunner> main_thread =
+      base::SequencedTaskRunnerHandle::Get();
+  base::OnceClosure pm_callback = base::BindOnce(
+      [](scoped_refptr<base::SequencedTaskRunner> main_thread,
+         base::OnceClosure callback) {
+        main_thread->PostTask(FROM_HERE, std::move(callback));
+      },
+      main_thread, std::move(callback));
+
+  // Pass the callback to the PM.
+  GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PerformanceManagerImpl::SetOnDestroyedCallbackImpl,
+                     std::move(pm_callback)));
 }
 
 PerformanceManagerImpl::PerformanceManagerImpl() {
@@ -320,6 +345,15 @@ void PerformanceManagerImpl::RunCallbackWithGraph(
 
   if (g_performance_manager)
     std::move(graph_callback).Run(&g_performance_manager->graph_);
+}
+
+// static
+void PerformanceManagerImpl::SetOnDestroyedCallbackImpl(
+    base::OnceClosure callback) {
+  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+
+  if (g_performance_manager)
+    g_performance_manager->on_destroyed_callback_ = std::move(callback);
 }
 
 }  // namespace performance_manager

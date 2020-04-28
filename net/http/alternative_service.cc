@@ -4,9 +4,10 @@
 
 #include "net/http/alternative_service.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 
 namespace net {

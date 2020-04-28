@@ -1,22 +1,3 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-
-<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
-<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../controls/settings_checkbox.html">
-<link rel="import" href="../controls/settings_toggle_button.html">
-<link rel="import" href="../i18n_setup.html">
-<link rel="import" href="../icons.html">
-<link rel="import" href="import_data_browser_proxy.html">
-<link rel="import" href="../prefs/prefs_behavior.html">
-<link rel="import" href="../settings_vars_css.html">
-
-<dom-module id="settings-import-data-dialog">
-  <template>
     <style include="settings-shared md-select">
       .description {
         align-items: center;
@@ -127,6 +108,3 @@
             on-click="closeDialog_">$i18n{done}</cr-button>
       </div>
     </cr-dialog>
-  </template>
-  <script src="import_data_dialog.js"></script>
-</dom-module>

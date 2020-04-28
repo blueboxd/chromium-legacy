@@ -93,9 +93,10 @@ void UntrustedSource::StartDataRequest(
   GURL url_param = GURL(url.query());
   if (path == "one-google-bar" && one_google_bar_service_) {
     one_google_bar_callbacks_.push_back(std::move(callback));
-    if (one_google_bar_callbacks_.size() == 1) {
-      one_google_bar_service_->Refresh();
+    if (one_google_bar_service_->one_google_bar_data().has_value()) {
+      OnOneGoogleBarDataUpdated();
     }
+    one_google_bar_service_->Refresh();
     return;
   }
   if (path == "one_google_bar.js") {
@@ -106,9 +107,10 @@ void UntrustedSource::StartDataRequest(
   }
   if (path == "promo" && promo_service_) {
     promo_callbacks_.push_back(std::move(callback));
-    if (promo_callbacks_.size() == 1) {
-      promo_service_->Refresh();
+    if (promo_service_->promo_data().has_value()) {
+      OnPromoDataUpdated();
     }
+    promo_service_->Refresh();
     return;
   }
   if (path == "promo.js") {

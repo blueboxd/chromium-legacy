@@ -8,6 +8,12 @@
 
 #include <tuple>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
+#include "base/run_loop.h"
+#include "base/task_runner_util.h"
+#include "base/test/bind_test_util.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -144,6 +150,25 @@ testing::AssertionResult ReportsEqual(
   }
 
   return testing::AssertionSuccess();
+}
+
+std::vector<ConversionReport> GetConversionsToReportForTesting(
+    ConversionManagerImpl* manager,
+    base::Time max_report_time) {
+  base::RunLoop run_loop;
+  std::vector<ConversionReport> conversion_reports;
+  base::PostTaskAndReplyWithResult(
+      manager->storage_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ConversionStorage::GetConversionsToReport,
+                     base::Unretained(manager->storage_.get()),
+                     max_report_time),
+      base::BindOnce(base::BindLambdaForTesting(
+          [&](std::vector<ConversionReport> reports) {
+            conversion_reports = std::move(reports);
+            run_loop.Quit();
+          })));
+  run_loop.Run();
+  return conversion_reports;
 }
 
 }  // namespace content

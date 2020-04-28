@@ -130,6 +130,10 @@ class InputHandlerProxy : public cc::InputHandlerClient,
     return handling_gesture_on_impl_thread_;
   }
 
+  blink::WebGestureDevice currently_active_gesture_device() const {
+    return currently_active_gesture_device_.value();
+  }
+
  protected:
   void RecordMainThreadScrollingReasons(blink::WebGestureDevice device,
                                         uint32_t reasons);

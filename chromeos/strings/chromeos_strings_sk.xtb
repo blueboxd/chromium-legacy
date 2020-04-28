@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Aplikácie</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
 <translation id="3008341117444806826">OBNOVIŤ</translation>
+<translation id="3749289110408117711">Názov súboru</translation>
 <translation id="3820172043799983114">Neplatný kód PIN.</translation>
 <translation id="3838338534323494292">Nové heslo</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> spravuje toto zariadenie a má prístup k všetkým aktivitám používateľa vrátane navštívených webových stránok, hesiel a pošty.</translation>
+<translation id="4034824040120875894">Tlačiareň</translation>
 <translation id="4227825898293920515">Platnosť hesla vyprší o <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Platnosť tiketu Kerberos čoskoro uplynie</translation>
 <translation id="445059817448385655">Staré heslo</translation>
 <translation id="467510802200863975">Heslá sa nezhodujú</translation>
 <translation id="4731797938093519117">Rodičovský prístup</translation>
 <translation id="4890353053343094602">Okamžite si zvoľte nové heslo</translation>
+<translation id="4932733599132424254">Dátum</translation>
 <translation id="5212543919916444558">Na obrazovke nie je nič, s čím by som mohol pomôcť.
 Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
@@ -40,6 +43,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="6146993107019042706">Ak chcete zmenu dokončiť, zadajte nové heslo</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7690294790491645610">Potvrďte nové heslo</translation>
+<translation id="7805768142964895445">Stav</translation>
 <translation id="808894953321890993">Zmeniť heslo</translation>
 <translation id="8208861521865154048">Výhody</translation>
 <translation id="8747900814994928677">Potvrdenie zmeny</translation>

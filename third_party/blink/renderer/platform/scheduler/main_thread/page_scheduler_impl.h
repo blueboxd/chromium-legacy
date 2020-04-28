@@ -111,6 +111,10 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   void OnTraceLogEnabled();
 
+  // Virtual for testing.
+  virtual bool IsWaitingForMainFrameContentfulPaint() const;
+  virtual bool IsWaitingForMainFrameMeaningfulPaint() const;
+
   // Return a number of child web frame schedulers for this PageScheduler.
   size_t FrameCount() const;
 

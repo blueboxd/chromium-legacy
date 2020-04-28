@@ -29,6 +29,7 @@ cr.define('network_config', function() {
 
   cr.addSingletonGetter(MojoInterfaceProviderImpl);
 
+  // #cr_define_end
   return {
     MojoInterfaceProvider: MojoInterfaceProvider,
     MojoInterfaceProviderImpl: MojoInterfaceProviderImpl,

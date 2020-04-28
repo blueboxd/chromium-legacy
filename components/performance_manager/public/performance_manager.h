@@ -12,11 +12,13 @@
 #include "base/memory/weak_ptr.h"
 
 namespace content {
+class RenderFrameHost;
 class WebContents;
 }
 
 namespace performance_manager {
 
+class FrameNode;
 class Graph;
 class GraphOwned;
 class PageNode;
@@ -62,6 +64,13 @@ class PerformanceManager {
   // CallOnGraph callback).
   static base::WeakPtr<PageNode> GetPageNodeForWebContents(
       content::WebContents* wc);
+
+  // Returns a WeakPtr to the FrameNode associated with a given RenderFrameHost,
+  // or a null WeakPtr if there's no FrameNode for this RFH. Valid to call from
+  // the main thread only, the returned WeakPtr should only be dereferenced on
+  // the PM sequence (e.g. it can be used in a CallOnGraph callback).
+  static base::WeakPtr<FrameNode> GetFrameNodeForRenderFrameHost(
+      content::RenderFrameHost* rfh);
 
   // Adds / removes an observer that is notified of PerformanceManager events
   // that happen on the main thread. Can only be called on the main thread.

@@ -4,8 +4,8 @@
 
 #include "net/proxy_resolution/win/dhcpcsvc_init_win.h"
 
+#include "base/check_op.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 
 #include <windows.h>  // Must be in front of other Windows header files.
 

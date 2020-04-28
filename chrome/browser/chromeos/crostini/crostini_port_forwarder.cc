@@ -26,7 +26,6 @@ const char kWlanInterface[] = "wlan0";
 const char kPortNumberKey[] = "port_number";
 const char kPortProtocolKey[] = "protocol_type";
 const char kPortInterfaceKey[] = "input_ifname";
-const char kPortActiveKey[] = "active";
 const char kPortLabelKey[] = "label";
 const char kPortVmNameKey[] = "vm_name";
 const char kPortContainerNameKey[] = "container_name";
@@ -69,6 +68,12 @@ CrostiniPortForwarder::CrostiniPortForwarder(Profile* profile)
     : profile_(profile) {}
 
 CrostiniPortForwarder::~CrostiniPortForwarder() = default;
+
+void CrostiniPortForwarder::SignalActivePortsChanged() {
+  for (auto& observer : observers_) {
+    observer.OnActivePortsChanged(GetActivePorts());
+  }
+}
 
 bool CrostiniPortForwarder::MatchPortRuleDict(const base::Value& dict,
                                               const PortRuleKey& key) {
@@ -126,8 +131,8 @@ bool CrostiniPortForwarder::RemovePortPreference(const PortRuleKey& key) {
 base::Optional<base::Value> CrostiniPortForwarder::ReadPortPreference(
     const PortRuleKey& key) {
   PrefService* pref_service = profile_->GetPrefs();
-  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
-  base::ListValue* all_ports = update.Get();
+  const base::ListValue* all_ports =
+      pref_service->GetList(crostini::prefs::kCrostiniPortForwarding);
   auto it = std::find_if(
       all_ports->begin(), all_ports->end(),
       [&key, this](const auto& dict) { return MatchPortRuleDict(dict, key); });
@@ -145,6 +150,7 @@ void CrostiniPortForwarder::OnAddOrActivatePortCompleted(
     forwarded_ports_.erase(key);
   }
   std::move(result_callback).Run(success);
+  SignalActivePortsChanged();
 }
 
 void CrostiniPortForwarder::OnRemoveOrDeactivatePortCompleted(
@@ -153,6 +159,7 @@ void CrostiniPortForwarder::OnRemoveOrDeactivatePortCompleted(
     bool success) {
   forwarded_ports_.erase(key);
   std::move(result_callback).Run(success);
+  SignalActivePortsChanged();
 }
 
 void CrostiniPortForwarder::TryActivatePort(
@@ -252,8 +259,7 @@ void CrostiniPortForwarder::AddPort(const ContainerId& container_id,
       .container_id = container_id,
   };
 
-  base::Optional<base::Value> existing_port = ReadPortPreference(new_port_key);
-  if (existing_port) {
+  if (ReadPortPreference(new_port_key)) {
     LOG(ERROR) << "Trying to add port which already exists.";
     std::move(result_callback).Run(false);
     return;
@@ -372,6 +378,18 @@ void CrostiniPortForwarder::RemoveAllPorts(const ContainerId& container_id) {
   });
 
   DeactivateAllActivePorts(container_id);
+}
+
+base::ListValue CrostiniPortForwarder::GetActivePorts() {
+  base::ListValue forwarded_ports_list;
+  for (const auto& port : forwarded_ports_) {
+    base::Value port_info(base::Value::Type::DICTIONARY);
+    port_info.SetKey("port_number", base::Value(port.first.port_number));
+    port_info.SetKey("protocol_type",
+                     base::Value(static_cast<int>(port.first.protocol_type)));
+    forwarded_ports_list.Append(std::move(port_info));
+  }
+  return forwarded_ports_list;
 }
 
 size_t CrostiniPortForwarder::GetNumberOfForwardedPortsForTesting() {

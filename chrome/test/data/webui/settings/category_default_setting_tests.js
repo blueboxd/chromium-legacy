@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {ContentSetting,ContentSettingProvider,ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {createContentSettingTypeToValuePair,createDefaultContentSetting,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ContentSetting,ContentSettingProvider,ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {createContentSettingTypeToValuePair,createDefaultContentSetting,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for category-default-setting. */
@@ -96,16 +96,15 @@ suite('CategoryDefaultSetting', function() {
     const prefsLocationEnabled = createSiteSettingsPrefs(
         [
           createContentSettingTypeToValuePair(
-              ContentSettingsTypes.GEOLOCATION,
-              createDefaultContentSetting({
+              ContentSettingsTypes.GEOLOCATION, createDefaultContentSetting({
                 setting: ContentSetting.ALLOW,
               })),
         ],
         []);
 
     return testCategoryEnabled(
-        testElement, ContentSettingsTypes.GEOLOCATION,
-        prefsLocationEnabled, true, ContentSetting.ASK);
+        testElement, ContentSettingsTypes.GEOLOCATION, prefsLocationEnabled,
+        true, ContentSetting.ASK);
   });
 
   test('categoryEnabled correctly represents prefs (disabled)', function() {
@@ -115,22 +114,20 @@ suite('CategoryDefaultSetting', function() {
      */
     const prefsLocationDisabled = createSiteSettingsPrefs(
         [createContentSettingTypeToValuePair(
-            ContentSettingsTypes.GEOLOCATION,
-            createDefaultContentSetting({
+            ContentSettingsTypes.GEOLOCATION, createDefaultContentSetting({
               setting: ContentSetting.BLOCK,
             }))],
         []);
 
     return testCategoryEnabled(
-        testElement, ContentSettingsTypes.GEOLOCATION,
-        prefsLocationDisabled, false, ContentSetting.ASK);
+        testElement, ContentSettingsTypes.GEOLOCATION, prefsLocationDisabled,
+        false, ContentSetting.ASK);
   });
 
   test('test Flash content setting in DETECT/ASK setting', function() {
     const prefsFlash = createSiteSettingsPrefs(
         [createContentSettingTypeToValuePair(
-            ContentSettingsTypes.PLUGINS,
-            createDefaultContentSetting({
+            ContentSettingsTypes.PLUGINS, createDefaultContentSetting({
               setting: ContentSetting.IMPORTANT_CONTENT,
             }))],
         []);
@@ -143,8 +140,7 @@ suite('CategoryDefaultSetting', function() {
   test('test Flash content setting in legacy ALLOW setting', function() {
     const prefsFlash = createSiteSettingsPrefs(
         [createContentSettingTypeToValuePair(
-            ContentSettingsTypes.PLUGINS,
-            createDefaultContentSetting({
+            ContentSettingsTypes.PLUGINS, createDefaultContentSetting({
               setting: ContentSetting.ALLOW,
             }))],
         []);
@@ -157,8 +153,7 @@ suite('CategoryDefaultSetting', function() {
   test('test Flash content setting in BLOCK setting', function() {
     const prefsFlash = createSiteSettingsPrefs(
         [createContentSettingTypeToValuePair(
-            ContentSettingsTypes.PLUGINS,
-            createDefaultContentSetting({
+            ContentSettingsTypes.PLUGINS, createDefaultContentSetting({
               setting: ContentSetting.BLOCK,
             }))],
         []);
@@ -179,8 +174,7 @@ suite('CategoryDefaultSetting', function() {
 
           const prefs = createSiteSettingsPrefs(
               [createContentSettingTypeToValuePair(
-                  ContentSettingsTypes.MIC,
-                  createDefaultContentSetting({
+                  ContentSettingsTypes.MIC, createDefaultContentSetting({
                     setting: ContentSetting.BLOCK,
                     source: ContentSettingProvider.EXTENSION,
                   }))],
@@ -311,8 +305,7 @@ suite('CategoryDefaultSetting', function() {
      */
     const prefsCookiesSessionOnly = createSiteSettingsPrefs(
         [createContentSettingTypeToValuePair(
-            ContentSettingsTypes.COOKIES,
-            createDefaultContentSetting({
+            ContentSettingsTypes.COOKIES, createDefaultContentSetting({
               setting: ContentSetting.SESSION_ONLY,
             }))],
         []);

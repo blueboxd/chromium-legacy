@@ -227,6 +227,18 @@ void WritePixelsINTERNALImmediate(GLint x_offset,
   }
 }
 
+void ConvertYUVMailboxesToRGBINTERNALImmediate(GLenum planes_yuv_color_space,
+                                               const GLbyte* mailboxes) {
+  const uint32_t size =
+      raster::cmds::ConvertYUVMailboxesToRGBINTERNALImmediate::ComputeSize();
+  raster::cmds::ConvertYUVMailboxesToRGBINTERNALImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          raster::cmds::ConvertYUVMailboxesToRGBINTERNALImmediate>(size);
+  if (c) {
+    c->Init(planes_yuv_color_space, mailboxes);
+  }
+}
+
 void TraceBeginCHROMIUM(GLuint category_bucket_id, GLuint name_bucket_id) {
   raster::cmds::TraceBeginCHROMIUM* c =
       GetCmdSpace<raster::cmds::TraceBeginCHROMIUM>();

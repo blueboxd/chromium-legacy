@@ -35,6 +35,11 @@ void TestPrintJobDatabase::DeletePrintJobs(const std::vector<std::string>& ids,
   std::move(callback).Run(true);
 }
 
+void TestPrintJobDatabase::Clear(DeletePrintJobsCallback callback) {
+  database_.clear();
+  std::move(callback).Run(/*success=*/true);
+}
+
 void TestPrintJobDatabase::GetPrintJobs(GetPrintJobsCallback callback) {
   std::vector<printing::proto::PrintJobInfo> entries;
   entries.reserve(database_.size());

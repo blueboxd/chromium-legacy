@@ -1055,9 +1055,9 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
           Menentukan durasi waktu tanpa masukan pengguna setelah layar dinonaktifkan saat menggunakan daya baterai.
 
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak ada aktivitas sebelum <ph name="PRODUCT_OS_NAME" /> menonaktifkan layar.
+          Jika kebijakan ini ditetapkan ke nilai lebih besar dari nol, nilai tersebut akan menentukan berapa lama pengguna harus tetap tidak beraktivitas sebelum <ph name="PRODUCT_OS_NAME" /> menonaktifkan layar.
 
-          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan menonaktifkan layar saat pengguna tidak ada aktivitas.
+          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan menonaktifkan layar ketika pengguna tidak beraktivitas.
 
           Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
 
@@ -1469,7 +1469,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
           ﻿Menentukan durasi waktu tanpa masukan pengguna setelah tindakan tidak ada aktivitas diambil saat menggunakan daya baterai.
 
-          Jika ditetapkan, kebijakan ini akan menentukan durasi waktu pengguna harus tetap tidak ada aktivitas sebelum <ph name="PRODUCT_OS_NAME" /> mengambil tindakan tidak ada aktivitas, yang dapat dikonfigurasi secara terpisah.
+          Jika ditetapkan, kebijakan ini akan menentukan berapa lama pengguna harus tetap tidak beraktivitas sebelum <ph name="PRODUCT_OS_NAME" /> mengambil tindakan tidak ada aktivitas, yang dapat dikonfigurasi secara terpisah.
 
           Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
 
@@ -1547,7 +1547,7 @@ Jika ditetapkan ke False, <ph name="PRODUCT_NAME" /> tidak akan menggunakan noti
 
           Menentukan durasi waktu tanpa masukan pengguna setelah dialog peringatan ditampilkan saat menggunakan daya baterai.
 
-          Jika ditetapkan, kebijakan ini akan menentukan durasi waktu pengguna harus tetap tidak ada aktivitas sebelum <ph name="PRODUCT_OS_NAME" /> menampilkan dialog peringatan yang memberi tahu pengguna bahwa tindakan tidak ada aktivitas akan segera diambil.
+          Jika ditetapkan, kebijakan ini akan menentukan berapa lama pengguna harus tetap tidak beraktivitas sebelum <ph name="PRODUCT_OS_NAME" /> menampilkan dialog peringatan yang memberi tahu pengguna bahwa tindakan untuk tidak adanya aktivitas akan segera diambil.
 
           Jika kebijakan ini tidak ditetapkan, dialog peringatan tidak akan ditampilkan.
 
@@ -1709,9 +1709,9 @@ Jika ditetapkan ke False, <ph name="PRODUCT_NAME" /> tidak akan menggunakan noti
 
           Menentukan durasi waktu tanpa masukan pengguna setelah layar terkunci saat menggunakan daya AC.
 
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak ada aktivitas sebelum <ph name="PRODUCT_OS_NAME" /> mengunci layar.
+          Jika kebijakan ini ditetapkan ke nilai lebih besar dari nol, nilai tersebut akan menentukan berapa lama pengguna harus tetap tidak beraktivitas sebelum <ph name="PRODUCT_OS_NAME" /> mengunci layar.
 
-          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan mengunci layar ketika pengguna tidak ada aktivitas.
+          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan mengunci layar ketika pengguna tidak beraktivitas.
 
           Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
 
@@ -3550,7 +3550,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Menentukan durasi waktu tanpa masukan pengguna sebelum dialog peringatan ditampilkan saat menggunakan daya AC.
 
-          Jika ditetapkan, kebijakan ini akan menentukan durasi waktu pengguna harus tetap tidak ada aktivitas sebelum <ph name="PRODUCT_OS_NAME" /> menampilkan dialog peringatan yang memberi tahu pengguna bahwa tindakan tidak ada aktivitas akan segera diambil.
+          Jika ditetapkan, kebijakan ini akan menentukan berapa lama pengguna harus tetap tidak beraktivitas sebelum <ph name="PRODUCT_OS_NAME" /> menampilkan dialog peringatan yang memberi tahu pengguna bahwa tindakan untuk tidak adanya aktivitas akan segera diambil.
 
           Jika kebijakan ini tidak ditetapkan, dialog peringatan tidak akan ditampilkan.
 
@@ -3669,9 +3669,9 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Menentukan durasi waktu tanpa masukan pengguna setelah layar dikunci saat menggunakan daya baterai.
 
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak ada aktivitas sebelum <ph name="PRODUCT_OS_NAME" /> mengunci layar.
+          Jika kebijakan ini ditetapkan ke nilai lebih besar dari nol, nilai tersebut akan menentukan berapa lama pengguna harus tetap tidak beraktivitas sebelum <ph name="PRODUCT_OS_NAME" /> mengunci layar.
 
-          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan mengunci layar ketika pengguna tidak ada aktivitas.
+          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan mengunci layar ketika pengguna tidak beraktivitas.
 
           Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
 
@@ -4416,9 +4416,9 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
           Menentukan durasi waktu tanpa masukan pengguna setelah layar diredupkan saat menggunakan daya AC.
 
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak ada aktivitas sebelum <ph name="PRODUCT_OS_NAME" /> meredupkan layar.
+          Jika kebijakan ini ditetapkan ke nilai lebih besar dari nol, nilai tersebut akan menentukan berapa lama pengguna harus tetap tidak beraktivitas sebelum <ph name="PRODUCT_OS_NAME" /> meredupkan layar.
 
-          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan meredupkan layar saat pengguna tidak ada aktivitas.
+          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan meredupkan layar ketika pengguna tidak beraktivitas.
 
           Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
 
@@ -4616,9 +4616,9 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
           Menentukan durasi waktu tanpa masukan pengguna setelah layar diredupkan saat menggunakan daya baterai.
 
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak ada aktivitas sebelum <ph name="PRODUCT_OS_NAME" /> meredupkan layar.
+          Jika kebijakan ini ditetapkan ke nilai lebih besar dari nol, nilai tersebut akan menentukan berapa lama pengguna harus tetap tidak beraktivitas sebelum <ph name="PRODUCT_OS_NAME" /> meredupkan layar.
 
-          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan meredupkan layar saat pengguna tidak ada aktivitas.
+          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan meredupkan layar ketika pengguna tidak beraktivitas.
 
           Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
 
@@ -4634,9 +4634,9 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
           Menentukan durasi waktu tanpa masukan pengguna setelah layar dinonaktifkan saat menggunakan daya AC.
 
-          Jika kebijakan ini ditetapkan ke nilai yang lebih besar dari nol, nilai tersebut akan menentukan durasi waktu pengguna harus tetap tidak ada aktivitas sebelum <ph name="PRODUCT_OS_NAME" /> menonaktifkan layar.
+          Jika kebijakan ini ditetapkan ke nilai lebih besar dari nol, nilai tersebut akan menentukan berapa lama pengguna harus tetap tidak beraktivitas sebelum <ph name="PRODUCT_OS_NAME" /> menonaktifkan layar.
 
-          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan menonaktifkan layar saat pengguna tidak ada aktivitas.
+          Jika kebijakan ini ditetapkan ke nol, <ph name="PRODUCT_OS_NAME" /> tidak akan menonaktifkan layar ketika pengguna tidak beraktivitas.
 
           Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
 
@@ -4778,7 +4778,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan,
       Jika <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (nilai 2) ditetapkan, semua variasi tidak akan diterapkan ke browser di layar login. Perlu diketahui, mode ini tidak direkomendasikan karena berpotensi menyebabkan developer <ph name="PRODUCT_OS_NAME" /> tidak dapat menyediakan perbaikan keamanan penting secara tepat waktu.</translation>
 <translation id="8213770777756919897">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 85. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Jika ditetapkan, kebijakan ini akan menentukan tindakan yang diambil <ph name="PRODUCT_OS_NAME" /> saat pengguna tetap tidak ada aktivitas selama durasi waktu yang ditentukan oleh penundaan waktu tidak ada aktivitas, yang dapat dikonfigurasi secara terpisah.
+          Jika ditetapkan, kebijakan ini akan menentukan tindakan yang diambil <ph name="PRODUCT_OS_NAME" /> saat pengguna tetap tidak beraktivitas selama durasi waktu yang ditentukan oleh penundaan waktu tidak ada aktivitas, yang dapat dikonfigurasi secara terpisah.
 
           Jika kebijakan ini tidak ditetapkan, tindakan default akan diambil, yaitu penangguhan.
 
@@ -5011,7 +5011,7 @@ Kebijakan akan dihapus pada M75.</translation>
 
           Menentukan durasi waktu tanpa masukan pengguna setelah tindakan tidak ada aktivitas diambil saat menggunakan daya AC.
 
-          Jika ditetapkan, kebijakan ini akan menentukan durasi waktu pengguna harus tetap tidak ada aktivitas sebelum <ph name="PRODUCT_OS_NAME" /> mengambil tindakan tidak ada aktivitas, yang dapat dikonfigurasi secara terpisah.
+          Jika ditetapkan, kebijakan ini akan menentukan berapa lama pengguna harus tetap tidak beraktivitas sebelum <ph name="PRODUCT_OS_NAME" /> mengambil tindakan tidak ada aktivitas, yang dapat dikonfigurasi secara terpisah.
 
           Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
 

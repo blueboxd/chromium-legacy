@@ -217,15 +217,11 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
       start_ = start_->CreatePreviousWordStartPosition(
           AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       // Since start_ is already located at a word boundary, we need to cross it
-      // in order to move to the next one (stopping at the last anchor's end).
+      // in order to move to the next one. Because Windows ATs behave
+      // undesirably when the start and end endpoints are not in the same anchor
+      // (for character and word navigation), stop at anchor boundary.
       end_ = start_->CreateNextWordStartPosition(
-          AXBoundaryBehavior::StopAtLastAnchorBoundary);
-      // Because Windows ATs behave undesirably when the start and end endpoints
-      // are not in the same anchor (for character and word navigation), make
-      // sure to bring back the end endpoint to the end of the start's anchor.
-      if (start_->anchor_id() != end_->anchor_id()) {
-        end_ = start_->CreatePositionAtEndOfAnchor();
-      }
+          AXBoundaryBehavior::StopAtAnchorBoundary);
       break;
     case TextUnit_Line:
       start_ = start_->CreateBoundaryStartPosition(
@@ -562,7 +558,8 @@ HRESULT AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
     return UIA_E_ELEMENTNOTAVAILABLE;
 
   while (enclosing_node->GetData().IsIgnored() ||
-         enclosing_node->GetData().role == ax::mojom::Role::kInlineTextBox) {
+         enclosing_node->GetData().role == ax::mojom::Role::kInlineTextBox ||
+         enclosing_node->IsChildOfLeaf()) {
     AXPlatformNodeWin* parent = static_cast<AXPlatformNodeWin*>(
         AXPlatformNode::FromNativeViewAccessible(enclosing_node->GetParent()));
     DCHECK(parent);

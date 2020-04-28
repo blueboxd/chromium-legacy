@@ -79,12 +79,11 @@ bool BluetoothTestAndroid::PlatformSupportsLowEnergy() {
 
 void BluetoothTestAndroid::InitWithDefaultAdapter() {
   adapter_ = BluetoothAdapterAndroid::Create(
-                 BluetoothAdapterWrapper_CreateWithDefaultAdapter())
-                 .get();
+      BluetoothAdapterWrapper_CreateWithDefaultAdapter());
 }
 
 void BluetoothTestAndroid::InitWithoutDefaultAdapter() {
-  adapter_ = BluetoothAdapterAndroid::Create(NULL).get();
+  adapter_ = BluetoothAdapterAndroid::Create(nullptr);
 }
 
 void BluetoothTestAndroid::InitWithFakeAdapter() {

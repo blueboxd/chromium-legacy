@@ -985,6 +985,44 @@ void FinishGenerateNegotiateAuthToken(
 }
 #endif
 
+// Conceptually, many downstream interfaces don't need to know about the
+// complexity of callers into StoragePartition, so this function reduces the API
+// surface to something simple and generic. It is designed to be used by
+// callsites in ClearDataImpl.
+//
+// Precondition: |matcher_func| and |storage_origin| cannot both be set.
+// If both |matcher_func| and |storage_origin| are null/empty, should return a
+// null callback that indicates all origins should match. This is an
+// optimization for backends to efficiently clear all data.
+//
+// TODO(csharrison, mek): Right now, the only storage backend that uses this is
+// is for conversion measurement. We should consider moving some of the
+// backends to use this if they can, and additionally we should consider
+// rethinking this approach if / when storage backends move out of process
+// (see crbug.com/1016065 for initial work here).
+base::RepeatingCallback<bool(const url::Origin&)> CreateGenericOriginMatcher(
+    const GURL& storage_origin,
+    StoragePartition::OriginMatcherFunction matcher_func,
+    scoped_refptr<storage::SpecialStoragePolicy> policy) {
+  DCHECK(storage_origin.is_empty() || matcher_func.is_null());
+
+  if (storage_origin.is_empty() && matcher_func.is_null())
+    return base::NullCallback();
+
+  if (matcher_func) {
+    return base::BindRepeating(
+        [](StoragePartition::OriginMatcherFunction matcher_func,
+           scoped_refptr<storage::SpecialStoragePolicy> policy,
+           const url::Origin& origin) -> bool {
+          return matcher_func.Run(origin, policy.get());
+        },
+        std::move(matcher_func), std::move(policy));
+  }
+  DCHECK(!storage_origin.is_empty());
+  return base::BindRepeating(std::equal_to<url::Origin>(),
+                             url::Origin::Create(storage_origin));
+}
+
 }  // namespace
 
 class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
@@ -1161,6 +1199,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       storage::SpecialStoragePolicy* special_storage_policy,
       storage::FileSystemContext* filesystem_context,
       network::mojom::CookieManager* cookie_manager,
+      ConversionManagerImpl* conversion_manager,
       bool perform_storage_cleanup,
       const base::Time begin,
       const base::Time end);
@@ -1184,6 +1223,7 @@ class StoragePartitionImpl::DataDeletionHelper {
     kSessionStorage = 5,
     kShaderCache = 6,
     kPluginPrivate = 7,
+    kConversions = 8,
   };
 
   base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
@@ -2068,7 +2108,7 @@ void StoragePartitionImpl::ClearDataImpl(
       std::move(cookie_deletion_filter), GetPath(), dom_storage_context_.get(),
       quota_manager_.get(), special_storage_policy_.get(),
       filesystem_context_.get(), GetCookieManagerForBrowserProcess(),
-      perform_storage_cleanup, begin, end);
+      conversion_manager_.get(), perform_storage_cleanup, begin, end);
 }
 
 void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
@@ -2241,14 +2281,21 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     storage::SpecialStoragePolicy* special_storage_policy,
     storage::FileSystemContext* filesystem_context,
     network::mojom::CookieManager* cookie_manager,
+    ConversionManagerImpl* conversion_manager,
     bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end) {
   DCHECK_NE(remove_mask_, 0u);
   DCHECK(callback_);
 
+  // Only one of |storage_origin| and |origin_matcher| can be set.
+  DCHECK(storage_origin.is_empty() || origin_matcher.is_null());
+
   base::ScopedClosureRunner synchronous_clear_operations(
       CreateTaskCompletionClosure(TracingDataType::kSynchronous));
+
+  scoped_refptr<storage::SpecialStoragePolicy> storage_policy_ref =
+      base::WrapRefCounted(special_storage_policy);
 
   if (remove_mask_ & REMOVE_DATA_MASK_COOKIES) {
     // The CookieDeletionFilter has a redundant time interval to |begin| and
@@ -2280,19 +2327,18 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       remove_mask_ & REMOVE_DATA_MASK_CACHE_STORAGE) {
     base::PostTask(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
-            base::Unretained(this), base::WrapRefCounted(quota_manager), begin,
-            storage_origin, base::WrapRefCounted(special_storage_policy),
-            origin_matcher, perform_storage_cleanup,
-            CreateTaskCompletionClosure(TracingDataType::kQuota)));
+        base::BindOnce(&DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
+                       base::Unretained(this),
+                       base::WrapRefCounted(quota_manager), begin,
+                       storage_origin, storage_policy_ref, origin_matcher,
+                       perform_storage_cleanup,
+                       CreateTaskCompletionClosure(TracingDataType::kQuota)));
   }
 
   if (remove_mask_ & REMOVE_DATA_MASK_LOCAL_STORAGE) {
     ClearLocalStorageOnUIThread(
-        base::WrapRefCounted(dom_storage_context),
-        base::WrapRefCounted(special_storage_policy), origin_matcher,
-        storage_origin, perform_storage_cleanup, begin, end,
+        base::WrapRefCounted(dom_storage_context), storage_policy_ref,
+        origin_matcher, storage_origin, perform_storage_cleanup, begin, end,
         mojo::WrapCallbackWithDefaultInvokeIfNotRun(
             CreateTaskCompletionClosure(TracingDataType::kLocalStorage)));
 
@@ -2303,9 +2349,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       // TODO(crbug.com/960325): Sometimes SessionStorage fails to call its
       // callback. Figure out why.
       ClearSessionStorageOnUIThread(
-          base::WrapRefCounted(dom_storage_context),
-          base::WrapRefCounted(special_storage_policy), origin_matcher,
-          perform_storage_cleanup,
+          base::WrapRefCounted(dom_storage_context), storage_policy_ref,
+          origin_matcher, perform_storage_cleanup,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
               CreateTaskCompletionClosure(TracingDataType::kSessionStorage)));
     }
@@ -2318,6 +2363,14 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
                                       TracingDataType::kShaderCache)));
   }
 
+  auto filter = CreateGenericOriginMatcher(storage_origin, origin_matcher,
+                                           storage_policy_ref);
+  if (conversion_manager && (remove_mask_ & REMOVE_DATA_MASK_CONVERSIONS)) {
+    conversion_manager->ClearData(
+        begin, end, std::move(filter),
+        CreateTaskCompletionClosure(TracingDataType::kConversions));
+  }
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   if (remove_mask_ & REMOVE_DATA_MASK_PLUGIN_PRIVATE_DATA) {
     filesystem_context->default_file_task_runner()->PostTask(
@@ -2325,8 +2378,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
         base::BindOnce(
             &ClearPluginPrivateDataOnFileTaskRunner,
             base::WrapRefCounted(filesystem_context), storage_origin,
-            std::move(origin_matcher),
-            base::WrapRefCounted(special_storage_policy), begin, end,
+            origin_matcher, storage_policy_ref, begin, end,
             CreateTaskCompletionClosure(TracingDataType::kPluginPrivate)));
   }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)

@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="3008341117444806826">REFRESH</translation>
+<translation id="3749289110408117711">File name</translation>
 <translation id="3820172043799983114">Invalid PIN.</translation>
 <translation id="3838338534323494292">New password</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> manages this device and has access to all user activity, including web pages visited, passwords and email.</translation>
+<translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Password expires in <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos ticket expires soon</translation>
 <translation id="445059817448385655">Old password</translation>
 <translation id="467510802200863975">Passwords do not match</translation>
 <translation id="4731797938093519117">Parent access</translation>
 <translation id="4890353053343094602">Choose a new one immediately</translation>
+<translation id="4932733599132424254">Date</translation>
 <translation id="5212543919916444558">I can't find anything on your screen that I can help with.
 Try tapping the mic to ask me anything.</translation>
 <translation id="5222676887888702881">Sign out</translation>
@@ -40,6 +43,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="6146993107019042706">To finish, enter your new password</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7690294790491645610">Confirm new password</translation>
+<translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Change password</translation>
 <translation id="8208861521865154048">Perks</translation>
 <translation id="8747900814994928677">Confirm change</translation>

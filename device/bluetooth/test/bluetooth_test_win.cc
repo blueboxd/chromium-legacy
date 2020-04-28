@@ -146,7 +146,7 @@ class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
   TestBluetoothAdapterWinrt(ComPtr<IBluetoothAdapter> adapter,
                             ComPtr<IDeviceInformation> device_information,
                             ComPtr<IRadioStatics> radio_statics,
-                            InitCallback init_cb,
+                            base::OnceClosure init_cb,
                             BluetoothTestWinrt* bluetooth_test_winrt)
       : adapter_(std::move(adapter)),
         device_information_(std::move(device_information)),
@@ -253,16 +253,16 @@ bool BluetoothTestWin::PlatformSupportsLowEnergy() {
 }
 
 void BluetoothTestWin::InitWithDefaultAdapter() {
-  auto adapter =
-      base::WrapRefCounted(new BluetoothAdapterWin(base::DoNothing()));
-  adapter->Init();
+  auto adapter = base::WrapRefCounted(new BluetoothAdapterWin());
+  base::RunLoop run_loop;
+  adapter->Initialize(run_loop.QuitClosure());
+  run_loop.Run();
   adapter_ = std::move(adapter);
 }
 
 void BluetoothTestWin::InitWithoutDefaultAdapter() {
-  auto adapter =
-      base::WrapRefCounted(new BluetoothAdapterWin(base::DoNothing()));
-  adapter->InitForTest(nullptr, nullptr, ui_task_runner_,
+  auto adapter = base::WrapRefCounted(new BluetoothAdapterWin());
+  adapter->InitForTest(base::DoNothing(), nullptr, nullptr, ui_task_runner_,
                        bluetooth_task_runner_);
   adapter_ = std::move(adapter);
 }
@@ -279,13 +279,14 @@ void BluetoothTestWin::InitWithFakeAdapter() {
   fake_bt_le_wrapper_ = fake_bt_le_wrapper.get();
   fake_bt_le_wrapper_->AddObserver(this);
 
-  auto adapter =
-      base::WrapRefCounted(new BluetoothAdapterWin(base::DoNothing()));
-  adapter->InitForTest(std::move(fake_bt_classic_wrapper),
-                       std::move(fake_bt_le_wrapper), nullptr,
-                       bluetooth_task_runner_);
+  auto adapter = base::WrapRefCounted(new BluetoothAdapterWin());
+  base::RunLoop run_loop;
+  adapter->InitForTest(
+      run_loop.QuitClosure(), std::move(fake_bt_classic_wrapper),
+      std::move(fake_bt_le_wrapper), nullptr, bluetooth_task_runner_);
   adapter_ = std::move(adapter);
   FinishPendingTasks();
+  run_loop.Run();
 }
 
 bool BluetoothTestWin::DenyPermission() {
@@ -700,7 +701,7 @@ void BluetoothTestWinrt::InitWithDefaultAdapter() {
 
   base::RunLoop run_loop;
   auto adapter = base::WrapRefCounted(new BluetoothAdapterWinrt());
-  adapter->Init(run_loop.QuitClosure());
+  adapter->Initialize(run_loop.QuitClosure());
   adapter_ = std::move(adapter);
   run_loop.Run();
 }

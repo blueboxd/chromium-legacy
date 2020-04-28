@@ -25,6 +25,7 @@ namespace cc {
 class PaintImageGenerator;
 class PaintOpBuffer;
 class PaintWorkletInput;
+class TextureBacking;
 using PaintRecord = PaintOpBuffer;
 
 enum class ImageType { kPNG, kJPEG, kWEBP, kGIF, kICO, kBMP, kAVIF, kInvalid };
@@ -334,6 +335,7 @@ class CC_PAINT_EXPORT PaintImage {
   ContentId content_id_ = kInvalidContentId;
 
   sk_sp<PaintImageGenerator> paint_image_generator_;
+  sk_sp<TextureBacking> texture_backing_;
 
   Id id_ = 0;
   AnimationType animation_type_ = AnimationType::STATIC;

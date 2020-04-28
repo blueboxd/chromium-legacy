@@ -4,7 +4,7 @@
 
 #include "net/websockets/websocket_extension_parser.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "net/http/http_util.h"
 
 namespace net {

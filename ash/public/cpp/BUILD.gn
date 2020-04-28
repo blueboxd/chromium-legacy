@@ -17,12 +17,14 @@ component("cpp") {
     "accessibility_focus_ring_controller.h",
     "accessibility_focus_ring_info.cc",
     "accessibility_focus_ring_info.h",
+    "ambient/ambient_backend_controller.cc",
+    "ambient/ambient_backend_controller.h",
+    "ambient/ambient_client.cc",
+    "ambient/ambient_client.h",
     "ambient/ambient_mode_state.cc",
     "ambient/ambient_mode_state.h",
     "ambient/ambient_prefs.cc",
     "ambient/ambient_prefs.h",
-    "ambient/photo_controller.cc",
-    "ambient/photo_controller.h",
     "android_intent_helper.cc",
     "android_intent_helper.h",
     "app_list/app_list_client.h",
@@ -326,14 +328,16 @@ source_set("unit_tests") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "assistant/test_support/test_assistant_image_downloader.cc",
+    "assistant/test_support/test_assistant_image_downloader.h",
     "immersive/immersive_fullscreen_controller_test_api.cc",
     "immersive/immersive_fullscreen_controller_test_api.h",
+    "test/test_ambient_client.cc",
+    "test/test_ambient_client.h",
     "test/test_keyboard_controller_observer.cc",
     "test/test_keyboard_controller_observer.h",
     "test/test_new_window_delegate.cc",
     "test/test_new_window_delegate.h",
-    "test/test_photo_controller.cc",
-    "test/test_photo_controller.h",
     "test/test_system_tray_client.cc",
     "test/test_system_tray_client.h",
   ]
@@ -341,6 +345,7 @@ source_set("test_support") {
   deps = [
     ":cpp",
     "//base",
+    "//services/network/public/cpp:cpp",
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/gfx",

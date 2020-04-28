@@ -17,6 +17,9 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
 import org.chromium.chrome.browser.share.screenshot.ScreenshotCoordinator;
@@ -26,6 +29,9 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.Shee
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.printing.PrintManagerDelegateImpl;
+import org.chromium.printing.PrintingController;
+import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.Toast;
 
@@ -38,6 +44,7 @@ public class ShareSheetCoordinator {
     private final BottomSheetController mBottomSheetController;
     private final ActivityTabProvider mActivityTabProvider;
     private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
+    private final PrefServiceBridge mPrefServiceBridge;
     private ScreenshotCoordinator mScreenshotCoordinator;
     private static long sShareStartTime;
 
@@ -63,10 +70,11 @@ public class ShareSheetCoordinator {
      * @param provider The ActivityTabProvider for the current visible tab.
      */
     public ShareSheetCoordinator(BottomSheetController controller, ActivityTabProvider provider,
-            ShareSheetPropertyModelBuilder modelBuilder) {
+            ShareSheetPropertyModelBuilder modelBuilder, PrefServiceBridge prefServiceBridge) {
         mBottomSheetController = controller;
         mActivityTabProvider = provider;
         mPropertyModelBuilder = modelBuilder;
+        mPrefServiceBridge = prefServiceBridge;
     }
 
     protected void showShareSheet(ShareParams params, long shareStartTime) {
@@ -175,6 +183,29 @@ public class ShareSheetCoordinator {
                 },
                 /*isFirstParty=*/true);
         models.add(qrcodePropertyModel);
+
+        // Print
+        boolean printingAvailable = mPrefServiceBridge.getBoolean(Pref.PRINTING_ENABLED);
+        if (printingAvailable) {
+            PropertyModel printPropertyModel = mPropertyModelBuilder.createPropertyModel(
+                    AppCompatResources.getDrawable(activity, R.drawable.print),
+                    activity.getResources().getString(R.string.print_share_activity_title),
+                    (currentActivity)
+                            -> {
+                        RecordUserAction.record("SharingHubAndroid.PrintSelected");
+                        recordTimeToShare();
+                        mBottomSheetController.hideContent(bottomSheet, true);
+                        PrintingController printingController =
+                                PrintingControllerImpl.getInstance();
+                        if (printingController != null && !printingController.isBusy()) {
+                            printingController.startPrint(
+                                    new TabPrinter(mActivityTabProvider.get()),
+                                    new PrintManagerDelegateImpl(activity));
+                        }
+                    },
+                    /*isFirstParty=*/true);
+            models.add(printPropertyModel);
+        }
 
         return models;
     }

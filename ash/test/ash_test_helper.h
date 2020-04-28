@@ -11,7 +11,8 @@
 #include <utility>
 
 #include "ash/assistant/test/test_assistant_service.h"
-#include "ash/public/cpp/test/test_photo_controller.h"
+#include "ash/public/cpp/assistant/test_support/test_assistant_image_downloader.h"
+#include "ash/public/cpp/test/test_ambient_client.h"
 #include "ash/public/cpp/test/test_system_tray_client.h"
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/session/test_session_controller_client.h"
@@ -150,8 +151,10 @@ class AshTestHelper : public aura::test::AuraTestHelper {
       std::make_unique<TestAssistantService>();
   std::unique_ptr<TestSystemTrayClient> system_tray_client_ =
       std::make_unique<TestSystemTrayClient>();
-  std::unique_ptr<TestPhotoController> photo_controller_ =
-      std::make_unique<TestPhotoController>();
+  std::unique_ptr<TestAssistantImageDownloader> assistant_image_downloader_ =
+      std::make_unique<TestAssistantImageDownloader>();
+  std::unique_ptr<TestAmbientClient> ambient_client_ =
+      std::make_unique<TestAmbientClient>();
   std::unique_ptr<AppListTestHelper> app_list_test_helper_;
   std::unique_ptr<BluezDBusManagerInitializer> bluez_dbus_manager_initializer_;
   std::unique_ptr<PowerPolicyControllerInitializer>

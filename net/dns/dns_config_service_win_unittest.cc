@@ -4,7 +4,7 @@
 
 #include "net/dns/dns_config_service_win.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/free_deleter.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"

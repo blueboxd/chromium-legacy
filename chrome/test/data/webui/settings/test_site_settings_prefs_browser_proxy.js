@@ -4,10 +4,10 @@
 
 // clang-format off
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {ContentSetting,SiteSettingSource} from 'chrome://settings/lazy_load.js';
 import {createSiteGroup,createSiteSettingsPrefs, getContentSettingsTypeFromChooserType} from 'chrome://test/settings/test_util.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /**
@@ -119,8 +119,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     for (const type in this.prefs_.chooserExceptions) {
       const chooserExceptionList = this.prefs_.chooserExceptions[type];
       for (let i = 0; i < chooserExceptionList.length; ++i) {
-        webUIListenerCallback(
-            'contentSettingChooserPermissionChanged', type);
+        webUIListenerCallback('contentSettingChooserPermissionChanged', type);
       }
     }
   }
@@ -237,12 +236,10 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       // TODO(https://crbug.com/1021606): Add test where existing evaluates to
       // true.
       if (existing) {
-        const originInfo =
-            createOriginInfo(origin, {usage: mockUsage});
+        const originInfo = createOriginInfo(origin, {usage: mockUsage});
         existing.origins.push(originInfo);
       } else {
-        const entry =
-            createSiteGroup(etldPlus1Name, [origin], mockUsage);
+        const entry = createSiteGroup(etldPlus1Name, [origin], mockUsage);
         result.push(entry);
       }
     });
@@ -293,8 +290,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     // permission, however the test stores the permissions with the setting
     // category, so we need to get the content settings type that pertains to
     // this chooser type.
-    const setting =
-        getContentSettingsTypeFromChooserType(chooserType);
+    const setting = getContentSettingsTypeFromChooserType(chooserType);
     assert(
         setting != null,
         'ContentSettingsType mapping missing for ' + chooserType);
@@ -447,8 +443,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   observeProtocolHandlers() {
     webUIListenerCallback('setHandlersEnabled', true);
     webUIListenerCallback('setProtocolHandlers', this.protocolHandlers_);
-    webUIListenerCallback(
-        'setIgnoredProtocolHandlers', this.ignoredProtocols_);
+    webUIListenerCallback('setIgnoredProtocolHandlers', this.ignoredProtocols_);
     this.methodCalled('observeProtocolHandlers');
   }
 

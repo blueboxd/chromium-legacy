@@ -125,7 +125,6 @@
 <translation id="1164899421101904659">Внесете клуч (PUK) за отклучување PIN</translation>
 <translation id="1165039591588034296">Грешка</translation>
 <translation id="1166212789817575481">Затвори картички на десно</translation>
-<translation id="1167199480815330007">Најдете го PIN-кодот со 6 цифри на задната страна на безбедносниот клуч</translation>
 <translation id="1168020859489941584">Ќе се отвори за <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Сервери за име на Google</translation>
 <translation id="1171135284592304528">Нагласи го предметот со фокус на тастатурата кога се менува</translation>
@@ -423,7 +422,7 @@
 <translation id="155865706765934889">Подлога за допир</translation>
 <translation id="1560763881671211335">Администраторите на G Suite for Education одлучуваат до кои услуги на Google може да пристапуваат корисниците додека се најавени на сметка на G Suite for Education. Потребно е училишните администратори да обезбедат или да добијат согласност за користење на услугите од страна на малолетните корисници.
 
-    Податоците од прелистувањето (вклучително и историјата, обележувачите и лозинките) ќе се складираат со сметката на Family Link, а не со училишната сметка.
+    Податоците од прелистувањето (вклучително и историјата, обележувачите и лозинките) ќе се складираат во сметката на Family Link, а не во училишната сметка.
 
     Родителските поставки за Family Link сѐ уште ќе важат. Ако претходно сте блокирале апликација или сајт, нема да мора да го правите тоа повторно.</translation>
 <translation id="1566049601598938765">Веб-сајт</translation>
@@ -614,7 +613,6 @@
 <translation id="1802931390041703523">Flash беше блокиран на страницава</translation>
 <translation id="1803531841600994172">Јазик на кој треба да се преведе</translation>
 <translation id="1803545009660609783">Повторно обучи</translation>
-<translation id="1805472176602625930">Притиснете го копчето на безбедносниот клуч</translation>
 <translation id="1805738995123446102">Картичка во заднина го користи вашиот микрофон</translation>
 <translation id="1805822111539868586">Провери ги приказите</translation>
 <translation id="1805888043020974594">Сервер за печатење</translation>
@@ -675,9 +673,9 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> е подготвен да ја комплетира инсталацијата</translation>
 <translation id="1868193363684582383">„Ok Google“</translation>
 <translation id="1870629042957780127">Дозволете пристап до микрофонот</translation>
+<translation id="1871534214638631766">Прикажувај поврзани информации кога ќе кликнам со десно копче или кога долго ќе притиснам на содржини</translation>
 <translation id="1871615898038944731">Вашиот <ph name="DEVICE_TYPE" /> е ажуриран</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Преместете ја картичката во друг прозорец}one{Преместете ги картичките во друг прозорец}other{Преместете ги картичките во друг прозорец}}</translation>
-<translation id="1875312262568496299">Започни</translation>
 <translation id="1875386316419689002">Картичкава е поврзана со HID-уред.</translation>
 <translation id="1875387611427697908">Ова може да се додаде само од <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Не успеа да се преземе токен за автентикација. Одјавете се и повторно најавете се за да се обидете повторно.</translation>
@@ -697,7 +695,6 @@
 <translation id="189358972401248634">Други јазици</translation>
 <translation id="1895658205118569222">Исклучување</translation>
 <translation id="1895934970388272448">Мора да ја потврдите регистрацијата на вашиот печатач за да го завршите овој процес - проверете сега.</translation>
-<translation id="1899826437968063457">Plugin VM има потреба од дозвола за да се извршува</translation>
 <translation id="1900305421498694955">Апликациите од Google Play може да бараат целосен пристап до системот на датотеки за да читаат и да запишуваат датотеки на надворешни уреди за складирање. Датотеките и папките создадени на уредот се видливи за сите што го користат надворешниот диск. <ph name="LINK_BEGIN" />Дознајте повеќе<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Избери ги &amp;сите</translation>
 <translation id="1905375423839394163">Име на уредот Chromebook</translation>
@@ -733,6 +730,7 @@
 <translation id="1944528062465413897">Код за спарување преку Bluetooth:</translation>
 <translation id="1944921356641260203">Најдено е ажурирање</translation>
 <translation id="1946577776959096882">Прикажи ги сметките</translation>
+<translation id="1949584741547056205">Брзи одговори</translation>
 <translation id="1951012854035635156">Помошник</translation>
 <translation id="1954813140452229842">Грешка при монтирање на споделувањето. Проверете ги вашите акредитиви и обидете се повторно.</translation>
 <translation id="1956050014111002555">Датотеката содржи повеќе сертификати, но не е увезен ниту еден:</translation>
@@ -992,7 +990,6 @@
 <translation id="2299734369537008228">Лизгач: <ph name="MIN_LABEL" /> до <ph name="MAX_LABEL" /></translation>
 <translation id="2300383962156589922">Приспособете ја и контролирајте ја апликацијата <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">Неважечки основен директориум на наставка.</translation>
-<translation id="2302444155926798584">Plugin VM е деинсталиран</translation>
 <translation id="23030561267973084">„<ph name="EXTENSION_NAME" />“ побара дополнителни дозволи.</translation>
 <translation id="23055578400314116">Изберете корисничко име</translation>
 <translation id="2307462900900812319">Конфигурирај мрежа</translation>
@@ -1036,7 +1033,6 @@
 <translation id="2353297238722298836">Камерата и микрофонот се дозволени</translation>
 <translation id="2356070529366658676">Прашај</translation>
 <translation id="2357330829548294574">Отстранете <ph name="USER_NAME" /></translation>
-<translation id="235798134753548762">Вашите апликации, поставки и поставки за Wi-Fi ќе се синхронизираат. За да извршите промени, одете во „Поставки“ во кое било време после поставувањето.</translation>
 <translation id="2359345697448000899">Уредувајте со наставки со кликнување на Наставки во менито Алатки.</translation>
 <translation id="2359808026110333948">Продолжи</translation>
 <translation id="236117173274098341">Оптимизирај</translation>
@@ -1073,7 +1069,6 @@
 <translation id="2408955596600435184">Внесете го вашиот PIN</translation>
 <translation id="241082044617551207">Непознат приклучок</translation>
 <translation id="2412593942846481727">Достапно е ажурирање</translation>
-<translation id="2417206894320497232">Plugin VM е подготвен за употреба.</translation>
 <translation id="241727068219398187">Податоците се шифрирани со вашата лозинка на Google од
           <ph name="TIME" />. Тоа не ги вклучува начините на плаќање и адресите од Google Pay.</translation>
 <translation id="2419706071571366386">Од безбедносни причини, одјавете се од компјутерот кога не го користите.</translation>
@@ -1206,7 +1201,7 @@
 <translation id="258095186877893873">Долго</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Не можеше да се преземе билетот на Kerberos. Обидете се повторно или контактирајте со администраторот на уредот во вашата организација. (Код за грешка <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997">Се прикажува 1 резултат од пребарувањето <ph name="QUERY" /></translation>
+<translation id="2585013490795742997">Се прикажува 1 резултат од пребарувањето „<ph name="QUERY" />“</translation>
 <translation id="2585724835339714757">Картичкава го споделува вашиот екран.</translation>
 <translation id="2586657967955657006">Табла со исечоци</translation>
 <translation id="2586672484245266891">Внесете пократка URL-адреса</translation>
@@ -1357,7 +1352,6 @@
 <translation id="2773802008104670137">Овој тип на датотека може да му наштети на компјутерот.</translation>
 <translation id="2775104091073479743">Уредување отпечатоци</translation>
 <translation id="2776441542064982094">Се чини дека нема достапни уреди за регистрирање на мрежата. Ако вашиот уред е вклучен и поврзан на интернет, обидете се да го регистрирате користејќи ги инструкциите во неговото упатство за користење.</translation>
-<translation id="2780009105947267877">Се поставува Plugin VM…</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2782104745158847185">Грешка при инсталирањето на апликацијата за Linux</translation>
 <translation id="2783298271312924866">Преземено</translation>
@@ -1401,7 +1395,6 @@
 <translation id="2822910719211888134">Грешка при правењето бекап на Linux</translation>
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> користи поставки за прокси од вашиот администратор</translation>
 <translation id="2825758591930162672">Јавен клуч на субјектот</translation>
-<translation id="2825848369316359348">Најдете го името отпечатено на задниот дел на безбедносниот клуч</translation>
 <translation id="2828650939514476812">Поврзете се на Wi-Fi мрежа</translation>
 <translation id="2835294513443818940">Датотекава не може да се преземе безбедно.</translation>
 <translation id="2835547721736623118">Услуга за препознавање говор</translation>
@@ -1780,7 +1773,6 @@
 <translation id="3347086966102161372">К&amp;опирај ја адресата на сликата</translation>
 <translation id="3348038390189153836">Откриен пренослив уред</translation>
 <translation id="3349933790966648062">Потребна меморија</translation>
-<translation id="3350117557200012647">Влезете во режим на спарување</translation>
 <translation id="3355936511340229503">Грешка при поврзување</translation>
 <translation id="3356580349448036450">Завршено</translation>
 <translation id="3359256513598016054">Ограничувања на политика за сертификат</translation>
@@ -1852,7 +1844,6 @@
 <translation id="3449393517661170867">Нов прозорец со картички</translation>
 <translation id="3449839693241009168">Притисни <ph name="SEARCH_KEY" /> за да испратиш команди на <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Процент на зафаќање во состојба на неактивност</translation>
-<translation id="3451332697983754369">Синхронизирај го мојот <ph name="DEVICE_TYPE" /></translation>
 <translation id="3453612417627951340">Бара авторизација</translation>
 <translation id="3454157711543303649">Активирањето заврши</translation>
 <translation id="3454213325559396544">Ова е последното автоматско софтверско и безбедносно ажурирање за овој <ph name="DEVICE_TYPE" />. За да добивате идни ажурирања, надградете на понов модел.</translation>
@@ -2031,7 +2022,6 @@
 <translation id="3677657024345889897">Најтивко</translation>
 <translation id="3677911431265050325">Побарај мобилна верзија на сајтот</translation>
 <translation id="3678156199662914018">Наставка: <ph name="EXTENSION_NAME" /></translation>
-<translation id="3678613690490567106">Синхронизирајте за персонализирано доживување на уредите</translation>
 <translation id="3681311097828166361">Благодариме за повратните информации. Во моментов сте офлајн, па вашиот извештај ќе се испрати подоцна.</translation>
 <translation id="3682824389861648626">Праг на движења</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> барање за споделување на екран</translation>
@@ -2079,7 +2069,6 @@
 <translation id="372722114124766626">Само еднаш</translation>
 <translation id="3729303374699765035">Прашај кога некој сајт сака да открива уреди со Bluetooth во близина</translation>
 <translation id="3729506734996624908">Дозволени сајтови</translation>
-<translation id="3731997362820527097">Изберете го вашиот безбедносен клуч</translation>
 <translation id="3732078975418297900">Грешка во редот <ph name="ERROR_LINE" /></translation>
 <translation id="3732530910372558017">PIN-кодот мора да има најмногу 63 знаци</translation>
 <translation id="3733127536501031542">ССЛ-сервер со покачување</translation>
@@ -2090,7 +2079,6 @@
 <translation id="3742666961763734085">Не може да се најде организациска единица со тоа име. Обидете се повторно.</translation>
 <translation id="3744111561329211289">Синхронизација во заднина</translation>
 <translation id="3746127522257263495">Апликациите на Android не поддржуваат додавање сметка на G Suite for Education.</translation>
-<translation id="3747039297326604768">Не можеше да се отвори Plugin VM</translation>
 <translation id="3747077776423672805">За да ги отстраните апликациите, одете во „Поставки &gt; Google Play Store &gt; Управувајте со поставките за Android &gt; Апликации“ или „Управникот со апликации“. Потоа допрете ја апликацијата што сакате да ја деинсталирате (можеби ќе треба да повлечете десно или лево за да ја најдете). Потоа допрете „Деинсталирај“ или „Оневозможи“.</translation>
 <translation id="3748026146096797577">Не е поврзана</translation>
 <translation id="3752582316358263300">Во ред...</translation>
@@ -2153,7 +2141,6 @@
 <translation id="3816118180265633665">Бои на Chrome</translation>
 <translation id="3817524650114746564">Отворете ги поставките за прокси на компјутерот</translation>
 <translation id="3817579325494460411">Не е обезбедена</translation>
-<translation id="381892968844315516">Plugin VM не е дозволен на уредов. Контактирајте со администраторот на уредот во вашата организација. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="3819257035322786455">Бекап</translation>
 <translation id="3819261658055281761">Системот не успеа да го складира пристапниот токен на долгорочниот API за уредов.</translation>
 <translation id="3819800052061700452">&amp;Цел екран</translation>
@@ -2346,7 +2333,6 @@
 <translation id="4056908315660577142">Го достигна временското ограничување што твојот родител го поставил за апликацијата <ph name="APP_NAME" /> на Chrome. Ќе може да ја користиш <ph name="TIME_LIMIT" /> утре.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Прикажи во продавница</translation>
-<translation id="4058647953897694817">Потврди преку Bluetooth</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Веднаш провери го документот</translation>
 <translation id="406070391919917862">Апликации во заднина</translation>
@@ -2355,7 +2341,6 @@
 <translation id="4068506536726151626">Оваа страница содржи елементи од следниве локации кои ја следат вашата локација:</translation>
 <translation id="4068776064906523561">Зачувани отпечатоци</translation>
 <translation id="407173827865827707">На клик</translation>
-<translation id="4073520450811433493">Синхронизација на поставките</translation>
 <translation id="4074900173531346617">Сертификат на потписник на е-пошта</translation>
 <translation id="407520071244661467">Размер</translation>
 <translation id="4075639477629295004">Не може да се емитува <ph name="FILE_NAME" />.</translation>
@@ -2438,7 +2423,6 @@
 <translation id="4181841719683918333">Јазици</translation>
 <translation id="4184885522552335684">Повлечете за да поместите екран</translation>
 <translation id="4194570336751258953">Овозможи допри и кликни</translation>
-<translation id="4194595472342532425">Не можеше да се постави Plugin VM поради конфигурациски проблем. Контактирајте со администраторот на уредот во вашата организација. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="4195643157523330669">Отвори во нова картичка</translation>
 <translation id="4195814663415092787">Продолжете каде што сте застанале</translation>
 <translation id="4198146608511578238">Само држете ја иконата „Стартер“ за да разговарате со „Помошникот на Google“.</translation>
@@ -3075,7 +3059,6 @@
 <translation id="5117930984404104619">Следење на однесувањето на други наставки, вклучувајќи посетени URL-адреси</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Тврдиот диск е полн. Зачувувајте на друга локација или направете простор на тврдиот диск.</translation>
-<translation id="5122384452788334261">На уредот нема доволно простор за складирање. Се препорачува слободен простор од најмалку <ph name="RECOMMENDED_SPACE" /> за да се користи Plugin VM За да ослободите простор, избришете датотеки од капацитетот на уредот.</translation>
 <translation id="5123433949759960244">Баскет</translation>
 <translation id="5125751979347152379">Неважечка URL-адреса.</translation>
 <translation id="5126611267288187364">Погледнете ги промените</translation>
@@ -3131,7 +3114,6 @@
 <translation id="520621735928254154">Грешка при увезување сертификат</translation>
 <translation id="5209307736170827035">Податоците на вашето дете во Classroom ќе бидат заштитени. <ph name="LINK_BEGIN" />Дознајте повеќе<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Не се пронајдени уреди</translation>
-<translation id="5210990770352357081">Не можеше да се деинсталира Plugin VM</translation>
 <translation id="5213481667492808996">Услугата за мобилен интернет од <ph name="NAME" /> е спремна за употреба</translation>
 <translation id="5213891612754844763">Покажи ги поставките за прокси</translation>
 <translation id="5215502535566372932">Изберете држава</translation>
@@ -3480,7 +3462,6 @@
 <translation id="5658415415603568799">За дополнителна безбедност, Smart Lock ќе побара да ја внесете вашата лозинка по 20 часа.</translation>
 <translation id="5659593005791499971">Е-пошта</translation>
 <translation id="5659833766619490117">Страницава не може да се преведе</translation>
-<translation id="5660204307954428567">Спарете со <ph name="DEVICE_NAME" /></translation>
 <translation id="5662513737565158057">Променете го начинот на работа на апликациите на Linux.</translation>
 <translation id="5667546120811588575">Се поставува Google Play…</translation>
 <translation id="5669267381087807207">Се активира</translation>
@@ -3558,7 +3539,7 @@
 <translation id="577322787686508614">Операцијата за читање не е дозволена на: „<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Отвори ја апликацијата Датотеки</translation>
 <translation id="577624874850706961">Барај колачиња</translation>
-<translation id="5776858208024364029">Се прикажуваат <ph name="NUMBER" /> резултати од пребарувањето <ph name="QUERY" /></translation>
+<translation id="5776858208024364029">Се прикажуваат <ph name="NUMBER" /> резултати од пребарувањето „<ph name="QUERY" />“</translation>
 <translation id="5777468213129569553">Отвори го Chrome</translation>
 <translation id="5778747455497889540">Подолу се наоѓа случајно создадената лозинка на заштитниот модул што е доделена за вашиот компјутер:</translation>
 <translation id="5780011244986845107">Папката што ја избравте содржи чувствителни датотеки. Дали сигурно сакате да ѝ доделите на <ph name="APP_NAME" /> постојан пристап за читање на оваа папка?</translation>
@@ -3740,7 +3721,6 @@
 <translation id="6020431688553761150">Серверот не ве овласти за пристап на ресурсот.</translation>
 <translation id="6022526133015258832">Отвори на цел екран</translation>
 <translation id="6022659036123304283">Направете го Chrome свој</translation>
-<translation id="6022705094403139349">Дали сте подготвени да го спарите вашиот безбедносен клуч?</translation>
 <translation id="6023643151125006053">Администраторот на <ph name="SAML_DOMAIN" /> го заклучил овој уред (СБ: <ph name="SERIAL_NUMBER" />).</translation>
 <translation id="6025215716629925253">Следи стог</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - поврзан е USB-уред</translation>
@@ -3815,7 +3795,6 @@
 <translation id="6103681770816982672">Предупредување: се префрлате на канал за програмери</translation>
 <translation id="6104068876731806426">Сметки на Google</translation>
 <translation id="6104311680260824317">Уредот не може да се приклучи на доменот. Серверот не ги поддржува одредените типови шифрирање на Kerberos. Кликнете „Повеќе опции“ за поставките за шифрирање.</translation>
-<translation id="6106186653986077033">Plugin VM бара лиценца</translation>
 <translation id="6112294629795967147">Допрете за да ја промените големината</translation>
 <translation id="6112727384379533756">Додајте билет</translation>
 <translation id="6112931163620622315">Проверете го телефонот</translation>
@@ -4090,7 +4069,6 @@
 <translation id="6478248366783946499">Да се задржи опасната датотека?</translation>
 <translation id="6483485061007832714">Отворање преземена датотека</translation>
 <translation id="6483805311199035658">Се отвора <ph name="FILE" />…</translation>
-<translation id="6485092675191826776">Лиценцата за Plugin VM истече</translation>
 <translation id="6488384360522318064">Изберете јазик</translation>
 <translation id="648927581764831596">Ништо не е достапно</translation>
 <translation id="6490471652906364588">USB-Ц уред (десна порта)</translation>
@@ -4115,7 +4093,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6520876759015997832">Резултат од пребарувањето <ph name="LIST_POSITION" /> од <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Притиснете Enter за да се движите низ делот.</translation>
+<translation id="6520876759015997832">Резултат од пребарувањето <ph name="LIST_POSITION" /> од <ph name="LIST_SIZE" />: <ph name="SEARCH_RESULT_TEXT" />. Притиснете Enter за да одите до делот.</translation>
 <translation id="652492607360843641">Поврзани сте на <ph name="NETWORK_TYPE" /> мрежа.</translation>
 <translation id="6527303717912515753">Сподели</translation>
 <translation id="6528513914570774834">Дозволи други корисници на уредов да ја користат мрежава</translation>
@@ -4285,7 +4263,6 @@
 <translation id="6770664076092644100">Потврди преку NFC</translation>
 <translation id="6771503742377376720">Е орган за сертифицирање</translation>
 <translation id="6772339735733515807">Управувајте со екстензиите</translation>
-<translation id="6774271858705413900">Нешто не е во ред. Почекајте неколку минути и повторно извршете го Plugin VM.</translation>
 <translation id="6775163072363532304">Достапните уреди ќе се појават тука.</translation>
 <translation id="6777817260680419853">Пренасочувањето е блокирано</translation>
 <translation id="6778737459546443941">Родителот уште не го одобрил</translation>
@@ -4363,7 +4340,6 @@
 <translation id="686664946474413495">Температура на боите</translation>
 <translation id="6871644448911473373">OCSP-одговарач: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Серверот ја одби лозинката што ја внесовте.</translation>
-<translation id="6874170800191969835">Отидовте до <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Велосипед</translation>
 <translation id="6876469544038980967">Не е корисно</translation>
 <translation id="6878422606530379992">Сензорите се дозволени</translation>
@@ -4617,7 +4593,6 @@
 <translation id="7207631048330366454">Пребарувајте апликации</translation>
 <translation id="7210499381659830293">Печатачи за екстензии</translation>
 <translation id="7212097698621322584">Внесете го тековниот PIN за да го промените. Ако не го знаете PIN-кодот, ќе треба да го ресетирате безбедносниот клуч, а потоа да создадете нов PIN.</translation>
-<translation id="721467499098558573">Притиснете го и задржете го копчето на безбедносниот клуч најмалку 5 секунди</translation>
 <translation id="7216409898977639127">Мобилен оператор</translation>
 <translation id="7216595297012131718">Нарачајте јазици според вашите желби</translation>
 <translation id="7220019174139618249">Лозинките не може да се извезат во „<ph name="FOLDER" />“</translation>
@@ -4636,9 +4611,8 @@
 <translation id="7235737137505019098">Вашиот безбедносен клуч нема доволно простор за уште сметки.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, детали</translation>
 <translation id="7240339475467890413">Да се поврзе со нова точка на пристап?</translation>
-<translation id="7240847845291869311">Вашето дете сака да додаде сметка на Google за G Suite for Education на уредов. <ph name="LINK_BEGIN" />„Известувањето за приватност“ за G Suite for Education<ph name="LINK_END" /> има за цел да им помогне на корисниците и родителите на G Suite for Education да разберат кои податоците ги прибира производот, зошто се прибираат и што се прави со нив.</translation>
+<translation id="7240847845291869311">Вашето дете сака да додаде сметка на Google за G Suite for Education на уредов. <ph name="LINK_BEGIN" />„Известувањето за приватност“ за G Suite for Education<ph name="LINK_END" /> има за цел да им помогне на корисниците и родителите на G Suite for Education да разберат кои податоци ги прибира производот, зошто се прибираат и што се прави со нив.</translation>
 <translation id="7241389281993241388">Најавете се на <ph name="TOKEN_NAME" /> за да го увезете клиентскиот сертификат.</translation>
-<translation id="7241443820034350811">Доколку безбедносниот клуч не е на списокот, притискајте го неговото копче најмалку 5 секунди.</translation>
 <translation id="7243632151880336635">Исчисти и одјави се</translation>
 <translation id="7243784282103630670">Имаше грешка при надградувањето на Linux. Ќе го вратиме контејнерот од вашиот бекап.</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (најдобра)</translation>
@@ -4853,7 +4827,6 @@
 <translation id="7531779363494549572">Одете во „Поставки &gt; Апликации и известувања &gt; Известувања“.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> не одговара. Изберете „Затвори присилно“ за да ја затворите.</translation>
 <translation id="7537451260744431038">Сајтовите не може да користат колачиња за да го подобрат вашето доживување со прелистувањето, на пример, да ве одржат најавени или да запомнат ставки во кошничката за купување</translation>
-<translation id="7539856059004947393">Bluetooth безбедносен клуч</translation>
 <translation id="7540972813190816353">Настана грешка при проверка за ажурирања: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> со апликацијата <ph name="APP_NAME" /></translation>
 <translation id="7543104066686362383">Овозможете функции за отстранување грешки на овој уред со <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
@@ -4977,7 +4950,6 @@
 <translation id="7704305437604973648">Задача</translation>
 <translation id="7704317875155739195">Автоматски довршувај ги пребарувањата и URL-адресите</translation>
 <translation id="7704521324619958564">Отвори Play Store</translation>
-<translation id="7704628569466676326">Спарете го безбедносниот клуч со уредов за да може да го користите за најавување на сметката</translation>
 <translation id="7705276765467986571">Не може да се вчита модел на обележувач.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7706963867324547089">Вклучи/исклучи режим на читач</translation>
@@ -5067,7 +5039,6 @@
 <translation id="7817361223956157679">Тастатурата на екран сѐ уште не функционира во апликациите на Linux</translation>
 <translation id="7818135753970109980">Додадена е нова тема (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA или RSN)</translation>
-<translation id="7819992334107904369">Синхронизација на Chrome</translation>
 <translation id="782057141565633384">К&amp;опирај ја адресата на видеото</translation>
 <translation id="7824864914877854148">Бекапот не може да се заврши поради грешка</translation>
 <translation id="782590969421016895">Користи тековни страници</translation>
@@ -5221,7 +5192,6 @@
 <translation id="7988355189918024273">Овозможете ги функциите за пристапност</translation>
 <translation id="7991296728590311172">Поставки за „Пристап со прекинувачи“</translation>
 <translation id="7992202128769240372">Го надминува ограничувањето од <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="7994350303002908848">Не можеше да се инсталира Plugin VM. Обидете се повторно или контактирајте со администраторот на уредот во вашата организација. Код за грешка: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP-метод</translation>
 <translation id="7997826902155442747">Приоритет на процес</translation>
 <translation id="7999229196265990314">Се создадоа следниве датотеки:
@@ -5319,7 +5289,6 @@
 <translation id="8118488170956489476">Вашата организација <ph name="BEGIN_LINK" />управува со прелистувачот<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">Управувај со преземањата</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> и други</translation>
-<translation id="8120715633374652536">На уредот нема доволно простор за складирање. Потребен е слободен простор од најмалку <ph name="MINIMUM_SPACE" /> за да се користи Plugin VM, а се препорачува слободен простор поголем од<ph name="RECOMMENDED_SPACE" />. За да ослободите простор, избришете датотеки од капацитетот на уредот.</translation>
 <translation id="8123590694679414600">Податоците се шифрирани со вашата лозинка за синхронизација во
           <ph name="TIME" />. Тоа не ги вклучува начините на плаќање и адресите од Google Pay.</translation>
 <translation id="81238879832906896">Жолт и бел цвет</translation>
@@ -5636,7 +5605,6 @@
 <translation id="8551388862522347954">Лиценци</translation>
 <translation id="8553342806078037065">Управувај со другите луѓе</translation>
 <translation id="8554899698005018844">Нема јазик</translation>
-<translation id="8556135141412663091">Уредот треба да се ажурира пред да може да користите Plugin VM.</translation>
 <translation id="8557022314818157177">Допирајте го безбедносниот клуч додека не се сними вашиот отпечаток</translation>
 <translation id="855773602626431402">Спречено е активирање на неизолиран приклучок на оваа страница.</translation>
 <translation id="8557930019681227453">Манифест</translation>
@@ -5709,7 +5677,6 @@
 <translation id="8655295600908251630">Канал</translation>
 <translation id="8655319619291175901">Упс, нешто не е во ред.</translation>
 <translation id="8655972064210167941">Најавувањето не успеа бидејќи не можеше да се потврди вашата лозинка. Контактирајте со администраторот или обидете се повторно.</translation>
-<translation id="8656619792520327915">Додајте друг Bluetooth безбедносен клуч</translation>
 <translation id="8656768832129462377">Не проверувај</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> ги споделува вашиот екран и аудио со <ph name="TAB_NAME" />.</translation>
 <translation id="8661290697478713397">Отвори ја врската во инко&amp;гнито прозорец</translation>
@@ -5898,13 +5865,11 @@
 <translation id="8871696467337989339">Користите неподдржано знаме на командна линија: <ph name="BAD_FLAG" />. Ќе настрадаат стабилноста и безбедноста.</translation>
 <translation id="8871974300055371298">Поставки за содржина</translation>
 <translation id="8872155268274985541">Пронајдена е погрешна надворешна манифест-датотека за ажурирање на Киоск. Не успеа да ја ажурира апликацијата Киоск. Отстранете ја USB-меморијата.</translation>
-<translation id="8872187374998143710">Рестартирајте го уредот за да го користите Plugin VM.</translation>
 <translation id="8872777911145321141">Прашувај кога некој сајт ќе сака да ги користи уредите и податоците за виртуелна реалност (препорачано)</translation>
 <translation id="8874184842967597500">Не е поврзано</translation>
 <translation id="8875775314572167244">Поставки за етернет</translation>
 <translation id="8876307312329369159">Поставкава не може да се промени во демо-сесија.</translation>
 <translation id="8877448029301136595">[надреден директориум]</translation>
-<translation id="8878384954777710821">Се деинсталира Plugin VM…</translation>
 <translation id="8879284080359814990">&amp;Прикажи како картичка</translation>
 <translation id="8879921471468674457">Запомни ги информациите за најавување</translation>
 <translation id="8881020143150461183">Обидете се повторно. За техничка поддршка, контактирајте со <ph name="CARRIER_NAME" />.</translation>
@@ -5935,7 +5900,6 @@
 <translation id="8912810933860534797">Овозможете автоматско скенирање</translation>
 <translation id="8915370057835397490">Се вчитува предлог</translation>
 <translation id="8916476537757519021">Инкогнито подрамка: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8921366488406707015">Се потврдува безбедносниот клуч…</translation>
 <translation id="8922013791253848639">Секогаш дозволувај реклами на сајтов</translation>
 <translation id="8923880975836399332">Темна синозелена</translation>
 <translation id="8925458182817574960">&amp;Поставки</translation>

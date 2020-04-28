@@ -78,6 +78,9 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
   // Resets the feed to defaults and returns a boolean if it was saved.
   bool Reset(const int64_t feed_id,
              const media_feeds::mojom::ResetReason reason);
+
+  // Deletes the feed with |feed_id| and returns a boolean if it was successful.
+  bool Delete(const int64_t feed_id);
 };
 
 }  // namespace media_history

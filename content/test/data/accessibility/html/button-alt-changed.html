@@ -13,8 +13,10 @@
 <script>
 setTimeout(function() {
   document.querySelector('img').setAttribute("alt", "After");
-  document.getElementById('status').setAttribute('aria-label', 'Done');
-}, 100);
+  setTimeout(() => {
+    document.getElementById('status').setAttribute('aria-label', 'Done');
+  }, 0);
+}, 1000);
 </script>
 </body>
 </html>

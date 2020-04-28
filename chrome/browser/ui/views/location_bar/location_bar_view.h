@@ -191,6 +191,7 @@ class LocationBarView : public LocationBar,
   SkColor GetIconLabelBubbleBackgroundColor() const override;
 
   // ContentSettingImageView::Delegate:
+  bool ShouldHideContentSettingImage() override;
   content::WebContents* GetContentSettingWebContents() override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
@@ -309,7 +310,7 @@ class LocationBarView : public LocationBar,
 
   // PageActionIconView::Delegate:
   content::WebContents* GetWebContentsForPageActionIconView() override;
-  bool IsLocationBarUserInputInProgress() const override;
+  bool ShouldHidePageActionIcons() const override;
 
   // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;

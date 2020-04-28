@@ -7,7 +7,6 @@
 #include <iostream>
 
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "net/cert/pem.h"

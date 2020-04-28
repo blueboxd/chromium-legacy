@@ -16,7 +16,7 @@
     <ph name="LINE_BREAK1" />
     لا توجد مساحة كافية في مساحة التخزين المحلية. ويتطلب وجود <ph name="FILE_SIZE" /> إضافي.
     <ph name="LINE_BREAK2" />
-    حاول تحديد عدد صور أقل.</translation>
+    حاول اختيار عدد صور أقل.</translation>
 <translation id="1150565364351027703">نظارات شمسية</translation>
 <translation id="115443833402798225">هانغول أهنماتي</translation>
 <translation id="1155759005174418845">الكتالانية</translation>
@@ -593,7 +593,7 @@
     <ph name="LINE_BREAK1" />
     حصة Google Drive ليست كبيرة بشكلٍ كافٍ. يتطلب وجود <ph name="FILE_SIZE" /> إضافي.
     <ph name="LINE_BREAK2" />
-    حاول تحديد عدد صور أقل.</translation>
+    حاول اختيار عدد صور أقل.</translation>
 <translation id="7825423931463735974">‏لوحة المفاتيح التاميلية (Tamil99)</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> تيرابايت</translation>
 <translation id="7839804798877833423">سيؤدي جلب هذه الملفات إلى استخدام حوالي <ph name="FILE_SIZE" /> من بيانات الجوال.</translation>

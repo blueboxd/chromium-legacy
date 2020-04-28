@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {SecureDnsMode, SecureDnsUiManagementMode} from 'chrome://settings/settings.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-import {SecureDnsUiManagementMode, SecureDnsMode} from 'chrome://settings/settings.js';
 // clang-format on
 
 /** @implements {PrivacyPageBrowserProxy} */

@@ -278,14 +278,13 @@ void GetAssertionRequestHandler::OnBluetoothAdapterEnumerated(
     bool can_power_on,
     bool is_peripheral_role_supported) {
   if (!is_peripheral_role_supported && request_.cable_extension) {
-    // caBLEv1 relies on the client being able to send Bluetooth advertisements.
-    // If that isn't the case, deem caBLE unavailable. In theory, the client
-    // could still use caBLEv2 for this request. However, the caBLEv1 request
-    // extension is only supported on google.com, hence caBLE can just be
-    // disabled entirely for this request.
-    FIDO_LOG(ERROR) << "BLE adapter does not support peripheral role";
-    transport_availability_info().available_transports.erase(
-        FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+    // caBLEv1 relies on the client being able to broadcast Bluetooth
+    // advertisements. |is_peripheral_role_supported| supposedly indicates
+    // whether the adapter supports advertising, but there appear to be false
+    // negatives (crbug/1074692). So we can't really do anything about it
+    // besides log it to aid diagnostics.
+    FIDO_LOG(ERROR)
+        << "caBLEv1 request, but BLE adapter does not support peripheral role";
   }
   FidoRequestHandlerBase::OnBluetoothAdapterEnumerated(
       is_present, is_powered_on, can_power_on, is_peripheral_role_supported);

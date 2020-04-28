@@ -105,6 +105,7 @@
 <translation id="2239626343334228536">正在清除瀏覽資料…</translation>
 <translation id="2245545499420671379">在無痕模式中封鎖第三方 Cookie</translation>
 <translation id="2257567812274161158">同步功能無法正常運作。</translation>
+<translation id="225943865679747347">錯誤代碼：<ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">新增帳戶</translation>
 <translation id="2268044343513325586">修正搜尋</translation>
 <translation id="2273327106802955778">[更多] 選單</translation>
@@ -115,6 +116,7 @@
 <translation id="2359043044084662842">翻譯</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2360196772093551345">切換至流動網站</translation>
+<translation id="2379896346847637748">在新視窗中開啟</translation>
 <translation id="2381405137052800939">基本</translation>
 <translation id="2386793615875593361">已選取 1 張</translation>
 <translation id="2421004566762153674">封鎖第三方 Cookie</translation>

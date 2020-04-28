@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Приложения</translation>
 <translation id="2872961005593481000">Изключване</translation>
 <translation id="3008341117444806826">ОПРЕСНЯВАНЕ</translation>
+<translation id="3749289110408117711">Име на файла</translation>
 <translation id="3820172043799983114">Невалиден ПИН код.</translation>
 <translation id="3838338534323494292">Нова парола</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управлява това устройство и има достъп до цялата потребителска активност, включително посетените уеб страници, паролите и имейлите.</translation>
+<translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Паролата изтича след <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Пропускът за Kerberos изтича скоро</translation>
 <translation id="445059817448385655">Стара парола</translation>
 <translation id="467510802200863975">Паролите не са идентични</translation>
 <translation id="4731797938093519117">Достъп на родител</translation>
 <translation id="4890353053343094602">Изберете нова незабавно</translation>
+<translation id="4932733599132424254">Дата</translation>
 <translation id="5212543919916444558">На екрана ви не намирам нищо, за което да мога да ви помогна.
 Докоснете иконата на микрофон, за да ме попитате каквото и да е.</translation>
 <translation id="5222676887888702881">Изход</translation>
@@ -40,6 +43,7 @@
 <translation id="6146993107019042706">За да завършите процеса, въведете новата си парола</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7690294790491645610">Потвърдете новата парола</translation>
+<translation id="7805768142964895445">Състояние</translation>
 <translation id="808894953321890993">Промяна на паролата</translation>
 <translation id="8208861521865154048">Предимства</translation>
 <translation id="8747900814994928677">Потвърждаване на промяната</translation>

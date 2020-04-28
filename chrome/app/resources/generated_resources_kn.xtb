@@ -125,7 +125,6 @@
 <translation id="1164899421101904659">ಪಿನ್ ಅನ್‌ಲಾಕ್ ಕೀ ನಮೂದಿಸಿ</translation>
 <translation id="1165039591588034296">ದೋಷ</translation>
 <translation id="1166212789817575481">ಬಲಗಡೆಗೆ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿರಿ</translation>
-<translation id="1167199480815330007">ನಿಮ್ಮ ಭದ್ರತೆ ಕೀಯ ಹಿಂಬದಿಯಲ್ಲಿನ 6-ಅಂಕಿಯ ಪಿನ್ ಅನ್ನು ಕಂಡುಕೊಳ್ಳಿ</translation>
 <translation id="1168020859489941584"><ph name="TIME_REMAINING" /> ನಲ್ಲಿ ತೆರೆದುಕೊಳ್ಳುತ್ತಿದೆ...</translation>
 <translation id="1168100932582989117">Google ಹೆಸರು ಸರ್ವರ್‌ಗಳು</translation>
 <translation id="1171135284592304528">ಆಬ್ಜೆಕ್ಟ್ ಬದಲಾದಾಗ ಕೀಬೋರ್ಡ್ ಫೋಕಸ್ ಬಳಸಿಕೊಂಡು ಅದನ್ನು ಹೈಲೈಟ್ ಮಾಡಿ</translation>
@@ -615,7 +614,6 @@
 <translation id="1802931390041703523">ಈ ಪುಟದಲ್ಲಿ ಫ್ಲ್ಯಾಶ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="1803531841600994172">ಈ ಭಾಷೆಯಿಂದ ಈ ಭಾಷೆಗೆ ಅನುವಾದಿಸಬೇಕು</translation>
 <translation id="1803545009660609783">ಮರುತರಬೇತಿ ನೀಡಿ</translation>
-<translation id="1805472176602625930">ಭದ್ರತೆ ಕೀಯಲ್ಲಿ ಬಟನ್ ಒತ್ತಿರಿ</translation>
 <translation id="1805738995123446102">ಹಿನ್ನೆಲೆ ಟ್ಯಾಬ್‌ ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್‌ ಅನ್ನು ಬಳಸುತ್ತಿದೆ</translation>
 <translation id="1805822111539868586">ವೀಕ್ಷಣೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="1805888043020974594">ಪ್ರಿಂಟ್ ಸರ್ವರ್‌</translation>
@@ -678,7 +676,6 @@
 <translation id="1870629042957780127">ಮೈಕ್ರೋಫೋನ್‌ಗೆ ಪ್ರವೇಶ ನೀಡಿ</translation>
 <translation id="1871615898038944731">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅಪ್‌ ಟು ಡೇಟ್‌ ಆಗಿದೆ</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{ಟ್ಯಾಬ್ ಅನ್ನು ಬೇರೊಂದು ವಿಂಡೋಗೆ ಸರಿಸಿ}one{ಟ್ಯಾಬ್‌ಗಳನ್ನು ಬೇರೊಂದು ವಿಂಡೋಗೆ ಸರಿಸಿ}other{ಟ್ಯಾಬ್‌ಗಳನ್ನು ಬೇರೊಂದು ವಿಂಡೋಗೆ ಸರಿಸಿ}}</translation>
-<translation id="1875312262568496299">ಆರಂಭಿಸಿ</translation>
 <translation id="1875386316419689002">ಈ ಟ್ಯಾಬ್, HID ಸಾಧನಕ್ಕೆ ಕನೆಕ್ಟ್ ಆಗಿದೆ.</translation>
 <translation id="1875387611427697908"><ph name="CHROME_WEB_STORE" /> ಮೂಲಕ ಮಾತ್ರ ಇದನ್ನು ಸೇರಿಸಬಹುದಾಗಿದೆ</translation>
 <translation id="1877520246462554164">ದೃಢೀಕರಣ ಟೋಕನ್ ಪಡೆಯಲು ವಿಫಲವಾಗಿದೆ. ಸೈನ್ ಔಟ್ ಆಗಿ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಆಗಿ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -698,7 +695,6 @@
 <translation id="189358972401248634">ಇತರೆ ಭಾಷೆಗಳು</translation>
 <translation id="1895658205118569222">ಶಟ್‌ಡೌನ್</translation>
 <translation id="1895934970388272448">ನೀವು ಈ ಪ್ರಕ್ರಿಯೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ನಿಮ್ಮ ಮುದ್ರಕದಲ್ಲಿ ನೋಂದಣಿಯನ್ನು ದೃಢೀಕರಿಸಬೇಕು - ಅದನ್ನು ಈಗಲೇ ಪರಿಶೀಲಿಸಿ.</translation>
-<translation id="1899826437968063457">ಪ್ಲಗ್‌ಇನ್ VM ಅನ್ನು ರನ್ ಮಾಡಲು ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="1900305421498694955">Google Play ನಿಂದ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡುವ ಆ್ಯಪ್‌ಗಳು, ಬಾಹ್ಯ ಸಂಗ್ರಹಣೆ ಸಾಧನಗಳಲ್ಲಿರುವ ಫೈಲ್‌ಗಳನ್ನು ರೀಡ್ ಮಾಡಲು ಮತ್ತು ರೈಟ್ ಮಾಡಲು ಪೂರ್ಣ ಫೈಲ್ ಸಿಸ್ಟಂ ಅನ್ನು ಪ್ರವೇಶಿಸಬೇಕಾಗಬಹುದು. ಸಾಧನದಲ್ಲಿ ರಚಿಸಲಾದ ಫೈಲ್‌ಗಳು ಮತ್ತು ಫೋಲ್ಡರ್‌ಗಳು ಬಾಹ್ಯ ಡ್ರೈವ್ ಬಳಸುವ ಯಾರಿಗಾದರೂ ಗೋಚರಿಸುತ್ತವೆ. <ph name="LINK_BEGIN" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">&amp;ಎಲ್ಲ ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="1905375423839394163">Chromebook ಸಾಧನದ ಹೆಸರು</translation>
@@ -993,7 +989,6 @@
 <translation id="2299734369537008228">ಸ್ಲೈಡರ್: <ph name="MAX_LABEL" /> ರಿಂದ <ph name="MIN_LABEL" /> ಗೆ</translation>
 <translation id="2300383962156589922"><ph name="APP_NAME" /> ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ</translation>
 <translation id="2301382460326681002">ವಿಸ್ತರಣೆ ಮೂಲ ಡೈರೆಕ್ಟರಿ ಅಮಾನ್ಯವಾಗಿದೆ.</translation>
-<translation id="2302444155926798584">Plugin VM ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" ಹೆಚ್ಚುವರಿ ಅನುಮತಿಗಳನ್ನು ವಿನಂತಿಸಿದ್ದಾರೆ.</translation>
 <translation id="23055578400314116">ಬಳಕೆದಾರರ ಹೆಸರನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="2307462900900812319">ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರ್ ಮಾಡು</translation>
@@ -1037,7 +1032,6 @@
 <translation id="2353297238722298836">ಕ್ಯಾಮೆರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್ ಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="2356070529366658676">ಕೇಳಿ</translation>
 <translation id="2357330829548294574"><ph name="USER_NAME" /> ಅನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
-<translation id="235798134753548762">ನಿಮ್ಮ ಆ್ಯಪ್‌ಗಳು, ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ವೈ-ಫೈ ಆದ್ಯತೆಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತದೆ. ಬದಲಾವಣೆಗಳನ್ನು ಮಾಡಲು, ಸೆಟಪ್ ಮಾಡಿದ ನಂತರ ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ.</translation>
 <translation id="2359345697448000899">ಪರಿಕರಗಳ ಮೆನುವಿನಲ್ಲಿರುವ ‘ವಿಸ್ತರಣೆಗಳು’ ಅನ್ನು ಕ್ಲಿಕ್ ಮಾಡುವ ಮೂಲಕ ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ.</translation>
 <translation id="2359808026110333948">ಮುಂದುವರೆಸಿ</translation>
 <translation id="236117173274098341">ಆಪ್ಟಿಮೈಸ್ ಮಾಡಿ</translation>
@@ -1074,7 +1068,6 @@
 <translation id="2408955596600435184">ನಿಮ್ಮ ಪಿನ್ ನಮೂದಿಸಿ</translation>
 <translation id="241082044617551207">ಅಪರಿಚಿತ ಪ್ಲಗ್-ಇನ್</translation>
 <translation id="2412593942846481727">ಅಪ್‌ಡೇಟ್‌‌ ಲಭ್ಯವಿದೆ</translation>
-<translation id="2417206894320497232">Plugin VM ಬಳಸಲು ಸಿದ್ಧವಾಗಿದೆ</translation>
 <translation id="241727068219398187"><ph name="TIME" /> ರಂದು ಬಳಕೆಯಲ್ಲಿದ್ದ ನಿಮ್ಮ Google ಪಾಸ್‌ವರ್ಡ್‌ ಬಳಸಿಕೊಂಡು ಡೇಟಾವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ. ಇದು Google Pay ನಿಂದ ಪಾವತಿ ವಿಧಾನಗಳು ಮತ್ತು ವಿಳಾಸಗಳನ್ನು ಒಳಗೊಂಡಿರುವುದಿಲ್ಲ.</translation>
 <translation id="2419706071571366386">ಸುರಕ್ಷತೆಗಾಗಿ, ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಬಳಕೆಯಾಗದೆ ಇದ್ದಾಗ ಸೈನ್ ಔಟ್ ಮಾಡಿ.</translation>
 <translation id="2422125132043002186">Linux ಮರುಸ್ಥಾಪನೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ</translation>
@@ -1357,7 +1350,6 @@
 <translation id="2773802008104670137">ಈ ಪ್ರಕಾರದ ಫೈಲ್ ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ಗೆ ಹಾನಿ ಮಾಡಬಹುದು.</translation>
 <translation id="2775104091073479743">ಫಿಂಗರ್‌ಪ್ರಿಂಟ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="2776441542064982094">ನೆಟ್‌ವರ್ಕ್‌ನಲ್ಲಿ ನೋಂದಾಯಿಸಲು ಯಾವುದೇ ಸಾಧನಗಳು ಕಂಡುಬಂದಿಲ್ಲವೆಂದು ತೋರುತ್ತಿದೆ. ನಿಮ್ಮ ಸಾಧನವು ಆನ್ ಆಗಿದ್ದು ಹಾಗೂ ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದ್ದರೆ, ಅದರ ಸೂಚನಾ ಕೈಪಿಡಿಯಲ್ಲಿರುವ ಸೂಚನೆಗಳನ್ನು ಬಳಸಿಕೊಂಡು ಅದನ್ನು ನೋಂದಾಯಿಸಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="2780009105947267877">ಪ್ಲಗ್ಇನ್ VM ಹೊಂದಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2782104745158847185">Linux ಅಪ್ಲಿಕೇಶನ್‌ ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡುವಲ್ಲಿ ದೋಷ ಕಂಡುಬಂದಿದೆ</translation>
 <translation id="2783298271312924866">ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
@@ -1401,7 +1393,6 @@
 <translation id="2822910719211888134">Linux ಬ್ಯಾಕಪ್ ಮಾಡುತ್ತಿರುವಾಗ ದೋಷ ಸಂಭವಿಸಿದೆ</translation>
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> ನಿಮ್ಮ ನಿರ್ವಾಹಕದಿಂದ ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬಳಸುತ್ತಿದೆ</translation>
 <translation id="2825758591930162672">ವಿಷಯದ ಸಾರ್ವಜನಿಕ ಕೀಲಿ</translation>
-<translation id="2825848369316359348">ನಿಮ್ಮ ಭದ್ರತೆ ಕೀಯ ಹಿಂಭಾಗದಲ್ಲಿ ಮುದ್ರಿಸಲಾಗಿರುವ ಹೆಸರನ್ನು ಕಂಡುಕೊಳ್ಳಿ</translation>
 <translation id="2828650939514476812">ವೈ-ಫೈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ</translation>
 <translation id="2835294513443818940">ಈ ಫೈಲ್ ಅನ್ನು ಸುರಕ್ಷಿತವಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="2835547721736623118">ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಸೇವೆ</translation>
@@ -1780,7 +1771,6 @@
 <translation id="3347086966102161372">ಚಿತ್ರದ ವಿಳಾಸ ನ&amp;ಕಲಿಸು</translation>
 <translation id="3348038390189153836">ತೆಗೆದುಹಾಕಬಹುದಾದ ಸಾಧನವನ್ನು ಪತ್ತೆಹಚ್ಚಲಾಗಿದೆ</translation>
 <translation id="3349933790966648062">ಮೆಮೊರಿ ಬಳಕೆಯ ಪ್ರಮಾಣ</translation>
-<translation id="3350117557200012647">ಜೋಡಿಸುವಿಕೆ ಮೋಡ್‌ಗೆ ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="3355936511340229503">ಸಂಪರ್ಕ ದೋಷ</translation>
 <translation id="3356580349448036450">ಪೂರ್ಣಗೊಂಡಿದೆ</translation>
 <translation id="3359256513598016054">ಪ್ರಮಾಣಪತ್ರ ನೀತಿ ನಿರ್ಬಂಧಗಳು</translation>
@@ -1852,7 +1842,6 @@
 <translation id="3449393517661170867">ಹೊಸ ಟ್ಯಾಬ್ ಮಾಡಿರುವ ವಿಂಡೋ</translation>
 <translation id="3449839693241009168"><ph name="EXTENSION_NAME" /> ಗೆ ಆದೇಶಗಳನ್ನು ಕಳುಹಿಸಲು <ph name="SEARCH_KEY" /> ಒತ್ತಿರಿ</translation>
 <translation id="3450157232394774192">ತಟಸ್ಥ ಸ್ಥಿತಿಯ ನೆಲೆಸುವಿಕೆ ಪ್ರತಿಶತ</translation>
-<translation id="3451332697983754369"><ph name="DEVICE_TYPE" /> ಅನ್ನು ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="3453612417627951340">ದೃಢೀಕರಣದ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="3454157711543303649">ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆ ಪೂರ್ಣಗೊಂಡಿದೆ</translation>
 <translation id="3454213325559396544">ಈ <ph name="DEVICE_TYPE" /> ಗಾಗಿ, ಇದು ಕೊನೆಯ ಸಾಫ್ಟ್‌ವೇರ್ ಹಾಗೂ ಸುರಕ್ಷತಾ ಅಪ್‌ಡೇಟ್ ಆಗಿದೆ. ಭವಿಷ್ಯದ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಪಡೆಯಲು, ಹೊಸ ಮಾಡೆಲ್‌ಗೆ ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ.</translation>
@@ -2031,7 +2020,6 @@
 <translation id="3677657024345889897">ಕನಿಷ್ಠ ಪರಿಮಾಣ</translation>
 <translation id="3677911431265050325">ಮೊಬೈಲ್ ಸೈಟ್‌ಗಾಗಿ ವಿನಂತಿಸಿ</translation>
 <translation id="3678156199662914018">ವಿಸ್ತರಣೆ: <ph name="EXTENSION_NAME" /></translation>
-<translation id="3678613690490567106">ಸಾಧನಗಳಾದ್ಯಂತ ವೈಯಕ್ತಿಕಗೊಳಿಸಿದ ಅನುಭವ ಪಡೆಯುವುದಕ್ಕಾಗಿ ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="3681311097828166361">ನಿಮ್ಮ ಪ್ರತಿಕ್ರಿಯೆಗೆ ಧನ್ಯವಾದಗಳು. ನೀವು ಇದೀಗ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿರುವಿರಿ ಮತ್ತು ನಿಮ್ಮ ವರದಿಯನ್ನು ನಂತರ ಕಳುಹಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="3682824389861648626">ಚಲನೆಯ ಮಿತಿ</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> ಪರದೆ ಹಂಚಿಕೆ ವಿನಂತಿ</translation>
@@ -2079,7 +2067,6 @@
 <translation id="372722114124766626">ಒಮ್ಮೆ ಮಾತ್ರ</translation>
 <translation id="3729303374699765035">ಸೈಟ್ ಯಾವಾಗ ಸಮೀಪದ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ಅನ್ವೇಷಿಸಲು ಬಯಸುತ್ತದೆಯೋ ಆಗ ಕೇಳಿ</translation>
 <translation id="3729506734996624908">ಅನುಮತಿಸಲಾದ ಸೈಟ್‌ಗಳು</translation>
-<translation id="3731997362820527097">ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="3732078975418297900"><ph name="ERROR_LINE" /> ನೇ ಸಾಲಿನಲ್ಲಿ ದೋಷವಿದೆ</translation>
 <translation id="3732530910372558017">ಪಿನ್ ಗರಿಷ್ಠ 63 ಅಕ್ಷರಗಳಾಗಿರಬೇಕು</translation>
 <translation id="3733127536501031542">ಹೆಚ್ಚುವಿಕೆಯೊಂದಿಗೆ SSL ಸರ್ವರ್</translation>
@@ -2090,7 +2077,6 @@
 <translation id="3742666961763734085">ಆ ಹೆಸರಿನ ಸಾಂಸ್ಥಿಕ ಘಟಕವನ್ನು ಕಂಡುಹಿಡಿಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3744111561329211289">ಹಿನ್ನೆಲೆ ಸಿಂಕ್</translation>
 <translation id="3746127522257263495">Android ಆ್ಯಪ್‌ಗಳಲ್ಲಿ ಶಿಕ್ಷಣಕ್ಕಾಗಿ G Suite ಖಾತೆಯನ್ನು ಸೇರಿಸುವುದಕ್ಕೆ ಬೆಂಬಲವಿಲ್ಲ.</translation>
-<translation id="3747039297326604768">Plugin VM ಅನ್ನು ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="3747077776423672805">ಆ್ಯಪ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳು &gt; Google Play ಸ್ಟೋರ್ &gt; Android ಆದ್ಯತೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ&gt; ಆ್ಯಪ್‌ಗಳು ಅಥವಾ ಆ್ಯಪ್ ನಿರ್ವಾಹಕಕ್ಕೆ ಹೋಗಿ ನಂತರ ನೀವು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಬಯಸುವ ಆ್ಯಪ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ (ಆ್ಯಪ್ ಹುಡುಕಲು ನಿಮಗೆ ಎಡಕ್ಕೆ ಅಥವಾ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡುವ ಅಗತ್ಯವಿರಬಹುದು). ನಂತರ ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಅಥವಾ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="3748026146096797577">ಸಂಪರ್ಕಗೊಳಿಸಿಲ್ಲ</translation>
 <translation id="3752582316358263300">ಸರಿ...</translation>
@@ -2153,7 +2139,6 @@
 <translation id="3816118180265633665">Chrome ಬಣ್ಣಗಳು</translation>
 <translation id="3817524650114746564">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನ ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="3817579325494460411">ಒದಗಿಸಿಲ್ಲ</translation>
-<translation id="381892968844315516">Plugin VM ಅನ್ನು ಈ ಸಾಧನದಲ್ಲಿ ಅನುಮತಿಸಲಾಗುವುದಿಲ್ಲ. ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸಾಧನ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ. ದೋಷ ಕೋಡ್: <ph name="ERROR_CODE" /></translation>
 <translation id="3819257035322786455">ಬ್ಯಾಕಪ್‌</translation>
 <translation id="3819261658055281761">ಈ ಸಾಧನಕ್ಕಾಗಿ ದೀರ್ಘ-ಕಾಲದ API ಪ್ರವೇಶ ಟೋಕನ್ ಅನ್ನು ಸಂಗ್ರಹಣೆ ಮಾಡಲು ಸಿಸ್ಟಂ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="3819800052061700452">&amp;ಪೂರ್ಣ-ಪರದೆ</translation>
@@ -2346,7 +2331,6 @@
 <translation id="4056908315660577142"><ph name="APP_NAME" /> Chrome ಆ್ಯಪ್‌ಗೆ ನಿಮ್ಮ ಪೋಷಕರು ಹೊಂದಿಸಿದ ಸಮಯ-ಮಿತಿಯನ್ನು ನೀವು ತಲುಪಿದ್ದೀರಿ. ನಾಳೆ ಇದನ್ನು <ph name="TIME_LIMIT" /> ಸಮಯದವರೆಗೆ ಬಳಸಲು ನಿಮಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">ಸ್ಟೋರ್‌ನಲ್ಲಿ ವೀಕ್ಷಿಸಿ</translation>
-<translation id="4058647953897694817">ಬ್ಲೂಟೂತ್ ಮೂಲಕ ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">ಡಾಕ್ಯುಮೆಂಟ್ ಅನ್ನು ಇದೀಗ ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="406070391919917862">ಹಿನ್ನೆಲೆ ಅಪ್ಲಿಕೇಶನ್</translation>
@@ -2355,7 +2339,6 @@
 <translation id="4068506536726151626">ಈ ಪುಟವು ನಿಮ್ಮ ಸ್ಥಾನದ ನಿಗಾ ಇರಿಸುತ್ತಿರುವ ಈ ಕೆಳಗಿನ ಸೈಟ್‌ಗಳ ಮೂಲಾಂಶಗಳನ್ನು ಒಳಗೊಂಡಿದೆ:</translation>
 <translation id="4068776064906523561">ಉಳಿಸಿದ ಬೆರಳಚ್ಚುಗಳು</translation>
 <translation id="407173827865827707">ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ</translation>
-<translation id="4073520450811433493">ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="4074900173531346617">ಇಮೇಲ್ ಸಹಿ ಮಾಡುವವರ ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="407520071244661467">ಮಾಪಕ</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> ಬಿತ್ತರಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
@@ -2438,7 +2421,6 @@
 <translation id="4181841719683918333">ಭಾಷೆಗಳು</translation>
 <translation id="4184885522552335684">ಡಿಸ್‌ಪ್ಲೇಯನ್ನು ಸರಿಸಲು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
 <translation id="4194570336751258953">ಕ್ಲಿಕ್ ಮಾಡಲು ಟ್ಯಾಪ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
-<translation id="4194595472342532425">ಕಾನ್ಫಿಗರೇಶನ್ ಸಮಸ್ಯೆ ಒಂದರಿಂದಾಗಿ, Plugin VM ಅನ್ನು ಸೆಟಪ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸಾಧನ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ. ದೋಷ ಕೋಡ್: <ph name="ERROR_CODE" /></translation>
 <translation id="4195643157523330669">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="4195814663415092787">ಎಲ್ಲಿ ಬಿಡಲಾಗಿದೆಯೋ ಅಲ್ಲಿಂದಲೇ ಮುಂದುವರೆ</translation>
 <translation id="4198146608511578238">ನಿಮ್ಮ Google ಸಹಾಯಕದೊಂದಿಗೆ ಮಾತನಾಡಲು ಲಾಂಚರ್‌ ಐಕಾನ್‌ ಅನ್ನು ಇರಿಸಿಕೊಳ್ಳಿ</translation>
@@ -3076,7 +3058,6 @@
 <translation id="5117930984404104619">ಭೇಟಿ ನೀಡಿದ URL ಗಳು ಸೇರಿದಂತೆ, ಇತರ ವಿಸ್ತರಣೆಗಳ ವರ್ತನೆಯ ಮೇಲೆ ನಿಗಾವಹಿಸಿ</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">ನಿಮ್ಮ ಹಾರ್ಡ್ ಡಿಸ್ಕ್ ಭರ್ತಿಯಾಗಿದೆ. ದಯವಿಟ್ಟು ಬೇರೊಂದು ಸ್ಥಳದಲ್ಲಿ ಉಳಿಸಿ ಇಲ್ಲವೇ ಹಾರ್ಡ್ ಡಿಸ್ಕ್‌ನಲ್ಲಿ ಹೆಚ್ಚಿನ ಅವಕಾಶ ಕಲ್ಪಿಸಿ.</translation>
-<translation id="5122384452788334261">ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಕಡಿಮೆ ಸ್ಥಳಾವಕಾಶವಿದೆ. Plugin VM ಬಳಸಲು, ಕನಿಷ್ಠ <ph name="RECOMMENDED_SPACE" /> ಮುಕ್ತ ಸ್ಥಳಾವಕಾಶ ಹೊಂದಿರಬೇಕೆಂದು ಶಿಫಾರಸು ಮಾಡಲಾಗುತ್ತದೆ. ಸ್ಥಳಾವಕಾಶವನ್ನು ಮುಕ್ತಗೊಳಿಸಲು, ಸಾಧನದ ಸಂಗ್ರಹಣೆಯಲ್ಲಿರುವ ಫೈಲ್‌ಗಳನ್ನು ಅಳಿಸಿ.</translation>
 <translation id="5123433949759960244">ಬ್ಯಾಸ್ಕೆಟ್‌ಬಾಲ್‌</translation>
 <translation id="5125751979347152379">ಅಮಾನ್ಯವಾದ URL.</translation>
 <translation id="5126611267288187364">ಬದಲಾವಣೆಗಳನ್ನು ವೀಕ್ಷಿಸಿ</translation>
@@ -3132,7 +3113,6 @@
 <translation id="520621735928254154">ಪ್ರಮಾಣಪತ್ರದ ಆಮದು ದೋಷ</translation>
 <translation id="5209307736170827035">ಕ್ಲಾಸ್‌ರೂಂನಲ್ಲಿರುವ ನಿಮ್ಮ ಮಗುವಿನ ಡೇಟಾವನ್ನು ರಕ್ಷಿಸಲಾಗುತ್ತದೆ. <ph name="LINK_BEGIN" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">ಯಾವ ಸಾಧನಗಳೂ ಕಂಡುಬಂದಿಲ್ಲ</translation>
-<translation id="5210990770352357081">Plugin VM ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="5213481667492808996">ನಿಮ್ಮ '<ph name="NAME" />' ಡೇಟಾ ಸೇವೆಯು ಬಳಕೆಗೆ ಸಿದ್ಧವಾಗಿದೆ</translation>
 <translation id="5213891612754844763">ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="5215502535566372932">ದೇಶವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
@@ -3482,7 +3462,6 @@
 <translation id="5658415415603568799">ಹೆಚ್ಚುವರಿ ಸುರಕ್ಷತೆಗಾಗಿ, 20 ಗಂಟೆಗಳ ನಂತರ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ನಮೂದಿಸಿ ಎಂದು Smart Lock ನಿಮ್ಮನ್ನು ಕೇಳುತ್ತದೆ.</translation>
 <translation id="5659593005791499971">ಇಮೇಲ್</translation>
 <translation id="5659833766619490117">ಈ ಪುಟವನ್ನು ಅನುವಾದಿಸಲಾಗುವುದಿಲ್ಲ</translation>
-<translation id="5660204307954428567"><ph name="DEVICE_NAME" /> ಸಾಧನದೊಂದಿಗೆ ಜೋಡಿಸಿ</translation>
 <translation id="5662513737565158057">Linux ಆ್ಯಪ್‌ಗಳು ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸಬೇಕು ಎಂಬುದನ್ನು ಬದಲಾಯಿಸಿ.</translation>
 <translation id="5667546120811588575">Google Play ಅನ್ನು ಹೊಂದಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5669267381087807207">ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
@@ -3742,7 +3721,6 @@
 <translation id="6020431688553761150">ಈ ಸಂಪನ್ಮೂಲವನ್ನು ಪ್ರವೇಶಿಸಲು ನಿಮಗೆ ಸರ್ವರ್ ದೃಢೀಕರಿಸಿಲ್ಲ.</translation>
 <translation id="6022526133015258832">ಪೂರ್ಣ ಪರದೆಯನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="6022659036123304283">Chrome ಅನ್ನು ನಿಮ್ಮದಾಗಿಸಿಕೊಳ್ಳಿ</translation>
-<translation id="6022705094403139349">ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀಯನ್ನು ಜೋಡಿಸಲು ಸಿದ್ಧರಾಗಿರುವಿರಾ?</translation>
 <translation id="6023643151125006053">ಈ ಸಾಧನವು (SN: <ph name="SERIAL_NUMBER" />), <ph name="SAML_DOMAIN" /> ನ ನಿರ್ವಾಹಕರಿಂದ ಲಾಕ್ ಮಾಡಲ್ಪಟ್ಟಿದೆ.</translation>
 <translation id="6025215716629925253">ಸ್ಟ್ಯಾಕ್ ಪತ್ತೆ</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB ಸಾಧನ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
@@ -3817,7 +3795,6 @@
 <translation id="6103681770816982672">ಎಚ್ಚರಿಕೆ: ನೀವು ಡೆವಲಪರ್ ಚಾನಲ್‌ಗೆ ಬದಲಾಯಿಸುತ್ತಿರುವಿರಿ</translation>
 <translation id="6104068876731806426">Google ಖಾತೆಗಳು</translation>
 <translation id="6104311680260824317">ಡೊಮೇನ್‌ಗೆ ಸಾಧನವನ್ನು ಸೇರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಿರ್ದಿಷ್ಟ Kerberos ಎನ್‌ಕ್ರಿಪ್ಶನ್ ಪ್ರಕಾರಗಳನ್ನು ಸರ್ವರ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ಎನ್‌ಕ್ರಿಪ್ಶನ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗಾಗಿ "ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳನ್ನು" ಪರಿಶೀಲಿಸಿ.</translation>
-<translation id="6106186653986077033">ಪ್ಲಗ್ಇನ್ VM ಗೆ ಪರವಾನಗಿ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="6112294629795967147">ಮರುಗಾತ್ರಗೊಳಿಸಲು ಸ್ಪರ್ಶಿಸಿ</translation>
 <translation id="6112727384379533756">ಟಿಕೆಟ್ ಅನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="6112931163620622315">ನಿಮ್ಮ ಫೋನ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
@@ -4092,7 +4069,6 @@
 <translation id="6478248366783946499">ಅಪಾಯಕಾರಿ ಫೈಲ್ ಇರಿಸುವುದೇ?</translation>
 <translation id="6483485061007832714">ಡೌನ್‌ಲೋಡ್ ತೆರೆಯಿರಿ</translation>
 <translation id="6483805311199035658"><ph name="FILE" /> ತೆರೆಯುತ್ತಿದೆ...</translation>
-<translation id="6485092675191826776">Plugin VM ಪರವಾನಗಿಯ ಅವಧಿ ಮೀರಿದೆ</translation>
 <translation id="6488384360522318064">ಭಾಷೆ ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="648927581764831596">ಯಾವುದೂ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="6490471652906364588">USB-C ಸಾಧನ (ಬಲ ಪೋರ್ಟ್)</translation>
@@ -4287,7 +4263,6 @@
 <translation id="6770664076092644100">NFC ಮೂಲಕ ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="6771503742377376720">ಪ್ರಮಾಣಪತ್ರ ಪ್ರಾಧಿಕಾರವಾಗಿದೆ</translation>
 <translation id="6772339735733515807">ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
-<translation id="6774271858705413900">ಏನೋ ತಪ್ಪಾಗಿದೆ. ಕೆಲವು ನಿಮಿಷಗಳವರೆಗೆ ನಿರೀಕ್ಷಿಸಿ ಮತ್ತು Plugin VM ಅನ್ನು ಮತ್ತೆ ರನ್ ಮಾಡಿ.</translation>
 <translation id="6775163072363532304">ಲಭ್ಯವಿರುವ ಸಾಧನಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ.</translation>
 <translation id="6777817260680419853">ಮರುನಿರ್ದೇಶಿಸುವಿಕೆಯನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="6778737459546443941">ನಿಮ್ಮ ಪೋಷಕರು ಇನ್ನೂ ಇದನ್ನು ಅಂಗೀಕರಿಸಿಲ್ಲ</translation>
@@ -4365,7 +4340,6 @@
 <translation id="686664946474413495">ಬಣ್ಣ ತಾಪಮಾನ</translation>
 <translation id="6871644448911473373">OCSP ಪ್ರತಿಕ್ರಿಯೆ ನೀಡುಗ: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">ನೀವು ನಮೂದಿಸಿದ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಸರ್ವರ್‌ ನಿಂದ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ.</translation>
-<translation id="6874170800191969835"><ph name="SEARCH_RESULT_TEXT" /> ಗೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="6876155724392614295">ಬೈಕ್</translation>
 <translation id="6876469544038980967">ಉಪಯುಕ್ತವಲ್ಲ</translation>
 <translation id="6878422606530379992">ಸೆನ್ಸರ್‌ಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ</translation>
@@ -4620,7 +4594,6 @@
 <translation id="7207631048330366454">ಆ್ಯಪ್‌ಗಳನ್ನು ಹುಡುಕಿ</translation>
 <translation id="7210499381659830293">ವಿಸ್ತರಣೆ ಪ್ರಿಂಟರ್‌ಗಳು</translation>
 <translation id="7212097698621322584">ಪಿನ್ ಬದಲಾಯಿಸಲು, ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಪಿನ್ ಅನ್ನು ನಮೂದಿಸಿ. ನಿಮ್ಮ ಪಿನ್ ನಿಮಗೆ ಗೊತ್ತಿಲ್ಲದಿದ್ದರೆ, ನೀವು ಭದ್ರತೆ ಕೀ ಅನ್ನು ಮರುಹೊಂದಿಸಿ, ಆಮೇಲೆ ಹೊಸ ಪಿನ್ ಅನ್ನು ರಚಿಸಬೇಕಾಗುತ್ತದೆ.</translation>
-<translation id="721467499098558573">ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀಯ ಮೇಲಿನ ಬಟನ್ ಅನ್ನು ಕನಿಷ್ಠ 5 ಸೆಕೆಂಡುಗಳವರೆಗೆ ಒತ್ತಿ ಹಿಡಿದುಕೊಳ್ಳಿ</translation>
 <translation id="7216409898977639127">ಸೆಲ್ಯುಲಾರ್ ಒದಗಿಸುವವರು</translation>
 <translation id="7216595297012131718">ನಿಮ್ಮ ಆದ್ಯತೆಯನ್ನು ಆಧರಿಸಿ ಭಾಷೆಗಳನ್ನು ಕ್ರಮಗೊಳಿಸಿ</translation>
 <translation id="7220019174139618249">"<ph name="FOLDER" />" ಗೆ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
@@ -4641,7 +4614,6 @@
 <translation id="7240339475467890413">ಹೊಸ ಹಾಟ್‌ಸ್ಪಾಟ್‌ಗೆ ಸಂಪರ್ಕಗೊಳಿಸುವುದೇ?</translation>
 <translation id="7240847845291869311">ನಿಮ್ಮ ಮಗುವು ಈ ಸಾಧನದಲ್ಲಿ, ಶಿಕ್ಷಣಕ್ಕಾಗಿ G Suite Google ಖಾತೆಯನ್ನು ಸೇರಿಸಲು ಬಯಸುತ್ತಿದೆ. ಶಿಕ್ಷಣಕ್ಕಾಗಿ G Suite ಯಾವ ಡೇಟಾವನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ, ಯಾಕಾಗಿ ಸಂಗ್ರಹಿಸುತ್ತದೆ ಮತ್ತು ಅದನ್ನು ಏನು ಮಾಡಲಾಗುತ್ತದೆ ಎಂಬ ಕುರಿತು ಈ ಉತ್ಪನ್ನದ ಬಳಕೆದಾರರು ಹಾಗೂ ಪೋಷಕರು ಅರ್ಥಮಾಡಿಕೊಳ್ಳುವುದಕ್ಕಾಗಿ ಸಹಾಯ ಮಾಡುವುದು <ph name="LINK_BEGIN" />ಶಿಕ್ಷಣಕ್ಕಾಗಿ G Suite ಗೌಪ್ಯತೆ ಸೂಚನೆಯ<ph name="LINK_END" /> ಉದ್ದೇಶವಾಗಿದೆ.</translation>
 <translation id="7241389281993241388">ಕ್ಲೈಂಟ್ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಆಮದು ಮಾಡಿಕೊಳ್ಳಲು <ph name="TOKEN_NAME" /> ಗೆ ದಯವಿಟ್ಟು ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
-<translation id="7241443820034350811">ನಿಮ್ಮ ಭದ್ರತೆ ಕೀಯನ್ನು ಪಟ್ಟಿ ಮಾಡಿರದಿದ್ದರೆ, ಅದರ ಬಟನ್ ಅನ್ನು ಕನಿಷ್ಠ 5 ಸೆಕೆಂಡುಗಳವರೆಗೆ ಒತ್ತಿರಿ.</translation>
 <translation id="7243632151880336635">ತೆರವುಗೊಳಿಸು ಮತ್ತು ಸೈನ್ ಔಟ್ ಮಾಡು</translation>
 <translation id="7243784282103630670">Linux ಅನ್ನು ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡುವಾಗ ದೋಷ ಕಂಡುಬಂದಿದೆ. ನಿಮ್ಮ ಬ್ಯಾಕಪ್ ಬಳಸಿ ನಾವು ಕಂಟೇನರ್ ಅನ್ನು ಮರುಸ್ಥಾಪಿಸುತ್ತೇವೆ.</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (ಅತ್ಯುತ್ತಮ)</translation>
@@ -4856,7 +4828,6 @@
 <translation id="7531779363494549572">ಸೆಟ್ಟಿಂಗ್‌ಗಳು &gt; ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಮತ್ತು ಅಧಿಸೂಚನೆಗಳು &gt; ಅಧಿಸೂಚನೆಗಳಿಗೆ ಹೋಗಿ.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> ಪ್ರತಿಕ್ರಿಯಿಸುತ್ತಿಲ್ಲ. ಆ್ಯಪ್ ಅನ್ನು ಮುಚ್ಚಲು "ಬಲವಂತವಾಗಿ ಮುಚ್ಚಿ" ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="7537451260744431038">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು, ಉದಾಹರಣೆಗೆ, ನಿಮ್ಮನ್ನು ಸೈನ್ ಇನ್ ಆಗಿರಿಸಲು ಅಥವಾ ನಿಮ್ಮ ಶಾಪಿಂಗ್ ಕಾರ್ಟ್‌ನಲ್ಲಿರುವ ಐಟಂಗಳನ್ನು ನೆನಪಿಟ್ಟುಕೊಳ್ಳಲು ಕುಕೀಗಳನ್ನು ಬಳಸಲು, ಸೈಟ್‌ಗಳಿಗೆ ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ</translation>
-<translation id="7539856059004947393">ಬ್ಲೂಟೂತ್ ಸುರಕ್ಷತಾ ಕೀ</translation>
 <translation id="7540972813190816353">ನವೀಕರಣಗಳಿಗಾಗಿ ಪರಿಶೀಲಿಸುತ್ತಿರುವಾಗ ದೋಷವೊಂದು ಸಂಭವಿಸಿದೆ: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="APP_NAME" /> ಆ್ಯಪ್ ಬಳಸಿಕೊಂಡು <ph name="ACTION_NAME" /></translation>
 <translation id="7543104066686362383">ಈ <ph name="IDS_SHORT_PRODUCT_NAME" /> ಸಾಧನದಲ್ಲಿ ಡೀಬಗ್ ಮಾಡುವಿಕೆ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
@@ -4980,7 +4951,6 @@
 <translation id="7704305437604973648">ಕಾರ್ಯ</translation>
 <translation id="7704317875155739195">ಸ್ವಯಂಪೂರ್ಣ ಹುಡುಕಾಟಗಳು ಮತ್ತು URLಗಳು</translation>
 <translation id="7704521324619958564">Play ಸ್ಟೋರ್ ತೆರೆಯಿರಿ</translation>
-<translation id="7704628569466676326">ನಿಮ್ಮ ಭದ್ರತೆ ಕೀಯನ್ನು ಈ ಸಾಧನಕ್ಕೆ ಜೋಡಿಸುವುದರಿಂದ, ಅದನ್ನು ನಿಮ್ಮ ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಬಳಸಬಹುದು</translation>
 <translation id="7705276765467986571">ಬುಕ್‌ಮಾರ್ಕ್ ಮಾದರಿಯನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಿಲ್ಲ.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7706963867324547089">ರೀಡರ್ ಮೋಡ್ ಅನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
@@ -5069,7 +5039,6 @@
 <translation id="7817361223956157679">ಆನ್-ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್, Linux ಆ್ಯಪ್‌ಗಳಲ್ಲಿ ಈಗಲೂ ಕೆಲಸ ಮಾಡುತ್ತಿಲ್ಲ</translation>
 <translation id="7818135753970109980">ಹೊಸ ಥೀಮ್ ಸೇರಿಸಲಾಗಿದೆ (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA ಅಥವಾ RSN)</translation>
-<translation id="7819992334107904369">Chrome ಸಿಂಕ್</translation>
 <translation id="782057141565633384">ವೀಡಿಯೋ ವಿಳಾಸವನ್ನು ನ&amp;ಕಲಿಸಿ</translation>
 <translation id="7824864914877854148">ದೋಷದ ಕಾರಣದಿಂದಾಗಿ ಬ್ಯಾಕಪ್ ಪೂರ್ಣಗೊಳಿಸಲಾಗಲಿಲ್ಲ</translation>
 <translation id="782590969421016895">ಪ್ರಸ್ತುತ ಪುಟಗಳನ್ನು ಬಳಸಿ</translation>
@@ -5223,7 +5192,6 @@
 <translation id="7988355189918024273">ಪ್ರವೇಶದ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="7991296728590311172">ಪ್ರವೇಶದ ವಿಧಾನವನ್ನು ಬದಲಿಸುವ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="7992202128769240372"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> ಮಿತಿಯನ್ನು ಮೀರುತ್ತಿದೆ</translation>
-<translation id="7994350303002908848">Plugin VM ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ ನಿಮ್ಮ ಸಂಸ್ಥೆಯ ಸಾಧನ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ. ದೋಷ ಕೋಡ್: <ph name="ERROR_CODE" /></translation>
 <translation id="7994702968232966508">EAP ವಿಧಾನ</translation>
 <translation id="7997826902155442747">ಪ್ರಕ್ರಿಯೆಯ ಆದ್ಯತೆ</translation>
 <translation id="7999229196265990314">ಕೆಳಗಿನ ಫೈಲ್‌ಗಳನ್ನು ರಚಿಸಲಾಗಿದೆ:
@@ -5319,7 +5287,6 @@
 <translation id="8118488170956489476">ನಿಮ್ಮ ಸಂಸ್ಥೆಯು ನಿಮ್ಮ <ph name="BEGIN_LINK" />ಬ್ರೌಸರ್ ಅನ್ನು ನಿರ್ವಹಿಸುತ್ತಿದೆ<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">ನಿಮ್ಮ ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> ಮತ್ತು ಇತ್ಯಾದಿ</translation>
-<translation id="8120715633374652536">ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಕಡಿಮೆ ಸ್ಥಳಾವಕಾಶವಿದೆ. Plugin VM ಬಳಸಲು ಕನಿಷ್ಠ <ph name="MINIMUM_SPACE" /> ಮುಕ್ತ ಸ್ಥಳಾವಕಾಶದ ಅಗತ್ಯವಿದೆ ಮತ್ತು <ph name="RECOMMENDED_SPACE" /> ಗಿಂತ ಹೆಚ್ಚು ಮುಕ್ತ ಸ್ಥಳಾವಕಾಶ ಇರಬೇಕೆಂದು ಶಿಫಾರಸು ಮಾಡಲಾಗುತ್ತದೆ. ಸ್ಥಳಾವಕಾಶವನ್ನು ಮುಕ್ತಗೊಳಿಸಲು, ಸಾಧನದ ಸಂಗ್ರಹಣೆಯಲ್ಲಿರುವ ಫೈಲ್‌ಗಳನ್ನು ಅಳಿಸಿ.</translation>
 <translation id="8123590694679414600"><ph name="TIME" /> ರಂದು ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಬಳಸಿಕೊಂಡು ಡೇಟಾವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್‌ 
      ಮಾಡಲಾಗಿತ್ತು. ಇದು Google Pay ನಿಂದ ಪಾವತಿ ವಿಧಾನಗಳು ಮತ್ತು ವಿಳಾಸಗಳನ್ನು ಒಳಗೊಂಡಿರುವುದಿಲ್ಲ.</translation>
 <translation id="81238879832906896">ಹಳದಿ ಮತ್ತು ಬಿಳಿ ಹೂ</translation>
@@ -5633,7 +5600,6 @@
 <translation id="8551388862522347954">ಪರವಾನಗಿಗಳು</translation>
 <translation id="8553342806078037065">ಇತರ ವ್ಯಕ್ತಿಗಳನ್ನು ನಿರ್ವಹಿಸು</translation>
 <translation id="8554899698005018844">ಭಾಷೆ ನಮೂದಿಸಿಲ್ಲ</translation>
-<translation id="8556135141412663091">ನೀವು Plugin VM ಬಳಸುವ ಮೊದಲು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಬೇಕಿದೆ.</translation>
 <translation id="8557022314818157177">ನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಅನ್ನು ಕ್ಯಾಪ್ಚರ್ ಮಾಡುವವರೆಗೆ ಸುರಕ್ಷತಾ ಕೀಯನ್ನು ಸ್ಪರ್ಶಿಸುತ್ತಾ ಇರಿ.</translation>
 <translation id="855773602626431402">ಈ ಪುಟದಲ್ಲಿ ಸ್ಯಾಂಡ್‌ಬಾಕ್ಸ್ ರದ್ದುಗೊಳಿಸಿರುವ ಪ್ಲಗ್-ಇನ್ ಅನ್ನು ಚಾಲನೆ ಮಾಡುವುದರಿಂದ ತಡೆಯಲಾಗಿದೆ.</translation>
 <translation id="8557930019681227453">ಮ್ಯಾನಿಫೆಸ್ಟ್</translation>
@@ -5706,7 +5672,6 @@
 <translation id="8655295600908251630">ಚಾನಲ್</translation>
 <translation id="8655319619291175901">ಓಹ್, ಯಾವುದೋ ತಪ್ಪು ಸಂಭವಿಸಿದೆ.</translation>
 <translation id="8655972064210167941">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲದಿರುವುದರಿಂದ ಸೈನ್ ಇನ್ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ ಅಥವಾ ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="8656619792520327915">ಮತ್ತೊಂದು ಬ್ಲೂಟೂತ್ ಸುರಕ್ಷತಾ ಕೀಯನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="8656768832129462377">ಪರಿಶೀಲಿಸಬೇಡ</translation>
 <translation id="8658645149275195032"><ph name="TAB_NAME" /> ಜೊತೆಗೆ ನಿಮ್ಮ ಪರದೆ ಮತ್ತು ಆಡಿಯೋವನ್ನು <ph name="APP_NAME" /> ಹಂಚಿಕೊಳ್ಳುತ್ತಿದೆ.</translation>
 <translation id="8661290697478713397">ಅಜ್ಞಾ&amp;ತ ವಿಂಡೋದಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
@@ -5895,13 +5860,11 @@
 <translation id="8871696467337989339">ನೀವು ಬೆಂಬಲಿತವಲ್ಲದ ಕಮಾಂಡ್-ಲೈನ್ ಫ್ಲ್ಯಾಗ್ ಅನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ: <ph name="BAD_FLAG" />. ಸ್ಥಿರತೆ ಮತ್ತು ಸುರಕ್ಷತೆಯು ಹಾನಿಯಾಗುತ್ತದೆ.</translation>
 <translation id="8871974300055371298">ವಿಷಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8872155268274985541">ಅಮಾನ್ಯ ಕಿಯೋಸ್ಕ್ ಬಾಹ್ಯ ಅಪ್‌ಡೇಟ್‌‌ ಮ್ಯಾನಿಫೆಸ್ಟ್ ಫೈಲ್ ಕಂಡುಬಂದಿದೆ. ಕಿಯೋಸ್ಕ್ ಅಪ್ಲಿಕೇಶನ್ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು USB ಸ್ಟಿಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ.</translation>
-<translation id="8872187374998143710">Plugin VM ಬಳಸಲು ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="8872777911145321141">ನಿಮ್ಮ ವರ್ಚುವಲ್ ರಿಯಾಲಿಟಿ ಸಾಧನಗಳು ಮತ್ತು ಡೇಟಾವನ್ನು ಬಳಸುವ ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="8874184842967597500">ಸಂಪರ್ಕಗೊಳಿಸಿಲ್ಲ</translation>
 <translation id="8875775314572167244">ಇಥರ್ನೆಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8876307312329369159">ಈ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ಡೆಮೊ ಸೆಷನ್‌ನಲ್ಲಿ ಬದಲಾಯಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="8877448029301136595">[ಮೂಲ ಡೈರೆಕ್ಟರಿ]</translation>
-<translation id="8878384954777710821">Plugin VM ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8879284080359814990">ಟ್ಯಾಬ್‌ನಂತೆ &amp;ತೋರಿಸಿ</translation>
 <translation id="8879921471468674457">ಸೈನ್-ಇನ್ ಮಾಹಿತಿಯನ್ನು ನೆನಪಿನಲ್ಲಿಡಿ</translation>
 <translation id="8881020143150461183">ಪುನಃ ಪ್ರಯತ್ನಿಸಿ. ತಾಂತ್ರಿಕ ಬೆಂಬಲಕ್ಕಾಗಿ, <ph name="CARRIER_NAME" /> ಅನ್ನು ಸಂಪರ್ಕಿಸಿ.</translation>
@@ -5932,7 +5895,6 @@
 <translation id="8912810933860534797">ಸ್ವಯಂ ಸ್ಕ್ಯಾನ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="8915370057835397490">ಸಲಹೆಯನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8916476537757519021">ಅದೃಶ್ಯ ಉಪಫ್ರೇಮ್: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8921366488406707015">ನಿಮ್ಮ ಸುರಕ್ಷತಾ ಕೀಯನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8922013791253848639">ಈ ಸೈಟ್‌ನಲ್ಲಿ ಯಾವಾಗಲೂ ಜಾಹೀರಾತುಗಳನ್ನು ಅನುಮತಿಸಿ</translation>
 <translation id="8923880975836399332">ಗಾಢ ಕೆನ್ನೀಲಿ</translation>
 <translation id="8925458182817574960">&amp;ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>

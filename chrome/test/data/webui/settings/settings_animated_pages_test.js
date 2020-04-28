@@ -4,8 +4,9 @@
 
 // clang-format off
 import {Route, Router} from 'chrome://settings/settings.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
 import {setupPopstateListener} from 'chrome://test/settings/test_util.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+
 // clang-format on
 
 suite('settings-animated-pages', function() {

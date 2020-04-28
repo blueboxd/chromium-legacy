@@ -32,9 +32,10 @@
   OP(ClearPaintCacheINTERNAL)                    /* 273 */ \
   OP(CopySubTextureINTERNALImmediate)            /* 274 */ \
   OP(WritePixelsINTERNALImmediate)               /* 275 */ \
-  OP(TraceBeginCHROMIUM)                         /* 276 */ \
-  OP(TraceEndCHROMIUM)                           /* 277 */ \
-  OP(SetActiveURLCHROMIUM)                       /* 278 */
+  OP(ConvertYUVMailboxesToRGBINTERNALImmediate)  /* 276 */ \
+  OP(TraceBeginCHROMIUM)                         /* 277 */ \
+  OP(TraceEndCHROMIUM)                           /* 278 */ \
+  OP(SetActiveURLCHROMIUM)                       /* 279 */
 
 enum CommandId {
   kOneBeforeStartPoint =

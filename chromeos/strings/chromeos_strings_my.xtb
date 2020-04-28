@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">အက်ပ်များ</translation>
 <translation id="2872961005593481000">ပိတ်ရန်</translation>
 <translation id="3008341117444806826">ပြန်လည်စတင်ရန်</translation>
+<translation id="3749289110408117711">ဖိုင် အမည်</translation>
 <translation id="3820172043799983114">ပင်နံပါတ် မမှန်ကန်ပါ။</translation>
 <translation id="3838338534323494292">စကားဝှက်အသစ်</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> သည် ဤကိရိယာကို စီမံခန့်ခွဲပြီး ဝင်ကြည့်ထားသည့် ဝဘ်စာမျက်နှာများ၊ စကားဝှက်များနှင့် အီးမေးလ်အပါအဝင် အသုံးပြုသူ လုပ်ဆောင်ချက်အားလုံးကို အသုံးပြုခွင့်ရှိပါသည်။</translation>
+<translation id="4034824040120875894">ပုံနှိပ်စက်</translation>
 <translation id="4227825898293920515">စကားဝှက်သည် <ph name="TIME" /> တွင် သက်တမ်းကုန်ပါမည်</translation>
 <translation id="4429881212383817840">Kerberos လက်မှတ်သည် မကြာမီ သက်တမ်းကုန်ပါတော့မည်</translation>
 <translation id="445059817448385655">စကားဝှက်အဟောင်း</translation>
 <translation id="467510802200863975">စကားဝှက်များ မတူညီပါ</translation>
 <translation id="4731797938093519117">မိဘ သုံးခွင့်</translation>
 <translation id="4890353053343094602">ချက်ချင်း အသစ်တစ်ခု ‌ရွေးပါ</translation>
+<translation id="4932733599132424254">ရက်စွဲ</translation>
 <translation id="5212543919916444558">သင့်မျက်နှာပြင်တွင် ကျွန်ုပ်ကူညီနိုင်သည့် အကြောင်းအရာများကို မတွေ့ပါ။ မိုက်ကို တို့ပြီး နှစ်သက်ရာ မေးနိုင်ပါသည်။</translation>
 <translation id="5222676887888702881">ထွက်ခွာရန်</translation>
 <translation id="5317780077021120954">သိမ်းရန်</translation>
@@ -39,6 +42,7 @@
 <translation id="6146993107019042706">အပြီးသတ်ရန် သင့်စကားဝှက်အသစ်ကို ထည့်ပါ</translation>
 <translation id="7658239707568436148">မလုပ်တော့</translation>
 <translation id="7690294790491645610">စကားဝှက်အသစ်ကို အတည်ပြုပါ</translation>
+<translation id="7805768142964895445">အခြေအနေ</translation>
 <translation id="808894953321890993">စကားဝှက် ပြောင်းရန်</translation>
 <translation id="8208861521865154048">ခံစားခွင့်များ</translation>
 <translation id="8747900814994928677">ပြောင်းလဲမှုကို အတည်ပြုခြင်း</translation>

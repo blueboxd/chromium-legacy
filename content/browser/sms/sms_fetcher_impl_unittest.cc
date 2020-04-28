@@ -8,6 +8,7 @@
 #include "content/browser/sms/test/mock_sms_provider.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -47,12 +48,13 @@ class MockSubscriber : public SmsFetcher::Subscriber {
   DISALLOW_COPY_AND_ASSIGN(MockSubscriber);
 };
 
-class SmsFetcherImplTest : public testing::Test {
+class SmsFetcherImplTest : public RenderViewHostTestHarness {
  public:
   SmsFetcherImplTest() = default;
   ~SmsFetcherImplTest() override = default;
 
   void SetUp() override {
+    RenderViewHostTestHarness::SetUp();
     original_client_ = SetBrowserClientForTesting(&client_);
     provider_ = new NiceMock<MockSmsProvider>();
   }
@@ -60,6 +62,7 @@ class SmsFetcherImplTest : public testing::Test {
   void TearDown() override {
     if (original_client_)
       SetBrowserClientForTesting(original_client_);
+    RenderViewHostTestHarness::TearDown();
   }
 
  protected:
@@ -82,13 +85,13 @@ TEST_F(SmsFetcherImplTest, ReceiveFromLocalSmsProvider) {
   StrictMock<MockSubscriber> subscriber;
   SmsFetcherImpl fetcher(nullptr, base::WrapUnique(provider()));
 
-  EXPECT_CALL(*provider(), Retrieve()).WillOnce(Invoke([&]() {
+  EXPECT_CALL(*provider(), Retrieve(_)).WillOnce(Invoke([&]() {
     provider()->NotifyReceive(kOrigin, "123");
   }));
 
   EXPECT_CALL(subscriber, OnReceive("123"));
 
-  fetcher.Subscribe(kOrigin, &subscriber);
+  fetcher.Subscribe(kOrigin, &subscriber, main_rfh());
 }
 
 TEST_F(SmsFetcherImplTest, ReceiveFromRemoteProvider) {
@@ -106,7 +109,8 @@ TEST_F(SmsFetcherImplTest, ReceiveFromRemoteProvider) {
 
   EXPECT_CALL(subscriber, OnReceive("123"));
 
-  fetcher.Subscribe(url::Origin::Create(GURL("https://a.com")), &subscriber);
+  fetcher.Subscribe(url::Origin::Create(GURL("https://a.com")), &subscriber,
+                    main_rfh());
 }
 
 TEST_F(SmsFetcherImplTest, RemoteProviderTimesOut) {
@@ -122,7 +126,8 @@ TEST_F(SmsFetcherImplTest, RemoteProviderTimesOut) {
 
   EXPECT_CALL(subscriber, OnReceive(_)).Times(0);
 
-  fetcher.Subscribe(url::Origin::Create(GURL("https://a.com")), &subscriber);
+  fetcher.Subscribe(url::Origin::Create(GURL("https://a.com")), &subscriber,
+                    main_rfh());
 }
 
 TEST_F(SmsFetcherImplTest, ReceiveFromOtherOrigin) {
@@ -138,10 +143,12 @@ TEST_F(SmsFetcherImplTest, ReceiveFromOtherOrigin) {
 
   EXPECT_CALL(subscriber, OnReceive(_)).Times(0);
 
-  fetcher.Subscribe(url::Origin::Create(GURL("https://a.com")), &subscriber);
+  fetcher.Subscribe(url::Origin::Create(GURL("https://a.com")), &subscriber,
+                    main_rfh());
 }
 
 TEST_F(SmsFetcherImplTest, ReceiveFromBothProviders) {
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://a.com"));
   StrictMock<MockSubscriber> subscriber;
   SmsFetcherImpl fetcher(nullptr, base::WrapUnique(provider()));
 
@@ -154,14 +161,14 @@ TEST_F(SmsFetcherImplTest, ReceiveFromBothProviders) {
             std::move(callback).Run(sms);
           }));
 
-  EXPECT_CALL(*provider(), Retrieve()).WillOnce(Invoke([&]() {
-    provider()->NotifyReceive(sms);
+  EXPECT_CALL(*provider(), Retrieve(_)).WillOnce(Invoke([&]() {
+    provider()->NotifyReceive(kOrigin, sms);
   }));
 
   // Expects subscriber to be notified just once.
   EXPECT_CALL(subscriber, OnReceive("123"));
 
-  fetcher.Subscribe(url::Origin::Create(GURL("https://a.com")), &subscriber);
+  fetcher.Subscribe(kOrigin, &subscriber, main_rfh());
 }
 
 TEST_F(SmsFetcherImplTest, OneOriginTwoSubscribers) {
@@ -172,8 +179,8 @@ TEST_F(SmsFetcherImplTest, OneOriginTwoSubscribers) {
 
   SmsFetcherImpl fetcher(nullptr, base::WrapUnique(provider()));
 
-  fetcher.Subscribe(kOrigin, &subscriber1);
-  fetcher.Subscribe(kOrigin, &subscriber2);
+  fetcher.Subscribe(kOrigin, &subscriber1, main_rfh());
+  fetcher.Subscribe(kOrigin, &subscriber2, main_rfh());
 
   EXPECT_CALL(subscriber1, OnReceive("123"));
   provider()->NotifyReceive(kOrigin, "123");
@@ -190,8 +197,8 @@ TEST_F(SmsFetcherImplTest, TwoOriginsTwoSubscribers) {
   StrictMock<MockSubscriber> subscriber2;
 
   SmsFetcherImpl fetcher(nullptr, base::WrapUnique(provider()));
-  fetcher.Subscribe(kOrigin1, &subscriber1);
-  fetcher.Subscribe(kOrigin2, &subscriber2);
+  fetcher.Subscribe(kOrigin1, &subscriber1, main_rfh());
+  fetcher.Subscribe(kOrigin2, &subscriber2, main_rfh());
 
   EXPECT_CALL(subscriber2, OnReceive("456"));
   provider()->NotifyReceive(kOrigin2, "456");

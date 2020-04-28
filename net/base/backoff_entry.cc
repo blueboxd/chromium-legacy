@@ -8,7 +8,7 @@
 #include <cmath>
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
 #include "base/time/tick_clock.h"

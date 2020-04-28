@@ -161,6 +161,22 @@ TEST_F(MediaFeedsFetcherTest, ReturnsFailedResponseCode) {
   ASSERT_TRUE(RespondToFetch("", net::HTTP_BAD_REQUEST));
 }
 
+TEST_F(MediaFeedsFetcherTest, ReturnsGone) {
+  base::MockCallback<MediaFeedsFetcher::MediaFeedCallback> callback;
+
+  fetcher()->FetchFeed(
+      GURL("https://www.google.com"),
+      base::BindLambdaForTesting(
+          [&](const schema_org::improved::mojom::EntityPtr& response,
+              MediaFeedsFetcher::Status status) {
+            EXPECT_EQ(status, MediaFeedsFetcher::Status::kGone);
+            EXPECT_FALSE(response);
+          }));
+
+  WaitForRequest();
+  ASSERT_TRUE(RespondToFetch("", net::HTTP_GONE));
+}
+
 TEST_F(MediaFeedsFetcherTest, ReturnsNetError) {
   base::MockCallback<MediaFeedsFetcher::MediaFeedCallback> callback;
 

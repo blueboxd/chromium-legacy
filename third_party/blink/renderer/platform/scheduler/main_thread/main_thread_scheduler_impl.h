@@ -367,8 +367,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     return task_queue_throttler_.get();
   }
 
-  void OnFirstContentfulPaint();
-  void OnFirstMeaningfulPaint();
+  void OnMainFramePaint();
 
   void OnShutdownTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
 
@@ -475,6 +474,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   static const char* TimeDomainTypeToString(TimeDomainType domain_type);
 
   bool ContainsLocalMainFrame();
+
+  bool IsAnyMainFrameWaitingForFirstContentfulPaint() const;
+  bool IsAnyMainFrameWaitingForFirstMeaningfulPaint() const;
 
   struct TaskQueuePolicy {
     // Default constructor of TaskQueuePolicy should match behaviour of a
@@ -981,9 +983,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     TraceableState<bool, TracingCategoryName::kInfo>
         have_seen_a_blocking_gesture;
     TraceableState<bool, TracingCategoryName::kInfo>
-        waiting_for_contentful_paint;
+        waiting_for_any_main_frame_contentful_paint;
     TraceableState<bool, TracingCategoryName::kInfo>
-        waiting_for_meaningful_paint;
+        waiting_for_any_main_frame_meaningful_paint;
     TraceableState<bool, TracingCategoryName::kInfo>
         have_seen_input_since_navigation;
     TraceableCounter<uint32_t, TracingCategoryName::kInfo>

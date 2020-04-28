@@ -9,8 +9,9 @@
 
 #include "base/bind.h"
 #include "base/bit_cast.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ref_counted.h"
+#include "base/notreached.h"
 #include "net/base/io_buffer.h"
 #include "third_party/zlib/zlib.h"
 

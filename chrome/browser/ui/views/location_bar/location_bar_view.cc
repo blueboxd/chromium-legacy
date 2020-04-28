@@ -676,8 +676,13 @@ SkColor LocationBarView::GetIconLabelBubbleBackgroundColor() const {
   return GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND);
 }
 
+bool LocationBarView::ShouldHideContentSettingImage() {
+  // Content setting icons are hidden at the same time as page action icons.
+  return ShouldHidePageActionIcons();
+}
+
 content::WebContents* LocationBarView::GetContentSettingWebContents() {
-  return IsLocationBarUserInputInProgress() ? nullptr : GetWebContents();
+  return GetWebContents();
 }
 
 ContentSettingBubbleModelDelegate*
@@ -689,8 +694,18 @@ WebContents* LocationBarView::GetWebContentsForPageActionIconView() {
   return GetWebContents();
 }
 
-bool LocationBarView::IsLocationBarUserInputInProgress() const {
-  return omnibox_view_ && omnibox_view_->model()->user_input_in_progress();
+bool LocationBarView::ShouldHidePageActionIcons() const {
+  if (!omnibox_view_)
+    return false;
+
+  // When the user is typing in the omnibox, the page action icons are no longer
+  // associated with the current omnibox text, so hide them.
+  if (omnibox_view_->model()->user_input_in_progress())
+    return true;
+
+  // Also hide them if the popup is open for any other reason, e.g. ZeroSuggest.
+  // The page action icons are not relevant to the displayed suggestions.
+  return omnibox_view_->model()->popup_model()->IsOpen();
 }
 
 // static
@@ -1027,9 +1042,10 @@ void LocationBarView::AnimationCanceled(const gfx::Animation* animation) {
 
 void LocationBarView::OnChanged() {
   location_icon_view_->Update(/*suppress_animations=*/false);
-  clear_all_button_->SetVisible(IsLocationBarUserInputInProgress() &&
-                                !omnibox_view_->GetText().empty() &&
-                                IsVirtualKeyboardVisible(GetWidget()));
+  clear_all_button_->SetVisible(
+      omnibox_view_ && omnibox_view_->model()->user_input_in_progress() &&
+      !omnibox_view_->GetText().empty() &&
+      IsVirtualKeyboardVisible(GetWidget()));
   Layout();
   SchedulePaint();
   UpdateSendTabToSelfIcon();
@@ -1039,15 +1055,15 @@ void LocationBarView::OnPopupVisibilityChanged() {
   RefreshBackground();
 
   // The location icon may change when the popup visibility changes.
-  location_icon_view_->Update(/*suppress_animations=*/false);
+  // The page action icons and content setting images may be hidden now.
+  // This will also schedule a paint and re-layout.
+  UpdateWithoutTabRestore();
 
   // The focus ring may be hidden or shown when the popup visibility changes.
   if (focus_ring_)
     focus_ring_->SchedulePaint();
 
   // We indent the textfield when the popup is open to align to suggestions.
-  Layout();
-  SchedulePaint();
   omnibox_view_->NotifyAccessibilityEvent(ax::mojom::Event::kControlsChanged,
                                           true);
 }

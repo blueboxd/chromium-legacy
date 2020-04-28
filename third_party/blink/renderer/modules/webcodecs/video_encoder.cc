@@ -12,7 +12,9 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
 #include "media/base/video_encoder.h"
+#if BUILDFLAG(ENABLE_LIBVPX)
 #include "media/video/vpx_video_encoder.h"
+#endif
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -218,12 +220,14 @@ void VideoEncoder::ProcessConfigure(Request* request) {
     return;
   }
 
-  media::VideoCodecProfile profile;
   auto codec_type = media::StringToVideoCodec(request->config->codec().Utf8());
   if (codec_type == media::kUnknownVideoCodec) {
     request->Reject(DOMExceptionCode::kNotFoundError, "Unknown codec type");
     return;
-  } else if (codec_type == media::kCodecVP8) {
+  }
+  media::VideoCodecProfile profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
+#if BUILDFLAG(ENABLE_LIBVPX)
+  if (codec_type == media::kCodecVP8) {
     media_encoder_ = std::make_unique<media::VpxVideoEncoder>();
     profile = media::VP8PROFILE_ANY;
   } else if (codec_type == media::kCodecVP9) {
@@ -236,6 +240,7 @@ void VideoEncoder::ProcessConfigure(Request* request) {
     }
     media_encoder_ = std::make_unique<media::VpxVideoEncoder>();
   }
+#endif  // BUILDFLAG(ENABLE_LIBVPX)
 
   if (!media_encoder_) {
     request->Reject(DOMExceptionCode::kNotFoundError, "Unsupported codec type");

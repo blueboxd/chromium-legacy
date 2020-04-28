@@ -8,7 +8,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket_descriptor.h"
 #include "net/socket/tcp_client_socket.h"

@@ -311,6 +311,12 @@ void HTMLIFrameElement::ParseAttribute(
 // on iframe attribute.'.
 DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
     const {
+  if (!required_policy_.IsEmpty()) {
+    UseCounter::Count(
+        GetDocument(),
+        mojom::blink::WebFeature::kDocumentPolicyIframePolicyAttribute);
+  }
+
   DocumentPolicy::FeatureState new_required_policy =
       DocumentPolicyParser::Parse(required_policy_)
           .value_or(DocumentPolicy::ParsedDocumentPolicy{})
@@ -323,7 +329,6 @@ DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
           "Blink.UseCounter.DocumentPolicy.PolicyAttribute", feature);
     }
   }
-
   return new_required_policy;
 }
 

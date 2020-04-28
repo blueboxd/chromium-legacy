@@ -39,6 +39,7 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   MOCK_METHOD1(SetIsSurfaceVisible, void(bool));
   MOCK_METHOD1(SetIsPageVisible, void(bool));
   MOCK_METHOD1(SetForceSubmit, void(bool));
+  MOCK_METHOD1(SetForceBeginFrames, void(bool));
   void DidReceiveFrame() override { ++did_receive_frame_count_; }
 
   int did_receive_frame_count() { return did_receive_frame_count_; }
@@ -200,7 +201,7 @@ TEST_P(VideoFrameCompositorTest, PaintSingleFrame) {
   EXPECT_EQ(1, submitter_->did_receive_frame_count());
 }
 
-TEST_P(VideoFrameCompositorTest, RenderFiresPrensentationCallback) {
+TEST_P(VideoFrameCompositorTest, RenderFiresPresentationCallback) {
   // Advance the clock so we can differentiate between base::TimeTicks::Now()
   // and base::TimeTicks().
   tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
@@ -208,6 +209,7 @@ TEST_P(VideoFrameCompositorTest, RenderFiresPrensentationCallback) {
   scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
   EXPECT_CALL(*this, Render(_, _, true)).WillRepeatedly(Return(opaque_frame));
   EXPECT_CALL(*this, OnNewFramePresented());
+  EXPECT_CALL(*submitter_, SetForceBeginFrames(true)).Times(AnyNumber());
   compositor()->SetOnFramePresentedCallback(GetNewFramePresentedCB());
   StartVideoRendererSink();
   StopVideoRendererSink(true);
@@ -215,6 +217,26 @@ TEST_P(VideoFrameCompositorTest, RenderFiresPrensentationCallback) {
   auto metadata = compositor()->GetLastPresentedFrameMetadata();
   EXPECT_NE(base::TimeTicks(), metadata->presentation_time);
   EXPECT_NE(base::TimeTicks(), metadata->expected_display_time);
+}
+
+TEST_P(VideoFrameCompositorTest, PresentationCallbackForcesBeginFrames) {
+  if (!IsSurfaceLayerForVideoEnabled())
+    return;
+
+  // A call to the requestVideoFrameCallback() API should set ForceBeginFrames.
+  EXPECT_CALL(*submitter_, SetForceBeginFrames(true));
+  compositor()->SetOnFramePresentedCallback(GetNewFramePresentedCB());
+  base::RunLoop().RunUntilIdle();
+
+  testing::Mock::VerifyAndClear(submitter_);
+
+  // The flag should be un-set when stop receiving callbacks.
+  base::RunLoop run_loop;
+  EXPECT_CALL(*submitter_, SetForceBeginFrames(false))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+  run_loop.Run();
+
+  testing::Mock::VerifyAndClear(submitter_);
 }
 
 TEST_P(VideoFrameCompositorTest, MultiplePresentationCallbacks) {
@@ -231,6 +253,7 @@ TEST_P(VideoFrameCompositorTest, MultiplePresentationCallbacks) {
   scoped_refptr<VideoFrame> opaque_frame_3 = CreateOpaqueFrame(kSize3, kSize3);
 
   EXPECT_CALL(*this, OnNewFramePresented()).Times(1);
+  EXPECT_CALL(*submitter_, SetForceBeginFrames(_)).Times(AnyNumber());
   compositor()->SetOnFramePresentedCallback(GetNewFramePresentedCB());
   compositor()->PaintSingleFrame(opaque_frame_1);
 

@@ -17528,6 +17528,12 @@ Called by update_document_policy_enum.py.-->
   <int value="2" label="Unknown"/>
 </enum>
 
+<enum name="DuplicateBookmarkEntityOnRemoteUpdateCondition">
+  <int value="0" label="Entity with server ID is a tombstone"/>
+  <int value="1" label="Only entity with temporary ID is a tombstone"/>
+  <int value="2" label="Both entities are non-tombstone"/>
+</enum>
+
 <enum name="DXGI_COLOR_SPACE_TYPE">
   <summary>
     DirectX color space type. Documented here:
@@ -17796,6 +17802,18 @@ Called by update_document_policy_enum.py.-->
   <int value="9" label="SCRIPT_READ_FINISHED (obsolete)"/>
   <int value="10" label="SCRIPT_STREAMING"/>
   <int value="11" label="SCRIPT_EVALUATION"/>
+</enum>
+
+<enum name="EmeApiType">
+  <int value="0" label="Not expected"/>
+  <int value="1" label="MediaKeySystemAccess.createMediaKeys()"/>
+  <int value="2" label="MediaKeys.setServerCertificate()"/>
+  <int value="3" label="MediaKeys.getStatusForPolicy()"/>
+  <int value="4" label="MediaKeySession.generateRequest()"/>
+  <int value="5" label="MediaKeySession.load()"/>
+  <int value="6" label="MediaKeySession.update()"/>
+  <int value="7" label="MediaKeySession.close()"/>
+  <int value="8" label="MediaKeySession.remove()"/>
 </enum>
 
 <enum name="EmmcLifeUsed">
@@ -38896,6 +38914,7 @@ from previous Chrome versions.
   <int value="-962030536" label="ChromeDuetLabeled:enabled"/>
   <int value="-960077963" label="EnableAuraTooltipsOnWindows:enabled"/>
   <int value="-958950214" label="AllowDisableMouseAcceleration:disabled"/>
+  <int value="-958372962" label="LacrosSupport:enabled"/>
   <int value="-957200826" label="enable-spdy-proxy-auth"/>
   <int value="-956696029" label="scheduler-configuration"/>
   <int value="-953215709" label="StorageAccessAPI:enabled"/>
@@ -41491,6 +41510,7 @@ from previous Chrome versions.
   <int value="2106855416" label="HostWindowsInAppShimProcess:enabled"/>
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
+  <int value="2115848376" label="LacrosSupport:disabled"/>
   <int value="2119964154" label="enable-download-resumption"/>
   <int value="2120659210" label="BackForwardCache:enabled"/>
   <int value="2121056855" label="IncreaseInputAudioBufferSize:disabled"/>

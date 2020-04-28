@@ -30,6 +30,8 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_config.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -232,7 +234,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetScrubbedBigLogs(GetLogsCallback callback) override {
+  void GetScrubbedBigLogs(const cryptohome::AccountIdentifier& id,
+                          GetLogsCallback callback) override {
     // The PipeReaderWrapper is a self-deleting object; we don't have to worry
     // about ownership or lifetime. We need to create a new one for each Big
     // Logs requests in order to queue these requests. One request can take a
@@ -245,6 +248,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                                  debugd::kGetBigFeedbackLogs);
     dbus::MessageWriter writer(&method_call);
     writer.AppendFileDescriptor(pipe_write_end.get());
+    writer.AppendString(id.account_id());
 
     DVLOG(1) << "Requesting big feedback logs";
     debugdaemon_proxy_->CallMethod(

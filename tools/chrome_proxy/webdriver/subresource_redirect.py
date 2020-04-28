@@ -32,7 +32,7 @@ class SubresourceRedirect(IntegrationTest):
     with TestDriver() as test_driver:
       self.enableSubresourceRedirectFeature(test_driver)
       test_driver.LoadURL(
-          'https://check.googlezip.net/static/image_delayed_load.html')
+          'https://probe.googlezip.net/static/image_delayed_load.html')
 
       test_driver.SleepUntilHistogramHasEntry(
           'SubresourceRedirect.CompressionAttempt.ServerResponded')
@@ -83,7 +83,7 @@ class SubresourceRedirect(IntegrationTest):
   def testNoCompressNonImage(self):
     with TestDriver() as test_driver:
       self.enableSubresourceRedirectFeature(test_driver)
-      test_driver.LoadURL('https://check.googlezip.net/testvideo.html')
+      test_driver.LoadURL('https://probe.googlezip.net/testvideo.html')
 
       image_responses = 0
 
@@ -104,7 +104,7 @@ class SubresourceRedirect(IntegrationTest):
   def testNoCompressNonHTTPS(self):
     with TestDriver() as test_driver:
       self.enableSubresourceRedirectFeature(test_driver)
-      test_driver.LoadURL('http://check.googlezip.net/static/index.html')
+      test_driver.LoadURL('http://probe.googlezip.net/static/index.html')
 
       image_responses = 0
 

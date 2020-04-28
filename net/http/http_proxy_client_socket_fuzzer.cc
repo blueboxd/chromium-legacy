@@ -12,7 +12,7 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/address_list.h"
 #include "net/base/auth.h"

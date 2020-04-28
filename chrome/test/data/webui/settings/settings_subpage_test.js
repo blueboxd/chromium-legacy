@@ -4,9 +4,10 @@
 
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {flushTasks} from 'chrome://test/test_util.m.js';
 import {Route, Router} from 'chrome://settings/settings.js';
 import {setupPopstateListener} from 'chrome://test/settings/test_util.js';
+import {flushTasks} from 'chrome://test/test_util.m.js';
+
 // clang-format on
 
 suite('SettingsSubpage', function() {
@@ -65,22 +66,19 @@ suite('SettingsSubpage', function() {
     window.history.replaceState(undefined, '', testRoutes.CERTIFICATES.path);
     Router.getInstance().initializeRouteFromUrl();
     assertEquals(
-        testRoutes.CERTIFICATES,
-        Router.getInstance().getCurrentRoute());
+        testRoutes.CERTIFICATES, Router.getInstance().getCurrentRoute());
 
     const subpage = document.createElement('settings-subpage');
     document.body.appendChild(subpage);
 
     subpage.$$('cr-icon-button').click();
-    assertEquals(
-        testRoutes.PRIVACY, Router.getInstance().getCurrentRoute());
+    assertEquals(testRoutes.PRIVACY, Router.getInstance().getCurrentRoute());
   });
 
   test('navigates to any route via window.back()', function(done) {
     Router.getInstance().navigateTo(testRoutes.BASIC);
     Router.getInstance().navigateTo(testRoutes.SYNC);
-    assertEquals(
-        testRoutes.SYNC, Router.getInstance().getCurrentRoute());
+    assertEquals(testRoutes.SYNC, Router.getInstance().getCurrentRoute());
 
     const subpage = document.createElement('settings-subpage');
     document.body.appendChild(subpage);

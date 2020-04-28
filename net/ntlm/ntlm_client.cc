@@ -6,8 +6,8 @@
 
 #include <string.h>
 
+#include "base/check_op.h"
 #include "base/containers/span.h"
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/ntlm/ntlm.h"
 #include "net/ntlm/ntlm_buffer_reader.h"

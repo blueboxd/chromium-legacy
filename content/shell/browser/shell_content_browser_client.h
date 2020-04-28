@@ -67,8 +67,15 @@ class ShellContentBrowserClient : public ContentBrowserClient {
                            WebPreferences* prefs) override;
   base::FilePath GetFontLookupTableCacheDir() override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  void ExposeInterfacesToRenderer(
+      service_manager::BinderRegistry* registry,
+      blink::AssociatedInterfaceRegistry* associated_registry,
+      RenderProcessHost* render_process_host) override;
   mojo::Remote<::media::mojom::MediaService> RunSecondaryMediaService()
       override;
+  void RegisterBrowserInterfaceBindersForFrame(
+      RenderFrameHost* render_frame_host,
+      service_manager::BinderMapWithContext<RenderFrameHost*>* map) override;
   void OpenURL(SiteInstance* site_instance,
                const OpenURLParams& params,
                base::OnceCallback<void(WebContents*)> callback) override;
@@ -133,6 +140,23 @@ class ShellContentBrowserClient : public ContentBrowserClient {
     url_loader_factory_params_callback_ =
         std::move(url_loader_factory_params_callback);
   }
+  void set_expose_interfaces_to_renderer_callback(
+      base::RepeatingCallback<
+          void(service_manager::BinderRegistry* registry,
+               blink::AssociatedInterfaceRegistry* associated_registry,
+               RenderProcessHost* render_process_host)>
+          expose_interfaces_to_renderer_callback) {
+    expose_interfaces_to_renderer_callback_ =
+        expose_interfaces_to_renderer_callback;
+  }
+  void set_register_browser_interface_binders_for_frame_callback(
+      base::RepeatingCallback<
+          void(RenderFrameHost* render_frame_host,
+               service_manager::BinderMapWithContext<RenderFrameHost*>* map)>
+          register_browser_interface_binders_for_frame_callback) {
+    register_browser_interface_binders_for_frame_callback_ =
+        register_browser_interface_binders_for_frame_callback;
+  }
 
  protected:
   // Call this if CreateBrowserMainParts() is overridden in a subclass.
@@ -156,6 +180,15 @@ class ShellContentBrowserClient : public ContentBrowserClient {
                                const url::Origin&,
                                bool is_for_isolated_world)>
       url_loader_factory_params_callback_;
+  base::RepeatingCallback<void(
+      service_manager::BinderRegistry* registry,
+      blink::AssociatedInterfaceRegistry* associated_registry,
+      RenderProcessHost* render_process_host)>
+      expose_interfaces_to_renderer_callback_;
+  base::RepeatingCallback<void(
+      RenderFrameHost* render_frame_host,
+      service_manager::BinderMapWithContext<RenderFrameHost*>* map)>
+      register_browser_interface_binders_for_frame_callback_;
 
   // Owned by content::BrowserMainLoop.
   ShellBrowserMainParts* shell_browser_main_parts_;

@@ -174,7 +174,11 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   void AddObserver(DialogObserver* observer);
   void RemoveObserver(DialogObserver* observer);
 
-  // Notifies observers when the result of the DialogModel overrides changes.
+  // Notifies DialogDelegate that the result of one of the virtual getter
+  // functions above has changed, which causes it to rebuild its layout. It is
+  // not necessary to call this unless you are overriding
+  // IsDialogButtonEnabled() or manually manipulating the dialog buttons.
+  // TODO(https://crbug.com/1011446): Make this private.
   void DialogModelChanged();
 
   void set_use_round_corners(bool round) { params_.round_corners = round; }
@@ -183,6 +187,8 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   void set_use_custom_frame(bool use) { params_.custom_frame = use; }
   bool use_custom_frame() const { return params_.custom_frame; }
 
+  // These methods internally call DialogModelChanged() if needed, so it is not
+  // necessary to call DialogModelChanged() yourself after calling them.
   void SetDefaultButton(int button);
   void SetButtons(int buttons);
   void SetButtonLabel(ui::DialogButton button, base::string16 label);

@@ -73,10 +73,16 @@ namespace {
 TouchAction AdjustTouchActionForElement(TouchAction touch_action,
                                         const ComputedStyle& style,
                                         Element* element) {
+  // if body is the viewport defining element then ScrollsOverflow should
+  // return false as body should have overflow-x/overflow-y set to visible
+  Element* body = element ? element->GetDocument().body() : nullptr;
+  bool is_body_and_viewport =
+      element && element == body &&
+      body == element->GetDocument().ViewportDefiningElement();
   bool is_child_document =
       element && element == element->GetDocument().documentElement() &&
       element->GetDocument().LocalOwner();
-  if (style.ScrollsOverflow() || is_child_document)
+  if ((!is_body_and_viewport && style.ScrollsOverflow()) || is_child_document)
     return touch_action | TouchAction::kPan;
   return touch_action;
 }

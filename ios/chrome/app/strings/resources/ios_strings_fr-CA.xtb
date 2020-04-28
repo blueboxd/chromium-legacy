@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">Ligne adresse 1</translation>
 <translation id="1545749641540134597">Scannez le code QR</translation>
 <translation id="1552525382687785070">La synchronisation est désactivée par votre administrateur</translation>
+<translation id="1554477036522844996">Nouvelle fenêtre</translation>
 <translation id="1580783302095112590">Courriel envoyé.</translation>
 <translation id="1582732959743469162">Cette opération entraînera l'arrêt de la progression de votre téléchargement en cours.</translation>
 <translation id="1605658421715042784">Copier l'image</translation>
@@ -104,6 +105,7 @@
 <translation id="2239626343334228536">Effacement des données de navigation en cours…</translation>
 <translation id="2245545499420671379">Bloquer les témoins tiers en navigation privée</translation>
 <translation id="2257567812274161158">La synchronisation ne fonctionne pas.</translation>
+<translation id="225943865679747347">Code d'erreur : <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Ajouter un compte</translation>
 <translation id="2268044343513325586">Affiner</translation>
 <translation id="2273327106802955778">Menu Plus</translation>
@@ -187,6 +189,7 @@
 <translation id="3328801116991980348">Information sur le site</translation>
 <translation id="3329904751041170572">Impossible de se connecter au serveur.</translation>
 <translation id="3335947283844343239">Rouvrir l'onglet fermé</translation>
+<translation id="3343651535143698944">Ajouter une exception de site</translation>
 <translation id="3371831930909698441">La traduction est disponible. Vous trouverez les options vers le bas de l'écran.</translation>
 <translation id="3393920035788932672">Fenêtr context autor</translation>
 <translation id="3443810440409579745">Onglet reçu.</translation>
@@ -555,6 +558,7 @@ Comme votre compte est géré par <ph name="HOSTED_DOMAIN" />, vos données Chro
 <translation id="8319076807703933069">Nouvelle recherche</translation>
 <translation id="8323906514956095947">Maintenez le doigt sur le bouton pour afficher plus d'options d'onglets</translation>
 <translation id="8328777765163860529">Tout fermer</translation>
+<translation id="8332159733957009464">Exceptions de sites</translation>
 <translation id="8386068868580335421">Réinitialiser</translation>
 <translation id="8407669440184693619">Aucun mot de passé trouvé pour ce site</translation>
 <translation id="842017693807136194">Connecté avec</translation>

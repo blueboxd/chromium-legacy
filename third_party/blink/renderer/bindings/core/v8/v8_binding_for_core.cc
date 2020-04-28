@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_xpath_ns_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
@@ -734,8 +733,8 @@ static ScriptState* ToScriptStateImpl(LocalFrame* frame,
 v8::Local<v8::Context> ToV8Context(ExecutionContext* context,
                                    DOMWrapperWorld& world) {
   DCHECK(context);
-  if (auto* document = Document::DynamicFrom(context)) {
-    if (LocalFrame* frame = document->GetFrame())
+  if (LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context)) {
+    if (LocalFrame* frame = window->GetFrame())
       return ToV8Context(frame, world);
   } else if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context)) {
     if (WorkerOrWorkletScriptController* script = scope->ScriptController()) {
@@ -770,8 +769,8 @@ v8::Local<v8::Context> ToV8ContextEvenIfDetached(LocalFrame* frame,
 
 ScriptState* ToScriptState(ExecutionContext* context, DOMWrapperWorld& world) {
   DCHECK(context);
-  if (auto* document = Document::DynamicFrom(context)) {
-    if (LocalFrame* frame = document->GetFrame())
+  if (LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context)) {
+    if (LocalFrame* frame = window->GetFrame())
       return ToScriptState(frame, world);
   } else if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context)) {
     if (WorkerOrWorkletScriptController* script = scope->ScriptController())

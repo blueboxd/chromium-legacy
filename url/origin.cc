@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/check_op.h"
 #include "base/containers/span.h"
-#include "base/logging.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"

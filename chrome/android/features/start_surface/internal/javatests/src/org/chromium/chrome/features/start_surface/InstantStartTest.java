@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.test.filters.SmallTest;
+import android.text.TextUtils;
 import android.widget.ImageView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelMetadata;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
@@ -232,6 +234,23 @@ public class InstantStartTest {
         Assert.assertTrue(LibraryLoader.getInstance().isInitialized());
         assertThat(mActivityTestRule.getActivity().getLayoutManager())
                 .isInstanceOf(LayoutManagerChromeTablet.class);
+    }
+
+    @Test
+    @SmallTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    // clang-format off
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+            "force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:start_surface_variation/single"})
+    public void testShouldShowStartSurfaceAsTheHomePagePreNative() {
+        // clang-format on
+        Assert.assertTrue(StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled());
+        Assert.assertFalse(TextUtils.isEmpty(HomepageManager.getHomepageUri()));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                (Runnable) ReturnToChromeExperimentsUtil::shouldShowStartSurfaceAsTheHomePage);
     }
 
     private void showOverview() {

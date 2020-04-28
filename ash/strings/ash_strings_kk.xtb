@@ -294,6 +294,7 @@
 <translation id="4565377596337484307">Құпия сөзді жасыру</translation>
 <translation id="4570957409596482333">Select-to-Speak түймесі</translation>
 <translation id="4585337515783392668">Белгісіз қабылдағышқа трансляциялауды тоқтату</translation>
+<translation id="4588090240171750605">Оңға айналдыру</translation>
 <translation id="4628757576491864469">Құрылғылар</translation>
 <translation id="4659419629803378708">ChromeVox қосылды</translation>
 <translation id="4665114317261903604">"Мазаламау" режиміне ауысыңыз. <ph name="STATE_TEXT" /></translation>
@@ -415,6 +416,7 @@
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> есептік жазбасы ата-ананың рұқсатымен кейінірек қайта енгізіледі.</translation>
 <translation id="6297287540776456956">Бөлікті таңдау үшін стилусты таңдаңыз</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> дисплейі <ph name="ROTATION" /> бағытында бұрылды</translation>
+<translation id="6364916375976753737">Солға айналдыру</translation>
 <translation id="6376931439017688372">Bluetooth қосулы</translation>
 <translation id="6381109794406942707">Құрылғының құлпын ашу үшін PIN кодын енгізіңіз.</translation>
 <translation id="639644700271529076">CAPS LOCK өшірулі</translation>
@@ -473,6 +475,7 @@
 <translation id="698231206551913481">Бұл пайдаланушы өшірілгеннен кейін, оған қатысты барлық файлдар және жергілікті деректер біржола жойылады.</translation>
 <translation id="7015766095477679451">Сағат <ph name="COME_BACK_TIME" /> болғанда, қайта қолданып көріңіз.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> құрылғысын телефонға жалғаңыз</translation>
+<translation id="7026338066939101231">Кему</translation>
 <translation id="7029814467594812963">Сеанстан шығу</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Google Assistant</translation>
 <translation id="7042322267639375032">Күй аумағын жию</translation>
@@ -544,6 +547,7 @@
 <translation id="7984197416080286869">Саусақ ізі тым көп енгізілді</translation>
 <translation id="7994370417837006925">Бірнеше профильдердің кіруі</translation>
 <translation id="8000066093800657092">Желі жоқ</translation>
+<translation id="8004512796067398576">Арту</translation>
 <translation id="8029629653277878342">Қауіпсіздікті күшейту үшін PIN коды немесе құпия сөз қажет.</translation>
 <translation id="8030169304546394654">Ажыратылған</translation>
 <translation id="8048123526339889627">Bluetooth параметрлері</translation>
@@ -570,6 +574,7 @@
 <translation id="8261506727792406068">Жою</translation>
 <translation id="8297006494302853456">Әлсіз</translation>
 <translation id="8308637677604853869">Алдыңғы мәзір</translation>
+<translation id="8331626408530291785">Жоғарыға айналдыру</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Ескертпе жасау</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> және телефоныңыз автоматты түрде жалғанады</translation>

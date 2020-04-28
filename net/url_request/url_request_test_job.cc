@@ -223,13 +223,8 @@ void URLRequestTestJob::StartAsync() {
     } else {
       AdvanceJob();
 
-      // unexpected url, return error
-      // FIXME(brettw) we may want to use WININET errors or have some more types
-      // of errors
-      NotifyStartError(
-          URLRequestStatus(URLRequestStatus::FAILED, ERR_INVALID_URL));
-      // FIXME(brettw): this should emulate a network error, and not just fail
-      // initiating a connection
+      // Return an error on unexpected urls.
+      NotifyStartError(ERR_INVALID_URL);
       return;
     }
   }

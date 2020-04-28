@@ -5,7 +5,6 @@
 #include "net/cert/test_root_certs.h"
 
 #include "base/location.h"
-#include "base/logging.h"
 #include "net/android/network_library.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"

@@ -36,7 +36,8 @@ PrintingManagerFactory::~PrintingManagerFactory() = default;
 
 KeyedService* PrintingManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new PrintingManager(Profile::FromBrowserContext(context));
+  return new PrintingManager(
+      PrintJobHistoryServiceFactory::GetForBrowserContext(context));
 }
 
 }  // namespace print_management

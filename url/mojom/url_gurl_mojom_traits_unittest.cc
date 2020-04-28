@@ -4,7 +4,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

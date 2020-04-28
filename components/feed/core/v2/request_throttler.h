@@ -10,7 +10,7 @@
 class PrefService;
 namespace base {
 class Clock;
-}
+}  // namespace base
 
 namespace feed {
 

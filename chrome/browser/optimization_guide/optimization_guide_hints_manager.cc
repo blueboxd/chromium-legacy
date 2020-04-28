@@ -1353,6 +1353,7 @@ void OptimizationGuideHintsManager::AddHintForTesting(
   optimization->set_optimization_type(optimization_type);
   if (!metadata) {
     hint_cache_->AddHintForTesting(url, std::move(hint));
+    PrepareToInvokeRegisteredCallbacks(url);
     return;
   }
   if (metadata->previews_metadata()) {
@@ -1370,4 +1371,5 @@ void OptimizationGuideHintsManager::AddHintForTesting(
     NOTREACHED();
   }
   hint_cache_->AddHintForTesting(url, std::move(hint));
+  PrepareToInvokeRegisteredCallbacks(url);
 }

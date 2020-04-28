@@ -105,6 +105,7 @@
 <translation id="2239626343334228536">Brisanje podataka pregledanja...</translation>
 <translation id="2245545499420671379">Blokiraj kolačiće trećih strana u anonimnom načinu rada</translation>
 <translation id="2257567812274161158">Sinhronizacija ne funkcionira.</translation>
+<translation id="225943865679747347">Kôd pogreške: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Dodaj račun</translation>
 <translation id="2268044343513325586">Traži detaljnije</translation>
 <translation id="2273327106802955778">Meni Više</translation>
@@ -115,6 +116,7 @@
 <translation id="2359043044084662842">Prevedi</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2360196772093551345">Zatraži web lokaciju za mobilni uređaj</translation>
+<translation id="2379896346847637748">Otvori u novom prozoru</translation>
 <translation id="2381405137052800939">Osnove</translation>
 <translation id="2386793615875593361">1 odabrana</translation>
 <translation id="2421004566762153674">Blokiranje kolačića treće strane</translation>
@@ -557,7 +559,7 @@ S obzirom da vašim računom upravlja domena <ph name="HOSTED_DOMAIN" />, vaši 
 <translation id="8319076807703933069">Novo pretraživanje</translation>
 <translation id="8323906514956095947">Dodirnite i zadržite za više opcija za karticu</translation>
 <translation id="8328777765163860529">Zatvori sve</translation>
-<translation id="8332159733957009464">Izuzete web lokacije</translation>
+<translation id="8332159733957009464">Izuzeci za web lokacije</translation>
 <translation id="8386068868580335421">Vrati na zadano</translation>
 <translation id="8407669440184693619">Nije pronađena nijedna lozinka za ovu web lokaciju</translation>
 <translation id="842017693807136194">Prijavljeni ste sa</translation>

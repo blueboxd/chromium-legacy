@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">ॲप्लिकेशन</translation>
 <translation id="2872961005593481000">बंद करा</translation>
 <translation id="3008341117444806826">रिफ्रेश करा</translation>
+<translation id="3749289110408117711">फाइल नाव</translation>
 <translation id="3820172043799983114">चुकीचे पिन.</translation>
 <translation id="3838338534323494292">नवीन पासवर्ड</translation>
 <translation id="4003259559679196451">हे डिव्हाइस <ph name="ENROLLMENT_DOMAIN" />व्यवस्थापित करते आणि भेट दिलेली वेबपेज पासवर्ड आणि ईमेलसह सर्व वापरकर्ता ॲक्टिव्हिटीचा त्यांना ॲक्सेस आहे.</translation>
+<translation id="4034824040120875894">प्रिंटर</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> मध्ये पासवर्ड एक्स्पायर होईल</translation>
 <translation id="4429881212383817840">Kerberos तिकीट लवकरच एक्स्पायर होईल</translation>
 <translation id="445059817448385655">जुना पासवर्ड</translation>
 <translation id="467510802200863975">पासवर्ड जुळत नाहीत</translation>
 <translation id="4731797938093519117">पालक अ‍ॅक्सेस</translation>
 <translation id="4890353053343094602">तत्काळ नवीन निवडा</translation>
+<translation id="4932733599132424254">तारीख</translation>
 <translation id="5212543919916444558">मी मदत करू शकेन असे मला तुमच्या स्क्रीनवर काही आढळले नाही. 
 मला काहीही विचारण्यासाठी माइकवर टॅप करून पाहा.</translation>
 <translation id="5222676887888702881">साइन आउट करा</translation>
@@ -40,6 +43,7 @@
 <translation id="6146993107019042706">पूर्ण करण्यासाठी, तुमचा नवीन पासवर्ड एंटर करा</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7690294790491645610">नवीन पासवर्ड कन्फर्म करा</translation>
+<translation id="7805768142964895445">स्थिती</translation>
 <translation id="808894953321890993">पासवर्ड बदला</translation>
 <translation id="8208861521865154048">लाभ</translation>
 <translation id="8747900814994928677">बदलाची खात्री करा</translation>

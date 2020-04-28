@@ -659,6 +659,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   }
 
   MutatorHost* mutator_host() const { return mutator_host_.get(); }
+  ScrollbarController* scrollbar_controller_for_testing() const {
+    return scrollbar_controller_.get();
+  }
 
   void SetDebugState(const LayerTreeDebugState& new_debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }

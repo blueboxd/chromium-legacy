@@ -34,11 +34,11 @@
 #include "base/timer/elapsed_timer.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -293,8 +293,8 @@ void FileReader::ReadInternal(Blob* blob,
 
   // A document loader will not load new resources once the Document has
   // detached from its frame.
-  Document* document = Document::DynamicFrom(context);
-  if (document && !document->GetFrame()) {
+  LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context);
+  if (window && !window->GetFrame()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kAbortError,
         "Reading from a Document-detached FileReader is not supported.");

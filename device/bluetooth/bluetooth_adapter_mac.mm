@@ -73,29 +73,26 @@ CBCentralManagerState GetCBManagerState(CBCentralManager* manager) {
 }
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    InitCallback init_callback) {
+scoped_refptr<BluetoothAdapter> BluetoothAdapter::CreateAdapter() {
   return BluetoothAdapterMac::CreateAdapter();
 }
 
 // static
-base::WeakPtr<BluetoothAdapterMac> BluetoothAdapterMac::CreateAdapter() {
-  BluetoothAdapterMac* adapter = new BluetoothAdapterMac();
-  adapter->Init();
-  return adapter->weak_ptr_factory_.GetWeakPtr();
+scoped_refptr<BluetoothAdapterMac> BluetoothAdapterMac::CreateAdapter() {
+  return base::WrapRefCounted(new BluetoothAdapterMac());
 }
 
 // static
-base::WeakPtr<BluetoothAdapterMac> BluetoothAdapterMac::CreateAdapterForTest(
+scoped_refptr<BluetoothAdapterMac> BluetoothAdapterMac::CreateAdapterForTest(
     std::string name,
     std::string address,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  BluetoothAdapterMac* adapter = new BluetoothAdapterMac();
+  auto adapter = base::WrapRefCounted(new BluetoothAdapterMac());
   adapter->InitForTest(ui_task_runner);
   adapter->name_ = name;
   adapter->should_update_name_ = false;
   adapter->address_ = address;
-  return adapter->weak_ptr_factory_.GetWeakPtr();
+  return adapter;
 }
 
 // static
@@ -477,7 +474,7 @@ bool BluetoothAdapterMac::StartDiscovery(
   return true;
 }
 
-void BluetoothAdapterMac::Init() {
+void BluetoothAdapterMac::Initialize(base::OnceClosure callback) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   low_energy_advertisement_manager_->Init(ui_task_runner_,
                                           low_energy_peripheral_manager_);
@@ -492,6 +489,8 @@ void BluetoothAdapterMac::Init() {
                               weak_ptr_factory_.GetWeakPtr()));
 
   bluetooth_low_energy_device_watcher_->ReadBluetoothPropertyListFile();
+
+  std::move(callback).Run();
 }
 
 void BluetoothAdapterMac::InitForTest(

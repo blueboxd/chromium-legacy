@@ -4,7 +4,6 @@
 
 #include "net/base/backoff_entry.h"
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"

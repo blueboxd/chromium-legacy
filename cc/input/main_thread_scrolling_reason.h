@@ -42,12 +42,10 @@ struct CC_EXPORT MainThreadScrollingReason {
     // These *AndLCDText reasons are due to subpixel text rendering which can
     // only be applied by blending glyphs with the background at a specific
     // screen position; transparency and transforms break this.
-    kNonCompositedReasonsFirst = 16,
-    kHasOpacityAndLCDText = 1 << 16,
+    kNonCompositedReasonsFirst = 17,
     kHasTransformAndLCDText = 1 << 17,
     kBackgroundNotOpaqueInRectAndLCDText = 1 << 18,
     kHasClipRelatedProperty = 1 << 20,
-    kHasBoxShadowFromNonRootLayer = 1 << 21,
     kIsNotStackingContextAndLCDText = 1 << 22,
     kNonCompositedReasonsLast = 22,
 
@@ -70,9 +68,8 @@ struct CC_EXPORT MainThreadScrollingReason {
   };
 
   static const uint32_t kNonCompositedReasons =
-      kHasOpacityAndLCDText | kHasTransformAndLCDText |
-      kBackgroundNotOpaqueInRectAndLCDText | kHasClipRelatedProperty |
-      kHasBoxShadowFromNonRootLayer | kIsNotStackingContextAndLCDText;
+      kHasTransformAndLCDText | kBackgroundNotOpaqueInRectAndLCDText |
+      kHasClipRelatedProperty | kIsNotStackingContextAndLCDText;
 
   // Returns true if the given MainThreadScrollingReason can be set by the main
   // thread.

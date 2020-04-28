@@ -433,7 +433,10 @@ class ColorPicker extends HTMLElement {
 
     this.visualColorPicker_ = new VisualColorPicker(initialColor);
     this.manualColorPicker_ = new ManualColorPicker(initialColor);
-    this.append(this.visualColorPicker_, this.manualColorPicker_);
+    this.colorValueAXAnnouncer_ = new ColorValueAXAnnouncer();
+    this.append(
+        this.visualColorPicker_, this.manualColorPicker_,
+        this.colorValueAXAnnouncer_);
 
     this.visualColorPicker_.addEventListener(
         'visual-color-picker-initialized', this.initializeListeners_);
@@ -447,7 +450,9 @@ class ColorPicker extends HTMLElement {
 
     this.addEventListener('visual-color-change', this.onVisualColorChange_);
 
-    this.addEventListener('format-change', this.updateFocusableElements_);
+    this.addEventListener('format-change', this.onFormatChange_);
+
+    this.addEventListener('focusin', this.onFocusin_);
 
     document.documentElement.addEventListener('keydown', this.onKeyDown_);
   }
@@ -499,6 +504,8 @@ class ColorPicker extends HTMLElement {
         this.selectedColor = newColor;
         this.manualColorPicker_.color = newColor;
 
+        this.colorValueAXAnnouncer_.announceColor(newColor);
+
         const selectedValue = newColor.asHex();
         window.pagePopupController.setValue(selectedValue);
       } else {
@@ -545,6 +552,23 @@ class ColorPicker extends HTMLElement {
           this.focusableElements_[nextFocusIndex].focus({preventScroll: true});
         }
         break;
+    }
+  };
+
+  onFormatChange_ = (event) => {
+    this.updateFocusableElements_();
+    this.colorValueAXAnnouncer_.updateColorFormat(event.detail.colorFormat);
+  };
+
+  onFocusin_ = (event) => {
+    if (event.target instanceof ColorSelectionRing) {
+      // Announce the current color when the user focuses the ColorWell or the
+      // HueSlider.
+      this.colorValueAXAnnouncer_.announceColor(this.selectedColor);
+    } else if (event.target instanceof FormatToggler) {
+      // Announce the current color format when the user focuses the
+      // FormatToggler.
+      this.colorValueAXAnnouncer_.announceColorFormat();
     }
   };
 
@@ -850,6 +874,10 @@ class ColorViewer extends HTMLElement {
     super();
 
     this.color = initialColor;
+
+    // Leave the ColorViewer out of the accessibility tree; it's redundant
+    // with the updates from ColorValueAXAnnouncer.
+    this.setAttribute('aria-hidden', 'true');
   }
 
   get color() {
@@ -1198,7 +1226,48 @@ class ColorSelectionRing extends HTMLElement {
 
   onPositionChange_() {
     this.setElementPosition_();
+    this.updatePositionForAria_();
     this.updateColor();
+  }
+
+  initializeAria(isForColorWell) {
+    this.setAttribute('role', 'slider');
+    this.isForColorWell = isForColorWell;
+    this.setAttribute('aria-valuemin', 0);
+    if (isForColorWell) {
+      this.setAttribute('aria-label', global.params.axColorWellLabel);
+      this.setAttribute(
+          'aria-roledescription', global.params.axColorWellRoleDescription);
+      this.setAttribute(
+          'aria-valuemax',
+          this.backingColorPalette_.offsetHeight *
+              this.backingColorPalette_.offsetWidth);
+    } else {
+      this.setAttribute('aria-label', global.params.axHueSliderLabel);
+      this.setAttribute(
+          'aria-valuemax',
+          this.backingColorPalette_.right - this.backingColorPalette_.left);
+    }
+    this.updatePositionForAria_();
+  }
+
+  updatePositionForAria_() {
+    if (this.isForColorWell) {
+      let positionX = (this.position_.x - this.backingColorPalette_.left);
+      let positionY = (this.position_.y - this.backingColorPalette_.top);
+      let colorWellWidth =
+          (this.backingColorPalette_.right - this.backingColorPalette_.left);
+
+      // aria-valuenow only takes a single numeric value, so we use this
+      // scheme to collapse the 2-D coordinates into a 1-D slider value.
+      this.setAttribute(
+          'aria-valuenow', (positionY * colorWellWidth) + positionX);
+
+      this.setAttribute('aria-valuetext', `X: ${positionX}, Y: ${positionY}`);
+    } else {
+      this.setAttribute(
+          'aria-valuenow', this.position_.x - this.backingColorPalette_.left);
+    }
   }
 
   setElementPosition_() {
@@ -1356,6 +1425,7 @@ class ColorWell extends ColorSelectionArea {
           'color-selection-ring-update', this.onColorSelectionRingUpdate_);
 
       this.moveColorSelectionRingTo_(this.selectedColor_);
+      this.colorSelectionRing_.initializeAria(/*isForColorWell*/ true);
 
       this.resizeObserver_.disconnect();
       this.resizeObserver_ = null;
@@ -1470,6 +1540,7 @@ class HueSlider extends ColorSelectionArea {
           'color-selection-ring-update', this.onColorSelectionRingUpdate_);
 
       this.moveColorSelectionRingTo_(this.color_);
+      this.colorSelectionRing_.initializeAria(/*isForColorWell*/ false);
 
       this.resizeObserver_.disconnect();
       this.resizeObserver_ = null;
@@ -1687,36 +1758,44 @@ class ChannelValueContainer extends HTMLInputElement {
 
     this.setAttribute('type', 'text');
     this.colorChannel_ = colorChannel;
+
     switch (colorChannel) {
       case ColorChannel.HEX:
         this.setAttribute('id', 'hexValueContainer');
         this.setAttribute('maxlength', '7');
+        this.setAttribute('aria-label', global.params.axHexadecimalEditLabel);
         break;
       case ColorChannel.R:
         this.setAttribute('id', 'rValueContainer');
         this.setAttribute('maxlength', '3');
+        this.setAttribute('aria-label', global.params.axRedEditLabel);
         break;
       case ColorChannel.G:
         this.setAttribute('id', 'gValueContainer');
         this.setAttribute('maxlength', '3');
+        this.setAttribute('aria-label', global.params.axGreenEditLabel);
         break;
       case ColorChannel.B:
         this.setAttribute('id', 'bValueContainer');
         this.setAttribute('maxlength', '3');
+        this.setAttribute('aria-label', global.params.axBlueEditLabel);
         break;
       case ColorChannel.H:
         this.setAttribute('id', 'hValueContainer');
         this.setAttribute('maxlength', '3');
+        this.setAttribute('aria-label', global.params.axHueEditLabel);
         break;
       case ColorChannel.S:
         // up to 3 digits plus '%'
         this.setAttribute('id', 'sValueContainer');
         this.setAttribute('maxlength', '4');
+        this.setAttribute('aria-label', global.params.axSaturationEditLabel);
         break;
       case ColorChannel.L:
         // up to 3 digits plus '%'
         this.setAttribute('id', 'lValueContainer');
         this.setAttribute('maxlength', '4');
+        this.setAttribute('aria-label', global.params.axLightnessEditLabel);
         break;
     }
     this.setValue(initialColor);
@@ -1858,13 +1937,18 @@ class FormatToggler extends HTMLElement {
     super();
 
     this.setAttribute('tabIndex', 0);
+    this.setAttribute('role', 'spinbutton');
+    this.setAttribute('aria-label', global.params.axFormatTogglerLabel);
+    this.setAttribute('aria-valuenow', '1');
+    this.setAttribute('aria-valuemin', '1');
+    this.setAttribute('aria-valuemax', '3');
     this.currentColorFormat_ = initialColorFormat;
-    this.hexFormatLabel_ = new FormatLabel(ColorFormat.HEX);
     this.rgbFormatLabel_ = new FormatLabel(ColorFormat.RGB);
+    this.hexFormatLabel_ = new FormatLabel(ColorFormat.HEX);
     this.hslFormatLabel_ = new FormatLabel(ColorFormat.HSL);
     this.colorFormatLabels_ = [
-      this.hexFormatLabel_,
       this.rgbFormatLabel_,
+      this.hexFormatLabel_,
       this.hslFormatLabel_,
     ];
     this.adjustFormatLabelVisibility_();
@@ -1899,6 +1983,14 @@ class FormatToggler extends HTMLElement {
           (((newValue % numFormats) + numFormats) % numFormats);
     });
     this.currentColorFormat_ = ColorFormat[newColorFormatKey];
+
+    if (this.currentColorFormat_ === ColorFormat.RGB) {
+      this.setAttribute('aria-valuenow', '1');
+    } else if (this.currentColorFormat_ === ColorFormat.HSL) {
+      this.setAttribute('aria-valuenow', '2');
+    } else if (this.currentColorFormat_ === ColorFormat.HEX) {
+      this.setAttribute('aria-valuenow', '3');
+    }
 
     this.adjustFormatLabelVisibility_();
 
@@ -2010,3 +2102,94 @@ class ChannelLabel extends HTMLElement {
   }
 }
 window.customElements.define('channel-label', ChannelLabel);
+
+/**
+ * ColorValueAXAnnouncer: Make announcements to be read out by accessibility tools
+ * when the color value is changed by the ColorWell or HueSlider.
+ * Ideally it would be sufficient to just set the right ARIA attributes on the elements
+ * themselves, but the color control does not fit neatly into existing ARIA roles.
+ * ColorValueAXAnnouncer fills this gap by reading out color value changes using an
+ * ARIA live region.
+ */
+class ColorValueAXAnnouncer extends HTMLElement {
+  constructor() {
+    super();
+    this.setAttribute('aria-live', 'polite');
+    this.colorFormat_ = ColorFormat.RGB;
+
+    // We don't want this element to be visible so hide it off the edge of the popup.
+    this.style.position = 'absolute';
+    this.style.left = '-99999ch';
+
+    this.addEventListener('format-change', this.onFormatChange_);
+  }
+
+  announceColor(newColor) {
+    let announcementString = null;
+    if (this.colorFormat_ === ColorFormat.HEX) {
+      announcementString =
+          `${global.params.axHexadecimalEditLabel} ${newColor.hexValue}`;
+    } else if (this.colorFormat_ === ColorFormat.RGB) {
+      announcementString =
+          `${global.params.axRedEditLabel} ${newColor.rValue}, ${
+              global.params.axGreenEditLabel} ${newColor.gValue}, ${
+              global.params.axBlueEditLabel} ${newColor.bValue}`;
+    } else if (this.colorFormat_ === ColorFormat.HSL) {
+      announcementString =
+          `${global.params.axHueEditLabel} ${newColor.hValue}, ${
+              global.params.axSaturationEditLabel} ${newColor.sValue}, ${
+              global.params.axLightnessEditLabel} ${newColor.lValue}`;
+    }
+    this.announce_(announcementString)
+  }
+
+  // Announce format changes via the live region in order to work around an
+  // issue where Windows Narrator does not support aria-valuetext for
+  // spinbutton.  The behavior that this achieves is similar to updating the
+  // FormatToggler spinbutton's aria-valuetext whenever the format changes,
+  // but it dodges the Narrator bug.
+  // TODO(crbug.com/1073188): Remove this workaround and use aria-valuetext
+  // instead once the Narrator bug has been fixed.
+  announceColorFormat() {
+    // These are deliberately non-localized so that they match the
+    // abbreviations of the text on the FormatToggler ChannelLabels,
+    // which are also not localized.
+    let announcementString = null;
+    if (this.colorFormat_ === ColorFormat.HEX) {
+      announcementString = 'Hex';
+    } else if (this.colorFormat_ === ColorFormat.RGB) {
+      announcementString = 'RGB';
+    } else if (this.colorFormat_ === ColorFormat.HSL) {
+      announcementString = 'HSL';
+    }
+
+    this.announce_(announcementString)
+  }
+
+  updateColorFormat(newColorFormat) {
+    this.colorFormat_ = newColorFormat;
+    this.announceColorFormat();
+  }
+
+  announce_(announcementString) {
+    // Only cue one announcement at a time so that user isn't spammed with a backlog
+    // of announcements after holding down an arrow key.
+    // Announce after a delay so that the control announces its raw position before
+    // the full announcement starts.
+    window.clearTimeout(this.pendingAnnouncement_);
+    this.pendingAnnouncement_ = window.setTimeout(() => {
+      if (this.textContent === announcementString) {
+        // The AT will only do an announcement if the live-region content has
+        // changed, so make a no-op change to fool it into announcing every
+        // time.  Normal whitespace is ignored by Narrator for this purpose,
+        // so use a non-breaking space.
+        this.textContent += String.fromCharCode(160);
+      } else {
+        this.textContent = announcementString;
+      }
+    }, ColorValueAXAnnouncer.announcementDelayMS);
+  }
+
+  static announcementDelayMS = 500;
+}
+window.customElements.define('color-value-ax-announcer', ColorValueAXAnnouncer);

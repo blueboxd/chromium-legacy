@@ -350,33 +350,6 @@ class CORE_EXPORT Document : public ContainerNode,
     return security_context_;
   }
 
-  // TODO(crbug.com/1029822): Temporary cast helpers while ExecutionContext is
-  // migrating to LocalDOMWindow. Callsite that permanently need to convert a
-  // Document to an ExecutionContext should use either GetExecutionContext() as
-  // inherited from Node, or domWindow().
-  // Downcasts will cast to a LocalDOMWindow, then use
-  // LocalDOMWindow::document() if the Document is what is actually needed.
-  static Document* From(ExecutionContext* context) {
-    return context ? &From(*context) : nullptr;
-  }
-  static Document& From(ExecutionContext& context);
-  static const Document* From(const ExecutionContext* context) {
-    return context ? &From(*context) : nullptr;
-  }
-  static const Document& From(const ExecutionContext& context);
-  static Document* DynamicFrom(ExecutionContext* context) {
-    return context && context->IsDocument() ? From(context) : nullptr;
-  }
-  static Document* DynamicFrom(ExecutionContext& context) {
-    return context.IsDocument() ? &From(context) : nullptr;
-  }
-  static const Document* DynamicFrom(const ExecutionContext* context) {
-    return context && context->IsDocument() ? From(context) : nullptr;
-  }
-  static const Document* DynamicFrom(const ExecutionContext& context) {
-    return context.IsDocument() ? &From(context) : nullptr;
-  }
-
   // TODO(crbug.com/1029822): Temporary helpers to access ExecutionContext
   // methods. These will need to be audited. Some might be useful permanent
   // helpers.

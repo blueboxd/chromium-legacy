@@ -19630,6 +19630,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SharingHubAndroid.PrintSelected">
+  <owner>kmilka@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>The Print option was selected in the sharing hub.</description>
+</action>
+
 <action name="SharingHubAndroid.QRCodeSelected">
   <owner>kmilka@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>

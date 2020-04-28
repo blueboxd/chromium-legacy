@@ -580,6 +580,7 @@ if (!is_ios && !is_fuchsia) {
       "//components/offline_pages/core/renovations",
       "//components/paint_preview/renderer",
       "//components/password_manager/content/browser",
+      "//components/performance_manager:browser_tests",
       "//components/security_state/content",
       "//components/security_state/core",
       "//components/strings",

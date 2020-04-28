@@ -26,10 +26,15 @@ source_set("public") {
   sources = [
     "tile.cc",
     "tile.h",
+    "tile_background_task.cc",
+    "tile_background_task.h",
     "tile_service.h",
   ]
 
-  deps = [ "//ui/gfx" ]
+  deps = [
+    "//components/background_task_scheduler:public",
+    "//ui/gfx",
+  ]
 
   public_deps = [
     "//base",

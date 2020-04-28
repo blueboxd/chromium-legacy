@@ -63,6 +63,9 @@ class EnterpriseActivityStorage;
 struct DeviceLocalAccount;
 class DeviceStatusCollectorState;
 
+// Enum used to define which data the CrosHealthdDataFetcher should collect.
+enum class CrosHealthdCollectionMode { kFull, kBattery };
+
 // Holds TPM status info.  Cf. TpmStatusInfo in device_management_backend.proto.
 struct TpmStatusInfo {
   TpmStatusInfo();
@@ -141,7 +144,8 @@ class DeviceStatusCollector : public StatusCollector,
       const base::circular_deque<std::unique_ptr<SampledData>>&)>;
   // Gets the data from cros_healthd and passes it to CrosHealthdDataReceiver.
   using CrosHealthdDataFetcher =
-      base::RepeatingCallback<void(CrosHealthdDataReceiver)>;
+      base::RepeatingCallback<void(CrosHealthdCollectionMode,
+                                   CrosHealthdDataReceiver)>;
 
   // Asynchronously receives the graphics status.
   using GraphicsStatusReceiver =
@@ -318,8 +322,10 @@ class DeviceStatusCollector : public StatusCollector,
                      SamplingCallback callback);
 
   // CrosHealthdDataReceiver interface implementation, fetches data from
-  // cros_healthd and passes it to |callback|.
-  void FetchCrosHealthdData(CrosHealthdDataReceiver callback);
+  // cros_healthd and passes it to |callback|. The data collected depends on the
+  // collection |mode|.
+  void FetchCrosHealthdData(CrosHealthdCollectionMode mode,
+                            CrosHealthdDataReceiver callback);
 
   // Callback for CrosHealthd that performs final sampling and
   // actually invokes |callback|.

@@ -23,6 +23,7 @@ class InfobarBannerOverlayRequestCancelHandler
   InfobarBannerOverlayRequestCancelHandler(
       OverlayRequest* request,
       OverlayRequestQueue* queue,
+      InfoBarIOS* infobar,
       const InfobarOverlayRequestInserter* inserter,
       InfobarModalCompletionNotifier* modal_completion_notifier);
   ~InfobarBannerOverlayRequestCancelHandler() override;

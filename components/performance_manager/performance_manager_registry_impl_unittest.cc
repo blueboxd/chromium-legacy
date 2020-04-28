@@ -4,8 +4,8 @@
 
 #include "components/performance_manager/performance_manager_registry_impl.h"
 
-#include "components/performance_manager/performance_manager_test_harness.h"
 #include "components/performance_manager/public/performance_manager_main_thread_observer.h"
+#include "components/performance_manager/test_support/performance_manager_test_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -49,10 +49,10 @@ class BASE_EXPORT RefCountedBase {
   }
 
   void AddRef() const {
-    // TODO(maruel): Add back once it doesn't assert 500 times/sec.
-    // Current thread books the critical section "AddRelease"
-    // without release it.
-    // DFAKE_SCOPED_LOCK_THREAD_LOCKED(add_release_);
+#if !defined(OS_IOS)
+    // TODO(https://crbug.com/1075776): This asserts on iOS, but should not.
+    DFAKE_SCOPED_LOCK_THREAD_LOCKED(add_release_);
+#endif
 #if DCHECK_IS_ON()
     DCHECK(!in_dtor_);
     DCHECK(!needs_adopt_ref_)
@@ -71,10 +71,10 @@ class BASE_EXPORT RefCountedBase {
   bool Release() const {
     ReleaseImpl();
 
-    // TODO(maruel): Add back once it doesn't assert 500 times/sec.
-    // Current thread books the critical section "AddRelease"
-    // without release it.
-    // DFAKE_SCOPED_LOCK_THREAD_LOCKED(add_release_);
+#if !defined(OS_IOS)
+    // TODO(https://crbug.com/1075776): This asserts on iOS, but should not.
+    DFAKE_SCOPED_LOCK_THREAD_LOCKED(add_release_);
+#endif
 
 #if DCHECK_IS_ON()
     DCHECK(!in_dtor_);

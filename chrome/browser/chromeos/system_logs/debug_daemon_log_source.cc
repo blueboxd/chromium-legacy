@@ -19,6 +19,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "components/user_manager/user.h"
@@ -167,8 +168,13 @@ void DebugDaemonLogSource::Fetch(SysLogsSourceCallback callback) {
   ++num_pending_requests_;
 
   if (scrub_) {
-    client->GetScrubbedBigLogs(base::BindOnce(&DebugDaemonLogSource::OnGetLogs,
-                                              weak_ptr_factory_.GetWeakPtr()));
+    const user_manager::User* user =
+        user_manager::UserManager::Get()->GetActiveUser();
+    client->GetScrubbedBigLogs(
+        cryptohome::CreateAccountIdentifierFromAccountId(
+            user ? user->GetAccountId() : EmptyAccountId()),
+        base::BindOnce(&DebugDaemonLogSource::OnGetLogs,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     client->GetAllLogs(base::BindOnce(&DebugDaemonLogSource::OnGetLogs,
                                       weak_ptr_factory_.GetWeakPtr()));

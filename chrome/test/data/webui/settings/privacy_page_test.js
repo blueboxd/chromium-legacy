@@ -3,18 +3,19 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {CookieControlsMode, ClearBrowsingDataBrowserProxyImpl, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, SyncBrowserProxyImpl, HatsBrowserProxyImpl, Router, routes} from 'chrome://settings/settings.js';
-import {TestClearBrowsingDataBrowserProxy} from 'chrome://test/settings/test_clear_browsing_data_browser_proxy.js';
-import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
-import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
-import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.js';
-import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
 import {isMac, isWindows, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {whenAttributeIs, flushTasks, isChildVisible} from 'chrome://test/test_util.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ClearBrowsingDataBrowserProxyImpl, CookieControlsMode, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Router, routes, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {TestClearBrowsingDataBrowserProxy} from 'chrome://test/settings/test_clear_browsing_data_browser_proxy.js';
+import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.js';
+import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
+import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {flushTasks, isChildVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
+
 // clang-format on
 
 suite('PrivacyPageUMACheck', function() {
@@ -66,8 +67,7 @@ suite('PrivacyPageUMACheck', function() {
     page.$$('#manageCertificates').click();
     let result =
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
-    assertEquals(
-        PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
+    assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
 
     Router.getInstance().navigateTo(routes.PRIVACY);
     testMetricsBrowserProxy.reset();
@@ -90,8 +90,7 @@ suite('PrivacyPageUMACheck', function() {
     page.$$('#safeBrowsingReportingToggle').click();
     return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
         .then(result => {
-          assertEquals(
-              PrivacyElementInteractions.IMPROVE_SECURITY, result);
+          assertEquals(PrivacyElementInteractions.IMPROVE_SECURITY, result);
         });
   });
 });
@@ -211,8 +210,7 @@ suite('PrivacyPage', function() {
     assertFalse(isChildVisible(page, '#permissionsLinkRow'));
 
     assertTrue(isChildVisible(page, '#clearBrowsingData'));
-    assertTrue(
-        isChildVisible(page, '#site-settings-subpage-trigger'));
+    assertTrue(isChildVisible(page, '#site-settings-subpage-trigger'));
     assertTrue(isChildVisible(page, '#moreExpansion'));
 
     page.$$('#moreExpansion').click();
@@ -223,8 +221,7 @@ suite('PrivacyPage', function() {
     assertTrue(isChildVisible(page, '#doNotTrack'));
     assertTrue(isChildVisible(page, '#canMakePaymentToggle'));
     if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
-      assertTrue(
-          isChildVisible(page, '#security-keys-subpage-trigger'));
+      assertTrue(isChildVisible(page, '#security-keys-subpage-trigger'));
     }
   });
 
@@ -233,8 +230,7 @@ suite('PrivacyPage', function() {
     page.prefs.profile.cookie_controls_mode = {
       value: CookieControlsMode.DISABLED
     };
-    Router.getInstance().navigateTo(
-        routes.SITE_SETTINGS_COOKIES);
+    Router.getInstance().navigateTo(routes.SITE_SETTINGS_COOKIES);
     flush();
 
     page.$$('#blockThirdPartyCookies').click();
@@ -271,8 +267,7 @@ suite('PrivacyPageRedesignEnabled', function() {
 
   setup(function() {
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    SiteSettingsPrefsBrowserProxyImpl.instance_ =
-        siteSettingsBrowserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
     siteSettingsBrowserProxy.setResultFor(
         'getCookieSettingDescription', Promise.resolve(testLabels[0]));
     PolymerTest.clearBody();
@@ -348,8 +343,7 @@ suite('PrivacyPageSound', function() {
     PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
     PolymerTest.clearBody();
 
-    Router.getInstance().navigateTo(
-        routes.SITE_SETTINGS_SOUND);
+    Router.getInstance().navigateTo(routes.SITE_SETTINGS_SOUND);
     page = document.createElement('settings-privacy-page');
     document.body.appendChild(page);
     return flushAsync();

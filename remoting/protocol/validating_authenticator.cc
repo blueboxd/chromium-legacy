@@ -23,10 +23,10 @@ namespace protocol {
 
 ValidatingAuthenticator::ValidatingAuthenticator(
     const std::string& remote_jid,
-    ValidationCallback validation_callback,
+    const ValidationCallback& validation_callback,
     std::unique_ptr<Authenticator> current_authenticator)
     : remote_jid_(remote_jid),
-      validation_callback_(std::move(validation_callback)),
+      validation_callback_(validation_callback),
       current_authenticator_(std::move(current_authenticator)) {
   DCHECK(!remote_jid_.empty());
   DCHECK(validation_callback_);
@@ -129,11 +129,11 @@ void ValidatingAuthenticator::UpdateState(base::OnceClosure resume_callback) {
 
   if (state_ == ACCEPTED) {
     state_ = PROCESSING_MESSAGE;
-    std::move(validation_callback_)
-        .Run(remote_jid_,
-             base::BindOnce(&ValidatingAuthenticator::OnValidateComplete,
-                            weak_factory_.GetWeakPtr(),
-                            base::Passed(std::move(resume_callback))));
+    validation_callback_.Run(
+        remote_jid_,
+        base::BindOnce(&ValidatingAuthenticator::OnValidateComplete,
+                       weak_factory_.GetWeakPtr(),
+                       base::Passed(std::move(resume_callback))));
   } else {
     std::move(resume_callback).Run();
   }

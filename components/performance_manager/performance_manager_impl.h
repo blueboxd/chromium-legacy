@@ -124,6 +124,11 @@ class PerformanceManagerImpl : public PerformanceManager {
   // runner.
   static bool OnPMTaskRunnerForTesting();
 
+  // Allows testing code to know when tear down is complete. This can only be
+  // called from the main thread, and the callback will also be invoked on the
+  // main thread.
+  static void SetOnDestroyedCallbackForTesting(base::OnceClosure callback);
+
  private:
   friend class PerformanceManager;
 
@@ -162,7 +167,10 @@ class PerformanceManagerImpl : public PerformanceManager {
   static TaskReturnType RunCallbackWithGraphAndReplyWithResult(
       base::OnceCallback<TaskReturnType(GraphImpl*)> task);
 
+  static void SetOnDestroyedCallbackImpl(base::OnceClosure callback);
+
   GraphImpl graph_;
+  base::OnceClosure on_destroyed_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

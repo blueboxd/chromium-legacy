@@ -90,6 +90,9 @@ public class ChromeBackgroundTaskFactory implements BackgroundTaskFactory {
                 return new NotificationTriggerBackgroundTask();
             case TaskIds.PERIODIC_BACKGROUND_SYNC_CHROME_WAKEUP_TASK_JOB_ID:
                 return new PeriodicBackgroundSyncChromeWakeUpTask();
+            // End of Java tasks. All native tasks should be listed here.
+            case TaskIds.QUERY_TILE_JOB_ID:
+                return new ProxyNativeTask();
             // When adding a new job id with a BackgroundTask, remember to add a specific case for
             // it here.
             // If the job id corresponds to a native task, use {@link ProxyNativeTask} as the task

@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
     }) ();
   )";
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).WillOnce(Invoke([&]() {
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&]() {
     mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
     ConfirmPrompt();
   }));
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOrigin) {
     }) ();
   )";
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve())
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_))
       .WillOnce(Return())
       .WillOnce(Invoke([&]() {
         mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
   tab1->web_contents()->SetDelegate(&delegate_);
   tab2->web_contents()->SetDelegate(&delegate_);
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).Times(3);
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).Times(3);
 
   // Make 1 request on tab1 that is expected to be cancelled when the 2nd
   // request is made.
@@ -339,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
 
   base::RunLoop loop;
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).WillOnce(Invoke([&loop]() {
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&loop]() {
     // Deliberately avoid calling NotifyReceive() to simulate
     // a request that has been received but not fulfilled.
     loop.Quit();
@@ -377,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
 
   base::RunLoop loop;
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).WillOnce(Invoke([&loop]() {
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&loop]() {
     loop.Quit();
   }));
 
@@ -415,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
   tab1->web_contents()->SetDelegate(&delegate_);
   tab2->web_contents()->SetDelegate(&delegate_);
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).Times(2);
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).Times(2);
 
   std::string script = R"(
     var otp = navigator.credentials.get({otp: {transport: ["sms"]}})
@@ -507,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
 
   base::RunLoop loop;
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).Times(2);
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).Times(2);
 
   tab1->web_contents()->SetDelegate(&delegate_);
   tab2->web_contents()->SetDelegate(&delegate_);
@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
 
   base::RunLoop loop;
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).WillOnce(Invoke([&loop]() {
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&loop]() {
     loop.Quit();
   }));
 
@@ -596,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
 
   ExpectSmsPrompt();
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).WillOnce(Invoke([&]() {
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&]() {
     mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
     DismissPrompt();
   }));
@@ -634,7 +634,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AbortAfterSmsRetrieval) {
 
   ExpectSmsPrompt();
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve())
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_))
       .WillOnce(Invoke([&mock_provider_ptr, &url]() {
         mock_provider_ptr->NotifyReceive(url::Origin::Create(url), "hello");
       }));

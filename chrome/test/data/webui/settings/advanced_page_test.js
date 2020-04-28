@@ -5,9 +5,10 @@
 /** @fileoverview Suite of tests for the Settings advanced page. */
 
 // clang-format off
-import {CrSettingsPrefs} from 'chrome://settings/settings.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrSettingsPrefs} from 'chrome://settings/settings.js';
 import {getPage, getSection} from 'chrome://test/settings/settings_page_test_util.js';
+
 // clang-format on
 
 suite('AdvancedPage', function() {
@@ -81,8 +82,7 @@ suite('AdvancedPage', function() {
       sections.push('privacy');
     }
     for (let i = 0; i < sections.length; i++) {
-      const section =
-          getSection(basicPage, sections[i]);
+      const section = getSection(basicPage, sections[i]);
       assertTrue(!!section);
       verifySubpagesHidden(section);
     }

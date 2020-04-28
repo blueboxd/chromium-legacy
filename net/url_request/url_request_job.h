@@ -45,7 +45,6 @@ class SSLCertRequestInfo;
 class SSLInfo;
 class SSLPrivateKey;
 class UploadDataStream;
-class URLRequestStatus;
 class X509Certificate;
 
 class NET_EXPORT URLRequestJob {
@@ -284,7 +283,7 @@ class NET_EXPORT URLRequestJob {
 
   // Notifies the request that a start error has occurred.
   // NOTE: Must not be called synchronously from |Start|.
-  void NotifyStartError(const URLRequestStatus& status);
+  void NotifyStartError(int net_error);
 
   // Used as an asynchronous callback for Kill to notify the URLRequest
   // that we were canceled.
@@ -324,9 +323,6 @@ class NET_EXPORT URLRequestJob {
 
   // Provides derived classes with access to the request's network delegate.
   NetworkDelegate* network_delegate() { return network_delegate_; }
-
-  // The status of the job.
-  const URLRequestStatus GetStatus();
 
   // Set the proxy server that was used, if any.
   void SetProxyServer(const ProxyServer& proxy_server);
@@ -394,7 +390,7 @@ class NET_EXPORT URLRequestJob {
   // asynchronously.  Otherwise, the caller will need to do this itself,
   // possibly through a synchronous return value.
   // TODO(mmenke):  Remove |notify_done|, and make caller handle notification.
-  void OnDone(const URLRequestStatus& status, bool notify_done);
+  void OnDone(int net_error, bool notify_done);
 
   // Takes care of the notification initiated by OnDone() to avoid re-entering
   // the URLRequest::Delegate.

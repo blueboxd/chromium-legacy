@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.Sc
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObserver;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -29,7 +29,7 @@ public class BasicStreamScrollMonitor
 
     public BasicStreamScrollMonitor(Clock clock) {
         this.mClock = clock;
-        mScrollObservers = Collections.newSetFromMap(Collections.synchronizedMap(new HashMap<>()));
+        mScrollObservers = Collections.synchronizedSet(new HashSet<>());
     }
 
     @Override

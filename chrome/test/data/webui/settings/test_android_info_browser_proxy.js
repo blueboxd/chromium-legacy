@@ -6,24 +6,23 @@
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // clang-format on
 
-  /**
-   * Test value for messages for web permissions origin.
-   */
-  export const TEST_ANDROID_SMS_ORIGIN = 'http://foo.com';
+/**
+ * Test value for messages for web permissions origin.
+ */
+export const TEST_ANDROID_SMS_ORIGIN = 'http://foo.com';
 
-  /** @implements {AndroidInfoBrowserProxy} */
-  export class TestAndroidInfoBrowserProxy extends TestBrowserProxy {
-    constructor() {
-      super([
-        'getAndroidSmsInfo',
-      ]);
-      this.androidSmsInfo = {origin: TEST_ANDROID_SMS_ORIGIN, enabled: true};
-    }
-
-    /** @override */
-    getAndroidSmsInfo() {
-      this.methodCalled('getAndroidSmsInfo');
-      return Promise.resolve(this.androidSmsInfo);
-    }
+/** @implements {AndroidInfoBrowserProxy} */
+export class TestAndroidInfoBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'getAndroidSmsInfo',
+    ]);
+    this.androidSmsInfo = {origin: TEST_ANDROID_SMS_ORIGIN, enabled: true};
   }
 
+  /** @override */
+  getAndroidSmsInfo() {
+    this.methodCalled('getAndroidSmsInfo');
+    return Promise.resolve(this.androidSmsInfo);
+  }
+}

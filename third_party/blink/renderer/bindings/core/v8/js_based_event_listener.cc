@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 
 namespace blink {
@@ -41,8 +42,8 @@ bool JSBasedEventListener::BelongsToTheCurrentWorld(
   // If currently parsing, the parser could be accessing this listener
   // outside of any v8 context; check if it belongs to the main world.
   if (!isolate->InContext() && execution_context &&
-      execution_context->IsDocument()) {
-    Document* document = Document::From(execution_context);
+      IsA<LocalDOMWindow>(execution_context)) {
+    Document* document = To<LocalDOMWindow>(execution_context)->document();
     if (document->Parser() && document->Parser()->IsParsing())
       return GetWorld().IsMainWorld();
   }

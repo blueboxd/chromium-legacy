@@ -5,11 +5,12 @@
 // clang-format off
 import 'chrome://settings/settings.js';
 import 'chrome://test/cr_elements/cr_policy_strings.js';
-import {ChooserType,ContentSettingsTypes,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {createContentSettingTypeToValuePair,createRawChooserException,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ChooserType,ContentSettingsTypes,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {createContentSettingTypeToValuePair,createRawChooserException,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for chooser-exception-list. */
@@ -50,27 +51,24 @@ function populateTestExceptions() {
       [] /* chooserExceptionsList */);
 
   prefsUserProvider = createSiteSettingsPrefs(
-      [] /* defaultsList */, [] /* exceptionsList */, [
-        createContentSettingTypeToValuePair(
-            ContentSettingsTypes.USB_DEVICES,
-            [createRawChooserException(
-                ChooserType.USB_DEVICES,
-                [createRawSiteException('https://foo.com')])])
-      ] /* chooserExceptionsList */);
+      [] /* defaultsList */, [] /* exceptionsList */,
+      [createContentSettingTypeToValuePair(ContentSettingsTypes.USB_DEVICES, [
+        createRawChooserException(
+            ChooserType.USB_DEVICES,
+            [createRawSiteException('https://foo.com')])
+      ])] /* chooserExceptionsList */);
 
   prefsPolicyProvider = createSiteSettingsPrefs(
       [] /* defaultsList */, [] /* exceptionsList */,
-      [createContentSettingTypeToValuePair(
-          ContentSettingsTypes.USB_DEVICES,
-          [createRawChooserException(
-              ChooserType.USB_DEVICES,
-              [createRawSiteException('https://foo.com', {
-                source: SiteSettingSource.POLICY
-              })])])] /* chooserExceptionsList */);
+      [createContentSettingTypeToValuePair(ContentSettingsTypes.USB_DEVICES, [
+        createRawChooserException(
+            ChooserType.USB_DEVICES,
+            [createRawSiteException(
+                'https://foo.com', {source: SiteSettingSource.POLICY})])
+      ])] /* chooserExceptionsList */);
 
-  prefsUsb = createSiteSettingsPrefs([] /* defaultsList */,
-      [] /* exceptionsList */,
-      [
+  prefsUsb =
+      createSiteSettingsPrefs([] /* defaultsList */, [] /* exceptionsList */, [
         createContentSettingTypeToValuePair(
             ContentSettingsTypes.USB_DEVICES,
             [
@@ -80,26 +78,22 @@ function populateTestExceptions() {
                     createRawSiteException(
                         'https://foo-policy.com',
                         {source: SiteSettingSource.POLICY}),
-                    createRawSiteException(
-                        'https://foo-user.com'),
-                  ], {
+                    createRawSiteException('https://foo-user.com'),
+                  ],
+                  {
                     displayName: 'Gadget',
                   }),
               createRawChooserException(
                   ChooserType.USB_DEVICES,
-                  [
-                    createRawSiteException(
-                        'https://bar-policy.com', {
-                      source: SiteSettingSource.POLICY,
-                    })
-                  ], {
+                  [createRawSiteException('https://bar-policy.com', {
+                    source: SiteSettingSource.POLICY,
+                  })],
+                  {
                     displayName: 'Gizmo',
                   }),
               createRawChooserException(
                   ChooserType.USB_DEVICES,
-                  [
-                    createRawSiteException('https://baz-user.com')
-                  ],
+                  [createRawSiteException('https://baz-user.com')],
                   {displayName: 'Widget'})
             ]),
       ] /* chooserExceptionsList */);
@@ -161,10 +155,8 @@ suite('ChooserExceptionList', function() {
 
   test('getChooserExceptionList API used', function() {
     setUpChooserType(
-        ContentSettingsTypes.USB_DEVICES,
-        ChooserType.USB_DEVICES, prefsUsb);
-    assertEquals(
-        ContentSettingsTypes.USB_DEVICES, testElement.category);
+        ContentSettingsTypes.USB_DEVICES, ChooserType.USB_DEVICES, prefsUsb);
+    assertEquals(ContentSettingsTypes.USB_DEVICES, testElement.category);
     assertEquals(ChooserType.USB_DEVICES, testElement.chooserType);
     return browserProxy.whenCalled('getChooserExceptionList')
         .then(function(chooserType) {
@@ -180,8 +172,7 @@ suite('ChooserExceptionList', function() {
           assertEquals(3, chooserExceptionListEntries.length);
           for (let i = 0; i < chooserExceptionListEntries.length; ++i) {
             assertChooserExceptionEquals(
-                prefsUsb.chooserExceptions[ContentSettingsTypes
-                                               .USB_DEVICES][i],
+                prefsUsb.chooserExceptions[ContentSettingsTypes.USB_DEVICES][i],
                 chooserExceptionListEntries[i].exception);
           }
 
@@ -212,10 +203,9 @@ suite('ChooserExceptionList', function() {
       'User granted chooser exceptions should show the reset button',
       function() {
         setUpChooserType(
-            ContentSettingsTypes.USB_DEVICES,
-            ChooserType.USB_DEVICES, prefsUserProvider);
-        assertEquals(
-            ContentSettingsTypes.USB_DEVICES, testElement.category);
+            ContentSettingsTypes.USB_DEVICES, ChooserType.USB_DEVICES,
+            prefsUserProvider);
+        assertEquals(ContentSettingsTypes.USB_DEVICES, testElement.category);
         assertEquals(ChooserType.USB_DEVICES, testElement.chooserType);
         return browserProxy.whenCalled('getChooserExceptionList')
             .then(function(chooserType) {
@@ -251,10 +241,9 @@ suite('ChooserExceptionList', function() {
       'Policy granted chooser exceptions should show the policy indicator icon',
       function() {
         setUpChooserType(
-            ContentSettingsTypes.USB_DEVICES,
-            ChooserType.USB_DEVICES, prefsPolicyProvider);
-        assertEquals(
-            ContentSettingsTypes.USB_DEVICES, testElement.category);
+            ContentSettingsTypes.USB_DEVICES, ChooserType.USB_DEVICES,
+            prefsPolicyProvider);
+        assertEquals(ContentSettingsTypes.USB_DEVICES, testElement.category);
         assertEquals(ChooserType.USB_DEVICES, testElement.chooserType);
         return browserProxy.whenCalled('getChooserExceptionList')
             .then(function(chooserType) {
@@ -289,10 +278,9 @@ suite('ChooserExceptionList', function() {
   test(
       'Site exceptions from mixed sources should display properly', function() {
         setUpChooserType(
-            ContentSettingsTypes.USB_DEVICES,
-            ChooserType.USB_DEVICES, prefsUsb);
-        assertEquals(
-            ContentSettingsTypes.USB_DEVICES, testElement.category);
+            ContentSettingsTypes.USB_DEVICES, ChooserType.USB_DEVICES,
+            prefsUsb);
+        assertEquals(ContentSettingsTypes.USB_DEVICES, testElement.category);
         assertEquals(ChooserType.USB_DEVICES, testElement.chooserType);
         return browserProxy.whenCalled('getChooserExceptionList')
             .then(function(chooserType) {
@@ -347,10 +335,8 @@ suite('ChooserExceptionList', function() {
 
   test('Empty list', function() {
     setUpChooserType(
-        ContentSettingsTypes.USB_DEVICES,
-        ChooserType.USB_DEVICES, prefsEmpty);
-    assertEquals(
-        ContentSettingsTypes.USB_DEVICES, testElement.category);
+        ContentSettingsTypes.USB_DEVICES, ChooserType.USB_DEVICES, prefsEmpty);
+    assertEquals(ContentSettingsTypes.USB_DEVICES, testElement.category);
     assertEquals(ChooserType.USB_DEVICES, testElement.chooserType);
     return browserProxy.whenCalled('getChooserExceptionList')
         .then(function(chooserType) {
@@ -365,10 +351,9 @@ suite('ChooserExceptionList', function() {
 
   test('resetChooserExceptionForSite API used', function() {
     setUpChooserType(
-        ContentSettingsTypes.USB_DEVICES,
-        ChooserType.USB_DEVICES, prefsUserProvider);
-    assertEquals(
-        ContentSettingsTypes.USB_DEVICES, testElement.category);
+        ContentSettingsTypes.USB_DEVICES, ChooserType.USB_DEVICES,
+        prefsUserProvider);
+    assertEquals(ContentSettingsTypes.USB_DEVICES, testElement.category);
     assertEquals(ChooserType.USB_DEVICES, testElement.chooserType);
     return browserProxy.whenCalled('getChooserExceptionList')
         .then(function(chooserType) {
@@ -376,8 +361,8 @@ suite('ChooserExceptionList', function() {
           assertEquals(1, testElement.chooserExceptions.length);
 
           assertChooserExceptionEquals(
-              prefsUserProvider.chooserExceptions[ContentSettingsTypes
-                                                      .USB_DEVICES][0],
+              prefsUserProvider
+                  .chooserExceptions[ContentSettingsTypes.USB_DEVICES][0],
               testElement.chooserExceptions[0]);
 
           // Flush the container to ensure that the container is populated.
@@ -416,10 +401,9 @@ suite('ChooserExceptionList', function() {
           'indicator and the common tooltip is shown',
       function() {
         setUpChooserType(
-            ContentSettingsTypes.USB_DEVICES,
-            ChooserType.USB_DEVICES, prefsPolicyProvider);
-        assertEquals(
-            ContentSettingsTypes.USB_DEVICES, testElement.category);
+            ContentSettingsTypes.USB_DEVICES, ChooserType.USB_DEVICES,
+            prefsPolicyProvider);
+        assertEquals(ContentSettingsTypes.USB_DEVICES, testElement.category);
         assertEquals(ChooserType.USB_DEVICES, testElement.chooserType);
         return browserProxy.whenCalled('getChooserExceptionList')
             .then(function(chooserType) {
@@ -427,8 +411,8 @@ suite('ChooserExceptionList', function() {
               assertEquals(1, testElement.chooserExceptions.length);
 
               assertChooserExceptionEquals(
-                  prefsPolicyProvider.chooserExceptions
-                      [ContentSettingsTypes.USB_DEVICES][0],
+                  prefsPolicyProvider
+                      .chooserExceptions[ContentSettingsTypes.USB_DEVICES][0],
                   testElement.chooserExceptions[0]);
 
               // Flush the container to ensure that the container is populated.
@@ -478,10 +462,9 @@ suite('ChooserExceptionList', function() {
 
   test('The exception list is updated when the prefs are modified', function() {
     setUpChooserType(
-        ContentSettingsTypes.USB_DEVICES,
-        ChooserType.USB_DEVICES, prefsUserProvider);
-    assertEquals(
-        ContentSettingsTypes.USB_DEVICES, testElement.category);
+        ContentSettingsTypes.USB_DEVICES, ChooserType.USB_DEVICES,
+        prefsUserProvider);
+    assertEquals(ContentSettingsTypes.USB_DEVICES, testElement.category);
     assertEquals(ChooserType.USB_DEVICES, testElement.chooserType);
     return browserProxy.whenCalled('getChooserExceptionList')
         .then(function(chooserType) {
@@ -489,25 +472,22 @@ suite('ChooserExceptionList', function() {
           assertEquals(1, testElement.chooserExceptions.length);
 
           assertChooserExceptionEquals(
-              prefsUserProvider.chooserExceptions[ContentSettingsTypes
-                                                      .USB_DEVICES][0],
+              prefsUserProvider
+                  .chooserExceptions[ContentSettingsTypes.USB_DEVICES][0],
               testElement.chooserExceptions[0]);
 
           browserProxy.resetResolver('getChooserExceptionList');
 
           // Simulate a change in preferences.
           setUpChooserType(
-              ContentSettingsTypes.USB_DEVICES,
-              ChooserType.USB_DEVICES, prefsPolicyProvider);
-          assertEquals(
-              ContentSettingsTypes.USB_DEVICES, testElement.category);
-          assertEquals(
-              ChooserType.USB_DEVICES, testElement.chooserType);
+              ContentSettingsTypes.USB_DEVICES, ChooserType.USB_DEVICES,
+              prefsPolicyProvider);
+          assertEquals(ContentSettingsTypes.USB_DEVICES, testElement.category);
+          assertEquals(ChooserType.USB_DEVICES, testElement.chooserType);
 
           webUIListenerCallback(
               'contentSettingChooserPermissionChanged',
-              ContentSettingsTypes.USB_DEVICES,
-              ChooserType.USB_DEVICES);
+              ContentSettingsTypes.USB_DEVICES, ChooserType.USB_DEVICES);
           return browserProxy.whenCalled('getChooserExceptionList');
         })
         .then(function(chooserType) {
@@ -516,8 +496,7 @@ suite('ChooserExceptionList', function() {
 
           assertChooserExceptionEquals(
               prefsPolicyProvider
-                  .chooserExceptions[ContentSettingsTypes.USB_DEVICES]
-                                    [0],
+                  .chooserExceptions[ContentSettingsTypes.USB_DEVICES][0],
               testElement.chooserExceptions[0]);
         });
   });
@@ -526,10 +505,9 @@ suite('ChooserExceptionList', function() {
       'The exception list is updated when incognito status is changed',
       function() {
         setUpChooserType(
-            ContentSettingsTypes.USB_DEVICES,
-            ChooserType.USB_DEVICES, prefsPolicyProvider);
-        assertEquals(
-            ContentSettingsTypes.USB_DEVICES, testElement.category);
+            ContentSettingsTypes.USB_DEVICES, ChooserType.USB_DEVICES,
+            prefsPolicyProvider);
+        assertEquals(ContentSettingsTypes.USB_DEVICES, testElement.category);
         assertEquals(ChooserType.USB_DEVICES, testElement.chooserType);
         return browserProxy.whenCalled('getChooserExceptionList')
             .then(function(chooserType) {

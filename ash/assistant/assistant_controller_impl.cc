@@ -49,12 +49,6 @@ void AssistantControllerImpl::RegisterProfilePrefs(
 }
 
 void AssistantControllerImpl::BindReceiver(
-    mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
-        receiver) {
-  assistant_controller_receivers_.Add(this, std::move(receiver));
-}
-
-void AssistantControllerImpl::BindReceiver(
     mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) {
   assistant_volume_control_receiver_.Bind(std::move(receiver));
 }
@@ -91,14 +85,6 @@ void AssistantControllerImpl::SendAssistantFeedback(
   assistant_feedback->description = feedback_description;
   assistant_feedback->screenshot_png = screenshot_png;
   assistant_->SendAssistantFeedback(std::move(assistant_feedback));
-}
-
-void AssistantControllerImpl::StartTextInteraction(
-    const std::string& query,
-    bool allow_tts,
-    chromeos::assistant::mojom::AssistantQuerySource source) {
-  assistant_interaction_controller_.StartTextInteraction(query, allow_tts,
-                                                         source);
 }
 
 void AssistantControllerImpl::StartSpeakerIdEnrollmentFlow() {
@@ -314,12 +300,6 @@ void AssistantControllerImpl::OnLockedFullScreenStateChanged(bool enabled) {
   if (enabled)
     assistant_ui_controller_.CloseUi(
         chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
-}
-
-void AssistantControllerImpl::BindController(
-    mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
-        receiver) {
-  BindReceiver(std::move(receiver));
 }
 
 void AssistantControllerImpl::BindAlarmTimerController(

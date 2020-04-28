@@ -71,7 +71,10 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
 
     return raster_interface_.get();
   }
-
+  bool IsContextLost() override {
+    return RasterInterface() &&
+           RasterInterface()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
+  }
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override { return nullptr; }
 
   bool BindToCurrentThread() override { return false; }

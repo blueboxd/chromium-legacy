@@ -39,7 +39,7 @@ class FakeServiceContext : public ServiceContext {
   // ServiceContext implementation:
   ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller()
       override;
-  mojom::AssistantController* assistant_controller() override;
+  ash::AssistantController* assistant_controller() override;
   ash::mojom::AssistantNotificationController*
   assistant_notification_controller() override;
   ash::mojom::AssistantScreenContextController*

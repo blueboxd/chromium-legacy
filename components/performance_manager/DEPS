@@ -2,8 +2,10 @@ include_rules = [
   "+content/public/common",
   "+content/public/browser",
   "+content/public/test",
+  "+content/shell/browser",
   "+mojo/public",
   "+services/metrics/public/cpp",
+  "+services/service_manager/public/cpp",
   "+third_party/blink/public/mojom/favicon",
   "+third_party/leveldatabase",
 ]

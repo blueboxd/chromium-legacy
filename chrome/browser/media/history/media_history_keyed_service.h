@@ -103,6 +103,7 @@ class MediaHistoryKeyedService : public KeyedService,
       const bool was_fetched_from_cache,
       const std::vector<media_session::MediaImage>& logos,
       const std::string& display_name,
+      const std::vector<url::Origin>& associated_origins,
       base::OnceClosure callback);
 
   void GetURLsInTableForTest(const std::string& table,
@@ -197,6 +198,9 @@ class MediaHistoryKeyedService : public KeyedService,
   // Resets a Media Feed by deleting any items and resetting it to defaults.
   void ResetMediaFeed(const int64_t feed_id,
                       media_feeds::mojom::ResetReason reason);
+
+  // Deletes the Media Feed and runs the callback.
+  void DeleteMediaFeed(const int64_t feed_id, base::OnceClosure callback);
 
  private:
   class StoreHolder;

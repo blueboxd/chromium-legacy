@@ -4,7 +4,7 @@
 
 #include "net/base/io_buffer.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/numerics/safe_math.h"
 
 namespace net {

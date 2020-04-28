@@ -23,34 +23,6 @@ import "ui/accessibility/mojom/ax_assistant_structure.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
 
-// Interface whose implementation is owned by Shell in Ash. This is used
-// primarily to provide Ash with an interface to the Assistant service.
-interface AssistantController {
-  // Provides a reference to the underlying |assistant| service.
-  SetAssistant(pending_remote<Assistant> assistant);
-
-  // All other methods may only be called after |SetAssistant| is called.
-
-  // Show speaker id enrollment flow.
-  StartSpeakerIdEnrollmentFlow();
-
-  // Send Assistant feedback to Assistant server. If |pii_allowed| is
-  // true then the user gives permission to attach Assistant debug info.
-  // |feedback_description| is user's feedback input.
-  SendAssistantFeedback(
-    bool pii_allowed,
-    string feedback_description,
-    string screenshot_png);
-
-  // Start Assistant text interaction.
-  // TODO(b/146074655): Move the API to appropriate module as part of the
-  // Assistant controller mojo interface cleanup effort.
-  StartTextInteraction(
-    string query,
-    bool allow_tts,
-    AssistantQuerySource source);
-};
-
 // Interface to communicate with assistant backend.
 // The Assistant instance is held by chromeos::assistant::Service, which is
 // hosted in the browser process.

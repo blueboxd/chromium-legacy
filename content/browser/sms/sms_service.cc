@@ -94,7 +94,7 @@ void SmsService::Receive(ReceiveCallback callback) {
     return;
   }
 
-  fetcher_->Subscribe(origin_, this);
+  fetcher_->Subscribe(origin_, this, render_frame_host());
 }
 
 void SmsService::OnReceive(const std::string& one_time_code) {

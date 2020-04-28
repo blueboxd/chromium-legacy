@@ -781,7 +781,7 @@ class LocalDeviceInstrumentationTestRun(
           }
           extras[_EXTRA_TEST_LIST] = dev_test_list_json.name
           target = '%s/%s' % (test_package, junit4_runner_class)
-          timeout = 120
+          timeout = 240
           if self._test_instance.wait_for_java_debugger:
             timeout = None
           with self._ArchiveLogcat(dev, 'list_tests'):

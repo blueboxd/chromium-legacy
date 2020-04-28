@@ -204,6 +204,20 @@ class OptimizationGuideKeyedServiceBrowserTest
         browser()->tab_strip_model()->GetActiveWebContents()));
   }
 
+  optimization_guide::TopHostProvider* top_host_provider() {
+    auto* optimization_guide_keyed_service =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(
+            browser()->profile());
+    return optimization_guide_keyed_service->GetTopHostProvider();
+  }
+
+  optimization_guide::PredictionManager* prediction_manager() {
+    auto* optimization_guide_keyed_service =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(
+            browser()->profile());
+    return optimization_guide_keyed_service->GetPredictionManager();
+  }
+
   void PushHintsComponentAndWaitForCompletion() {
     base::RunLoop run_loop;
     OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
@@ -297,16 +311,12 @@ class OptimizationGuideKeyedServiceBrowserTest
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
                        PredictionManagerNotCreatedIfFeatureDisabled) {
-  ASSERT_FALSE(
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
-          ->GetPredictionManager());
+  ASSERT_FALSE(prediction_manager());
 }
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
                        TopHostProviderNotSetIfNotAllowed) {
-  ASSERT_FALSE(
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
-          ->GetTopHostProvider());
+  ASSERT_FALSE(top_host_provider());
 
   // ChromeOS has multiple profiles and optimization guide currently does not
   // run on non-Android.
@@ -741,14 +751,8 @@ class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest
 IN_PROC_BROWSER_TEST_F(
     OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest,
     TopHostProviderIsSentDown) {
-  OptimizationGuideKeyedService* keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
-
-  optimization_guide::TopHostProvider* top_host_provider =
-      keyed_service->GetTopHostProvider();
-  ASSERT_TRUE(top_host_provider);
-
-  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
+  ASSERT_TRUE(top_host_provider());
+  std::vector<std::string> top_hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(2ul, top_hosts.size());
   EXPECT_EQ("myfavoritesite.com", top_hosts[0]);
   EXPECT_EQ("myotherfavoritesite.com", top_hosts[1]);
@@ -778,14 +782,9 @@ class OptimizationGuideKeyedServiceCommandLineOverridesTest
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceCommandLineOverridesTest,
                        TopHostProviderIsSentDown) {
-  OptimizationGuideKeyedService* keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(top_host_provider());
 
-  optimization_guide::TopHostProvider* top_host_provider =
-      keyed_service->GetTopHostProvider();
-  ASSERT_TRUE(top_host_provider);
-
-  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
+  std::vector<std::string> top_hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(2ul, top_hosts.size());
   EXPECT_EQ("whatever.com", top_hosts[0]);
   EXPECT_EQ("somehost.com", top_hosts[1]);
@@ -832,9 +831,7 @@ class OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest
 IN_PROC_BROWSER_TEST_F(
     OptimizationGuideKeyedServiceTargetPredictionEnabledBrowserTest,
     PredictionManagerIsCreated) {
-  ASSERT_TRUE(
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
-          ->GetPredictionManager());
+  ASSERT_TRUE(prediction_manager());
 }
 
 IN_PROC_BROWSER_TEST_F(

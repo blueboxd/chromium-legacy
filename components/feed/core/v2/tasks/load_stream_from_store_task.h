@@ -17,7 +17,7 @@
 
 namespace base {
 class Clock;
-}
+}  // namespace base
 
 namespace feed {
 struct StreamModelUpdateRequest;

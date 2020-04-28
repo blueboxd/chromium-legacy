@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/performance_manager_registry_impl.h"
@@ -63,6 +64,19 @@ base::WeakPtr<PageNode> PerformanceManager::GetPageNodeForWebContents(
     return nullptr;
 
   return helper->page_node()->GetWeakPtr();
+}
+
+// static
+base::WeakPtr<FrameNode> PerformanceManager::GetFrameNodeForRenderFrameHost(
+    content::RenderFrameHost* rfh) {
+  DCHECK(rfh);
+  auto* wc = content::WebContents::FromRenderFrameHost(rfh);
+  PerformanceManagerTabHelper* helper =
+      PerformanceManagerTabHelper::FromWebContents(wc);
+  if (!helper)
+    return nullptr;
+
+  return helper->GetFrameNode(rfh)->GetWeakPtr();
 }
 
 // static

@@ -60,31 +60,6 @@ using base::TimeDelta;
 using net::test::IsError;
 using net::test::IsOk;
 
-// TODO(eroman): Add a regression test for http://crbug.com/40505.
-
-namespace {
-
-// TODO(akalin): Move all the test data to somewhere under net/.
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("net/data/url_fetcher_impl_unittest");
-const char kTestServerFilePrefix[] = "/";
-
-// Test server path and response body for the default URL used by many of the
-// tests.
-const char kDefaultResponsePath[] = "/defaultresponse";
-const char kDefaultResponseBody[] =
-    "Default response given for path: /defaultresponse";
-
-// Request body for streams created by CreateUploadStream.
-const char kCreateUploadStreamBody[] = "rosebud";
-
-base::FilePath GetUploadFileTestPath() {
-  base::FilePath path;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
-  return path.Append(
-      FILE_PATH_LITERAL("net/data/url_request_unittest/BullRunSpeech.txt"));
-}
-
 // Simple URLRequestDelegate that waits for the specified fetcher to complete.
 // Can only be used once.
 class WaitingURLFetcherDelegate : public URLFetcherDelegate {
@@ -183,6 +158,29 @@ class WaitingURLFetcherDelegate : public URLFetcherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(WaitingURLFetcherDelegate);
 };
+
+namespace {
+
+// TODO(akalin): Move all the test data to somewhere under net/.
+const base::FilePath::CharType kDocRoot[] =
+    FILE_PATH_LITERAL("net/data/url_fetcher_impl_unittest");
+const char kTestServerFilePrefix[] = "/";
+
+// Test server path and response body for the default URL used by many of the
+// tests.
+const char kDefaultResponsePath[] = "/defaultresponse";
+const char kDefaultResponseBody[] =
+    "Default response given for path: /defaultresponse";
+
+// Request body for streams created by CreateUploadStream.
+const char kCreateUploadStreamBody[] = "rosebud";
+
+base::FilePath GetUploadFileTestPath() {
+  base::FilePath path;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return path.Append(
+      FILE_PATH_LITERAL("net/data/url_request_unittest/BullRunSpeech.txt"));
+}
 
 // A TestURLRequestContext with a ThrottleManager and a MockHostResolver.
 class FetcherTestURLRequestContext : public TestURLRequestContext {

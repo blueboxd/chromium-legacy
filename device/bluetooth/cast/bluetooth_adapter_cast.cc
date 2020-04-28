@@ -65,6 +65,12 @@ BluetoothAdapterCast::~BluetoothAdapterCast() {
   le_scan_manager_->RemoveObserver(this);
 }
 
+void BluetoothAdapterCast::Initialize(base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  initialized_ = true;
+  std::move(callback).Run();
+}
+
 std::string BluetoothAdapterCast::GetAddress() const {
   // TODO(slan|bcf): Right now, we aren't surfacing the address of the GATT
   // client to the caller, because there is no apparent need and this
@@ -442,12 +448,6 @@ void BluetoothAdapterCast::OnGetScanResults(
     OnNewScanResult(result);
 }
 
-void BluetoothAdapterCast::InitializeAsynchronously(InitCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  initialized_ = true;
-  std::move(callback).Run();
-}
-
 // static
 void BluetoothAdapterCast::SetFactory(FactoryCb factory_cb) {
   FactoryCb& factory = GetFactory();
@@ -461,25 +461,15 @@ void BluetoothAdapterCast::ResetFactoryForTest() {
 }
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapterCast::Create(
-    InitCallback callback) {
+scoped_refptr<BluetoothAdapter> BluetoothAdapterCast::Create() {
   FactoryCb& factory = GetFactory();
   DCHECK(factory) << "SetFactory() must be called before this method!";
-  base::WeakPtr<BluetoothAdapterCast> weak_ptr = factory.Run();
-
-  // BluetoothAdapterFactory assumes that |init_callback| will be called
-  // asynchronously the first time, and that IsInitialized() will return false.
-  // Post init_callback to this sequence so that it gets called back later.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&BluetoothAdapterCast::InitializeAsynchronously,
-                                weak_ptr, std::move(callback)));
-  return weak_ptr;
+  return factory.Run();
 }
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    InitCallback init_callback) {
-  return BluetoothAdapterCast::Create(std::move(init_callback));
+scoped_refptr<BluetoothAdapter> BluetoothAdapter::CreateAdapter() {
+  return BluetoothAdapterCast::Create();
 }
 
 }  // namespace device

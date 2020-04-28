@@ -80,8 +80,8 @@ static void Constructor1(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   ExecutionContext* execution_context = ToExecutionContext(
       info.NewTarget().As<v8::Object>()->CreationContext());
-  Document& document = *Document::From(ToExecutionContext(
-      info.NewTarget().As<v8::Object>()->CreationContext()));
+  Document& document = *ToLocalDOMWindow(
+      info.NewTarget().As<v8::Object>()->CreationContext())->document();
   TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(script_state, execution_context, document, exception_state);
   if (exception_state.HadException()) {
     return;
@@ -136,8 +136,8 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (UNLIKELY(num_args_passed <= 5)) {
     ExecutionContext* execution_context = ToExecutionContext(
         info.NewTarget().As<v8::Object>()->CreationContext());
-    Document& document = *Document::From(ToExecutionContext(
-        info.NewTarget().As<v8::Object>()->CreationContext()));
+    Document& document = *ToLocalDOMWindow(
+        info.NewTarget().As<v8::Object>()->CreationContext())->document();
     TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(script_state, execution_context, document, double_arg, string_arg, test_interface_empty_arg, sequence_string_arg, sequence_long_or_test_dictionary_arg, exception_state);
     if (exception_state.HadException()) {
       return;
@@ -159,8 +159,8 @@ static void Constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   ExecutionContext* execution_context = ToExecutionContext(
       info.NewTarget().As<v8::Object>()->CreationContext());
-  Document& document = *Document::From(ToExecutionContext(
-      info.NewTarget().As<v8::Object>()->CreationContext()));
+  Document& document = *ToLocalDOMWindow(
+      info.NewTarget().As<v8::Object>()->CreationContext())->document();
   TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(script_state, execution_context, document, double_arg, string_arg, test_interface_empty_arg, sequence_string_arg, sequence_long_or_test_dictionary_arg, optional_usv_string_arg, optional_test_interface_empty_arg, exception_state);
   if (exception_state.HadException()) {
     return;
@@ -192,8 +192,8 @@ static void Constructor3(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (UNLIKELY(num_args_passed <= 1)) {
     ExecutionContext* execution_context = ToExecutionContext(
         info.NewTarget().As<v8::Object>()->CreationContext());
-    Document& document = *Document::From(ToExecutionContext(
-        info.NewTarget().As<v8::Object>()->CreationContext()));
+    Document& document = *ToLocalDOMWindow(
+        info.NewTarget().As<v8::Object>()->CreationContext())->document();
     TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(script_state, execution_context, document, arg, exception_state);
     if (exception_state.HadException()) {
       return;
@@ -209,8 +209,8 @@ static void Constructor3(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   ExecutionContext* execution_context = ToExecutionContext(
       info.NewTarget().As<v8::Object>()->CreationContext());
-  Document& document = *Document::From(ToExecutionContext(
-      info.NewTarget().As<v8::Object>()->CreationContext()));
+  Document& document = *ToLocalDOMWindow(
+      info.NewTarget().As<v8::Object>()->CreationContext())->document();
   TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(script_state, execution_context, document, arg, opt_arg, exception_state);
   if (exception_state.HadException()) {
     return;
@@ -244,8 +244,8 @@ static void Constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   ExecutionContext* execution_context = ToExecutionContext(
       info.NewTarget().As<v8::Object>()->CreationContext());
-  Document& document = *Document::From(ToExecutionContext(
-      info.NewTarget().As<v8::Object>()->CreationContext()));
+  Document& document = *ToLocalDOMWindow(
+      info.NewTarget().As<v8::Object>()->CreationContext())->document();
   TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(script_state, execution_context, document, arg, arg_2, arg_3, exception_state);
   if (exception_state.HadException()) {
     return;

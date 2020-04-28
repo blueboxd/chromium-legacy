@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {SyncBrowserProxyImpl, Router} from 'chrome://settings/settings.js';
 import 'chrome://settings/lazy_load.js';
+
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {Router, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {setupRouterWithSyncRoutes} from 'chrome://test/settings/sync_test_util.m.js';
 import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+
 // clang-format on
 
 suite('sync-page-test', function() {

@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "crypto/hmac.h"
 #include "remoting/base/session_options.h"
+#include "remoting/protocol/session_options_provider.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/webrtc_data_stream_adapter.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
@@ -30,7 +31,7 @@ class TransportContext;
 class MessagePipe;
 class WebrtcAudioModule;
 
-class WebrtcTransport : public Transport {
+class WebrtcTransport : public Transport, public SessionOptionsProvider {
  public:
   class EventHandler {
    public:
@@ -79,10 +80,14 @@ class WebrtcTransport : public Transport {
   // any messages.
   std::unique_ptr<MessagePipe> CreateOutgoingChannel(const std::string& name);
 
-  // Transport interface.
+  // Transport implementations.
   void Start(Authenticator* authenticator,
              SendTransportInfoCallback send_transport_info_callback) override;
   bool ProcessTransportInfo(jingle_xmpp::XmlElement* transport_info) override;
+
+  // SessionOptionsProvider implementations.
+  const SessionOptions& session_options() const override;
+
   void Close(ErrorCode error);
 
   void ApplySessionOptions(const SessionOptions& options);
@@ -181,6 +186,8 @@ class WebrtcTransport : public Transport {
       pending_incoming_candidates_;
 
   std::string preferred_video_codec_;
+
+  SessionOptions session_options_;
 
   rtc::scoped_refptr<webrtc::RtpTransceiverInterface> video_transceiver_;
 

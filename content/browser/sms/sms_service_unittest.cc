@@ -173,7 +173,7 @@ TEST_F(SmsServiceTest, Basic) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
     service.ConfirmPrompt();
   }));
@@ -200,7 +200,7 @@ TEST_F(SmsServiceTest, HandlesMultipleCalls) {
 
     service.CreateSmsPrompt(main_rfh());
 
-    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+    EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
       service.NotifyReceive(GURL(kTestUrl), "first");
       service.ConfirmPrompt();
     }));
@@ -220,7 +220,7 @@ TEST_F(SmsServiceTest, HandlesMultipleCalls) {
 
     service.CreateSmsPrompt(main_rfh());
 
-    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+    EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
       service.NotifyReceive(GURL(kTestUrl), "second");
       service.ConfirmPrompt();
     }));
@@ -248,7 +248,7 @@ TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     // Delivers an SMS from an unrelated origin first and expect the
     // receiver to ignore it.
     service.NotifyReceive(GURL("http://b.com"), "wrong");
@@ -282,7 +282,7 @@ TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     // Delivers two SMSes for the same origin, even if only one was being
     // expected.
     ASSERT_TRUE(service.fetcher()->HasSubscribers());
@@ -321,7 +321,7 @@ TEST_F(SmsServiceTest, AtMostOneSmsRequestPerOrigin) {
   // Expect SMS Prompt to be created once.
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve())
+  EXPECT_CALL(*service.provider(), Retrieve(_))
       .WillOnce(Return())
       .WillOnce(Invoke([&service]() {
         service.NotifyReceive(GURL(kTestUrl), "second");
@@ -371,7 +371,7 @@ TEST_F(SmsServiceTest, SecondRequestDuringPrompt) {
   // Expect SMS Prompt to be created once.
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "second");
   }));
 
@@ -420,7 +420,7 @@ TEST_F(SmsServiceTest, CleansUp) {
 
   base::RunLoop navigate;
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).WillOnce(Invoke([&navigate]() {
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&navigate]() {
     navigate.Quit();
   }));
 
@@ -453,7 +453,7 @@ TEST_F(SmsServiceTest, PromptsDialog) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
     service.ConfirmPrompt();
   }));
@@ -486,7 +486,7 @@ TEST_F(SmsServiceTest, Cancel) {
         loop.Quit();
       }));
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
     service.DismissPrompt();
   }));
@@ -557,7 +557,7 @@ TEST_F(SmsServiceTest, AbortWhilePrompt) {
         loop.Quit();
       }));
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "ABC");
     EXPECT_TRUE(service.IsPromptOpen());
     service.AbortRequest();
@@ -587,7 +587,7 @@ TEST_F(SmsServiceTest, RequestAfterAbortWhilePrompt) {
           loop.Quit();
         }));
 
-    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+    EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
       service.NotifyReceive(GURL(kTestUrl), "hi");
       EXPECT_TRUE(service.IsPromptOpen());
       service.AbortRequest();
@@ -615,7 +615,7 @@ TEST_F(SmsServiceTest, RequestAfterAbortWhilePrompt) {
           loop.Quit();
         }));
 
-    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+    EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
       service.NotifyReceive(GURL(kTestUrl), "hi2");
       service.ConfirmPrompt();
     }));
@@ -640,7 +640,7 @@ TEST_F(SmsServiceTest, SecondRequestWhilePrompt) {
         callback_loop1.Quit();
       }));
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
     service.AbortRequest();
   }));
@@ -677,7 +677,7 @@ TEST_F(SmsServiceTest, RecordTimeMetricsForContinueOnSuccess) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "ABC");
     service.ConfirmPrompt();
   }));
@@ -702,7 +702,7 @@ TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
 
   service.CreateSmsPrompt(main_rfh());
 
-  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+  EXPECT_CALL(*service.provider(), Retrieve(_)).WillOnce(Invoke([&service]() {
     service.NotifyReceive(GURL(kTestUrl), "hi");
     service.DismissPrompt();
   }));
@@ -737,7 +737,7 @@ TEST_F(SmsServiceTest, RecordMetricsForNewPage) {
 
   base::RunLoop navigate;
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).WillOnce(Invoke([&navigate]() {
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&navigate]() {
     navigate.Quit();
   }));
 
@@ -777,7 +777,7 @@ TEST_F(SmsServiceTest, RecordMetricsForSamePage) {
 
   base::RunLoop navigate;
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).WillOnce(Invoke([&navigate]() {
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&navigate]() {
     navigate.Quit();
   }));
 
@@ -822,7 +822,7 @@ TEST_F(SmsServiceTest, RecordMetricsForExistingPage) {
 
   base::RunLoop navigate;
 
-  EXPECT_CALL(*mock_provider_ptr, Retrieve()).WillOnce(Invoke([&navigate]() {
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_)).WillOnce(Invoke([&navigate]() {
     navigate.Quit();
   }));
 
@@ -844,6 +844,57 @@ TEST_F(SmsServiceTest, RecordMetricsForExistingPage) {
 
   ExpectDestroyedReasonCount(SmsReceiverDestroyedReason::kNavigateExistingPage,
                              1);
+}
+
+TEST_F(SmsServiceTest, SmsFetcherUAF) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kWebOtpBackend, switches::kWebOtpBackendUserConsent);
+  NavigateAndCommit(GURL(kTestUrl));
+
+  NiceMock<MockSmsWebContentsDelegate> delegate;
+  WebContentsImpl* web_contents_impl =
+      reinterpret_cast<WebContentsImpl*>(web_contents());
+  web_contents_impl->SetDelegate(&delegate);
+
+  auto provider = std::make_unique<MockSmsProvider>();
+  MockSmsProvider* mock_provider_ptr = provider.get();
+  auto* fetcher = SmsFetcher::Get(web_contents()->GetBrowserContext());
+  auto* fetcher2 = SmsFetcher::Get(web_contents()->GetBrowserContext());
+  mojo::Remote<blink::mojom::SmsReceiver> service;
+  mojo::Remote<blink::mojom::SmsReceiver> service2;
+
+  static_cast<SmsFetcherImpl*>(fetcher2)->SetSmsProviderForTesting(
+      std::move(provider));
+  SmsService::Create(fetcher, main_rfh(), service.BindNewPipeAndPassReceiver());
+  SmsService::Create(fetcher2, main_rfh(),
+                     service2.BindNewPipeAndPassReceiver());
+
+  base::RunLoop navigate;
+
+  EXPECT_CALL(*mock_provider_ptr, Retrieve(_))
+      .WillOnce(Invoke([&fetcher]() {
+        static_cast<SmsFetcherImpl*>(fetcher)->OnReceive(
+            Origin::Create(GURL(kTestUrl)), "ABC234");
+      }))
+      .WillOnce(Invoke([&fetcher2]() {
+        static_cast<SmsFetcherImpl*>(fetcher2)->OnReceive(
+            Origin::Create(GURL(kTestUrl)), "DEF567");
+      }));
+
+  service->Receive(base::BindLambdaForTesting(
+      [](SmsStatus status, const Optional<string>& otp) {
+        EXPECT_EQ(SmsStatus::kSuccess, status);
+        EXPECT_EQ("ABC234", otp);
+      }));
+
+  service2->Receive(base::BindLambdaForTesting(
+      [&navigate](SmsStatus status, const Optional<string>& otp) {
+        EXPECT_EQ(SmsStatus::kSuccess, status);
+        EXPECT_EQ("DEF567", otp);
+        navigate.Quit();
+      }));
+
+  navigate.Run();
 }
 
 }  // namespace content

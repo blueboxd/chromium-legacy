@@ -533,6 +533,13 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
     HintsFetcherDisabledBrowserTest::SetUpOnMainThread();
   }
 
+  optimization_guide::TopHostProvider* top_host_provider() {
+    OptimizationGuideKeyedService* keyed_service =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(
+            browser()->profile());
+    return keyed_service->GetTopHostProvider();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherBrowserTest);
 };
@@ -1541,16 +1548,12 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherChangeDefaultBlacklistSizeBrowserTest,
       optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
           kNotInitialized);
 
-  OptimizationGuideKeyedService* keyed_service =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
-  optimization_guide::TopHostProvider* top_host_provider =
-      keyed_service->GetTopHostProvider();
-  ASSERT_TRUE(top_host_provider);
+  ASSERT_TRUE(top_host_provider());
 
-  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
+  std::vector<std::string> top_hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(0u, top_hosts.size());
 
-  top_hosts = top_host_provider->GetTopHosts();
+  top_hosts = top_host_provider()->GetTopHosts();
   EXPECT_EQ(0u, top_hosts.size());
 
   // Everything HTTPS origin within the site engagement service should now be

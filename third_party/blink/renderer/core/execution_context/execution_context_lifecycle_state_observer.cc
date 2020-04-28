@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 
@@ -40,11 +39,6 @@ ExecutionContextLifecycleStateObserver::ExecutionContextLifecycleStateObserver(
   InstanceCounters::IncrementCounter(
       InstanceCounters::kContextLifecycleStateObserverCounter);
 }
-
-ExecutionContextLifecycleStateObserver::ExecutionContextLifecycleStateObserver(
-    Document* document)
-    : ExecutionContextLifecycleStateObserver(
-          document ? document->GetExecutionContext() : nullptr) {}
 
 ExecutionContextLifecycleStateObserver::
     ~ExecutionContextLifecycleStateObserver() {

@@ -4,7 +4,8 @@
 
 #include "net/cert/cert_status_flags.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "net/base/net_errors.h"
 
 namespace net {

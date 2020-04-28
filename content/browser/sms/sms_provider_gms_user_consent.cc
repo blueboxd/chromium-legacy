@@ -19,9 +19,7 @@ using base::android::ConvertJavaStringToUTF8;
 
 namespace content {
 
-SmsProviderGmsUserConsent::SmsProviderGmsUserConsent(
-    base::WeakPtr<RenderFrameHost> rfh)
-    : SmsProvider(), render_frame_host_(std::move(rfh)) {
+SmsProviderGmsUserConsent::SmsProviderGmsUserConsent() : SmsProvider() {
   // This class is constructed a single time whenever the
   // first web page uses the SMS Retriever API to wait for
   // SMSes.
@@ -35,12 +33,11 @@ SmsProviderGmsUserConsent::~SmsProviderGmsUserConsent() {
   Java_SmsUserConsentReceiver_destroy(env, j_sms_receiver_);
 }
 
-void SmsProviderGmsUserConsent::Retrieve() {
-  if (!render_frame_host_)
-    return;
+void SmsProviderGmsUserConsent::Retrieve(RenderFrameHost* render_frame_host) {
+  DCHECK(render_frame_host);
 
   WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host_.get());
+      WebContents::FromRenderFrameHost(render_frame_host);
   if (!web_contents || !web_contents->GetTopLevelNativeWindow())
     return;
 

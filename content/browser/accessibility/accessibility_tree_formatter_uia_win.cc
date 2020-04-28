@@ -395,14 +395,35 @@ AccessibilityTreeFormatterUia::BuildAccessibilityTree(
                                 &condition);
   CHECK(condition);
   Microsoft::WRL::ComPtr<IUIAutomationElement> start_element;
-  root->FindFirst(TreeScope_Subtree, condition.Get(), &start_element);
-  CHECK(start_element.Get());
 
-  // Build an accessibility tree starting from that element.
+  root->FindFirst(TreeScope_Subtree, condition.Get(), &start_element);
   std::unique_ptr<base::DictionaryValue> tree =
       std::make_unique<base::DictionaryValue>();
-  RecursiveBuildAccessibilityTree(start_element.Get(), root_bounds.left,
-                                  root_bounds.top, tree.get());
+
+  if (start_element.Get()) {
+    // Build an accessibility tree starting from that element.
+    RecursiveBuildAccessibilityTree(start_element.Get(), root_bounds.left,
+                                    root_bounds.top, tree.get());
+  } else {
+    // If the search failed, start dumping with the first thing that isn't a
+    // Pane.
+    // TODO(http://crbug.com/1071188): Figure out why the original FindFirst
+    // fails and remove this fallback codepath.
+    Microsoft::WRL::ComPtr<IUIAutomationElement> non_pane_descendant;
+    Microsoft::WRL::ComPtr<IUIAutomationCondition> is_pane_condition;
+    base::win::ScopedVariant pane_control_type_variant(UIA_PaneControlTypeId);
+    uia_->CreatePropertyCondition(UIA_ControlTypePropertyId,
+                                  pane_control_type_variant,
+                                  &is_pane_condition);
+    Microsoft::WRL::ComPtr<IUIAutomationCondition> not_is_pane_condition;
+    uia_->CreateNotCondition(is_pane_condition.Get(), &not_is_pane_condition);
+    root->FindFirst(TreeScope_Subtree, not_is_pane_condition.Get(),
+                    &non_pane_descendant);
+
+    DCHECK(non_pane_descendant.Get());
+    RecursiveBuildAccessibilityTree(non_pane_descendant.Get(), root_bounds.left,
+                                    root_bounds.top, tree.get());
+  }
   return tree;
 }
 

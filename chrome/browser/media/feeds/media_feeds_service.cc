@@ -266,6 +266,12 @@ void MediaFeedsService::OnFetchResponse(
     base::OnceClosure callback,
     const schema_org::improved::mojom::EntityPtr& response,
     MediaFeedsFetcher::Status status) {
+  if (status == MediaFeedsFetcher::Status::kGone) {
+    GetMediaHistoryService()->DeleteMediaFeed(feed_id, std::move(callback));
+    fetchers_.erase(feed_id);
+    return;
+  }
+
   std::vector<media_session::MediaImage> logos;
   std::string display_name;
   auto feed_items = GetMediaFeeds(response, &logos, &display_name);
@@ -279,7 +285,8 @@ void MediaFeedsService::OnFetchResponse(
   // TODO(crbug.com/1074486): Set the fetch result and was_fetched_from_cache.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
       feed_id, std::move(feed_items.value()), mojom::FetchResult::kSuccess,
-      false, std::move(logos), display_name, std::move(callback));
+      false, std::move(logos), display_name, std::vector<url::Origin>(),
+      std::move(callback));
 
   fetchers_.erase(feed_id);
 

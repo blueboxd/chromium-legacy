@@ -38,17 +38,21 @@ class CONTENT_EXPORT SmsProvider {
   virtual ~SmsProvider();
 
   // Listen to the next incoming SMS and notify observers (exactly once) when
-  // it is received or (exclusively) when it timeouts.
-  virtual void Retrieve() = 0;
+  // it is received or (exclusively) when it timeouts. |render_frame_host|
+  // is the RenderFrameHost for the renderer that issued the request, and is
+  // passed in to support showing native permission confirmation prompt on the
+  // relevant window.
+  virtual void Retrieve(RenderFrameHost* render_frame_host) = 0;
 
-  static std::unique_ptr<SmsProvider> Create(
-      base::WeakPtr<RenderFrameHost> rfh);
+  static std::unique_ptr<SmsProvider> Create();
 
   void AddObserver(Observer*);
   void RemoveObserver(const Observer*);
   void NotifyReceive(const url::Origin&, const std::string& one_time_code);
-  void NotifyReceive(const std::string& sms);
   bool HasObservers();
+
+ protected:
+  void NotifyReceive(const std::string& sms);
 
  private:
   base::ObserverList<Observer> observers_;

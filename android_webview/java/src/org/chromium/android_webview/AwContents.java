@@ -2474,6 +2474,48 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
+     * Add a JavaScript snippet that will run after the document has been created, but before any
+     * script in the document executes. Note that calling this method multiple times will add
+     * multiple scripts. Added scripts will take effect from the next navigation. If want to remove
+     * previously set script, use the returned ScriptReference object to do so. Any JavaScript
+     * objects injected by addWebMessageListener() or addJavascriptInterface() will be available to
+     * use in this script. Scripts can be removed using the ScriptReference object returned when
+     * they were added. The DOM tree may not be ready at the moment that the script runs.
+     *
+     * If multiple scripts are added, they will be executed in the same order they were added.
+     *
+     * @param script             The JavaScript snippet to be run.
+     * @param allowedOriginRules The JavaScript snippet will run on every frame whose origin matches
+     *                           any one of the allowedOriginRules.
+     *
+     * @throws IllegalArgumentException if one of the allowedOriginRules is invalid or one of
+     *                                  jsObjectName and allowedOriginRules is {@code null}.
+     * @return A {@link ScriptReference} for removing the script.
+     */
+    public ScriptReference addDocumentStartJavascript(
+            @NonNull String script, @NonNull String[] allowedOriginRules) {
+        if (script == null) {
+            throw new IllegalArgumentException("script shouldn't be null.");
+        }
+
+        for (int i = 0; i < allowedOriginRules.length; ++i) {
+            if (TextUtils.isEmpty(allowedOriginRules[i])) {
+                throw new IllegalArgumentException(
+                        "allowedOriginRules[" + i + "] shouldn't be null or empty");
+            }
+        }
+
+        return new ScriptReference(AwContents.this,
+                AwContentsJni.get().addDocumentStartJavascript(
+                        mNativeAwContents, AwContents.this, script, allowedOriginRules));
+    }
+
+    /* package */ void removeDocumentStartJavascript(int scriptId) {
+        AwContentsJni.get().removeDocumentStartJavascript(
+                mNativeAwContents, AwContents.this, scriptId);
+    }
+
+    /**
      * Add the {@link WebMessageListener} to AwContents, it will also inject the JavaScript object
      * with the given name to frames that have origins matching the allowedOriginRules. Note that
      * this call will not inject the JS object immediately. The JS object will be injected only for
@@ -4045,6 +4087,9 @@ public class AwContents implements SmartClipProvider {
         void grantFileSchemeAccesstoChildProcess(long nativeAwContents, AwContents caller);
         void resumeLoadingCreatedPopupWebContents(long nativeAwContents, AwContents caller);
         AwRenderProcess getRenderProcess(long nativeAwContents, AwContents caller);
+        int addDocumentStartJavascript(long nativeAwContents, AwContents caller, String script,
+                String[] allowedOriginRules);
+        void removeDocumentStartJavascript(long nativeAwContents, AwContents caller, int scriptId);
         String addWebMessageListener(long nativeAwContents, AwContents caller,
                 WebMessageListenerHolder listener, String jsObjectName, String[] allowedOrigins);
         void removeWebMessageListener(

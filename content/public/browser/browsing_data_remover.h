@@ -107,8 +107,12 @@ class BrowsingDataRemover {
     // storage.
     DATA_TYPE_TRUST_TOKENS = 1 << 16,
 
+    // Conversion measurement API
+    // (https://github.com/WICG/conversion-measurement-api) persistent storage.
+    DATA_TYPE_CONVERSIONS = 1 << 17,
+
     // Embedders can add more datatypes beyond this point.
-    DATA_TYPE_CONTENT_END = DATA_TYPE_TRUST_TOKENS,
+    DATA_TYPE_CONTENT_END = DATA_TYPE_CONVERSIONS,
   };
 
   enum OriginType {

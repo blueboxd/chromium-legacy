@@ -16,6 +16,8 @@ class RenderFrameHost;
 
 namespace android_webview {
 
+class AwOriginMatcher;
+struct DocumentStartJavascript;
 struct JsObject;
 
 class JsToJavaMessaging;
@@ -29,6 +31,15 @@ class JsJavaConfiguratorHost : public content::WebContentsObserver {
  public:
   explicit JsJavaConfiguratorHost(content::WebContents* web_contents);
   ~JsJavaConfiguratorHost() override;
+
+  // Native side AddDocumentStartJavascript, returns an error message if the
+  // parameters didn't pass necessary checks.
+  jint AddDocumentStartJavascript(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& script,
+      const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules);
+
+  jboolean RemoveDocumentStartJavascript(JNIEnv* env, jint script_id);
 
   // Native side AddWebMessageListener, returns an error message if the
   // parameters didn't pass necessary checks.
@@ -51,8 +62,24 @@ class JsJavaConfiguratorHost : public content::WebContentsObserver {
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
  private:
-  void NotifyFrame(content::RenderFrameHost* render_frame_host);
+  void NotifyFrameForWebMessageListener(
+      content::RenderFrameHost* render_frame_host);
+  void NotifyFrameForAllDocumentStartJavascripts(
+      content::RenderFrameHost* render_frame_host);
+  void NotifyFrameForAddDocumentStartJavascript(
+      const DocumentStartJavascript* script,
+      content::RenderFrameHost* render_frame_host);
 
+  void NotifyFrameForRemoveDocumentStartJavascript(
+      int32_t script_id,
+      content::RenderFrameHost* render_frame_host);
+  std::string ConvertToNativeAllowedOriginRulesWithSanityCheck(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules,
+      AwOriginMatcher& native_allowed_origin_rules);
+
+  int32_t next_script_id_ = 0;
+  std::vector<DocumentStartJavascript> scripts_;
   std::vector<JsObject> js_objects_;
   std::map<content::RenderFrameHost*,
            std::vector<std::unique_ptr<JsToJavaMessaging>>>

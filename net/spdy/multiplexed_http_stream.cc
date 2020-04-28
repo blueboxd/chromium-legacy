@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "net/http/http_raw_request_headers.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 

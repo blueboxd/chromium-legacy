@@ -4,7 +4,6 @@
 
 #include "base/big_endian.h"
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"

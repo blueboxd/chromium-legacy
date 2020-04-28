@@ -98,8 +98,8 @@ void ValidatingAuthenticatorTest::SetUp() {
 
   validating_authenticator_.reset(new ValidatingAuthenticator(
       kRemoteTestJid,
-      base::BindOnce(&ValidatingAuthenticatorTest::ValidateCallback,
-                     base::Unretained(this)),
+      base::BindRepeating(&ValidatingAuthenticatorTest::ValidateCallback,
+                          base::Unretained(this)),
       std::move(authenticator)));
 }
 

@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
-#include "remoting/protocol/transport_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
@@ -43,8 +42,7 @@ class ChromiumSocketFactoryTest : public testing::Test,
                                   public sigslot::has_slots<> {
  public:
   void SetUp() override {
-    socket_factory_ = std::make_unique<ChromiumPacketSocketFactory>(
-        TransportContext::ForTests(TransportRole::SERVER));
+    socket_factory_ = std::make_unique<ChromiumPacketSocketFactory>(nullptr);
 
     socket_.reset(socket_factory_->CreateUdpSocket(
         rtc::SocketAddress("127.0.0.1", 0), 0, 0));

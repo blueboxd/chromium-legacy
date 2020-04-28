@@ -64,6 +64,10 @@ extern const base::Feature kPaymentRequestSkipToGPayIfNoCard;
 // complete autofill instruments in payment sheet's method selection section.
 extern const base::Feature kDownRankJustInTimePaymentApp;
 
+// Desktop only, if enabled payment handler window size matches the pop up
+// window size.
+extern const base::Feature kPaymentHandlerPopUpSizeWindow;
+
 }  // namespace features
 }  // namespace payments
 

@@ -4,9 +4,9 @@
 
 #include "net/disk_cache/disk_cache_test_util.h"
 
+#include "base/check_op.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"

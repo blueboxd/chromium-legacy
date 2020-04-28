@@ -33,12 +33,12 @@ class ValidatingAuthenticator : public Authenticator {
 
   typedef base::OnceCallback<void(Result validation_result)> ResultCallback;
 
-  typedef base::OnceCallback<void(const std::string& remote_jid,
-                                  ResultCallback callback)>
+  typedef base::RepeatingCallback<void(const std::string& remote_jid,
+                                       ResultCallback callback)>
       ValidationCallback;
 
   ValidatingAuthenticator(const std::string& remote_jid,
-                          ValidationCallback validation_callback,
+                          const ValidationCallback& validation_callback,
                           std::unique_ptr<Authenticator> current_authenticator);
   ~ValidatingAuthenticator() override;
 

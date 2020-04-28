@@ -134,6 +134,11 @@ class CONTENT_EXPORT NavigatorDelegate {
   virtual void OnServiceWorkerAccessed(NavigationHandle* navigation,
                                        const GURL& scope,
                                        AllowServiceWorkerResult allowed) {}
+
+  // Does a global walk of the session history, and registers origins that
+  // match |origin| to their respective BrowsingInstances.
+  virtual void RegisterExistingOriginToPreventOptInIsolation(
+      const url::Origin& origin) {}
 };
 
 }  // namespace content

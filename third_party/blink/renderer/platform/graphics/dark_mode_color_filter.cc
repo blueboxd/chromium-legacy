@@ -13,38 +13,26 @@
 namespace blink {
 namespace {
 
-sk_sp<SkColorFilter> SkColorFilterFromSettings(
-    SkHighContrastConfig::InvertStyle invert_style,
-    const DarkModeSettings& settings) {
-  SkHighContrastConfig config;
-  config.fInvertStyle = invert_style;
-  config.fGrayscale = settings.grayscale;
-  config.fContrast = settings.contrast;
-  return SkHighContrastFilter::Make(config);
-}
-
-// Further darken dark grays to match the primary surface color recommended by
-// the material design guidelines:
-//   https://material.io/design/color/dark-theme.html#properties
-//
-// TODO(gilmanmh): Consider adding a more general way to adjust colors after
-// applying the main filter.
-void AdjustGray(Color* color) {
-  DCHECK(color);
-  static const int kBrightnessThreshold = 32;
-  static const int kAdjustedBrightness = 18;
-
-  if (color->Red() == color->Blue() && color->Red() == color->Green() &&
-      color->Red() < kBrightnessThreshold &&
-      color->Red() > kAdjustedBrightness) {
-    color->SetRGB(kAdjustedBrightness, kAdjustedBrightness,
-                  kAdjustedBrightness);
-  }
-}
-
+// SkColorFilterWrapper implementation.
 class SkColorFilterWrapper : public DarkModeColorFilter {
  public:
-  SkColorFilterWrapper(sk_sp<SkColorFilter> filter) : filter_(filter) {}
+  static std::unique_ptr<SkColorFilterWrapper> Create(
+      sk_sp<SkColorFilter> color_filter) {
+    return std::unique_ptr<SkColorFilterWrapper>(
+        new SkColorFilterWrapper(color_filter));
+  }
+
+  static std::unique_ptr<SkColorFilterWrapper> Create(
+      SkHighContrastConfig::InvertStyle invert_style,
+      const DarkModeSettings& settings) {
+    SkHighContrastConfig config;
+    config.fInvertStyle = invert_style;
+    config.fGrayscale = settings.grayscale;
+    config.fContrast = settings.contrast;
+
+    return std::unique_ptr<SkColorFilterWrapper>(
+        new SkColorFilterWrapper(SkHighContrastFilter::Make(config)));
+  }
 
   Color InvertColor(const Color& color) const override {
     return Color(filter_->filterColor(color.Rgb()));
@@ -53,9 +41,13 @@ class SkColorFilterWrapper : public DarkModeColorFilter {
   sk_sp<SkColorFilter> ToSkColorFilter() const override { return filter_; }
 
  private:
+  explicit SkColorFilterWrapper(sk_sp<SkColorFilter> filter)
+      : filter_(filter) {}
+
   sk_sp<SkColorFilter> filter_;
 };
 
+// LabColorFilter implementation.
 class LabColorFilter : public DarkModeColorFilter {
  public:
   LabColorFilter() : transformer_(LabColorSpace::RGBLABTransformer()) {
@@ -85,6 +77,25 @@ class LabColorFilter : public DarkModeColorFilter {
   sk_sp<SkColorFilter> ToSkColorFilter() const override { return filter_; }
 
  private:
+  // Further darken dark grays to match the primary surface color recommended by
+  // the material design guidelines:
+  //   https://material.io/design/color/dark-theme.html#properties
+  //
+  // TODO(gilmanmh): Consider adding a more general way to adjust colors after
+  // applying the main filter.
+  void AdjustGray(Color* color) const {
+    DCHECK(color);
+    static const int kBrightnessThreshold = 32;
+    static const int kAdjustedBrightness = 18;
+
+    if (color->Red() == color->Blue() && color->Red() == color->Green() &&
+        color->Red() < kBrightnessThreshold &&
+        color->Red() > kAdjustedBrightness) {
+      color->SetRGB(kAdjustedBrightness, kAdjustedBrightness,
+                    kAdjustedBrightness);
+    }
+  }
+
   const LabColorSpace::RGBLABTransformer transformer_;
   sk_sp<SkColorFilter> filter_;
 };
@@ -103,16 +114,16 @@ std::unique_ptr<DarkModeColorFilter> DarkModeColorFilter::FromSettings(
         identity[i] = i;
         invert[i] = 255 - i;
       }
-      return std::make_unique<SkColorFilterWrapper>(
+      return SkColorFilterWrapper::Create(
           SkTableColorFilter::MakeARGB(identity, invert, invert, invert));
 
     case DarkModeInversionAlgorithm::kInvertBrightness:
-      return std::make_unique<SkColorFilterWrapper>(SkColorFilterFromSettings(
-          SkHighContrastConfig::InvertStyle::kInvertBrightness, settings));
+      return SkColorFilterWrapper::Create(
+          SkHighContrastConfig::InvertStyle::kInvertBrightness, settings);
 
     case DarkModeInversionAlgorithm::kInvertLightness:
-      return std::make_unique<SkColorFilterWrapper>(SkColorFilterFromSettings(
-          SkHighContrastConfig::InvertStyle::kInvertLightness, settings));
+      return SkColorFilterWrapper::Create(
+          SkHighContrastConfig::InvertStyle::kInvertLightness, settings);
 
     case DarkModeInversionAlgorithm::kInvertLightnessLAB:
       return std::make_unique<LabColorFilter>();

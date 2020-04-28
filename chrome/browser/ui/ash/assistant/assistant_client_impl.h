@@ -58,9 +58,6 @@ class AssistantClientImpl : public ash::AssistantClient,
 
   // chromeos::assistant::AssisantClient overrides:
   void OnAssistantStatusChanged(ash::mojom::AssistantState new_state) override;
-  void RequestAssistantController(
-      mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
-          receiver) override;
   void RequestAssistantAlarmTimerController(
       mojo::PendingReceiver<ash::mojom::AssistantAlarmTimerController> receiver)
       override;

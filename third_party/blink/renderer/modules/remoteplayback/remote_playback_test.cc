@@ -451,4 +451,15 @@ TEST_F(RemotePlaybackTest, IsListening) {
   testing::Mock::VerifyAndClear(mock_controller);
 }
 
+TEST_F(RemotePlaybackTest, NullContextDoesntCrash) {
+  auto page_holder = std::make_unique<DummyPageHolder>();
+
+  auto* element =
+      MakeGarbageCollected<HTMLVideoElement>(page_holder->GetDocument());
+  RemotePlayback& remote_playback = RemotePlayback::From(*element);
+
+  remote_playback.SetExecutionContext(nullptr);
+  remote_playback.PromptInternal();
+}
+
 }  // namespace blink

@@ -483,6 +483,9 @@ class RasterDecoderImpl final : public RasterDecoder,
                              GLuint shm_offset,
                              GLuint shm_size,
                              const volatile GLbyte* mailbox);
+  void DoConvertYUVMailboxesToRGBINTERNAL(GLenum yuv_color_space,
+                                          const volatile GLbyte* mailboxes);
+
   void DoLoseContextCHROMIUM(GLenum current, GLenum other) { NOTIMPLEMENTED(); }
   void DoBeginRasterCHROMIUM(GLuint sk_color,
                              GLuint msaa_sample_count,
@@ -2362,6 +2365,168 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
   if (!dest_shared_image->IsCleared()) {
     dest_shared_image->SetClearedRect(
         gfx::Rect(x_offset, y_offset, src_width, src_height));
+  }
+}
+
+namespace {
+struct YUVConversionMailboxIndex {
+  enum Index : size_t {
+    kYIndex = 0,
+    kUIndex = 1,
+    kVIndex = 2,
+    kDestIndex = 3,
+  };
+
+  static constexpr size_t kNumInputMailboxes =
+      YUVConversionMailboxIndex::kVIndex + 1;
+  static constexpr size_t kTotalMailboxes =
+      YUVConversionMailboxIndex::kDestIndex + 1;
+};
+
+std::string MailboxIndexToString(YUVConversionMailboxIndex::Index idx) {
+  switch (idx) {
+    case YUVConversionMailboxIndex::kYIndex:
+      return "Y Plane";
+    case YUVConversionMailboxIndex::kUIndex:
+      return "U Plane";
+    case YUVConversionMailboxIndex::kVIndex:
+      return "V Plane";
+    case YUVConversionMailboxIndex::kDestIndex:
+      return "Destination";
+    default:
+      return "Invalid mailbox index";
+  }
+}
+std::string MailboxIndexToString(size_t idx) {
+  return MailboxIndexToString(
+      static_cast<YUVConversionMailboxIndex::Index>(idx));
+}
+
+}  // namespace
+
+void RasterDecoderImpl::DoConvertYUVMailboxesToRGBINTERNAL(
+    GLenum planes_yuv_color_space,
+    const volatile GLbyte* mailboxes_in) {
+  if (planes_yuv_color_space > kLastEnum_SkYUVColorSpace) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_ENUM, "glConvertYUVMailboxesToRGB",
+        "planes_yuv_color_space must be a valid SkYUVColorSpace");
+    return;
+  }
+  SkYUVColorSpace src_color_space =
+      static_cast<SkYUVColorSpace>(planes_yuv_color_space);
+
+  // Mailboxes are sent over in the order y_plane, u_plane, v_plane, destination
+  std::array<gpu::Mailbox, YUVConversionMailboxIndex::kTotalMailboxes>
+      mailboxes;
+  for (size_t i = 0; i < mailboxes.size(); ++i) {
+    mailboxes[i] = Mailbox::FromVolatile(
+        reinterpret_cast<const volatile Mailbox*>(mailboxes_in)[i]);
+    DLOG_IF(ERROR, !mailboxes[i].Verify()) << "ConvertYUVMailboxesToRGB was "
+                                              "passed an invalid mailbox.";
+  }
+
+  std::array<std::unique_ptr<SharedImageRepresentationSkia>,
+             YUVConversionMailboxIndex::kTotalMailboxes>
+      images;
+  for (size_t i = 0; i < images.size(); i++) {
+    images[i] = shared_image_representation_factory_.ProduceSkia(
+        mailboxes[i], shared_context_state_);
+    if (!images[i]) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glConvertYUVMailboxesToRGB",
+                         ("Attempting to operate on unknown mailbox:" +
+                          MailboxIndexToString(i))
+                             .c_str());
+      return;
+    }
+  }
+
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  std::vector<GrBackendSemaphore> end_semaphores;
+
+  auto dest_scoped_access =
+      images[YUVConversionMailboxIndex::kDestIndex]->BeginScopedWriteAccess(
+          &begin_semaphores, &end_semaphores,
+          SharedImageRepresentation::AllowUnclearedAccess::kYes);
+  if (!dest_scoped_access) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glConvertYUVMailboxesToRGB",
+                       "Destination shared image is not writable");
+    DCHECK(begin_semaphores.empty());
+    return;
+  }
+
+  bool source_access_valid = true;
+  std::array<std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>,
+             YUVConversionMailboxIndex::kNumInputMailboxes>
+      source_scoped_access;
+  for (size_t i = 0; i < source_scoped_access.size(); ++i) {
+    source_scoped_access[i] =
+        images[i]->BeginScopedReadAccess(&begin_semaphores, &end_semaphores);
+
+    if (!source_scoped_access[i]) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glConvertYUVMailboxesToRGB",
+                         ("Couldn't access shared image for mailbox:" +
+                          MailboxIndexToString(i))
+                             .c_str());
+      source_access_valid = false;
+      break;
+    }
+  }
+
+  auto* dest_surface = dest_scoped_access->surface();
+  if (!begin_semaphores.empty()) {
+    bool result =
+        dest_surface->wait(begin_semaphores.size(), begin_semaphores.data());
+    DCHECK(result);
+  }
+
+  bool drew_image = false;
+  if (source_access_valid) {
+    std::array<GrBackendTexture, YUVConversionMailboxIndex::kNumInputMailboxes>
+        yuva_textures;
+    for (size_t i = 0; i < yuva_textures.size(); ++i) {
+      yuva_textures[i] =
+          source_scoped_access[i]->promise_image_texture()->backendTexture();
+    }
+
+    SkISize dest_size =
+        SkISize::Make(dest_surface->width(), dest_surface->height());
+
+    std::array<SkYUVAIndex, SkYUVAIndex::kIndexCount> yuva_indices;
+    yuva_indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
+    yuva_indices[SkYUVAIndex::kU_Index] = {1, SkColorChannel::kR};
+    yuva_indices[SkYUVAIndex::kV_Index] = {2, SkColorChannel::kR};
+    yuva_indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kA};
+
+    auto result_image = SkImage::MakeFromYUVATextures(
+        gr_context(), src_color_space, yuva_textures.data(),
+        yuva_indices.data(), dest_size, kTopLeft_GrSurfaceOrigin, nullptr);
+    if (!result_image) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION, "glConvertYUVMailboxesToRGB",
+          "Couldn't create destination images from provided sources");
+    } else {
+      dest_surface->getCanvas()->drawImage(result_image, 0, 0);
+      drew_image = true;
+    }
+  }
+
+  // Always flush the surface even if we don't have scoped_access
+  // so the begin_semaphores can be released, and end_semaphores can be
+  // signalled.
+  GrFlushInfo flush_info = {
+      .fFlags = kNone_GrFlushFlags,
+      .fNumSemaphores = end_semaphores.size(),
+      .fSignalSemaphores = end_semaphores.data(),
+  };
+  gpu::AddVulkanCleanupTaskForSkiaFlush(
+      shared_context_state_->vk_context_provider(), &flush_info);
+  dest_scoped_access->surface()->flush(
+      SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+
+  if (!images[YUVConversionMailboxIndex::kDestIndex]->IsCleared() &&
+      drew_image) {
+    images[YUVConversionMailboxIndex::kDestIndex]->SetCleared();
   }
 }
 

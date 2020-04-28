@@ -325,23 +325,35 @@ void DialogDelegate::DialogModelChanged() {
 }
 
 void DialogDelegate::SetDefaultButton(int button) {
+  if (params_.default_button == button)
+    return;
   params_.default_button = button;
+  DialogModelChanged();
 }
 
 void DialogDelegate::SetButtons(int buttons) {
+  if (params_.buttons == buttons)
+    return;
   params_.buttons = buttons;
+  DialogModelChanged();
 }
 
 void DialogDelegate::SetButtonEnabled(ui::DialogButton button, bool enabled) {
+  if (!!(params_.enabled_buttons & button) == enabled)
+    return;
   if (enabled)
     params_.enabled_buttons |= button;
   else
     params_.enabled_buttons &= ~button;
+  DialogModelChanged();
 }
 
 void DialogDelegate::SetButtonLabel(ui::DialogButton button,
     base::string16 label) {
+  if (params_.button_labels[button] == label)
+    return;
   params_.button_labels[button] = label;
+  DialogModelChanged();
 }
 
 void DialogDelegate::SetAcceptCallback(base::OnceClosure callback) {

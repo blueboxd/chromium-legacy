@@ -47,25 +47,28 @@ enum { kPurgeDelay = 500 };
 namespace device {
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    InitCallback init_callback) {
+scoped_refptr<BluetoothAdapter> BluetoothAdapter::CreateAdapter() {
   return BluetoothAdapterAndroid::Create(
       BluetoothAdapterWrapper_CreateWithDefaultAdapter());
 }
 
 // static
-base::WeakPtr<BluetoothAdapterAndroid> BluetoothAdapterAndroid::Create(
+scoped_refptr<BluetoothAdapterAndroid> BluetoothAdapterAndroid::Create(
     const JavaRef<jobject>&
-        bluetooth_adapter_wrapper) {  // Java Type: bluetoothAdapterWrapper
-  BluetoothAdapterAndroid* adapter = new BluetoothAdapterAndroid();
+        bluetooth_adapter_wrapper) {  // Java Type: BluetoothAdapterWrapper
+  auto adapter = base::WrapRefCounted(new BluetoothAdapterAndroid());
 
   adapter->j_adapter_.Reset(Java_ChromeBluetoothAdapter_create(
-      AttachCurrentThread(), reinterpret_cast<intptr_t>(adapter),
+      AttachCurrentThread(), reinterpret_cast<intptr_t>(adapter.get()),
       bluetooth_adapter_wrapper));
 
   adapter->ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
-  return adapter->weak_ptr_factory_.GetWeakPtr();
+  return adapter;
+}
+
+void BluetoothAdapterAndroid::Initialize(base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 std::string BluetoothAdapterAndroid::GetAddress() const {

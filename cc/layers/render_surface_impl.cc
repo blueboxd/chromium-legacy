@@ -110,10 +110,6 @@ SkBlendMode RenderSurfaceImpl::BlendMode() const {
   return OwningEffectNode()->blend_mode;
 }
 
-bool RenderSurfaceImpl::UsesDefaultBlendMode() const {
-  return BlendMode() == SkBlendMode::kSrcOver;
-}
-
 SkColor RenderSurfaceImpl::GetDebugBorderColor() const {
   return DebugColors::SurfaceBorderColor();
 }

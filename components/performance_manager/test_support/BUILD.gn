@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 # Expose the graph implementation, test fixtures and test support through
-# this test only target.
-source_set("test_support") {
+# these test only targets.
+
+source_set("test_support_common") {
   testonly = true
 
   sources = [
@@ -12,15 +13,54 @@ source_set("test_support") {
     "frame_priority.cc",
     "frame_priority.h",
     "graph_impl.h",
+    "test_harness_helper.cc",
+    "test_harness_helper.h",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//components/performance_manager",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
     "graph_test_harness.cc",
     "graph_test_harness.h",
     "mock_graphs.cc",
     "mock_graphs.h",
+    "performance_manager_test_harness.cc",
+    "performance_manager_test_harness.h",
   ]
+
   deps = [
+    ":test_support_common",
     "//base/test:test_support",
     "//components/performance_manager",
     "//content/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+source_set("browsertest_support") {
+  testonly = true
+
+  sources = [
+    "performance_manager_browsertest_harness.cc",
+    "performance_manager_browsertest_harness.h",
+  ]
+
+  deps = [
+    ":test_support_common",
+    "//base/test:test_support",
+    "//components/performance_manager",
+    "//content/shell:content_shell_lib",
+    "//content/test:browsertest_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

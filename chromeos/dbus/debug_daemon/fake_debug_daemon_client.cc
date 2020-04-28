@@ -118,7 +118,9 @@ void FakeDebugDaemonClient::GetPerfOutput(
 void FakeDebugDaemonClient::StopPerf(uint64_t session_id,
                                      VoidDBusMethodCallback callback) {}
 
-void FakeDebugDaemonClient::GetScrubbedBigLogs(GetLogsCallback callback) {
+void FakeDebugDaemonClient::GetScrubbedBigLogs(
+    const cryptohome::AccountIdentifier& id,
+    GetLogsCallback callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Scrubbed Big Log"] = "Your email address is xxxxxxxx";
   base::ThreadTaskRunnerHandle::Get()->PostTask(

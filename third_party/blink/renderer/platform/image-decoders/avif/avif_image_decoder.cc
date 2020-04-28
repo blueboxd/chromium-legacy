@@ -212,8 +212,8 @@ void AVIFImageDecoder::OnSetData(SegmentReader* data) {
   // avifDecoder requires all the data be available before reading and cannot
   // read incrementally as data comes in. See
   // https://github.com/AOMediaCodec/libavif/issues/11.
-  if (IsAllDataReceived())
-    MaybeCreateDemuxer();
+  if (IsAllDataReceived() && !MaybeCreateDemuxer())
+    SetFailed();
 }
 
 int AVIFImageDecoder::RepetitionCount() const {
@@ -337,32 +337,27 @@ bool AVIFImageDecoder::CanReusePreviousFrameBuffer(size_t index) const {
   return true;
 }
 
-void AVIFImageDecoder::MaybeCreateDemuxer() {
-  if (Failed() || !IsAllDataReceived() || decoder_)
-    return;
+bool AVIFImageDecoder::MaybeCreateDemuxer() {
+  if (decoder_)
+    return true;
 
   decoder_ = std::unique_ptr<avifDecoder, void (*)(avifDecoder*)>(
       avifDecoderCreate(), avifDecoderDestroy);
-  if (!decoder_) {
-    SetFailed();
-    return;
-  }
+  if (!decoder_)
+    return false;
 
   // TODO(dalecurtis): This may create a second copy of the media data in
   // memory, which is not great. Upstream should provide a read() based API:
   // https://github.com/AOMediaCodec/libavif/issues/11
   image_data_ = data_->GetAsSkData();
-  if (!image_data_) {
-    SetFailed();
-    return;
-  }
+  if (!image_data_)
+    return false;
 
   avifROData raw_data = {image_data_->bytes(), image_data_->size()};
   auto ret = avifDecoderParse(decoder_.get(), &raw_data);
   if (ret != AVIF_RESULT_OK) {
     DVLOG(1) << "avifDecoderParse failed: " << avifResultToString(ret);
-    SetFailed();
-    return;
+    return false;
   }
 
   DCHECK_GT(decoder_->imageCount, 0);
@@ -373,17 +368,12 @@ void AVIFImageDecoder::MaybeCreateDemuxer() {
       high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat;
 
   // Try to get the size from the container if possible instead of decoding.
-  if (decoder_->containerWidth && decoder_->containerHeight) {
-    SetSize(decoder_->containerWidth, decoder_->containerHeight);
-    return;
-  }
+  if (decoder_->containerWidth && decoder_->containerHeight)
+    return SetSize(decoder_->containerWidth, decoder_->containerHeight);
 
   // We need to SetSize() to proceed, so decode the first frame.
-  if (!DecodeImage(0)) {
-    SetFailed();
-    return;
-  }
-  SetSize(decoder_->image->width, decoder_->image->height);
+  return DecodeImage(0) &&
+         SetSize(decoder_->image->width, decoder_->image->height);
 }
 
 bool AVIFImageDecoder::DecodeImage(size_t index) {

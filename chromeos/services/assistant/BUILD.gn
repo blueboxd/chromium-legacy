@@ -134,6 +134,7 @@ source_set("tests") {
   testonly = true
   deps = [
     ":lib",
+    "//ash/public/cpp/assistant/test_support",
     "//ash/public/mojom",
     "//base",
     "//base/test:test_support",

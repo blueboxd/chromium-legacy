@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {Router, routes, ResetBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {ResetBrowserProxyImpl, Router, routes} from 'chrome://settings/settings.js';
 import {TestResetBrowserProxy} from 'chrome://test/settings/test_reset_browser_proxy.js';
+
 // clang-format on
 
 suite('BannerTests', function() {
@@ -28,12 +29,9 @@ suite('BannerTests', function() {
   // URL when the "reset all settings" button is clicked.
   test('ResetBannerReset', function() {
     assertNotEquals(
-        routes.RESET_DIALOG,
-        Router.getInstance().getCurrentRoute());
+        routes.RESET_DIALOG, Router.getInstance().getCurrentRoute());
     resetBanner.$.reset.click();
-    assertEquals(
-        routes.RESET_DIALOG,
-        Router.getInstance().getCurrentRoute());
+    assertEquals(routes.RESET_DIALOG, Router.getInstance().getCurrentRoute());
     assertFalse(resetBanner.$.dialog.open);
   });
 

@@ -32,10 +32,6 @@ namespace device {
 
 namespace {
 
-void AdapterCallback(const base::Closure& quit_closure) {
-  quit_closure.Run();
-}
-
 void GetValueCallback(
     base::OnceClosure quit_closure,
     BluetoothLocalGattService::Delegate::ValueCallback value_callback,
@@ -107,8 +103,8 @@ bool BluetoothTestBlueZ::PlatformSupportsLowEnergy() {
 
 void BluetoothTestBlueZ::InitWithFakeAdapter() {
   base::RunLoop run_loop;
-  adapter_ = new bluez::BluetoothAdapterBlueZ(
-      base::BindOnce(&AdapterCallback, run_loop.QuitClosure()));
+  adapter_ = bluez::BluetoothAdapterBlueZ::CreateAdapter();
+  adapter_->Initialize(run_loop.QuitClosure());
   run_loop.Run();
   adapter_->SetPowered(true, base::DoNothing(), base::DoNothing());
 }

@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {ContentSetting,defaultSettingLabel,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ContentSetting,defaultSettingLabel,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+
 // clang-format on
 
 suite('SiteSettingsPage', function() {
@@ -28,8 +29,7 @@ suite('SiteSettingsPage', function() {
 
   function setupPage() {
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    SiteSettingsPrefsBrowserProxyImpl.instance_ =
-        siteSettingsBrowserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
     siteSettingsBrowserProxy.setResultFor(
         'getCookieSettingDescription', Promise.resolve(testLabels[0]));
     PolymerTest.clearBody();
@@ -45,36 +45,18 @@ suite('SiteSettingsPage', function() {
   });
 
   test('DefaultLabels', function() {
+    assertEquals('a', defaultSettingLabel(ContentSetting.ALLOW, 'a', 'b'));
+    assertEquals('b', defaultSettingLabel(ContentSetting.BLOCK, 'a', 'b'));
+    assertEquals('a', defaultSettingLabel(ContentSetting.ALLOW, 'a', 'b', 'c'));
+    assertEquals('b', defaultSettingLabel(ContentSetting.BLOCK, 'a', 'b', 'c'));
     assertEquals(
-        'a',
-        defaultSettingLabel(ContentSetting.ALLOW, 'a', 'b'));
+        'c', defaultSettingLabel(ContentSetting.SESSION_ONLY, 'a', 'b', 'c'));
     assertEquals(
-        'b',
-        defaultSettingLabel(ContentSetting.BLOCK, 'a', 'b'));
-    assertEquals(
-        'a',
-        defaultSettingLabel(
-            ContentSetting.ALLOW, 'a', 'b', 'c'));
-    assertEquals(
-        'b',
-        defaultSettingLabel(
-            ContentSetting.BLOCK, 'a', 'b', 'c'));
+        'c', defaultSettingLabel(ContentSetting.DEFAULT, 'a', 'b', 'c'));
+    assertEquals('c', defaultSettingLabel(ContentSetting.ASK, 'a', 'b', 'c'));
     assertEquals(
         'c',
-        defaultSettingLabel(
-            ContentSetting.SESSION_ONLY, 'a', 'b', 'c'));
-    assertEquals(
-        'c',
-        defaultSettingLabel(
-            ContentSetting.DEFAULT, 'a', 'b', 'c'));
-    assertEquals(
-        'c',
-        defaultSettingLabel(
-            ContentSetting.ASK, 'a', 'b', 'c'));
-    assertEquals(
-        'c',
-        defaultSettingLabel(
-            ContentSetting.IMPORTANT_CONTENT, 'a', 'b', 'c'));
+        defaultSettingLabel(ContentSetting.IMPORTANT_CONTENT, 'a', 'b', 'c'));
   });
 
   test('CookiesLinkRowSublabel', async function() {

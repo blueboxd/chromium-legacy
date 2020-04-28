@@ -310,6 +310,12 @@ void BubbleDialogDelegateView::OnWidgetBoundsChanged(
 void BubbleDialogDelegateView::OnWidgetPaintAsActiveChanged(
     Widget* widget,
     bool paint_as_active) {
+  // We only care about the current widget having its state changed; if the
+  // anchor widget receives active status directly then there's no need to apply
+  // paint as active lock.
+  if (widget != GetWidget())
+    return;
+
   if (!paint_as_active) {
     paint_as_active_lock_.reset();
     return;

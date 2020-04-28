@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"

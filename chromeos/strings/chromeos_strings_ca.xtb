@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Aplicacions</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="3008341117444806826">ACTUALITZA</translation>
+<translation id="3749289110408117711">Nom del fitxer</translation>
 <translation id="3820172043799983114">El PIN no és vàlid.</translation>
 <translation id="3838338534323494292">Contrasenya nova</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gestiona aquest dispositiu i té accés a tota l'activitat dels usuaris, com ara les pàgines web visitades, les contrasenyes i el correu electrònic.</translation>
+<translation id="4034824040120875894">Impressora</translation>
 <translation id="4227825898293920515">La contrasenya caduca d'aquí a <ph name="TIME" /></translation>
 <translation id="4429881212383817840">El tiquet de Kerberos caducarà aviat</translation>
 <translation id="445059817448385655">Contrasenya antiga</translation>
 <translation id="467510802200863975">Les contrasenyes no coincideixen</translation>
 <translation id="4731797938093519117">Accés parental</translation>
 <translation id="4890353053343094602">Tria'n una de nova immediatament</translation>
+<translation id="4932733599132424254">Data</translation>
 <translation id="5212543919916444558">No he trobat res a la pantalla amb què et pugui ajudar.
 Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
@@ -40,6 +43,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="6146993107019042706">Per acabar, introdueix la contrasenya nova</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7690294790491645610">Confirma la contrasenya nova</translation>
+<translation id="7805768142964895445">Estat</translation>
 <translation id="808894953321890993">Canvia la contrasenya</translation>
 <translation id="8208861521865154048">Avantatges</translation>
 <translation id="8747900814994928677">Confirma el canvi</translation>

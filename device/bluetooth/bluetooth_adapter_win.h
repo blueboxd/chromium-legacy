@@ -33,11 +33,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
     : public BluetoothAdapter,
       public BluetoothTaskManagerWin::Observer {
  public:
-  static base::WeakPtr<BluetoothAdapter> CreateAdapter(
-      InitCallback init_callback);
-
-  static base::WeakPtr<BluetoothAdapter> CreateClassicAdapter(
-      InitCallback init_callback);
+  static scoped_refptr<BluetoothAdapter> CreateAdapter();
+  static scoped_refptr<BluetoothAdapter> CreateClassicAdapter();
 
   static bool UseNewBLEWinImplementation();
 
@@ -112,7 +109,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
     DISCOVERY_STOPPING
   };
 
-  explicit BluetoothAdapterWin(InitCallback init_callback);
+  BluetoothAdapterWin();
   ~BluetoothAdapterWin() override;
 
   // BluetoothAdapter:
@@ -125,8 +122,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
       DiscoverySessionResultCallback callback) override;
   void StopScan(DiscoverySessionResultCallback callback) override;
 
-  void Init();
+  void Initialize(base::OnceClosure callback) override;
   void InitForTest(
+      base::OnceClosure init_callback,
       std::unique_ptr<win::BluetoothClassicWrapper> classic_wrapper,
       std::unique_ptr<win::BluetoothLowEnergyWrapper> le_wrapper,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
@@ -135,7 +133,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
   void MaybePostStartDiscoveryTask();
   void MaybePostStopDiscoveryTask();
 
-  InitCallback init_callback_;
+  base::OnceClosure init_callback_;
   std::string address_;
   std::string name_;
   bool initialized_;

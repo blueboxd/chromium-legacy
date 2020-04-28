@@ -125,7 +125,6 @@
 <translation id="1164899421101904659">Enter PIN Unlock Key</translation>
 <translation id="1165039591588034296">Error</translation>
 <translation id="1166212789817575481">Close Tabs to the Right</translation>
-<translation id="1167199480815330007">Find the 6-digit PIN on the back of your security key</translation>
 <translation id="1168020859489941584">Opening in <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Google name servers</translation>
 <translation id="1171135284592304528">Highlight the object with keyboard focus when it changes</translation>
@@ -614,7 +613,6 @@
 <translation id="1802931390041703523">Flash was blocked on this page</translation>
 <translation id="1803531841600994172">Language to translate into</translation>
 <translation id="1803545009660609783">Retrain</translation>
-<translation id="1805472176602625930">Press the button on the security key</translation>
 <translation id="1805738995123446102">Background tab is using your microphone</translation>
 <translation id="1805822111539868586">Inspect views</translation>
 <translation id="1805888043020974594">Print server</translation>
@@ -675,9 +673,9 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> is ready to complete your installation</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">Give access to microphone</translation>
+<translation id="1871534214638631766">Show related info when you right-click or long press on content</translation>
 <translation id="1871615898038944731">Your <ph name="DEVICE_TYPE" /> is up to date</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Move tab to another window}other{Move tabs to another window}}</translation>
-<translation id="1875312262568496299">Begin</translation>
 <translation id="1875386316419689002">This tab is connected to a HID device.</translation>
 <translation id="1875387611427697908">This can only be added from the <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Failed to get authentication token. Please sign out then sign in again to try again.</translation>
@@ -697,7 +695,6 @@
 <translation id="189358972401248634">Other languages</translation>
 <translation id="1895658205118569222">Shutdown</translation>
 <translation id="1895934970388272448">You must confirm registration on your printer to finish this process - check it now.</translation>
-<translation id="1899826437968063457">Plugin VM needs permission to run</translation>
 <translation id="1900305421498694955">Apps from Google Play may require full file system access to read and write files on external storage devices. Files and folders created on the device are visible to anyone who uses the external drive. <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Select &amp;all</translation>
 <translation id="1905375423839394163">Chromebook device name</translation>
@@ -733,6 +730,7 @@
 <translation id="1944528062465413897">Bluetooth pairing code</translation>
 <translation id="1944921356641260203">Update found</translation>
 <translation id="1946577776959096882">View accounts</translation>
+<translation id="1949584741547056205">Quick answers</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1954813140452229842">Error mounting share. Please check your credentials and try again.</translation>
 <translation id="1956050014111002555">The file contained multiple certificates, none of which were imported:</translation>
@@ -992,7 +990,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2299734369537008228">Slider: <ph name="MIN_LABEL" /> to <ph name="MAX_LABEL" /></translation>
 <translation id="2300383962156589922">Customise and control <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">Extension root directory is invalid.</translation>
-<translation id="2302444155926798584">Plugin VM has been uninstalled</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" has requested additional permissions.</translation>
 <translation id="23055578400314116">Select a username</translation>
 <translation id="2307462900900812319">Configure network</translation>
@@ -1036,7 +1033,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2353297238722298836">Camera and microphone allowed</translation>
 <translation id="2356070529366658676">Ask</translation>
 <translation id="2357330829548294574">Remove <ph name="USER_NAME" /></translation>
-<translation id="235798134753548762">Your apps, settings and Wi-Fi preferences will be synced. To make changes, go to settings at any time after setup.</translation>
 <translation id="2359345697448000899">Manage your extensions by clicking Extensions in the Tools menu.</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="236117173274098341">Optimise</translation>
@@ -1073,7 +1069,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2408955596600435184">Enter your PIN</translation>
 <translation id="241082044617551207">Unknown plug-in</translation>
 <translation id="2412593942846481727">Update available</translation>
-<translation id="2417206894320497232">Plugin VM is ready to use.</translation>
 <translation id="241727068219398187">Data was encrypted with your Google password as of
           <ph name="TIME" />. This doesn't include payment methods and addresses from Google Pay.</translation>
 <translation id="2419706071571366386">For security, sign out when your computer isn't being used.</translation>
@@ -1357,7 +1352,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2773802008104670137">This type of file may harm your computer.</translation>
 <translation id="2775104091073479743">Edit Fingerprints</translation>
 <translation id="2776441542064982094">Looks like there are no devices available to register on the network. If your device is on and connected to the internet, try registering it using instructions in its instruction manual.</translation>
-<translation id="2780009105947267877">Setting up Plugin VM...</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2782104745158847185">Error installing Linux application</translation>
 <translation id="2783298271312924866">Downloaded</translation>
@@ -1401,7 +1395,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2822910719211888134">Error while backing up Linux</translation>
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> is using proxy settings from your administrator</translation>
 <translation id="2825758591930162672">Subject's Public Key</translation>
-<translation id="2825848369316359348">Find the name printed on the back of your security key</translation>
 <translation id="2828650939514476812">Connect to Wi-Fi network</translation>
 <translation id="2835294513443818940">This file can't be downloaded securely.</translation>
 <translation id="2835547721736623118">Speech recognition service</translation>
@@ -1780,7 +1773,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3347086966102161372">C&amp;opy image address</translation>
 <translation id="3348038390189153836">Removable device detected</translation>
 <translation id="3349933790966648062">Memory footprint</translation>
-<translation id="3350117557200012647">Get into pairing mode</translation>
 <translation id="3355936511340229503">Connection error</translation>
 <translation id="3356580349448036450">Complete</translation>
 <translation id="3359256513598016054">Certificate Policy Constraints</translation>
@@ -1852,7 +1844,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3449393517661170867">New tabbed window</translation>
 <translation id="3449839693241009168">Press <ph name="SEARCH_KEY" /> to send commands to <ph name="EXTENSION_NAME" /></translation>
 <translation id="3450157232394774192">Idle State Occupancy Percentage</translation>
-<translation id="3451332697983754369">Sync my <ph name="DEVICE_TYPE" /></translation>
 <translation id="3453612417627951340">Needs authorisation</translation>
 <translation id="3454157711543303649">Activation complete</translation>
 <translation id="3454213325559396544">This is the last automatic software and security update for this <ph name="DEVICE_TYPE" />. To get future updates, upgrade to a newer model.</translation>
@@ -2031,7 +2022,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3677657024345889897">Quietest</translation>
 <translation id="3677911431265050325">Request mobile site</translation>
 <translation id="3678156199662914018">Extension: <ph name="EXTENSION_NAME" /></translation>
-<translation id="3678613690490567106">Sync for a personalised experience across devices</translation>
 <translation id="3681311097828166361">Thank you for your feedback. You are offline now, and your report will be sent later.</translation>
 <translation id="3682824389861648626">Movement threshold</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> Screen Sharing Request</translation>
@@ -2079,7 +2069,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="372722114124766626">Just Once</translation>
 <translation id="3729303374699765035">Ask when a site wants to discover nearby Bluetooth devices</translation>
 <translation id="3729506734996624908">Allowed sites</translation>
-<translation id="3731997362820527097">Select your security key</translation>
 <translation id="3732078975418297900">Error on line <ph name="ERROR_LINE" /></translation>
 <translation id="3732530910372558017">PIN must be at most 63 characters</translation>
 <translation id="3733127536501031542">SSL Server with Step-up</translation>
@@ -2090,7 +2079,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3742666961763734085">Can’t find an organisational unit with that name. Please try again.</translation>
 <translation id="3744111561329211289">Background sync</translation>
 <translation id="3746127522257263495">Adding G Suite for Education account in Android apps is not supported.</translation>
-<translation id="3747039297326604768">Couldn't open Plugin VM</translation>
 <translation id="3747077776423672805">To remove apps, go to Settings &gt; Google Play Store &gt; Manage Android preferences &gt; Apps or Application manager. Then tap the app that you want to uninstall (you may need to swipe right or left to find the app). Then tap Uninstall or Disable.</translation>
 <translation id="3748026146096797577">Not Connected</translation>
 <translation id="3752582316358263300">OK...</translation>
@@ -2153,7 +2141,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3816118180265633665">Chrome colours</translation>
 <translation id="3817524650114746564">Open your computer's proxy settings</translation>
 <translation id="3817579325494460411">Not provided</translation>
-<translation id="381892968844315516">Plugin VM isn't allowed on this device. Contact your organisation's device administrator. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="3819257035322786455">Back Up</translation>
 <translation id="3819261658055281761">The system failed to store the long-term API access token for this device.</translation>
 <translation id="3819800052061700452">&amp;Full screen</translation>
@@ -2346,7 +2333,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4056908315660577142">You reached the time limit that your parent set for <ph name="APP_NAME" /> Chrome app. You can use it for <ph name="TIME_LIMIT" /> tomorrow.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">View in Store</translation>
-<translation id="4058647953897694817">Verify via Bluetooth</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Check Document Now</translation>
 <translation id="406070391919917862">Background Apps</translation>
@@ -2355,7 +2341,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4068506536726151626">This page contains elements from the following sites that are tracking your location:</translation>
 <translation id="4068776064906523561">Saved fingerprints</translation>
 <translation id="407173827865827707">On click</translation>
-<translation id="4073520450811433493">Settings sync</translation>
 <translation id="4074900173531346617">Email Signer Certificate</translation>
 <translation id="407520071244661467">Scale</translation>
 <translation id="4075639477629295004">Unable to cast <ph name="FILE_NAME" />.</translation>
@@ -2438,7 +2423,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4181841719683918333">Languages</translation>
 <translation id="4184885522552335684">Drag to move a display</translation>
 <translation id="4194570336751258953">Enable tap-to-click</translation>
-<translation id="4194595472342532425">Couldn't set up Plugin VM because of a configuration problem. Please contact your organisation's device administrator. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="4195814663415092787">Continue where you left off</translation>
 <translation id="4198146608511578238">Just hold the Launcher icon to talk to your Google Assistant.</translation>
@@ -3075,7 +3059,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5117930984404104619">Monitor the behaviour of other extensions, including visited URLs</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Your hard disk is full.  Please save to another location or make more room on the hard disk.</translation>
-<translation id="5122384452788334261">Your device is low on storage space. At least <ph name="RECOMMENDED_SPACE" /> of free space is recommended to use Plugin VM. To free up space, delete files from device storage.</translation>
 <translation id="5123433949759960244">Basketball</translation>
 <translation id="5125751979347152379">Invalid URL.</translation>
 <translation id="5126611267288187364">View changes</translation>
@@ -3131,7 +3114,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="520621735928254154">Certificate import error</translation>
 <translation id="5209307736170827035">You child's data in Classroom will be protected. <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">No devices found</translation>
-<translation id="5210990770352357081">Couldn't uninstall Plugin VM</translation>
 <translation id="5213481667492808996">Your '<ph name="NAME" />' data service is ready to use</translation>
 <translation id="5213891612754844763">Show proxy settings</translation>
 <translation id="5215502535566372932">Select country</translation>
@@ -3480,7 +3462,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5658415415603568799">For added security, Smart Lock will ask you to enter your password after 20 hours.</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5659833766619490117">This page could not be translated</translation>
-<translation id="5660204307954428567">Pair with <ph name="DEVICE_NAME" /></translation>
 <translation id="5662513737565158057">Change how Linux apps will work.</translation>
 <translation id="5667546120811588575">Setting up Google Play…</translation>
 <translation id="5669267381087807207">Activating</translation>
@@ -3740,7 +3721,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6020431688553761150">Server did not authorise you to access this resource.</translation>
 <translation id="6022526133015258832">Open Full Screen</translation>
 <translation id="6022659036123304283">Make Chrome your own</translation>
-<translation id="6022705094403139349">Ready to pair your security key?</translation>
 <translation id="6023643151125006053">This device (SN: <ph name="SERIAL_NUMBER" />) was locked by the <ph name="SAML_DOMAIN" /> administrator.</translation>
 <translation id="6025215716629925253">Stack Trace</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB device connected</translation>
@@ -3815,7 +3795,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6103681770816982672">Warning: You are switching to developer channel</translation>
 <translation id="6104068876731806426">Google Accounts</translation>
 <translation id="6104311680260824317">Can't join the device to the domain. The server does not support specified Kerberos encryption types. Check 'More options' for encryption settings.</translation>
-<translation id="6106186653986077033">Plugin VM requires a licence</translation>
 <translation id="6112294629795967147">Touch to resize</translation>
 <translation id="6112727384379533756">Add a ticket</translation>
 <translation id="6112931163620622315">Check your phone</translation>
@@ -4090,7 +4069,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6478248366783946499">Keep dangerous file?</translation>
 <translation id="6483485061007832714">Open download</translation>
 <translation id="6483805311199035658">Opening <ph name="FILE" />...</translation>
-<translation id="6485092675191826776">Plugin VM licence has expired</translation>
 <translation id="6488384360522318064">Select language</translation>
 <translation id="648927581764831596">None available</translation>
 <translation id="6490471652906364588">USB-C device (right port)</translation>
@@ -4285,7 +4263,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6770664076092644100">Verify via NFC</translation>
 <translation id="6771503742377376720">Is a Certification Authority</translation>
 <translation id="6772339735733515807">Manage your extensions</translation>
-<translation id="6774271858705413900">Something went wrong. Please wait a few minutes and run Plugin VM again.</translation>
 <translation id="6775163072363532304">Available devices will appear here.</translation>
 <translation id="6777817260680419853">Redirect blocked</translation>
 <translation id="6778737459546443941">Your parent hasn't approved it yet</translation>
@@ -4363,7 +4340,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="686664946474413495">Colour temperature</translation>
 <translation id="6871644448911473373">OCSP Responder: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">The password that you entered was rejected by the server.</translation>
-<translation id="6874170800191969835">Navigated to <ph name="SEARCH_RESULT_TEXT" />.</translation>
 <translation id="6876155724392614295">Cycle</translation>
 <translation id="6876469544038980967">Not helpful</translation>
 <translation id="6878422606530379992">Sensors allowed</translation>
@@ -4617,7 +4593,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7207631048330366454">Search apps</translation>
 <translation id="7210499381659830293">Extension printers</translation>
 <translation id="7212097698621322584">Enter your current PIN to change it. If you don’t know your PIN, you’ll need to reset the security key, then create a new PIN.</translation>
-<translation id="721467499098558573">Press and hold the button on your security key for at least 5 seconds</translation>
 <translation id="7216409898977639127">Mobile provider</translation>
 <translation id="7216595297012131718">Order languages based on your preference</translation>
 <translation id="7220019174139618249">Can't export passwords to '<ph name="FOLDER" />'</translation>
@@ -4638,7 +4613,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7240339475467890413">Connect to new hotspot?</translation>
 <translation id="7240847845291869311">Your child wants to add a G Suite for Education Google Account to this device. The <ph name="LINK_BEGIN" />G Suite for Education privacy notice<ph name="LINK_END" /> is meant to help G Suite for Education users and parents understand what data the product collects, why it is collected and what is done with it.</translation>
 <translation id="7241389281993241388">Please sign in to <ph name="TOKEN_NAME" /> to import the client certificate.</translation>
-<translation id="7241443820034350811">If your security key isn't listed, press its button for at least 5 seconds.</translation>
 <translation id="7243632151880336635">Clear and Sign Out</translation>
 <translation id="7243784282103630670">There was an error while upgrading Linux. We'll restore the container using your backup.</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Best)</translation>
@@ -4853,7 +4827,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7531779363494549572">Go to Settings &gt; Apps &amp; notifications &gt; Notifications.</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> is not responding. Select 'Force close' to close the app.</translation>
 <translation id="7537451260744431038">Sites can't use cookies to improve your browsing experience, for example to keep you signed in or to remember items in your shopping basket</translation>
-<translation id="7539856059004947393">Bluetooth security key</translation>
 <translation id="7540972813190816353">An error occurred while checking for updates: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> with <ph name="APP_NAME" /> app</translation>
 <translation id="7543104066686362383">Enable debugging features on this <ph name="IDS_SHORT_PRODUCT_NAME" /> device</translation>
@@ -4977,7 +4950,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7704305437604973648">Task</translation>
 <translation id="7704317875155739195">Auto-complete searches and URLs</translation>
 <translation id="7704521324619958564">Open Play Store</translation>
-<translation id="7704628569466676326">Pair your security key to this device so that you can use it to sign into your account</translation>
 <translation id="7705276765467986571">Could not load bookmark model.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7706963867324547089">Toggle reader mode</translation>
@@ -5067,7 +5039,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7817361223956157679">The on-screen keyboard doesn’t work in Linux apps yet</translation>
 <translation id="7818135753970109980">New theme added (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA or RSN)</translation>
-<translation id="7819992334107904369">Chrome sync</translation>
 <translation id="782057141565633384">C&amp;opy video address</translation>
 <translation id="7824864914877854148">Backup couldn't be completed due to an error</translation>
 <translation id="782590969421016895">Use current pages</translation>
@@ -5221,7 +5192,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7988355189918024273">Enable accessibility features</translation>
 <translation id="7991296728590311172">Switch Access settings</translation>
 <translation id="7992202128769240372">Exceeds limit of <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="7994350303002908848">Couldn't install Plugin VM. Please try again, or contact your organisation's device administrator. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="7994702968232966508">EAP method</translation>
 <translation id="7997826902155442747">Process Priority</translation>
 <translation id="7999229196265990314">Created the following files:
@@ -5320,7 +5290,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8118488170956489476">Your <ph name="BEGIN_LINK" />browser is managed<ph name="END_LINK" /> by your organisation</translation>
 <translation id="8118860139461251237">Manage your downloads</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> and more</translation>
-<translation id="8120715633374652536">Your device is low on storage space. At least <ph name="MINIMUM_SPACE" /> of free space is required to use Plugin VM, and over <ph name="RECOMMENDED_SPACE" /> of free space is recommended. To free up space, delete files from device storage.</translation>
 <translation id="8123590694679414600">Data was encrypted with your sync passphrase on
           <ph name="TIME" />. This doesn't include payment methods and addresses from Google Pay.</translation>
 <translation id="81238879832906896">Yellow and white flower</translation>
@@ -5634,7 +5603,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8551388862522347954">Licences</translation>
 <translation id="8553342806078037065">Manage other people</translation>
 <translation id="8554899698005018844">No language</translation>
-<translation id="8556135141412663091">Your device needs to be updated before you can use Plugin VM.</translation>
 <translation id="8557022314818157177">Keep touching your security key until your fingerprint is captured</translation>
 <translation id="855773602626431402">An unsandboxed plug-in was prevented from running on this page.</translation>
 <translation id="8557930019681227453">Manifest</translation>
@@ -5707,7 +5675,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8655295600908251630">Channel</translation>
 <translation id="8655319619291175901">Oops, something went wrong.</translation>
 <translation id="8655972064210167941">Sign-in failed because your password could not be verified. Please contact your administrator or try again.</translation>
-<translation id="8656619792520327915">Add another Bluetooth security key</translation>
 <translation id="8656768832129462377">Do not check</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> is sharing your screen and audio with <ph name="TAB_NAME" />.</translation>
 <translation id="8661290697478713397">Open Link in Inco&amp;gnito Window</translation>
@@ -5896,13 +5863,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8871696467337989339">You are using an unsupported command-line flag: <ph name="BAD_FLAG" />. Stability and security will suffer.</translation>
 <translation id="8871974300055371298">Content Settings ...</translation>
 <translation id="8872155268274985541">Invalid Kiosk external update manifest file found. Failed to update Kiosk app. Please remove the USB stick.</translation>
-<translation id="8872187374998143710">Please restart your device to use Plugin VM.</translation>
 <translation id="8872777911145321141">Ask when a site wants to use your virtual reality devices and data (recommended)</translation>
 <translation id="8874184842967597500">Not connected</translation>
 <translation id="8875775314572167244">Ethernet settings</translation>
 <translation id="8876307312329369159">This setting can't be changed in a demo session.</translation>
 <translation id="8877448029301136595">[parent directory]</translation>
-<translation id="8878384954777710821">Uninstalling Plugin VM…</translation>
 <translation id="8879284080359814990">&amp;Show As Tab</translation>
 <translation id="8879921471468674457">Remember sign-in info</translation>
 <translation id="8881020143150461183">Please try again. For technical support, contact <ph name="CARRIER_NAME" />.</translation>
@@ -5933,7 +5898,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8912810933860534797">Enable auto-scan</translation>
 <translation id="8915370057835397490">Loading suggestion</translation>
 <translation id="8916476537757519021">Incognito Subframe: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8921366488406707015">Verifying your security key...</translation>
 <translation id="8922013791253848639">Always allow ads on this site</translation>
 <translation id="8923880975836399332">Dark teal</translation>
 <translation id="8925458182817574960">&amp;Settings</translation>

@@ -1547,7 +1547,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="3303653927512453822">모든 쿠키를 레거시 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌릴 수 있습니다. 레거시 동작으로 되돌리면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않는 쿠키가 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />'인 것처럼 처리되고 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' 쿠키가 '<ph name="ATTRIBUTE_SECURE_NAME" />' 속성을 수반하지 않아도 됩니다. https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies에서 전체 설명을 확인하세요.
 
           이 정책을 설정하지 않으면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않은 쿠키의 기본 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작이 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 기능에 관한 사용자의 개인 설정에 따라 달라지며, 이러한 설정은 필드 평가판에서 설정하거나 플래그 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 플래그를 사용 또는 사용 중지하여 설정할 수 있습니다.</translation>
-<translation id="3303911765031636277">OnFileAttached Chrome Enterprise 커넥터 구성 정책</translation>
+<translation id="3303911765031636277">OnFileAttached Chrome Enterprise Connector 설정 정책</translation>
 <translation id="3304662785258434098">사용자가 특정 사이트에 혼합 콘텐츠를 허용하는 예외를 추가할 수 있도록 할지 결정합니다.
 
           'InsecureContentAllowedForUrls' 정책 및 'InsecureContentBlockedForUrls' 정책을 사용하는 특정 URL 패턴의 경우, 이 정책을 재정의할 수 있습니다.
@@ -4180,9 +4180,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       변형을 사용하면 새로운 브라우저 버전을 제공하지 않고도 이미 존재하는 기능을 선별적으로 사용 설정 또는 중지하여 <ph name="PRODUCT_NAME" />의 변형본을 제공할 수 있습니다.
 
-      <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> 옵션을 설정하거나(값 0) 정책을 설정하지 않으면 모든 변형이 브라우저에 적용될 수 있습니다.
+      <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> 옵션을 설정하거나(값 0) 정책을 설정하지 않으면 브라우저에 모든 변형을 적용할 수 있습니다.
 
-      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> 옵션을 설정하면(값 1) 중요한 보안 문제 또는 안정성 관련 수정사항으로 간주되는 변형만 <ph name="PRODUCT_NAME" />에 적용 가능합니다.
+      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> 옵션을 설정하면(값 1) 중요한 보안 또는 안정성 관련 수정사항으로 간주되는 변형만 <ph name="PRODUCT_NAME" />에 적용 가능합니다.
 
       <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> 옵션을 설정하면(값 2) 어떤 변형도 브라우저에 적용할 수 없습니다. 이 모드를 사용하면 <ph name="PRODUCT_NAME" /> 개발자가 중요한 보안 수정사항을 신속히 제공하지 못할 수 있으므로 권장되지 않습니다.</translation>
 <translation id="7145335384492396213">기본 PIN 인쇄 모드</translation>
@@ -4894,13 +4894,13 @@ False로 설정하면 로그인 화면이 표시될 때 개인정보 보호 화�
 <translation id="8176035528522326671">기업 사용자에게 기본 멀티 프로필 사용자만 허용(기업에서 관리하는 사용자에 대한 기본 동작임)</translation>
 <translation id="8183108371184777472">브라우저 창 실행 억제</translation>
 <translation id="8186911565834244165">사용자 의견 허용</translation>
-<translation id="8196725647498287556">이 정책을 구성하면 기업에서 관리하는 <ph name="PRODUCT_OS_NAME" /> 기기에 적용할 변형을 지정할 수 있습니다.
+<translation id="8196725647498287556">이 정책을 설정하면 기업에서 관리하는 <ph name="PRODUCT_OS_NAME" /> 기기에 적용 가능한 변형을 지정할 수 있습니다.
 
       변형을 사용하면 새로운 버전을 제공하지 않고도 이미 존재하는 기능을 선별적으로 사용 설정 또는 중지하여 <ph name="PRODUCT_OS_NAME" />의 변형본을 제공할 수 있습니다.
 
       <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> 옵션을 설정하거나(값 0) 정책을 설정하지 않으면 <ph name="PRODUCT_OS_NAME" />에 모든 변형을 적용할 수 있습니다.
 
-      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> 옵션을 설정하면(값 1) 중요한 보안 문제 또는 안정성 관련 수정사항으로 간주되는 변형만 <ph name="PRODUCT_OS_NAME" />에 적용 가능합니다.
+      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> 옵션을 설정하면(값 1) 중요한 보안 또는 안정성 관련 수정사항으로 간주되는 변형만 <ph name="PRODUCT_OS_NAME" />에 적용 가능합니다.
 
       <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> 옵션을 설정하면(값 2) 로그인 화면에서 브라우저에 어떤 변형도 적용할 수 없습니다. 이 모드를 사용하면 <ph name="PRODUCT_OS_NAME" /> 개발자가 중요한 보안 수정사항을 신속히 제공하지 못할 수 있으므로 권장되지 않습니다.</translation>
 <translation id="8213770777756919897">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 85에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
@@ -5479,13 +5479,13 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
           이 정책이 기기에서 지원되지만 설정되지 않았다면 표준 배터리 충전 모드가 적용되며 사용자가 변경할 수 없습니다.
 
           참고: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />이(가) 지정된 경우 이 정책을 재정의합니다.</translation>
-<translation id="9071472304496502510"><ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise 커넥터에 적용할 Chrome Enterprise 커넥터 서비스 설정의 목록으로, 파일이 Chrome에 첨부될 때 실행됩니다.
+<translation id="9071472304496502510"><ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> Enterprise Connector에 적용할 Chrome Enterprise Connector 서비스 설정의 목록으로, 파일이 Chrome에 첨부될 때 실행됩니다.
 
-      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 필드는 파일이 특정 페이지에 첨부되었을 때 커넥터가 분석을 위해 파일을 전송할지 및 파일 분석 요청에 어떤 태그를 포함할지 결정하는 데 사용됩니다. 페이지 URL이 특정 태그와 연결된 패턴과 일치하면 '사용 설정' 패턴에 해당하는 태그가 분석 요청에 포함되지만, 이 태그의 '사용 중지' 패턴 중에서 페이지 URL과 일치하는 것이 없어야 합니다. 하나 이상의 태그가 요청에 포함되면 분석이 실시됩니다.
+      <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> 필드는 파일이 특정 페이지에 첨부되었을 때 Connector가 분석을 위해 파일을 전송할지 여부와 파일 분석 요청에 어떤 태그를 포함할지 결정하는 데 사용됩니다. 페이지 URL이 특정 태그와 연결된 패턴과 일치하면 'enable' 패턴에 해당하는 태그가 분석 요청에 포함되지만, 이 태그의 'disable' 패턴 중에서 페이지 URL과 일치하는 것이 없어야 합니다. 하나 이상의 태그가 요청에 포함되면 분석이 실시됩니다.
 
       <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> 필드는 설정에 해당하는 분석 서비스 제공업체를 나타냅니다.
 
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 필드가 1로 설정되면 Chrome에서 페이지에 파일 액세스 권한을 부여하기 전에 분석 서비스의 응답을 받을 때까지 대기합니다. 다른 정수 값이 설정되면 Chrome에서 페이지에 파일 액세스 권한을 즉시 부여합니다.
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_UNTIL_VERDICT_FIELD" /> 필드가 1로 설정되면 Chrome에서 페이지에 파일 액세스 권한을 부여하기 전에 분석 서비스의 응답을 받을 때까지 대기합니다. 다른 정수 값으로 설정되면 Chrome에서 페이지에 파일 액세스 권한을 즉시 부여합니다.
 
       <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> 필드는 Chrome에서 비밀번호로 보호된 파일을 차단 또는 허용할지 결정합니다.
 

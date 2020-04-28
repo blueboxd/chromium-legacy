@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {isChromeOS, isLinux} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {isLinux, isChromeOS} from 'chrome://resources/js/cr.m.js';
+import {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 // clang-format on
 

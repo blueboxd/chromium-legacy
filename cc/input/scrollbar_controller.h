@@ -138,6 +138,7 @@ class CC_EXPORT ScrollbarController {
   void DidUnregisterScrollbar(ElementId element_id);
   ScrollbarLayerImplBase* ScrollbarLayer();
   void WillBeginImplFrame();
+  void ResetState();
 
  private:
   // "Autoscroll" here means the continuous scrolling that occurs when the
@@ -229,7 +230,6 @@ class CC_EXPORT ScrollbarController {
   // the thumb reaching the pointer or the pointer leaving (or re-entering) the
   // bounds.
   void RecomputeAutoscrollStateIfNeeded();
-  void ResetState();
 
   // Shift (or "Option" in case of Mac) + click is expected to do a non-animated
   // jump to a certain offset.

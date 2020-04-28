@@ -1000,6 +1000,8 @@ jumbo_component("platform") {
     "graphics/lab_color_space.h",
     "graphics/logging_canvas.cc",
     "graphics/logging_canvas.h",
+    "graphics/mailbox_texture_backing.cc",
+    "graphics/mailbox_texture_backing.h",
     "graphics/main_thread_mutator_client.cc",
     "graphics/main_thread_mutator_client.h",
     "graphics/memory_managed_paint_canvas.cc",

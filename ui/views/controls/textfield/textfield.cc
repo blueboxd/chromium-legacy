@@ -267,6 +267,11 @@ bool IsControlKeyModifier(int flags) {
 #endif
 }
 
+bool IsValidCharToInsert(const base::char16& ch) {
+  // Filter out all control characters, including tab and new line characters.
+  return (ch >= 0x20 && ch < 0x7F) || ch > 0x9F;
+}
+
 }  // namespace
 
 // static
@@ -1464,13 +1469,17 @@ void Textfield::ClearCompositionText() {
 }
 
 void Textfield::InsertText(const base::string16& new_text) {
-  // TODO(suzhe): Filter invalid characters.
-  if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE || new_text.empty())
+  base::string16 filtered_new_text;
+  std::copy_if(new_text.begin(), new_text.end(),
+               std::back_inserter(filtered_new_text), IsValidCharToInsert);
+
+  if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE ||
+      filtered_new_text.empty())
     return;
 
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
-  model_->InsertText(new_text);
+  model_->InsertText(filtered_new_text);
   skip_input_method_cancel_composition_ = false;
   UpdateAfterChange(true, true);
   OnAfterUserAction();
@@ -1482,13 +1491,12 @@ void Textfield::InsertChar(const ui::KeyEvent& event) {
     return;
   }
 
-  // Filter out all control characters, including tab and new line characters,
-  // and all characters with Alt modifier (and Search on ChromeOS, Ctrl on
-  // Linux). But allow characters with the AltGr modifier. On Windows AltGr is
-  // represented by Alt+Ctrl or Right Alt, and on Linux it's a different flag
-  // that we don't care about.
+  // Filter all invalid chars and all characters with Alt modifier (and Search
+  // on ChromeOS, Ctrl on Linux). But allow characters with the AltGr modifier.
+  // On Windows AltGr is represented by Alt+Ctrl or Right Alt, and on Linux it's
+  // a different flag that we don't care about.
   const base::char16 ch = event.GetCharacter();
-  const bool should_insert_char = ((ch >= 0x20 && ch < 0x7F) || ch > 0x9F) &&
+  const bool should_insert_char = IsValidCharToInsert(ch) &&
                                   !ui::IsSystemKeyModifier(event.flags()) &&
                                   !IsControlKeyModifier(event.flags());
   if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE || !should_insert_char)

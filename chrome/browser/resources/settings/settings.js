@@ -22,9 +22,6 @@ export {pageVisibility, setPageVisibilityForTesting} from './page_visibility.m.j
 // <if expr="chromeos">
 export {AccountManagerBrowserProxyImpl} from './people_page/account_manager_browser_proxy.m.js';
 // </if>
-// <if expr="not chromeos">
-export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.m.js';
-// </if>
 export {ProfileInfoBrowserProxyImpl} from './people_page/profile_info_browser_proxy.m.js';
 export {MAX_SIGNIN_PROMO_IMPRESSION} from './people_page/sync_account_control.m.js';
 export {PageStatus, StatusAction, SyncBrowserProxyImpl} from './people_page/sync_browser_proxy.m.js';

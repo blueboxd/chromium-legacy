@@ -70,6 +70,9 @@ class AssistantInteractionControllerImpl
   const AssistantInteractionModel* GetModel() const override;
   void AddModelObserver(AssistantInteractionModelObserver*) override;
   void RemoveModelObserver(AssistantInteractionModelObserver*) override;
+  void StartTextInteraction(const std::string& text,
+                            bool allow_tts,
+                            AssistantQuerySource query_source) override;
 
   // AssistantControllerObserver:
   void OnAssistantControllerConstructed() override;
@@ -125,10 +128,6 @@ class AssistantInteractionControllerImpl
   // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
-
-  void StartTextInteraction(const std::string& text,
-                            bool allow_tts,
-                            AssistantQuerySource query_source);
 
  private:
   void OnTabletModeChanged();

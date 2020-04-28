@@ -383,9 +383,8 @@ void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
     return;
 
   ready_state_ = MediaStreamSource::kReadyStateEnded;
-  LocalDOMWindow* window = To<LocalDOMWindow>(execution_context);
   UserMediaController* user_media =
-      UserMediaController::From(window->GetFrame());
+      UserMediaController::From(To<LocalDOMWindow>(execution_context));
   if (user_media)
     user_media->StopTrack(Component());
 
@@ -647,6 +646,9 @@ MediaTrackSettings* MediaStreamTrack::getSettings() const {
 ScriptPromise MediaStreamTrack::applyConstraints(
     ScriptState* script_state,
     const MediaTrackConstraints* constraints) {
+  if (!script_state->ContextIsValid())
+    return ScriptPromise();
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -692,9 +694,8 @@ ScriptPromise MediaStreamTrack::applyConstraints(
     return promise;
   }
 
-  LocalDOMWindow* window = To<LocalDOMWindow>(execution_context);
   UserMediaController* user_media =
-      UserMediaController::From(window->GetFrame());
+      UserMediaController::From(To<LocalDOMWindow>(execution_context));
   if (!user_media) {
     resolver->Reject(OverconstrainedError::Create(
         String(), "Cannot apply constraints due to unexpected error"));

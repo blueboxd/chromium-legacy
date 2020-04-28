@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/icu/source/common/unicode/ucnv.h"
 #include "third_party/icu/source/common/unicode/ucnv_cb.h"
 #include "third_party/icu/source/common/unicode/utypes.h"

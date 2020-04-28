@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/hash/hash.h"
-#include "base/logging.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"

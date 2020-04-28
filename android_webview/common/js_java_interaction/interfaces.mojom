@@ -18,6 +18,15 @@ struct JsObject {
   android_webview.mojom.AwOriginMatcher origin_matcher;
 };
 
+// DocumentStartJavascript struct contains the JavaScript snippet |script| and
+// the corresponding |origin_matcher|. We will run the script if the frame's
+// origin matches any rules in the |origin_matcher|.
+struct DocumentStartJavascript {
+  int32 script_id;
+  mojo_base.mojom.String16 script;
+  android_webview.mojom.AwOriginMatcher origin_matcher;
+};
+
 // For JavaScript postMessage() API, implemented by browser.
 interface JsToJavaMessaging {
   // Called from renderer, browser receives |message| and possible |ports|,
@@ -44,4 +53,12 @@ interface JsJavaConfigurator {
   // Called from browser, to tell renderer that if we need to inject
   // JavaScript objects to the frame based on the |js_objects| array.
   SetJsObjects(array<android_webview.mojom.JsObject> js_objects);
+
+  // Called from browser, to add a script for a frame to run at document start
+  // stage. The script will run only if the frame's origin matches any of the
+  // allowed_origin_rules.
+  AddDocumentStartScript(android_webview.mojom.DocumentStartJavascript script);
+
+  // Called from browser, to remove the script by the given script_id.
+  RemoveDocumentStartScript(int32 script_id);
 };

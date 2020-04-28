@@ -214,7 +214,7 @@
 <translation id="3513798432020909783">Hisobni <ph name="MANAGER_EMAIL" /> boshqaradi</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" tiliga qaytarish (qayta yuklash kerak bo‘ladi)</translation>
 <translation id="3576141592585647168">Vaqt mintaqasini almashtirish</translation>
-<translation id="3593646411856133110">Ochiq ilovalarni chiqarish uchun tepaga suring va bosib turing.</translation>
+<translation id="3593646411856133110">Ochiq ilovalarni chiqarish uchun tepaga suring va ushlab turing.</translation>
 <translation id="3595596368722241419">Batareya to‘ldi</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> ish stoli yaratildi</translation>
 <translation id="3606978283550408104">Brayl displeyi ulandi.</translation>
@@ -294,6 +294,7 @@
 <translation id="4565377596337484307">Parolni berkitish</translation>
 <translation id="4570957409596482333">Teginib tinglash tugmasi</translation>
 <translation id="4585337515783392668">Ekranni notanish qurilmaga translatsiya qilinishi to‘xtatilsin</translation>
+<translation id="4588090240171750605">O‘ngga aylantirish</translation>
 <translation id="4628757576491864469">Qurilmalar</translation>
 <translation id="4659419629803378708">ChromeVox yoqildi</translation>
 <translation id="4665114317261903604">“Bezovta qilinmasin” tugmasi. <ph name="STATE_TEXT" /></translation>
@@ -415,6 +416,7 @@
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> hisobini keyinroq ota-ona ruxsati bilan qayta kiritish mumkin.</translation>
 <translation id="6297287540776456956">Ekran qismini belgilash uchun stilusdan foydalaning</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />: joylashuv <ph name="ROTATION" /> ga o‘zgartirildi</translation>
+<translation id="6364916375976753737">Chapga o‘tkazish</translation>
 <translation id="6376931439017688372">Bluetooth yoniq</translation>
 <translation id="6381109794406942707">Qurilmani qulfdan chiqarish uchun PIN kodingizni kiriting.</translation>
 <translation id="639644700271529076">CAPS LOCK o‘chiq</translation>
@@ -473,6 +475,7 @@
 <translation id="698231206551913481">Bu foydalanuvchiga tegishli barcha fayllar va mahalliy ma’lumotlar foydalanuvchi olib tashlanganda butunlay o‘chib ketadi.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> da qayting.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> qurilmasini telefoningiz bilan ulang</translation>
+<translation id="7026338066939101231">Kamaytirish</translation>
 <translation id="7029814467594812963">Seansni yakunlash</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Google Assistent</translation>
 <translation id="7042322267639375032">Holat panelini yopish</translation>
@@ -544,6 +547,7 @@
 <translation id="7984197416080286869">Siz juda koʻp marta urindingiz</translation>
 <translation id="7994370417837006925">Bir nechta hisobdan kirish</translation>
 <translation id="8000066093800657092">Tarmoq topilmadi</translation>
+<translation id="8004512796067398576">Oshirish</translation>
 <translation id="8029629653277878342">Xavfsizlikni oshirish uchun PIN kod yoki parol kiriting</translation>
 <translation id="8030169304546394654">Uzildi</translation>
 <translation id="8048123526339889627">Bluetooth sozlamalari</translation>
@@ -570,6 +574,7 @@
 <translation id="8261506727792406068">O‘chirish</translation>
 <translation id="8297006494302853456">Zaif</translation>
 <translation id="8308637677604853869">Avvalgi menyu</translation>
+<translation id="8331626408530291785">Tepaga o‘tkazish</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Qayd yaratish</translation>
 <translation id="8375916635258623388">Bu <ph name="DEVICE_NAME" /> telefonga avtomatik ulanadi</translation>

@@ -107,6 +107,14 @@ class PrintJobDatabaseImplTest : public ::testing::Test {
     run_loop.Run();
   }
 
+  void Clear() {
+    base::RunLoop run_loop;
+    print_job_database_->Clear(
+        base::BindOnce(&PrintJobDatabaseImplTest::OnPrintJobsDeleted,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
   void OnPrintJobsDeleted(base::RepeatingClosure run_loop_closure,
                           bool success) {
     EXPECT_TRUE(success);
@@ -173,6 +181,19 @@ TEST_F(PrintJobDatabaseImplTest, DeletePrintJobs) {
   EXPECT_EQ(1u, entries.size());
   EXPECT_EQ(kId2, entries[0].id());
   EXPECT_EQ(kTitle2, entries[0].title());
+}
+
+TEST_F(PrintJobDatabaseImplTest, Clear) {
+  Initialize();
+  PrintJobInfo print_job_info1 = ConstructPrintJobInfo(kId1, kTitle1);
+  SavePrintJob(print_job_info1);
+  PrintJobInfo print_job_info2 = ConstructPrintJobInfo(kId2, kTitle2);
+  SavePrintJob(print_job_info2);
+  std::vector<PrintJobInfo> entries = GetPrintJobs();
+  EXPECT_EQ(2u, entries.size());
+  Clear();
+  entries = GetPrintJobs();
+  EXPECT_EQ(0u, entries.size());
 }
 
 TEST_F(PrintJobDatabaseImplTest, GetPrintJobsFromDatabase) {

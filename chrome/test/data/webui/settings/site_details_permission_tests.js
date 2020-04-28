@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {ContentSetting,ContentSettingsTypes,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {createContentSettingTypeToValuePair,createDefaultContentSetting,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ContentSetting,ContentSettingsTypes,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {createContentSettingTypeToValuePair,createDefaultContentSetting,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for site-details. */
@@ -34,8 +34,7 @@ suite('SiteDetailsPermission', function() {
   setup(function() {
     prefs = createSiteSettingsPrefs(
         [createContentSettingTypeToValuePair(
-            ContentSettingsTypes.CAMERA,
-            createDefaultContentSetting({
+            ContentSettingsTypes.CAMERA, createDefaultContentSetting({
               setting: ContentSetting.ALLOW,
             }))],
         [createContentSettingTypeToValuePair(
@@ -86,16 +85,13 @@ suite('SiteDetailsPermission', function() {
     // Flip the permission and validate that prefs stay in sync.
     return validatePermissionFlipWorks(origin, ContentSetting.ALLOW)
         .then(() => {
-          return validatePermissionFlipWorks(
-              origin, ContentSetting.BLOCK);
+          return validatePermissionFlipWorks(origin, ContentSetting.BLOCK);
         })
         .then(() => {
-          return validatePermissionFlipWorks(
-              origin, ContentSetting.ALLOW);
+          return validatePermissionFlipWorks(origin, ContentSetting.ALLOW);
         })
         .then(() => {
-          return validatePermissionFlipWorks(
-              origin, ContentSetting.DEFAULT);
+          return validatePermissionFlipWorks(origin, ContentSetting.DEFAULT);
         });
   });
 
@@ -138,8 +134,7 @@ suite('SiteDetailsPermission', function() {
           browserProxy.resetResolver('getDefaultValueForContentType');
           const defaultPrefs = createSiteSettingsPrefs(
               [createContentSettingTypeToValuePair(
-                  ContentSettingsTypes.CAMERA,
-                  createDefaultContentSetting())],
+                  ContentSettingsTypes.CAMERA, createDefaultContentSetting())],
               []);
           browserProxy.setPrefs(defaultPrefs);
           return browserProxy.whenCalled('getDefaultValueForContentType');
@@ -196,10 +191,8 @@ suite('SiteDetailsPermission', function() {
 
     // Permissions that have been set by extensions.
     const extensionSourceStrings = {};
-    extensionSourceStrings[ContentSetting.ALLOW] =
-        'Allowed by an extension';
-    extensionSourceStrings[ContentSetting.BLOCK] =
-        'Blocked by an extension';
+    extensionSourceStrings[ContentSetting.ALLOW] = 'Allowed by an extension';
+    extensionSourceStrings[ContentSetting.BLOCK] = 'Blocked by an extension';
     extensionSourceStrings[ContentSetting.ASK] =
         'Setting controlled by an extension';
 
@@ -221,10 +214,8 @@ suite('SiteDetailsPermission', function() {
 
     // Permissions that have been set by enterprise policy.
     const policySourceStrings = {};
-    policySourceStrings[ContentSetting.ALLOW] =
-        'Allowed by your administrator';
-    policySourceStrings[ContentSetting.BLOCK] =
-        'Blocked by your administrator';
+    policySourceStrings[ContentSetting.ALLOW] = 'Allowed by your administrator';
+    policySourceStrings[ContentSetting.BLOCK] = 'Blocked by your administrator';
     policySourceStrings[ContentSetting.ASK] =
         'Setting controlled by your administrator';
 
@@ -447,8 +438,7 @@ suite('SiteDetailsPermission', function() {
 
         // In addition to the assertions below, the main goal of this test is to
         // ensure we do not hit any assertions when choosing ASK as a setting.
-        assertEquals(
-            testElement.$.permission.value, ContentSetting.ASK);
+        assertEquals(testElement.$.permission.value, ContentSetting.ASK);
         assertFalse(testElement.$.permission.disabled);
         assertFalse(testElement.$.permission.options.ask.hidden);
 
@@ -461,8 +451,7 @@ suite('SiteDetailsPermission', function() {
 
         // In addition to the assertions below, the main goal of this test is to
         // ensure we do not hit any assertions when choosing BLOCK as a setting.
-        assertEquals(
-            testElement.$.permission.value, ContentSetting.BLOCK);
+        assertEquals(testElement.$.permission.value, ContentSetting.BLOCK);
         assertFalse(testElement.$.permission.disabled);
         assertFalse(testElement.$.permission.options.block.hidden);
       });
@@ -472,8 +461,7 @@ suite('SiteDetailsPermission', function() {
           'users',
       function() {
         const origin = 'https://www.example.com';
-        testElement.category =
-            ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
+        testElement.category = ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
         testElement.label = 'Save to original files';
         testElement.site = {
           origin: origin,
@@ -484,8 +472,7 @@ suite('SiteDetailsPermission', function() {
 
         // In addition to the assertions below, the main goal of this test is to
         // ensure we do not hit any assertions when choosing ASK as a setting.
-        assertEquals(
-            testElement.$.permission.value, ContentSetting.ASK);
+        assertEquals(testElement.$.permission.value, ContentSetting.ASK);
         assertFalse(testElement.$.permission.disabled);
         assertFalse(testElement.$.permission.options.ask.hidden);
 
@@ -498,8 +485,7 @@ suite('SiteDetailsPermission', function() {
 
         // In addition to the assertions below, the main goal of this test is to
         // ensure we do not hit any assertions when choosing BLOCK as a setting.
-        assertEquals(
-            testElement.$.permission.value, ContentSetting.BLOCK);
+        assertEquals(testElement.$.permission.value, ContentSetting.BLOCK);
         assertFalse(testElement.$.permission.disabled);
         assertFalse(testElement.$.permission.options.block.hidden);
       });

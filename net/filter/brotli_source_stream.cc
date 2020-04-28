@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bit_cast.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "net/base/io_buffer.h"

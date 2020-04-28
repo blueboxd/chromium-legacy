@@ -6,15 +6,28 @@
 class TestCrostiniBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
-      'requestCrostiniInstallerView', 'requestRemoveCrostini',
-      'getCrostiniSharedPathsDisplayText', 'getCrostiniSharedUsbDevices',
-      'setCrostiniUsbDeviceShared', 'removeCrostiniSharedPath',
-      'exportCrostiniContainer', 'importCrostiniContainer',
+      'requestCrostiniInstallerView',
+      'requestRemoveCrostini',
+      'getCrostiniSharedPathsDisplayText',
+      'getCrostiniSharedUsbDevices',
+      'setCrostiniUsbDeviceShared',
+      'removeCrostiniSharedPath',
+      'exportCrostiniContainer',
+      'importCrostiniContainer',
       'requestCrostiniContainerUpgradeView',
       'requestCrostiniUpgraderDialogStatus',
-      'requestCrostiniContainerUpgradeAvailable', 'addCrostiniPortForward',
-      'getCrostiniDiskInfo', 'resizeCrostiniDisk',
-      'checkCrostiniMicSharingStatus'
+      'requestCrostiniContainerUpgradeAvailable',
+      'addCrostiniPortForward',
+      'getCrostiniDiskInfo',
+      'resizeCrostiniDisk',
+      'checkCrostiniMicSharingStatus',
+      'addCrostiniPortForward',
+      'removeCrostiniPortForward',
+      'removeAllCrostiniPortForwards',
+      'activateCrostiniPortForward',
+      'deactivateCrostiniPortForward',
+      'getCrostiniActivePorts',
+      'checkCrostiniIsRunning',
     ]);
     this.sharedUsbDevices = [];
     this.removeSharedPathResult = true;
@@ -115,6 +128,28 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
+  removeCrostiniPortForward(vmName, containerName, portNumber, protocolIndex) {
+    this.methodCalled(
+        'removeCrostiniPortForward', vmName, containerName, portNumber,
+        protocolIndex);
+    return Promise.resolve(true);
+  }
+
+  /** @override */
+  activateCrostiniPortForward(
+      vmName, containerName, portNumber, protocolIndex) {
+    this.methodCalled(
+        'activateCrostiniPortForward', vmName, containerName, portNumber,
+        protocolIndex);
+    return Promise.resolve(true);
+  }
+
+  /** @override */
+  removeAllCrostiniPortForwards(vmName, containerName) {
+    this.methodCalled('removeAllCrostiniPortForwards');
+  }
+
+  /** @override */
   getCrostiniDiskInfo(vmName) {
     this.methodCalled('getCrostiniDiskInfo', vmName);
     return this.getNewPromiseFor('getCrostiniDiskInfo');
@@ -130,5 +165,26 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   checkCrostiniMicSharingStatus(proposedValue) {
     this.methodCalled('checkCrostiniMicSharingStatus', proposedValue);
     return Promise.resolve(!proposedValue);
+  }
+
+  /** @override */
+  deactivateCrostiniPortForward(
+      vmName, containerName, portNumber, protocolIndex) {
+    this.methodCalled(
+        'deactivateCrostiniPortForward', vmName, containerName, portNumber,
+        protocolIndex);
+    return Promise.resolve(true);
+  }
+
+  /** @override */
+  getCrostiniActivePorts() {
+    this.methodCalled('getCrostiniActivePorts');
+    return Promise.resolve(new Array());
+  }
+
+  /** @override */
+  checkCrostiniIsRunning() {
+    this.methodCalled('checkCrostiniIsRunning');
+    return Promise.resolve(true);
   }
 }

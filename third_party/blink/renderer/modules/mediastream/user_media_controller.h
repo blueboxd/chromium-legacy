@@ -28,7 +28,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 
 namespace blink {
@@ -38,14 +38,14 @@ class MediaStreamComponent;
 class UserMediaRequest;
 
 class UserMediaController final : public GarbageCollected<UserMediaController>,
-                                  public Supplement<LocalFrame>,
+                                  public Supplement<LocalDOMWindow>,
                                   public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
 
  public:
   static const char kSupplementName[];
 
-  UserMediaController(LocalFrame&);
+  explicit UserMediaController(LocalDOMWindow*);
   void Trace(Visitor*) override;
 
   UserMediaClient* Client();
@@ -59,9 +59,7 @@ class UserMediaController final : public GarbageCollected<UserMediaController>,
   // ExecutionContextLifecycleObserver implementation.
   void ContextDestroyed() override;
 
-  static UserMediaController* From(LocalFrame* frame) {
-    return Supplement<LocalFrame>::From<UserMediaController>(frame);
-  }
+  static UserMediaController* From(LocalDOMWindow*);
 
  private:
   Member<UserMediaClient> client_;
@@ -90,8 +88,6 @@ inline void UserMediaController::StopTrack(MediaStreamComponent* track) {
 inline bool UserMediaController::HasRequestedUserMedia() {
   return has_requested_user_media_;
 }
-
-MODULES_EXPORT void ProvideUserMediaTo(LocalFrame&);
 
 }  // namespace blink
 

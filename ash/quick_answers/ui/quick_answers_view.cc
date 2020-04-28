@@ -43,8 +43,9 @@ using views::View;
 constexpr int kMarginDip = 10;
 
 constexpr gfx::Insets kMainViewInsets(4, 0);
-constexpr gfx::Insets kContentViewInsets(8, 0, 8, 26);
+constexpr gfx::Insets kContentViewInsets(8, 0, 8, 16);
 constexpr float kHoverStateAlpha = 0.06f;
+constexpr int kMaxRows = 3;
 
 // Assistant icon.
 constexpr int kAssistantIconSizeDip = 16;
@@ -66,6 +67,12 @@ constexpr char kNetworkErrorStr[] = "Cannot connect to internet.";
 constexpr int kDogfoodButtonMarginDip = 4;
 constexpr int kDogfoodButtonSizeDip = 20;
 constexpr SkColor kDogfoodButtonColor = gfx::kGoogleGrey500;
+
+// Maximum height QuickAnswersView can expand to.
+int MaximumViewHeight() {
+  return kMainViewInsets.height() + kContentViewInsets.height() +
+         kMaxRows * kLineHeightDip + (kMaxRows - 1) * kLineSpacingDip;
+}
 
 // Adds |text_element| as label to the container.
 Label* AddTextElement(const QuickAnswerText& text_element, View* container) {
@@ -289,7 +296,7 @@ void QuickAnswersView::ShowRetryView() {
   if (retry_label_)
     return;
 
-  content_view_->RemoveAllChildViews(true);
+  ResetContentView();
   main_view_->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
 
   // Add title.
@@ -378,35 +385,71 @@ void QuickAnswersView::InitWidget() {
 }
 
 void QuickAnswersView::UpdateBounds() {
-  int height = GetHeightForWidth(anchor_view_bounds_.width());
+  int desired_width = anchor_view_bounds_.width();
+
+  // Multi-line labels need to be resized to be compatible with |desired_width|.
+  if (first_answer_label_) {
+    int label_desired_width =
+        desired_width - kMainViewInsets.width() - kContentViewInsets.width() -
+        kAssistantIconInsets.width() - kAssistantIconSizeDip;
+    first_answer_label_->SizeToFit(label_desired_width);
+  }
+
+  int height = GetHeightForWidth(desired_width);
   int y = anchor_view_bounds_.y() - kMarginDip - height;
-  if (y < display::Screen::GetScreen()
-              ->GetDisplayMatching(anchor_view_bounds_)
-              .bounds()
-              .y()) {
+
+  // Reserve space at the top since the view might expand for two-line answers.
+  int y_min = anchor_view_bounds_.y() - kMarginDip - MaximumViewHeight();
+  if (y_min < display::Screen::GetScreen()
+                  ->GetDisplayMatching(anchor_view_bounds_)
+                  .bounds()
+                  .y()) {
     // The Quick Answers view will be off screen if showing above the anchor.
     // Show below the anchor instead.
     y = anchor_view_bounds_.bottom() + kMarginDip;
   }
 
-  GetWidget()->SetBounds(gfx::Rect(anchor_view_bounds_.x(), y,
-                                   anchor_view_bounds_.width(), height));
+  GetWidget()->SetBounds(
+      gfx::Rect(anchor_view_bounds_.x(), y, desired_width, height));
 }
 
 void QuickAnswersView::UpdateQuickAnswerResult(
     const QuickAnswer& quick_answer) {
-  content_view_->RemoveAllChildViews(true);
+  ResetContentView();
 
   // Add title.
   AddHorizontalUiElements(quick_answer.title, content_view_);
 
   // Add first row answer.
-  if (quick_answer.first_answer_row.size() > 0)
-    AddHorizontalUiElements(quick_answer.first_answer_row, content_view_);
+  View* first_answer_view = nullptr;
+  if (!quick_answer.first_answer_row.empty()) {
+    first_answer_view =
+        AddHorizontalUiElements(quick_answer.first_answer_row, content_view_);
+  }
 
   // Add second row answer.
-  if (quick_answer.second_answer_row.size() > 0)
+  if (!quick_answer.second_answer_row.empty()) {
     AddHorizontalUiElements(quick_answer.second_answer_row, content_view_);
+  } else {
+    // If secondary-answer does not exist and primary-answer is a single label,
+    // allow that label to wrap through to the row intended for the former.
+    bool only_one_label_answer =
+        (first_answer_view->children().size() == 1 &&
+         first_answer_view->children().front()->GetClassName() ==
+             views::Label::kViewClassName);
+    if (only_one_label_answer) {
+      // Cache multi-line label for resizing when view bounds change.
+      first_answer_label_ =
+          static_cast<Label*>(first_answer_view->children().front());
+      first_answer_label_->SetMultiLine(true);
+      first_answer_label_->SetMaxLines(kMaxRows - /*exclude title*/ 1);
+    }
+  }
+}
+
+void QuickAnswersView::ResetContentView() {
+  content_view_->RemoveAllChildViews(true);
+  first_answer_label_ = nullptr;
 }
 
 }  // namespace ash

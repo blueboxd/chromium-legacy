@@ -11,7 +11,6 @@
 
 #include "net/base/interval.h"
 
-#include "base/logging.h"
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

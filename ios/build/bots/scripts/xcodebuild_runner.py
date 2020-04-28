@@ -199,9 +199,13 @@ class LaunchCommand(object):
                                              os.path.dirname(self.out_dir))
       self.test_results['attempts'].append(
           self._log_parser.collect_test_results(outdir_attempt, output))
-      if self.retries == attempt or not self.test_results[
-          'attempts'][-1]['failed']:
+
+      # Do not exit here when no failed test from parsed log, because when one
+      # shard fails before tests start in xcodebuild parallel testing, the tests
+      # not run don't appear in log at all.
+      if self.retries == attempt:
         break
+
       # Exclude passed tests in next test attempt.
       self.egtests_app.excluded_tests += self.test_results['attempts'][-1][
           'passed']

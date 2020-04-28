@@ -34,8 +34,6 @@
     'remove_from': [
       # On chromium.android, these do not need to run prior to M.
       'android-lollipop-arm-rel',
-      'KitKat Phone Tester (dbg)',
-      'KitKat Tablet Tester',
       'android-code-coverage-native', # crbug/1018434
     ],
   },
@@ -627,11 +625,6 @@
           'Feature=RenderTest', # https://crbug.com/1068294
         ],
       },
-      'KitKat Phone Tester (dbg)': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
       'Marshmallow 64 bit Tester': {
         'swarming': {
           'shards': 14,
@@ -696,7 +689,6 @@
   },
   'chrome_public_test_vr_apk': {
     'remove_from': [
-      'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
       'android-marshmallow-x86-fyi-rel',
@@ -1013,8 +1005,6 @@
   },
   'gin_unittests': {
     'remove_from': [
-      'Fuchsia ARM64',  # https://crbug.com/1072861
-      'Fuchsia x64',  # https://crbug.com/1072861
       'ToTLinuxASan',  # https://crbug.com/831667
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
@@ -1317,12 +1307,6 @@
         },
       },
     },
-  },
-  'media_blink_unittests': {
-    'remove_from': [
-      'Fuchsia ARM64',  # https://crbug.com/1072861
-      'Fuchsia x64',  # https://crbug.com/1072861
-    ],
   },
   'media_unittests': {
     'modifications': {
@@ -1661,7 +1645,6 @@
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
-      'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
       'android-code-coverage-native', # https://crbug.com/1018780
@@ -1696,7 +1679,6 @@
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
-      'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
       'android-code-coverage-native', # crbug/1018434
@@ -1710,7 +1692,6 @@
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
-      'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
       'android-code-coverage-native', # crbug/1018434
@@ -1739,7 +1720,6 @@
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
-      'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
       'android-code-coverage-native', # crbug/1018434
@@ -1763,10 +1743,8 @@
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-pie-arm64-rel',
-      'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
-      'KitKat Phone Tester (dbg)',
       'android-asan',  # https://crbug.com/964562
       'Android CFI',
       'ToTAndroid',
@@ -1853,8 +1831,6 @@
       'android-pie-arm64-rel',
       'android-pie-x86-rel',
       'Android CFI',
-      'KitKat Phone Tester (dbg)',
-      'KitKat Tablet Tester',
       'Lollipop Phone Tester',
       'Lollipop Tablet Tester',
       'Marshmallow 64 bit Tester',
@@ -2426,8 +2402,6 @@
     'remove_from': [
       # This test frequently fails on Android, https://crbug.com/824959
       'android-lollipop-arm-rel',
-      'KitKat Phone Tester (dbg)',
-      'KitKat Tablet Tester',
       # matching android builders, the test fails on these.
       'ToTAndroid',
       'android-asan',  # https://crbug.com/964562

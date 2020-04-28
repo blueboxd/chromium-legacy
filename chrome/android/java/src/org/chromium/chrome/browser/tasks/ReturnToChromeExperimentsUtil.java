@@ -12,9 +12,11 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.homepage.HomepageManager;
@@ -182,6 +184,19 @@ public final class ReturnToChromeExperimentsUtil {
     }
 
     /**
+     * TODO(crbug/1041865): avoid using GURL since {@link #shouldShowStartSurfaceAsTheHomePage()}
+     *  is in the critical path in Instant Start.
+     */
+    private static boolean isNTPUrl(String url) {
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)) {
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                return NewTabPage.isNTPUrl(url);
+            }
+        }
+        return NewTabPage.isNTPUrl(url);
+    }
+
+    /**
      * Check whether we should show Start Surface as the home page.
      * @return Whether Start Surface should be shown as the home page, otherwise false.
      */
@@ -190,7 +205,7 @@ public final class ReturnToChromeExperimentsUtil {
         // HomePage is not customized, accessibility is not enabled and not on tablet.
         String homePageUrl = HomepageManager.getHomepageUri();
         return StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled()
-                && (TextUtils.isEmpty(homePageUrl) || NewTabPage.isNTPUrl(homePageUrl))
+                && (TextUtils.isEmpty(homePageUrl) || isNTPUrl(homePageUrl))
                 && !AccessibilityUtil.isAccessibilityEnabled()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                         ContextUtils.getApplicationContext());

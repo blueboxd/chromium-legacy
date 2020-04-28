@@ -122,7 +122,7 @@ public final class EphemeralFeedStore implements ClearableStore {
 
     @Override
     public Result<Set<StreamUploadableAction>> getAllUploadableActions() {
-        Set<StreamUploadableAction> uploadableActions = Collections.emptySet();
+        Set<StreamUploadableAction> uploadableActions = new HashSet<>();
         for (Set<StreamUploadableAction> actions : mUploadableActionsMap.values()) {
             uploadableActions.addAll(actions);
         }

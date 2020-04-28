@@ -1273,8 +1273,8 @@ void RTCPeerConnection::GenerateCertificateCompleted(
 bool RTCPeerConnection::HasDocumentMedia() const {
   if (!GetExecutionContext())
     return false;
-  UserMediaController* user_media_controller = UserMediaController::From(
-      To<LocalDOMWindow>(GetExecutionContext())->GetFrame());
+  UserMediaController* user_media_controller =
+      UserMediaController::From(To<LocalDOMWindow>(GetExecutionContext()));
   return user_media_controller &&
          user_media_controller->HasRequestedUserMedia();
 }

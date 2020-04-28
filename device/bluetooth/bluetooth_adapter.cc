@@ -30,11 +30,10 @@ BluetoothAdapter::ServiceOptions::~ServiceOptions() = default;
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX) && \
     !defined(OS_WIN) && !defined(OS_LINUX)
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    InitCallback init_callback) {
-  return base::WeakPtr<BluetoothAdapter>();
+scoped_refptr<BluetoothAdapter> BluetoothAdapter::CreateAdapter() {
+  return nullptr;
 }
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_WIN) && !defined(OS_MACOSX)
+#endif  // Not supported platforms.
 
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::GetWeakPtrForTesting() {
   return GetWeakPtr();

@@ -482,12 +482,22 @@ function approx_equals(actual, expected, epsilon) {
 
 // Returns the given element's client rect center in an object with |x| and |y|
 // properties. Client rect being relative to the layout viewport. i.e. this will
-// not do what you thing if the page is pinch-zoomed.
+// not do what you think if the page is pinch-zoomed.
 function elementCenter(element) {
   const rect = element.getBoundingClientRect();
   return {
     x: rect.x + rect.width / 2,
     y: rect.y + rect.height / 2
+  };
+}
+
+// Returns a position in the given element with an offset of |x| and |y| from
+// the element's top-left position.
+function pointInElement(element, x, y) {
+  const rect = element.getBoundingClientRect();
+  return {
+    x: rect.x + x,
+    y: rect.y + y
   };
 }
 

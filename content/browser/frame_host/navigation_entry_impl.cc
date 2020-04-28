@@ -221,7 +221,26 @@ void RecursivelyInitRestoredTreeNode(BrowserContext* browser_context,
     RecursivelyInitRestoredTreeNode(browser_context, child.get());
 }
 
+void RegisterOriginsRecursive(NavigationEntryImpl::TreeNode* node,
+                              const url::Origin& origin) {
+  if (node->frame_entry->committed_origin().has_value()) {
+    const url::Origin node_origin =
+        node->frame_entry->committed_origin().value();
+    SiteInstanceImpl* site_instance = node->frame_entry->site_instance();
+    if (site_instance && origin == node_origin)
+      site_instance->PreventOptInOriginIsolation(node_origin);
+  }
+
+  for (auto& child : node->children)
+    RegisterOriginsRecursive(child.get(), origin);
+}
+
 }  // namespace
+
+void NavigationEntryImpl::RegisterExistingOriginToPreventOptInIsolation(
+    const url::Origin& origin) {
+  return RegisterOriginsRecursive(root_node(), origin);
+}
 
 NavigationEntryImpl::TreeNode::TreeNode(
     TreeNode* parent,

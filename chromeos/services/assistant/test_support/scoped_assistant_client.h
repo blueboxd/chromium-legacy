@@ -25,8 +25,6 @@ class ScopedAssistantClient : AssistantClient {
   // AssistantClient implementation:
   void OnAssistantStatusChanged(ash::mojom::AssistantState new_state) override {
   }
-  void RequestAssistantController(
-      mojo::PendingReceiver<mojom::AssistantController> receiver) override {}
   void RequestAssistantAlarmTimerController(
       mojo::PendingReceiver<ash::mojom::AssistantAlarmTimerController> receiver)
       override {}

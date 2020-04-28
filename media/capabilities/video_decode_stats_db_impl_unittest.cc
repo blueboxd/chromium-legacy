@@ -247,8 +247,6 @@ TEST_F(VideoDecodeStatsDBImplTest, WriteReadAndClear) {
   EXPECT_CALL(*this, MockClearStatsCb);
   stats_db_->ClearStats(base::BindOnce(
       &VideoDecodeStatsDBImplTest::MockClearStatsCb, base::Unretained(this)));
-  VerifyOnePendingOp("LoadKeys");
-  fake_db_->LoadKeysCallback(true);
   VerifyOnePendingOp("Clear");
   fake_db_->UpdateCallback(true);
 

@@ -8,23 +8,26 @@
 #include "chrome/browser/chromeos/printing/history/print_job_history_service.h"
 #include "chrome/browser/chromeos/printing/history/print_job_history_service_factory.h"
 #include "chrome/browser/chromeos/printing/print_management/print_job_info_mojom_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 
 namespace chromeos {
 namespace printing {
 namespace print_management {
 
-PrintingManager::PrintingManager(Profile* profile) : profile_(profile) {}
+PrintingManager::PrintingManager(
+    PrintJobHistoryService* print_job_history_service)
+    : print_job_history_service_(print_job_history_service) {}
 
 PrintingManager::~PrintingManager() = default;
 
 void PrintingManager::GetPrintJobs(GetPrintJobsCallback callback) {
-  chromeos::PrintJobHistoryService* print_job_history_service =
-      chromeos::PrintJobHistoryServiceFactory::GetForBrowserContext(profile_);
-  print_job_history_service->GetPrintJobs(
+  print_job_history_service_->GetPrintJobs(
       base::BindOnce(&PrintingManager::OnPrintJobsRetrieved,
                      base::Unretained(this), std::move(callback)));
+}
+
+void PrintingManager::DeleteAllPrintJobs(DeleteAllPrintJobsCallback callback) {
+  print_job_history_service_->DeleteAllPrintJobs(std::move(callback));
 }
 
 void PrintingManager::OnPrintJobsRetrieved(

@@ -4,7 +4,6 @@
 
 #include "net/base/host_port_pair.h"
 
-#include "base/logging.h"
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

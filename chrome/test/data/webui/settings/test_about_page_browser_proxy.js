@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 import {isMac, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {UpdateStatus} from 'chrome://settings/settings.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 
 /** @implements {AboutPageBrowserProxy} */
 export class TestAboutPageBrowserProxy extends TestBrowserProxy {
@@ -71,4 +71,3 @@ if (isMac) {
     this.methodCalled('promoteUpdater');
   };
 }
-

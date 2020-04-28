@@ -125,7 +125,6 @@
 <translation id="1164899421101904659">‏PIN غیر مقفل کرنے کی کلید درج کریں</translation>
 <translation id="1165039591588034296">خرابی</translation>
 <translation id="1166212789817575481">دائیں جانب ٹیبز بند کریں</translation>
-<translation id="1167199480815330007">‏اپنی سیکیورٹی کلید کے پچھلے حصے پر 6 ہندسی PIN تلاش کریں</translation>
 <translation id="1168020859489941584"><ph name="TIME_REMAINING" /> میں کھولا جا رہا ہے…</translation>
 <translation id="1168100932582989117">‏Google نام سرورز</translation>
 <translation id="1171135284592304528">کی بورڈ فوکس کے ساتھ آبجیکٹ تبدیل ہونے پر اسے ہائی لائٹ کریں</translation>
@@ -426,7 +425,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 
     براؤزنگ ڈیٹا (بشمول سرگزشت، بُک مارکس اور پاس ورڈز) کو Family Link اکاؤنٹ کے ساتھ اسٹور کیا جائے گا اور اسکول والے اکاؤنٹ کے ساتھ نہیں۔
 
-    آپ کی Family Link کے والدین کی ترتیبات اب بھی لاگو ہوں گی۔ اگر آپ نے پہلے ہی کسی ایپ یا سائٹ کو مسدود کیا ہے، تو آپ کو اسے دوبارہ کرنے کی ضرورت نہیں ہوگی۔</translation>
+    آپ کی Family Link کے والدین کی ترتیبات اب بھی لاگو ہوں گی۔ اگر آپ نے پہلے ہی کسی ایپ یا سائٹ کو مسدود کیا ہے تو آپ کو اسے دوبارہ کرنے کی ضرورت نہیں ہوگی۔</translation>
 <translation id="1566049601598938765">ویب سائٹ</translation>
 <translation id="15662109988763471">منتخب کردہ پرنٹر دستیاب نہیں ہے یا صحیح طریقے سے انسٹال نہیں ہوا ہے۔ اپنا پرنٹر چیک کریں یا دوسرا پرنٹر منتخب کر کے آزمائيں۔</translation>
 <translation id="1567387640189251553">آپ کے پچھلی مرتبہ اپنا پاس ورڈ درج کرنے کے بعد سے ایک مختلف کی بورڈ منسلک کیا گیا ہے۔ یہ آپ کی کلید کے اسٹروکس کو چوری کرنے کی کوشش کر سکتا ہے۔</translation>
@@ -615,7 +614,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1802931390041703523">‏Flash کو اس صفحہ پر مسدود کر دیا گیا</translation>
 <translation id="1803531841600994172">وہ زبان جس میں ترجمہ کرنا ہے</translation>
 <translation id="1803545009660609783">دوبارہ تربیت دیں</translation>
-<translation id="1805472176602625930">سیکیورٹی کلید پر بٹن دبائیں</translation>
 <translation id="1805738995123446102">پس منظر ٹیب آپ کا مائیکروفون استعمال کر رہا ہے</translation>
 <translation id="1805822111539868586">ملاحظات کا معائنہ کریں</translation>
 <translation id="1805888043020974594">پرنٹ سرور</translation>
@@ -676,9 +674,9 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> آپ کا انسٹالیشن مکمل کرنے کیلئے تیار ہے</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1870629042957780127">مائیکروفون تک رسائی دیں</translation>
+<translation id="1871534214638631766">جب آپ مواد پر دائیں طرف کلک یا لانگ پریس کریں تو متعلقہ معلومات دکھائیں</translation>
 <translation id="1871615898038944731">آپ کا <ph name="DEVICE_TYPE" /> اپ ٹو ڈیٹ ہے</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{ٹیب کو دوسری ونڈو میں منتقل کریں}other{ٹیبز کو دوسری ونڈو میں منتقل کریں}}</translation>
-<translation id="1875312262568496299">شروع کریں</translation>
 <translation id="1875386316419689002">‏یہ ٹیب ایک HID آلہ سے منسلک ہے۔</translation>
 <translation id="1875387611427697908">اس کو صرف <ph name="CHROME_WEB_STORE" /> سے شامل کیا جا سکتا ہے</translation>
 <translation id="1877520246462554164">تصدیقی ٹوکن حاصل نہیں ہو سکا۔ براہ کرم سائن آؤٹ کر کے دوبارہ کوشش کرنے کیلئے پھر سے  سائن ان کریں۔</translation>
@@ -698,7 +696,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="189358972401248634">دوسری زبانیں</translation>
 <translation id="1895658205118569222">بند کریں</translation>
 <translation id="1895934970388272448">اس کارروائی کو مکمل کرنے کیلئے آپ کو اپنے پرنٹر پر رجسٹریشن کی توثیق کرنا ضروری ہے - اسے ابھی چیک کریں۔</translation>
-<translation id="1899826437968063457">‏پلگ ان VM کو چلنے کے لیے اجازت درکار ہے</translation>
 <translation id="1900305421498694955">‏خارجی اسٹوریج آلات پر فائلیں پڑھنے اور لکھنے کیلئے، Google Play کی ایپس کو فائل سسٹم تک مکمل رسائی کی ضرورت پڑ سکتی ہے۔ اس آلے پر تخلیق کردہ فائلیں اور فولڈرز خارجی ڈرائیو استعمال کرنے والے ہر شخص کو دکھائی دیتے ہیں۔ <ph name="LINK_BEGIN" />مزید جانیں<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">&amp;سبھی کو منتخب کریں</translation>
 <translation id="1905375423839394163">‏Chromebook آلہ کا نام</translation>
@@ -734,6 +731,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1944528062465413897">بلوٹوتھ جوڑا بنانے کا کوڈ:</translation>
 <translation id="1944921356641260203">اپ ڈیٹ ملا</translation>
 <translation id="1946577776959096882">اکاؤنٹس دیکھیں</translation>
+<translation id="1949584741547056205">فوری جوابات</translation>
 <translation id="1951012854035635156">اسسٹنٹ</translation>
 <translation id="1954813140452229842">اشتراک کو ماؤنٹ کرنے میں خرابی آگئی ۔ براہ کرم اپنے اسنادات چیک کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="1956050014111002555">فائل میں متعدد سرٹیفیکیٹس شامل ہیں، ان میں سے کسی کو درآمد نہیں کیا گیا:</translation>
@@ -993,7 +991,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2299734369537008228">سلائیڈر: <ph name="MIN_LABEL" /> تا <ph name="MAX_LABEL" /></translation>
 <translation id="2300383962156589922"><ph name="APP_NAME" /> کو ذاتی نوعیت کا بنائیں اور کنٹرول کريں</translation>
 <translation id="2301382460326681002">ایکسٹینشن روٹ ڈائریکٹری غلط ہے۔</translation>
-<translation id="2302444155926798584">‏Plugin VM کو ان انسٹال کر دیا گیا ہے</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" نے اضافی اجازتوں کی درخواست کی ہے۔</translation>
 <translation id="23055578400314116">صارف نام منتخب کریں</translation>
 <translation id="2307462900900812319">نیٹ ورک کنفیگر کریں</translation>
@@ -1037,7 +1034,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2353297238722298836">کیمرا اور مائیکروفون اجازت یافتہ ہے</translation>
 <translation id="2356070529366658676">پوچھیں</translation>
 <translation id="2357330829548294574"><ph name="USER_NAME" /> ہٹائیں</translation>
-<translation id="235798134753548762">‏آپ کی ایپس، ترتیبات اور Wi-Fi کی ترجیحات مطابقت پذیر ہو جائیں گی۔ تبدیلیاں کرنے کیلئے، سیٹ اپ کے بعد کسی بھی وقت ترتیبات پر جائیں۔</translation>
 <translation id="2359345697448000899">ٹولز مینو میں ایکسٹینشنز پر کلک کر کے اپنے ایکسٹینشنز کا نظم کریں۔</translation>
 <translation id="2359808026110333948">جاری رکھیں</translation>
 <translation id="236117173274098341">بہتر بنائیں</translation>
@@ -1074,7 +1070,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2408955596600435184">‏اپنا PIN درج کریں</translation>
 <translation id="241082044617551207">نامعلوم پلگ ان</translation>
 <translation id="2412593942846481727">اپ ڈیٹ دستیاب ہے</translation>
-<translation id="2417206894320497232">‏پلگ ان VM استعمال کے لیے تیار ہے</translation>
 <translation id="241727068219398187">‏ڈيٹا کی مرموزکاری بوقت <ph name="TIME" /> آپ کے Google پاس فریز کے ساتھ کر دی گئی۔
           اس میں Google Pay سے ادائیگی کے طریقے اور پتے شامل نہیں ہوتے ہیں۔</translation>
 <translation id="2419706071571366386">سیکورٹی کے مد نظر جب آپ کا کمپیوٹر استعمال نہ ہو رہا ہو تو سائن آؤٹ کریں۔</translation>
@@ -1358,7 +1353,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2773802008104670137">اس قسم کی فائل سے آپ کے کمپیوٹر کو نقصان پہنچ سکتا ہے۔</translation>
 <translation id="2775104091073479743">فنگر پرنٹس میں ترمیم کریں</translation>
 <translation id="2776441542064982094">ایسا لگتا ہے کہ نیٹ ورک پر رجسٹر کرنے کیلئے کوئی آلات دستیاب نہیں ہیں۔ اگر آپ کا آلہ آن اور انٹرنیٹ سے منسلک ہے تو اس کے ہدایت مینوئل میں موجود ہدایات کو استعمال کر کے اسے رجسٹر کرنے کی کوشش کریں۔</translation>
-<translation id="2780009105947267877">‏پلگ ان VM کو ترتیب دیا جا رہا ہے...</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2782104745158847185">‏Linux ایپلیکیشن انسٹال کرنے میں خرابی</translation>
 <translation id="2783298271312924866">ڈاؤن لوڈ کردہ</translation>
@@ -1402,7 +1396,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2822910719211888134">‏Linux کا بیک اپ لینے کے دوران خرابی</translation>
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> آپ کے منتظم سے پراکسی کی ترتیبات کا استعمال کر رہا ہے</translation>
 <translation id="2825758591930162672">موضوع کی عوامی کلید</translation>
-<translation id="2825848369316359348">اپنی سیکیورٹی کلید کے پچھلے حصے پر پرنٹ نام تلاش کریں</translation>
 <translation id="2828650939514476812">‏Wi-Fi نیٹ ورک سے منسلک ہوں</translation>
 <translation id="2835294513443818940">اس فائل کو محفوظ طریقے سے ڈاؤن لوڈ نہیں کیا جا سکتا ہے۔</translation>
 <translation id="2835547721736623118">اسپیچ شناخت کی سروس</translation>
@@ -1782,7 +1775,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3347086966102161372">تصویر کا پتہ کا&amp;پی کریں</translation>
 <translation id="3348038390189153836">ہٹانے لائق آلہ کا پتا چلا</translation>
 <translation id="3349933790966648062">میموری فوٹ پرنٹ</translation>
-<translation id="3350117557200012647">جوڑا بنانے کے موڈ میں جائیں</translation>
 <translation id="3355936511340229503">کنکشن کی خرابی</translation>
 <translation id="3356580349448036450">مکمل</translation>
 <translation id="3359256513598016054">سرٹیفکیٹ کی پالیسی کی پابندیاں</translation>
@@ -1854,7 +1846,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3449393517661170867">نئی ٹیب والی ونڈو</translation>
 <translation id="3449839693241009168"><ph name="EXTENSION_NAME" /> پر کمانڈز بھیجنے کیلئے <ph name="SEARCH_KEY" /> دبائیں</translation>
 <translation id="3450157232394774192">معطل صورتحال کے تصرف کی فیصد</translation>
-<translation id="3451332697983754369">میرے <ph name="DEVICE_TYPE" /> کو سِنک کریں</translation>
 <translation id="3453612417627951340">اجازت نامہ درکار ہے</translation>
 <translation id="3454157711543303649">فعالیت مکمل</translation>
 <translation id="3454213325559396544">یہ اس <ph name="DEVICE_TYPE" /> کے لیے آخری خودکار سافٹ ویئر اور سیکیورٹی اپ ڈیٹ ہے۔ آئندہ کے اپ ڈیٹس حاصل کرنے کے لیے، نئے ماڈل پر اپ گریڈ کریں۔</translation>
@@ -2033,7 +2024,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3677657024345889897">انتہائی خاموش</translation>
 <translation id="3677911431265050325">موبائل سائٹ کی درخواست کریں</translation>
 <translation id="3678156199662914018">ایکسٹینشن: <ph name="EXTENSION_NAME" /></translation>
-<translation id="3678613690490567106">مختلف آلات میں ذاتی نوعیت کے تجربے کیلئے سِنک کریں</translation>
 <translation id="3681311097828166361">آپ کے تاثرات کا شکریہ۔ آپ ابھی آف لائن ہیں اور آپ کی رپورٹ بعد میں بھیجی جائے گی۔</translation>
 <translation id="3682824389861648626">حرکت کی حد</translation>
 <translation id="3683524264665795342"><ph name="APP_NAME" /> اسکرین کے اشتراک کی درخواست</translation>
@@ -2081,7 +2071,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="372722114124766626">بس ایک بار</translation>
 <translation id="3729303374699765035">اس وقت پوچھیں جب کسی سائٹ میں قریبی بلوٹوتھ آلات کو دریافت کرنا مقصود ہو</translation>
 <translation id="3729506734996624908">مجاز سائٹس</translation>
-<translation id="3731997362820527097">اپنی سیکیورٹی کلید منتخب کریں</translation>
 <translation id="3732078975418297900">لائن <ph name="ERROR_LINE" /> پر خرابی ہے</translation>
 <translation id="3732530910372558017">‏PIN زیادہ سے زیادہ 63 حروف پر مشتمل ہونا چاہیے</translation>
 <translation id="3733127536501031542">‏Step-up والا SSL سرور</translation>
@@ -2092,7 +2081,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3742666961763734085">اس نام کا تنظیمی یونٹ تلاش نہیں کیا جا سکا۔ براہ کرم دوبارہ کوشش کریں۔</translation>
 <translation id="3744111561329211289">پس منظر کی مطابقت پذیری</translation>
 <translation id="3746127522257263495">‏Android ایپس میں G Suite برائے تعلیم اکاؤنٹ شامل کرنا تعاون یافتہ نہیں ہے۔</translation>
-<translation id="3747039297326604768">‏Plugin VM کھولی نہیں جا سکی</translation>
 <translation id="3747077776423672805">‏ایپس ہٹانے کے لیے، ترتیبات &gt; Google Play اسٹور &gt; Android کی ترجیحات کا نظم کریں &gt; ایپس یا ایپلیکیشن مینیجر پر جائیں۔ پھر اس ایپ پر تھپتھپائیں جسے آپ اَن انسٹال کرنا چاہتے ہیں (ممکن ہے کہ ایپ تلاش کرنے کے لیے آپ کو دائیں یا بائیں سوائپ کرنا پڑے)۔ پھر 'اَن انسٹال کریں' یا 'غیر فعال کریں' پر تھپتھپائیں۔</translation>
 <translation id="3748026146096797577">منسلک نہیں ہے</translation>
 <translation id="3752582316358263300">ٹھیک ہے…</translation>
@@ -2155,7 +2143,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3816118180265633665">‏Chrome کے رنگ</translation>
 <translation id="3817524650114746564">اپنے کمپیوٹر کی پراکسی ترتیبات کو کھولیں</translation>
 <translation id="3817579325494460411">فراہم نہیں کیا گیا</translation>
-<translation id="381892968844315516">‏اس آلہ پر Plugin VM کی اجازت نہیں ہے۔ اپنی تنظیم کے آلہ کے منتظم سے رابطہ کریں۔ خرابی کا کوڈ: <ph name="ERROR_CODE" />۔</translation>
 <translation id="3819257035322786455">بیک اپ لیں</translation>
 <translation id="3819261658055281761">‏سسٹم اس آلہ کیلئے ایک طویل مدّتی API رسائی کا ٹوکن اسٹور کرنے میں ناکام ہوگیا۔</translation>
 <translation id="3819800052061700452">&amp;پوری اسکرین</translation>
@@ -2348,7 +2335,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4056908315660577142">‏<ph name="APP_NAME" /> Chrome ایپ کے لیے آپ کے والدین کی سیٹ کی ہوئی آپ کی وقت کی حد پوری ہو گئی۔ اب آپ اسے <ph name="TIME_LIMIT" /> تک کل استعمال کر سکتے ہیں۔</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">اسٹور میں دیکھیں</translation>
-<translation id="4058647953897694817">بلوٹوتھ کے ذریعے توثیق کریں</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)‎</translation>
 <translation id="4058793769387728514">دستاویز ابھی چیک کریں</translation>
 <translation id="406070391919917862">پس منظر کی ایپس</translation>
@@ -2357,7 +2343,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4068506536726151626">یہ صفحہ درج ذیل سائٹس کے عناصر پر مشتمل ہے جو آپ کے مقام کو ٹریک کر رہی ہیں:</translation>
 <translation id="4068776064906523561">محفوظ کردہ فنگر پرنٹس</translation>
 <translation id="407173827865827707">کلک کرنے پر</translation>
-<translation id="4073520450811433493">سِنک کی ترتیبات</translation>
 <translation id="4074900173531346617">ای میل دستخط کنندہ سرٹیفیکیٹ</translation>
 <translation id="407520071244661467">اسکیل</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" /> کاسٹ کرنے سے قاصر ہے۔</translation>
@@ -2440,7 +2425,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4181841719683918333">زبانیں</translation>
 <translation id="4184885522552335684">ڈسپلے کو منتقل کرنے کیلئے گھسیٹیں</translation>
 <translation id="4194570336751258953">کلک کرنے کیلئے تھپتھپائیں کو فعال کریں</translation>
-<translation id="4194595472342532425">‏کنفیگریشن میں مسئلہ پیش آنے کی وجہ سے Plugin VM کو سیٹ اپ نہیں کیا جا سکا۔ براہ کرم اپنی تنظیم کے آلہ کے منتظم سے رابطہ کریں۔ خرابی کا کوڈ: <ph name="ERROR_CODE" />۔</translation>
 <translation id="4195643157523330669">نئے ٹیب میں کھولیں</translation>
 <translation id="4195814663415092787">آپ نے جہاں چھوڑا تھا وہیں سے جاری رکھیں</translation>
 <translation id="4198146608511578238">‏اپنے Google اسسٹنٹ سے بات کرنے کے لیے صرف لانچر آئیکن کو پکڑیں۔</translation>
@@ -3077,7 +3061,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5117930984404104619">‏ملاحظہ کردہ URLs سمیت دیگر ایکسٹینشنز کے رویے کو مانیٹر کریں</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">آپ کی ہارڈ ڈسک بھری ہوئی ہے۔  براہ کرم کسی دوسرے مقام میں محفوظ کریں یا ہارڈ ڈسک پر مزید جگہ بنائیں۔</translation>
-<translation id="5122384452788334261">‏آپ کے آلے میں اسٹوریج کی جگہ کم ہے۔ Plugin VM کا استعمال کرنے کے لیے کم از کم <ph name="RECOMMENDED_SPACE" /> خالی جگہ کی تجویز پیش کی جاتی ہے۔ جگہ خالی کرنے کیلئے، آلہ کے اسٹوریج سے فائلیں حذف کریں۔</translation>
 <translation id="5123433949759960244">باسکٹ بال</translation>
 <translation id="5125751979347152379">‏غلط URL۔</translation>
 <translation id="5126611267288187364">تبدیلیاں دیکھیں</translation>
@@ -3133,7 +3116,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="520621735928254154">سرٹیفکیٹ درآمد کرنے میں خرابی</translation>
 <translation id="5209307736170827035">کلاس روم میں آپ کے بچے کا ڈیٹا محفوظ رہے گا۔ <ph name="LINK_BEGIN" />مزید جانیں<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">کوئی آلات نہیں ملے</translation>
-<translation id="5210990770352357081">‏Plugin VM ان انسٹال نہیں کیا جا سکا</translation>
 <translation id="5213481667492808996">آپ کی '<ph name="NAME" />' کی ڈیٹا سروس استعمال کیلئے تیار ہے</translation>
 <translation id="5213891612754844763">پراکسی ترتیبات دکھائيں</translation>
 <translation id="5215502535566372932">ملک منتخب کریں</translation>
@@ -3482,7 +3464,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5658415415603568799">‏اضافی سیکیورٹی کیلئے Smart Lock آپ سے 20 گھنٹے بعد آپ کا پاس ورڈ درج کرنے کا تقاضہ کرے گا۔</translation>
 <translation id="5659593005791499971">ای میل</translation>
 <translation id="5659833766619490117">اس صفحہ کا ترجمہ نہیں کیا جا سکا</translation>
-<translation id="5660204307954428567"><ph name="DEVICE_NAME" /> کے ساتھ جوڑا بنائیں</translation>
 <translation id="5662513737565158057">‏Linux ایپس کے کام کرنے کا طریقہ تبدیل کریں۔</translation>
 <translation id="5667546120811588575">‏Google Play کو سیٹ کیا جا رہا ہے...</translation>
 <translation id="5669267381087807207">فعال کیا جا رہا ہے</translation>
@@ -3742,7 +3723,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6020431688553761150">سرور نے آپ کو اس وسیلے تک رسائی کی اجازت نہیں دی۔</translation>
 <translation id="6022526133015258832">پوری اسکرین کھولیں</translation>
 <translation id="6022659036123304283">‏Chrome کو اپنا ڈیفالٹ براؤزر بنائيں</translation>
-<translation id="6022705094403139349">اپنی سیکیورٹی کلید کا جوڑا بنانے کیلئے تیار ہیں؟</translation>
 <translation id="6023643151125006053">‏اس آلہ (SN: <ph name="SERIAL_NUMBER" />‎) کو <ph name="SAML_DOMAIN" /> منتظم نے مقفل کیا تھا۔</translation>
 <translation id="6025215716629925253">انبار کا ٹریس</translation>
 <translation id="6026819612896463875">‏<ph name="WINDOW_TITLE" /> - USB آلہ منسلک ہے</translation>
@@ -3817,7 +3797,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6103681770816982672">وارننگ: آپ ڈیولپر چینل پر سوئچ کر رہے ہیں</translation>
 <translation id="6104068876731806426">‏Google اکاؤنٹس</translation>
 <translation id="6104311680260824317">‏ڈومین میں آلہ کو شامل نہیں کیا جا سکا۔ سرور متعین Kerberos مرموز کاری کی اقسام کو سپورٹ نہیں کرتا ہے۔ مرموز کاری کی ترتیبات کے لیے "مزید احتیارات" چیک کریں۔</translation>
-<translation id="6106186653986077033">‏پلگ ان VM کو لائسنس درکار ہے</translation>
 <translation id="6112294629795967147">سائز تبدیل کرنے کے لیے ٹچ کریں</translation>
 <translation id="6112727384379533756">ٹکٹ شامل کریں</translation>
 <translation id="6112931163620622315">اپنا فون چیک کریں</translation>
@@ -4092,7 +4071,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6478248366783946499">خطرناک فائل رکھیں؟</translation>
 <translation id="6483485061007832714">ڈاؤن لوڈ کھولیں</translation>
 <translation id="6483805311199035658"><ph name="FILE" /> کھل رہی ہے…</translation>
-<translation id="6485092675191826776">‏Plugin VM لائسنس کی میعاد ختم ہو گئی</translation>
 <translation id="6488384360522318064">زبان منتخب کریں</translation>
 <translation id="648927581764831596">کوئی دستیاب نہیں ہے</translation>
 <translation id="6490471652906364588">‏USB-C آلہ (دایاں پورٹ)</translation>
@@ -4117,7 +4095,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6520876759015997832">‏<ph name="LIST_SIZE" /> میں سے <ph name="LIST_POSITION" /> تلاش کا نتیجہ: <ph name="SEARCH_RESULT_TEXT" />۔ سیکشن پر نیویگیٹ کرنے کے لیے 'Enter' دبائیں۔</translation>
+<translation id="6520876759015997832">‏<ph name="LIST_SIZE" /> میں سے <ph name="LIST_POSITION" /> تلاش کا نتیجہ: <ph name="SEARCH_RESULT_TEXT" />۔ سیکشن پر نیویگیٹ کرنے کے لیے Enter دبائیں۔</translation>
 <translation id="652492607360843641">آپ ایک <ph name="NETWORK_TYPE" /> نیٹ ورک سے منسلک ہیں۔</translation>
 <translation id="6527303717912515753">اشتراک کریں</translation>
 <translation id="6528513914570774834">اس آلہ کے دیگر صارفین کو یہ نیٹ ورک استعمال کرنے کی اجازت دیں</translation>
@@ -4287,7 +4265,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6770664076092644100">‏NFC کے ذریعے توثیق کریں</translation>
 <translation id="6771503742377376720">ایک سرٹیفیکیشن ادارہ ہے</translation>
 <translation id="6772339735733515807">اپنی ایکسٹینشنز کا نظم کریں</translation>
-<translation id="6774271858705413900">‏کچھ غلط ہوگیا۔ براہ کرم کچھ منٹس تک انتظار کریں اور دوبارہ Plugin VM چلائیں۔</translation>
 <translation id="6775163072363532304">دستیاب آلات یہاں دکھائی دیں گے۔</translation>
 <translation id="6777817260680419853">ری ڈائریکٹ مسدود ہے</translation>
 <translation id="6778737459546443941">آپ کے والدین نے ابھی تک اسے منظور نہیں کیا ہے</translation>
@@ -4365,7 +4342,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="686664946474413495">رنگ کا درجہ حرارت</translation>
 <translation id="6871644448911473373">‏OCSP ریسپانڈر: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">سرور نے آپ کا درج کردہ پاسورڈ مسترد کر دیا۔</translation>
-<translation id="6874170800191969835"><ph name="SEARCH_RESULT_TEXT" /> پر نیویگیٹ کر دیا گیا۔</translation>
 <translation id="6876155724392614295">بائیک</translation>
 <translation id="6876469544038980967">مددگار نہیں ہے</translation>
 <translation id="6878422606530379992">سینسرز کی اجازت ہے</translation>
@@ -4619,7 +4595,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7207631048330366454">ایپس تلاش کریں</translation>
 <translation id="7210499381659830293">ایکسٹینشن پرنٹرز</translation>
 <translation id="7212097698621322584">‏PIN تبدیل کرنے کیلئے، اپنا موجودہ PIN درج کریں۔ اگر آپ کو اپنا PIN نہیں معلوم ہے تو آپ کو پہلے اپنی سیکیورٹی کلید دوبارہ ترتیب دینی ہوگی اور پھر ایک نیا PIN تخلیق کرنا ہوگا۔</translation>
-<translation id="721467499098558573">اپنی سیکیورٹی کلید پر موجود بٹن کو کم از کم 5 سیکنڈ تک دبائیں رکھیں</translation>
 <translation id="7216409898977639127">سیلولر فراہم کنندہ</translation>
 <translation id="7216595297012131718">اپنی ترجیح کی بنیاد پر زبانوں کو ترتیب دیں</translation>
 <translation id="7220019174139618249">پاس ورڈ کو "<ph name="FOLDER" />" پر برآمد نہیں کر سکتے</translation>
@@ -4638,9 +4613,8 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7235737137505019098">آپ کی سیکیورٹی کلید میں کسی اور اکاؤنٹ کے لیے کافی جگہ نہیں ہے۔</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />، تفصیلات</translation>
 <translation id="7240339475467890413">نئے ہاٹ اسپاٹ سے منسلک کریں؟</translation>
-<translation id="7240847845291869311">‏آپ کا بچہ اس آلہ میں G Suite for Education Google اکاؤنٹ کو شامل کرنا چاہتا ہے۔ <ph name="LINK_BEGIN" />G Suite for Education کی رازداری کے نوٹس<ph name="LINK_END" /> کا مقصد G Suite for Education کے صارفین اور والدین کو یہ سمجھنے میں مدد فراہم کرتا ہے کہ پروڈکٹ کون سا ڈیٹا اکٹھا کرتا ہے، کیوں کرتا ہے اور اس کے ساتھ کیا کیا جاتا ہے۔</translation>
+<translation id="7240847845291869311">‏آپ کا بچہ اس آلہ میں G Suite for Education Google اکاؤنٹ کو شامل کرنا چاہتا ہے۔ <ph name="LINK_BEGIN" />G Suite for Education کی رازداری کے نوٹس<ph name="LINK_END" /> کا مقصد G Suite for Education کے صارفین اور والدین کو یہ سمجھنے میں مدد فراہم کرنا ہے کہ پروڈکٹ کون سا ڈیٹا اکٹھا کرتا ہے، کیوں کرتا ہے اور اس کے ساتھ کیا کیا جاتا ہے۔</translation>
 <translation id="7241389281993241388">براہ کرم کلائنٹ سرٹیفکیٹ درآمد کرنے کیلئے <ph name="TOKEN_NAME" /> میں سائن ان کریں۔</translation>
-<translation id="7241443820034350811">اگر آپ کی سیکیورٹی کلید مندرج نہیں ہے تو اس کے بٹن کو کم از کم 5 سیکنڈ تک دبائیں۔</translation>
 <translation id="7243632151880336635">صاف کریں اور سائن آؤٹ کریں</translation>
 <translation id="7243784282103630670">‏Linux اپ گریڈ کرنے میں ایک خرابی تھی۔ ہم آپ کا بیک اپ استعمال کرکے کنٹینر کو بحال کریں گے۔</translation>
 <translation id="7245628041916450754">‏<ph name="WIDTH" /> x <ph name="HEIGHT" /> (بہترین)</translation>
@@ -4855,7 +4829,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7531779363494549572">ترتیبات &gt; ایپس اور اطلاعات &gt; اطلاعات پر جائیں۔</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> جواب نہیں دے رہی ہے۔ ایپ بند کرنے کیلئے، "زبردستی بند کریں" منتخب کریں۔</translation>
 <translation id="7537451260744431038">سائٹس آپ کے براؤزنگ کے تجربہ کو، مثال کے طور پر، آپ کو سائن ان رکھنے یا آپ کی شاپنگ کارٹ میں آئٹمز کو یاد رکھنے کے لیے، بہتر بنانے کے لیے کوکیز کا استعمال نہیں کر سکتی ہیں</translation>
-<translation id="7539856059004947393">بلوٹوتھ سیکیورٹی کلید</translation>
 <translation id="7540972813190816353">اپ ڈیٹس کو چیک کرتے وقت ایک خرابی پیش آ گئی: <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="APP_NAME" /> ایپ کے ساتھ <ph name="ACTION_NAME" /></translation>
 <translation id="7543104066686362383">اس <ph name="IDS_SHORT_PRODUCT_NAME" /> آلہ پر ڈیبگ کرنے کی خصوصیات فعال کریں</translation>
@@ -4979,7 +4952,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7704305437604973648">ٹاسک</translation>
 <translation id="7704317875155739195">‏تلاشوں اور URLs کی خودکار تکمیل کریں</translation>
 <translation id="7704521324619958564">‏Play اسٹور کھولیں</translation>
-<translation id="7704628569466676326">اس آلہ کے ساتھ اپنی سیکیورٹی کلید کا جوڑا بنائيں تاکہ آپ اسے اپنے اکاؤنٹ میں سائن ان کرنے کیلئے استعمال کر سکیں</translation>
 <translation id="7705276765467986571">بُک مارک ماڈل لوڈ نہیں کیا جا سکا۔</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7706963867324547089">ریڈر وضع ٹوگل کریں</translation>
@@ -5069,7 +5041,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7817361223956157679">‏Linux ایپس پر آن اسکرین کی بورڈ ابھی کام نہیں کرتا ہے</translation>
 <translation id="7818135753970109980">نیا تھیم شامل کر دیا گیا (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">‏‫‫PSK‎‏ (WPA یا RSN)‏</translation>
-<translation id="7819992334107904369">Chrome Sync</translation>
 <translation id="782057141565633384">ویڈیو پتہ کا&amp;پی کریں</translation>
 <translation id="7824864914877854148">خرابی کی وجہ سے بیک اپ مکمل نہیں ہو سکا</translation>
 <translation id="782590969421016895">حالیہ صفحات استعمال کریں</translation>
@@ -5170,7 +5141,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7925247922861151263">‏AAA چیک ناکام ہوگیا</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> کا منتظر…</translation>
 <translation id="7926423016278357561">یہ میں نہیں تھا۔</translation>
-<translation id="7928175190925744466">پہلے ہی اس پاس ورڈ تبدیل کیا ہے؟</translation>
+<translation id="7928175190925744466">پہلے ہی یہ پاس ورڈ تبدیل کیا ہے؟</translation>
 <translation id="7928836894214140642"><ph name="ENROLLMENT_DOMAIN" /> کے زیر انتظام</translation>
 <translation id="7930294771522048157">ادائیگی کے محفوظ کردہ طریقے یہاں ظاہر ہوں گے</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> آپ کی اسکرین اور آڈیو کا اشتراک کر رہی ہے۔</translation>
@@ -5224,7 +5195,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7988355189918024273">ایکسیسبیلٹی کی خصوصیات کو فعال کریں</translation>
 <translation id="7991296728590311172">سوئچ رسائی کی ترتیبات</translation>
 <translation id="7992202128769240372"><ph name="SHEETS_LABEL" /> <ph name="NUMBER_OF_SHEETS" /> کی حد متجاوز ہے</translation>
-<translation id="7994350303002908848">‏Plugin VM انسٹال نہیں کیا جا سکا۔ براہ کرم دوبارہ کوشش کریں، یا اپنی تنظیم کے آلہ کے منتظم سے رابطہ کریں۔ خرابی کا کوڈ: <ph name="ERROR_CODE" />۔</translation>
 <translation id="7994702968232966508">‏EAP طریقہ</translation>
 <translation id="7997826902155442747">کارروائی کی ترجیح</translation>
 <translation id="7999229196265990314">مندرجہ ذیل فائلز بنائی گئیں:
@@ -5322,7 +5292,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8118488170956489476">آپ کا ادارہ آپ کے <ph name="BEGIN_LINK" />براؤزر کا نظم کرتا ہے<ph name="END_LINK" /></translation>
 <translation id="8118860139461251237">اپنے ڈاؤن لوڈز کا نظم کریں</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />، <ph name="RECENT_PERMISSIONS_CHANGE_1" />، <ph name="RECENT_PERMISSIONS_CHANGE_2" /> اور مزید</translation>
-<translation id="8120715633374652536">‏آپ کے آلے میں اسٹوریج کی جگہ کم ہے۔ Plugin VM استعمال کرنے کے لیے کم از کم <ph name="MINIMUM_SPACE" /> خالی جگہ درکار ہے اور <ph name="RECOMMENDED_SPACE" /> سے زیادہ خالی جگہ کی تجویز پیش کی جاتی ہے۔ جگہ خالی کرنے کیلئے، آلہ کے اسٹوریج سے فائلیں حذف کریں۔</translation>
 <translation id="8123590694679414600">‏ڈيٹا کی مرموزکاری بوقت <ph name="TIME" /> آپ کے مطابقت پذیر پاس فریز کے ساتھ کر دی گئی۔
           اس میں Google Pay سے ادائیگی کے طریقے اور پتے شامل نہیں ہوتے ہیں۔</translation>
 <translation id="81238879832906896">زرد اور سفید پھول</translation>
@@ -5636,7 +5605,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8551388862522347954">لائسنسز</translation>
 <translation id="8553342806078037065">دوسرے لوگوں کا نظم کریں</translation>
 <translation id="8554899698005018844">کوئی زبان نہیں</translation>
-<translation id="8556135141412663091">‏Plugin VM استعمال کرنے سے پہلے آپ کے آلہ کو اپ ڈیٹ کی ضرورت ہے۔</translation>
 <translation id="8557022314818157177">آپ کے فنگر پرنٹ کیپچر ہو جانے تک اپنی سیکیورٹی کلید کو ٹچ کرتے رہیں</translation>
 <translation id="855773602626431402">ایک غیر سینڈ باکس کردہ پلگ ان اس صفحہ پر چلنے سے روک دیا گیا۔</translation>
 <translation id="8557930019681227453">مینی فیسٹ</translation>
@@ -5709,7 +5677,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8655295600908251630">چینل</translation>
 <translation id="8655319619291175901">افوہ، کچھ غلط ہو گیا۔</translation>
 <translation id="8655972064210167941">سائن ان ناکام ہو گیا کیونکہ آپ کے پاس ورڈز کی توثیق نہيں ہو سکی۔ براہ کرم اپنے منتظم سے رابطہ کریں یا دوبارہ کوشش کریں۔</translation>
-<translation id="8656619792520327915">دوسری بلوٹوتھ سیکیورٹی کلید شامل کریں</translation>
 <translation id="8656768832129462377">چیک نہ کریں</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> آپ کی اسکرین اور آڈیو کا <ph name="TAB_NAME" /> کے ساتھ اشتراک کر رہی ہے۔</translation>
 <translation id="8661290697478713397">لنک پوشید&amp;گی ونڈو میں کھولیں</translation>
@@ -5898,13 +5865,11 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8871696467337989339">آپ ایک غیر تعاون یافتہ کمانڈ لائن کا پرچم استعمال کر رہے ہیں: <ph name="BAD_FLAG" />۔ استحکام اور سیکیورٹی متاثر ہوں گی۔</translation>
 <translation id="8871974300055371298">مواد کی ترتیبات</translation>
 <translation id="8872155268274985541">‏کیوسک کی خارجی اپ ڈیٹ مینی فیسٹ کی غلط فائل ملی۔ کیوسک ایپ کو اپ ڈیٹ کرنے میں ناکام۔ براہ کرم USB اسٹک ہٹائیں۔</translation>
-<translation id="8872187374998143710">‏Plugin VM کا استعمال کرنے کے لیے براہ کرم اپنا آلہ ری سٹارٹ کریں۔</translation>
 <translation id="8872777911145321141">جب کوئی سائٹ آپ کے ورچوئل ریئلٹی آلات اور ڈیٹا کا استعمال کرنا چاہے تو پوچھیں (تجویز کردہ)</translation>
 <translation id="8874184842967597500">منسلک نہیں</translation>
 <translation id="8875775314572167244">ایتھرنیٹ کی ترتیبات</translation>
 <translation id="8876307312329369159">ڈیمو سیشن میں اس ترتیب کو تبدیل نہیں کیا جا سکتا ہے۔</translation>
 <translation id="8877448029301136595">[پیرینٹ ڈائرکٹری]</translation>
-<translation id="8878384954777710821">‏Plugin VM ان انسٹال کیا جا رہا ہے...</translation>
 <translation id="8879284080359814990">&amp;ٹیب کے بطور دکھائیں</translation>
 <translation id="8879921471468674457">سائن ان کی معلومات یاد رکھیں</translation>
 <translation id="8881020143150461183">براہ کرم دوبارہ کوشش کریں۔ تکنیکی سپورٹ کیلئے <ph name="CARRIER_NAME" /> سے رابطہ کریں۔</translation>
@@ -5935,7 +5900,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8912810933860534797">خودکار اسکین فعال کریں</translation>
 <translation id="8915370057835397490">تجویز لوڈ ہو رہی ہے</translation>
 <translation id="8916476537757519021">پوشیدگی کا ذیلی فریم: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8921366488406707015">آپ کی سیکیورٹی کلید کی توثیق ہو رہی ہے...</translation>
 <translation id="8922013791253848639">ہمیشہ اس سائٹ پر اشتہارات کی اجازت دیں</translation>
 <translation id="8923880975836399332">گہرا نیلگوں سبز</translation>
 <translation id="8925458182817574960">&amp;ترتیبات</translation>

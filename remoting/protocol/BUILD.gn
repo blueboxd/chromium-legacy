@@ -225,6 +225,7 @@ static_library("protocol") {
       "chromium_socket_factory.h",
       "remoting_ice_config_request.cc",
       "remoting_ice_config_request.h",
+      "session_options_provider.h",
       "stream_packet_processor.h",
       "stream_packet_socket.cc",
       "stream_packet_socket.h",

@@ -4,7 +4,7 @@
 
 #include "net/ftp/ftp_network_layer.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "net/ftp/ftp_network_session.h"
 #include "net/ftp/ftp_network_transaction.h"
 #include "net/socket/client_socket_factory.h"

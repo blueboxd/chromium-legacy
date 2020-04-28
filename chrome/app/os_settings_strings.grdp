@@ -1015,14 +1015,29 @@
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_LABEL" desc="Label for the text input of an optional label.">
     Label (Optional)
   </message>
-  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TCP" desc="Label for the TCP protocol when forwarding ports.">
-    TCP
+  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TCP" desc="Label for the TCP protocol when forwarding ports. The parentheses are for formatting reasons.">
+    (TCP)
   </message>
-  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_UDP" desc="Label for the UDP protocol when forwarding ports.">
-    UDP
+  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_UDP" desc="Label for the UDP protocol when forwarding ports. The parentheses are for formatting reasons.">
+    (UDP)
   </message>
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_ERROR" desc="Description for the error when adding an invalid port.">
     Error forwarding port
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_REMOVE_ALL_PORTS" desc="Label for the button to deallocate all ports currently being forwarded in Crostini and clear the list of ports in the Crostini port forwarding settings page.">
+    Remove all ports
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_REMOVE_PORT" desc="Label for the button to deallocate a specified port and remove it from the list of ports in the Crostini port forwarding settings page.">
+    Remove port
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TOGGLE_PORT_ARIA_LABEL" desc="The aria label for the toggle that controls the state of a port i.e. the text that screen readers will read out for the button.">
+    Activate port
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_REMOVE_ALL_PORTS_ARIA_LABEL" desc="The aria label for the button to deallocate all ports currently being forwarded in Crostini and clears the list of ports in the Crostini port forwarding settings page i.e. the text that screen readers will read out for the button.">
+    Deactivate all ports being forwarded in Linux
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_SHOW_MORE_ACTIONS_ARIA_LABEL" desc="The aria label for the button that displays more actions to the user for an individual port i.e. the text that screen readers will read out for the button.">
+    Show more actions for this port
   </message>
   <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_SHOW_BUTTON" desc="The label of the button/link the user clicks to open the disk resizing dialogue." meaning="The label of the button/link the user clicks to open the disk resizing dialogue.">
     Change

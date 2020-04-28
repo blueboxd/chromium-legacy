@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -287,6 +288,7 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1075677")
     public void testDialog_ZoomInZoomOut() {
         AtomicReference<ViewGroup> parentViewReference = new AtomicReference<>();
         // Setup the animation with a dummy animation source view.

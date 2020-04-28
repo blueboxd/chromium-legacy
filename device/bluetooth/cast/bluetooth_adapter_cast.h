@@ -47,7 +47,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
       chromecast::bluetooth::GattClientManager* gatt_client_manager,
       chromecast::bluetooth::LeScanManager* le_scan_manager);
 
-  // BluetoothAdapter implementation:
+  // BluetoothAdapter implementation
+  // |callback| will be executed asynchronously on the calling sequence.
+  void Initialize(base::OnceClosure callback) override;
   std::string GetAddress() const override;
   std::string GetName() const override;
   void SetName(const std::string& name,
@@ -108,7 +110,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
   // TODO(slan): Remove this once this class talks to a dedicated Bluetooth
   // service (b/76155468)
   using FactoryCb =
-      base::RepeatingCallback<base::WeakPtr<BluetoothAdapterCast>()>;
+      base::RepeatingCallback<scoped_refptr<BluetoothAdapterCast>()>;
   static void SetFactory(FactoryCb factory_cb);
 
   // Resets the factory callback for test scenarios.
@@ -116,9 +118,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
 
   // Creates a BluetoothAdapterCast using the |factory_cb| set in SetFactory().
   // This method is intended to be called only by the WebBluetooth code in
-  // //device/blutooth/. |callback| will be executed asynchronously
-  // on the calling sequence.
-  static base::WeakPtr<BluetoothAdapter> Create(InitCallback callback);
+  // //device/bluetooth/.
+  static scoped_refptr<BluetoothAdapter> Create();
 
  private:
   ~BluetoothAdapterCast() override;
@@ -140,10 +141,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
 
   // Helper method to access |devices_| as BluetoothDeviceCast*.
   BluetoothDeviceCast* GetCastDevice(const std::string& address);
-
-  // Runs |callback|. After this method returns, |this| is initialized. This
-  // must run on the same sequence on which |this| is created.
-  void InitializeAsynchronously(InitCallback callback);
 
   // Creates a BluetoothDeviceCast for |remote_device|, adds it to |devices_|,
   // and updates observers.

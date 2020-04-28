@@ -387,7 +387,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationSuccess) {
                 ui::PAGE_TRANSITION_TYPED);
   ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetermined();
+  if (chrome_translate_client->GetLanguageState().original_language() != "fr")
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
@@ -465,7 +466,9 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateSuccess) {
                 ui::PAGE_TRANSITION_TYPED);
   ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetermined();
+  if (chrome_translate_client->GetLanguageState().original_language() != "de")
+    WaitUntilLanguageDetermined();
+
   EXPECT_EQ("de",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -692,7 +695,9 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateNoHrefLang) {
                 ui::PAGE_TRANSITION_TYPED);
   ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetermined();
+  if (chrome_translate_client->GetLanguageState().original_language() != "de")
+    WaitUntilLanguageDetermined();
+
   EXPECT_EQ("de",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -755,7 +760,9 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                 ui::PAGE_TRANSITION_TYPED);
   ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetermined();
+  if (chrome_translate_client->GetLanguageState().original_language() != "de")
+    WaitUntilLanguageDetermined();
+
   EXPECT_EQ("de",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -1127,7 +1134,9 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                 ui::PAGE_TRANSITION_TYPED);
   ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetermined();
+  if (chrome_translate_client->GetLanguageState().original_language() != "de")
+    WaitUntilLanguageDetermined();
+
   EXPECT_EQ("de",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -1152,9 +1161,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 }
 
 // Test that iframes not translated.
-// TODO(https://crbug.com/1075446) disabled due to flakiness
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
-                       DISABLED_TranslateIframeNotTranslated) {
+                       TranslateIframeNotTranslated) {
   SetTranslateScript(kTestValidScript);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
@@ -1175,7 +1183,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
       ui::PAGE_TRANSITION_TYPED);
   ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  if (chrome_translate_client->GetLanguageState().original_language() == "und")
+  if (chrome_translate_client->GetLanguageState().original_language() != "fr")
     WaitUntilLanguageDetermined();
 
   EXPECT_EQ("fr",

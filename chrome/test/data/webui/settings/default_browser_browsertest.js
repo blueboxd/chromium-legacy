@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {DefaultBrowserBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
 /**

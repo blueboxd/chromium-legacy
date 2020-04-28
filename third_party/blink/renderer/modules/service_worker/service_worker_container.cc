@@ -608,7 +608,7 @@ ServiceWorker* ServiceWorkerContainer::GetOrCreateServiceWorker(
 
 ServiceWorkerContainer::ServiceWorkerContainer(Document* document)
     : Supplement<Document>(*document),
-      ExecutionContextLifecycleObserver(document) {}
+      ExecutionContextLifecycleObserver(document->GetExecutionContext()) {}
 
 ServiceWorkerContainer::ReadyProperty*
 ServiceWorkerContainer::CreateReadyProperty() {

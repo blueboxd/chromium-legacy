@@ -88,8 +88,9 @@
 
 #include "net/base/mime_sniffer.h"
 
+#include "base/check_op.h"
 #include "base/containers/span.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "url/gurl.h"

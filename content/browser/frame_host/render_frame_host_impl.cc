@@ -39,6 +39,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -591,6 +592,26 @@ void RecordCrossOriginIsolationMetrics(RenderFrameHostImpl* rfh) {
     client->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kCoopAndCoepIsolated);
   }
+}
+
+// Subframe navigations can optionally have associated Trust Tokens operations
+// (https://github.com/wicg/trust-token-api). If the operation's type is
+// "redemption" or "signing" (as opposed to "issuance"), the parent's frame
+// needs to have the trust-token-redemption Feature Policy feature enabled.
+bool ParentNeedsTrustTokenFeaturePolicy(
+    const mojom::BeginNavigationParams& begin_params) {
+  if (!begin_params.trust_token_params)
+    return false;
+
+  switch (begin_params.trust_token_params->type) {
+    case network::mojom::TrustTokenOperationType::kRedemption:
+    case network::mojom::TrustTokenOperationType::kSigning:
+      return true;
+    case network::mojom::TrustTokenOperationType::kIssuance:
+      return false;
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace
@@ -4683,6 +4704,25 @@ void RenderFrameHostImpl::BeginNavigation(
   if (!VerifyBeginNavigationCommonParams(GetSiteInstance(), &*validated_params))
     return;
 
+  // If the request is bearing Trust Tokens parameters:
+  // - it must not be a main-frame navigation, and
+  // - for certain Trust Tokens operations, the frame's parent needs the
+  // trust-token-redemption Feature Policy feature.
+  if (begin_params->trust_token_params && !GetParent()) {
+    mojo::ReportBadMessage("RFHI: Trust Token params in main frame nav");
+    return;
+  }
+  if (begin_params->trust_token_params &&
+      ParentNeedsTrustTokenFeaturePolicy(*begin_params)) {
+    RenderFrameHostImpl* parent = GetParent();
+    if (!parent->IsFeatureEnabled(
+            blink::mojom::FeaturePolicyFeature::kTrustTokenRedemption)) {
+      mojo::ReportBadMessage(
+          "RFHI: Mandatory Trust Tokens Feature Policy feature is absent");
+      return;
+    }
+  }
+
   GetProcess()->FilterURL(true, &begin_params->searchable_form_url);
 
   // If the request was for a blob URL, but the validated URL is no longer a
@@ -6981,8 +7021,7 @@ void RenderFrameHostImpl::BindSmsReceiverReceiver(
     mojo::ReportBadMessage("Must have the same origin as the top-level frame.");
     return;
   }
-  auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext(),
-                                  weak_ptr_factory_.GetWeakPtr());
+  auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext());
   SmsService::Create(fetcher, this, std::move(receiver));
 }
 

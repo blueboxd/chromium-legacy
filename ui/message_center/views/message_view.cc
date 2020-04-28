@@ -133,6 +133,10 @@ void MessageView::CloseSwipeControl() {
 }
 
 void MessageView::SlideOutAndClose(int direction) {
+  // Do not process events once the message view is animating out.
+  // crbug.com/940719
+  SetEnabled(false);
+
   slide_out_controller_.SlideOutAndClose(direction);
 }
 

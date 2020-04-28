@@ -61,6 +61,21 @@ class PrintJobHistoryServiceImplTest : public ::testing::Test {
     run_loop_closure.Run();
   }
 
+  void OnDeleteAllPrintJobs(base::RepeatingClosure run_loop_closure,
+                            bool success) {
+    EXPECT_TRUE(success);
+    run_loop_closure.Run();
+  }
+
+  std::vector<printing::proto::PrintJobInfo> GetPrintJobs() {
+    base::RunLoop run_loop;
+    print_job_history_service_->GetPrintJobs(
+        base::BindOnce(&PrintJobHistoryServiceImplTest::OnPrintJobsRetrieved,
+                       base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    return entries_;
+  }
+
  protected:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestCupsPrintJobManager> print_job_manager_;
@@ -85,17 +100,13 @@ TEST_F(PrintJobHistoryServiceImplTest, SaveObservedCupsPrintJob) {
   print_job_manager_->CancelPrintJob(print_job.get());
   save_print_job_run_loop.Run();
 
-  base::RunLoop get_print_jobs_run_loop;
-  print_job_history_service_->GetPrintJobs(base::BindOnce(
-      &PrintJobHistoryServiceImplTest::OnPrintJobsRetrieved,
-      base::Unretained(this), get_print_jobs_run_loop.QuitClosure()));
-  get_print_jobs_run_loop.Run();
+  std::vector<printing::proto::PrintJobInfo> entries = GetPrintJobs();
 
-  EXPECT_EQ(1u, entries_.size());
-  EXPECT_EQ(kTitle, entries_[0].title());
-  EXPECT_EQ(kPagesNumber, entries_[0].number_of_pages());
+  EXPECT_EQ(1u, entries.size());
+  EXPECT_EQ(kTitle, entries[0].title());
+  EXPECT_EQ(kPagesNumber, entries[0].number_of_pages());
   EXPECT_EQ(printing::proto::PrintJobInfo_PrintJobStatus_CANCELED,
-            entries_[0].status());
+            entries[0].status());
 }
 
 TEST_F(PrintJobHistoryServiceImplTest, ObserverTest) {
@@ -112,6 +123,34 @@ TEST_F(PrintJobHistoryServiceImplTest, ObserverTest) {
   run_loop.Run();
 
   EXPECT_EQ(1, observer.num_print_jobs());
+}
+
+TEST_F(PrintJobHistoryServiceImplTest, DeleteAllPrintJobs) {
+  base::RunLoop save_print_job_run_loop;
+  TestPrintJobHistoryServiceObserver observer(
+      print_job_history_service_.get(), save_print_job_run_loop.QuitClosure());
+
+  auto print_job = std::make_unique<CupsPrintJob>(
+      chromeos::Printer(), /*job_id=*/0, kTitle, kPagesNumber,
+      ::printing::PrintJob::Source::PRINT_PREVIEW,
+      /*source_id=*/"", printing::proto::PrintSettings());
+  print_job_manager_->CreatePrintJob(print_job.get());
+  print_job_manager_->CancelPrintJob(print_job.get());
+  save_print_job_run_loop.Run();
+
+  std::vector<printing::proto::PrintJobInfo> entries = GetPrintJobs();
+  EXPECT_EQ(1u, entries.size());
+
+  // Delete all print jobs.
+  base::RunLoop delete_all_print_jobs_run_loop;
+  print_job_history_service_->DeleteAllPrintJobs(base::BindOnce(
+      &PrintJobHistoryServiceImplTest::OnDeleteAllPrintJobs,
+      base::Unretained(this), delete_all_print_jobs_run_loop.QuitClosure()));
+  delete_all_print_jobs_run_loop.Run();
+
+  // Run GetPrintJobs again and verify that the print job has been deleted.
+  entries = GetPrintJobs();
+  EXPECT_EQ(0u, entries.size());
 }
 
 }  // namespace chromeos

@@ -28,7 +28,7 @@ class It2MeHostAuthenticatorFactory : public AuthenticatorFactory {
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       const std::string& access_code,
-      ValidatingAuthenticator::ValidationCallback callback);
+      const ValidatingAuthenticator::ValidationCallback& callback);
   ~It2MeHostAuthenticatorFactory() override;
 
   // AuthenticatorFactory interface.

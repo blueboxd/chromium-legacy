@@ -34,4 +34,12 @@ TEST_F(CompositorElementIdTest, FromDOMNodeId) {
             NamespaceFromCompositorElementId(element_id));
 }
 
+TEST_F(CompositorElementIdTest, ToDOMNodeId) {
+  auto element_id = CompositorElementIdFromUniqueObjectId(
+      1, CompositorElementIdNamespace::kDOMNodeId);
+  EXPECT_EQ(CompositorElementIdNamespace::kDOMNodeId,
+            NamespaceFromCompositorElementId(element_id));
+  EXPECT_EQ(1, DOMNodeIdFromCompositorElementId(element_id));
+}
+
 }  // namespace blink

@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">אפליקציות</translation>
 <translation id="2872961005593481000">כיבוי</translation>
 <translation id="3008341117444806826">רענון</translation>
+<translation id="3749289110408117711">שם קובץ</translation>
 <translation id="3820172043799983114">‏PIN לא חוקי.</translation>
 <translation id="3838338534323494292">סיסמה חדשה</translation>
 <translation id="4003259559679196451">הניהול של המכשיר הזה מתבצע מהדומיין<ph name="ENROLLMENT_DOMAIN" /> ואפשר לגשת ממנו אל כל המידע על הפעילות של המשתמשים, כולל דפי אינטרנט שנכנסת אליהם, סיסמאות ואימייל.</translation>
+<translation id="4034824040120875894">מדפסת</translation>
 <translation id="4227825898293920515">תוקף הסיסמה יפוג בעוד <ph name="TIME" /></translation>
 <translation id="4429881212383817840">‏התוקף של כרטיס Kerberos עומד לפוג בקרוב</translation>
 <translation id="445059817448385655">סיסמה ישנה</translation>
 <translation id="467510802200863975">הסיסמאות אינן תואמות</translation>
 <translation id="4731797938093519117">גישת הורים</translation>
 <translation id="4890353053343094602">יש לבחור מיד סיסמה חדשה</translation>
+<translation id="4932733599132424254">תאריך</translation>
 <translation id="5212543919916444558">לא מצאתי במסך משהו שאוכל לעזור בו.
 אפשר להקיש על המיקרופון כדי לשאול אותי משהו.</translation>
 <translation id="5222676887888702881">יציאה</translation>
@@ -40,6 +43,7 @@
 <translation id="6146993107019042706">כדי לסיים, יש להזין את הסיסמה החדשה</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7690294790491645610">אישור הסיסמה החדשה</translation>
+<translation id="7805768142964895445">סטטוס</translation>
 <translation id="808894953321890993">שינוי הסיסמה</translation>
 <translation id="8208861521865154048">הטבות</translation>
 <translation id="8747900814994928677">אישור השינוי</translation>

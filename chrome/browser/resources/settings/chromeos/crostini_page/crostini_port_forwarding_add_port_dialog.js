@@ -7,9 +7,8 @@
  * user to start forwarding a different port by filling in the appropriate
  * fields and clicking add.
  */
-const MAX_VALID_PORT_NUMBER = 0xFFFF;  // Maximum 16-bit integer value.
-const DEFAULT_CROSTINI_VM = 'termina';
-const DEFAULT_CROSTINI_CONTAINER = 'penguin';
+const MIN_VALID_PORT_NUMBER = 1024;   // Minimum 16-bit integer value.
+const MAX_VALID_PORT_NUMBER = 65535;  // Maximum 16-bit integer value.
 
 Polymer({
   is: 'settings-crostini-add-port-dialog',
@@ -82,7 +81,8 @@ Polymer({
    */
   isValidPortNumber: function(input) {
     const numberRegex = /^[0-9]+$/;
-    return input.match(numberRegex) && +input <= MAX_VALID_PORT_NUMBER;
+    return input.match(numberRegex) && Number(input) >= MIN_VALID_PORT_NUMBER &&
+        Number(input) <= MAX_VALID_PORT_NUMBER;
   },
 
   /**
@@ -113,7 +113,7 @@ Polymer({
             DEFAULT_CROSTINI_VM, DEFAULT_CROSTINI_CONTAINER, portNumber,
             this.inputProtocolIndex_, portLabel)
         .then(result => {
-          // TODO(matterchen): Error handling for result (cr:848127).
+          // TODO(crbug.com/848127): Error handling for result
           this.$.dialog.close();
         });
     this.resetInputs_();

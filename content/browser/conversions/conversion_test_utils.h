@@ -8,8 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "content/browser/conversions/conversion_manager.h"
+#include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_storage.h"
 #include "content/browser/conversions/storable_conversion.h"
@@ -99,6 +102,10 @@ StorableConversion DefaultConversion();
 testing::AssertionResult ReportsEqual(
     const std::vector<ConversionReport>& expected,
     const std::vector<ConversionReport>& actual);
+
+std::vector<ConversionReport> GetConversionsToReportForTesting(
+    ConversionManagerImpl* manager,
+    base::Time max_report_time);
 
 }  // namespace content
 

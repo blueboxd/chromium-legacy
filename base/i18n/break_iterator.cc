@@ -48,18 +48,26 @@ template <UBreakIteratorType break_type>
 class DefaultLocaleBreakIteratorCache {
  public:
   DefaultLocaleBreakIteratorCache()
-      : main_(nullptr), main_could_be_leased_(true) {
-    UErrorCode status = U_ZERO_ERROR;
-    main_ = ubrk_open(break_type, nullptr, nullptr, 0, &status);
-    if (U_FAILURE(status)) {
+      : main_status_(U_ZERO_ERROR),
+        main_(nullptr),
+        main_could_be_leased_(true) {
+    main_ = ubrk_open(break_type, nullptr, nullptr, 0, &main_status_);
+    if (U_FAILURE(main_status_)) {
       NOTREACHED() << "ubrk_open failed for type " << break_type
-                   << " with error " << status;
+                   << " with error " << main_status_;
     }
   }
 
   virtual ~DefaultLocaleBreakIteratorCache() { ubrk_close(main_); }
 
   UBreakIterator* Lease(UErrorCode& status) {
+    if (U_FAILURE(status)) {
+      return nullptr;
+    }
+    if (U_FAILURE(main_status_)) {
+      status = main_status_;
+      return nullptr;
+    }
     {
       AutoLock scoped_lock(lock_);
       if (main_could_be_leased_) {
@@ -70,11 +78,11 @@ class DefaultLocaleBreakIteratorCache {
     }
     // The main_ is already leased out to some other places, return a new
     // object instead.
-    // TODO(ftang) call ubrk_safeClone(main_, ...) after the fix of ICU-21079
     UBreakIterator* result =
         ubrk_open(break_type, nullptr, nullptr, 0, &status);
     if (U_FAILURE(status)) {
-      NOTREACHED() << "ubrk_open failed with error " << status;
+      NOTREACHED() << "ubrk_open failed for type " << break_type
+                   << " with error " << status;
     }
     return result;
   }
@@ -92,6 +100,7 @@ class DefaultLocaleBreakIteratorCache {
   }
 
  private:
+  UErrorCode main_status_;
   UBreakIterator* main_;
   bool main_could_be_leased_;
   Lock lock_;
@@ -168,10 +177,16 @@ bool BreakIterator::Init() {
       return false;
   }
 
-  ubrk_setText(static_cast<UBreakIterator*>(iter_), string_.data(),
-               static_cast<int32_t>(string_.size()), &status);
-  if (U_FAILURE(status)) {
+  if (U_FAILURE(status) || iter_ == nullptr) {
     return false;
+  }
+
+  if (string_.data() != nullptr) {
+    ubrk_setText(static_cast<UBreakIterator*>(iter_), string_.data(),
+                 static_cast<int32_t>(string_.size()), &status);
+    if (U_FAILURE(status)) {
+      return false;
+    }
   }
 
   // Move the iterator to the beginning of the string.

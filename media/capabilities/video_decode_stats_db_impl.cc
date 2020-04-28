@@ -533,36 +533,12 @@ void VideoDecodeStatsDBImpl::ClearStats(base::OnceClosure clear_done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << __func__;
 
-  db_->LoadKeys(
-      base::BindOnce(&VideoDecodeStatsDBImpl::OnLoadAllKeysForClearing,
-                     weak_ptr_factory_.GetWeakPtr(), StartPendingOp("LoadKeys"),
+  db_->UpdateEntriesWithRemoveFilter(
+      std::make_unique<ProtoDecodeStatsEntry::KeyEntryVector>(),
+      base::BindRepeating([](const std::string& key) { return true; }),
+      base::BindOnce(&VideoDecodeStatsDBImpl::OnStatsCleared,
+                     weak_ptr_factory_.GetWeakPtr(), StartPendingOp("Clear"),
                      std::move(clear_done_cb)));
-}
-
-void VideoDecodeStatsDBImpl::OnLoadAllKeysForClearing(
-    PendingOpId op_id,
-    base::OnceClosure clear_done_cb,
-    bool success,
-    std::unique_ptr<std::vector<std::string>> keys) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(2) << __func__ << (success ? " succeeded" : " FAILED!");
-
-  CompletePendingOp(op_id);
-
-  UMA_HISTOGRAM_BOOLEAN("Media.VideoDecodeStatsDB.OpSuccess.LoadKeys", success);
-
-  if (success) {
-    // Remove all keys.
-    db_->UpdateEntries(
-        std::make_unique<ProtoDecodeStatsEntry::KeyEntryVector>(),
-        std::move(keys) /* keys_to_remove */,
-        base::BindOnce(&VideoDecodeStatsDBImpl::OnStatsCleared,
-                       weak_ptr_factory_.GetWeakPtr(), StartPendingOp("Clear"),
-                       std::move(clear_done_cb)));
-  } else {
-    // Fail silently. See comment in OnStatsCleared().
-    std::move(clear_done_cb).Run();
-  }
 }
 
 void VideoDecodeStatsDBImpl::OnStatsCleared(PendingOpId op_id,

@@ -9,8 +9,8 @@
 #include <memory>
 #include <string>
 
+#include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "net/base/request_priority.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

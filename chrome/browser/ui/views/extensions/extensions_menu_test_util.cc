@@ -175,6 +175,11 @@ ExtensionsMenuTestUtil::CreateOverflowBar(Browser* browser) {
   return nullptr;
 }
 
+void ExtensionsMenuTestUtil::LayoutForOverflowBar() {
+  // There is no overflow bar with the ExtensionsMenu implementation.
+  NOTREACHED();
+}
+
 gfx::Size ExtensionsMenuTestUtil::GetMinPopupSize() {
   return gfx::Size(ExtensionPopup::kMinWidth, ExtensionPopup::kMinHeight);
 }

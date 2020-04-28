@@ -5,7 +5,8 @@
 #include "net/android/network_change_notifier_delegate_android.h"
 
 #include "base/android/jni_array.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "net/android/network_change_notifier_android.h"
 #include "net/net_jni_headers/NetworkChangeNotifier_jni.h"
 

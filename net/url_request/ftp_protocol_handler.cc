@@ -4,7 +4,7 @@
 
 #include "net/url_request/ftp_protocol_handler.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/port_util.h"

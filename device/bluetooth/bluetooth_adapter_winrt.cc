@@ -674,7 +674,7 @@ BluetoothAdapterWinrt::StaticsInterfaces::StaticsInterfaces() = default;
 
 BluetoothAdapterWinrt::StaticsInterfaces::~StaticsInterfaces() {}
 
-void BluetoothAdapterWinrt::Init(InitCallback init_cb) {
+void BluetoothAdapterWinrt::Initialize(base::OnceClosure init_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Some of the initialization work requires loading libraries and should not
@@ -683,16 +683,16 @@ void BluetoothAdapterWinrt::Init(InitCallback init_cb) {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BluetoothAdapterWinrt::PerformSlowInitTasks),
       base::BindOnce(&BluetoothAdapterWinrt::CompleteInitAgile,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(init_cb)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(init_callback)));
 }
 
 void BluetoothAdapterWinrt::InitForTests(
-    InitCallback init_cb,
+    base::OnceClosure init_callback,
     ComPtr<IBluetoothAdapterStatics> bluetooth_adapter_statics,
     ComPtr<IDeviceInformationStatics> device_information_statics,
     ComPtr<IRadioStatics> radio_statics) {
   if (!ResolveCoreWinRT()) {
-    CompleteInit(std::move(init_cb), std::move(bluetooth_adapter_statics),
+    CompleteInit(std::move(init_callback), std::move(bluetooth_adapter_statics),
                  std::move(device_information_statics),
                  std::move(radio_statics));
     return;
@@ -714,7 +714,7 @@ void BluetoothAdapterWinrt::InitForTests(
   StaticsInterfaces agile_statics = GetAgileReferencesForStatics(
       std::move(bluetooth_adapter_statics),
       std::move(device_information_statics), std::move(radio_statics));
-  CompleteInitAgile(std::move(init_cb), std::move(agile_statics));
+  CompleteInitAgile(std::move(init_callback), std::move(agile_statics));
 }
 
 // static
@@ -807,12 +807,12 @@ BluetoothAdapterWinrt::GetAgileReferencesForStatics(
                            std::move(radio_statics_agileref));
 }
 
-void BluetoothAdapterWinrt::CompleteInitAgile(InitCallback init_cb,
+void BluetoothAdapterWinrt::CompleteInitAgile(base::OnceClosure init_callback,
                                               StaticsInterfaces agile_statics) {
   if (!agile_statics.adapter_statics ||
       !agile_statics.device_information_statics ||
       !agile_statics.radio_statics) {
-    CompleteInit(std::move(init_cb), nullptr, nullptr, nullptr);
+    CompleteInit(std::move(init_callback), nullptr, nullptr, nullptr);
     return;
   }
   ComPtr<IBluetoothAdapterStatics> bluetooth_adapter_statics;
@@ -827,26 +827,27 @@ void BluetoothAdapterWinrt::CompleteInitAgile(InitCallback init_cb,
   hr = agile_statics.radio_statics->Resolve(IID_IRadioStatics, &radio_statics);
   DCHECK(SUCCEEDED(hr));
 
-  CompleteInit(std::move(init_cb), std::move(bluetooth_adapter_statics),
+  CompleteInit(std::move(init_callback), std::move(bluetooth_adapter_statics),
                std::move(device_information_statics), std::move(radio_statics));
 }
 
 void BluetoothAdapterWinrt::CompleteInit(
-    InitCallback init_cb,
+    base::OnceClosure init_callback,
     ComPtr<IBluetoothAdapterStatics> bluetooth_adapter_statics,
     ComPtr<IDeviceInformationStatics> device_information_statics,
     ComPtr<IRadioStatics> radio_statics) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // We are wrapping |init_cb| in a ScopedClosureRunner to ensure it gets run
-  // no matter how the function exits. Furthermore, we set |is_initialized_|
+  // We are wrapping |init_callback| in a ScopedClosureRunner to ensure it gets
+  // run no matter how the function exits. Furthermore, we set |is_initialized_|
   // to true if adapter is still active when the callback gets run.
   base::ScopedClosureRunner on_init(base::BindOnce(
-      [](base::WeakPtr<BluetoothAdapterWinrt> adapter, InitCallback init_cb) {
+      [](base::WeakPtr<BluetoothAdapterWinrt> adapter,
+         base::OnceClosure init_callback) {
         if (adapter)
           adapter->is_initialized_ = true;
-        std::move(init_cb).Run();
+        std::move(init_callback).Run();
       },
-      weak_ptr_factory_.GetWeakPtr(), std::move(init_cb)));
+      weak_ptr_factory_.GetWeakPtr(), std::move(init_callback)));
 
   bluetooth_adapter_statics_ = bluetooth_adapter_statics;
   device_information_statics_ = device_information_statics;

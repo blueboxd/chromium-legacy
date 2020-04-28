@@ -402,6 +402,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverflowedPageActionTriggers) {
   }
   std::unique_ptr<ExtensionActionTestHelper> test_helper =
       ExtensionActionTestHelper::Create(browser());
+  RunScheduledLayouts();
   EXPECT_EQ(0, test_helper->VisibleBrowserActions());
 
   const int tab_id = NavigateToTestURLAndReturnTabId();

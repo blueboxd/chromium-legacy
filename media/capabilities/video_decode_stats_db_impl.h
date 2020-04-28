@@ -162,13 +162,6 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
                         bool success,
                         std::unique_ptr<DecodeStatsProto> stats_proto);
 
-  // Internal callback for first step of ClearStats(). Will clear all stats If
-  // |keys| fetched successfully.
-  void OnLoadAllKeysForClearing(PendingOpId op_id,
-                                base::OnceClosure clear_done_cb,
-                                bool success,
-                                std::unique_ptr<std::vector<std::string>> keys);
-
   // Internal callback for OnLoadAllKeysForClearing(), initially triggered by
   // ClearStats(). Method simply logs |success| and runs |clear_done_cb|.
   void OnStatsCleared(PendingOpId op_id,

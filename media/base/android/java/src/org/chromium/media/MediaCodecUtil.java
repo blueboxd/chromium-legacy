@@ -28,9 +28,7 @@ import org.chromium.base.compat.ApiHelperForN;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
@@ -624,12 +622,6 @@ class MediaCodecUtil {
         return -1;
     }
 
-    // List of devices with poor H.264 encoder quality.
-    private static final String[] H264_ENCODER_MODEL_BLACKLIST = new String[] {
-            // HW H.264 encoder on below devices has poor bitrate control - actual bitrates deviates
-            // a lot from the target value.
-            "SAMSUNG-SGH-I337", "Nexus 7", "Nexus 4"};
-
     /**
      * Creates MediaCodec encoder.
      * @param mime MIME type of the media.
@@ -662,23 +654,7 @@ class MediaCodecUtil {
      */
     @CalledByNative
     static boolean isEncoderSupportedByDevice(String mime) {
-        // MediaCodec.setParameters is missing for JB and below, so bitrate
-        // can not be adjusted dynamically.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            return false;
-        }
-
-        // Check if this is supported HW encoder.
-        if (mime.equals(MimeTypes.VIDEO_H264)) {
-            // Check if device is in H.264 exception list.
-            List<String> exceptionModels = Arrays.asList(H264_ENCODER_MODEL_BLACKLIST);
-            if (exceptionModels.contains(Build.MODEL)) {
-                Log.w(TAG, "Model: " + Build.MODEL + " has blacklisted H.264 encoder.");
-                return false;
-            }
-        }
-
-        return !(findHWEncoder(mime) == null);
+        return findHWEncoder(mime) != null;
     }
 
     /**

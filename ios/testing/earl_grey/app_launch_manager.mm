@@ -9,12 +9,18 @@
 #include "base/feature_list.h"
 #import "base/ios/crb_protocol_observers.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/testing/earl_grey/app_launch_manager_app_interface.h"
 #import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#import "ios/third_party/edo/src/Service/Sources/EDOServiceException.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+#if defined(CHROME_EARL_GREY_2)
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(AppLaunchManagerAppInterface)
+#endif  // defined(CHROME_EARL_GREY_2)
 
 #if defined(CHROME_EARL_GREY_2)  // avoid unused function warning in EG1
 namespace {
@@ -38,6 +44,7 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
 @property(nonatomic, strong)
     CRBProtocolObservers<AppLaunchManagerObserver>* observers;
 @property(nonatomic) XCUIApplication* runningApplication;
+@property(nonatomic) int runningApplicationProcessIdentifier;
 @property(nonatomic) NSArray<NSString*>* currentLaunchArgs;
 @end
 
@@ -91,10 +98,32 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
   BOOL appIsRunning =
       (self.runningApplication != nil) &&
       (self.runningApplication.state != XCUIApplicationStateNotRunning) &&
-      (self.runningApplication.state != XCUIApplicationStateUnknown);
+      (self.runningApplication.state != XCUIApplicationStateUnknown) &&
+      (self.runningApplication.state !=
+       XCUIApplicationStateRunningBackgroundSuspended);
+
+  // App PID change means an unknown relaunch not from AppLaunchManager, so it
+  // needs a correct relaunch for setups.
+  BOOL appPIDChanged = YES;
+  if (appIsRunning) {
+    @try {
+      appPIDChanged = (self.runningApplicationProcessIdentifier !=
+                       [AppLaunchManagerAppInterface processIdentifier]);
+    } @catch (NSException* exception) {
+      GREYAssertEqual(
+          EDOServiceGenericException, exception.name,
+          @"Unknown excption caught when communicating to host app: %@",
+          exception.reason);
+      // An EDOServiceGenericException here comes from the communication between
+      // test and app process, which means there should be issues in host app,
+      // but it wasn't reflected in XCUIApplicationState.
+      // TODO(crbug.com/1075716): Investigate why the exception is thrown.
+      appIsRunning = NO;
+    }
+  }
 
   bool appNeedsLaunching =
-      forceRestart || !appIsRunning ||
+      forceRestart || !appIsRunning || appPIDChanged ||
       !LaunchArgumentsAreEqual(arguments, self.currentLaunchArgs);
   if (!appNeedsLaunching) {
     [self.runningApplication activate];
@@ -122,6 +151,8 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
     [self.observers appLaunchManagerDidRelaunchApp:self runResets:runResets];
   }
   self.runningApplication = application;
+  self.runningApplicationProcessIdentifier =
+      [AppLaunchManagerAppInterface processIdentifier];
   self.currentLaunchArgs = arguments;
 #endif  // defined(CHROME_EARL_GREY_2)
 }

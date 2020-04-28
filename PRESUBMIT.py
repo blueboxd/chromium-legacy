@@ -931,25 +931,6 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      'net::URLFetcher',
-      (
-        'net::URLFetcher should no longer be used in content embedders. ',
-        'Instead, use network::SimpleURLLoader instead, which supports ',
-        'an out-of-process network stack. ',
-        'net::URLFetcher may still be used in binaries that do not embed',
-        'content.',
-      ),
-      False,
-      (
-        r'^ios[\\/].*\.(cc|h)$',
-        r'.*[\\/]ios[\\/].*\.(cc|h)$',
-        r'.*_ios\.(cc|h)$',
-        r'^net[\\/].*\.(cc|h)$',
-        r'.*[\\/]tools[\\/].*\.(cc|h)$',
-        r'^fuchsia/base/test_devtools_list_fetcher\.cc$',
-      ),
-    ),
-    (
       'std::random_shuffle',
       (
         'std::random_shuffle is deprecated in C++14, and removed in C++17. Use',

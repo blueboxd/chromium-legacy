@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="3008341117444806826">OSVJEŽI</translation>
+<translation id="3749289110408117711">Naziv fajla</translation>
 <translation id="3820172043799983114">Nevažeći PIN.</translation>
 <translation id="3838338534323494292">Nova lozinka</translation>
 <translation id="4003259559679196451">Web lokacija <ph name="ENROLLMENT_DOMAIN" /> upravlja ovim uređajem i ima pristup svim aktivnostima korisnika, uključujući posjećene web stranice, lozinke i e-poštu.</translation>
+<translation id="4034824040120875894">Štampač</translation>
 <translation id="4227825898293920515">Lozinka će isteći za <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos tiket uskoro ističe</translation>
 <translation id="445059817448385655">Stara lozinka</translation>
 <translation id="467510802200863975">Lozinke se ne podudaraju</translation>
 <translation id="4731797938093519117">Pristup roditelja</translation>
 <translation id="4890353053343094602">Odmah odaberite novu lozinku</translation>
+<translation id="4932733599132424254">Datum</translation>
 <translation id="5212543919916444558">Ne mogu pronaći ništa na ekranu u vezi s čim mogu pomoći.
 Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="5222676887888702881">Odjava</translation>
@@ -40,6 +43,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="6146993107019042706">Unesite novu lozinku da završite</translation>
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="7690294790491645610">Potvrdite novu lozinku</translation>
+<translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Promijenite lozinku</translation>
 <translation id="8208861521865154048">Privilegije</translation>
 <translation id="8747900814994928677">Potvrdite promjenu</translation>

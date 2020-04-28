@@ -166,7 +166,8 @@ void AshTestHelper::TearDown() {
   test_views_delegate_.reset();
   new_window_delegate_.reset();
   bluez_dbus_manager_initializer_.reset();
-  photo_controller_.reset();
+  ambient_client_.reset();
+  assistant_image_downloader_.reset();
   system_tray_client_.reset();
   assistant_service_.reset();
   notifier_settings_controller_.reset();

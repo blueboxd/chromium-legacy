@@ -39,7 +39,7 @@ namespace media {
 // implement the backend of PPB_VideoDecoder_Dev.
 class MEDIA_EXPORT VideoDecodeAccelerator {
  public:
-  // Specification of a decoding profile supported by an decoder.
+  // Specification of a decoding profile supported by a decoder.
   // |max_resolution| and |min_resolution| are inclusive.
   struct MEDIA_EXPORT SupportedProfile {
     SupportedProfile();

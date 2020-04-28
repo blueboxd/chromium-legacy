@@ -32,13 +32,6 @@ class URLFetcherFactory;
 
 class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
  public:
-  // |url| is the URL to send the request to.
-  // |request_type| is the type of request to make.
-  // |d| the object that will receive the callback on fetch completion.
-  URLFetcherImpl(const GURL& url,
-                 RequestType request_type,
-                 URLFetcherDelegate* d,
-                 net::NetworkTrafficAnnotationTag traffic_annotation);
   ~URLFetcherImpl() override;
 
   // URLFetcher implementation:
@@ -121,6 +114,16 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
 
  private:
   friend class URLFetcherTest;
+  friend class URLFetcher;
+  friend class WaitingURLFetcherDelegate;
+
+  // |url| is the URL to send the request to.
+  // |request_type| is the type of request to make.
+  // |d| the object that will receive the callback on fetch completion.
+  URLFetcherImpl(const GURL& url,
+                 RequestType request_type,
+                 URLFetcherDelegate* d,
+                 net::NetworkTrafficAnnotationTag traffic_annotation);
 
   // Only used by URLFetcherTest, returns the number of URLFetcher::Core objects
   // actively running.

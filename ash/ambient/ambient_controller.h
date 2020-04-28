@@ -5,6 +5,7 @@
 #ifndef ASH_AMBIENT_AMBIENT_CONTROLLER_H_
 #define ASH_AMBIENT_AMBIENT_CONTROLLER_H_
 
+#include "ash/ambient/ambient_photo_controller.h"
 #include "ash/ambient/ambient_view_delegate_impl.h"
 #include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ash_export.h"
@@ -24,7 +25,9 @@ class ImageSkia;
 
 namespace ash {
 
+class AmbientBackendController;
 class AmbientContainerView;
+class AmbientPhotoController;
 
 // Class to handle all ambient mode functionalities.
 class ASH_EXPORT AmbientController : public views::WidgetObserver,
@@ -72,7 +75,14 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
     return refresh_timer_;
   }
 
+  AmbientBackendController* ambient_backend_controller() {
+    return ambient_backend_controller_.get();
+  }
+
  private:
+  friend class AmbientContainerViewTest;
+  friend class AmbientPhotoControllerTest;
+
   void CreateContainerView();
   void DestroyContainerView();
   void RefreshImage();
@@ -87,10 +97,19 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
 
   void StartFadeOutAnimation();
 
+  AmbientPhotoController* get_ambient_photo_controller_for_testing() {
+    return &ambient_photo_controller_;
+  }
+
+  void set_backend_controller_for_testing(
+      std::unique_ptr<AmbientBackendController> photo_client);
+
   AmbientViewDelegateImpl delegate_{this};
   AmbientContainerView* container_view_ = nullptr;   // Owned by view hierarchy.
   AmbientBackendModel ambient_backend_model_;
   AmbientModeState ambient_state_;
+  std::unique_ptr<AmbientBackendController> ambient_backend_controller_;
+  AmbientPhotoController ambient_photo_controller_;
   base::OneShotTimer refresh_timer_;
   base::WeakPtrFactory<AmbientController> weak_factory_{this};
 

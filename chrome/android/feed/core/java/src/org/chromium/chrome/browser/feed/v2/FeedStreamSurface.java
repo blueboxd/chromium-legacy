@@ -177,11 +177,14 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
             }
         }
 
-        // 3) Removes those contents that do not appear in the new list.
+        // 3) Removes those contents that do not appear in the new list as the existing contents.
+        //    Sometimes we may add new content with same id as the one in current list. In this
+        //    case, we will remove it from current list and add it again later as new content.
         for (int i = mContentManager.getItemCount() - 1; i >= 0; --i) {
             String id = mContentManager.getContent(i).getKey();
             if (!existingIdsInNewContentList.contains(id)) {
                 mContentManager.removeContents(i, 1);
+                existingContentMap.remove(id);
             }
         }
 

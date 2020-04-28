@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Entrypoint to the font enumeration API for workers.
-// https://inexorabletash.github.io/font-enumeration/
+// https://wicg.github.io/local-font-access/
 [
     Exposed=Worker,
     SecureContext,

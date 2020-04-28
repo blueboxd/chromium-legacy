@@ -273,6 +273,16 @@ ShellContentBrowserClient::GetDevToolsManagerDelegate() {
   return new ShellDevToolsManagerDelegate(browser_context());
 }
 
+void ShellContentBrowserClient::ExposeInterfacesToRenderer(
+    service_manager::BinderRegistry* registry,
+    blink::AssociatedInterfaceRegistry* associated_registry,
+    RenderProcessHost* render_process_host) {
+  if (expose_interfaces_to_renderer_callback_) {
+    expose_interfaces_to_renderer_callback_.Run(registry, associated_registry,
+                                                render_process_host);
+  }
+}
+
 mojo::Remote<::media::mojom::MediaService>
 ShellContentBrowserClient::RunSecondaryMediaService() {
   mojo::Remote<::media::mojom::MediaService> remote;
@@ -284,6 +294,14 @@ ShellContentBrowserClient::RunSecondaryMediaService() {
       remote.BindNewPipeAndPassReceiver()));
 #endif
   return remote;
+}
+
+void ShellContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
+    RenderFrameHost* render_frame_host,
+    service_manager::BinderMapWithContext<RenderFrameHost*>* map) {
+  if (register_browser_interface_binders_for_frame_callback_)
+    register_browser_interface_binders_for_frame_callback_.Run(
+        render_frame_host, map);
 }
 
 void ShellContentBrowserClient::OpenURL(

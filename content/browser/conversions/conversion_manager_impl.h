@@ -98,6 +98,12 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
 
   void HandleReportsExpiredAtStartup(std::vector<ConversionReport> reports);
 
+  // Friend to expose the ConversionStorage and task runner, consider changing
+  // to just expose the storage if it moves to SequenceBound.
+  friend std::vector<ConversionReport> GetConversionsToReportForTesting(
+      ConversionManagerImpl* manager,
+      base::Time max_report_time);
+
   // Task runner used to perform operations on |storage_|. Runs with
   // base::TaskPriority::BEST_EFFORT.
   scoped_refptr<base::SequencedTaskRunner> storage_task_runner_;

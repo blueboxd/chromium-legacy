@@ -5,13 +5,13 @@
 /** @fileoverview Suite of tests for site-list. */
 
 // clang-format off
-import {ContentSetting,ContentSettingsTypes,kControlledByLookup,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl,SITE_EXCEPTION_WILDCARD} from 'chrome://settings/lazy_load.js';
-import {createContentSettingTypeToValuePair,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
-import {CrSettingsPrefs,Router} from 'chrome://settings/settings.js';
-import {eventToPromise,waitBeforeNextRender} from 'chrome://test/test_util.m.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ContentSetting,ContentSettingsTypes,kControlledByLookup,SITE_EXCEPTION_WILDCARD,SiteSettingSource,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {CrSettingsPrefs,Router} from 'chrome://settings/settings.js';
+import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {createContentSettingTypeToValuePair,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
+import {eventToPromise,waitBeforeNextRender} from 'chrome://test/test_util.m.js';
 // clang-format on
 
 /**
@@ -378,8 +378,7 @@ suite('SiteList', function() {
 
   test('read-only attribute', function() {
     setUpCategory(
-        ContentSettingsTypes.GEOLOCATION,
-        ContentSetting.ALLOW, prefsVarious);
+        ContentSettingsTypes.GEOLOCATION, ContentSetting.ALLOW, prefsVarious);
     return browserProxy.whenCalled('getExceptionList')
         .then(function(contentType) {
           // Flush to be sure list container is populated.
@@ -398,8 +397,8 @@ suite('SiteList', function() {
 
   test('getExceptionList API used', function() {
     setUpCategory(
-        ContentSettingsTypes.GEOLOCATION,
-        ContentSetting.ALLOW, prefsGeolocationEmpty);
+        ContentSettingsTypes.GEOLOCATION, ContentSetting.ALLOW,
+        prefsGeolocationEmpty);
     return browserProxy.whenCalled('getExceptionList')
         .then(function(contentType) {
           assertEquals(ContentSettingsTypes.GEOLOCATION, contentType);
@@ -408,16 +407,15 @@ suite('SiteList', function() {
 
   test('Empty list', function() {
     setUpCategory(
-        ContentSettingsTypes.GEOLOCATION,
-        ContentSetting.ALLOW, prefsGeolocationEmpty);
+        ContentSettingsTypes.GEOLOCATION, ContentSetting.ALLOW,
+        prefsGeolocationEmpty);
     return browserProxy.whenCalled('getExceptionList')
         .then(function(contentType) {
           assertEquals(ContentSettingsTypes.GEOLOCATION, contentType);
 
           assertEquals(0, testElement.sites.length);
 
-          assertEquals(
-              ContentSetting.ALLOW, testElement.categorySubtype);
+          assertEquals(ContentSetting.ALLOW, testElement.categorySubtype);
 
           assertFalse(testElement.$.category.hidden);
         });
@@ -425,8 +423,8 @@ suite('SiteList', function() {
 
   test('initial ALLOW state is correct', function() {
     setUpCategory(
-        ContentSettingsTypes.GEOLOCATION,
-        ContentSetting.ALLOW, prefsGeolocation);
+        ContentSettingsTypes.GEOLOCATION, ContentSetting.ALLOW,
+        prefsGeolocation);
     return browserProxy.whenCalled('getExceptionList')
         .then(function(contentType) {
           assertEquals(ContentSettingsTypes.GEOLOCATION, contentType);
@@ -438,8 +436,7 @@ suite('SiteList', function() {
           assertEquals(
               prefsGeolocation.exceptions[contentType][1].origin,
               testElement.sites[1].origin);
-          assertEquals(
-              ContentSetting.ALLOW, testElement.categorySubtype);
+          assertEquals(ContentSetting.ALLOW, testElement.categorySubtype);
           flush();  // Populates action menu.
           openActionMenu(0);
           assertMenu(['Block', 'Edit', 'Remove'], testElement);
@@ -450,8 +447,8 @@ suite('SiteList', function() {
 
   test('action menu closes when list changes', function() {
     setUpCategory(
-        ContentSettingsTypes.GEOLOCATION,
-        ContentSetting.ALLOW, prefsGeolocation);
+        ContentSettingsTypes.GEOLOCATION, ContentSetting.ALLOW,
+        prefsGeolocation);
     const actionMenu = testElement.$$('cr-action-menu');
     return browserProxy.whenCalled('getExceptionList')
         .then(function(contentType) {
@@ -474,8 +471,8 @@ suite('SiteList', function() {
 
   test('exceptions are not reordered in non-ALL_SITES', function() {
     setUpCategory(
-        ContentSettingsTypes.GEOLOCATION,
-        ContentSetting.BLOCK, prefsMixedProvider);
+        ContentSettingsTypes.GEOLOCATION, ContentSetting.BLOCK,
+        prefsMixedProvider);
     return browserProxy.whenCalled('getExceptionList')
         .then(function(contentType) {
           assertEquals(ContentSettingsTypes.GEOLOCATION, contentType);
@@ -691,8 +688,8 @@ suite('SiteList', function() {
 
   test('edit action menu opens edit exception dialog', function() {
     setUpCategory(
-        ContentSettingsTypes.COOKIES,
-        ContentSetting.SESSION_ONLY, prefsSessionOnly);
+        ContentSettingsTypes.COOKIES, ContentSetting.SESSION_ONLY,
+        prefsSessionOnly);
 
     return browserProxy.whenCalled('getExceptionList').then(function() {
       flush();  // Populates action menu.
@@ -713,8 +710,7 @@ suite('SiteList', function() {
 
   test('edit dialog closes when incognito status changes', function() {
     setUpCategory(
-        ContentSettingsTypes.COOKIES, ContentSetting.BLOCK,
-        prefsSessionOnly);
+        ContentSettingsTypes.COOKIES, ContentSetting.BLOCK, prefsSessionOnly);
 
     return browserProxy.whenCalled('getExceptionList')
         .then(function() {
@@ -870,8 +866,8 @@ suite('SiteList', function() {
   test('Mixed schemes (present and absent)', function() {
     // Prefs: One item with scheme and one without.
     setUpCategory(
-        ContentSettingsTypes.GEOLOCATION,
-        ContentSetting.ALLOW, prefsMixedSchemes);
+        ContentSettingsTypes.GEOLOCATION, ContentSetting.ALLOW,
+        prefsMixedSchemes);
     return browserProxy.whenCalled('getExceptionList')
         .then(function(contentType) {
           // No further checks needed. If this fails, it will hang the test.
@@ -881,8 +877,8 @@ suite('SiteList', function() {
   test('Select menu item', function() {
     // Test for error: "Cannot read property 'origin' of undefined".
     setUpCategory(
-        ContentSettingsTypes.GEOLOCATION,
-        ContentSetting.ALLOW, prefsGeolocation);
+        ContentSettingsTypes.GEOLOCATION, ContentSetting.ALLOW,
+        prefsGeolocation);
     return browserProxy.whenCalled('getExceptionList')
         .then(function(contentType) {
           flush();
@@ -920,8 +916,8 @@ suite('SiteList', function() {
 
   test('show-tooltip event fires on entry shows common tooltip', function() {
     setUpCategory(
-        ContentSettingsTypes.GEOLOCATION,
-        ContentSetting.ALLOW, prefsGeolocation);
+        ContentSettingsTypes.GEOLOCATION, ContentSetting.ALLOW,
+        prefsGeolocation);
     return browserProxy.whenCalled('getExceptionList').then(() => {
       flush();
       const entry =
@@ -951,8 +947,8 @@ suite('SiteList', function() {
       'Add site button is hidden for content settings that don\'t allow it',
       function() {
         setUpCategory(
-            ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
-            ContentSetting.ALLOW, prefsNativeFileSystemWrite);
+            ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE, ContentSetting.ALLOW,
+            prefsNativeFileSystemWrite);
         return browserProxy.whenCalled('getExceptionList').then(() => {
           flush();
           assertFalse(testElement.showAddSiteButton_);

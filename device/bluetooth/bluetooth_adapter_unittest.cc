@@ -64,6 +64,10 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
  public:
   TestBluetoothAdapter() = default;
 
+  void Initialize(base::OnceClosure callback) override {
+    std::move(callback).Run();
+  }
+
   std::string GetAddress() const override { return ""; }
 
   std::string GetName() const override { return ""; }

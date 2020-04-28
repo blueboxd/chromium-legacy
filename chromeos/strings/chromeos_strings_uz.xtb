@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Ilovalar</translation>
 <translation id="2872961005593481000">Ishni tamomlash</translation>
 <translation id="3008341117444806826">YANGILASH</translation>
+<translation id="3749289110408117711">Fayl nomi</translation>
 <translation id="3820172043799983114">PIN kod xato.</translation>
 <translation id="3838338534323494292">Yangi parol</translation>
 <translation id="4003259559679196451">Bu qurilma va uning foydalanuvchilari harakatlari, ochilgan sahifalar, parollar va emaillar <ph name="ENROLLMENT_DOMAIN" /> domenida boshqariladi.</translation>
+<translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Parol muddati tugashiga <ph name="TIME" /> qoldi</translation>
 <translation id="4429881212383817840">Kerberos chiptasi amal qilish muddati tezda tugaydi</translation>
 <translation id="445059817448385655">Eski parol</translation>
 <translation id="467510802200863975">Parollaringiz mos kelmadi</translation>
 <translation id="4731797938093519117">Ota-ona kirishi</translation>
 <translation id="4890353053343094602">Tezda yangi parol tanlang</translation>
+<translation id="4932733599132424254">Sana</translation>
 <translation id="5212543919916444558">Ekranda men yordam bera oladigan hech narsa topilmadi.
 Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="5222676887888702881">Tizimdan chiqish</translation>
@@ -40,6 +43,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="6146993107019042706">Yakunlash uchun yangi parolni kiriting</translation>
 <translation id="7658239707568436148">Bekor qilish</translation>
 <translation id="7690294790491645610">Yangi parolni tasdiqlang.</translation>
+<translation id="7805768142964895445">Holat</translation>
 <translation id="808894953321890993">Parolni almashtirish</translation>
 <translation id="8208861521865154048">Imtiyozlar</translation>
 <translation id="8747900814994928677">Almashtiruvni tasdiqlang</translation>

@@ -2887,9 +2887,6 @@ bool PaintLayer::CompositesWithOpacity() const {
 bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
     const PhysicalRect& local_rect,
     bool should_check_children) const {
-  if (PaintsWithTransparency(kGlobalPaintNormalPhase))
-    return false;
-
   // We can't use hasVisibleContent(), because that will be true if our
   // layoutObject is hidden, but some child is visible and that child doesn't
   // cover the entire rect.
@@ -2941,6 +2938,9 @@ bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
       continue;
 
     if (!child_layer->CanUseConvertToLayerCoords())
+      continue;
+
+    if (child_layer->PaintsWithTransparency(kGlobalPaintNormalPhase))
       continue;
 
     PhysicalOffset child_offset;

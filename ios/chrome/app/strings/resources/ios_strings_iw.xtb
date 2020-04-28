@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">כתובת, שורה 1</translation>
 <translation id="1545749641540134597">‏סריקת קוד QR</translation>
 <translation id="1552525382687785070">מנהל המערכת השבית את הסנכרון</translation>
+<translation id="1554477036522844996">חלון חדש</translation>
 <translation id="1580783302095112590">הדואר נשלח.</translation>
 <translation id="1582732959743469162">הפעולה תפסיק את ההורדה הנוכחית.</translation>
 <translation id="1605658421715042784">העתקת התמונה</translation>
@@ -104,6 +105,7 @@
 <translation id="2239626343334228536">מנקה נתוני גלישה…</translation>
 <translation id="2245545499420671379">‏חסימת קובצי cookie של צד שלישי במצב אנונימי</translation>
 <translation id="2257567812274161158">הסנכרון לא פועל.</translation>
+<translation id="225943865679747347">קוד שגיאה: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">חשבון חדש</translation>
 <translation id="2268044343513325586">צמצם</translation>
 <translation id="2273327106802955778">התפריט 'עוד'</translation>
@@ -187,6 +189,7 @@
 <translation id="3328801116991980348">פרטי אתר</translation>
 <translation id="3329904751041170572">לא ניתן להתחבר לשרת.</translation>
 <translation id="3335947283844343239">פתח מחדש כרטיסייה שנסגרה</translation>
+<translation id="3343651535143698944">הוספת החרגה של אתר</translation>
 <translation id="3371831930909698441">‏Translate זמין. האפשרויות מוצגות בחלק התחתון של המסך.</translation>
 <translation id="3393920035788932672">חלונות קופצים מותרים</translation>
 <translation id="3443810440409579745">כרטיסייה התקבלה.</translation>
@@ -555,6 +558,7 @@
 <translation id="8319076807703933069">חיפוש חדש</translation>
 <translation id="8323906514956095947">לחיצה ארוכה תציג אפשרויות נוספות של כרטיסיות</translation>
 <translation id="8328777765163860529">סגור הכל</translation>
+<translation id="8332159733957009464">החרגות אתרים</translation>
 <translation id="8386068868580335421">איפוס</translation>
 <translation id="8407669440184693619">לא נמצאו סיסמאות בשביל האתר הזה</translation>
 <translation id="842017693807136194">מחובר באמצעות</translation>

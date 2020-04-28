@@ -199,7 +199,7 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
     HandleAuthNeededResponse();
   } else {
     LogFtpStartResult(FTPStartResult::kFailed);
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
+    NotifyStartError(result);
   }
 }
 

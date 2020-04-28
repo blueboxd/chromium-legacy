@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/cpp/assistant/assistant_interface_binder.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/public/cpp/quick_answers_controller.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -234,11 +234,7 @@ void QuickAnswersMenuObserver::SetQuickAnswerClientForTesting(
 }
 
 void QuickAnswersMenuObserver::SendAssistantQuery(const std::string& query) {
-  mojo::Remote<chromeos::assistant::mojom::AssistantController>
-      assistant_controller;
-  ash::AssistantInterfaceBinder::GetInstance()->BindController(
-      assistant_controller.BindNewPipeAndPassReceiver());
-  assistant_controller->StartTextInteraction(
+  ash::AssistantInteractionController::Get()->StartTextInteraction(
       query, /*allow_tts=*/false,
       chromeos::assistant::mojom::AssistantQuerySource::kQuickAnswers);
 }

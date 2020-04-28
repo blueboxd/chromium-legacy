@@ -10,8 +10,10 @@
 #include "android_webview/common/js_java_interaction/interfaces.mojom.h"
 #include "base/strings/string16.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_frame_observer_tracker.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace content {
 class RenderFrame;
@@ -21,14 +23,19 @@ namespace android_webview {
 
 class JsBinding;
 
-class JsJavaConfigurator : public mojom::JsJavaConfigurator,
-                           public content::RenderFrameObserver {
+class JsJavaConfigurator
+    : public mojom::JsJavaConfigurator,
+      public content::RenderFrameObserver,
+      public content::RenderFrameObserverTracker<JsJavaConfigurator> {
  public:
   explicit JsJavaConfigurator(content::RenderFrame* render_frame);
   ~JsJavaConfigurator() override;
 
   // mojom::Configurator implementation
   void SetJsObjects(std::vector<mojom::JsObjectPtr> js_object_ptrs) override;
+  void AddDocumentStartScript(
+      mojom::DocumentStartJavascriptPtr script_ptr) override;
+  void RemoveDocumentStartScript(int32_t script_id) override;
 
   // RenderFrameObserver implementation
   void DidClearWindowObject() override;
@@ -36,11 +43,14 @@ class JsJavaConfigurator : public mojom::JsJavaConfigurator,
                                 int32_t world_id) override;
   void OnDestruct() override;
 
+  void RunScriptsAtDocumentStart();
+
   mojom::JsToJavaMessaging* GetJsToJavaMessage(
       const base::string16& js_object_name);
 
  private:
   struct JsObjectInfo;
+  struct DocumentStartJavascript;
 
   void BindPendingReceiver(
       mojo::PendingAssociatedReceiver<mojom::JsJavaConfigurator>
@@ -53,6 +63,7 @@ class JsJavaConfigurator : public mojom::JsJavaConfigurator,
   // to prevent doing multiple injection in that case.
   bool inside_did_clear_window_object_ = false;
 
+  std::vector<std::unique_ptr<DocumentStartJavascript>> scripts_;
   std::vector<std::unique_ptr<JsBinding>> js_bindings_;
 
   // Associated with legacy IPC channel.

@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -60,7 +59,7 @@ ScheduledAction::ScheduledAction(ScriptState* script_state,
   if (script_state->World().IsWorkerWorld() ||
       BindingSecurity::ShouldAllowAccessToFrame(
           EnteredDOMWindow(script_state->GetIsolate()),
-          Document::From(target)->GetFrame(),
+          To<LocalDOMWindow>(target)->GetFrame(),
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
     function_ = handler;
     arguments_ = arguments;
@@ -77,7 +76,7 @@ ScheduledAction::ScheduledAction(ScriptState* script_state,
   if (script_state->World().IsWorkerWorld() ||
       BindingSecurity::ShouldAllowAccessToFrame(
           EnteredDOMWindow(script_state->GetIsolate()),
-          Document::From(target)->GetFrame(),
+          To<LocalDOMWindow>(target)->GetFrame(),
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
     code_ = handler;
   } else {
@@ -121,8 +120,8 @@ void ScheduledAction::Execute(ExecutionContext* context) {
   // determine if it is allowed. Enter the scope here.
   ScriptState::Scope scope(script_state_->Get());
 
-  if (auto* document = Document::DynamicFrom(context)) {
-    LocalFrame* frame = document->GetFrame();
+  if (LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context)) {
+    LocalFrame* frame = window->GetFrame();
     if (!frame) {
       DVLOG(1) << "ScheduledAction::execute " << this << ": no frame";
       return;

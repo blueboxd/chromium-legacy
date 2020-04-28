@@ -227,6 +227,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
   // Reduce visible count to 0 so that the action is overflowed.
   ToolbarActionsModel::Get(profile())->SetVisibleIconCount(0);
+  RunScheduledLayouts();
 
   // When the extension is activated, it will send a message that its popup
   // opened. Listen for the message.
@@ -292,6 +293,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
   // Reduce visible count to 0 so that all actions are overflowed.
   ToolbarActionsModel::Get(profile())->SetVisibleIconCount(0);
+  RunScheduledLayouts();
 
   auto* app_menu_button = GetAppMenuButtonFromBrowser(browser());
   // Click on the app button.
@@ -328,6 +330,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("ui").AppendASCII("browser_action_popup")));
   base::RunLoop().RunUntilIdle();  // Ensure the extension is fully loaded.
+
+  RunScheduledLayouts();
 
   BrowserActionsContainer* browser_actions_container =
       BrowserView::GetBrowserViewForBrowser(browser())
@@ -393,6 +397,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 
   // Reduce visible count to 0 so that all actions are overflowed.
   ToolbarActionsModel::Get(profile())->SetVisibleIconCount(0);
+  RunScheduledLayouts();
 
   // Set up a listener for the extension being triggered.
   ExtensionTestMessageListener listener("Popup opened", false);

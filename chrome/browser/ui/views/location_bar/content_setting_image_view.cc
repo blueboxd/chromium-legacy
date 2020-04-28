@@ -93,9 +93,10 @@ ContentSettingImageView::~ContentSettingImageView() {
 void ContentSettingImageView::Update() {
   content::WebContents* web_contents =
       delegate_->GetContentSettingWebContents();
-  // Note: We explicitly want to call this even if |web_contents| is NULL, so we
-  // get hidden properly while the user is editing the omnibox.
-  content_setting_image_model_->Update(web_contents);
+
+  // Calling Update() with a nullptr WebContents will hide the image.
+  content_setting_image_model_->Update(
+      delegate_->ShouldHideContentSettingImage() ? nullptr : web_contents);
   SetTooltipText(content_setting_image_model_->get_tooltip());
 
   if (!content_setting_image_model_->is_visible()) {

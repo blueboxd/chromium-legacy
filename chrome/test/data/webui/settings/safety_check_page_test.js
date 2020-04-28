@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckInteractions, SafetyCheckExtensionsStatus, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from 'chrome://settings/settings.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {HatsBrowserProxyImpl, LifetimeBrowserProxyImpl, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckExtensionsStatus, SafetyCheckInteractions, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from 'chrome://settings/settings.js';
 import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.js';
 import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.m.js';
 import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
-import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
 import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
 // clang-format on
 
 suite('SafetyCheckUiTests', function() {
@@ -53,16 +54,14 @@ suite('SafetyCheckUiTests', function() {
     const event = {};
     event.newState = state;
     event.displayString = null;
-    webUIListenerCallback(
-        SafetyCheckCallbackConstants.PARENT_CHANGED, event);
+    webUIListenerCallback(SafetyCheckCallbackConstants.PARENT_CHANGED, event);
   }
 
   function fireSafetyCheckUpdatesEvent(state) {
     const event = {};
     event.newState = state;
     event.displayString = null;
-    webUIListenerCallback(
-        SafetyCheckCallbackConstants.UPDATES_CHANGED, event);
+    webUIListenerCallback(SafetyCheckCallbackConstants.UPDATES_CHANGED, event);
   }
 
   function fireSafetyCheckPasswordsEvent(state) {
@@ -234,8 +233,7 @@ suite('SafetyCheckUiTests', function() {
   });
 
   test('updatesDisabledByAdminUiTest', function() {
-    fireSafetyCheckUpdatesEvent(
-        SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN);
+    fireSafetyCheckUpdatesEvent(SafetyCheckUpdatesStatus.DISABLED_BY_ADMIN);
     flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertTrue(!!page.$$('#safetyCheckUpdatesManagedIcon'));
@@ -243,8 +241,7 @@ suite('SafetyCheckUiTests', function() {
   });
 
   test('updatesFailedOfflineUiTest', function() {
-    fireSafetyCheckUpdatesEvent(
-        SafetyCheckUpdatesStatus.FAILED_OFFLINE);
+    fireSafetyCheckUpdatesEvent(SafetyCheckUpdatesStatus.FAILED_OFFLINE);
     flush();
     assertFalse(!!page.$$('#safetyCheckUpdatesButton'));
     assertFalse(!!page.$$('#safetyCheckUpdatesManagedIcon'));
@@ -307,8 +304,7 @@ suite('SafetyCheckUiTests', function() {
     const passwordManager = new TestPasswordManagerProxy();
     PasswordManagerImpl.instance_ = passwordManager;
 
-    fireSafetyCheckPasswordsEvent(
-        SafetyCheckPasswordsStatus.COMPROMISED);
+    fireSafetyCheckPasswordsEvent(SafetyCheckPasswordsStatus.COMPROMISED);
     flush();
     assertTrue(!!page.$$('#safetyCheckPasswordsButton'));
     assertIconStatusWarning(page.$$('#passwordsIcon'));
@@ -325,8 +321,7 @@ suite('SafetyCheckUiTests', function() {
         await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the correct Settings page is shown.
     assertEquals(
-        routes.CHECK_PASSWORDS,
-        Router.getInstance().getCurrentRoute());
+        routes.CHECK_PASSWORDS, Router.getInstance().getCurrentRoute());
 
     // Ensure correct referrer sent to password check.
     const referrer =
@@ -336,8 +331,7 @@ suite('SafetyCheckUiTests', function() {
   });
 
   test('safeBrowsingCheckingUiTest', function() {
-    fireSafetyCheckSafeBrowsingEvent(
-        SafetyCheckSafeBrowsingStatus.CHECKING);
+    fireSafetyCheckSafeBrowsingEvent(SafetyCheckSafeBrowsingStatus.CHECKING);
     flush();
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
@@ -363,8 +357,7 @@ suite('SafetyCheckUiTests', function() {
   });
 
   test('safeBrowsingDisabledUiTest', async function() {
-    fireSafetyCheckSafeBrowsingEvent(
-        SafetyCheckSafeBrowsingStatus.DISABLED);
+    fireSafetyCheckSafeBrowsingEvent(SafetyCheckSafeBrowsingStatus.DISABLED);
     flush();
     assertTrue(!!page.$$('#safetyCheckSafeBrowsingButton'));
     assertFalse(!!page.$$('#safetyCheckSafeBrowsingManagedIcon'));
@@ -381,9 +374,7 @@ suite('SafetyCheckUiTests', function() {
         'Settings.SafetyCheck.ManageSafeBrowsing',
         await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the correct Settings page is shown.
-    assertEquals(
-        routes.SECURITY,
-        Router.getInstance().getCurrentRoute());
+    assertEquals(routes.SECURITY, Router.getInstance().getCurrentRoute());
   });
 
   test('safeBrowsingDisabledByAdminUiTest', function() {
@@ -405,8 +396,7 @@ suite('SafetyCheckUiTests', function() {
   });
 
   test('extensionsCheckingUiTest', function() {
-    fireSafetyCheckExtensionsEvent(
-        SafetyCheckExtensionsStatus.CHECKING);
+    fireSafetyCheckExtensionsEvent(SafetyCheckExtensionsStatus.CHECKING);
     flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
@@ -453,8 +443,8 @@ suite('SafetyCheckUiTests', function() {
   });
 
   test('extensionsBlocklistedOnUserAdminUiTest', function() {
-    fireSafetyCheckExtensionsEvent(SafetyCheckExtensionsStatus
-                                       .BLOCKLISTED_REENABLED_SOME_BY_USER);
+    fireSafetyCheckExtensionsEvent(
+        SafetyCheckExtensionsStatus.BLOCKLISTED_REENABLED_SOME_BY_USER);
     flush();
     assertTrue(!!page.$$('#safetyCheckExtensionsButton'));
     assertFalse(!!page.$$('#safetyCheckExtensionsManagedIcon'));
@@ -464,8 +454,8 @@ suite('SafetyCheckUiTests', function() {
   });
 
   test('extensionsBlocklistedOnAllAdminUiTest', function() {
-    fireSafetyCheckExtensionsEvent(SafetyCheckExtensionsStatus
-                                       .BLOCKLISTED_REENABLED_ALL_BY_ADMIN);
+    fireSafetyCheckExtensionsEvent(
+        SafetyCheckExtensionsStatus.BLOCKLISTED_REENABLED_ALL_BY_ADMIN);
     flush();
     assertFalse(!!page.$$('#safetyCheckExtensionsButton'));
     assertTrue(!!page.$$('#safetyCheckExtensionsManagedIcon'));

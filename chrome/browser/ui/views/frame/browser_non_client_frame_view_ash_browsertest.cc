@@ -366,6 +366,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // Setting non-zero bookmark bar preferred size forces it to be visible and
   // triggers BrowserView layout update.
   bookmark_bar->SetPreferredSize(gfx::Size(50, 5));
+  browser_view->GetWidget()->LayoutRootViewIfNecessary();
   EXPECT_TRUE(bookmark_bar->GetVisible());
 
   // Minimum window size should grow with the bookmark bar shown.

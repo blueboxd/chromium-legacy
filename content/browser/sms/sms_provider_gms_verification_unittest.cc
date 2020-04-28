@@ -88,7 +88,7 @@ TEST_F(SmsProviderGmsVerificationTest, Retrieve) {
   std::string test_url = "https://google.com";
 
   EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
-  provider()->Retrieve();
+  provider()->Retrieve(main_rfh());
   TriggerSmsVerificationSms("Hi\n@google.com #ABC123");
 }
 
@@ -99,14 +99,14 @@ TEST_F(SmsProviderGmsVerificationTest, IgnoreBadSms) {
 
   EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
 
-  provider()->Retrieve();
+  provider()->Retrieve(main_rfh());
   TriggerSmsVerificationSms(bad_sms);
   TriggerSmsVerificationSms(good_sms);
 }
 
 TEST_F(SmsProviderGmsVerificationTest, TaskTimedOut) {
   EXPECT_CALL(*observer(), OnReceive(_, _)).Times(0);
-  provider()->Retrieve();
+  provider()->Retrieve(main_rfh());
   TriggerTimeout();
 }
 
@@ -116,8 +116,8 @@ TEST_F(SmsProviderGmsVerificationTest, OneObserverTwoTasks) {
   EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
 
   // Two tasks for when 1 request gets aborted but the task is still triggered.
-  provider()->Retrieve();
-  provider()->Retrieve();
+  provider()->Retrieve(main_rfh());
+  provider()->Retrieve(main_rfh());
 
   // First timeout should be ignored.
   TriggerTimeout();

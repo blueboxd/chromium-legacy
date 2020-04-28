@@ -865,6 +865,17 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   if (scroll_predictor_)
     scroll_predictor_->ResetOnGestureScrollBegin(gesture_event);
 
+  // When a GSB is being handled, end any pre-existing gesture scrolls that are
+  // in progress.
+  if (currently_active_gesture_device_.has_value() &&
+      handling_gesture_on_impl_thread_) {
+    // TODO(arakeri): Once crbug.com/1074209 is fixed, delete calls to
+    // RecordScrollEnd.
+    input_handler_->RecordScrollEnd(
+        GestureScrollInputType(*currently_active_gesture_device_));
+    InputHandlerScrollEnd();
+  }
+
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
   cc::InputHandler::ScrollStatus scroll_status;
   cc::ElementIdType element_id_type =

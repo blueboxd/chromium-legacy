@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">Adresse 1</translation>
 <translation id="1545749641540134597">Skann en QR-kode</translation>
 <translation id="1552525382687785070">Administratoren din har slått av synkronisering</translation>
+<translation id="1554477036522844996">Nytt vindu</translation>
 <translation id="1580783302095112590">E-posten er sendt.</translation>
 <translation id="1582732959743469162">Dette stopper all fremdriften for den aktive nedlastingen.</translation>
 <translation id="1605658421715042784">Kopiér bildet</translation>
@@ -104,6 +105,7 @@
 <translation id="2239626343334228536">Sletter nettlesingsdata …</translation>
 <translation id="2245545499420671379">Blokkér informasjonskapsler fra tredjepart i inkognitomodus</translation>
 <translation id="2257567812274161158">Synkroniseringen fungerer ikke.</translation>
+<translation id="225943865679747347">Feilkode: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Legg til konto</translation>
 <translation id="2268044343513325586">Finstem</translation>
 <translation id="2273327106802955778">Mer-menyen</translation>
@@ -114,6 +116,7 @@
 <translation id="2359043044084662842">Oversett</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2360196772093551345">Be om mobilversjonen av nettstedet</translation>
+<translation id="2379896346847637748">Åpne i et nytt vindu</translation>
 <translation id="2381405137052800939">Grunninnstillinger</translation>
 <translation id="2386793615875593361">1 er valgt</translation>
 <translation id="2421004566762153674">Blokkerer informasjonskapsler fra tredjeparter</translation>
@@ -187,6 +190,7 @@
 <translation id="3328801116991980348">Informasjon om nettstedet</translation>
 <translation id="3329904751041170572">Kunne ikke koble til tjeneren.</translation>
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
+<translation id="3343651535143698944">Legg til et nettsted som unntak</translation>
 <translation id="3371831930909698441">Oversetter er tilgjengelig. Du finner alternativer på nedre del av skjermen.</translation>
 <translation id="3393920035788932672">Tillat forgrunnsvinduer</translation>
 <translation id="3443810440409579745">Fane er mottatt.</translation>
@@ -555,6 +559,7 @@ Fordi kontoen din administreres av <ph name="HOSTED_DOMAIN" />, slettes Chrome-d
 <translation id="8319076807703933069">Nytt søk</translation>
 <translation id="8323906514956095947">Trykk og hold inne for flere fanealternativer</translation>
 <translation id="8328777765163860529">Lukk alle</translation>
+<translation id="8332159733957009464">Nettstedsunntak</translation>
 <translation id="8386068868580335421">Tilbakestill</translation>
 <translation id="8407669440184693619">Fant ingen passord for dette nettstedet</translation>
 <translation id="842017693807136194">Logget på med</translation>

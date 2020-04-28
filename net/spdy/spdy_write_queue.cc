@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/containers/circular_deque.h"
-#include "base/logging.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "net/spdy/spdy_buffer.h"
 #include "net/spdy/spdy_buffer_producer.h"

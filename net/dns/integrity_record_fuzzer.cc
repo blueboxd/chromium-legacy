@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "net/dns/record_rdata.h"

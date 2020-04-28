@@ -369,9 +369,7 @@ int URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size) {
 }
 
 void URLRequestChromeJob::NotifyStartErrorAsync() {
-  const net::URLRequestStatus error = net::URLRequestStatus(
-      net::URLRequestStatus::FAILED, net::ERR_INVALID_URL);
-  NotifyStartError(error);
+  NotifyStartError(net::ERR_INVALID_URL);
 }
 
 namespace {

@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace ash {
+class AssistantController;
 class AssistantStateBase;
 }  // namespace ash
 
@@ -23,14 +24,6 @@ namespace assistant_client {
 struct SpeakerIdEnrollmentStatus;
 struct SpeakerIdEnrollmentUpdate;
 }  // namespace assistant_client
-
-namespace chromeos {
-namespace assistant {
-namespace mojom {
-class AssistantController;
-}  // namespace mojom
-}  // namespace assistant
-}  // namespace chromeos
 
 namespace chromeos {
 namespace assistant {
@@ -77,7 +70,7 @@ class AssistantSettingsManagerImpl : public AssistantSettingsManager {
                                   const std::string& settings);
 
   ash::AssistantStateBase* assistant_state();
-  mojom::AssistantController* assistant_controller();
+  ash::AssistantController* assistant_controller();
   scoped_refptr<base::SequencedTaskRunner> main_task_runner();
 
   ServiceContext* const context_;

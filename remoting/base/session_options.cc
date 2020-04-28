@@ -82,6 +82,10 @@ base::Optional<bool> SessionOptions::GetBool(const std::string& key) const {
   return base::nullopt;
 }
 
+bool SessionOptions::GetBoolValue(const std::string& key) const {
+  return GetBool(key).value_or(false);
+}
+
 base::Optional<int> SessionOptions::GetInt(const std::string& key) const {
   base::Optional<std::string> value = Get(key);
   if (!value) {

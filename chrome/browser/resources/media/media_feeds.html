@@ -8,7 +8,9 @@
   <script src="chrome://resources/js/promise_resolver.js"></script>
   <script src="chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js"></script>
   <script src="chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js"></script>
+  <script src="chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js"></script>
   <script src="chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js"></script>
+  <script src="chrome://resources/mojo/url/mojom/origin.mojom-lite.js"></script>
   <script src="chrome://resources/mojo/url/mojom/url.mojom-lite.js"></script>
   <script src="ui/gfx/geometry/mojom/geometry.mojom-lite.js"></script>
   <script src="services/media_session/public/mojom/media_session.mojom-lite.js"></script>
@@ -128,8 +130,12 @@
         <th sort-key="resetReason">
           Reset Reason
         </th>
+        <th data-key="associatedOrigins">
+          Associated Origins
+        </th>
         <th data-key="logos">
           Logos
+        </th>
         <th data-key="actions">
           Actions
         </th>

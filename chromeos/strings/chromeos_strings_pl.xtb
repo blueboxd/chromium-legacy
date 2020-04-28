@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Aplikacje</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="3008341117444806826">ODŚWIEŻ</translation>
+<translation id="3749289110408117711">Nazwa pliku</translation>
 <translation id="3820172043799983114">Nieprawidłowy kod PIN.</translation>
 <translation id="3838338534323494292">Nowe hasło</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> zarządza tym urządzeniem i ma dostęp do wszelkiej aktywności użytkownika, w tym odwiedzanych stron internetowych, haseł i e-maili.</translation>
+<translation id="4034824040120875894">Drukarka</translation>
 <translation id="4227825898293920515">Hasło wygasa za <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Bilet Kerberos wkrótce straci ważność</translation>
 <translation id="445059817448385655">Stare hasło</translation>
 <translation id="467510802200863975">Hasła nie są zgodne</translation>
 <translation id="4731797938093519117">Dostęp rodzica</translation>
 <translation id="4890353053343094602">Jak najszybciej wybierz nowe.</translation>
+<translation id="4932733599132424254">Data</translation>
 <translation id="5212543919916444558">Na Twoim ekranie nie ma nic, w czym mogę pomóc.
 Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
@@ -40,6 +43,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="6146993107019042706">Aby zakończyć, wpisz nowe hasło</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7690294790491645610">Potwierdź nowe hasło</translation>
+<translation id="7805768142964895445">Stan</translation>
 <translation id="808894953321890993">Zmień hasło</translation>
 <translation id="8208861521865154048">Korzyści</translation>
 <translation id="8747900814994928677">Potwierdź zmianę</translation>

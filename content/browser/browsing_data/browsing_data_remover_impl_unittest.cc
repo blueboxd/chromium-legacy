@@ -1280,6 +1280,15 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveShaderCache) {
             StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE);
 }
 
+TEST_F(BrowsingDataRemoverImplTest, RemoveConversions) {
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                BrowsingDataRemover::DATA_TYPE_CONVERSIONS,
+                                false);
+  StoragePartitionRemovalData removal_data = GetStoragePartitionRemovalData();
+  EXPECT_EQ(removal_data.remove_mask,
+            StoragePartition::REMOVE_DATA_MASK_CONVERSIONS);
+}
+
 class MultipleTasksObserver {
  public:
   // A simple implementation of BrowsingDataRemover::Observer.

@@ -103,8 +103,8 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
     return;
   }
 
-  Document& document = *Document::From(ToExecutionContext(
-      info.NewTarget().As<v8::Object>()->CreationContext()));
+  Document& document = *ToLocalDOMWindow(
+      info.NewTarget().As<v8::Object>()->CreationContext())->document();
   TestInterfaceEventTarget* impl = TestInterfaceEventTarget::CreateForJSConstructor(document);
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceEventTargetConstructor::GetWrapperTypeInfo(), wrapper);

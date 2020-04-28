@@ -985,6 +985,50 @@ static_assert(
     offsetof(WritePixelsINTERNALImmediate, pixels_offset) == 40,
     "offset of WritePixelsINTERNALImmediate pixels_offset should be 40");
 
+struct ConvertYUVMailboxesToRGBINTERNALImmediate {
+  typedef ConvertYUVMailboxesToRGBINTERNALImmediate ValueType;
+  static const CommandId kCmdId = kConvertYUVMailboxesToRGBINTERNALImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
+
+  static uint32_t ComputeDataSize() {
+    return static_cast<uint32_t>(sizeof(GLbyte) * 64);
+  }
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType) + ComputeDataSize());
+  }
+
+  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
+
+  void Init(GLenum _planes_yuv_color_space, const GLbyte* _mailboxes) {
+    SetHeader();
+    planes_yuv_color_space = _planes_yuv_color_space;
+    memcpy(ImmediateDataAddress(this), _mailboxes, ComputeDataSize());
+  }
+
+  void* Set(void* cmd,
+            GLenum _planes_yuv_color_space,
+            const GLbyte* _mailboxes) {
+    static_cast<ValueType*>(cmd)->Init(_planes_yuv_color_space, _mailboxes);
+    const uint32_t size = ComputeSize();
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t planes_yuv_color_space;
+};
+
+static_assert(sizeof(ConvertYUVMailboxesToRGBINTERNALImmediate) == 8,
+              "size of ConvertYUVMailboxesToRGBINTERNALImmediate should be 8");
+static_assert(
+    offsetof(ConvertYUVMailboxesToRGBINTERNALImmediate, header) == 0,
+    "offset of ConvertYUVMailboxesToRGBINTERNALImmediate header should be 0");
+static_assert(offsetof(ConvertYUVMailboxesToRGBINTERNALImmediate,
+                       planes_yuv_color_space) == 4,
+              "offset of ConvertYUVMailboxesToRGBINTERNALImmediate "
+              "planes_yuv_color_space should be 4");
+
 struct TraceBeginCHROMIUM {
   typedef TraceBeginCHROMIUM ValueType;
   static const CommandId kCmdId = kTraceBeginCHROMIUM;

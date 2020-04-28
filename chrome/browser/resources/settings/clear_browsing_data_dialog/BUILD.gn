@@ -26,7 +26,7 @@ js_library("clear_browsing_data_dialog") {
     ":clear_browsing_data_browser_proxy",
     "..:route.m",
     "..:router.m",
-    "../controls:settings_checkbox.m",
+    "../controls:settings_checkbox",
     "../controls:settings_dropdown_menu.m",
     "../people_page:sync_browser_proxy.m",
     "//ui/webui/resources/js:load_time_data.m",

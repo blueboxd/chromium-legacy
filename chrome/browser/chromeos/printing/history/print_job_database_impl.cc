@@ -120,7 +120,35 @@ void PrintJobDatabaseImpl::DeletePrintJobs(const std::vector<std::string>& ids,
   database_->UpdateEntries(
       /*entries_to_save=*/std::make_unique<EntryVector>(),
       /*keys_to_remove=*/std::make_unique<std::vector<std::string>>(ids),
-      base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobDeleted,
+      base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobsDeleted,
+                     weak_ptr_factory_.GetWeakPtr(), ids, std::move(callback)));
+}
+
+void PrintJobDatabaseImpl::Clear(DeletePrintJobsCallback callback) {
+  // TODO(crbug/1074444): Maybe try to remove duplicate code in this function.
+  if (init_status_ == InitStatus::FAILED) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  if (init_status_ != InitStatus::INITIALIZED) {
+    deferred_callbacks_.push(base::BindOnce(&PrintJobDatabaseImpl::Clear,
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            std::move(callback)));
+    return;
+  }
+
+  std::vector<std::string> ids;
+  ids.reserve(cache_.size());
+  for (const auto& pair : cache_)
+    ids.push_back(pair.second.id());
+
+  database_->UpdateEntries(
+      /*entries_to_save=*/std::make_unique<EntryVector>(),
+      /*keys_to_remove=*/
+      std::make_unique<std::vector<std::string>>(ids),
+      base::BindOnce(&PrintJobDatabaseImpl::OnPrintJobsDeleted,
                      weak_ptr_factory_.GetWeakPtr(), ids, std::move(callback)));
 }
 
@@ -215,7 +243,7 @@ void PrintJobDatabaseImpl::OnPrintJobSaved(
       FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
-void PrintJobDatabaseImpl::OnPrintJobDeleted(
+void PrintJobDatabaseImpl::OnPrintJobsDeleted(
     const std::vector<std::string>& ids,
     DeletePrintJobsCallback callback,
     bool success) {

@@ -5,9 +5,9 @@
 #ifndef REMOTING_BASE_SESSION_OPTIONS_H_
 #define REMOTING_BASE_SESSION_OPTIONS_H_
 
-#include <map>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/optional.h"
 
 namespace remoting {
@@ -40,6 +40,9 @@ class SessionOptions final {
   // converted to false.
   base::Optional<bool> GetBool(const std::string& key) const;
 
+  // Equivalent to GetBool(key).value_or(false).
+  bool GetBoolValue(const std::string& key) const;
+
   // Retrieves the value of |key|. Returns a true Optional if |key| has been
   // found and the corresponding value can be converted to an integer.
   base::Optional<int> GetInt(const std::string& key) const;
@@ -54,7 +57,7 @@ class SessionOptions final {
   void Import(const std::string& parameter);
 
  private:
-  std::map<std::string, std::string> options_;
+  base::flat_map<std::string, std::string> options_;
 };
 
 }  // namespace remoting

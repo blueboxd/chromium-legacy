@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/values.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_network_session.h"

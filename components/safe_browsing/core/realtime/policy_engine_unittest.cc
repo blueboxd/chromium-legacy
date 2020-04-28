@@ -181,6 +181,39 @@ TEST_F(RealTimePolicyEngineTest,
 }
 
 TEST_F(RealTimePolicyEngineTest,
+       TestCanPerformFullURLLookup_RTLookupForEpEnabled_WithTokenDisabled) {
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env =
+      std::make_unique<signin::IdentityTestEnvironment>();
+  signin::IdentityManager* identity_manager =
+      identity_test_env->identity_manager();
+  syncer::TestSyncService sync_service;
+  // User is signed in.
+  identity_test_env->MakeUnconsentedPrimaryAccountAvailable("test@example.com");
+
+  pref_service_.SetBoolean(prefs::kSafeBrowsingEnhanced, true);
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        /* enabled_features */ {kEnhancedProtection,
+                                kRealTimeUrlLookupEnabledForEP},
+        /* disabled_features */ {});
+    EXPECT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+    EXPECT_TRUE(CanPerformFullURLLookupWithToken(
+        /* is_off_the_record */ false, &sync_service, identity_manager));
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        /* enabled_features */ {kEnhancedProtection,
+                                kRealTimeUrlLookupEnabledForEP},
+        /* disabled_features */ {kRealTimeUrlLookupEnabledForEPWithToken});
+    EXPECT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+    EXPECT_FALSE(CanPerformFullURLLookupWithToken(
+        /* is_off_the_record */ false, &sync_service, identity_manager));
+  }
+}
+
+TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_NonEpUsersEnabledWhenRTLookupForEpDisabled) {
   base::test::ScopedFeatureList feature_list;
 #if defined(OS_ANDROID)

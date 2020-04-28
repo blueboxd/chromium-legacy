@@ -712,8 +712,10 @@ class DeviceStatusCollectorState : public StatusCollectorState {
   void FetchCrosHealthdData(
       const policy::DeviceStatusCollector::CrosHealthdDataFetcher&
           cros_healthd_data_fetcher) {
-    cros_healthd_data_fetcher.Run(base::BindOnce(
-        &DeviceStatusCollectorState::OnCrosHealthdDataReceived, this));
+    cros_healthd_data_fetcher.Run(
+        CrosHealthdCollectionMode::kFull,
+        base::BindOnce(&DeviceStatusCollectorState::OnCrosHealthdDataReceived,
+                       this));
   }
 
   void FetchEMMCLifeTime(
@@ -1511,15 +1513,8 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
   sample->timestamp = timestamp;
 
   if (report_power_status_) {
-    std::vector<chromeos::cros_healthd::mojom::ProbeCategoryEnum>
-        categories_to_probe = {
-            chromeos::cros_healthd::mojom::ProbeCategoryEnum::kBattery};
-    chromeos::cros_healthd::ServiceConnection::GetInstance()
-        ->ProbeTelemetryInfo(
-            categories_to_probe,
-            base::BindOnce(&DeviceStatusCollector::SampleProbeData,
-                           weak_factory_.GetWeakPtr(), std::move(sample),
-                           SamplingProbeResultCallback()));
+    cros_healthd_data_fetcher_.Run(CrosHealthdCollectionMode::kBattery,
+                                   base::DoNothing());
   } else {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -1640,30 +1635,46 @@ void DeviceStatusCollector::AddDataSample(std::unique_ptr<SampledData> sample,
 }
 
 void DeviceStatusCollector::FetchCrosHealthdData(
+    CrosHealthdCollectionMode mode,
     CrosHealthdDataReceiver callback) {
   using chromeos::cros_healthd::mojom::ProbeCategoryEnum;
 
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::vector<ProbeCategoryEnum> categories_to_probe = {
-      ProbeCategoryEnum::kCachedVpdData, ProbeCategoryEnum::kFan};
-  if (report_storage_status_)
-    categories_to_probe.push_back(ProbeCategoryEnum::kNonRemovableBlockDevices);
-  if (report_power_status_)
-    categories_to_probe.push_back(ProbeCategoryEnum::kBattery);
-  if (report_cpu_info_)
-    categories_to_probe.push_back(ProbeCategoryEnum::kCpu);
-  if (report_timezone_info_)
-    categories_to_probe.push_back(ProbeCategoryEnum::kTimezone);
-  if (report_memory_info_)
-    categories_to_probe.push_back(ProbeCategoryEnum::kMemory);
-  if (report_backlight_info_)
-    categories_to_probe.push_back(ProbeCategoryEnum::kBacklight);
+  std::vector<ProbeCategoryEnum> categories_to_probe;
+  SamplingProbeResultCallback completion_callback;
+  switch (mode) {
+    case CrosHealthdCollectionMode::kFull: {
+      categories_to_probe.push_back(ProbeCategoryEnum::kCachedVpdData);
+      categories_to_probe.push_back(ProbeCategoryEnum::kFan);
+
+      if (report_storage_status_) {
+        categories_to_probe.push_back(
+            ProbeCategoryEnum::kNonRemovableBlockDevices);
+      }
+      if (report_power_status_)
+        categories_to_probe.push_back(ProbeCategoryEnum::kBattery);
+      if (report_cpu_info_)
+        categories_to_probe.push_back(ProbeCategoryEnum::kCpu);
+      if (report_timezone_info_)
+        categories_to_probe.push_back(ProbeCategoryEnum::kTimezone);
+      if (report_memory_info_)
+        categories_to_probe.push_back(ProbeCategoryEnum::kMemory);
+      if (report_backlight_info_)
+        categories_to_probe.push_back(ProbeCategoryEnum::kBacklight);
+
+      completion_callback =
+          base::BindOnce(&DeviceStatusCollector::OnProbeDataFetched,
+                         weak_factory_.GetWeakPtr(), std::move(callback));
+      break;
+    }
+    case CrosHealthdCollectionMode::kBattery: {
+      categories_to_probe.push_back(ProbeCategoryEnum::kBattery);
+      break;
+    }
+  }
 
   auto sample = std::make_unique<SampledData>();
   sample->timestamp = base::Time::Now();
-  auto completion_callback =
-      base::BindOnce(&DeviceStatusCollector::OnProbeDataFetched,
-                     weak_factory_.GetWeakPtr(), std::move(callback));
 
   chromeos::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
       categories_to_probe,

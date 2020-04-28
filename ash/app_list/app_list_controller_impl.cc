@@ -754,10 +754,10 @@ void AppListControllerImpl::OnTabletModeEnded() {
                     ->GetShelfLayoutManager()
                     ->HasVisibleWindow());
   presenter_.OnTabletModeChanged(false);
+  UpdateLauncherContainer();
 
   // Dismiss the app list if the tablet mode ends.
   DismissAppList();
-  UpdateLauncherContainer();
 }
 
 void AppListControllerImpl::OnWallpaperColorsChanged() {
@@ -1683,10 +1683,13 @@ void AppListControllerImpl::UpdateLauncherContainer(
   aura::Window* parent_window = GetContainerForDisplayId(display_id);
   if (parent_window && !parent_window->Contains(window)) {
     parent_window->AddChild(window);
-    if (!ShouldHomeLauncherBeVisible()) {
-      // When move launcher back to behind apps, and there is app window
-      // showing, we release focus.
-      Shell::Get()->activation_client()->DeactivateWindow(window);
+    // Release focus if the launcher is moving behind apps, and there is app
+    // window showing. Note that the app list can be shown behind apps in tablet
+    // mode only.
+    if (IsTabletMode() && !ShouldHomeLauncherBeVisible()) {
+      WindowState* const window_state = WindowState::Get(window);
+      if (window_state->IsActive())
+        window_state->Deactivate();
     }
   }
 }

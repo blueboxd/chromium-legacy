@@ -62,8 +62,9 @@ void VideoFrameSubmitter::StartRendering() {
   DCHECK(!is_rendering_);
   is_rendering_ = true;
 
-  if (compositor_frame_sink_)
-    compositor_frame_sink_->SetNeedsBeginFrame(is_rendering_ && ShouldSubmit());
+  if (compositor_frame_sink_) {
+    compositor_frame_sink_->SetNeedsBeginFrame(IsDrivingFrameUpdates());
+  }
 
   frame_trackers_.StartSequence(cc::FrameSequenceTrackerType::kVideo);
 }
@@ -93,7 +94,7 @@ bool VideoFrameSubmitter::IsDrivingFrameUpdates() const {
   // We drive frame updates only when we believe that something is consuming
   // them.  This is different than VideoLayer, which drives updates any time
   // they're in the layer tree.
-  return is_rendering_ && ShouldSubmit();
+  return (is_rendering_ && ShouldSubmit()) || force_begin_frames_;
 }
 
 void VideoFrameSubmitter::Initialize(cc::VideoFrameProvider* provider,
@@ -139,6 +140,12 @@ void VideoFrameSubmitter::SetIsSurfaceVisible(bool is_visible) {
 void VideoFrameSubmitter::SetIsPageVisible(bool is_visible) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   is_page_visible_ = is_visible;
+  UpdateSubmissionState();
+}
+
+void VideoFrameSubmitter::SetForceBeginFrames(bool force_begin_frames) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  force_begin_frames_ = force_begin_frames;
   UpdateSubmissionState();
 }
 

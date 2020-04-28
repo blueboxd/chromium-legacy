@@ -16,7 +16,7 @@ Polymer({
 
     /**
      * Enum values for topicSourceRadioGroup.
-     * Values need to stay in sync with the enum |ash::ambient::TopicSource|.
+     * Values need to stay in sync with the enum |ash::AmbientModeTopicSource|.
      * @private {!Object<string, number>}
      */
     topicSource_: {

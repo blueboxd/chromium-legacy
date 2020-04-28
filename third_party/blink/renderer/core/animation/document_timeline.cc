@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
@@ -66,7 +67,7 @@ const double DocumentTimeline::kMinimumDelay = 0.04;
 DocumentTimeline* DocumentTimeline::Create(
     ExecutionContext* execution_context,
     const DocumentTimelineOptions* options) {
-  Document* document = Document::From(execution_context);
+  Document* document = To<LocalDOMWindow>(execution_context)->document();
   return MakeGarbageCollected<DocumentTimeline>(
       document, base::TimeDelta::FromMillisecondsD(options->originTime()),
       nullptr);

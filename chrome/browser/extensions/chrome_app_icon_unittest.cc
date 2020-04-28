@@ -171,13 +171,13 @@ bool IsBadgeApplied(const gfx::ImageSkia& src,
                     bool grayscale) {
   src.EnsureRepsForSupportedScales();
   gfx::ImageSkia reference_src = src.DeepCopy();
-
-  util::ApplyBadge(&reference_src, badge_type);
   if (grayscale) {
     constexpr color_utils::HSL shift = {-1, 0, 0.6};
     reference_src =
         gfx::ImageSkiaOperations::CreateHSLShiftedImage(reference_src, shift);
   }
+  util::ApplyBadge(&reference_src, badge_type);
+
   return AreEqual(reference_src, res);
 }
 #endif
@@ -235,11 +235,12 @@ TEST_F(ChromeAppIconTest, IconLifeCycle) {
   const size_t update_count_after_disable = reference_icon.icon_update_count();
   EXPECT_NE(2U, update_count_after_disable);
   EXPECT_FALSE(IsBlankImage(reference_icon.image_skia()));
-  EXPECT_TRUE(IsGrayscaleImage(reference_icon.image_skia()));
 #if defined(OS_CHROMEOS)
   EXPECT_TRUE(IsBadgeApplied(image_before_disable, reference_icon.image_skia(),
                              ChromeAppIcon::Badge::kBlocked,
                              true /* grayscale */));
+#else
+  EXPECT_TRUE(IsGrayscaleImage(reference_icon.image_skia()));
 #endif
 
   // Reenable extension. It should match previous enabled image

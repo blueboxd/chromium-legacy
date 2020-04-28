@@ -1401,7 +1401,7 @@ crbug.com/1050754 external/wpt/eventsource/shared-worker/eventsource-onopen.htm 
 crbug.com/1050754 external/wpt/eventsource/shared-worker/eventsource-prototype.htm [ Failure ]
 crbug.com/1050754 external/wpt/eventsource/shared-worker/eventsource-url.htm [ Failure ]
 crbug.com/1050754 external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-tentative.sub.html [ Failure ]
-crbug.com/1050754 external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-attribute-on-sanity-check-tentative.sub.html [ Failure ]
+crbug.com/1050754 external/wpt/feature-policy/experimental-features/lazyload/lazyload-image-loading-lazy-tentative.sub.html [ Failure ]
 crbug.com/1050754 external/wpt/feature-policy/experimental-features/sync-script.tentative.https.sub.html [ Failure ]
 crbug.com/1050754 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-self.https.sub.html [ Failure ]
 crbug.com/1050754 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Failure ]

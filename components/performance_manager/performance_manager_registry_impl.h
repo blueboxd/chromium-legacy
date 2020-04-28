@@ -53,12 +53,16 @@ class PerformanceManagerRegistryImpl
   // PerformanceManagerRegistry:
   void CreatePageNodeForWebContents(
       content::WebContents* web_contents) override;
-  void CreateProcessNodeForRenderProcessHost(
-      content::RenderProcessHost* render_process_host) override;
   void NotifyBrowserContextAdded(
       content::BrowserContext* browser_context) override;
   void NotifyBrowserContextRemoved(
       content::BrowserContext* browser_context) override;
+  void CreateProcessNodeAndExposeInterfacesToRendererProcess(
+      service_manager::BinderRegistry* registry,
+      content::RenderProcessHost* render_process_host) override;
+  void ExposeInterfacesToRenderFrame(
+      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
+      override;
   void TearDown() override;
 
   // PerformanceManagerTabHelper::DestructionObserver:
@@ -68,6 +72,12 @@ class PerformanceManagerRegistryImpl
   // RenderProcessUserData::DestructionObserver:
   void OnRenderProcessUserDataDestroying(
       content::RenderProcessHost* render_process_host) override;
+
+  // This is exposed so that the tab helper can call it as well, as in some
+  // testing configurations we otherwise miss RPH creation notifications that
+  // usually arrive when interfaces are exposed to the renderer.
+  void EnsureProcessNodeForRenderProcessHost(
+      content::RenderProcessHost* render_process_host);
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);

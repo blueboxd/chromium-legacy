@@ -53,6 +53,7 @@
 <translation id="1540800554400757039">Ünvan 1</translation>
 <translation id="1545749641540134597">QR Kodunu skan edin</translation>
 <translation id="1552525382687785070">Sinxronizasiya Administratorunuz Tərəfindən Deaktiv Eilib</translation>
+<translation id="1554477036522844996">Yeni Pəncərə</translation>
 <translation id="1580783302095112590">Məktub göndərildi.</translation>
 <translation id="1582732959743469162">Bu cari endirmə üçün bütün gedişatı dayandıracaq.</translation>
 <translation id="1605658421715042784">Şəkli Kopyalayın</translation>
@@ -104,6 +105,7 @@
 <translation id="2239626343334228536">Brauzinq datası silinir...</translation>
 <translation id="2245545499420671379">Anonim rejimdə üçüncü tərəf kukilərini bloklayın</translation>
 <translation id="2257567812274161158">Sinxronlaşdırma işləmir.</translation>
+<translation id="225943865679747347">Xəta kodu: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Hesab Əlavə edin</translation>
 <translation id="2268044343513325586">Silin</translation>
 <translation id="2273327106802955778">Ətraflı menyu</translation>
@@ -187,6 +189,7 @@
 <translation id="3328801116991980348">Sayt haqqında</translation>
 <translation id="3329904751041170572">Server qoşulmaq mümkün olması.</translation>
 <translation id="3335947283844343239">Bağlanmış Paneli yenidən açın</translation>
+<translation id="3343651535143698944">Sayt İstisnası Əlavə Edin</translation>
 <translation id="3371831930909698441">Tərcümə əlçatandır. Seçimlər ekranın aşağı hissəsində əlçatandır.</translation>
 <translation id="3393920035788932672">Popuplara icazə verilir</translation>
 <translation id="3443810440409579745">Tab qəbul edildi.</translation>
@@ -555,6 +558,7 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə,
 <translation id="8319076807703933069">Yeni Axtarış</translation>
 <translation id="8323906514956095947">Əlavə tab seçimləri üçün basıb saxlayın</translation>
 <translation id="8328777765163860529">Hamısını Bağlayın</translation>
+<translation id="8332159733957009464">Sayt İstisnaları</translation>
 <translation id="8386068868580335421">Sıfırlayın</translation>
 <translation id="8407669440184693619">Bu sayt üçün parol tapılmadı</translation>
 <translation id="842017693807136194">Bununla Daxil Olunub</translation>

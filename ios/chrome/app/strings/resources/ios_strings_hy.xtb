@@ -105,6 +105,7 @@
 <translation id="2239626343334228536">Այցելությունների պատմությունը ջնջվում է…</translation>
 <translation id="2245545499420671379">Արգելափակել կողմնակի կայքերի քուքիները ինկոգնիտո ռեժիմում</translation>
 <translation id="2257567812274161158">Համաժամացումը չի աշխատում։</translation>
+<translation id="225943865679747347">Սխալի կոդ` <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Ավելացնել հաշիվ</translation>
 <translation id="2268044343513325586">Թարմացնել</translation>
 <translation id="2273327106802955778">Այլ ընտրանքներ</translation>
@@ -115,9 +116,10 @@
 <translation id="2359043044084662842">Թարգմանել</translation>
 <translation id="2359808026110333948">Շարունակել</translation>
 <translation id="2360196772093551345">Բջջային տարբերակ</translation>
+<translation id="2379896346847637748">Բացել նոր պատուհանում</translation>
 <translation id="2381405137052800939">Հիմնական</translation>
 <translation id="2386793615875593361">Ընտրվել է 1 էջանիշ</translation>
-<translation id="2421004566762153674">Երրորդ կողմի քուքիներն արգելափակվում են</translation>
+<translation id="2421004566762153674">Արգելափակում է երրորդ կողմի քուքիները</translation>
 <translation id="2421044535038393232">Շարունակել խմբագրումը</translation>
 <translation id="2435457462613246316">Ցույց տալ գաղտնաբառը</translation>
 <translation id="2497852260688568942">Ձեր ադմինիստրատորն անջատել է համաժամացումը</translation>

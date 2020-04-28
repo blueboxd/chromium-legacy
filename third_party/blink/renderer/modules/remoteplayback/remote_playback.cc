@@ -249,6 +249,9 @@ void RemotePlayback::ContextDestroyed() {
 }
 
 void RemotePlayback::PromptInternal() {
+  if (!GetExecutionContext())
+    return;
+
   PresentationController* controller =
       PresentationController::FromContext(GetExecutionContext());
   if (controller && !availability_urls_.IsEmpty()) {

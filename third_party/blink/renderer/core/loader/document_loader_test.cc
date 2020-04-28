@@ -5,10 +5,12 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 
 #include <utility>
+
 #include "base/auto_reset.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-shared.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -20,6 +22,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -294,6 +297,9 @@ TEST_F(DocumentLoaderSimTest, ReportErrorWhenDocumentPolicyIncompatible) {
 
   // Should replace the document's origin with an opaque origin.
   EXPECT_EQ(child_document->Url(), SecurityOrigin::UrlWithUniqueOpaqueOrigin());
+
+  EXPECT_TRUE(child_document->IsUseCounted(
+      mojom::WebFeature::kDocumentPolicyCausedPageUnload));
 }
 
 // HTTP header Require-Document-Policy should only take effect on subtree of
@@ -311,6 +317,226 @@ TEST_F(DocumentLoaderSimTest,
   // If document is blocked by document policy because of incompatible document
   // policy, this test will fail by crashing here.
   main_resource.Finish();
+}
+
+TEST_F(DocumentLoaderSimTest, DocumentPolicyHeaderHistogramTest) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  HistogramTester histogram_tester;
+
+  SimRequest::Params params;
+  params.response_http_headers = {
+      {"Document-Policy",
+       "font-display-late-swap, unoptimized-lossless-images;bpp=1.1"}};
+
+  SimRequest main_resource("https://example.com", "text/html", params);
+  LoadURL("https://example.com");
+  main_resource.Finish();
+
+  histogram_tester.ExpectTotalCount("Blink.UseCounter.DocumentPolicy.Header",
+                                    2);
+  histogram_tester.ExpectBucketCount("Blink.UseCounter.DocumentPolicy.Header",
+                                     1 /* kFontDisplay */, 1);
+  histogram_tester.ExpectBucketCount("Blink.UseCounter.DocumentPolicy.Header",
+                                     2 /* kUnoptimizedLosslessImages */, 1);
+}
+
+TEST_F(DocumentLoaderSimTest, DocumentPolicyPolicyAttributeHistogramTest) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  HistogramTester histogram_tester;
+
+  SimRequest main_resource("https://example.com", "text/html");
+  LoadURL("https://example.com");
+
+  // Same feature should only be reported once in a document despite its
+  // occurrence.
+  main_resource.Complete(R"(
+    <iframe policy="font-display-late-swap"></iframe>
+    <iframe policy="no-font-display-late-swap"></iframe>
+    <iframe
+      policy="font-display-late-swap, unoptimized-lossless-images;bpp=1.1">
+    </iframe>
+  )");
+
+  histogram_tester.ExpectTotalCount(
+      "Blink.UseCounter.DocumentPolicy.PolicyAttribute", 2);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.DocumentPolicy.PolicyAttribute", 1 /* kFontDisplay */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.DocumentPolicy.PolicyAttribute",
+      2 /* kUnoptimizedLosslessImages */, 1);
+}
+
+TEST_F(DocumentLoaderSimTest, DocumentPolicyEnforcedReportHistogramTest) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  HistogramTester histogram_tester;
+
+  SimRequest main_resource("https://example.com", "text/html");
+  LoadURL("https://example.com");
+  main_resource.Finish();
+
+  GetDocument().ReportDocumentPolicyViolation(
+      mojom::blink::DocumentPolicyFeature::kFontDisplay,
+      mojom::blink::PolicyDisposition::kEnforce);
+
+  histogram_tester.ExpectTotalCount("Blink.UseCounter.DocumentPolicy.Enforced",
+                                    1);
+  histogram_tester.ExpectBucketCount("Blink.UseCounter.DocumentPolicy.Enforced",
+                                     1 /* kFontDisplay */, 1);
+
+  // Multiple reports should be recorded multiple times.
+  GetDocument().ReportDocumentPolicyViolation(
+      mojom::blink::DocumentPolicyFeature::kFontDisplay,
+      mojom::blink::PolicyDisposition::kEnforce);
+
+  histogram_tester.ExpectTotalCount("Blink.UseCounter.DocumentPolicy.Enforced",
+                                    2);
+  histogram_tester.ExpectBucketCount("Blink.UseCounter.DocumentPolicy.Enforced",
+                                     1 /* kFontDisplay */, 2);
+}
+
+TEST_F(DocumentLoaderSimTest, DocumentPolicyReportOnlyReportHistogramTest) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  HistogramTester histogram_tester;
+
+  SimRequest::Params params;
+  params.response_http_headers = {
+      {"Document-Policy-Report-Only", "font-display-late-swap"}};
+  SimRequest main_resource("https://example.com", "text/html", params);
+
+  LoadURL("https://example.com");
+  main_resource.Finish();
+
+  GetDocument().ReportDocumentPolicyViolation(
+      mojom::blink::DocumentPolicyFeature::kFontDisplay,
+      mojom::blink::PolicyDisposition::kReport);
+
+  histogram_tester.ExpectTotalCount(
+      "Blink.UseCounter.DocumentPolicy.ReportOnly", 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.DocumentPolicy.ReportOnly", 1 /* kFontDisplay */, 1);
+
+  // Multiple reports should be recorded multiple times.
+  GetDocument().ReportDocumentPolicyViolation(
+      mojom::blink::DocumentPolicyFeature::kFontDisplay,
+      mojom::blink::PolicyDisposition::kReport);
+
+  histogram_tester.ExpectTotalCount(
+      "Blink.UseCounter.DocumentPolicy.ReportOnly", 2);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.DocumentPolicy.ReportOnly", 1 /* kFontDisplay */, 2);
+}
+
+class DocumentPolicyHeaderUseCounterTest
+    : public DocumentLoaderSimTest,
+      public testing::WithParamInterface<std::tuple<bool, bool, bool>> {};
+
+TEST_P(DocumentPolicyHeaderUseCounterTest, ShouldObserveUseCounterUpdate) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+
+  bool has_document_policy_header, has_report_only_header, has_require_header;
+  std::tie(has_document_policy_header, has_report_only_header,
+           has_require_header) = GetParam();
+
+  SimRequest::Params params;
+  if (has_document_policy_header) {
+    params.response_http_headers.insert("Document-Policy",
+                                        "unoptimized-lossless-images;bpp=1.0");
+  }
+  if (has_report_only_header) {
+    params.response_http_headers.insert("Document-Policy-Report-Only",
+                                        "unoptimized-lossless-images;bpp=1.0");
+  }
+  if (has_require_header) {
+    params.response_http_headers.insert("Require-Document-Policy",
+                                        "unoptimized-lossless-images;bpp=1.0");
+  }
+  SimRequest main_resource("https://example.com", "text/html", params);
+  LoadURL("https://example.com");
+  main_resource.Complete();
+
+  EXPECT_EQ(
+      GetDocument().IsUseCounted(mojom::WebFeature::kDocumentPolicyHeader),
+      has_document_policy_header);
+  EXPECT_EQ(GetDocument().IsUseCounted(
+                mojom::WebFeature::kDocumentPolicyReportOnlyHeader),
+            has_report_only_header);
+  EXPECT_EQ(GetDocument().IsUseCounted(
+                mojom::WebFeature::kRequireDocumentPolicyHeader),
+            has_require_header);
+}
+
+INSTANTIATE_TEST_SUITE_P(DocumentPolicyHeaderValues,
+                         DocumentPolicyHeaderUseCounterTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
+                                            ::testing::Bool()));
+
+TEST_F(DocumentLoaderSimTest,
+       DocumentPolicyIframePolicyAttributeUseCounterTest) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  SimRequest main_resource("https://example.com", "text/html");
+  SimRequest::Params iframe_params;
+  iframe_params.response_http_headers = {
+      {"Document-Policy", "unoptimized-lossless-images;bpp=1.0"}};
+  SimRequest iframe_resource("https://example.com/foo.html", "text/html",
+                             iframe_params);
+  LoadURL("https://example.com");
+  main_resource.Complete(R"(
+    <iframe
+      src="https://example.com/foo.html"
+      policy="unoptimized-lossless-images;bpp=1.0"
+    ></iframe>
+  )");
+  iframe_resource.Finish();
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      mojom::WebFeature::kDocumentPolicyIframePolicyAttribute));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(mojom::WebFeature::kRequiredDocumentPolicy));
+
+  auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
+  auto* child_document = child_frame->GetFrame()->GetDocument();
+
+  EXPECT_FALSE(child_document->IsUseCounted(
+      mojom::WebFeature::kDocumentPolicyIframePolicyAttribute));
+  EXPECT_TRUE(
+      child_document->IsUseCounted(mojom::WebFeature::kRequiredDocumentPolicy));
+}
+
+TEST_F(DocumentLoaderSimTest, RequiredDocumentPolicyUseCounterTest) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+
+  SimRequest::Params main_frame_params;
+  main_frame_params.response_http_headers = {
+      {"Require-Document-Policy", "unoptimized-lossless-images;bpp=1.0"}};
+  SimRequest main_resource("https://example.com", "text/html",
+                           main_frame_params);
+
+  SimRequest::Params iframe_params;
+  iframe_params.response_http_headers = {
+      {"Document-Policy", "unoptimized-lossless-images;bpp=1.0"}};
+  SimRequest iframe_resource("https://example.com/foo.html", "text/html",
+                             iframe_params);
+
+  LoadURL("https://example.com");
+  main_resource.Complete(R"(
+    <iframe src="https://example.com/foo.html"></iframe>
+  )");
+  iframe_resource.Finish();
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      mojom::WebFeature::kDocumentPolicyIframePolicyAttribute));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(mojom::WebFeature::kRequiredDocumentPolicy));
+
+  auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
+  auto* child_document = child_frame->GetFrame()->GetDocument();
+
+  EXPECT_FALSE(child_document->IsUseCounted(
+      mojom::WebFeature::kDocumentPolicyIframePolicyAttribute));
+  EXPECT_TRUE(
+      child_document->IsUseCounted(mojom::WebFeature::kRequiredDocumentPolicy));
 }
 
 TEST_F(DocumentLoaderTest, CommitsDeferredOnSameOriginNavigation) {

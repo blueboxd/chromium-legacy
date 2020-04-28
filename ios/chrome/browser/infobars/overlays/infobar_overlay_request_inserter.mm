@@ -71,7 +71,8 @@ void InfobarOverlayRequestInserter::InsertOverlayRequest(
   // infobars have been converted to use OverlayPresenter.
   if (!request)
     return;
-  DCHECK_EQ(static_cast<InfoBarIOS*>(infobar),
+  InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);
+  DCHECK_EQ(infobar_ios,
             request->GetConfig<InfobarOverlayRequestConfig>()->infobar());
   OverlayRequestQueue* queue = queues_.at(type);
   std::unique_ptr<OverlayRequestCancelHandler> cancel_handler;
@@ -79,12 +80,13 @@ void InfobarOverlayRequestInserter::InsertOverlayRequest(
     case InfobarOverlayType::kBanner:
       cancel_handler =
           std::make_unique<InfobarBannerOverlayRequestCancelHandler>(
-              request.get(), queue, this, modal_completion_notifier_.get());
+              request.get(), queue, infobar_ios, this,
+              modal_completion_notifier_.get());
       break;
     case InfobarOverlayType::kDetailSheet:
     case InfobarOverlayType::kModal:
       cancel_handler = std::make_unique<InfobarOverlayRequestCancelHandler>(
-          request.get(), queue);
+          request.get(), queue, infobar_ios);
       break;
   }
   queue->InsertRequest(index, std::move(request), std::move(cancel_handler));

@@ -455,6 +455,10 @@ const base::Feature kLowLatencyCanvas2dSwapChain{
 const base::Feature kLowLatencyWebGLSwapChain{"LowLatencyWebGLSwapChain",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables Dawn-accelerated 2D canvas.
+const base::Feature kDawn2dCanvas{"Dawn2dCanvas",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables forcing additional rendering of subframes for the purpose of sticky
 // frame tracking.
 const base::Feature kForceExtraRenderingToTrackStickyFrame{

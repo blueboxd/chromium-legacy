@@ -5,7 +5,7 @@
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {cookieInfo, LocalDataBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {routes, Router} from 'chrome://settings/settings.js';
+import {Router,routes} from 'chrome://settings/settings.js';
 import {TestLocalDataBrowserProxy} from 'chrome://test/settings/test_local_data_browser_proxy.js';
 // clang-format on
 
@@ -49,8 +49,7 @@ suite('SiteDataDetailsSubpage', function() {
     PolymerTest.clearBody();
     page = document.createElement('site-data-details-subpage');
     Router.getInstance().navigateTo(
-        routes.SITE_SETTINGS_DATA_DETAILS,
-        new URLSearchParams('site=' + site));
+        routes.SITE_SETTINGS_DATA_DETAILS, new URLSearchParams('site=' + site));
 
     document.body.appendChild(page);
   });

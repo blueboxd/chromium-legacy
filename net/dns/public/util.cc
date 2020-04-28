@@ -7,7 +7,8 @@
 #include <set>
 #include <unordered_map>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "net/base/ip_address.h"
 #include "net/dns/public/dns_protocol.h"

@@ -33,7 +33,6 @@
 namespace blink {
 
 class ExecutionContext;
-class Document;
 class LocalDOMWindow;
 class LocalFrame;
 
@@ -128,11 +127,6 @@ class CORE_EXPORT ExecutionContextLifecycleObserver
   void Trace(Visitor*) override;
 
  protected:
-  // TODO(crbug.com/1029822): This is a shim to enable migrating
-  // ExecutionContext to LocalDOMWindow.
-  explicit ExecutionContextLifecycleObserver(Document*,
-                                             Type type = kGenericType);
-
   explicit ExecutionContextLifecycleObserver(
       ExecutionContext* execution_context,
       Type type = kGenericType);

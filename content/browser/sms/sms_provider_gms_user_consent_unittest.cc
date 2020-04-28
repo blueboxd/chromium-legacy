@@ -9,7 +9,6 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/sms/sms_provider.h"
 #include "content/browser/sms/sms_provider_gms_user_consent.h"
 #include "content/public/common/content_features.h"
@@ -49,8 +48,7 @@ class SmsProviderGmsUserConsentTest : public RenderViewHostTestHarness {
 
   void SetUp() {
     RenderViewHostTestHarness::SetUp();
-    provider_ = std::make_unique<SmsProviderGmsUserConsent>(
-        static_cast<RenderFrameHostImpl*>(main_rfh())->GetWeakPtr());
+    provider_ = std::make_unique<SmsProviderGmsUserConsent>();
     j_fake_sms_retriever_client_.Reset(
         Java_FakeSmsUserConsentRetrieverClient_create(AttachCurrentThread()));
     Java_SmsUserConsentFakes_setUserConsentClientForTesting(
@@ -91,7 +89,7 @@ class SmsProviderGmsUserConsentTest : public RenderViewHostTestHarness {
 TEST_F(SmsProviderGmsUserConsentTest, Retrieve) {
   EXPECT_CALL(*observer(),
               OnReceive(Origin::Create(GURL("https://google.com")), "ABC123"));
-  provider()->Retrieve();
+  provider()->Retrieve(main_rfh());
   TriggerUserConsentSms("Hi\n@google.com #ABC123");
 }
 
@@ -102,14 +100,14 @@ TEST_F(SmsProviderGmsUserConsentTest, IgnoreBadSms) {
 
   EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
 
-  provider()->Retrieve();
+  provider()->Retrieve(main_rfh());
   TriggerUserConsentSms(bad_sms);
   TriggerUserConsentSms(good_sms);
 }
 
 TEST_F(SmsProviderGmsUserConsentTest, TaskTimedOut) {
   EXPECT_CALL(*observer(), OnReceive(_, _)).Times(0);
-  provider()->Retrieve();
+  provider()->Retrieve(main_rfh());
   TriggerTimeout();
 }
 
@@ -119,8 +117,8 @@ TEST_F(SmsProviderGmsUserConsentTest, OneObserverTwoTasks) {
   EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
 
   // Two tasks for when 1 request gets aborted but the task is still triggered.
-  provider()->Retrieve();
-  provider()->Retrieve();
+  provider()->Retrieve(main_rfh());
+  provider()->Retrieve(main_rfh());
 
   // First timeout should be ignored.
   TriggerTimeout();

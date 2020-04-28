@@ -47,7 +47,6 @@ namespace ash {
 
 class ASH_EXPORT AssistantControllerImpl
     : public AssistantController,
-      public chromeos::assistant::mojom::AssistantController,
       public AssistantControllerObserver,
       public AssistantStateObserver,
       public mojom::AssistantVolumeControl,
@@ -60,9 +59,6 @@ class ASH_EXPORT AssistantControllerImpl
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  void BindReceiver(
-      mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
-          receiver);
   void BindReceiver(
       mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver);
 
@@ -77,8 +73,6 @@ class ASH_EXPORT AssistantControllerImpl
   void RemoveObserver(AssistantControllerObserver* observer) override;
   void OpenUrl(const GURL& url, bool in_background, bool from_server) override;
   base::WeakPtr<ash::AssistantController> GetWeakPtr() override;
-
-  // chromeos::assistant::mojom::AssistantController:
   // TODO(updowndota): Refactor Set() calls to use a factory pattern.
   void SetAssistant(mojo::PendingRemote<chromeos::assistant::mojom::Assistant>
                         assistant) override;
@@ -86,10 +80,6 @@ class ASH_EXPORT AssistantControllerImpl
   void SendAssistantFeedback(bool assistant_debug_info_allowed,
                              const std::string& feedback_description,
                              const std::string& screenshot_png) override;
-  void StartTextInteraction(
-      const std::string& query,
-      bool allow_tts,
-      chromeos::assistant::mojom::AssistantQuerySource source) override;
 
   // AssistantControllerObserver:
   void OnDeepLinkReceived(
@@ -149,9 +139,6 @@ class ASH_EXPORT AssistantControllerImpl
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
   // AssistantInterfaceBinder implementation:
-  void BindController(
-      mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
-          receiver) override;
   void BindAlarmTimerController(
       mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver)
       override;
@@ -169,9 +156,6 @@ class ASH_EXPORT AssistantControllerImpl
   // The observer list should be initialized early so that sub-controllers may
   // register as observers during their construction.
   base::ObserverList<AssistantControllerObserver> observers_;
-
-  mojo::ReceiverSet<chromeos::assistant::mojom::AssistantController>
-      assistant_controller_receivers_;
 
   mojo::Receiver<mojom::AssistantVolumeControl>
       assistant_volume_control_receiver_{this};

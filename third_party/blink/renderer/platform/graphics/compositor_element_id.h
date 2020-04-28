@@ -61,6 +61,9 @@ CompositorElementId PLATFORM_EXPORT CompositorElementIdFromDOMNodeId(DOMNodeId);
 CompositorElementIdNamespace PLATFORM_EXPORT
     NamespaceFromCompositorElementId(CompositorElementId);
 
+// Maps a CompositorElementId in the kDOMNodeId namespace back to a DOMNodeId.
+DOMNodeId PLATFORM_EXPORT DOMNodeIdFromCompositorElementId(CompositorElementId);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_ELEMENT_ID_H_

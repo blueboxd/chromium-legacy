@@ -105,7 +105,7 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
-    name = 'android-opus-kitkat-arm-rel',
+    name = 'android-opus-arm-rel',
 )
 
 try_.chromium_android_builder(

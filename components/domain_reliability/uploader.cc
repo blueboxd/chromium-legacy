@@ -53,6 +53,8 @@ class UploadUserData : public base::SupportsUserData::Data {
 const void* const UploadUserData::kUserDataKey =
     &UploadUserData::kUserDataKey;
 
+}  // namespace
+
 class DomainReliabilityUploaderImpl
     : public DomainReliabilityUploader, net::URLFetcherDelegate {
  public:
@@ -194,8 +196,6 @@ class DomainReliabilityUploaderImpl
   bool shutdown_;
   int discarded_upload_count_;
 };
-
-}  // namespace
 
 DomainReliabilityUploader::DomainReliabilityUploader() {}
 DomainReliabilityUploader::~DomainReliabilityUploader() {}

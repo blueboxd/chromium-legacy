@@ -5,7 +5,6 @@
 #include "net/cert/jwk_serializer.h"
 
 #include "base/base64url.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "crypto/openssl_util.h"

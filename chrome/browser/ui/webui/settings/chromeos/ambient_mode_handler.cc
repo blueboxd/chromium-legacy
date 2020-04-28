@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/ambient_mode_handler.h"
 
-#include "ash/public/cpp/ambient/photo_controller.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -47,21 +46,21 @@ void AmbientModeHandler::HandleTopicSourceSelectedChanged(
   int topic_source;
   CHECK(base::StringToInt(args->GetList()[0].GetString(), &topic_source));
   // Check the |topic_source| has valid value.
-  // TODO: 0 and 1 are enum values for Google Photos and Art gallery. Will
-  // replace these values to enum after moving the enum definition to ash.
-  CHECK_GE(topic_source, 0);
-  CHECK_LE(topic_source, 1);
+  CHECK_GE(topic_source,
+           static_cast<int>(ash::AmbientModeTopicSource::kMinValue));
+  CHECK_LE(topic_source,
+           static_cast<int>(ash::AmbientModeTopicSource::kMaxValue));
 
-  UpdateSettings(topic_source);
+  UpdateSettings(static_cast<ash::AmbientModeTopicSource>(topic_source));
 }
 
 void AmbientModeHandler::GetSettings() {
-  ash::PhotoController::Get()->GetSettings(base::BindOnce(
+  ash::AmbientBackendController::Get()->GetSettings(base::BindOnce(
       &AmbientModeHandler::OnGetSettings, weak_factory_.GetWeakPtr()));
 }
 
 void AmbientModeHandler::OnGetSettings(
-    const base::Optional<int>& topic_source) {
+    base::Optional<ash::AmbientModeTopicSource> topic_source) {
   if (!topic_source.has_value()) {
     // TODO(b/152921891): Retry a small fixed number of times, then only retry
     // when user confirms in the error message dialog.
@@ -76,16 +75,22 @@ void AmbientModeHandler::OnGetSettings(
 }
 
 void AmbientModeHandler::SendTopicSource() {
-  FireWebUIListener("topic-source-changed", base::Value(topic_source_.value()));
+  FireWebUIListener("topic-source-changed",
+                    base::Value(
+
+                        static_cast<int>(topic_source_.value())));
 }
 
-void AmbientModeHandler::UpdateSettings(int topic_source) {
-  ash::PhotoController::Get()->UpdateSettings(
+void AmbientModeHandler::UpdateSettings(
+    ash::AmbientModeTopicSource topic_source) {
+  ash::AmbientBackendController::Get()->UpdateSettings(
       topic_source, base::BindOnce(&AmbientModeHandler::OnUpdateSettings,
                                    weak_factory_.GetWeakPtr(), topic_source));
 }
 
-void AmbientModeHandler::OnUpdateSettings(int topic_source, bool success) {
+void AmbientModeHandler::OnUpdateSettings(
+    ash::AmbientModeTopicSource topic_source,
+    bool success) {
   if (success)
     return;
 

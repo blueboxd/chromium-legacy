@@ -231,6 +231,18 @@ if (!is_ios) {
   }
 }
 
+source_set("library_support") {
+  sources = [
+    "library_support/histogram_manager.cc",
+    "library_support/histogram_manager.h",
+  ]
+  deps = [
+    "//base",
+    "//components/metrics:metrics",
+    "//third_party/metrics_proto",
+  ]
+}
+
 jumbo_static_library("net") {
   sources = [
     "net/cellular_logic_helper.cc",
@@ -429,6 +441,7 @@ source_set("unit_tests") {
     "field_trials_provider_unittest.cc",
     "file_metrics_provider_unittest.cc",
     "histogram_encoder_unittest.cc",
+    "library_support/histogram_manager_unittest.cc",
     "machine_id_provider_nonwin_unittest.cc",
     "metrics_log_manager_unittest.cc",
     "metrics_log_store_unittest.cc",
@@ -451,6 +464,7 @@ source_set("unit_tests") {
     ":call_stack_profile_builder",
     ":component_metrics",
     ":demographic_metrics_provider",
+    ":library_support",
     ":metrics",
     ":net",
     ":single_sample_metrics",
@@ -470,6 +484,7 @@ source_set("unit_tests") {
     "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
     "//testing/gtest",
+    "//third_party/metrics_proto",
     "//third_party/zlib/google:compression_utils",
     "//ui/gfx/geometry",
   ]

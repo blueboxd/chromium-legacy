@@ -190,7 +190,8 @@ void FidoHidDevice::OnConnect(
     return;
   }
 
-  connection_.Bind(std::move(connection));
+  connection_ = base::MakeRefCounted<RefCountedHidConnection>(
+      mojo::Remote<mojom::HidConnection>(std::move(connection)));
   // Send random nonce to device to verify received message.
   std::vector<uint8_t> nonce(8);
   crypto::RandBytes(nonce.data(), nonce.size());
@@ -202,7 +203,7 @@ void FidoHidDevice::OnConnect(
                          nonce, nonce.size());
   std::vector<uint8_t> init_packet = init.GetSerializedData();
   init_packet.resize(output_report_size_, 0);
-  connection_->Write(
+  connection_->data->Write(
       kReportId, std::move(init_packet),
       base::BindOnce(&FidoHidDevice::OnInitWriteComplete,
                      weak_factory_.GetWeakPtr(), std::move(nonce)));
@@ -218,9 +219,9 @@ void FidoHidDevice::OnInitWriteComplete(std::vector<uint8_t> nonce,
     Transition(State::kDeviceError);
   }
 
-  connection_->Read(base::BindOnce(&FidoHidDevice::OnPotentialInitReply,
-                                   weak_factory_.GetWeakPtr(),
-                                   std::move(nonce)));
+  connection_->data->Read(base::BindOnce(&FidoHidDevice::OnPotentialInitReply,
+                                         weak_factory_.GetWeakPtr(),
+                                         std::move(nonce)));
 }
 
 // ParseInitReply parses a potential reply to a U2FHID_INIT message. If the
@@ -281,9 +282,9 @@ void FidoHidDevice::OnPotentialInitReply(
     // this HID device, but all processes will see all the messages from the
     // device. Thus it is not an error to observe unexpected messages from the
     // device and they are ignored.
-    connection_->Read(base::BindOnce(&FidoHidDevice::OnPotentialInitReply,
-                                     weak_factory_.GetWeakPtr(),
-                                     std::move(nonce)));
+    connection_->data->Read(base::BindOnce(&FidoHidDevice::OnPotentialInitReply,
+                                           weak_factory_.GetWeakPtr(),
+                                           std::move(nonce)));
     return;
   }
 
@@ -299,7 +300,7 @@ void FidoHidDevice::WriteMessage(FidoHidMessage message) {
   auto packet = message.PopNextPacket();
   DCHECK_LE(packet.size(), output_report_size_);
   packet.resize(output_report_size_, 0);
-  connection_->Write(
+  connection_->data->Write(
       kReportId, packet,
       base::BindOnce(&FidoHidDevice::PacketWritten, weak_factory_.GetWeakPtr(),
                      std::move(message)));
@@ -337,7 +338,7 @@ void FidoHidDevice::PacketWritten(FidoHidMessage message, bool success) {
 }
 
 void FidoHidDevice::ReadMessage() {
-  connection_->Read(
+  connection_->data->Read(
       base::BindOnce(&FidoHidDevice::OnRead, weak_factory_.GetWeakPtr()));
 }
 
@@ -364,9 +365,9 @@ void FidoHidDevice::OnRead(bool success,
 
   if (!message->MessageComplete()) {
     // Continue reading additional packets.
-    connection_->Read(base::BindOnce(&FidoHidDevice::OnReadContinuation,
-                                     weak_factory_.GetWeakPtr(),
-                                     std::move(*message)));
+    connection_->data->Read(base::BindOnce(&FidoHidDevice::OnReadContinuation,
+                                           weak_factory_.GetWeakPtr(),
+                                           std::move(*message)));
     return;
   }
 
@@ -420,9 +421,9 @@ void FidoHidDevice::OnReadContinuation(
   }
 
   if (!message.MessageComplete()) {
-    connection_->Read(base::BindOnce(&FidoHidDevice::OnReadContinuation,
-                                     weak_factory_.GetWeakPtr(),
-                                     std::move(message)));
+    connection_->data->Read(base::BindOnce(&FidoHidDevice::OnReadContinuation,
+                                           weak_factory_.GetWeakPtr(),
+                                           std::move(message)));
     return;
   }
 
@@ -518,13 +519,37 @@ void FidoHidDevice::OnTimeout() {
   Transition(State::kDeviceError);
 }
 
+// WriteCancelComplete is the callback from writing a cancellation message. Its
+// primary purpose is to hold a reference to the HidConnection so that the write
+// doesn't get discarded. It's a static function because it may be called after
+// the destruction of the |FidoHidDevice| that created it.
+// static
+void FidoHidDevice::WriteCancelComplete(
+    scoped_refptr<FidoHidDevice::RefCountedHidConnection> connection,
+    bool success) {
+  if (!success) {
+    FIDO_LOG(ERROR) << "Failed to write Cancel message";
+  }
+}
+
 void FidoHidDevice::WriteCancel() {
   FidoHidInitPacket cancel(channel_id_, FidoHidDeviceCommand::kCancel, {},
                            /*payload_length=*/0);
   std::vector<uint8_t> cancel_packet = cancel.GetSerializedData();
   DCHECK_LE(cancel_packet.size(), output_report_size_);
   cancel_packet.resize(output_report_size_, 0);
-  connection_->Write(kReportId, std::move(cancel_packet), base::DoNothing());
+  // This |FidoHidDevice| might be destructed immediately after this call. On
+  // Windows, pending writes are dropped when the |HidConnection| is destructed.
+  // Since it's important that the Cancel message actually gets written, this
+  // callback takes a reference to the HidConnection to hold it open at least
+  // until the Write completes.
+  //
+  // Note that, if this object is in the process of a multi-packet write that
+  // will eventually be canceled, the packet sequence will still be truncated
+  // when this object is destroyed. Fixing that would involve reference counting
+  // this object itself.
+  connection_->data->Write(kReportId, std::move(cancel_packet),
+                           base::BindOnce(WriteCancelComplete, connection_));
 }
 
 std::string FidoHidDevice::GetId() const {

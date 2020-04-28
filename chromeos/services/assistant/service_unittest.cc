@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/assistant/test_support/mock_assistant_controller.h"
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -176,6 +177,7 @@ class AssistantServiceTest : public testing::Test {
   signin::IdentityTestEnvironment identity_test_env_;
   ScopedFakeAssistantClient fake_assistant_client_{&assistant_state_};
   ScopedDeviceActions fake_device_actions_;
+  testing::NiceMock<ash::MockAssistantController> mock_assistant_controller;
 
   TestingPrefServiceSimple pref_service_;
 

@@ -5,7 +5,10 @@
 #ifndef ASH_PUBLIC_CPP_ASSISTANT_CONTROLLER_ASSISTANT_INTERACTION_CONTROLLER_H_
 #define ASH_PUBLIC_CPP_ASSISTANT_CONTROLLER_ASSISTANT_INTERACTION_CONTROLLER_H_
 
+#include <string>
+
 #include "ash/public/cpp/ash_public_export.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 
 namespace ash {
 
@@ -24,6 +27,12 @@ class ASH_PUBLIC_EXPORT AssistantInteractionController {
   // Adds/removes the specified model observer.
   virtual void AddModelObserver(AssistantInteractionModelObserver*) = 0;
   virtual void RemoveModelObserver(AssistantInteractionModelObserver*) = 0;
+
+  // Start Assistant text interaction.
+  virtual void StartTextInteraction(
+      const std::string& query,
+      bool allow_tts,
+      chromeos::assistant::mojom::AssistantQuerySource source) = 0;
 
  protected:
   AssistantInteractionController();

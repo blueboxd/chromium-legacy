@@ -69,6 +69,10 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
   // submission if not unless SetForceSubmit(true) has been called.
   virtual void SetIsPageVisible(bool) = 0;
 
+  // Set whether BeginFrames should be generated regardless of visibility. Does
+  // not submit unless submission is expected.
+  virtual void SetForceBeginFrames(bool) = 0;
+
   // Set whether frames should always be submitted regardless of visibility.
   virtual void SetForceSubmit(bool) = 0;
 };

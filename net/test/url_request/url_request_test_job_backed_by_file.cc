@@ -23,7 +23,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -162,7 +161,6 @@ URLRequestTestJobBackedByFile::SetUpSourceStream() {
   if (!base::LowerCaseEqualsASCII(file_path_.Extension(), ".svgz"))
     return source;
 
-  UMA_HISTOGRAM_BOOLEAN("Net.FileSVGZLoadCount", true);
   return GzipSourceStream::Create(std::move(source), SourceStream::TYPE_GZIP);
 }
 
@@ -210,7 +208,7 @@ void URLRequestTestJobBackedByFile::DidFetchMetaInfo(
 void URLRequestTestJobBackedByFile::DidOpen(int result) {
   OnOpenComplete(result);
   if (result != OK) {
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
+    NotifyStartError(result);
     return;
   }
 
@@ -244,8 +242,7 @@ void URLRequestTestJobBackedByFile::DidSeek(int64_t result) {
 
   OnSeekComplete(result);
   if (result < 0) {
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED,
-                                      ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+    NotifyStartError(ERR_REQUEST_RANGE_NOT_SATISFIABLE);
     return;
   }
 

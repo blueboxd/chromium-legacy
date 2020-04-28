@@ -33,29 +33,21 @@
 namespace device {
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    InitCallback init_callback) {
-  return BluetoothAdapterWin::CreateAdapter(std::move(init_callback));
+scoped_refptr<BluetoothAdapter> BluetoothAdapter::CreateAdapter() {
+  return BluetoothAdapterWin::CreateAdapter();
 }
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapterWin::CreateAdapter(
-    InitCallback init_callback) {
-  if (UseNewBLEWinImplementation()) {
-    auto* adapter = new BluetoothAdapterWinrt();
-    adapter->Init(std::move(init_callback));
-    return adapter->weak_ptr_factory_.GetWeakPtr();
-  }
+scoped_refptr<BluetoothAdapter> BluetoothAdapterWin::CreateAdapter() {
+  if (UseNewBLEWinImplementation())
+    return base::WrapRefCounted(new BluetoothAdapterWinrt());
 
-  return BluetoothAdapterWin::CreateClassicAdapter(std::move(init_callback));
+  return BluetoothAdapterWin::CreateClassicAdapter();
 }
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapterWin::CreateClassicAdapter(
-    InitCallback init_callback) {
-  auto* adapter = new BluetoothAdapterWin(std::move(init_callback));
-  adapter->Init();
-  return adapter->weak_ptr_factory_.GetWeakPtr();
+scoped_refptr<BluetoothAdapter> BluetoothAdapterWin::CreateClassicAdapter() {
+  return base::WrapRefCounted(new BluetoothAdapterWin());
 }
 
 // static
@@ -64,9 +56,8 @@ bool BluetoothAdapterWin::UseNewBLEWinImplementation() {
          base::win::GetVersion() >= base::win::Version::WIN10;
 }
 
-BluetoothAdapterWin::BluetoothAdapterWin(InitCallback init_callback)
+BluetoothAdapterWin::BluetoothAdapterWin()
     : BluetoothAdapter(),
-      init_callback_(std::move(init_callback)),
       initialized_(false),
       powered_(false),
       discovery_status_(NOT_DISCOVERING),
@@ -320,7 +311,8 @@ void BluetoothAdapterWin::StopScan(DiscoverySessionResultCallback callback) {
   MaybePostStopDiscoveryTask();
 }
 
-void BluetoothAdapterWin::Init() {
+void BluetoothAdapterWin::Initialize(base::OnceClosure init_callback) {
+  init_callback_ = std::move(init_callback);
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   socket_thread_ = BluetoothSocketThread::Get();
   task_manager_ =
@@ -330,10 +322,12 @@ void BluetoothAdapterWin::Init() {
 }
 
 void BluetoothAdapterWin::InitForTest(
+    base::OnceClosure init_callback,
     std::unique_ptr<win::BluetoothClassicWrapper> classic_wrapper,
     std::unique_ptr<win::BluetoothLowEnergyWrapper> le_wrapper,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SequencedTaskRunner> bluetooth_task_runner) {
+  init_callback_ = std::move(init_callback);
   ui_task_runner_ = ui_task_runner;
   if (!ui_task_runner_)
     ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();

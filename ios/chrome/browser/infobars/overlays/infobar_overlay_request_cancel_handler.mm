@@ -22,9 +22,10 @@ using infobars::InfoBarManager;
 
 InfobarOverlayRequestCancelHandler::InfobarOverlayRequestCancelHandler(
     OverlayRequest* request,
-    OverlayRequestQueue* queue)
+    OverlayRequestQueue* queue,
+    InfoBarIOS* infobar)
     : OverlayRequestCancelHandler(request, queue),
-      infobar_(GetOverlayRequestInfobar(request)),
+      infobar_(infobar),
       removal_observer_(this) {
   DCHECK(infobar_);
 }

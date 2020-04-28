@@ -6,7 +6,7 @@
 
 #include <cstring>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/sys_byteorder.h"
 #include "net/base/sys_addrinfo.h"
 

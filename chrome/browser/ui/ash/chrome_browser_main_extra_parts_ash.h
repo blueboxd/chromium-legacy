@@ -20,6 +20,7 @@ class DisplaySettingsHandler;
 }
 
 class AccessibilityControllerClient;
+class AmbientClientImpl;
 class AppListClientImpl;
 class ArcChromeActionsClient;
 class AshShellInit;
@@ -31,7 +32,6 @@ class MediaClientImpl;
 class MobileDataNotifications;
 class NetworkConnectDelegateChromeOS;
 class NightLightClient;
-class PhotoControllerImpl;
 class ScreenOrientationDelegateChromeos;
 class SessionControllerClientImpl;
 class SystemTrayClient;
@@ -107,7 +107,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   // Initialized in PostBrowserStart in all configs:
   std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;
   std::unique_ptr<NightLightClient> night_light_client_;
-  std::unique_ptr<PhotoControllerImpl> photo_controller_;
+  std::unique_ptr<AmbientClientImpl> ambient_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };

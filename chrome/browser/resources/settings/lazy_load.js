@@ -25,8 +25,8 @@ import './site_settings/site_data.js';
 import './site_settings/site_details.js';
 import './site_settings/zoom_levels.js';
 // <if expr="not chromeos">
-import './people_page/import_data_dialog.m.js';
-import './people_page/manage_profile.m.js';
+import './people_page/import_data_dialog.js';
+import './people_page/manage_profile.js';
 // </if>
 import './people_page/signout_dialog.m.js';
 import './people_page/sync_controls.m.js';
@@ -70,8 +70,8 @@ export {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from 
 export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
 export {kMenuCloseDelay} from './languages_page/languages_page.js';
 // <if expr="not chromeos">
-export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.m.js';
-export {ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from './people_page/manage_profile_browser_proxy.m.js';
+export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.js';
+export {ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from './people_page/manage_profile_browser_proxy.js';
 // </if>
 export {SafeBrowsingBrowserProxyImpl} from './privacy_page/safe_browsing_browser_proxy.js';
 export {BioEnrollDialogPage} from './privacy_page/security_keys_bio_enroll_dialog.js';

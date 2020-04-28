@@ -303,16 +303,16 @@ bool MediaCodecUtil::IsSurfaceViewOutputSupported() {
   // Notably this is codec agnostic at present, so any devices added to
   // the blacklist will avoid trying to play any codecs on SurfaceView.  If
   // needed in the future this can be expanded to be codec specific.
-  const char* model_prefixes[] = {// Exynos 4 (Mali-400)
-                                  "GT-I9300", "GT-I9305", "SHV-E210",
-                                  // Snapdragon S4 (Adreno-225)
-                                  "SCH-I535", "SCH-J201", "SCH-R530",
-                                  "SCH-I960", "SCH-S968", "SGH-T999",
-                                  "SGH-I747", "SGH-N064", 0};
+  constexpr const char* kDisabledModels[] = {// Exynos 4 (Mali-400)
+                                             "GT-I9300", "GT-I9305", "SHV-E210",
+                                             // Snapdragon S4 (Adreno-225)
+                                             "SCH-I535", "SCH-J201", "SCH-R530",
+                                             "SCH-I960", "SCH-S968", "SGH-T999",
+                                             "SGH-I747", "SGH-N064"};
 
   std::string model(base::android::BuildInfo::GetInstance()->model());
-  for (int i = 0; model_prefixes[i]; ++i) {
-    if (base::StartsWith(model, model_prefixes[i],
+  for (auto* disabled_model : kDisabledModels) {
+    if (base::StartsWith(model, disabled_model,
                          base::CompareCase::INSENSITIVE_ASCII)) {
       return false;
     }
@@ -343,8 +343,25 @@ bool MediaCodecUtil::CanDecode(AudioCodec codec) {
 }
 
 // static
-bool MediaCodecUtil::IsH264EncoderAvailable() {
-  return IsMediaCodecAvailable() && IsEncoderSupportedByDevice(kAvcMimeType);
+bool MediaCodecUtil::IsH264EncoderAvailable(bool use_codec_list) {
+  if (!IsMediaCodecAvailable())
+    return false;
+
+  constexpr const char* kDisabledModels[] = {"SAMSUNG-SGH-I337", "Nexus 7",
+                                             "Nexus 4"};
+  const std::string model(base::android::BuildInfo::GetInstance()->model());
+  for (auto* disabled_model : kDisabledModels) {
+    if (base::StartsWith(model, disabled_model,
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      return false;
+    }
+  }
+
+  if (use_codec_list)
+    return IsEncoderSupportedByDevice(kAvcMimeType);
+
+  // Assume support since Chrome only supports Lollipop+.
+  return true;
 }
 
 // static

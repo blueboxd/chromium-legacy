@@ -363,13 +363,11 @@ suite('CrostiniPageTests', function() {
               port_number: 5000,
               protocol_type: 0,
               label: 'Label1',
-              active: true
             },
             {
               port_number: 5001,
               protocol_type: 1,
               label: 'Label2',
-              active: false
             },
           ]
         });
@@ -442,6 +440,90 @@ suite('CrostiniPageTests', function() {
         await flushAsync();
         subpage = crostiniPage.$$('settings-crostini-port-forwarding');
         assertTrue(!!subpage);
+      });
+
+      test('RemoveAllPorts', function() {
+        return flushAsync()
+            .then(() => {
+              subpage = crostiniPage.$$('settings-crostini-port-forwarding');
+              subpage.$$('#showRemoveAllPortsMenu').click();
+              return flushAsync();
+            })
+            .then(() => {
+              subpage.$$('#removeAllPortsButton').click();
+              assertEquals(
+                  1,
+                  crostiniBrowserProxy.getCallCount(
+                      'removeAllCrostiniPortForwards'));
+            });
+      });
+
+      test('RemoveSinglePort', function() {
+        return flushAsync()
+            .then(() => {
+              subpage = crostiniPage.$$('settings-crostini-port-forwarding');
+              subpage.$$('#showRemoveSinglePortMenu').click();
+              return flushAsync();
+            })
+            .then(() => {
+              subpage.$$('#removeSinglePortButton').click();
+              assertEquals(
+                  1,
+                  crostiniBrowserProxy.getCallCount(
+                      'removeCrostiniPortForward'));
+            });
+      });
+
+
+      test('ActivateSinglePort', function() {
+        return flushAsync()
+            .then(() => {
+              subpage = crostiniPage.$$('settings-crostini-port-forwarding');
+              subpage.$$('#toggleActivationButton').click();
+              return flushAsync();
+            })
+            .then(() => {
+              assertEquals(
+                  1,
+                  crostiniBrowserProxy.getCallCount(
+                      'activateCrostiniPortForward'));
+            });
+      });
+
+      test('DeactivateSinglePort', function() {
+        return flushAsync()
+            .then(() => {
+              subpage = crostiniPage.$$('settings-crostini-port-forwarding');
+              const crToggle = subpage.$$('#toggleActivationButton');
+              crToggle.checked = true;
+              subpage.$$('#toggleActivationButton').click();
+              return flushAsync();
+            })
+            .then(() => {
+              assertEquals(
+                  1,
+                  crostiniBrowserProxy.getCallCount(
+                      'deactivateCrostiniPortForward'));
+            });
+      });
+
+      test('ButtonDisabledDuringInstall', function() {
+        setCrostiniPrefs(true, {
+          forwardedPorts: [
+            {
+              port_number: 5000,
+              protocol_type: 0,
+              label: 'Label1',
+            },
+          ]
+        });
+        cr.webUIListenerCallback(
+            'crostini-port-forwarder-active-ports-changed',
+            [{'port_number': 5000, 'protocol_type': 0}]);
+        return flushAsync().then(() => {
+          const crToggle = subpage.$$('#toggleActivationButton');
+          assertTrue(crToggle.checked);
+        });
       });
     });
 

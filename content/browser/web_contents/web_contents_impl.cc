@@ -6169,6 +6169,17 @@ std::unique_ptr<NavigationUIData> WebContentsImpl::GetNavigationUIData(
   return GetContentClient()->browser()->GetNavigationUIData(navigation_handle);
 }
 
+void WebContentsImpl::RegisterExistingOriginToPreventOptInIsolation(
+    const url::Origin& origin) {
+  // Note: This function can be made static if we ever need call it without
+  // a WebContentsImpl instance, in which case we can use a wrapper to
+  // implement the override from NavigatorDelegate.
+  for (WebContentsImpl* web_contents : GetAllWebContents()) {
+    web_contents->controller_.RegisterExistingOriginToPreventOptInIsolation(
+        origin);
+  }
+}
+
 void WebContentsImpl::DidCancelLoading() {
   controller_.DiscardNonCommittedEntries();
 

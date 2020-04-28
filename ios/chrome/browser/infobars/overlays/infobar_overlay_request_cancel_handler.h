@@ -16,7 +16,8 @@ class InfoBarIOS;
 class InfobarOverlayRequestCancelHandler : public OverlayRequestCancelHandler {
  public:
   InfobarOverlayRequestCancelHandler(OverlayRequest* request,
-                                     OverlayRequestQueue* queue);
+                                     OverlayRequestQueue* queue,
+                                     InfoBarIOS* infobar);
   ~InfobarOverlayRequestCancelHandler() override;
 
  protected:

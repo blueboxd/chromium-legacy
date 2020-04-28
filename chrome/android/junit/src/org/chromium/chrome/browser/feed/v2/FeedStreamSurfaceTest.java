@@ -82,6 +82,33 @@ public class FeedStreamSurfaceTest {
 
     @Test
     @SmallTest
+    public void testAddNewSlicesWithSameIds() {
+        FeedListContentManager contentManager =
+                mFeedStreamSurface.getFeedListContentManagerForTesting();
+
+        // Add 2 new slices at first.
+        StreamUpdate update = StreamUpdate.newBuilder()
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("b"))
+                                      .build();
+        mFeedStreamSurface.onStreamUpdated(update.toByteArray());
+        assertEquals(2, contentManager.getItemCount());
+        assertEquals(0, contentManager.findContentPositionByKey("a"));
+        assertEquals(1, contentManager.findContentPositionByKey("b"));
+
+        // Add 2 new slice with same ids as before.
+        update = StreamUpdate.newBuilder()
+                         .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("b"))
+                         .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
+                         .build();
+        mFeedStreamSurface.onStreamUpdated(update.toByteArray());
+        assertEquals(2, contentManager.getItemCount());
+        assertEquals(0, contentManager.findContentPositionByKey("b"));
+        assertEquals(1, contentManager.findContentPositionByKey("a"));
+    }
+
+    @Test
+    @SmallTest
     public void testRemoveSlicesOnStreamUpdated() {
         FeedListContentManager contentManager =
                 mFeedStreamSurface.getFeedListContentManagerForTesting();

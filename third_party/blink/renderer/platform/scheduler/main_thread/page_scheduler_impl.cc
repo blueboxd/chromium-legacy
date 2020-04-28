@@ -27,6 +27,8 @@ namespace scheduler {
 
 namespace {
 
+using blink::FrameScheduler;
+
 constexpr double kDefaultBackgroundBudgetAsCPUFraction = .01;
 constexpr double kDefaultMaxBackgroundBudgetLevelInSeconds = 3;
 constexpr double kDefaultInitialBackgroundBudgetInSeconds = 1;
@@ -480,6 +482,24 @@ void PageSchedulerImpl::OnTraceLogEnabled() {
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->OnTraceLogEnabled();
   }
+}
+
+bool PageSchedulerImpl::IsWaitingForMainFrameContentfulPaint() const {
+  return std::any_of(frame_schedulers_.begin(), frame_schedulers_.end(),
+                     [](const FrameSchedulerImpl* fs) {
+                       return fs->IsWaitingForContentfulPaint() &&
+                              fs->GetFrameType() ==
+                                  FrameScheduler::FrameType::kMainFrame;
+                     });
+}
+
+bool PageSchedulerImpl::IsWaitingForMainFrameMeaningfulPaint() const {
+  return std::any_of(frame_schedulers_.begin(), frame_schedulers_.end(),
+                     [](const FrameSchedulerImpl* fs) {
+                       return fs->IsWaitingForMeaningfulPaint() &&
+                              fs->GetFrameType() ==
+                                  FrameScheduler::FrameType::kMainFrame;
+                     });
 }
 
 void PageSchedulerImpl::AsValueInto(

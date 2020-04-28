@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/assistant/assistant_state_base.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -267,8 +268,7 @@ ash::AssistantStateBase* AssistantSettingsManagerImpl::assistant_state() {
   return context_->assistant_state();
 }
 
-mojom::AssistantController*
-AssistantSettingsManagerImpl::assistant_controller() {
+ash::AssistantController* AssistantSettingsManagerImpl::assistant_controller() {
   return context_->assistant_controller();
 }
 

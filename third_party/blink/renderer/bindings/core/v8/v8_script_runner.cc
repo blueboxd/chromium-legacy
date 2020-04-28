@@ -320,8 +320,8 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
     v8::Local<v8::Script> script,
     ExecutionContext* context) {
   DCHECK(!script.IsEmpty());
-  Document* document = Document::DynamicFrom(context);
-  ScopedFrameBlamer frame_blamer(document ? document->GetFrame() : nullptr);
+  LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context);
+  ScopedFrameBlamer frame_blamer(window ? window->GetFrame() : nullptr);
 
   v8::Local<v8::Value> script_name =
       script->GetUnboundScript()->GetScriptName();
@@ -454,8 +454,8 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
     int argc,
     v8::Local<v8::Value> args[],
     v8::Isolate* isolate) {
-  Document* document = Document::DynamicFrom(context);
-  LocalFrame* frame = document ? document->GetFrame() : nullptr;
+  LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context);
+  LocalFrame* frame = window ? window->GetFrame() : nullptr;
   ScopedFrameBlamer frame_blamer(frame);
   TRACE_EVENT0("v8", "v8.callFunction");
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);

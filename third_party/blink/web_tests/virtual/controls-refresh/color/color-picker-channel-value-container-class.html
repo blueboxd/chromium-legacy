@@ -16,6 +16,13 @@
 
 'use strict';
 
+// ChannelValueContainer expects to find localized string values on
+// global.params.  Those values aren't needed for this test, so just stub
+// out global.params to prevent the crash that occurs if it is entirely
+// missing.
+window.global = {};
+window.global.params = {};
+
 let hexValueContainer = new ChannelValueContainer(ColorChannel.HEX, new Color('#7effc9'));
 let rValueContainer = new ChannelValueContainer(ColorChannel.R, new Color('#7effc9'));
 let gValueContainer = new ChannelValueContainer(ColorChannel.G, new Color('#7effc9'));

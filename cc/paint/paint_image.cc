@@ -152,6 +152,8 @@ void PaintImage::CreateSkImage() {
         SkImage::MakeFromGenerator(std::make_unique<SkiaPaintImageGenerator>(
             paint_image_generator_, kDefaultFrameIndex,
             kDefaultGeneratorClientId));
+  } else if (texture_backing_) {
+    cached_sk_image_ = texture_backing_->GetAcceleratedSkImage();
   }
 
   if (!subset_rect_.IsEmpty() && cached_sk_image_) {

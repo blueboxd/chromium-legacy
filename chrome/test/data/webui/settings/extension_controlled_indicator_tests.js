@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ExtensionControlBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {TestExtensionControlBrowserProxy} from 'chrome://test/settings/test_extension_control_browser_proxy.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 // clang-format on
 
 suite('extension controlled indicator', function() {

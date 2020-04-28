@@ -4,7 +4,7 @@
 
 #include "net/ssl/ssl_cipher_suite_names.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "net/ssl/ssl_connection_status_flags.h"

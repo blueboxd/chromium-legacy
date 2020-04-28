@@ -39,7 +39,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.chrome.browser.site_settings.Website.StoredDataClearedCallback;
-import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
@@ -471,7 +470,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         long totalUsage = 0;
         boolean includesApps = false;
         Set<String> originsWithInstalledApp =
-                WebappRegistry.getInstance().getOriginsWithInstalledApp();
+                getSiteSettingsClient().getWebappSettingsClient().getOriginsWithInstalledApp();
         if (mWebsites != null) {
             for (WebsitePreference preference : mWebsites) {
                 totalUsage += preference.site().getTotalUsage();
@@ -778,8 +777,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             Set<String> delegatedOrigins =
                     mCategory.showSites(SiteSettingsCategory.Type.NOTIFICATIONS)
                     ? getSiteSettingsClient()
-                              .getNotificationSettingsClient()
-                              .getAllDelegatedOrigins()
+                              .getWebappSettingsClient()
+                              .getAllDelegatedNotificationOrigins()
                     : Collections.emptySet();
 
             for (WebsitePreference website : websites) {

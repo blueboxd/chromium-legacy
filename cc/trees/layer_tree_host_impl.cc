@@ -3917,7 +3917,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
   }
 
-  if (CurrentlyScrollingNode()) {
+  if (CurrentlyScrollingNode() && type == latched_scroll_type_) {
     // It's possible we haven't yet cleared the CurrentlyScrollingNode if we
     // received a GSE but we're still animating the last scroll. If that's the
     // case, we'll simply un-defer the GSE and continue latching to the same
@@ -4927,6 +4927,7 @@ void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
 }
 
 void LayerTreeHostImpl::ScrollEnd(bool should_snap) {
+  scrollbar_controller_->ResetState();
   if (!CurrentlyScrollingNode())
     return;
 

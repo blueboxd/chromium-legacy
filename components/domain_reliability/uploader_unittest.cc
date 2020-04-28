@@ -91,7 +91,7 @@ class UploadMockURLRequestJob : public net::URLRequestJob {
     if (result_.net_error == net::OK)
       NotifyHeadersComplete();
     else if (result_.net_error != net::ERR_IO_PENDING)
-      NotifyStartError(net::URLRequestStatus::FromError(result_.net_error));
+      NotifyStartError(result_.net_error);
   }
 
   void GetResponseInfo(net::HttpResponseInfo* info) override {

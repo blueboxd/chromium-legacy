@@ -9,6 +9,7 @@
 
 #include "base/files/scoped_file.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -22,13 +23,18 @@ extern const char kWlanInterface[];
 extern const char kPortNumberKey[];
 extern const char kPortProtocolKey[];
 extern const char kPortInterfaceKey[];
-extern const char kPortActiveKey[];
 extern const char kPortLabelKey[];
 extern const char kPortVmNameKey[];
 extern const char kPortContainerNameKey[];
 
 class CrostiniPortForwarder : public KeyedService {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when a port's active state changes.
+    virtual void OnActivePortsChanged(const base::ListValue& activePorts) = 0;
+  };
+
   enum class Protocol {
     TCP = 0,
     UDP = 1,
@@ -59,6 +65,12 @@ class CrostiniPortForwarder : public KeyedService {
 
   using ResultCallback = base::OnceCallback<void(bool)>;
 
+  void AddObserver(Observer* observer) { observers_.AddObserver(observer); }
+
+  void RemoveObserver(Observer* observer) {
+    observers_.RemoveObserver(observer);
+  }
+
   // The result_callback will only be called with success=true IF all conditions
   // pass. This means a port setting has been successfully updated in the
   // iptables and the profile preference setting has also been successfully
@@ -84,14 +96,16 @@ class CrostiniPortForwarder : public KeyedService {
   // TODO(matterchen): For the two following methods, implement callback
   // results.
 
-  // Deactivate all ports belong to the container_id and remove them from the
-  // preferences.
+  // Deactivate all ports belonging to the container_id and removes them from
+  // the preferences.
   void RemoveAllPorts(const ContainerId& container_id);
 
   // Deactivate all active ports belonging to the container_id and set their
   // preference to inactive such that these ports will not be automatically
   // re-forwarded on re-startup. This is called on container shutdown.
   void DeactivateAllActivePorts(const ContainerId& container_id);
+
+  base::ListValue GetActivePorts();
 
   size_t GetNumberOfForwardedPortsForTesting();
   base::Optional<base::Value> ReadPortPreferenceForTesting(
@@ -105,7 +119,9 @@ class CrostiniPortForwarder : public KeyedService {
  private:
   FRIEND_TEST_ALL_PREFIXES(CrostiniPortForwarderTest,
                            TryActivatePortPermissionBrokerClientFail);
+  FRIEND_TEST_ALL_PREFIXES(CrostiniPortForwarderTest, GetActivePortsForUI);
 
+  void SignalActivePortsChanged();
   bool MatchPortRuleDict(const base::Value& dict, const PortRuleKey& key);
   bool MatchPortRuleContainerId(const base::Value& dict,
                                 const ContainerId& container_id);
@@ -130,6 +146,8 @@ class CrostiniPortForwarder : public KeyedService {
   // requested it so we can release it on removal / deactivate.
   std::unordered_map<PortRuleKey, base::ScopedFD, PortRuleKeyHasher>
       forwarded_ports_;
+
+  base::ObserverList<Observer> observers_;
 
   Profile* profile_;
 

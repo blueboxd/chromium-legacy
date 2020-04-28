@@ -447,29 +447,6 @@ ci.android_builder(
 )
 
 ci.android_builder(
-    name = 'KitKat Phone Tester (dbg)',
-    console_view_entry = ci.console_view_entry(
-        category = 'tester|phone',
-        short_name = 'K',
-    ),
-    main_console_view = 'main',
-    triggered_by = ['ci/Android arm Builder (dbg)'],
-)
-
-ci.android_builder(
-    name = 'KitKat Tablet Tester',
-    console_view_entry = ci.console_view_entry(
-        category = 'tester|tablet',
-        short_name = 'K',
-    ),
-    # We have limited tablet capacity and thus limited ability to run
-    # tests in parallel, hence the high timeout.
-    execution_timeout = 20 * time.hour,
-    main_console_view = 'main',
-    triggered_by = ['ci/Android arm Builder (dbg)'],
-)
-
-ci.android_builder(
     name = 'Lollipop Phone Tester',
     console_view_entry = ci.console_view_entry(
         category = 'tester|phone',

@@ -31,6 +31,8 @@ class PrintJobHistoryServiceImpl
 
   // PrintJobHistoryService:
   void GetPrintJobs(PrintJobDatabase::GetPrintJobsCallback callback) override;
+  void DeleteAllPrintJobs(
+      PrintJobDatabase::DeletePrintJobsCallback callback) override;
 
  private:
   // CupsPrintJobManager::Observer:

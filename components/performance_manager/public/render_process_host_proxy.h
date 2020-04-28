@@ -37,7 +37,6 @@ class RenderProcessHostProxy {
 
  protected:
   friend class RenderProcessUserData;
-  friend class RenderProcessHostProxyTest;
   FRIEND_TEST_ALL_PREFIXES(FrameNodeImplTest, GetFrameNodeById);
 
   explicit RenderProcessHostProxy(int render_process_host_id);

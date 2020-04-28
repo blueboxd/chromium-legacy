@@ -375,8 +375,10 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     private void setUpClearDataPreference(ClearWebsiteStorage preference) {
         long usage = mSite.getTotalUsage();
         if (usage > 0) {
-            boolean appFound = getSiteSettingsClient().originHasInstalledWebapp(
-                    mSite.getAddress().getOrigin());
+            boolean appFound = getSiteSettingsClient()
+                                       .getWebappSettingsClient()
+                                       .getOriginsWithInstalledApp()
+                                       .contains(mSite.getAddress().getOrigin());
             Context context = preference.getContext();
             preference.setTitle(
                     String.format(context.getString(R.string.origin_settings_storage_usage_brief),
@@ -436,13 +438,13 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     }
 
     private void setUpNotificationsPreference(Preference preference) {
-        NotificationSettingsClient client = getSiteSettingsClient().getNotificationSettingsClient();
+        WebappSettingsClient client = getSiteSettingsClient().getWebappSettingsClient();
         Origin origin = Origin.create(mSite.getAddress().getOrigin());
         if (origin != null) {
-            String managedBy = client.getDelegateAppNameForOrigin(origin);
+            String managedBy = client.getNotificationDelegateAppNameForOrigin(origin);
             if (managedBy != null) {
                 final Intent notificationSettingsIntent = getNotificationSettingsIntent(
-                        client.getDelegatePackageNameForOrigin(origin));
+                        client.getNotificationDelegatePackageNameForOrigin(origin));
                 String summaryText =
                         getString(R.string.website_notification_managed_by_app, managedBy);
                 ChromeImageViewPreference newPreference =
@@ -514,8 +516,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         // origin, so it is safe to open the channel settings for whatever channel ID
         // it returns.
         String channelId =
-                getSiteSettingsClient().getNotificationSettingsClient().getChannelIdForOrigin(
-                        mSite.getAddress().getOrigin());
+                getSiteSettingsClient().getChannelIdForOrigin(mSite.getAddress().getOrigin());
         launchOsChannelSettings(preference.getContext(), channelId);
     }
 

@@ -17,14 +17,6 @@ namespace net {
 
 static URLFetcherFactory* g_factory = nullptr;
 
-URLFetcherImpl::URLFetcherImpl(
-    const GURL& url,
-    RequestType request_type,
-    URLFetcherDelegate* d,
-    net::NetworkTrafficAnnotationTag traffic_annotation)
-    : core_(
-          new URLFetcherCore(this, url, request_type, d, traffic_annotation)) {}
-
 URLFetcherImpl::~URLFetcherImpl() {
   core_->Stop();
 }
@@ -237,5 +229,13 @@ URLFetcherFactory* URLFetcherImpl::factory() {
 void URLFetcherImpl::set_factory(URLFetcherFactory* factory) {
   g_factory = factory;
 }
+
+URLFetcherImpl::URLFetcherImpl(
+    const GURL& url,
+    RequestType request_type,
+    URLFetcherDelegate* d,
+    net::NetworkTrafficAnnotationTag traffic_annotation)
+    : core_(
+          new URLFetcherCore(this, url, request_type, d, traffic_annotation)) {}
 
 }  // namespace net

@@ -334,6 +334,30 @@ error::Error RasterDecoderImpl::HandleWritePixelsINTERNALImmediate(
   return error::kNoError;
 }
 
+error::Error RasterDecoderImpl::HandleConvertYUVMailboxesToRGBINTERNALImmediate(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile raster::cmds::ConvertYUVMailboxesToRGBINTERNALImmediate& c =
+      *static_cast<const volatile raster::cmds::
+                       ConvertYUVMailboxesToRGBINTERNALImmediate*>(cmd_data);
+  GLenum planes_yuv_color_space = static_cast<GLenum>(c.planes_yuv_color_space);
+  uint32_t mailboxes_size;
+  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 64>(1, &mailboxes_size)) {
+    return error::kOutOfBounds;
+  }
+  if (mailboxes_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  volatile const GLbyte* mailboxes =
+      gles2::GetImmediateDataAs<volatile const GLbyte*>(c, mailboxes_size,
+                                                        immediate_data_size);
+  if (mailboxes == nullptr) {
+    return error::kOutOfBounds;
+  }
+  DoConvertYUVMailboxesToRGBINTERNAL(planes_yuv_color_space, mailboxes);
+  return error::kNoError;
+}
+
 error::Error RasterDecoderImpl::HandleTraceEndCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

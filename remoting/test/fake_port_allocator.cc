@@ -79,7 +79,8 @@ FakePortAllocatorFactory::~FakePortAllocatorFactory() = default;
 
 std::unique_ptr<cricket::PortAllocator>
 FakePortAllocatorFactory::CreatePortAllocator(
-    scoped_refptr<protocol::TransportContext> transport_context) {
+    scoped_refptr<protocol::TransportContext> transport_context,
+    base::WeakPtr<protocol::SessionOptionsProvider> session_options_provider) {
   return std::make_unique<FakePortAllocator>(
       network_manager_.get(), socket_factory_.get(), transport_context);
 }

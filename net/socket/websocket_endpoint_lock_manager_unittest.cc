@@ -4,7 +4,7 @@
 
 #include "net/socket/websocket_endpoint_lock_manager.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"

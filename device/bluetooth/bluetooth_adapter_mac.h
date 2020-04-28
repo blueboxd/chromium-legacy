@@ -51,8 +51,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
       public BluetoothDiscoveryManagerMac::Observer,
       public BluetoothLowEnergyDiscoveryManagerMac::Observer {
  public:
-  static base::WeakPtr<BluetoothAdapterMac> CreateAdapter();
-  static base::WeakPtr<BluetoothAdapterMac> CreateAdapterForTest(
+  static scoped_refptr<BluetoothAdapterMac> CreateAdapter();
+  static scoped_refptr<BluetoothAdapterMac> CreateAdapterForTest(
       std::string name,
       std::string address,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
@@ -205,7 +205,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   // filter.  If a discovery session is already running the filter is updated.
   bool StartDiscovery(BluetoothDiscoveryFilter* discovery_filter);
 
-  void Init();
+  void Initialize(base::OnceClosure callback) override;
   void InitForTest(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   void PollAdapter();
 

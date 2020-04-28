@@ -1,45 +1,127 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
+<translation id="1044891598689252897">אתרים יפעלו כרגיל</translation>
 <translation id="1124772482545689468">משתמש</translation>
 <translation id="1178581264944972037">השהה</translation>
 <translation id="1181037720776840403">הסרה</translation>
 <translation id="1201402288615127009">הבא</translation>
+<translation id="1242008676835033345">מוטמע ב-<ph name="WEBSITE_URL" /></translation>
+<translation id="129382876167171263">קבצים שנשמרו על ידי אתרים מופיעים כאן</translation>
+<translation id="1369915414381695676">האתר <ph name="SITE_NAME" /> נוסף</translation>
 <translation id="1383876407941801731">חפש</translation>
 <translation id="1384959399684842514">ההורדה הושהתה</translation>
+<translation id="1446450296470737166">‏התר שליטה מלאה על מכשירי MIDI</translation>
+<translation id="1509960214886564027">ייתכן שהתכונות של חלק גדול מהאתרים לא יפעלו כראוי</translation>
+<translation id="1620510694547887537">מצלמה</translation>
+<translation id="1647391597548383849">גישה אל המצלמה שלך</translation>
+<translation id="1660204651932907780">מתן הרשאה לאתרים להשמיע צלילים (מומלץ)</translation>
+<translation id="1688867105868176567">למחוק את נתוני האתר?</translation>
+<translation id="169515064810179024">חסימת הגישה של אתרים אל חיישני תנועה</translation>
+<translation id="1717218214683051432">חיישני תנועה</translation>
+<translation id="1743802530341753419">הצגת בקשה לפני מתן אישור לאתרים להתחבר להתקן (מומלץ)</translation>
+<translation id="1887786770086287077">‏הגישה למיקום כבויה בשביל המכשיר הזה. יש להפעיל אותה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
+<translation id="1919345977826869612">מודעות</translation>
+<translation id="1922076542920281912">‏כדי לאפשר ל-Chrome לגשת אל המיקום, צריך להפעיל את האפשרות הזו גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="194341124344773587">‏הפעלת הרשאה ל-Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
+<translation id="1984937141057606926">מותר, מלבד צד שלישי</translation>
+<translation id="1994173015038366702">כתובת אתר</translation>
+<translation id="2025115093177348061">מציאות רבודה</translation>
+<translation id="2041019821020695769">‏כדי לאפשר ל-Chrome לשלוח לך התראות, צריך להפעיל אותן גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
+<translation id="2091887806945687916">צליל</translation>
+<translation id="2107397443965016585">יש לבקש ממני אישור לפני מתן הרשאה לאתרים להציג תוכן מוגן (מומלץ)</translation>
 <translation id="2146738493024040262">פתח אפליקציית אינסטנט</translation>
 <translation id="2148716181193084225">היום</translation>
+<translation id="2182457891543959921">תוצג שאלה לפני מתן הרשאה לאתרים ליצור מפה בתלת ממד של הסביבה שלך או לעקוב אחר מיקום המצלמה (מומלץ)</translation>
+<translation id="2212565012507486665">‏אישור קובצי cookie</translation>
+<translation id="2289270750774289114">‏המערכת מבקשת אישור כשאתר רוצה לאתר התקני Bluetooth קרובים (מומלץ)</translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">ההורדה הושלמה <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2440823041667407902">גישה למיקום</translation>
+<translation id="2482878487686419369">התראות</translation>
+<translation id="2490684707762498678">מנוהלות על-ידי <ph name="APP_NAME" /></translation>
 <translation id="2501278716633472235">חזרה</translation>
+<translation id="2537296579376733324">‏כל קובצי ה-cookie, באתר זה בלבד</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{‏נחסם קובץ cookie אחד}two{‏נחסמו # קובצי cookie}many{‏נחסמו # קובצי cookie}other{‏נחסמו # קובצי cookie}}</translation>
+<translation id="2570922361219980984">‏גם הגישה למיקום כבויה בשביל המכשיר הזה. יש להפעיל אותה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">מורחב - לחץ כדי לכווץ.</translation>
+<translation id="2586657967955657006">לוח</translation>
+<translation id="2621115761605608342">‏אפשר JavaScript לאתר ספציפי.</translation>
 <translation id="2653659639078652383">שלח</translation>
+<translation id="2687403674020088961">‏חסימה של כל קובצי ה-cookie (לא מומלץ)</translation>
 <translation id="2704606927547763573">הועתק</translation>
+<translation id="2822354292072154809">לאפס את כל הרשאות האתר בשביל <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2870560284913253234">אתר</translation>
+<translation id="2910701580606108292">הצגת שאלה לפני מתן הרשאה לאתרים להפעיל תוכן מוגן</translation>
+<translation id="2913331724188855103">‏אתרים יוכלו לשמור ולקרוא נתונים של קובצי Cookie (מומלץ)</translation>
 <translation id="2968755619301702150">מציג האישורים</translation>
+<translation id="300526633675317032">פעולה זו תמחק את כל נתוני האתר המאוחסנים (<ph name="SIZE_IN_KB" />).</translation>
 <translation id="3115898365077584848">הצג פרטים</translation>
+<translation id="3123473560110926937">חסומות בחלק מהאתרים</translation>
+<translation id="3190152372525844641">‏הפעל הרשאות בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
+<translation id="3198916472715691905">נתונים מאוחסנים בנפח <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3223655101706843289">‏פעולה זו תמחק את כל הנתונים וקובצי ה-Cookie שאוחסנו על ידי <ph name="ORIGIN" /> ועל ידי האפליקציה שלו שמופיעה במסך הבית.</translation>
+<translation id="3227137524299004712">מיקרופון</translation>
+<translation id="3277252321222022663">התרת גישה של אתרים אל החיישנים (מומלץ)</translation>
 <translation id="3295602654194328831">הסתר פרטים</translation>
+<translation id="3386292677130313581">יש לשאול לפני שמאפשרים לאתרים לדעת מה המיקום שלך (מומלץ)</translation>
 <translation id="3479552764303398839">לא עכשיו</translation>
+<translation id="3538390592868664640">חסימה של יצירת מפה בתלת ממד של הסביבה שלך או של מעקב אחר מיקום המצלמה על ידי אתרים.</translation>
+<translation id="358794129225322306">מתן הרשאה לאתר להוריד קבצים מרובים באופן אוטומטי.</translation>
+<translation id="3596414637720633074">‏חסימת קובצי cookie של צד שלישי במצב אנונימי</translation>
+<translation id="3600792891314830896">השתקת אתרים שמשמיעים צלילים</translation>
+<translation id="3730075448226062617">‏כדי לאפשר ל-Chrome לגשת אל המיקרופון, צריך להפעיל אותו גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
+<translation id="3744111561329211289">סינכרון ברקע</translation>
+<translation id="3822502789641063741">למחוק נתוני אתר מהאחסון?</translation>
 <translation id="385051799172605136">חזרה</translation>
+<translation id="3955193568934677022">אתרים יוכלו להפעיל תוכן מוגן (מומלץ)</translation>
 <translation id="3987993985790029246">העתק קישור</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">כותרת</translation>
+<translation id="4008040567710660924">‏אישור קובצי Cookie של אתר מסוים.</translation>
+<translation id="4165986682804962316">הגדרות לאתרים</translation>
+<translation id="4226663524361240545">רטט של המכשיר אפשרי כשמתקבלת הודעה</translation>
 <translation id="4259722352634471385">הניווט חסום: <ph name="URL" /></translation>
+<translation id="4278390842282768270">מותר</translation>
 <translation id="4433925000917964731">‏גרסת Lite של הדף נוצרה על ידי Google</translation>
+<translation id="4434045419905280838">חלונות קופצים והפניות אוטומטיות</translation>
+<translation id="445467742685312942">מתן הרשאה לאתרים להציג תוכן מוגן</translation>
+<translation id="4468959413250150279">השתקת צלילים באתר ספציפי.</translation>
+<translation id="4479647676395637221">יש לשאול לפני שמאפשרים לאתרים להשתמש במצלמה שלך (מומלץ)</translation>
 <translation id="4570913071927164677">פרטים</translation>
 <translation id="4645575059429386691">מנוהל על-ידי ההורה שלך</translation>
+<translation id="4670064810192446073">מציאות מדומה</translation>
+<translation id="4751476147751820511">חיישני תנועה או אור</translation>
 <translation id="4883854917563148705">לא ניתן לאפס הגדרות מנוהלות</translation>
+<translation id="4887024562049524730">תוצג שאלה לפני מתן הרשאה לאתרים להשתמש במכשיר המציאות המדומה ובנתוני המציאות המדומה שלך (מומלץ)</translation>
+<translation id="4962975101802056554">ביטול כל ההרשאות בשביל המכשיר</translation>
+<translation id="4964199952259983386">‏כדי לאפשר ל-Chrome להשתמש ב-AR, צריך גם להפעיל את המצלמה ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="497421865427891073">המשך קדימה</translation>
+<translation id="5039804452771397117">זה בסדר</translation>
+<translation id="5048398596102334565">התרת גישה של אתרים אל חיישני התנועה (מומלץ)</translation>
+<translation id="5063480226653192405">שימוש</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
 <translation id="5300589172476337783">הצגה</translation>
 <translation id="5301954838959518834">בסדר, הבנתי</translation>
+<translation id="5307446750509046227">מחיקת נתוני אתר מהאחסון</translation>
+<translation id="5313967007315987356">הוסף אתר</translation>
 <translation id="5317780077021120954">שמור</translation>
+<translation id="5335288049665977812">‏אפשר לאתרים להריץ JavaScript (מומלץ)</translation>
+<translation id="534295439873310000">‏מכשירי NFC</translation>
 <translation id="5391532827096253100">החיבור שלך לאתר הזה לא מאובטח. פרטי האתר</translation>
+<translation id="5494752089476963479">חסימת מודעות באתרים שמוצגות בהם מודעות מפריעות או מטעות</translation>
+<translation id="5505264765875738116">אתרים לא יכולים לבקש לשלוח התראות</translation>
+<translation id="5516455585884385570">פתיחה של הגדרות ההתראות</translation>
+<translation id="5527111080432883924">יש לבקש הרשאה לפני מתן גישה לאתרים אל טקסט ותמונות מלוח העריכה (מומלץ)</translation>
 <translation id="5556459405103347317">ניסיון טעינה נוסף</translation>
 <translation id="5596627076506792578">אפשרויות נוספות</translation>
+<translation id="5649053991847567735">הורדות אוטומטיות</translation>
+<translation id="5677928146339483299">חסום</translation>
+<translation id="5689516760719285838">מיקום</translation>
+<translation id="5710871682236653961">‏הצגת שאלה לפני מתן הרשאה לאתרים לשלוח ולקבל מידע כשמקישים על מכשירי NFC (מומלץ)</translation>
 <translation id="5804241973901381774">הרשאות</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5916664084637901428">פועל</translation>
@@ -47,38 +129,88 @@
 <translation id="6040143037577758943">סגור</translation>
 <translation id="6042308850641462728">עוד</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6181444274883918285">להוספת מקרה חריג של אתר</translation>
+<translation id="6192792657125177640">יוצאי דופן</translation>
+<translation id="6194112207524046168">‏כדי לאפשר ל-Chrome לגשת אל המצלמה, צריך להפעיל אותה גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
+<translation id="6196640612572343990">‏חסום קובצי Cookie של צד שלישי</translation>
 <translation id="6206551242102657620">החיבור מאובטח. פרטי האתר</translation>
 <translation id="6216432067784365534">אפשרויות בשביל <ph name="NAME_OF_LIST_ITEM" /></translation>
+<translation id="6270391203985052864">אתרים יכולים לבקש לשלוח התראות</translation>
+<translation id="6295158916970320988">כל האתרים</translation>
+<translation id="6320088164292336938">רטט</translation>
+<translation id="6388207532828177975">ניקוי ואיפוס</translation>
+<translation id="6439114592976064011">תיחסם האפשרות של אתרים להשתמש במכשיר המציאות המדומה ובנתוני המציאות המדומה</translation>
 <translation id="6447842834002726250">‏קובצי Cookie</translation>
 <translation id="6527303717912515753">שיתוף</translation>
+<translation id="6545864417968258051">‏סריקת Bluetooth</translation>
+<translation id="6561560012278703671">הצגת חיווי בסרגל הכתובות (מונע הקפצה של חלוניות הודעה מפריעות)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
+<translation id="6612358246767739896">תוכן מוגן</translation>
+<translation id="6643016212128521049">ניקוי</translation>
 <translation id="6746124502594467657">הזז למטה</translation>
+<translation id="6782111308708962316">‏אתרים של צד שלישי לא יוכלו לשמור ולקרוא נתונים של קובצי cookie</translation>
 <translation id="6818926723028410516">בחירת פריטים</translation>
+<translation id="6864395892908308021">‏NFC לא נתמך במכשיר הזה</translation>
 <translation id="6910211073230771657">נמחק</translation>
+<translation id="6912998170423641340">חסימת היכולת של אתרים לקרוא טקסט ותמונות מלוח העריכה</translation>
 <translation id="6945221475159498467">בחירה</translation>
 <translation id="6963642900430330478">הדף הזה מסוכן. פרטי האתר</translation>
 <translation id="6965382102122355670">אישור</translation>
+<translation id="6992289844737586249">יש לשאול לפני שמאפשרים לאתרים להשתמש במיקרופון (מומלץ)</translation>
+<translation id="7053983685419859001">חסימה</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{נבחר אחד}two{נבחרו #}many{נבחרו #}other{נבחרו #}}</translation>
 <translation id="7087918508125750058">נבחרו <ph name="ITEM_COUNT" />. האפשרויות מוצגות בחלק העליון של המסך</translation>
+<translation id="7128222689758636196">יופעלו במנוע החיפוש הנוכחי</translation>
+<translation id="7141896414559753902">חסימה של חלונות קופצים והפניות אוטומטיות באתרים (מומלץ)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7250468141469952378">נבחרו <ph name="ITEM_COUNT" /></translation>
+<translation id="7302486331832100261">הבחירה שלך היא בדרך כלל לחסום התראות. כדי לאפשר את ההתראות, ניתן להקיש על 'פרטים'.</translation>
+<translation id="7423098979219808738">תופיע בקשת אישור</translation>
+<translation id="7423538860840206698">הגישה לקריאה מלוח העריכה נחסמה</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="7572498721684305250">‏חסימת האפשרות של אתרים לשלוח ולקבל מידע כשמקישים על מכשירי NFC</translation>
+<translation id="757524316907819857">חסימה של הפעלת תוכן מוגן על-ידי אתרים</translation>
+<translation id="7589445247086920869">חסימה במנוע החיפוש הנוכחי</translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="7791543448312431591">הוספה</translation>
 <translation id="780301667611848630">לא תודה</translation>
+<translation id="7817023149356982970">המערכת תוציא אותך מהאתר הזה.</translation>
+<translation id="7828557259026017104">‏קובצי cookie נוצרים על ידי האתרים שביקרת בהם. האתרים משתמשים בהם כדי לזכור את ההעדפות שלך. קובצי cookie של צד שלישי נוצרים על-ידי אתרים אחרים. האתרים האלה הם הבעלים של חלק מהתוכן בדף האינטרנט שביקרת בו, למשל מודעות או תמונות.</translation>
 <translation id="7846076177841592234">בטל את הבחירה</translation>
+<translation id="7882806643839505685">מתן הרשאה להשמעת צלילים באתר ספציפי.</translation>
+<translation id="7993619969781047893">ייתכן שהתכונות של חלק מהאתרים לא יפעלו כראוי</translation>
+<translation id="7999064672810608036">‏האם אתה בטוח שברצונך לנקות את כל הנתונים המקומיים, כולל קובצי Cookie, ולאפס את כל ההרשאות של האתר הזה?</translation>
 <translation id="802154636333426148">ההורדה נכשלה</translation>
 <translation id="8087000398470557479">‏התוכן הזה הוא מ-<ph name="DOMAIN_NAME" />, ומוגש על-ידי Google.</translation>
+<translation id="8116925261070264013">מושתקים</translation>
 <translation id="8131740175452115882">אישור</translation>
 <translation id="8200772114523450471">חדש</translation>
 <translation id="8206354486702514201">הגדרה זו נאכפת על ידי מנהל המערכת שלך.</translation>
 <translation id="8249310407154411074">העברה לראש הרשימה</translation>
 <translation id="8261506727792406068">מחיקה</translation>
+<translation id="8300705686683892304">מנוהלים על-ידי אפליקציה</translation>
+<translation id="8372893542064058268">אפשר סנכרון ברקע לאתר ספציפי.</translation>
+<translation id="8380167699614421159">באתר הזה מוצגות מודעות מפריעות או מטעות</translation>
+<translation id="8447861592752582886">שלול הרשאות מכשיר</translation>
+<translation id="851751545965956758">חסימת התחברות של אתרים אל התקנים</translation>
+<translation id="857943718398505171">מותרת (מומלץ)</translation>
 <translation id="8609465669617005112">הזז למעלה</translation>
 <translation id="8676374126336081632">ניקוי קלט</translation>
+<translation id="8702612070107455751">המערכת תמחק את כל הנתונים ששמורים אופליין.</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8730621377337864115">בוצע</translation>
+<translation id="8737217482364735741">‏פעולה זו תמחק את כל הנתונים וקובצי ה-Cookie שאוחסנו על ידי <ph name="ORIGIN" />.</translation>
+<translation id="8801436777607969138">‏חסימת JavaScript באתר ספציפי.</translation>
+<translation id="8816026460808729765">חסימת הגישה של אתרים אל חיישנים</translation>
+<translation id="8847988622838149491">USB</translation>
+<translation id="885701979325669005">אחסון</translation>
+<translation id="8926666909099850184">‏קישוריות ה-NFC מושבתת במכשיר הזה. ניתן להפעיל אותה דרך <ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
+<translation id="8941729603749328384">www.example.com</translation>
+<translation id="8958424370300090006">‏חסימת קובצי Cookie של אתר מסוים.</translation>
 <translation id="8959122750345127698">הניווט לא אפשרי: <ph name="URL" /></translation>
 <translation id="9019902583201351841">מנוהל על-ידי ההורים שלך</translation>
+<translation id="945632385593298557">גישה למיקרופון שלך</translation>
+<translation id="965817943346481315">חסימה אם באתר מוצגות מודעות מפריעות או מטעות (מומלץ)</translation>
 </translationbundle>

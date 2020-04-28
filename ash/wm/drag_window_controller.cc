@@ -22,7 +22,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/paint_context.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/gfx/transform_util.h"
@@ -147,12 +146,6 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
 
     // Show the widget after all the setups.
     drag_window_->Show();
-
-    // Fade the window in.
-    ui::Layer* drag_layer = drag_window_->layer();
-    drag_layer->SetOpacity(0);
-    ui::ScopedLayerAnimationSettings scoped_setter(drag_layer->GetAnimator());
-    drag_layer->SetOpacity(1);
   }
 
   void RecreateWindowLayers(aura::Window* original_window) {
@@ -166,9 +159,7 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
   }
 
   void SetOpacity(float opacity) {
-    ui::Layer* layer = drag_window_->layer();
-    ui::ScopedLayerAnimationSettings scoped_setter(layer->GetAnimator());
-    layer->SetOpacity(opacity);
+    drag_window_->layer()->SetOpacity(opacity);
     layer_owner_->root()->SetOpacity(1.0f);
   }
 

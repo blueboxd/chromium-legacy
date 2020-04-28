@@ -135,6 +135,10 @@
 #include "chromecast/media/service/video_geometry_setter_service.h"
 #endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#include "device/bluetooth/cast/bluetooth_adapter_cast.h"
+#endif
+
 namespace chromecast {
 namespace shell {
 
@@ -295,7 +299,7 @@ media::MediaCapsImpl* CastContentBrowserClient::media_caps() {
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-base::WeakPtr<device::BluetoothAdapterCast>
+scoped_refptr<device::BluetoothAdapterCast>
 CastContentBrowserClient::CreateBluetoothAdapter() {
   NOTREACHED() << "Bluetooth Adapter is not supported!";
   return nullptr;

@@ -33,6 +33,10 @@ class PrintJobHistoryService : public KeyedService {
   virtual void GetPrintJobs(
       PrintJobDatabase::GetPrintJobsCallback callback) = 0;
 
+  // Deletes all print jobs from the database.
+  virtual void DeleteAllPrintJobs(
+      PrintJobDatabase::DeletePrintJobsCallback callback) = 0;
+
   void AddObserver(PrintJobHistoryService::Observer* observer);
   void RemoveObserver(PrintJobHistoryService::Observer* observer);
 

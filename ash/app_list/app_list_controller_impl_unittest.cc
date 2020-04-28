@@ -36,6 +36,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -574,6 +575,39 @@ TEST_F(AppListControllerImplTest,
 
   ASSERT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
+}
+
+// Regression test for https://crbug.com/1073548
+// Verifies that app list shown from overview after toggling tablet mode can be
+// closed.
+TEST_F(AppListControllerImplTest,
+       CloseAppListShownFromOverviewAfterTabletExit) {
+  // Move to tablet mode and back.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+
+  std::unique_ptr<aura::Window> w(
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
+  OverviewController* const overview_controller =
+      Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+
+  // Press home button - verify overview exits and the app list is shown.
+  PressHomeButton();
+
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
+  GetAppListTestHelper()->CheckVisibility(true);
+  ASSERT_TRUE(GetAppListView()->GetWidget());
+  EXPECT_TRUE(GetAppListView()->GetWidget()->GetNativeWindow()->IsVisible());
+
+  // Pressing home button again should close the app list.
+  PressHomeButton();
+
+  EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
+  GetAppListTestHelper()->CheckVisibility(false);
+  ASSERT_TRUE(GetAppListView()->GetWidget());
+  EXPECT_FALSE(GetAppListView()->GetWidget()->GetNativeWindow()->IsVisible());
 }
 
 class AppListControllerImplTestWithoutHotseat

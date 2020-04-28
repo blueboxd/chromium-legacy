@@ -1973,11 +1973,6 @@
     "expiry_milestone": 77
   },
   {
-    "name": "enable-send-tab-to-self-when-signed-in",
-    "owners": [ "//components/send_tab_to_self/OWNERS" ],
-    "expiry_milestone": 84
-  },
-  {
     "name": "enable-service-worker-imported-script-update-check",
     "owners": [ "worker-dev@chromium.org" ],
     // It's still in development. Tentatively set to M76 as the expiry_milestone.
@@ -2762,6 +2757,11 @@
     // isolation policy, as well as for diagnosing problems when site isolation
     // only applies to some sites.
     "expiry_milestone": 90
+  },
+  {
+    "name" : "lacros-support",
+    "owners": [ "jamescook", "erikchen", "lacros-team@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "launcher-settings-search",
@@ -3904,7 +3904,7 @@
   {
     "name": "tab-hover-card-images",
     "owners": [ "dfried", "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "tab-hover-cards",

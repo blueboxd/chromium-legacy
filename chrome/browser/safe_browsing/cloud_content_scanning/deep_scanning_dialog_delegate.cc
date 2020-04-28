@@ -197,11 +197,12 @@ void DeepScanningDialogDelegate::BypassWarnings() {
         web_contents_->GetLastCommittedURL(), "Text data", std::string(),
         "text/plain",
         extensions::SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
-        content_size);
+        content_size, text_response_.dlp_scan_verdict());
   }
 
   // Mark every "warning" file as complying and report a warning bypass.
-  for (size_t index : file_warnings_) {
+  for (const auto& warning : file_warnings_) {
+    size_t index = warning.first;
     result_.paths_results[index] = true;
 
     ReportSensitiveDataWarningBypass(
@@ -209,7 +210,7 @@ void DeepScanningDialogDelegate::BypassWarnings() {
         web_contents_->GetLastCommittedURL(), data_.paths[index].AsUTF8Unsafe(),
         file_info_[index].sha256, file_info_[index].mime_type,
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-        file_info_[index].size);
+        file_info_[index].size, warning.second.dlp_scan_verdict());
   }
 
   RunCallback();
@@ -443,6 +444,7 @@ void DeepScanningDialogDelegate::StringRequestCallback(
   if (!text_complies) {
     if (ShouldShowWarning(response.dlp_scan_verdict())) {
       text_warning_ = true;
+      text_response_ = std::move(response);
       UpdateFinalResult(DeepScanningFinalResult::WARNING);
     } else {
       UpdateFinalResult(DeepScanningFinalResult::FAILURE);
@@ -485,7 +487,7 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
     } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
       UpdateFinalResult(DeepScanningFinalResult::ENCRYPTED_FILES);
     } else if (ShouldShowWarning(response.dlp_scan_verdict())) {
-      file_warnings_.insert(index);
+      file_warnings_[index] = std::move(response);
       UpdateFinalResult(DeepScanningFinalResult::WARNING);
     } else {
       UpdateFinalResult(DeepScanningFinalResult::FAILURE);

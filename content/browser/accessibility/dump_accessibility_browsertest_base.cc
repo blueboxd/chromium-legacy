@@ -110,6 +110,12 @@ void DumpAccessibilityTestBase::SetUp() {
   ChooseFeatures(&enabled_features, &disabled_features);
 
   scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+
+  // The <input type="color"> popup tested in
+  // AccessibilityInputColorWithPopupOpen requires the ability to read pixels
+  // from a Canvas, so we need to be able to produce pixel output.
+  EnablePixelOutput();
+
   ContentBrowserTest::SetUp();
 }
 

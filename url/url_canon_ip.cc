@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "url/url_canon_internal.h"
 
 namespace url {

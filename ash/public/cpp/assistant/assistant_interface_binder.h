@@ -21,9 +21,6 @@ class ASH_PUBLIC_EXPORT AssistantInterfaceBinder {
   static AssistantInterfaceBinder* GetInstance();
   static void SetInstance(AssistantInterfaceBinder* binder);
 
-  virtual void BindController(
-      mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
-          receiver) = 0;
   virtual void BindAlarmTimerController(
       mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver) = 0;
   virtual void BindNotificationController(

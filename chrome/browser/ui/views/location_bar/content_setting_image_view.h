@@ -41,6 +41,9 @@ class ContentSettingImageView : public IconLabelBubbleView,
  public:
   class Delegate {
    public:
+    // Delegate should return true if the content setting icon should be hidden.
+    virtual bool ShouldHideContentSettingImage() = 0;
+
     // Gets the web contents the ContentSettingImageView is for.
     virtual content::WebContents* GetContentSettingWebContents() = 0;
 

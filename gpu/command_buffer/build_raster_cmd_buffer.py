@@ -197,6 +197,14 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'trace_level': 2,
   },
+  'ConvertYUVMailboxesToRGBINTERNAL': {
+    'decoder_func': 'DoConvertYUVMailboxesToRGBINTERNAL',
+    'internal': True,
+    'type': 'PUT',
+    'count': 64, #GL_MAILBOX_SIZE_CHROMIUM x4
+    'unit_test': False,
+    'trace_level': 2,
+  },
   'Finish': {
     'impl_func': False,
     'client_test': False,

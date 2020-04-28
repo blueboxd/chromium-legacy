@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {AndroidInfoBrowserProxyImpl,ContentSetting,ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {createContentSettingTypeToValuePair,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {AndroidInfoBrowserProxyImpl,ContentSetting,ContentSettingsTypes,SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {Router} from 'chrome://settings/settings.js';
-import {TestAndroidInfoBrowserProxy, TEST_ANDROID_SMS_ORIGIN} from 'chrome://test/settings/test_android_info_browser_proxy.js';
+import {TEST_ANDROID_SMS_ORIGIN, TestAndroidInfoBrowserProxy} from 'chrome://test/settings/test_android_info_browser_proxy.js';
 import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
+import {createContentSettingTypeToValuePair,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
+
 // clang-format on
 
 suite('SiteListChromeOS', function() {
@@ -42,8 +43,7 @@ suite('SiteListChromeOS', function() {
         [], [createContentSettingTypeToValuePair(
                 ContentSettingsTypes.NOTIFICATIONS, [
                   // android sms setting.
-                  createRawSiteException(
-                      TEST_ANDROID_SMS_ORIGIN),
+                  createRawSiteException(TEST_ANDROID_SMS_ORIGIN),
                   // Non android sms setting that should be handled as usual.
                   createRawSiteException('http://bar.com')
                 ])]);
@@ -98,8 +98,7 @@ suite('SiteListChromeOS', function() {
         .then(results => {
           const contentType = results[1];
           flush();
-          assertEquals(
-              ContentSettingsTypes.NOTIFICATIONS, contentType);
+          assertEquals(ContentSettingsTypes.NOTIFICATIONS, contentType);
           assertEquals(2, testElement.sites.length);
 
           assertEquals(

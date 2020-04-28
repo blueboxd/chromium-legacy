@@ -25,6 +25,7 @@ class MediaFeedsFetcher {
     kRequestFailed,
     kNotFound,
     kInvalidFeedData,
+    kGone,
   };
 
   using MediaFeedCallback =

@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
+class Document;
 
 // The PictureInPictureWindow is meant to be used only by
 // PictureInPictureController and is fundamentally just a simple proxy to get

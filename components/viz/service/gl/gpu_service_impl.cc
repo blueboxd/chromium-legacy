@@ -72,6 +72,7 @@
 
 #if defined(OS_ANDROID)
 #include "components/viz/service/gl/throw_uncaught_exception.h"
+#include "media/base/android/media_codec_util.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -242,6 +243,53 @@ bool IsAcceleratedJpegDecodeSupported() {
 #endif  // defined(OS_CHROMEOS)
 }
 
+void GetVideoCapabilities(const gpu::GpuPreferences& gpu_preferences,
+                          const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
+                          gpu::GPUInfo* gpu_info) {
+  // Due to https://crbug.com/709631, we don't want to query Android video
+  // decode/encode capabilities during startup. The renderer needs this info
+  // though, so assume some baseline capabilities.
+#if defined(OS_ANDROID)
+  // Note: Video encoding on Android relies on MediaCodec, so all cases
+  // where it's disabled for decoding it is also disabled for encoding.
+  if (gpu_preferences.disable_accelerated_video_decode ||
+      gpu_preferences.disable_accelerated_video_encode) {
+    return;
+  }
+
+  auto& encoding_profiles =
+      gpu_info->video_encode_accelerator_supported_profiles;
+
+  gpu::VideoEncodeAcceleratorSupportedProfile vea_profile;
+  vea_profile.max_resolution = gfx::Size(1280, 720);
+  vea_profile.max_framerate_numerator = 30;
+  vea_profile.max_framerate_denominator = 1;
+
+  if (media::MediaCodecUtil::IsVp8EncoderAvailable()) {
+    vea_profile.profile = gpu::VP8PROFILE_ANY;
+    encoding_profiles.push_back(vea_profile);
+  }
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  if (media::MediaCodecUtil::IsH264EncoderAvailable(/*use_codec_list*/ false)) {
+    vea_profile.profile = gpu::H264PROFILE_BASELINE;
+    encoding_profiles.push_back(vea_profile);
+  }
+#endif
+
+  // Note: Since Android doesn't have to support PPAPI/Flash, we have not
+  // returned the decoder profiles here since https://crrev.com/665999.
+#else
+  gpu_info->video_decode_accelerator_capabilities =
+      media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences,
+                                                        gpu_workarounds);
+  gpu_info->video_encode_accelerator_supported_profiles =
+      media::GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(
+          media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
+              gpu_preferences));
+#endif
+}
+
 // Returns a callback which does a PostTask to run |callback| on the |runner|
 // task runner.
 template <typename... Params>
@@ -395,13 +443,9 @@ void GpuServiceImpl::UpdateGPUInfo() {
   DCHECK(!gpu_host_);
   gpu::GpuDriverBugWorkarounds gpu_workarounds(
       gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
-  gpu_info_.video_decode_accelerator_capabilities =
-      media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_,
-                                                        gpu_workarounds);
-  gpu_info_.video_encode_accelerator_supported_profiles =
-      media::GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(
-          media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
-              gpu_preferences_));
+
+  GetVideoCapabilities(gpu_preferences_, gpu_workarounds, &gpu_info_);
+
   gpu_info_.jpeg_decode_accelerator_supported =
       IsAcceleratedJpegDecodeSupported();
 

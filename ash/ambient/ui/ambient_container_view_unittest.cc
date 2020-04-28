@@ -8,7 +8,7 @@
 
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_controller.h"
-#include "ash/public/cpp/ambient/photo_controller.h"
+#include "ash/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
@@ -36,20 +36,27 @@ class AmbientContainerViewTest : public AshTestBase {
     scoped_feature_list_.InitAndEnableFeature(
         chromeos::features::kAmbientModeFeature);
     AshTestBase::SetUp();
+
+    // Will extract this into AmbientAshTestBase.
+    // Need to reset first and then assign the TestPhotoClient because can only
+    // have one instance of AmbientBackendController.
+    GetAmbientController()->set_backend_controller_for_testing(nullptr);
+    GetAmbientController()->set_backend_controller_for_testing(
+        std::make_unique<FakeAmbientBackendControllerImpl>());
   }
 
-  void Toggle() { AmbientController()->Toggle(); }
+  void Toggle() { GetAmbientController()->Toggle(); }
 
   AmbientContainerView* GetView() {
-    return AmbientController()->get_container_view_for_testing();
+    return GetAmbientController()->get_container_view_for_testing();
   }
 
   const base::OneShotTimer& GetTimer() const {
-    return AmbientController()->get_timer_for_testing();
+    return GetAmbientController()->get_timer_for_testing();
   }
 
  private:
-  AmbientController* AmbientController() const {
+  AmbientController* GetAmbientController() const {
     return Shell::Get()->ambient_controller();
   }
 

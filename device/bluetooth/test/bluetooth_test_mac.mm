@@ -108,15 +108,16 @@ bool BluetoothTestMac::PlatformSupportsLowEnergy() {
 }
 
 void BluetoothTestMac::InitWithDefaultAdapter() {
-  adapter_mac_ = BluetoothAdapterMac::CreateAdapter().get();
-  adapter_ = adapter_mac_;
+  auto adapter = BluetoothAdapterMac::CreateAdapter();
+  adapter_mac_ = adapter.get();
+  adapter_ = std::move(adapter);
 }
 
 void BluetoothTestMac::InitWithoutDefaultAdapter() {
-  adapter_mac_ = BluetoothAdapterMac::CreateAdapterForTest(
-                     "", "", task_environment_.GetMainThreadTaskRunner())
-                     .get();
-  adapter_ = adapter_mac_;
+  auto adapter = BluetoothAdapterMac::CreateAdapterForTest(
+      "", "", task_environment_.GetMainThreadTaskRunner());
+  adapter_mac_ = adapter.get();
+  adapter_ = std::move(adapter);
 
   mock_central_manager_.reset(
       new ScopedMockCentralManager([[MockCentralManager alloc] init]));
@@ -126,11 +127,11 @@ void BluetoothTestMac::InitWithoutDefaultAdapter() {
 }
 
 void BluetoothTestMac::InitWithFakeAdapter() {
-  adapter_mac_ = BluetoothAdapterMac::CreateAdapterForTest(
-                     kTestAdapterName, kTestAdapterAddress,
-                     task_environment_.GetMainThreadTaskRunner())
-                     .get();
-  adapter_ = adapter_mac_;
+  auto adapter = BluetoothAdapterMac::CreateAdapterForTest(
+      kTestAdapterName, kTestAdapterAddress,
+      task_environment_.GetMainThreadTaskRunner());
+  adapter_mac_ = adapter.get();
+  adapter_ = std::move(adapter);
 
   mock_central_manager_.reset(
       new ScopedMockCentralManager([[MockCentralManager alloc] init]));

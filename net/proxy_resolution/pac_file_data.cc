@@ -4,7 +4,7 @@
 
 #include "net/proxy_resolution/pac_file_data.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace net {

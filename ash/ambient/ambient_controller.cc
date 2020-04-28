@@ -7,34 +7,50 @@
 #include <string>
 
 #include "ash/ambient/ambient_constants.h"
+#include "ash/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/util/ambient_util.h"
 #include "ash/login/ui/lock_screen.h"
+#include "ash/public/cpp/ambient/ambient_backend_controller.h"
+#include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
-#include "ash/public/cpp/ambient/photo_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "build/buildflag.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "ui/views/widget/widget.h"
+
+#if BUILDFLAG(ENABLE_CROS_AMBIENT_MODE_BACKEND)
+#include "ash/ambient/backdrop/ambient_backend_controller_impl.h"
+#endif  // BUILDFLAG(ENABLE_CROS_AMBIENT_MODE_BACKEND)
 
 namespace ash {
 
 namespace {
 
 bool CanStartAmbientMode() {
-  return chromeos::features::IsAmbientModeEnabled() && PhotoController::Get() &&
-         !ambient::util::IsShowing(LockScreen::ScreenType::kLogin);
+  return chromeos::features::IsAmbientModeEnabled() &&
+         AmbientClient::Get()->IsAmbientModeAllowedForActiveUser();
 }
 
 void CloseAssistantUi() {
   DCHECK(AssistantUiController::Get());
   AssistantUiController::Get()->CloseUi(
       chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+}
+
+std::unique_ptr<AmbientBackendController> CreateAmbientBackendController() {
+#if BUILDFLAG(ENABLE_CROS_AMBIENT_MODE_BACKEND)
+  return std::make_unique<AmbientBackendControllerImpl>();
+#else
+  return std::make_unique<FakeAmbientBackendControllerImpl>();
+#endif  // BUILDFLAG(ENABLE_CROS_AMBIENT_MODE_BACKEND)
 }
 
 }  // namespace
@@ -53,6 +69,7 @@ void AmbientController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 AmbientController::AmbientController() {
+  ambient_backend_controller_ = CreateAmbientBackendController();
   ambient_state_.AddObserver(this);
   // |SessionController| is initialized before |this| in Shell.
   Shell::Get()->session_controller()->AddObserver(this);
@@ -130,8 +147,8 @@ void AmbientController::Toggle() {
 void AmbientController::OnBackgroundPhotoEvents() {
   refresh_timer_.Stop();
 
-  // Move the |AmbientModeContainer| beneath the |LockScreenWidget| to show the
-  // lock screen contents on top before the fade-out animation.
+  // Move the |AmbientModeContainer| beneath the |LockScreenWidget| to show
+  // the lock screen contents on top before the fade-out animation.
   auto* ambient_window = container_view_->GetWidget()->GetNativeWindow();
   ambient_window->parent()->StackChildAtBottom(ambient_window);
 
@@ -188,7 +205,7 @@ void AmbientController::ScheduleRefreshImage() {
 
 void AmbientController::GetNextImage() {
   // Start requesting photo and weather information from the backdrop server.
-  PhotoController::Get()->GetNextScreenUpdateInfo(
+  ambient_photo_controller_.GetNextScreenUpdateInfo(
       base::BindOnce(&AmbientController::OnPhotoDownloaded,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&AmbientController::OnWeatherConditionIconDownloaded,
@@ -200,7 +217,6 @@ void AmbientController::OnPhotoDownloaded(const gfx::ImageSkia& image) {
   if (image.isNull())
     return;
 
-  DCHECK(!image.isNull());
   ambient_backend_model_.AddNextImage(image);
   ScheduleRefreshImage();
 }
@@ -214,6 +230,11 @@ void AmbientController::OnWeatherConditionIconDownloaded(
     return;
 
   ambient_backend_model_.UpdateWeatherInfo(icon, temp_f.value());
+}
+
+void AmbientController::set_backend_controller_for_testing(
+    std::unique_ptr<AmbientBackendController> backend_controller) {
+  ambient_backend_controller_ = std::move(backend_controller);
 }
 
 }  // namespace ash

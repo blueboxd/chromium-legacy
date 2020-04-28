@@ -11,6 +11,7 @@
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/paint_worklet_input.h"
 #include "cc/paint/skia_paint_image_generator.h"
+#include "cc/paint/texture_backing.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace cc {
@@ -102,6 +103,12 @@ class CC_PAINT_EXPORT PaintImageBuilder {
   PaintImageBuilder&& set_paint_worklet_input(
       scoped_refptr<PaintWorkletInput> input) {
     paint_image_.paint_worklet_input_ = std::move(input);
+    return std::move(*this);
+  }
+  PaintImageBuilder&& set_texture_backing(sk_sp<TextureBacking> texture_backing,
+                                          PaintImage::ContentId content_id) {
+    paint_image_.texture_backing_ = std::move(texture_backing);
+    paint_image_.content_id_ = content_id;
     return std::move(*this);
   }
 

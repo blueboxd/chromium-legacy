@@ -126,9 +126,8 @@ device::BluetoothDevice::ManufacturerDataMap ConvertManufacturerDataMap(
 namespace device {
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    InitCallback init_callback) {
-  return bluez::BluetoothAdapterBlueZ::CreateAdapter(std::move(init_callback));
+scoped_refptr<BluetoothAdapter> BluetoothAdapter::CreateAdapter() {
+  return bluez::BluetoothAdapterBlueZ::CreateAdapter();
 }
 
 }  // namespace device
@@ -183,11 +182,23 @@ void ResetAdvertisingErrorCallbackConnector(
 }  // namespace
 
 // static
-base::WeakPtr<BluetoothAdapter> BluetoothAdapterBlueZ::CreateAdapter(
-    InitCallback init_callback) {
-  BluetoothAdapterBlueZ* adapter =
-      new BluetoothAdapterBlueZ(std::move(init_callback));
-  return adapter->weak_ptr_factory_.GetWeakPtr();
+scoped_refptr<BluetoothAdapterBlueZ> BluetoothAdapterBlueZ::CreateAdapter() {
+  return base::WrapRefCounted(new BluetoothAdapterBlueZ());
+}
+
+void BluetoothAdapterBlueZ::Initialize(base::OnceClosure callback) {
+  init_callback_ = std::move(callback);
+
+  // Can't initialize the adapter until DBus clients are ready.
+  if (bluez::BluezDBusManager::Get()->IsObjectManagerSupportKnown()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&BluetoothAdapterBlueZ::Init,
+                                  weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+  bluez::BluezDBusManager::Get()->CallWhenObjectManagerSupportIsKnown(
+      base::BindRepeating(&BluetoothAdapterBlueZ::Init,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothAdapterBlueZ::Shutdown() {
@@ -255,22 +266,10 @@ void BluetoothAdapterBlueZ::Shutdown() {
   dbus_is_shutdown_ = true;
 }
 
-BluetoothAdapterBlueZ::BluetoothAdapterBlueZ(InitCallback init_callback)
-    : init_callback_(std::move(init_callback)),
-      initialized_(false),
-      dbus_is_shutdown_(false) {
+BluetoothAdapterBlueZ::BluetoothAdapterBlueZ()
+    : initialized_(false), dbus_is_shutdown_(false) {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   socket_thread_ = device::BluetoothSocketThread::Get();
-
-  // Can't initialize the adapter until DBus clients are ready.
-  if (bluez::BluezDBusManager::Get()->IsObjectManagerSupportKnown()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&BluetoothAdapterBlueZ::Init,
-                                  weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-  bluez::BluezDBusManager::Get()->CallWhenObjectManagerSupportIsKnown(
-      base::Bind(&BluetoothAdapterBlueZ::Init, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothAdapterBlueZ::Init() {

@@ -10,7 +10,7 @@
 #include <algorithm>
 
 #include "base/big_endian.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/rand_util.h"
 #include "net/base/net_errors.h"
 

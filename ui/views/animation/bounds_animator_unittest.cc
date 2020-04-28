@@ -319,6 +319,34 @@ TEST_F(BoundsAnimatorTest, UseTransformsAnimateViewToEmptySrc) {
   EXPECT_EQ(target_bounds, child()->bounds());
 }
 
+// Tests that when using the transform option on the bounds animator, cancelling
+// the animation part way results in the correct bounds applied.
+TEST_F(BoundsAnimatorTest, UseTransformsCancelAnimation) {
+  RecreateAnimator(/*use_transforms=*/true);
+
+  gfx::Rect initial_bounds(0, 0, 10, 10);
+  child()->SetBoundsRect(initial_bounds);
+  gfx::Rect target_bounds(10, 10, 20, 20);
+
+  const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(200);
+  animator()->SetAnimationDuration(duration);
+  // Use a linear tween so we can estimate the expected bounds.
+  animator()->set_tween_type(gfx::Tween::LINEAR);
+  animator()->AnimateViewTo(child(), target_bounds);
+  animator()->SetAnimationDelegate(child(),
+                                   std::make_unique<TestAnimationDelegate>());
+  EXPECT_TRUE(animator()->IsAnimating());
+  EXPECT_TRUE(animator()->IsAnimating(child()));
+
+  // Stop halfway and cancel. The child should have its bounds updated to
+  // exactly halfway between |initial_bounds| and |target_bounds|.
+  const gfx::Rect expected_bounds(5, 5, 15, 15);
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  EXPECT_EQ(initial_bounds, child()->bounds());
+  animator()->Cancel();
+  EXPECT_EQ(expected_bounds, child()->bounds());
+}
+
 // Verify that the bounds animation which updates the transform of views work
 // as expected under RTL (https://crbug.com/1067033).
 TEST_F(BoundsAnimatorTest, VerifyBoundsAnimatorUnderRTL) {

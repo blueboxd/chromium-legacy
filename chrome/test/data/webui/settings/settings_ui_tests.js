@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CrSettingsPrefs, Router, routes} from 'chrome://settings/settings.js';
 import {eventToPromise} from 'chrome://test/test_util.m.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for the Settings layout. */
@@ -152,21 +152,18 @@ suite('settings-ui', function() {
         routes.BASIC, /* dynamicParams */ null,
         /* removeSearch */ true);
     assertEquals('', searchField.getSearchInput().value);
-    assertFalse(
-        Router.getInstance().getQueryParameters().has('search'));
+    assertFalse(Router.getInstance().getQueryParameters().has('search'));
 
     let value = 'GOOG';
     searchField.setValue(value);
     assertEquals(
-        value,
-        Router.getInstance().getQueryParameters().get('search'));
+        value, Router.getInstance().getQueryParameters().get('search'));
 
     // Test that search queries are properly URL encoded.
     value = '+++';
     searchField.setValue(value);
     assertEquals(
-        value,
-        Router.getInstance().getQueryParameters().get('search'));
+        value, Router.getInstance().getQueryParameters().get('search'));
   });
 
   test('whitespace only search query is ignored', function() {

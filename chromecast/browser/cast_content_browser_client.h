@@ -138,7 +138,7 @@ class CastContentBrowserClient
   // TODO(slan): This further couples the browser to the Cast service. Remove
   // this once the dedicated Bluetooth service has been implemented.
   // (b/76155468)
-  virtual base::WeakPtr<device::BluetoothAdapterCast> CreateBluetoothAdapter();
+  virtual scoped_refptr<device::BluetoothAdapterCast> CreateBluetoothAdapter();
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
   // chromecast::metrics::CastMetricsServiceDelegate implementation:

@@ -13,7 +13,7 @@
 
 namespace feedwire {
 class ContentId;
-}
+}  // namespace feedwire
 namespace feed {
 struct StreamModelUpdateRequest;
 

@@ -103,6 +103,11 @@ void MediaFeedsFetcher::OnURLFetchComplete(
   if (request->ResponseInfo() && request->ResponseInfo()->headers)
     response_code = request->ResponseInfo()->headers->response_code();
 
+  if (response_code == net::HTTP_GONE) {
+    std::move(callback).Run(nullptr, Status::kGone);
+    return;
+  }
+
   if (response_code != net::HTTP_OK) {
     std::move(callback).Run(nullptr, Status::kRequestFailed);
     return;

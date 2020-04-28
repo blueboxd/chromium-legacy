@@ -5,6 +5,8 @@
 #ifndef ASH_PUBLIC_CPP_ASSISTANT_TEST_SUPPORT_MOCK_ASSISTANT_CONTROLLER_H_
 #define ASH_PUBLIC_CPP_ASSISTANT_TEST_SUPPORT_MOCK_ASSISTANT_CONTROLLER_H_
 
+#include <string>
+
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
@@ -28,6 +30,21 @@ class MockAssistantController : public AssistantController {
               (override));
 
   MOCK_METHOD(base::WeakPtr<AssistantController>, GetWeakPtr, (), (override));
+
+  MOCK_METHOD(
+      void,
+      SetAssistant,
+      (mojo::PendingRemote<chromeos::assistant::mojom::Assistant> assistant),
+      (override));
+
+  MOCK_METHOD(void, StartSpeakerIdEnrollmentFlow, (), (override));
+
+  MOCK_METHOD(void,
+              SendAssistantFeedback,
+              (bool pii_allowed,
+               const std::string& feedback_description,
+               const std::string& screenshot_png),
+              (override));
 };
 
 }  // namespace ash

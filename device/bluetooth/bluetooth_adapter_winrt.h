@@ -80,10 +80,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   BluetoothAdapterWinrt();
   ~BluetoothAdapterWinrt() override;
 
-  void Init(InitCallback init_cb);
+  void Initialize(base::OnceClosure init_callback) override;
   // Allow tests to provide their own implementations of statics.
   void InitForTests(
-      InitCallback init_cb,
+      base::OnceClosure init_callback,
       Microsoft::WRL::ComPtr<
           ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics>
           bluetooth_adapter_statics,
@@ -144,9 +144,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
 
   // CompleteInitAgile is a proxy to CompleteInit that resolves agile
   // references.
-  void CompleteInitAgile(InitCallback init_cb, StaticsInterfaces statics);
+  void CompleteInitAgile(base::OnceClosure init_callback,
+                         StaticsInterfaces statics);
   void CompleteInit(
-      InitCallback init_cb,
+      base::OnceClosure init_callback,
       Microsoft::WRL::ComPtr<
           ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics>
           bluetooth_adapter_statics,

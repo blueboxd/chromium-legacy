@@ -38,6 +38,10 @@ MockBluetoothAdapter::MockBluetoothAdapter() {
 
 MockBluetoothAdapter::~MockBluetoothAdapter() = default;
 
+void MockBluetoothAdapter::Initialize(base::OnceClosure callback) {
+  std::move(callback).Run();
+}
+
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 void MockBluetoothAdapter::Shutdown() {
 }

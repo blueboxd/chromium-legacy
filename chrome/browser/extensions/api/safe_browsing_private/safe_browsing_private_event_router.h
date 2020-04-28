@@ -146,12 +146,14 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
       const int64_t content_size);
 
   // Notifies listeners that scanning for sensitive data detected a violation.
-  void OnSensitiveDataWarningBypassed(const GURL& url,
-                                      const std::string& file_name,
-                                      const std::string& download_digest_sha256,
-                                      const std::string& mime_type,
-                                      const std::string& trigger,
-                                      const int64_t content_size);
+  void OnSensitiveDataWarningBypassed(
+      const safe_browsing::DlpDeepScanningVerdict& verdict,
+      const GURL& url,
+      const std::string& file_name,
+      const std::string& download_digest_sha256,
+      const std::string& mime_type,
+      const std::string& trigger,
+      const int64_t content_size);
 
   // Notifies listeners that deep scanning failed, for the given |reason|.
   void OnUnscannedFileEvent(const GURL& url,

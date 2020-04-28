@@ -13,10 +13,10 @@
 
 namespace feedui {
 class StreamUpdate;
-}
+}  // namespace feedui
 namespace feedstore {
 class DataOperation;
-}
+}  // namespace feedstore
 
 namespace feed {
 

@@ -4,7 +4,7 @@
 
 #include "net/der/parser.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "net/der/parse_values.h"
 
 namespace net {

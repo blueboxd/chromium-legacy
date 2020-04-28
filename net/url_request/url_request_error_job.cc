@@ -33,7 +33,7 @@ void URLRequestErrorJob::Kill() {
 }
 
 void URLRequestErrorJob::StartAsync() {
-  NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, error_));
+  NotifyStartError(error_);
 }
 
 }  // namespace net

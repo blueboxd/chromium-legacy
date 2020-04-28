@@ -323,10 +323,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // all users are converted to using OnceClosure.
   using ErrorOnceCallback = base::OnceClosure;
 
-  // The InitCallback is used to trigger a callback after asynchronous
-  // initialization, if initialization is asynchronous on the platform.
-  using InitCallback = base::OnceClosure;
-
   using DiscoverySessionCallback =
       base::OnceCallback<void(std::unique_ptr<BluetoothDiscoverySession>)>;
   using DeviceList = std::vector<BluetoothDevice*>;
@@ -357,14 +353,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     kIdle,
   };
 
-  // Returns a weak pointer to a new adapter.  For platforms with asynchronous
-  // initialization, the returned adapter will run the |init_callback| once
-  // asynchronous initialization is complete.
-  // Caution: The returned pointer also transfers ownership of the adapter.  The
-  // caller is expected to call |AddRef()| on the returned pointer, typically by
-  // storing it into a |scoped_refptr|.
-  static base::WeakPtr<BluetoothAdapter> CreateAdapter(
-      InitCallback init_callback);
+  // Creates a new adapter. Initialize() must be called before the adapter can
+  // be used.
+  static scoped_refptr<BluetoothAdapter> CreateAdapter();
+
+  virtual void Initialize(base::OnceClosure callback) = 0;
 
   // Returns a weak pointer to an existing adapter for testing purposes only.
   base::WeakPtr<BluetoothAdapter> GetWeakPtrForTesting();
@@ -654,6 +647,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
  protected:
   friend class base::RefCounted<BluetoothAdapter>;
+  friend class BluetoothAdapterFactory;
   friend class BluetoothDiscoverySession;
   friend class BluetoothTestBase;
 

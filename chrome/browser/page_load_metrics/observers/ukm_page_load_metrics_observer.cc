@@ -188,8 +188,6 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   // The PageTransition for the navigation may be updated on commit.
   page_transition_ = navigation_handle->GetPageTransition();
   was_cached_ = navigation_handle->WasResponseCached();
-  is_signed_exchange_inner_response_ =
-      navigation_handle->IsSignedExchangeInnerResponse();
   RecordNoStatePrefetchMetrics(navigation_handle, source_id);
   RecordGeneratedNavigationUKM(source_id, navigation_handle->GetURL());
   navigation_is_cross_process_ = !navigation_handle->IsSameProcess();
@@ -473,9 +471,6 @@ void UkmPageLoadMetricsObserver::RecordPageLoadMetrics(
       static_cast<int64_t>(GetDelegate().GetPageEndReason()));
   if (GetDelegate().DidCommit() && was_cached_) {
     builder.SetWasCached(1);
-  }
-  if (GetDelegate().DidCommit() && is_signed_exchange_inner_response_) {
-    builder.SetIsSignedExchangeInnerResponse(1);
   }
   if (GetDelegate().DidCommit() && navigation_is_cross_process_) {
     builder.SetIsCrossProcessNavigation(navigation_is_cross_process_);

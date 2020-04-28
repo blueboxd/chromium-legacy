@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Апликације</translation>
 <translation id="2872961005593481000">Искључи</translation>
 <translation id="3008341117444806826">ОСВЕЖИ</translation>
+<translation id="3749289110408117711">Назив датотеке</translation>
 <translation id="3820172043799983114">Неважећи PIN.</translation>
 <translation id="3838338534323494292">Нова лозинка</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управља овим уређајем и има приступ свим активностима корисника, укључујући посећене веб-странице, лозинке и имејлове.</translation>
+<translation id="4034824040120875894">Штампач</translation>
 <translation id="4227825898293920515">Лозинка истиче за <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos тикет ускоро истиче</translation>
 <translation id="445059817448385655">Стара лозинка</translation>
 <translation id="467510802200863975">Лозинке се не подударају</translation>
 <translation id="4731797938093519117">Родитељски приступ</translation>
 <translation id="4890353053343094602">Одмах одаберите нову</translation>
+<translation id="4932733599132424254">Датум</translation>
 <translation id="5212543919916444558">Не могу да пронађем на екрану ништа око чега могу да помогнем.
 Пробајте да додирнете микрофон да бисте ме питали нешто.</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
@@ -40,6 +43,7 @@
 <translation id="6146993107019042706">Да бисте завршили, унесите нову лозинку</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7690294790491645610">Потврдите нову лозинку</translation>
+<translation id="7805768142964895445">Статус</translation>
 <translation id="808894953321890993">Промени лозинку</translation>
 <translation id="8208861521865154048">Погодности</translation>
 <translation id="8747900814994928677">Потврдите промену</translation>

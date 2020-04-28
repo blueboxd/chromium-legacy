@@ -242,11 +242,9 @@ TEST_F(MediaDevicesTest, GetUserMediaCanBeCalled) {
           ->getUserMedia(scope.GetScriptState(), constraints,
                          scope.GetExceptionState());
   ASSERT_TRUE(promise.IsEmpty());
-  // In the default test environment, we expect a DOM rejection because
-  // the script state's execution context's document's frame doesn't
-  // have an UserMediaController.
-  DCHECK_EQ(scope.GetExceptionState().Code(),
-            ToExceptionCode(DOMExceptionCode::kNotSupportedError));
+  // We expect a type error because the given constraints are empty.
+  EXPECT_EQ(scope.GetExceptionState().Code(),
+            ToExceptionCode(ESErrorType::kTypeError));
   VLOG(1) << "Exception message is" << scope.GetExceptionState().Message();
 }
 

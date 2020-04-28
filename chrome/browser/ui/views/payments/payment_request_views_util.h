@@ -46,6 +46,10 @@ constexpr int kPaymentRequestButtonSpacing = 10;
 constexpr int kDialogMinWidth = 512;
 constexpr int kDialogHeight = 450;
 
+// Preferred dimensions of the payment handler dialog in pixels.
+constexpr int kPreferredPaymentHandlerDialogWidth = 608;
+constexpr int kPreferredPaymentHandlerDialogHeight = 600;
+
 // Fixed width of the amount sections in the payment sheet and the order summary
 // sheet, in pixels.
 constexpr int kAmountSectionWidth = 96;
@@ -59,8 +63,6 @@ enum class PaymentRequestCommonTags {
   // specific events with tags can start their specific tags at this value.
   PAYMENT_REQUEST_COMMON_TAG_MAX
 };
-
-int GetActualDialogWidth();
 
 // Creates and returns a header for all the sheets in the PaymentRequest dialog.
 // The header contains an optional back arrow button (if |show_back_arrow| is

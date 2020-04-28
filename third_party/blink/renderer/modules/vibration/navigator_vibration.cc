@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/modules/vibration/navigator_vibration.h"
 
 #include "base/metrics/histogram_functions.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/intervention.h"
@@ -35,7 +34,7 @@
 namespace blink {
 
 NavigatorVibration::NavigatorVibration(Navigator& navigator)
-    : ExecutionContextLifecycleObserver(navigator.GetFrame()->GetDocument()) {}
+    : ExecutionContextLifecycleObserver(navigator.DomWindow()) {}
 
 NavigatorVibration::~NavigatorVibration() = default;
 
@@ -71,7 +70,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
     return false;
   CollectHistogramMetrics(navigator);
 
-  DCHECK(frame->GetDocument());
+  DCHECK(frame->DomWindow());
   DCHECK(frame->GetPage());
 
   if (!frame->GetPage()->IsPageVisible())
@@ -104,10 +103,9 @@ void NavigatorVibration::CollectHistogramMetrics(const Navigator& navigator) {
   NavigatorVibrationType type;
   LocalFrame* frame = navigator.GetFrame();
   bool user_gesture = frame->HasStickyUserActivation();
-  UseCounter::Count(navigator.DomWindow()->document(),
-                    WebFeature::kNavigatorVibrate);
+  UseCounter::Count(navigator.DomWindow(), WebFeature::kNavigatorVibrate);
   if (!frame->IsMainFrame()) {
-    UseCounter::Count(navigator.DomWindow()->document(),
+    UseCounter::Count(navigator.DomWindow(),
                       WebFeature::kNavigatorVibrateSubFrame);
     if (frame->IsCrossOriginToMainFrame()) {
       if (user_gesture)

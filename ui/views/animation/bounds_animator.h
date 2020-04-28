@@ -67,10 +67,6 @@ class VIEWS_EXPORT BoundsAnimator : public AnimationDelegateViews {
   // animating its current bounds is returned.
   gfx::Rect GetTargetBounds(const View* view) const;
 
-  // Sets the animation for the specified view.
-  void SetAnimationForView(View* view,
-                           std::unique_ptr<gfx::SlideAnimation> animation);
-
   // Returns the animation for the specified view. BoundsAnimator owns the
   // returned Animation.
   const gfx::SlideAnimation* GetAnimationForView(View* view);

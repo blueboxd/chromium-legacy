@@ -4,7 +4,7 @@
 
 #include "net/base/prioritized_dispatcher.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace net {
 

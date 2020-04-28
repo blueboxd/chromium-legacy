@@ -5151,6 +5151,11 @@ Dit beleid wordt verwijderd in M75.</translation>
 <translation id="8665314828727504286">Safe Browsing-beveiligingsniveau</translation>
 <translation id="8672321184841719703">Doelversie voor automatische updates</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8680488165461049026">Dit beleid geeft 'Snelle antwoorden' toegang tot geselecteerde content en toestemming om de informatie naar de server te sturen.
+
+      Als het beleid is ingeschakeld, heeft 'Snelle antwoorden' toegang tot geselecteerde content.
+      Als het beleid is uitgeschakeld, heeft 'Snelle antwoorden' geen toegang tot geselecteerde content.
+      Als het beleid niet is ingesteld, kunnen gebruikers bepalen of 'Snelle antwoorden' toegang tot geselecteerde content heeft.</translation>
 <translation id="8685024486845674965">Waarschuwing voor wachtwoordbeveiliging wordt geactiveerd bij hergebruik van een wachtwoord</translation>
 <translation id="8687958770985542440">Web Components v0 API opnieuw inschakelen tot M84.</translation>
 <translation id="8693243869659262736">Ingebouwde DNS-client gebruiken</translation>
@@ -5519,6 +5524,7 @@ Dit beleid wordt verwijderd in M75.</translation>
 
       Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, kunnen er nieuwe gebruikersaccounts worden gemaakt, mits <ph name="DEVICE_USER_WHITELIST_POLICY_NAME" /> de gebruiker toestaat in te loggen.</translation>
 <translation id="974349541138387272">URI-template van gewenste DNS-over-HTTPS-resolver opgeven</translation>
+<translation id="974479807614498635">'Snelle antwoorden' toegang tot geselecteerde content geven</translation>
 <translation id="981346395360763138">Locatieservices van Google uitgeschakeld</translation>
 <translation id="982497069985795632">Spellingcontrole inschakelen</translation>
 <translation id="991560005425213776">Gebruikersnaam en bestandsnaam naar systeemeigen printers verzenden</translation>

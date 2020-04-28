@@ -189,6 +189,17 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   void SetCurrentFrame_Locked(scoped_refptr<VideoFrame> frame,
                               base::TimeTicks expected_display_time);
 
+  // Sets the ForceBeginFrames flag on |submitter_|, and resets
+  // |force_begin_frames_timer_|.
+  //
+  // The flag is used to keep receiving BeginFrame()/UpdateCurrentFrame() calls
+  // even if the video element is not visible, so websites can still use the
+  // requestVideoFrameCallback() API when the video is offscreen.
+  void StartForceBeginFrames();
+
+  // Called from |force_begin_frames_timer_| to unset the flag on |submitter_|.
+  void StopForceBeginFrames();
+
   // Called by |background_rendering_timer_| when enough time elapses where we
   // haven't seen a Render() call.
   void BackgroundRender();
@@ -219,6 +230,10 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // them for various reasons.  Runs on |task_runner_| and is reset
   // after each successful UpdateCurrentFrame() call.
   base::RetainingOneShotTimer background_rendering_timer_;
+
+  // Calls ClearForceBeginFrames() once we stop receiving calls to
+  // requestVideoFrameCallback() (or SetOnFramePresentedCallback() in our case).
+  base::RetainingOneShotTimer force_begin_frames_timer_;
 
   // These values are only set and read on the compositor thread.
   cc::VideoFrameProvider::Client* client_ = nullptr;

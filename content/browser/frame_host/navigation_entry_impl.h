@@ -251,6 +251,10 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   base::flat_map<std::string, bool> GetSubframeUniqueNames(
       FrameTreeNode* frame_tree_node) const;
 
+  // Walks the tree of FrameNavigationEntries to find entries with |origin| so
+  // their isolation status can be registered.
+  void RegisterExistingOriginToPreventOptInIsolation(const url::Origin& origin);
+
   // Removes any subframe FrameNavigationEntries that match the unique name of
   // |frame_tree_node|, and all of their children. There should be at most one,
   // since collisions are avoided but leave old FrameNavigationEntries in the

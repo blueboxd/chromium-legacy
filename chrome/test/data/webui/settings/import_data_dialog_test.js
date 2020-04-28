@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ImportDataBrowserProxyImpl, ImportDataStatus} from 'chrome://settings/lazy_load.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 // clang-format on
 
 /** @implements {ImportDataBrowserProxy} */
@@ -86,8 +86,10 @@ suite('ImportDataDialog', function() {
   }
 
   const prefs = {};
-  ['import_dialog_history', 'import_dialog_bookmarks',
-   'import_dialog_saved_passwords', 'import_dialog_search_engine',
+  ['import_dialog_history',
+   'import_dialog_bookmarks',
+   'import_dialog_saved_passwords',
+   'import_dialog_search_engine',
    'import_dialog_autofill_form_data',
   ].forEach(function(name) {
     prefs[name] = createBooleanPref(name);

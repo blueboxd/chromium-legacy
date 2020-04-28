@@ -7,7 +7,7 @@
 #include <notify.h>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/mac/mac_util.h"
 #include "base/posix/eintr_wrapper.h"
 

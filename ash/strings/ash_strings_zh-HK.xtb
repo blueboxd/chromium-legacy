@@ -294,6 +294,7 @@
 <translation id="4565377596337484307">隱藏密碼</translation>
 <translation id="4570957409596482333">「選取以朗讀」按鈕</translation>
 <translation id="4585337515783392668">停止投放到不明嘅接收器</translation>
+<translation id="4588090240171750605">向右捲動</translation>
 <translation id="4628757576491864469">裝置</translation>
 <translation id="4659419629803378708">已啟用 ChromeVox</translation>
 <translation id="4665114317261903604">切換「請勿騷擾」模式。<ph name="STATE_TEXT" /></translation>
@@ -415,6 +416,7 @@
 <translation id="6288235558961782912">您可稍後在家長許可下重新新增 <ph name="USER_EMAIL_ADDRESS" />。</translation>
 <translation id="6297287540776456956">使用觸控筆選取區域</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> 已旋轉到 <ph name="ROTATION" /></translation>
+<translation id="6364916375976753737">向左捲動</translation>
 <translation id="6376931439017688372">藍牙已開啟</translation>
 <translation id="6381109794406942707">如要解鎖裝置，請輸入 PIN。</translation>
 <translation id="639644700271529076">大寫鍵已關閉</translation>
@@ -473,6 +475,7 @@
 <translation id="698231206551913481">移除這位使用者後，系統便會永久刪除所有與該使用者相關的檔案和本機數據。</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> 後才可使用。</translation>
 <translation id="7025533177575372252">將 <ph name="DEVICE_NAME" /> 連結至您的手機</translation>
+<translation id="7026338066939101231">減少</translation>
 <translation id="7029814467594812963">結束工作階段</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />，Google 助理</translation>
 <translation id="7042322267639375032">收合狀態區</translation>
@@ -544,6 +547,7 @@
 <translation id="7984197416080286869">指紋識別失敗嘅次數太多</translation>
 <translation id="7994370417837006925">多重登入</translation>
 <translation id="8000066093800657092">沒有網絡</translation>
+<translation id="8004512796067398576">增加</translation>
 <translation id="8029629653277878342">為安全起見，請輸入 PIN 或密碼</translation>
 <translation id="8030169304546394654">已中斷連線</translation>
 <translation id="8048123526339889627">藍牙設定</translation>
@@ -570,6 +574,7 @@
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8297006494302853456">弱</translation>
 <translation id="8308637677604853869">前一個選單</translation>
+<translation id="8331626408530291785">向上捲動</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">建立筆記</translation>
 <translation id="8375916635258623388">此 <ph name="DEVICE_NAME" /> 和手機將會自動連接</translation>

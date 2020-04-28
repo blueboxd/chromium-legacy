@@ -378,7 +378,7 @@ WebrtcTransport::WebrtcTransport(
   video_encoder_factory_ = new WebrtcDummyVideoEncoderFactory();
   std::unique_ptr<cricket::PortAllocator> port_allocator =
       transport_context_->port_allocator_factory()->CreatePortAllocator(
-          transport_context_);
+          transport_context_, weak_factory_.GetWeakPtr());
 
   // Takes ownership of video_encoder_factory_.
   peer_connection_wrapper_.reset(new PeerConnectionWrapper(
@@ -553,6 +553,11 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
   return true;
 }
 
+const SessionOptions& WebrtcTransport::session_options() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return session_options_;
+}
+
 void WebrtcTransport::Close(ErrorCode error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!peer_connection_wrapper_)
@@ -570,7 +575,8 @@ void WebrtcTransport::Close(ErrorCode error) {
 }
 
 void WebrtcTransport::ApplySessionOptions(const SessionOptions& options) {
-  transport_context_->set_session_options(options);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  session_options_ = options;
   base::Optional<std::string> video_codec = options.Get("Video-Codec");
   if (video_codec) {
     preferred_video_codec_ = *video_codec;

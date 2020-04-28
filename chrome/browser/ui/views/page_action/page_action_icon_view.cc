@@ -39,7 +39,7 @@ gfx::Insets PageActionIconView::Delegate::GetPageActionIconInsets(
   return GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING);
 }
 
-bool PageActionIconView::Delegate::IsLocationBarUserInputInProgress() const {
+bool PageActionIconView::Delegate::ShouldHidePageActionIcons() const {
   return false;
 }
 
@@ -200,7 +200,7 @@ void PageActionIconView::SetActive(bool active) {
 void PageActionIconView::Update() {
   // Currently no page action icon should be visible during user input.
   // A future subclass may need a hook here if that changes.
-  if (delegate_->IsLocationBarUserInputInProgress()) {
+  if (delegate_->ShouldHidePageActionIcons()) {
     SetVisible(false);
   } else {
     UpdateImpl();

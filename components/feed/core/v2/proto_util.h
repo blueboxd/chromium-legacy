@@ -15,10 +15,10 @@
 
 namespace feedwire {
 class Request;
-}
+}  // namespace feedwire
 namespace feedstore {
 class StreamData;
-}
+}  // namespace feedstore
 
 // Helper functions/classes for dealing with feed proto messages.
 

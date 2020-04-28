@@ -1,45 +1,127 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="1044891598689252897">সাইট স্বাভাবিকভাবেই কাজ করবে</translation>
 <translation id="1124772482545689468">ব্যবহারকারী</translation>
 <translation id="1178581264944972037">বিরতি</translation>
 <translation id="1181037720776840403">সরান</translation>
 <translation id="1201402288615127009">পরবর্তী</translation>
+<translation id="1242008676835033345"><ph name="WEBSITE_URL" />-এ এম্বেড করা হয়েছে</translation>
+<translation id="129382876167171263">ওয়েবসাইট যেসব ফাইল সেভ করে সেগুলি এখানে দেখা যায়</translation>
+<translation id="1369915414381695676"><ph name="SITE_NAME" /> সাইট যোগ করা হয়েছে</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1384959399684842514">ডাউনলোড পজ করা আছে</translation>
+<translation id="1446450296470737166">MIDI ডিভাইসগুলির পূর্ণ নিয়ন্ত্রণের অনুমতি দিন</translation>
+<translation id="1509960214886564027">একাধিক সাইটের ফিচারগুলি কাজ নাও করতে পারে</translation>
+<translation id="1620510694547887537">ক্যামেরা</translation>
+<translation id="1647391597548383849">আপনার ক্যামেরা অ্যাক্সেস করুন</translation>
+<translation id="1660204651932907780">সাউন্ডটি প্লে করার জন্য সাইটটিতে অনুমতি দিন (প্রস্তাবিত)</translation>
+<translation id="1688867105868176567">সাইট ডেটা খালি করতে চান?</translation>
+<translation id="169515064810179024">মোশন সেন্সর অ্যাক্সেস করা থেকে সাইটকে ব্লক করুন</translation>
+<translation id="1717218214683051432">মোশন সেন্সর</translation>
+<translation id="1743802530341753419">কোনও সাইটকে ডিভাইসের সাথে কানেক্ট করার আগে অনুমতি দেওয়ার ব্যবস্থা রাখুন (প্রস্তাবিত)</translation>
+<translation id="1887786770086287077">এই ডিভাইসে লোকেশন অ্যাক্সেস বন্ধ আছে। চালু করতে <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> যান।</translation>
+<translation id="1919345977826869612">বিজ্ঞাপন</translation>
+<translation id="1922076542920281912">Chrome যাতে আপনার লোকেশন অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে লোকেশন চালু করুন।</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="194341124344773587"><ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> Chrome এর জন্য অনুমতি চালু করুন।</translation>
+<translation id="1984937141057606926">মঞ্জুরিপ্রাপ্ত, তৃতীয় পক্ষ ব্যাতীত</translation>
+<translation id="1994173015038366702">সাইট URL</translation>
+<translation id="2025115093177348061">অগমেন্টেড রিয়েলিটি</translation>
+<translation id="2041019821020695769">Chrome যাতে আপনাকে বিজ্ঞপ্তি পাঠাতে পারে তার জন্য আপনি <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে বিজ্ঞপ্তি চালু করুন।</translation>
 <translation id="2079545284768500474">আগের অবস্থায় ফিরুন</translation>
+<translation id="2091887806945687916">আওয়াজ</translation>
+<translation id="2107397443965016585">সাইটকে সুরক্ষিত কন্টেন্ট চালানোর অনুমতি দেওয়ার আগে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="2146738493024040262">ইনস্ট্যান্ট অ্যাপ খুলুন</translation>
 <translation id="2148716181193084225">আজ</translation>
+<translation id="2182457891543959921">আপনার আশেপাশের এলাকার একটি 3D ম্যাপ তৈরি করতে বা ক্যামেরার অবস্থান ট্র্যাক করতে কোনও সাইট অনুমোদন দেওয়ার আগে, একবার জিজ্ঞাসা করে নিন (সাজেস্ট করা হয়েছে)</translation>
+<translation id="2212565012507486665">কুকিগুলিকে অনুমতি দিন</translation>
+<translation id="2289270750774289114">কাছাকাছি ব্লুটুথ ডিভাইস আছে কিনা তা কোনও সাইট খুঁজতে চাইলে আমাকে জিজ্ঞাসা করুন (সাজেস্ট করা হচ্ছে)</translation>
 <translation id="2359808026110333948">চালিয়ে যান</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> এমবি</translation>
 <translation id="2434158240863470628"><ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /> ডাউনলোড সম্পূর্ণ হয়েছে</translation>
+<translation id="2440823041667407902">লোকেশন অ্যাক্সেস</translation>
+<translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
+<translation id="2490684707762498678"><ph name="APP_NAME" /> ম্যানেজ করে</translation>
 <translation id="2501278716633472235">ফিরে যান</translation>
+<translation id="2537296579376733324">সব কুকি, শুধু এই সাইটে</translation>
 <translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{১টি কুকি ব্লক করা হয়েছে}one{#টি কুকি ব্লক করা হয়েছে}other{#টি কুকি ব্লক করা হয়েছে}}</translation>
+<translation id="2570922361219980984">এই ডিভাইসেও লোকেশন অ্যাক্সেস বন্ধ আছে। চালু করতে <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> যান।</translation>
 <translation id="257931822824936280">প্রসারিত - সঙ্কুচিত করতে ক্লিক করুন৷</translation>
+<translation id="2586657967955657006">ক্লিপবোর্ড</translation>
+<translation id="2621115761605608342">একটি নির্দিষ্ট সাইটের জন্য জাভাস্ক্রিপ্ট মঞ্জুর করুন।</translation>
 <translation id="2653659639078652383">জমা দিন</translation>
+<translation id="2687403674020088961">সব কুকি ব্লক করুন (সাজেস্ট করা হচ্ছে না)</translation>
 <translation id="2704606927547763573">প্রতিলিপি করা হয়েছে</translation>
+<translation id="2822354292072154809">আপনি কি <ph name="CHOSEN_OBJECT_NAME" />-এর জন্য সাইটের সব অনুমতি রিসেট করার ব্যাপারে নিশ্চিত?</translation>
+<translation id="2870560284913253234">সাইট</translation>
+<translation id="2910701580606108292">কোনও সাইটে সুরক্ষিত কন্টেন্ট চালু হওয়ার আগে আমায় জিজ্ঞেস করা হোক</translation>
+<translation id="2913331724188855103">সাইটগুলিকে কুকি ডেটা পড়ার এবং সংরক্ষণ করার অনুমতি দিন (প্রস্তাবিত)</translation>
 <translation id="2968755619301702150">সার্টিফিকেট প্রদর্শনকারী</translation>
+<translation id="300526633675317032">এটা ওয়েবসাইট স্টোরেজের <ph name="SIZE_IN_KB" />-এর পুরোটা সাফ করবে।</translation>
 <translation id="3115898365077584848">তথ্য দেখুন</translation>
+<translation id="3123473560110926937">কিছু সাইটে ব্লক করা হয়েছে</translation>
+<translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> Chrome এর জন্য অনুমতিগুলি চালু করুন।</translation>
+<translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> সংরক্ষিত ডেটা</translation>
+<translation id="3223655101706843289">এটি করলে, আপনার হোম স্ক্রিনে <ph name="ORIGIN" /> ও এর অ্যাপের সেভ করা সমস্ত ডেটা এবং কুকি মুছে যাবে।</translation>
+<translation id="3227137524299004712">মাইক্রোফোন</translation>
+<translation id="3277252321222022663">সাইটকে সেন্সর অ্যাক্সেস করার অনুমতি দিন (সাজেস্ট করা হয়)</translation>
 <translation id="3295602654194328831">তথ্য লুকান</translation>
+<translation id="3386292677130313581">সাইটগুলিকে আপনার লোকেশন জানতে দিতে মঞ্জুরি দেওয়ার আগে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="3479552764303398839">এখনই নয়</translation>
+<translation id="3538390592868664640">আপনার আশেপাশের এলাকার একটি 3D ম্যাপ তৈরি করা বা ক্যামেরার অবস্থান ট্র্যাক করার কাজে নিযুক্ত সাইটগুলিকে ব্লক করে দিন</translation>
+<translation id="358794129225322306">একটি সাইটকে একাধিক ফাইল অটোমেটিক ডাউনলোড করার অনুমতি দিন।</translation>
+<translation id="3596414637720633074">ছদ্মবেশী মোডে থার্ড-পার্টি কুকি ব্লক করুন</translation>
+<translation id="3600792891314830896">সাউন্ড প্লে করা হয় যে সাইটগুলিতে সেগুলি মিউট করুন</translation>
+<translation id="3730075448226062617">Chrome যাতে আপনার মাইক্রোফোন অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে মাইক্রোফোন চালু করুন।</translation>
+<translation id="3744111561329211289">পটভূমি সিঙ্ক</translation>
+<translation id="3822502789641063741">সাইটের সঞ্চয়স্থান সাফ করবেন?</translation>
 <translation id="385051799172605136">ফিরুন</translation>
+<translation id="3955193568934677022">সুরক্ষিত কন্টেন্ট প্লে করতে সাইটগুলিকে মঞ্জুরি দিন (প্রস্তাবিত)</translation>
 <translation id="3987993985790029246">লিঙ্ক কপি করুন</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">শিরোনাম</translation>
+<translation id="4008040567710660924">কোনও নির্দিষ্ট সাইটের জন্য কুকিকে অনুমতি দিন।</translation>
+<translation id="4165986682804962316">সাইটের সেটিংস</translation>
+<translation id="4226663524361240545">বিজ্ঞপ্তি আসলে ডিভাইস ভাইব্রেট হতে পারে</translation>
 <translation id="4259722352634471385">নেভিগেশন অবরুদ্ধ করা হয়েছে: <ph name="URL" /></translation>
+<translation id="4278390842282768270">মঞ্জুরিপ্রাপ্ত</translation>
 <translation id="4433925000917964731">Google লাইট পৃষ্ঠা পাঠিয়েছে</translation>
+<translation id="4434045419905280838">পপ-আপ এবং রিডাইরেক্ট</translation>
+<translation id="445467742685312942">সাইটকে সুরক্ষিত কন্টেন্ট চালানোর জন্য অনুমতি দিন</translation>
+<translation id="4468959413250150279">নির্দিষ্ট কোনও সাইটের জন্য সাউন্ড মিউট করুন।</translation>
+<translation id="4479647676395637221">সাইটগুলিকে আপনার ক্যামেরা ব্যবহার করতে দিতে মঞ্জুরি দেওয়ার আগে প্রথমে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="4570913071927164677">বিবরণ</translation>
 <translation id="4645575059429386691">আপনার পিতামাতার দ্বারা পরিচালিত</translation>
+<translation id="4670064810192446073">ভার্চুয়াল রিয়ালিটি</translation>
+<translation id="4751476147751820511">মোশন বা হালকা সেন্সর</translation>
 <translation id="4883854917563148705">ম্যানেজ করা সেটিংস রিসেট করা যায় না</translation>
+<translation id="4887024562049524730">সাইটগুলিকে আপনার ভার্চুয়াল রিয়েলিটি ডিভাইস ও ডেটা ব্যবহার করতে দেওয়ার আগে অনুমতি নিতে বলুন (সাজেস্ট করা হয়েছে)</translation>
+<translation id="4962975101802056554">ডিভাইসের ক্ষেত্রে সমস্ত অনুমতি সরিয়ে দিন</translation>
+<translation id="4964199952259983386">এছাড়াও, Chrome-কে এ আর (AR) ব্যবহার করতে দিতে চাইলে, <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে ক্যামেরা চালু করতে হবে।</translation>
 <translation id="497421865427891073">অগ্রবর্তী করুন</translation>
+<translation id="5039804452771397117">অনুমতি দিন</translation>
+<translation id="5048398596102334565">সাইটকে মোশন সেন্সর অ্যাক্সেস করার অনুমতি দিন (সাজেস্ট করা হয়)</translation>
+<translation id="5063480226653192405">ব্যবহার</translation>
 <translation id="5100237604440890931">সঙ্কুচিত - প্রসারিত করতে ক্লিক করুন৷</translation>
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5301954838959518834">ঠিক আছে, বুঝেছি</translation>
+<translation id="5307446750509046227">সাইটের সেভ করা ডেটা মুছুন</translation>
+<translation id="5313967007315987356">সাইট যোগ করুন</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>
+<translation id="5335288049665977812">সাইটগুলিকে JavaScript চালানোর অনুমতি দিন (প্রস্তাবিত)</translation>
+<translation id="534295439873310000">NFC ডিভাইস</translation>
 <translation id="5391532827096253100">এই সাইটে আপনার কানেকশন নিরাপদ নয়। সাইটের তথ্য</translation>
+<translation id="5494752089476963479">সাইটে থাকা ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন ব্লক করুন</translation>
+<translation id="5505264765875738116">সাইট আপনাকে বিজ্ঞপ্তি পাঠাতে পারবে না</translation>
+<translation id="5516455585884385570">বিজ্ঞপ্তির সেটিংস খুলুন</translation>
+<translation id="5527111080432883924">ক্লিপবোর্ডের টেক্সট এবং ছবি পড়ার জন্য অনুমতি দেওয়ার আগে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="5556459405103347317">রিলোড করুন</translation>
 <translation id="5596627076506792578">আরও বিকল্পগুলি</translation>
+<translation id="5649053991847567735">অটোমেটিক ডাউনলোডগুলি</translation>
+<translation id="5677928146339483299">অবরুদ্ধ</translation>
+<translation id="5689516760719285838">লোকেশন</translation>
+<translation id="5710871682236653961">NFC ডিভাইসে ট্যাপ করলে (সাজেস্ট করা হয়েছে) সাইট থেকে তথ্য পাঠানো বা পাওয়ার আগে অনুমতি নিতে হবে</translation>
 <translation id="5804241973901381774">অনুমতিগুলি</translation>
 <translation id="5860033963881614850">বন্ধ করুন</translation>
 <translation id="5916664084637901428">চালু</translation>
@@ -47,38 +129,88 @@
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6042308850641462728">আরও</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
+<translation id="6181444274883918285">ব্যতিক্রমী সাইট যোগ করুন</translation>
+<translation id="6192792657125177640">ব্যতিক্রমগুলি</translation>
+<translation id="6194112207524046168">Chrome যাতে আপনার ক্যামেরা অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে ক্যামেরা চালু করুন।</translation>
+<translation id="6196640612572343990">তৃতীয় পক্ষের কুকিজ অবরুদ্ধ করুন</translation>
 <translation id="6206551242102657620">কানেকশনটি নিরাপদ। সাইট তথ্য</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> এর বিকল্পগুলি</translation>
+<translation id="6270391203985052864">সাইট আপনাকে বিজ্ঞপ্তি পাঠানোর আগে অনুমতি চাইতে পারে</translation>
+<translation id="6295158916970320988">সমস্ত সাইট</translation>
+<translation id="6320088164292336938">কম্পন</translation>
+<translation id="6388207532828177975">পরিষ্কার এবং রিসেট করুন</translation>
+<translation id="6439114592976064011">সাইটগুলিকে আপনার ভার্চুয়াল রিয়েলিটি ডিভাইস ও ডেটা ব্যবহার করতে দেবেন না</translation>
 <translation id="6447842834002726250">কুকিজ</translation>
 <translation id="6527303717912515753">শেয়ার করুন</translation>
+<translation id="6545864417968258051">ব্লুটুথ স্ক্যানিং</translation>
+<translation id="6561560012278703671">আওয়াজ ছাড়া বিজ্ঞপ্তি (বিজ্ঞপ্তির ক্ষেত্রে আওয়াজ সহ প্রম্পট ব্লক করা হয়, যাতে কাজের সময় ব্যাঘাত না ঘটে)</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> জিবি</translation>
+<translation id="6612358246767739896">সুরক্ষিত কন্টেন্ট</translation>
+<translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="6746124502594467657">নিচে যান</translation>
+<translation id="6782111308708962316">কুকি ডেটা সংরক্ষণ করা এবং পড়া থেকে তৃতীয় পক্ষের ওয়েবসাইটগুলিকে আটকান</translation>
 <translation id="6818926723028410516">আইটেম বেছে নিন</translation>
+<translation id="6864395892908308021">এই ডিভাইস NFC পড়তে পারছে না</translation>
 <translation id="6910211073230771657">মোছা হয়েছে</translation>
+<translation id="6912998170423641340">ক্লিপবোর্ডের টেক্সট এবং ছবি পড়ার থেকে সাইটগুলিকে ব্লক করুন</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>
 <translation id="6963642900430330478">এই পৃষ্ঠাটি বিপজ্জনক। সাইটের তথ্য</translation>
 <translation id="6965382102122355670">ঠিক আছে</translation>
+<translation id="6992289844737586249">সাইটগুলিকে আপনার মাইক্রোফোন ব্যবহার করতে দিতে মঞ্জুরি দেওয়ার আগে প্রথমে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
+<translation id="7053983685419859001">ব্লক করুন</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{১টি বেছে নেওয়া হয়েছে}one{#টি বেছে নেওয়া হয়েছে}other{#টি বেছে নেওয়া হয়েছে}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> বেছে নেওয়া হয়েছে।  স্ক্রিনের উপরে বিকল্পগুলি পাওয়া যাবে</translation>
+<translation id="7128222689758636196">বর্তমান সার্চ ইঞ্জিনের জন্য অনুমোদন দিন</translation>
+<translation id="7141896414559753902">সাইটগুলিকে পপ-আপ দেখাতে এবং রিডাইরেক্ট করা থেকে বাধা দিন (প্রস্তাবিত)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> কেবি</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />টি বেছে নেওয়া হয়েছে</translation>
+<translation id="7302486331832100261">আপনি সাধারণত বিজ্ঞপ্তি ব্লক করেন। অনুমতি দিতে, 'বিবরণ' বিকল্পে ক্লিক করুন।</translation>
+<translation id="7423098979219808738">প্রথমে জিজ্ঞাসা করুন</translation>
+<translation id="7423538860840206698">ক্লিপবোর্ড পড়া ব্লক করা হয়েছে</translation>
+<translation id="7521387064766892559">জাভাস্ক্রিপ্ট</translation>
+<translation id="7572498721684305250">আপনি NFC ডিভাইসে ট্যাপ করলে সাইট থেকে তথ্য পাঠানো ও পাওয়া, কোনওটাই করা যাবে না</translation>
+<translation id="757524316907819857">সুরক্ষিত কন্টেন্ট চালানো থেকে সাইটকে ব্লক করুন</translation>
+<translation id="7589445247086920869">বর্তমান সার্চ ইঞ্জিনের জন্য অবরুদ্ধ করুন</translation>
 <translation id="7649070708921625228">সহায়তা</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7781829728241885113">গতকাল</translation>
 <translation id="7791543448312431591">জুড়ুন</translation>
 <translation id="780301667611848630">না থাক</translation>
+<translation id="7817023149356982970">আপনি এই সাইট থেকে সাইন-আউট হয়ে যাবেন।</translation>
+<translation id="7828557259026017104">আপনার ব্রাউজ করা ওয়েবসাইটের তৈরি করা ফাইলগুলিকে 'কুকি' বলা হয়। সাইট আপনার পছন্দগুলি মনে রাখতে, কুকি ব্যবহার করে। অন্যান্য সাইট 'থার্ড-পার্টি কুকি' তৈরি করে। এই সাইটগুলিতে বিজ্ঞাপন এবং ছবির মতো কিছু কন্টেন্ট থাকে, যেগুলি আপনার ভিজিট করা ওয়েবপেজে আপনি দেখতে পান।</translation>
 <translation id="7846076177841592234">নির্বাচন বাতিল করুন</translation>
+<translation id="7882806643839505685">একটি নির্দিষ্ট সাইটের জন্য সাউন্ড প্লে করার অনুমতি দিন।</translation>
+<translation id="7993619969781047893">কিছু কিছু সাইটের ফিচারগুলি কাজ নাও করতে পারে</translation>
+<translation id="7999064672810608036">আপনি কি এই ওয়েবসাইটের কুকি সহ সমস্ত ডেটা পরিষ্কার করার এবং এটির সমস্ত অনুমতি রিসেট করার বিষয়ে নিশ্চিত?</translation>
 <translation id="802154636333426148">ডাউনলোড করা যায়নি</translation>
 <translation id="8087000398470557479">এই কন্টেন্ট Google দ্বারা বিতরণ করা <ph name="DOMAIN_NAME" /> থেকে এসেছে।</translation>
+<translation id="8116925261070264013">মিউট করা আছে</translation>
 <translation id="8131740175452115882">নিশ্চিত হন</translation>
 <translation id="8200772114523450471">আবার চালু করা</translation>
 <translation id="8206354486702514201">এই সেটিংটি আপনার প্রশাসক দ্বারা কার্যকরী করা হয়েছে৷</translation>
 <translation id="8249310407154411074">শীর্ষে সরান</translation>
 <translation id="8261506727792406068">মুছুন</translation>
+<translation id="8300705686683892304">অ্যাপ ম্যানেজ করে</translation>
+<translation id="8372893542064058268">একটি নির্দিষ্ট সাইটের জন্য পটভূমি সিঙ্কের অনুমতি দিন।</translation>
+<translation id="8380167699614421159">এই সাইট ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন দেখায়</translation>
+<translation id="8447861592752582886">ডিভাইসের অনুমতি প্রত্যাহার করুন</translation>
+<translation id="851751545965956758">সাইটকে ডিভাইসের সাথে কানেক্ট করা থেকে ব্লক করুন</translation>
+<translation id="857943718398505171">অনুমোদিত (প্রস্তাবিত)</translation>
 <translation id="8609465669617005112">উপরে যান</translation>
 <translation id="8676374126336081632">ইনপুট সাফ করুন</translation>
+<translation id="8702612070107455751">যেকোনও অফলাইন ডেটা মুছে ফেলা হবে।</translation>
 <translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
 <translation id="8730621377337864115">হয়ে গেছে</translation>
+<translation id="8737217482364735741">এটি করলে, <ph name="ORIGIN" />-এর সেভ করা সমস্ত ডেটা ও কুকি মুছে যাবে।</translation>
+<translation id="8801436777607969138">একটি নির্দিষ্ট সাইটের জন্য জাভাস্ক্রিপ্ট ব্লক করুন।</translation>
+<translation id="8816026460808729765">সেন্সর অ্যাক্সেস করা থেকে সাইটকে ব্লক করুন</translation>
+<translation id="8847988622838149491">USB</translation>
+<translation id="885701979325669005">স্টোরেজ</translation>
+<translation id="8926666909099850184">এই ডিভাইসে NFC বন্ধ আছে। <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে এটি চালু করুন।</translation>
+<translation id="8941729603749328384">www.example.com</translation>
+<translation id="8958424370300090006">কোনও নির্দিষ্ট সাইটের জন্য কুকি ব্লক করুন।</translation>
 <translation id="8959122750345127698">নেভিগেশানে পৌছানো যাচ্ছে না: <ph name="URL" /></translation>
 <translation id="9019902583201351841">আপনার পিতামাতার দ্বারা পরিচালিত</translation>
+<translation id="945632385593298557">আপনার মাইক্রোফোন অ্যাক্সেস করুন</translation>
+<translation id="965817943346481315">সাইটে থাকা ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন ব্লক করুন (প্রস্তাবিত)</translation>
 </translationbundle>

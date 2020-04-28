@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"

@@ -435,6 +435,7 @@ em::StatefulPartitionInfo GetFakeStatefulPartitionInfo(
 }
 
 void GetEmptyCrosHealthdData(
+    policy::CrosHealthdCollectionMode mode,
     policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
   cros_healthd::TelemetryInfoPtr empty_info;
   base::circular_deque<std::unique_ptr<policy::SampledData>> empty_samples;
@@ -519,14 +520,36 @@ CreateFakeSampleData() {
   return samples;
 }
 
-void GetFakeCrosHealthdData(
+// Creates cros_healthd data with only the battery category populated.
+void GetFakeCrosHealthdBatteryData(
     policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
-  cros_healthd::TelemetryInfo fake_info(
-      CreateBatteryResult(), CreateBlockDeviceResult(), CreateVpdResult(),
-      CreateCpuResult(), CreateTimezoneResult(), CreateMemoryResult(),
-      CreateBacklightResult(), CreateFanResult());
-
+  cros_healthd::TelemetryInfo fake_info;
+  fake_info.battery_result = CreateBatteryResult();
   std::move(receiver).Run(fake_info.Clone(), CreateFakeSampleData());
+}
+
+// Fake cros_healthd fetching function. Returns data with all probe categories
+// populated if |mode| is kFull or only the battery category if |mode| is
+// kBattery.
+void FetchFakeFullCrosHealthdData(
+    policy::CrosHealthdCollectionMode mode,
+    policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+  switch (mode) {
+    case policy::CrosHealthdCollectionMode::kFull: {
+      cros_healthd::TelemetryInfo fake_info(
+          CreateBatteryResult(), CreateBlockDeviceResult(), CreateVpdResult(),
+          CreateCpuResult(), CreateTimezoneResult(), CreateMemoryResult(),
+          CreateBacklightResult(), CreateFanResult());
+
+      std::move(receiver).Run(fake_info.Clone(), CreateFakeSampleData());
+      return;
+    }
+
+    case policy::CrosHealthdCollectionMode::kBattery: {
+      GetFakeCrosHealthdBatteryData(std::move(receiver));
+      return;
+    }
+  }
 }
 
 void GetEmptyGraphicsStatus(
@@ -2897,7 +2920,7 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   // arbitrary values.
   auto options = CreateEmptyDeviceStatusCollectorOptions();
   options->cros_healthd_data_fetcher =
-      base::BindRepeating(&GetFakeCrosHealthdData);
+      base::BindRepeating(&FetchFakeFullCrosHealthdData);
   RestartStatusCollector(std::move(options));
 
   // If none of the relevant policies are set, expect that the data from

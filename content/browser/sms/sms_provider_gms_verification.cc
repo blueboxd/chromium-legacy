@@ -33,7 +33,7 @@ SmsProviderGmsVerification::~SmsProviderGmsVerification() {
   Java_SmsVerificationReceiver_destroy(env, j_sms_receiver_);
 }
 
-void SmsProviderGmsVerification::Retrieve() {
+void SmsProviderGmsVerification::Retrieve(RenderFrameHost* render_frame_host) {
   JNIEnv* env = AttachCurrentThread();
   Java_SmsVerificationReceiver_listen(env, j_sms_receiver_);
 }

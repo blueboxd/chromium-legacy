@@ -524,14 +524,14 @@ MainThreadSchedulerImpl::AnyThread::AnyThread(
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      waiting_for_contentful_paint(
-          true,
-          "Scheduler.WaitingForContentfulPaint",
+      waiting_for_any_main_frame_contentful_paint(
+          false,
+          "Scheduler.WaitingForMainFrameContentfulPaint",
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      waiting_for_meaningful_paint(
-          true,
+      waiting_for_any_main_frame_meaningful_paint(
+          false,
           "Scheduler.WaitingForMeaningfulPaint",
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
@@ -631,6 +631,22 @@ void MainThreadSchedulerImpl::ShutdownAllQueues() {
     virtual_time_control_task_queue_->ShutdownTaskQueue();
 }
 
+bool MainThreadSchedulerImpl::IsAnyMainFrameWaitingForFirstMeaningfulPaint()
+    const {
+  return std::any_of(
+      main_thread_only().page_schedulers.begin(),
+      main_thread_only().page_schedulers.end(),
+      std::mem_fn(&PageSchedulerImpl::IsWaitingForMainFrameMeaningfulPaint));
+}
+
+bool MainThreadSchedulerImpl::IsAnyMainFrameWaitingForFirstContentfulPaint()
+    const {
+  return std::any_of(
+      main_thread_only().page_schedulers.begin(),
+      main_thread_only().page_schedulers.end(),
+      std::mem_fn(&PageSchedulerImpl::IsWaitingForMainFrameContentfulPaint));
+}
+
 void MainThreadSchedulerImpl::Shutdown() {
   if (was_shutdown_)
     return;
@@ -642,8 +658,11 @@ void MainThreadSchedulerImpl::Shutdown() {
 
   ShutdownAllQueues();
   task_queue_throttler_.reset();
-  idle_helper_.Shutdown();
+
+  // Shut down |helper_| first, so that the ForceUpdatePolicy() |idle_helper_|
+  // early-outs and doesn't do anything.
   helper_.Shutdown();
+  idle_helper_.Shutdown();
   sequence_manager_.reset();
   main_thread_only().rail_mode_observers.Clear();
   was_shutdown_ = true;
@@ -1676,10 +1695,10 @@ UseCase MainThreadSchedulerImpl::ComputeCurrentUseCase(
   // treat the presence of input as an indirect signal that there is meaningful
   // content on the page.
   if (!any_thread().have_seen_input_since_navigation) {
-    if (any_thread().waiting_for_contentful_paint)
+    if (any_thread().waiting_for_any_main_frame_contentful_paint)
       return UseCase::kEarlyLoading;
 
-    if (any_thread().waiting_for_meaningful_paint)
+    if (any_thread().waiting_for_any_main_frame_meaningful_paint)
       return UseCase::kLoading;
   }
   return UseCase::kNone;
@@ -1986,10 +2005,10 @@ void MainThreadSchedulerImpl::AsValueIntoLocked(
                    IdleHelper::IdlePeriodStateToString(
                        idle_helper_.SchedulerIdlePeriodState()));
   state->SetBoolean("renderer_hidden", main_thread_only().renderer_hidden);
-  state->SetBoolean("waiting_for_contentful_paint",
-                    any_thread().waiting_for_contentful_paint);
-  state->SetBoolean("waiting_for_meaningful_paint",
-                    any_thread().waiting_for_meaningful_paint);
+  state->SetBoolean("waiting_for_any_main_frame_contentful_paint",
+                    any_thread().waiting_for_any_main_frame_contentful_paint);
+  state->SetBoolean("waiting_for_any_main_frame_meaningful_paint",
+                    any_thread().waiting_for_any_main_frame_meaningful_paint);
   state->SetBoolean("have_seen_input_since_navigation",
                     any_thread().have_seen_input_since_navigation);
   state->SetBoolean(
@@ -2212,19 +2231,14 @@ void MainThreadSchedulerImpl::DidCommitProvisionalLoad(
   }
 }
 
-void MainThreadSchedulerImpl::OnFirstContentfulPaint() {
+void MainThreadSchedulerImpl::OnMainFramePaint() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "MainThreadSchedulerImpl::OnFirstContentfulPaint");
+               "MainThreadSchedulerImpl::OnMainFramePaint");
   base::AutoLock lock(any_thread_lock_);
-  any_thread().waiting_for_contentful_paint = false;
-  UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
-}
-
-void MainThreadSchedulerImpl::OnFirstMeaningfulPaint() {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "MainThreadSchedulerImpl::OnFirstMeaningfulPaint");
-  base::AutoLock lock(any_thread_lock_);
-  any_thread().waiting_for_meaningful_paint = false;
+  any_thread().waiting_for_any_main_frame_contentful_paint =
+      IsAnyMainFrameWaitingForFirstContentfulPaint();
+  any_thread().waiting_for_any_main_frame_meaningful_paint =
+      IsAnyMainFrameWaitingForFirstMeaningfulPaint();
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
@@ -2235,8 +2249,10 @@ void MainThreadSchedulerImpl::ResetForNavigationLocked() {
   any_thread_lock_.AssertAcquired();
   any_thread().user_model.Reset(helper_.NowTicks());
   any_thread().have_seen_a_blocking_gesture = false;
-  any_thread().waiting_for_contentful_paint = true;
-  any_thread().waiting_for_meaningful_paint = true;
+  any_thread().waiting_for_any_main_frame_contentful_paint =
+      IsAnyMainFrameWaitingForFirstContentfulPaint();
+  any_thread().waiting_for_any_main_frame_meaningful_paint =
+      IsAnyMainFrameWaitingForFirstMeaningfulPaint();
   any_thread().have_seen_input_since_navigation = false;
   main_thread_only().idle_time_estimator.Clear();
   main_thread_only().have_reported_blocking_intervention_since_navigation =
@@ -2391,6 +2407,11 @@ void MainThreadSchedulerImpl::AddPageScheduler(
     memory_purge_manager_.OnPageCreated(
         page_scheduler->GetPageLifecycleState());
   }
+  base::AutoLock lock(any_thread_lock_);
+  any_thread().waiting_for_any_main_frame_contentful_paint =
+      IsAnyMainFrameWaitingForFirstContentfulPaint();
+  any_thread().waiting_for_any_main_frame_meaningful_paint =
+      IsAnyMainFrameWaitingForFirstMeaningfulPaint();
 }
 
 void MainThreadSchedulerImpl::RemovePageScheduler(
@@ -2402,6 +2423,11 @@ void MainThreadSchedulerImpl::RemovePageScheduler(
     memory_purge_manager_.OnPageDestroyed(
         page_scheduler->GetPageLifecycleState());
   }
+  base::AutoLock lock(any_thread_lock_);
+  any_thread().waiting_for_any_main_frame_contentful_paint =
+      IsAnyMainFrameWaitingForFirstContentfulPaint();
+  any_thread().waiting_for_any_main_frame_meaningful_paint =
+      IsAnyMainFrameWaitingForFirstMeaningfulPaint();
 }
 
 void MainThreadSchedulerImpl::OnPageFrozen() {

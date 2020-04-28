@@ -2525,10 +2525,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
            .GetSettings()
            ->GetPreferCompositingToLCDTextEnabled() &&
       !background_supports_lcd_text) {
-    if (layer_->CompositesWithOpacity()) {
-      non_composited_main_thread_scrolling_reasons_ |=
-          cc::MainThreadScrollingReason::kHasOpacityAndLCDText;
-    }
     if (layer_->CompositesWithTransform()) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kHasTransformAndLCDText;

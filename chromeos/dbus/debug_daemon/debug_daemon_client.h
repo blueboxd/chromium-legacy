@@ -23,6 +23,9 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+namespace cryptohome {
+class AccountIdentifier;
+}
 namespace chromeos {
 
 // A DbusLibraryError represents an error response received from D-Bus.
@@ -97,7 +100,10 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) DebugDaemonClient
   // Gets the scrubbed logs from debugd that are very large and cannot be
   // returned directly from D-Bus. These logs will include ARC and cheets
   // system information.
-  virtual void GetScrubbedBigLogs(GetLogsCallback callback) = 0;
+  // |id|: Cryptohome Account identifier for the user to get
+  // logs for.
+  virtual void GetScrubbedBigLogs(const cryptohome::AccountIdentifier& id,
+                                  GetLogsCallback callback) = 0;
 
   // Gets all logs collected by debugd.
   virtual void GetAllLogs(GetLogsCallback callback) = 0;

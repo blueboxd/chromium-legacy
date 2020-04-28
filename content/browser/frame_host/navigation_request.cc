@@ -1727,37 +1727,48 @@ void NavigationRequest::OnRequestRedirected(
   WillRedirectRequest(common_params_->referrer->url, expected_process);
 }
 
-void NavigationRequest::CheckForIsolationOptIn(
-    const GURL& url,
-    const network::mojom::URLResponseHead* response) {
-  if (!response)
+void NavigationRequest::CheckForIsolationOptIn(const GURL& url) {
+  if (!IsOptInIsolationRequested())
     return;
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  url::Origin origin = url::Origin::Create(url);
+  if (policy->UpdateOriginIsolationOptInListIfNecessary(origin)) {
+    // This is a new request for isolating |origin|. Do a global walk of session
+    // history to find any existing instances of |origin|, so that those
+    // existing BrowsingInstances can avoid isolating it (which could break
+    // cross-frame scripting). Only new BrowsingInstances and ones that have not
+    // seen |origin| before will isolate it.
+    // We don't always have a value for render_frame_host_ at this point, so we
+    // map the global-walk call onto NavigatorDelegate to get it into
+    // WebContents. We definitely need to do the global walk prior to deciding
+    // on the render_frame_host_ to commit to.
+    frame_tree_node_->navigator()
+        ->GetDelegate()
+        ->RegisterExistingOriginToPreventOptInIsolation(origin);
+  }
+}
+
+bool NavigationRequest::IsOptInIsolationRequested() {
+  if (!response())
+    return false;
 
   // For now we only check for the presence of hints; we do not yet act on the
   // specific hints.
   const bool requests_via_origin_policy =
       base::FeatureList::IsEnabled(features::kOriginPolicy) &&
-      response->origin_policy &&
-      response->origin_policy->state == network::OriginPolicyState::kLoaded &&
-      response->origin_policy->contents->isolation_optin_hints.has_value();
+      response()->origin_policy &&
+      response()->origin_policy->state == network::OriginPolicyState::kLoaded &&
+      response()->origin_policy->contents->isolation_optin_hints.has_value();
 
   // TODO(https://crbug.com/1066930): For now we just check the presence of the
   // header; we do not parse/validate it. When we do, that will have to be
   // outside the browser process.
   const bool requests_via_header =
       base::FeatureList::IsEnabled(features::kOriginIsolationHeader) &&
-      response->headers && response->headers->HasHeader("origin-isolation");
+      response()->headers && response()->headers->HasHeader("origin-isolation");
 
-  const bool requests_origin_isolation =
-      requests_via_origin_policy || requests_via_header;
-
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  url::Origin origin = url::Origin::Create(url);
-  // We need to update the master list even if |requests_origin_isolation| is
-  // false, since we need to maintain the opt-in list according to the most
-  // recently seen opt-in.
-  policy->UpdateOriginIsolationOptInListIfNecessary(origin,
-                                                    requests_origin_isolation);
+  return requests_via_header || requests_via_origin_policy;
 }
 
 void NavigationRequest::OnResponseStarted(
@@ -1789,6 +1800,34 @@ void NavigationRequest::OnResponseStarted(
   response_body_ = std::move(response_body);
   ssl_info_ = response_head_->ssl_info;
   auth_challenge_info_ = response_head_->auth_challenge_info;
+
+  // If origin isolation opt-in is being requested, set temporary state on
+  // ChildProcessSecurityPolicy that allows it to know the origin is requesting
+  // isolation without having to plumb it through all the calls that might get
+  // to ShouldOriginGetOptInIsolation. This is set in OnResponseStarted when
+  // headers are available to detect isolation requests, and early in the method
+  // to ensure all relevant calls will have the state available.
+  using ScopedOriginIsolationOptInRequest =
+      ChildProcessSecurityPolicyImpl::ScopedOriginIsolationOptInRequest;
+  std::unique_ptr<ScopedOriginIsolationOptInRequest>
+      scoped_origin_isolation_opt_in_request;
+  if (IsOptInIsolationRequested()) {
+    // This origin conversion won't be correct for about:blank, but origin
+    // isolation shouldn't need to care about that case because a previous
+    // instance of the origin would already have determined its isolation status
+    // in that BrowsingInstance.
+    // TODO(https://crbug.com/888079): Use the computed origin here just to be
+    // safe.
+    url::Origin origin_to_isolate(url::Origin::Create(common_params().url));
+    scoped_origin_isolation_opt_in_request =
+        ScopedOriginIsolationOptInRequest::GetScopedOriginIsolationOptInRequest(
+            origin_to_isolate);
+  }
+
+  // The navigation may have encountered an origin policy or Origin-Isolation
+  // header that requests isolation for the url's origin. Before we pick the
+  // renderer, make sure we update the origin-isolation opt-ins appropriately.
+  CheckForIsolationOptIn(common_params().url);
 
   // Check if the response should be sent to a renderer.
   response_should_be_rendered_ =
@@ -1943,11 +1982,6 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
-  // The navigation may have encountered an origin policy or Origin-Isolation
-  // header that requests isolation for the url's origin. Before we pick the
-  // renderer, make sure we update the origin-isolation opt-ins appropriately.
-  CheckForIsolationOptIn(common_params().url, response());
-
   // Select an appropriate renderer to commit the navigation.
   if (IsServedFromBackForwardCache()) {
     NavigationControllerImpl* controller =
@@ -2043,11 +2077,25 @@ void NavigationRequest::OnResponseStarted(
     // will prevent other sites from incorrectly reusing this process. See
     // https://crbug.com/738634.
     SiteInstanceImpl* instance = render_frame_host_->GetSiteInstance();
+    const IsolationContext& isolation_context = instance->GetIsolationContext();
     if (!instance->HasSite() &&
         SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-            instance->GetIsolationContext(), common_params_->url)) {
+            isolation_context, common_params_->url)) {
       instance->ConvertToDefaultOrSetSite(common_params_->url);
     }
+
+    // If this navigation request didn't opt-in to origin isolation, we need
+    // to check here in case the origin has previously requested isolation and
+    // should be marked as opted-out in this SiteInstance. At this point we know
+    // that |render_frame_host_|'s SiteInstance has been finalized, so it's safe
+    // to use it here to get the correct |IsolationContext|.
+    // TODO(wjmaclean): this won't handle cases like about:blank (where it
+    // inherits an origin we care about).  We plan to compute the origin
+    // before commit time (https://crbug.com/888079), which may make it
+    // possible to compute the right origin here.
+    ChildProcessSecurityPolicyImpl::GetInstance()->AddNonIsolatedOriginIfNeeded(
+        isolation_context, url::Origin::Create(common_params().url),
+        false /* is_global_walk */);
 
     // Replace the SiteInstance of the previously committed entry if it's for a
     // url that doesn't require a site assignment, since this new commit is

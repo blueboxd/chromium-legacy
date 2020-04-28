@@ -3,16 +3,17 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {SafeBrowsingBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {flushTasks} from 'chrome://test/test_util.m.js';
-import {PrivacyPageBrowserProxyImpl, SyncBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
-import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
-import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
-import {TestSafeBrowsingBrowserProxy} from 'chrome://test/settings/test_safe_browsing_browser_proxy.js';
 import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {SafeBrowsingBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions,PrivacyPageBrowserProxyImpl, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
+import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
+import {TestSafeBrowsingBrowserProxy} from 'chrome://test/settings/test_safe_browsing_browser_proxy.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {flushTasks} from 'chrome://test/test_util.m.js';
+
 // clang-format on
 
 suite('CrSettingsSecurityPageTestWithEnhanced', function() {
@@ -45,8 +46,7 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     syncBrowserProxy = new TestSyncBrowserProxy();
     SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
     testSafeBrowsingBrowserProxy = new TestSafeBrowsingBrowserProxy();
-    SafeBrowsingBrowserProxyImpl.instance_ =
-        testSafeBrowsingBrowserProxy;
+    SafeBrowsingBrowserProxyImpl.instance_ = testSafeBrowsingBrowserProxy;
     PolymerTest.clearBody();
     page = document.createElement('settings-security-page');
     page.prefs = {
@@ -80,8 +80,7 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     page.$$('#manageCertificates').click();
     return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
         .then(result => {
-          assertEquals(
-              PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
+          assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
         });
   });
 

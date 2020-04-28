@@ -4,12 +4,13 @@
 
 // clang-format off
 import 'chrome://settings/lazy_load.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
-import {ExtensionControlBrowserProxyImpl, SearchEnginesBrowserProxyImpl} from 'chrome://settings/settings.js';
+
+import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ExtensionControlBrowserProxyImpl, SearchEnginesBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {TestExtensionControlBrowserProxy} from 'chrome://test/settings/test_extension_control_browser_proxy.js';
 import {TestSearchEnginesBrowserProxy} from 'chrome://test/settings/test_search_engines_browser_proxy.m.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
 // clang-format on
 
 /**
@@ -243,11 +244,10 @@ suite('SearchEngineEntryTests', function() {
     assertTrue(!!editButton);
     assertFalse(editButton.hidden);
 
-    const promise =
-        eventToPromise('edit-search-engine', entry).then(e => {
-          assertEquals(engine, e.detail.engine);
-          assertEquals(entry.$$('cr-icon-button'), e.detail.anchorElement);
-        });
+    const promise = eventToPromise('edit-search-engine', entry).then(e => {
+      assertEquals(engine, e.detail.engine);
+      assertEquals(entry.$$('cr-icon-button'), e.detail.anchorElement);
+    });
     editButton.click();
     return promise;
   });

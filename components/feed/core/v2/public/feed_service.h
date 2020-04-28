@@ -18,16 +18,16 @@
 
 namespace base {
 class SequencedTaskRunner;
-}
+}  // namespace base
 namespace feedstore {
 class Record;
-}
+}  // namespace feedstore
 namespace network {
 class SharedURLLoaderFactory;
-}
+}  // namespace network
 namespace signin {
 class IdentityManager;
-}
+}  // namespace signin
 
 namespace feed {
 class RefreshTaskScheduler;

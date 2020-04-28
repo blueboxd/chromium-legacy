@@ -8,7 +8,7 @@
 
 #include "build/build_config.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"

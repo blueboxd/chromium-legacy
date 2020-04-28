@@ -199,8 +199,6 @@ class BluetoothBlueZTest : public testing::Test {
                           base::Unretained(this));
   }
 
-  void AdapterCallback() { QuitMessageLoop(); }
-
   void DiscoverySessionCallback(
       std::unique_ptr<BluetoothDiscoverySession> discovery_session) {
     ++callback_count_;
@@ -276,10 +274,11 @@ class BluetoothBlueZTest : public testing::Test {
 
   // Call to fill the adapter_ member with a BluetoothAdapter instance.
   void GetAdapter() {
-    adapter_ = new BluetoothAdapterBlueZ(base::BindOnce(
-        &BluetoothBlueZTest::AdapterCallback, base::Unretained(this)));
-    base::RunLoop().Run();
-    ASSERT_TRUE(adapter_.get() != nullptr);
+    adapter_ = BluetoothAdapterBlueZ::CreateAdapter();
+    base::RunLoop run_loop;
+    adapter_->Initialize(run_loop.QuitClosure());
+    run_loop.Run();
+    ASSERT_TRUE(adapter_);
     ASSERT_TRUE(adapter_->IsInitialized());
   }
 

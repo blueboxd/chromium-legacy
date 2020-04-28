@@ -5,7 +5,6 @@
 #include "net/cert/internal/ocsp.h"
 
 #include "base/base64.h"
-#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "net/cert/internal/test_helpers.h"
 #include "net/der/encode_values.h"

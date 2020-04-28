@@ -7,6 +7,7 @@ module media_feeds.mojom;
 import "services/media_session/public/mojom/media_session.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 struct MediaFeed {
@@ -64,6 +65,11 @@ struct MediaFeed {
   // The reason why the feed has been reset. If not kNone, this means the items
   // have been deleted and the feed status has been reset to default.
   ResetReason reset_reason;
+
+  // An associated origin is an origin associated with the feed. If the cookies
+  // are deleted or expire on the origin then we will delete the feed items.
+  // https://wicg.github.io/media-feeds/#dfn-associated-origin
+  array<url.mojom.Origin> associated_origins;
 };
 
 // The result of fetching the feed. This enum is committed to storage so do not

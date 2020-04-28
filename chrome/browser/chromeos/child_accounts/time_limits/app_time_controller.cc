@@ -415,10 +415,20 @@ void AppTimeController::OnAppLimitReached(const AppId& app_id,
     show_dialog = false;
 
   app_service_wrapper_->PauseApp(PauseAppInfo(app_id, time_limit, show_dialog));
+
+  // TODO(crbug/1074516) This is a temporary workaround. The underlying problem
+  // should be fixed.
+  if (app_id == GetChromeAppId() && web_time_enforcer_)
+    web_time_enforcer_->OnWebTimeLimitReached(time_limit);
 }
 
 void AppTimeController::OnAppLimitRemoved(const AppId& app_id) {
   app_service_wrapper_->ResumeApp(app_id);
+
+  // TODO(crbug/1074516) This is a temporary workaround. The underlying problem
+  // should be fixed.
+  if (app_id == GetChromeAppId() && web_time_enforcer_)
+    web_time_enforcer_->OnWebTimeLimitEnded();
 }
 
 void AppTimeController::OnAppInstalled(const AppId& app_id) {

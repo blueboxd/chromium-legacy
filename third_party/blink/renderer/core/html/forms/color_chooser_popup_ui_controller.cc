@@ -120,6 +120,29 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
   AddProperty("isBorderTransparent", features::IsFormControlsRefreshEnabled(),
               data);
 #endif
+  // We don't create PagePopups on Android, so these strings are excluded
+  // from blink_strings.grd on Android to save binary size.  We have to
+  // exclude them here as well to avoid an Android build break.
+#if !defined(OS_ANDROID)
+  AddLocalizedProperty("axColorWellLabel", IDS_AX_COLOR_WELL, data);
+  AddLocalizedProperty("axColorWellRoleDescription",
+                       IDS_AX_COLOR_WELL_ROLEDESCRIPTION, data);
+  AddLocalizedProperty("axHueSliderLabel", IDS_AX_COLOR_HUE_SLIDER, data);
+  AddLocalizedProperty("axHexadecimalEditLabel", IDS_AX_COLOR_EDIT_HEXADECIMAL,
+                       data);
+  AddLocalizedProperty("axRedEditLabel", IDS_AX_COLOR_EDIT_RED, data);
+  AddLocalizedProperty("axGreenEditLabel", IDS_AX_COLOR_EDIT_GREEN, data);
+  AddLocalizedProperty("axBlueEditLabel", IDS_AX_COLOR_EDIT_BLUE, data);
+  AddLocalizedProperty("axHueEditLabel", IDS_AX_COLOR_EDIT_HUE, data);
+  AddLocalizedProperty("axSaturationEditLabel", IDS_AX_COLOR_EDIT_SATURATION,
+                       data);
+  AddLocalizedProperty("axLightnessEditLabel", IDS_AX_COLOR_EDIT_LIGHTNESS,
+                       data);
+  AddLocalizedProperty("axFormatTogglerLabel", IDS_AX_COLOR_FORMAT_TOGGLER,
+                       data);
+#else
+  CHECK(false) << "We should never reach PagePopupClient code on Android";
+#endif
   PagePopupClient::AddString("};\n", data);
   data->Append(ChooserResourceLoader::GetPickerCommonJS());
   data->Append(ChooserResourceLoader::GetColorPickerJS());
@@ -149,9 +172,8 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
       "window.dialogArguments = {\n",
       data);
   PagePopupClient::AddProperty("values", suggestion_values, data);
-  PagePopupClient::AddProperty(
-      "otherColorLabel", GetLocale().QueryString(IDS_FORM_OTHER_COLOR_LABEL),
-      data);
+  PagePopupClient::AddLocalizedProperty("otherColorLabel",
+                                        IDS_FORM_OTHER_COLOR_LABEL, data);
   if (features::IsFormControlsRefreshEnabled()) {
     PagePopupClient::AddProperty("selectedColor",
                                  client_->CurrentColor().Serialized(), data);

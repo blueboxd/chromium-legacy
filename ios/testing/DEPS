@@ -1,6 +1,7 @@
 include_rules = [
   "+components/variations/variations_associated_data.h",
   "+ios/third_party/earl_grey2/src",
+  "+ios/third_party/edo/src/Service/Sources",
   "+net",
   "+third_party/ocmock",
 ]

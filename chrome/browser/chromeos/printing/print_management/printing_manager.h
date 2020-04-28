@@ -11,9 +11,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-class Profile;
-
 namespace chromeos {
+class PrintJobHistoryService;
 namespace printing {
 namespace mojom = printing_manager::mojom;
 namespace print_management {
@@ -21,7 +20,7 @@ namespace print_management {
 class PrintingManager : public mojom::PrintingMetadataProvider,
                         public KeyedService {
  public:
-  explicit PrintingManager(Profile* profile);
+  explicit PrintingManager(PrintJobHistoryService* print_job_history_service);
   ~PrintingManager() override;
 
   PrintingManager(const PrintingManager&) = delete;
@@ -29,6 +28,7 @@ class PrintingManager : public mojom::PrintingMetadataProvider,
 
   // mojom::PrintingMetadataProvider:
   void GetPrintJobs(GetPrintJobsCallback callback) override;
+  void DeleteAllPrintJobs(DeleteAllPrintJobsCallback callback) override;
 
   void BindInterface(
       mojo::PendingReceiver<mojom::PrintingMetadataProvider> pending_receiver);
@@ -43,8 +43,7 @@ class PrintingManager : public mojom::PrintingMetadataProvider,
                                 print_job_info_protos);
 
   mojo::Receiver<mojom::PrintingMetadataProvider> receiver_{this};
-
-  Profile* profile_;  // Not Owned.
+  chromeos::PrintJobHistoryService* print_job_history_service_;  // NOT OWNED.
 };
 
 }  // namespace print_management

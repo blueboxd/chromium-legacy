@@ -17,15 +17,18 @@
 <translation id="2805756323405976993">Апликации</translation>
 <translation id="2872961005593481000">Исклучи</translation>
 <translation id="3008341117444806826">ОСВЕЖИ</translation>
+<translation id="3749289110408117711">Име на датотека</translation>
 <translation id="3820172043799983114">Неважечки PIN.</translation>
 <translation id="3838338534323494292">Нова лозинка</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> управува со уредов и има пристап до целата активност на корисникот, вклучувајќи ги посетените веб-страници, лозинките и е-поштата.</translation>
+<translation id="4034824040120875894">Печатач</translation>
 <translation id="4227825898293920515">Лозинката истекува за <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Билетот на Kerberos истекува наскоро</translation>
 <translation id="445059817448385655">Стара лозинка</translation>
 <translation id="467510802200863975">Лозинките не се совпаѓаат</translation>
 <translation id="4731797938093519117">Пристап за родители</translation>
 <translation id="4890353053343094602">Веднаш изберете нова</translation>
+<translation id="4932733599132424254">Датум</translation>
 <translation id="5212543919916444558">Не можам да најдам ништо на екранот со што би можел ви помогнам.
 Допрете го микрофонот за да ме прашате нешто.</translation>
 <translation id="5222676887888702881">Одјави се</translation>
@@ -40,6 +43,7 @@
 <translation id="6146993107019042706">За да завршите, внесете ја новата лозинка</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7690294790491645610">Потврдете ја новата лозинка</translation>
+<translation id="7805768142964895445">Статус</translation>
 <translation id="808894953321890993">Промени лозинка</translation>
 <translation id="8208861521865154048">Поволности</translation>
 <translation id="8747900814994928677">Потврдете ја измената</translation>

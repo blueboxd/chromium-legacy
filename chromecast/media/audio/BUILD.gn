@@ -22,6 +22,10 @@ cast_source_set("audio_io_thread") {
   deps = [ "//base" ]
 }
 
+cast_source_set("wav_header") {
+  sources = [ "wav_header.h" ]
+}
+
 cast_source_set("processing") {
   sources = [
     "audio_clock_simulator.cc",

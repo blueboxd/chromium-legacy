@@ -61,7 +61,7 @@ void CookieControlsIconView::OnBlockedCookiesCountChanged(int blocked_cookies) {
 }
 
 bool CookieControlsIconView::ShouldBeVisible() const {
-  if (delegate()->IsLocationBarUserInputInProgress())
+  if (delegate()->ShouldHidePageActionIcons())
     return false;
 
   if (HasAssociatedBubble())

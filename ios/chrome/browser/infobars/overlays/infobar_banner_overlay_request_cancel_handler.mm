@@ -20,11 +20,12 @@ InfobarBannerOverlayRequestCancelHandler::
     InfobarBannerOverlayRequestCancelHandler(
         OverlayRequest* request,
         OverlayRequestQueue* queue,
+        InfoBarIOS* infobar,
         const InfobarOverlayRequestInserter* inserter,
         InfobarModalCompletionNotifier* modal_completion_notifier)
-    : InfobarOverlayRequestCancelHandler(request, queue),
+    : InfobarOverlayRequestCancelHandler(request, queue, infobar),
       inserter_(inserter),
-      modal_completion_observer_(this, modal_completion_notifier, infobar()) {
+      modal_completion_observer_(this, modal_completion_notifier, infobar) {
   DCHECK(inserter_);
 }
 

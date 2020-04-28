@@ -4,7 +4,7 @@
 
 #include "net/socket/stream_socket.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace net {
 

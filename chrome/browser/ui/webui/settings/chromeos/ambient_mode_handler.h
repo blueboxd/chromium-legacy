@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -43,21 +44,21 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
   void GetSettings();
 
   // Called when the initial settings is retrieved.
-  void OnGetSettings(const base::Optional<int>& topic_source);
+  void OnGetSettings(base::Optional<ash::AmbientModeTopicSource> topic_source);
 
   // Send the "topic-source-changed" WebUIListener event when the initial
   // settings is retrieved.
   void SendTopicSource();
 
   // Update the selected topic source to server.
-  void UpdateSettings(int topic_source);
+  void UpdateSettings(ash::AmbientModeTopicSource topic_source);
 
   // Called when the settings is updated.
   // |topic_source| is the value to retry if the update was failed.
-  void OnUpdateSettings(int topic_source, bool success);
+  void OnUpdateSettings(ash::AmbientModeTopicSource topic_source, bool success);
 
   // The topic source, i.e. from which category the photos will be displayed.
-  base::Optional<int> topic_source_;
+  base::Optional<ash::AmbientModeTopicSource> topic_source_;
 
   base::WeakPtrFactory<AmbientModeHandler> weak_factory_{this};
 };

@@ -118,8 +118,12 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       const WTF::String& name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
+
   void OnFirstContentfulPaint() override;
   void OnFirstMeaningfulPaint() override;
+  bool IsWaitingForContentfulPaint() const;
+  bool IsWaitingForMeaningfulPaint() const;
+
   void AsValueInto(base::trace_event::TracedValue* state) const;
   bool IsExemptFromBudgetBasedThrottling() const override;
   std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
@@ -347,6 +351,11 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       page_visibility_for_tracing_;
   TraceableState<bool, TracingCategoryName::kInfo>
       page_keep_active_for_tracing_;
+
+  TraceableState<bool, TracingCategoryName::kInfo>
+      waiting_for_contentful_paint_;
+  TraceableState<bool, TracingCategoryName::kInfo>
+      waiting_for_meaningful_paint_;
 
   // TODO(altimin): Remove after we have have 1:1 relationship between frames
   // and documents.

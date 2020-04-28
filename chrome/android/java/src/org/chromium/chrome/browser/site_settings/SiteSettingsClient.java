@@ -37,9 +37,9 @@ public interface SiteSettingsClient {
     void launchProtectedContentHelpAndFeedbackActivity(Activity currentActivity);
 
     /**
-     * @return The NotificationSettingsClient that should be used when showing the Site Settings UI.
+     * @return The WebappSettingsClient that should be used when showing the Site Settings UI.
      */
-    NotificationSettingsClient getNotificationSettingsClient();
+    WebappSettingsClient getWebappSettingsClient();
 
     /**
      * @return The BrowserContextHandle that should be used to read and update settings.
@@ -73,7 +73,8 @@ public interface SiteSettingsClient {
     SiteSettingsPrefClient getSiteSettingsPrefClient();
 
     /**
-     * @return True if a webapp is installed for the site at the given origin.
+     * @return The id of the notification channel associated with the given origin.
      */
-    boolean originHasInstalledWebapp(String origin);
+    // TODO(crbug.com/1069895): Remove this once WebLayer supports notifications.
+    String getChannelIdForOrigin(String origin);
 }

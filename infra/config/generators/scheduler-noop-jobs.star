@@ -5,8 +5,6 @@ load('@stdlib//internal/luci/proto.star', 'scheduler_pb')
 # on master, but not on branches.
 _ANDROID_NON_BRANCHED_TESTERS = (
     'Android WebView L (dbg)',
-    'KitKat Phone Tester (dbg)',
-    'KitKat Tablet Tester',
     'Lollipop Phone Tester',
     'Lollipop Tablet Tester',
     'Marshmallow Tablet Tester',

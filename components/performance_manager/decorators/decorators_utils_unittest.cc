@@ -8,7 +8,8 @@
 
 #include "base/test/bind_test_util.h"
 #include "components/performance_manager/graph/node_attached_data_impl.h"
-#include "components/performance_manager/performance_manager_test_harness.h"
+#include "components/performance_manager/test_support/performance_manager_test_harness.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {

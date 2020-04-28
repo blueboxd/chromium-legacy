@@ -25,7 +25,7 @@
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
-#include "chrome/browser/ui/ash/ambient/photo_controller_impl.h"
+#include "chrome/browser/ui/ash/ambient/ambient_client_impl.h"
 #include "chrome/browser/ui/ash/arc_chrome_actions_client.h"
 #include "chrome/browser/ui/ash/ash_shell_init.h"
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
@@ -209,7 +209,7 @@ void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
   night_light_client_->Start();
 
   if (chromeos::features::IsAmbientModeEnabled())
-    photo_controller_ = std::make_unique<PhotoControllerImpl>();
+    ambient_client_ = std::make_unique<AmbientClientImpl>();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
@@ -220,7 +220,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 #endif
 
   if (chromeos::features::IsAmbientModeEnabled())
-    photo_controller_.reset();
+    ambient_client_.reset();
 
   night_light_client_.reset();
   mobile_data_notifications_.reset();

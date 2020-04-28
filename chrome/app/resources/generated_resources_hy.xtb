@@ -125,7 +125,6 @@
 <translation id="1164899421101904659">Մուտքագրեք PUK կոդը</translation>
 <translation id="1165039591588034296">Սխալ</translation>
 <translation id="1166212789817575481">Փակել աջ կողմի ներդիրները</translation>
-<translation id="1167199480815330007">Մուտքագրեք վեց թվանշանից բաղկացած PIN կոդը, որը նշված է անվտանգության բանալու հետևի մասում։</translation>
 <translation id="1168020859489941584">Բացվում է <ph name="TIME_REMAINING" />-ից…</translation>
 <translation id="1168100932582989117">Google-ի DNS-սերվերներ</translation>
 <translation id="1171135284592304528">Ընդգծել ստեղնաշարի միջոցով ընտրված օբյեկտները, երբ դրանք փոխվում են</translation>
@@ -421,7 +420,7 @@
 <translation id="1555130319947370107">Կապույտ</translation>
 <translation id="1556537182262721003">Չհաջողվեց պրոֆիլ տեղափոխել ընդլայնման գրացուցակը:</translation>
 <translation id="155865706765934889">Հպահարթակ</translation>
-<translation id="1560763881671211335">Ադմինիստրատորները սահմանում են, թե Google-ի որ ծառայություններն պետք է հասանելի լինեն օգտատերերին, երբ վերջիններս մտնեն G Suite for Education հաշիվ։ Կրթական հաստատությունների ադմինիստրատորները պարտավոր են համաձայնություն տալ կամ ստանալ՝ անչափահասների կողմից ծառայությունն օգտագործելու համար։
+<translation id="1560763881671211335">Ադմինիստրատորները սահմանում են, թե Google-ի որ ծառայությունները պետք է հասանելի լինեն օգտատերերին, երբ վերջիններս մտնեն G Suite for Education հաշիվ։ Կրթական հաստատությունների ադմինիստրատորները պարտավոր են համաձայնություն տալ կամ ստանալ՝ անչափահասների կողմից ծառայությունն օգտագործվելու համար։
 
     Այցելությունների տվյալները (ներառյալ պատմությունը, էջանիշները և գաղտնաբառերը) կպահվեն Family Link հաշվում, այլ ոչ կրթական հաստատության հաշվում։
 
@@ -464,7 +463,7 @@
 <translation id="1608626060424371292">Հեռացնել այս պրոֆիլը</translation>
 <translation id="1608668830839595724">Այլ գործողություններ ընտրված տարրերի համար</translation>
 <translation id="161042844686301425">Երկնագույն</translation>
-<translation id="1611584202130317952">Համաժամացումն ընդհատվել է։ Նորից փորձեք կամ կապվեք սարքի սեփականատիրոջ կամ ադմինիստրատորի հետ։</translation>
+<translation id="1611584202130317952">Համաժամացումն ընդհատվել է։ Փորձեք նորից կամ կապվեք սարքի սեփականատիրոջ կամ ադմինիստրատորի հետ։</translation>
 <translation id="1614511179807650956">Հնարավոր է` դուք սպառել եք հասանելի ամբողջ բջջային թրաֆիկը: Լրացուցիչ թրաֆիկ գնելու համար այցելեք <ph name="NAME" /> ակտիվացման կայքէջ:</translation>
 <translation id="161460670679785907">Չհաջողվեց հայտնաբերել ձեր հեռախոսը</translation>
 <translation id="1616206807336925449">Տվյալ ընդլայնումը չի պահանջում հատուկ թույլտվություն:</translation>
@@ -614,7 +613,6 @@
 <translation id="1802931390041703523">Flash-ն արգելափակված է այս էջում</translation>
 <translation id="1803531841600994172">Թարգմանության լեզուն</translation>
 <translation id="1803545009660609783">Թարմացնել</translation>
-<translation id="1805472176602625930">Սեղմեք անվտանգության բանալու վրայի կոճակը</translation>
 <translation id="1805738995123446102">Ֆոնային ներդիրում օգտագործվում է խոսափողը</translation>
 <translation id="1805822111539868586">Վերլուծել դիտումները</translation>
 <translation id="1805888043020974594">Տպման սերվեր</translation>
@@ -675,9 +673,9 @@
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" />-ը պատրաստ է ավարտել տեղադրումը</translation>
 <translation id="1868193363684582383">«Ok Google»</translation>
 <translation id="1870629042957780127">Հասանելի դարձնել խոսափողը</translation>
+<translation id="1871534214638631766">Ցույց տալ առնչվող տեղեկություններ բովանդակության վրա երկար սեղմելու կամ մկնիկի աջ կոճակը սեղմելու դեպքում</translation>
 <translation id="1871615898038944731"><ph name="DEVICE_TYPE" /> սարքը թարմացված է</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Բացել ներդիրն այլ պատուհանում}one{Բացել ներդիրներն այլ պատուհանում}other{Բացել ներդիրներն այլ պատուհանում}}</translation>
-<translation id="1875312262568496299">Սկսել</translation>
 <translation id="1875386316419689002">Այս ներդիրը միացված է HID սարքին։</translation>
 <translation id="1875387611427697908">Սա կարող է ավելացվել միայն <ph name="CHROME_WEB_STORE" />-ից</translation>
 <translation id="1877520246462554164">Չհաջողվեց ստանալ նույնականացման թոքենը։ Դուրս եկեք հաշվից ու նորից մուտք գործեք:</translation>
@@ -697,7 +695,6 @@
 <translation id="189358972401248634">Այլ լեզուներ</translation>
 <translation id="1895658205118569222">Աշխատանքի ավարտ</translation>
 <translation id="1895934970388272448">Այս գործընթացն ավարտելու համար դուք պետք է հաստատեք գրանցումը տպիչի վրա: Ստուգեք այն:</translation>
-<translation id="1899826437968063457">Plugin VM-ն աշխատեցնելու համար թույլտվություն է հարկավոր</translation>
 <translation id="1900305421498694955">Google Play Խանութի հավելավածներին կարող է պահանջվել ֆայլային համակարգի լրիվ հասանելիություն՝ ֆայլերը կարդալու և արտաքին հիշասարքերում պահելու համար: Սարքում ստեղծված ֆայլերն ու պանակները տեսանելի կլինեն բոլորին, ով օգտագործում է արտաքին դրայվը: <ph name="LINK_BEGIN" />Իմանալ ավելին<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Ընտրել &amp;բոլորը</translation>
 <translation id="1905375423839394163">Chromebook սարքի անունը</translation>
@@ -733,6 +730,7 @@
 <translation id="1944528062465413897">Bluetooth-ով զուգակցման կոդ՝</translation>
 <translation id="1944921356641260203">Գտնվել է թարմացում</translation>
 <translation id="1946577776959096882">Դիտել հաշիվները</translation>
+<translation id="1949584741547056205">Արագ պատասխաններ</translation>
 <translation id="1951012854035635156">Օգնական</translation>
 <translation id="1954813140452229842">Ընդհանուր միացման սխալ կա։ Ստուգեք ձեր տվյալներն ու նորից փորձեք:</translation>
 <translation id="1956050014111002555">Ֆայլը պարունակում է մի քանի վկայագիր, նրանցից ոչ մեկը չի ներմուծվել`</translation>
@@ -992,7 +990,6 @@
 <translation id="2299734369537008228">Սահիչ՝ <ph name="MIN_LABEL" /> – <ph name="MAX_LABEL" /></translation>
 <translation id="2300383962156589922">«<ph name="APP_NAME" />» հավելվածի կարգավորում և կառավարում</translation>
 <translation id="2301382460326681002">Ընդլայնման արմատային գրացուցակը սխալ է:</translation>
-<translation id="2302444155926798584">Plugin VM-ը հեռացվեց</translation>
 <translation id="23030561267973084">«<ph name="EXTENSION_NAME" />»-ը լրացուցիչ թույլտվություններ է խնդրել:</translation>
 <translation id="23055578400314116">Ընտրեք օգտանուն</translation>
 <translation id="2307462900900812319">Կազմաձևել ցանցը</translation>
@@ -1036,7 +1033,6 @@
 <translation id="2353297238722298836">Տեսախցիկի ու խոսափողի օգտագործումը թույլատրված է</translation>
 <translation id="2356070529366658676">Հարցնել</translation>
 <translation id="2357330829548294574">Հեռացնել <ph name="USER_NAME" />-ին</translation>
-<translation id="235798134753548762">Ձեր հավելվածները, կարգավորումներն ու Wi-Fi կարգավորումները կհամաժամացվեն։ Փոփոխություններ անելու համար անցեք կարգավորումներ։</translation>
 <translation id="2359345697448000899">Կառավարեք ձեր ընդլայնումները` Գործիքների ընտրացանկում սեղմելով Ընդլայնումներ:</translation>
 <translation id="2359808026110333948">Շարունակել</translation>
 <translation id="236117173274098341">Օպտիմալացնել</translation>
@@ -1073,7 +1069,6 @@
 <translation id="2408955596600435184">Մուտքագրեք ձեր PIN կոդը</translation>
 <translation id="241082044617551207">Անհայտ փլագին</translation>
 <translation id="2412593942846481727">Հասանելի է նոր տարբերակը</translation>
-<translation id="2417206894320497232">Plugin VM-ը պատրաստ է օգտագործման։</translation>
 <translation id="241727068219398187">Տվյալները գաղտնագրվել են ձեր Google գաղտնաբառով
           <ph name="TIME" />-ին։ Գաղտնագրումը չի կիրառվում վճարման եղանակների և Google Pay-ի հասցեների համար։</translation>
 <translation id="2419706071571366386">Անվտանգության համար դուրս գրվեք հաշվից, երբ չեք օգտվում համակարգչից։</translation>
@@ -1205,8 +1200,8 @@
 <translation id="2580889980133367162">Միշտ թույլ տալ <ph name="HOST" />-ին ներբեռնել մի քանի ֆայլ</translation>
 <translation id="258095186877893873">Երկար</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (հենք՝ <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
-<translation id="2584109212074498965">Չհաջողվեց բեռնել Kerberos տոմսը: Նորից փորձեք կամ կապվեք կազմակերպության սարքի ադմինիստրատորի հետ (սխալի կոդը՝ <ph name="ERROR_CODE" />):</translation>
-<translation id="2585013490795742997">Ցուցադրվում է «<ph name="QUERY" />»-ի որոնման 1 արդյունք</translation>
+<translation id="2584109212074498965">Չհաջողվեց բեռնել Kerberos տոմսը: Փորձեք նորից կամ կապվեք կազմակերպության սարքի ադմինիստրատորի հետ (սխալի կոդը՝ <ph name="ERROR_CODE" />):</translation>
+<translation id="2585013490795742997">«<ph name="QUERY" />» հարցման համար ցուցադրվում է 1 արդյունք</translation>
 <translation id="2585724835339714757">Այս ներդիրը հասանելի է դարձնում ձեր էկրանը:</translation>
 <translation id="2586657967955657006">Սեղմատախտակ</translation>
 <translation id="2586672484245266891">Մուտքագրեք ավելի կարճ URL</translation>
@@ -1357,7 +1352,6 @@
 <translation id="2773802008104670137">Այս տեսակի ֆայլը կարող է վնասել ձեր համակարգիչը:</translation>
 <translation id="2775104091073479743">Փոխել մատնահետքը</translation>
 <translation id="2776441542064982094">Կարծես թե մատչելի սարքեր չկան ցանցում գրանցելու համար: Եթե ձեր սարքը միացված և կապակցված է համացանցին, փորձեք գրանցել այն` օգտվելով օգտատիրոջ ձեռնարկում ներկայացված հրահանգներից:</translation>
-<translation id="2780009105947267877">Plugin VM-ը կարգավորվում է…</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2782104745158847185">Չհաջողվեց տեղադրել Լինուքսի հավելվածը</translation>
 <translation id="2783298271312924866">Ներբեռնված է</translation>
@@ -1401,7 +1395,6 @@
 <translation id="2822910719211888134">Չհաջողվեց պահուստավորել Լինուքսը</translation>
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" />-ն օգտագործում է ձեր ադմինիստրատորի միջնորդ սերվերի կարգավորումները</translation>
 <translation id="2825758591930162672">Սուբյեկտի հանրային բանալին</translation>
-<translation id="2825848369316359348">Անունը նշված է անվտանգության բանալու հետևի մասում</translation>
 <translation id="2828650939514476812">Միացեք Wi-Fi ցանցի</translation>
 <translation id="2835294513443818940">Այս ֆայլը հնարավոր չէ ներբեռնել անվտանգ եղանակով։</translation>
 <translation id="2835547721736623118">Խոսքի ճանաչման ծառայություն</translation>
@@ -1624,7 +1617,7 @@
 <translation id="3143515551205905069">Չեղարկել համաժամացումը</translation>
 <translation id="3143754809889689516">Նվագարկել սկզբից</translation>
 <translation id="3144647712221361880">Բացել հղումը որպես</translation>
-<translation id="3145187901750964977">Չհաջողվեց տեղադրել վիրտուալ մեքենան։ Նորից փորձեք կամ կապվեք կազմակերպության սարքի ադմինիստրատորի հետ։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
+<translation id="3145187901750964977">Չհաջողվեց տեղադրել վիրտուալ մեքենան։ Փորձեք նորից կամ կապվեք կազմակերպության սարքի ադմինիստրատորի հետ։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="3149477159749171726">Տարբերակ՝
     <ph name="LINUX_VERSION" />
 
@@ -1664,7 +1657,7 @@
 <translation id="3192947282887913208">Աուդիո ֆայլեր</translation>
 <translation id="3199127022143353223">Սերվերներ</translation>
 <translation id="3200941271596533635">Միացնել ընթերցման ռեժիմը</translation>
-<translation id="3201306578844503970">Ցանցային սխալի պատճառով չհաջողվեց տեղադրել վիրտուալ մեքենան։ Նորից փորձեք կամ կապվեք կազմակերպության սարքի ադմինիստրատորի հետ։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
+<translation id="3201306578844503970">Ցանցային սխալի պատճառով չհաջողվեց տեղադրել վիրտուալ մեքենան։ Փորձեք նորից կամ կապվեք կազմակերպության սարքի ադմինիստրատորի հետ։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="3201422919974259695">Հասանելի USB սարքերը կցուցադրվեն այստեղ:</translation>
 <translation id="3202131003361292969">Ուղի</translation>
 <translation id="3202173864863109533">Այս ներդիրի ձայնն անջատված է:</translation>
@@ -1780,7 +1773,6 @@
 <translation id="3347086966102161372">Պատճենել պատկերի հասցեն</translation>
 <translation id="3348038390189153836">Հայտնաբերվել է արտաքին կրիչ</translation>
 <translation id="3349933790966648062">Օգտագործված հիշողության ծավալ</translation>
-<translation id="3350117557200012647">Անցնել զուգակցման ռեժիմ</translation>
 <translation id="3355936511340229503">Կապակցման սխալ</translation>
 <translation id="3356580349448036450">Ավարտված է</translation>
 <translation id="3359256513598016054">Վկայագրերի քաղաքականության սահմանափակումներ</translation>
@@ -1852,7 +1844,6 @@
 <translation id="3449393517661170867">Նոր ներդիրով պատուհան</translation>
 <translation id="3449839693241009168"><ph name="EXTENSION_NAME" />-ին հրամաններ ուղարկելու համար սեղմեք <ph name="SEARCH_KEY" /></translation>
 <translation id="3450157232394774192">Անգործուն վիճակի տևողությունը տոկոսներով</translation>
-<translation id="3451332697983754369">Համաժամացնել իմ <ph name="DEVICE_TYPE" /> սարքը</translation>
 <translation id="3453612417627951340">Անհրաժեշտ է լիազորում</translation>
 <translation id="3454157711543303649">Ակտիվացումն ավարտված է</translation>
 <translation id="3454213325559396544">Սա ծրագրային և անվտանգության կարգավորումների վերջին ավտոմատ թարմացումն է այս <ph name="DEVICE_TYPE" /> սարքի համար: Հետագա թարմացումները ստանալու համար անցեք ավելի նոր մոդելի:</translation>
@@ -2031,7 +2022,6 @@
 <translation id="3677657024345889897">Ամենացածր</translation>
 <translation id="3677911431265050325">Բջջային տարբերակ</translation>
 <translation id="3678156199662914018">Ընդլայնում` <ph name="EXTENSION_NAME" /></translation>
-<translation id="3678613690490567106">Համաժամացրեք՝ ձեր բոլոր սարքերում դիտարկիչից օգտվելու համար</translation>
 <translation id="3681311097828166361">Շնորհակալություն կարծիք հայտնելու համար: Դուք ներկայումս միացած չեք ցանցին, և ձեր հաղորդումը կուղարկվի ավելի ուշ:</translation>
 <translation id="3682824389861648626">Տեղաշարժի սահմանափակում</translation>
 <translation id="3683524264665795342">Էկրանի համօգտագործման հարցում <ph name="APP_NAME" />-ից</translation>
@@ -2079,7 +2069,6 @@
 <translation id="372722114124766626">Միայն այս անգամ</translation>
 <translation id="3729303374699765035">Հարցնել, երբ որևէ կայք ուզում է հայտնաբերել մոտակա Bluetooth սարքերը</translation>
 <translation id="3729506734996624908">Թույլատրված կայքեր</translation>
-<translation id="3731997362820527097">Ընտրեք անվտանգության բանալին</translation>
 <translation id="3732078975418297900">Սխալ՝ տող <ph name="ERROR_LINE" />-ում</translation>
 <translation id="3732530910372558017">PIN կոդը պետք է կազմված լինի առավելագույնը 63 նիշից</translation>
 <translation id="3733127536501031542">SSL սերվեր՝ նոր տարբերակին անցնելու հնարավորությամբ</translation>
@@ -2090,7 +2079,6 @@
 <translation id="3742666961763734085">Չհաջողվեց գտնել այդ անունով ստորաբաժանում: Նորից փորձեք:</translation>
 <translation id="3744111561329211289">Ֆոնային համաժամացում</translation>
 <translation id="3746127522257263495">Android հավելվածներում G Suite for Education հաշվի ավելացումը չի աջակցվում։</translation>
-<translation id="3747039297326604768">Չհաջողվեց բացել Plugin VM-ը</translation>
 <translation id="3747077776423672805">Հավելվածներ հեռացնելու համար անցեք Կարգավորումներ &gt; Google Play Խանութ &gt; Կառավարել Android-ի կարգավորումները &gt; Հավելվածներ կամ Հավելվածների կառավարիչ: Այնուհետև հպեք այն հավելվածին, որը ցանկանում եք հեռացնել (անհրաժեշտ հավելվածը գտնելու համար, հնարավոր է, պահանջվի թերթել աջ կամ ձախ): Ապա սեղմեք Հեռացնել կամ Անջատել կոճակը:</translation>
 <translation id="3748026146096797577">Միացված չէ</translation>
 <translation id="3752582316358263300">Եղավ…</translation>
@@ -2122,7 +2110,7 @@
 <translation id="3778868487658107119">Տվեք հարցեր և առաջադրանքներ: Ձեր անձնական Google Օգնականը միշտ պատրաստ է օգնել ձեզ:</translation>
 <translation id="3780211714699334884">Քանի դեռ այս ներդիրը բացված է, <ph name="ORIGIN" /> կայքը կարող է փոփոխել <ph name="FOLDERNAME" /> պանակի ֆայլերը։</translation>
 <translation id="378312418865624974">Դիտել այս համակարգչի եզակի նույնացուցիչը</translation>
-<translation id="3784372983762739446">Bluetooth-ով սարքեր</translation>
+<translation id="3784372983762739446">Bluetooth սարքեր</translation>
 <translation id="3784472333786002075">Քուքիները ֆայլեր են, որոնք ստեղծվում են կայքերի կողմից։ Քուքիների երկու տեսակ կա. առաջին կողմի քուքիները ստեղծվում են ձեր այցելած կայքի կողմից։ Կայքը ցուցադրվում է հասցեագոտում։ Երրորդ կողմի քուքիները ստեղծվում են այլ կայքերի կողմից։ Այս կայքերն ունեն որոշակի բովանդակություն, օր․՝ գովազդ կամ պատկերներ, որոնք դուք տեսնում եք ձեր այցելած կայքում։</translation>
 <translation id="3785308913036335955">Ցուցադրել հավելվածների դյուրանցումը</translation>
 <translation id="3785727820640310185">Այս կայքի պահված գաղտնաբառերը</translation>
@@ -2153,7 +2141,6 @@
 <translation id="3816118180265633665">Chrome-ի գույներ</translation>
 <translation id="3817524650114746564">Ձեր համակարգչում բացեք միջնորդ սերվերի կարգավորումները</translation>
 <translation id="3817579325494460411">Չի տրամադրվել</translation>
-<translation id="381892968844315516">Plugin VM-ը թույլատրված չէ այս սարքում: Դիմեք կազմակերպության սարքի ադմինիստրատորին։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="3819257035322786455">Պահուստավորում</translation>
 <translation id="3819261658055281761">Համակարգին չհաջողվեց պահել այս սարքի երկարաժամկետ API-ի մուտքի թոքենը:</translation>
 <translation id="3819800052061700452">&amp;Լիաէկրան</translation>
@@ -2346,7 +2333,6 @@
 <translation id="4056908315660577142">Դուք սպառել եք ձեր ծնողի կողմից <ph name="APP_NAME" /> հավելվածի համար սահմանված ժամանակը։ Վաղը կարող եք օգտագործել այն <ph name="TIME_LIMIT" />։</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Դիտել խանութում</translation>
-<translation id="4058647953897694817">Հաստատել Bluetooth-ի միջոցով</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Check Document Now</translation>
 <translation id="406070391919917862">Հետնաշերտի հավելվածներ</translation>
@@ -2355,7 +2341,6 @@
 <translation id="4068506536726151626">Այս էջը պարունակում է տարրեր հետևյալ կայքերից, որոնք հետագծում են ձեր տեղադրությունը՝</translation>
 <translation id="4068776064906523561">Պահված մատնահետքեր</translation>
 <translation id="407173827865827707">Սեղմելուց հետո</translation>
-<translation id="4073520450811433493">Կարգավորումների համաժամացում</translation>
 <translation id="4074900173531346617">Էլփոստի ստորագրման վկայագիր</translation>
 <translation id="407520071244661467">Մասշտաբ</translation>
 <translation id="4075639477629295004">Չհաջողվեց հեռարձակել <ph name="FILE_NAME" /> ֆայլը</translation>
@@ -2438,7 +2423,6 @@
 <translation id="4181841719683918333">Լեզուներ</translation>
 <translation id="4184885522552335684">Քաշեք՝ էկրանը տեղաշարժելու համար</translation>
 <translation id="4194570336751258953">Միացնել tap-to-click գործառույթը</translation>
-<translation id="4194595472342532425">Կազմաձևման խնդրի պատճառով չհաջողվեց կարգավորել Plugin VM-ը։ Կապվեք կազմակերպության սարքի ադմինիստրատորի հետ։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="4195643157523330669">Բացել նոր ներդիրով</translation>
 <translation id="4195814663415092787">Շարունակել աշխատանքը նույն տեղից</translation>
 <translation id="4198146608511578238">Սեղմած պահեք գործարկիչի պատկերակը՝ ձեր Google Օգնականի հետ խոսելու համար:</translation>
@@ -3053,7 +3037,7 @@
 <translation id="5086874064903147617">Վերականգնե՞լ կանխադրված գլխավոր էջը</translation>
 <translation id="5087249366037322692">Ավելացվել է այլ ծրագրի կողմից</translation>
 <translation id="5087580092889165836">Ավելացնել քարտ</translation>
-<translation id="5087926280563932024">Չհաջողվեց մուտք գործել։ Նորից փորձեք կամ վերաբեռնեք Chromebook-ը։</translation>
+<translation id="5087926280563932024">Չհաջողվեց մուտք գործել։ Փորձեք նորից կամ վերաբեռնեք Chromebook-ը։</translation>
 <translation id="5088172560898466307">Սերվերի խնամորդի անուն</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512՝ RSA գաղտնագրումով</translation>
 <translation id="5094721898978802975">Կապվել հարակից native հավելվածների հետ</translation>
@@ -3076,7 +3060,6 @@
 <translation id="5117930984404104619">Վերահսկել այլ ընդլայնումների աշխատանքի ռեժիմը, այդ թվում նաև այցելած URL-ները</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Ձեր կոշտ սկավառակը լցված է: Պահեք այլ տեղադրությունում կամ տեղ ազատեք կոշտ սկավառակի վրա:</translation>
-<translation id="5122384452788334261">Սարքի հիշողությունը սպառվում է։ Plugin VM-ն օգտագործելու համար խորհուրդ է տրվում ունենալ առնվազն <ph name="RECOMMENDED_SPACE" /> ազատ տարածք։ Տարածք ազատելու համար սարքի հիշողությունից ֆայլեր ջնջեք։</translation>
 <translation id="5123433949759960244">Բասկետբոլ</translation>
 <translation id="5125751979347152379">URL-ն անվավեր է:</translation>
 <translation id="5126611267288187364">Դիտել փոփոխությունները</translation>
@@ -3132,7 +3115,6 @@
 <translation id="520621735928254154">Վկայագիրը ներմուծելիս սխալ առաջացավ</translation>
 <translation id="5209307736170827035">Ձեր երեխայի Classroom-ի տվյալները կպաշտպանվեն։ <ph name="LINK_BEGIN" />Իմանալ ավելին<ph name="LINK_END" /></translation>
 <translation id="5209320130288484488">Սարքեր չեն գտնվել</translation>
-<translation id="5210990770352357081">Չհաջողվեց հեռացնել Plugin VM-ը</translation>
 <translation id="5213481667492808996">Տվյալների փոխանցման «<ph name="NAME" />» ծառայությունը պատրաստ է օգտագործման</translation>
 <translation id="5213891612754844763">Ցուցադրել միջնորդ սերվերի կարգավորումները</translation>
 <translation id="5215502535566372932">Ընտրեք երկիրը</translation>
@@ -3483,7 +3465,6 @@
 <translation id="5658415415603568799">Լրացուցիչ անվտանգության համար Smart Lock-ը ձեզ կխնդրի մուտքագրել գաղտնաբառը 20 ժամ անց։</translation>
 <translation id="5659593005791499971">Էլփոստ</translation>
 <translation id="5659833766619490117">Չհաջողվեց թարգմանել այս էջը</translation>
-<translation id="5660204307954428567">Զուգակցե՞լ <ph name="DEVICE_NAME" /> սարքի հետ</translation>
 <translation id="5662513737565158057">Փոխեք Լինուքսի հավելվածների աշխատանքի հետ կապված կարգավորումները։</translation>
 <translation id="5667546120811588575">Google Play-ի կարգավորում...</translation>
 <translation id="5669267381087807207">Ակտիվացում</translation>
@@ -3561,7 +3542,7 @@
 <translation id="577322787686508614">Կարդալու գործողությունը հետևյալ սարքում թույլատրված չէ՝ «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="5774295353725270860">Բացել «Ֆայլեր» ծրագիրը</translation>
 <translation id="577624874850706961">Cookie ֆայլերի որոնում</translation>
-<translation id="5776858208024364029">Ցուցադրվում է «<ph name="QUERY" />»-ի որոնման <ph name="NUMBER" /> արդյունք</translation>
+<translation id="5776858208024364029">«<ph name="QUERY" />» հարցման համար ցուցադրվում է <ph name="NUMBER" /> արդյունք</translation>
 <translation id="5777468213129569553">Բացել Chrome-ը</translation>
 <translation id="5778747455497889540">Ստորև ներկայացված է ձեր համակարգչի համար պատահական ստեղծված անվտանգության մոդուլի գաղտնաբառը՝</translation>
 <translation id="5780011244986845107">Ձեր ընտրած պանակը պարունակում է գաղտնի ֆայլեր: Ուզո՞ւմ եք <ph name="APP_NAME" /> հավելվածին այս պանակը կարդալու մշտական թույլտվություն տալ:</translation>
@@ -3613,7 +3594,7 @@
 <translation id="5849212445710944278">Արդեն ավելացված է</translation>
 <translation id="5849570051105887917">Տան ծառայությունների մատակարարի կոդը</translation>
 <translation id="5851868085455377790">Թողարկող</translation>
-<translation id="5852112051279473187">Ինչ-որ սխալ տեղի ունեցավ այս սարքը գրանցելիս: Նորից փորձեք կամ կապվեք ձեր աջակցման կենտրոնի հետ:</translation>
+<translation id="5852112051279473187">Ինչ-որ սխալ տեղի ունեցավ այս սարքը գրանցելիս: Փորձեք նորից կամ կապվեք ձեր աջակցման կենտրոնի հետ:</translation>
 <translation id="5852137567692933493">Վերագործարկում և Powerwash</translation>
 <translation id="5854912040170951372">Պիցցա</translation>
 <translation id="5855643921295613558">0,6 վայրկյան</translation>
@@ -3743,7 +3724,6 @@
 <translation id="6020431688553761150">Սերվերը ձեզ թույլ չի տալիս մուտք գործել այս պաշար:</translation>
 <translation id="6022526133015258832">Բացել լիաէկրան ռեժիմում</translation>
 <translation id="6022659036123304283">Անհատականացրեք Chrome դիտարկիչը</translation>
-<translation id="6022705094403139349">Պատրա՞ստ եք զուգակցելու անվտանգության բանալին</translation>
 <translation id="6023643151125006053">Այս սարքը (սերիական համար՝ <ph name="SERIAL_NUMBER" />) արգելափակվել է <ph name="SAML_DOMAIN" /> տիրույթի ադմինիստրատորի կողմից:</translation>
 <translation id="6025215716629925253">Սթեքի ժամանակագրություն</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB սարքը միացված է</translation>
@@ -3818,7 +3798,6 @@
 <translation id="6103681770816982672">Դուք անցնում եք մշակողների վարկածին</translation>
 <translation id="6104068876731806426">Google Հաշիվներ</translation>
 <translation id="6104311680260824317">Չհաջողվեց միացնել սարքը տիրույթին: Սերվերը չի աջակցում Kerberos գաղտնագրման նշված տեսակները։ Գաղտնագրման կարգավորումների համար ընտրեք «Այլ տարբերակներ»։</translation>
-<translation id="6106186653986077033">Plugin VM-ին արտոնագիր է անհրաժեշտ</translation>
 <translation id="6112294629795967147">Հպեք՝ չափը փոխելու համար</translation>
 <translation id="6112727384379533756">Ավելացնել տոմս</translation>
 <translation id="6112931163620622315">Ստուգեք հեռախոսը</translation>
@@ -4093,7 +4072,6 @@
 <translation id="6478248366783946499">Պահե՞լ վտանգավոր ֆայլը:</translation>
 <translation id="6483485061007832714">Բացեք ներբեռնումը</translation>
 <translation id="6483805311199035658"><ph name="FILE" /> ֆայլը բացվում է…</translation>
-<translation id="6485092675191826776">Plugin VM-ի արտոնագրի ժամկետը սպառվել է</translation>
 <translation id="6488384360522318064">Ընտրել լեզուն</translation>
 <translation id="648927581764831596">Ոչ մեկը մատչելի չէ</translation>
 <translation id="6490471652906364588">USB-C սարք (աջ միացք)</translation>
@@ -4288,7 +4266,6 @@
 <translation id="6770664076092644100">Հաստատել NFC-ի միջոցով</translation>
 <translation id="6771503742377376720">Հավաստագրման կենտրոն է</translation>
 <translation id="6772339735733515807">Կառավարեք ձեր ընդլայնումները</translation>
-<translation id="6774271858705413900">Սխալ առաջացավ։ Սպասեք մի քանի րոպե և նորից գործարկեք Plugin VM-ը։</translation>
 <translation id="6775163072363532304">Այստեղ կցուցադրվեն հասանելի սարքերը</translation>
 <translation id="6777817260680419853">Վերահասցեավորումն արգելափակված է</translation>
 <translation id="6778737459546443941">Ձեր ծնողը դեռ չի հաստատել</translation>
@@ -4366,7 +4343,6 @@
 <translation id="686664946474413495">Գունային ջերմություն</translation>
 <translation id="6871644448911473373">OCSP պատասխանիչ՝ <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Ձեր մուտքագրած գաղտնաբառը չի ընդունվում սերվերի կողմից:</translation>
-<translation id="6874170800191969835">Անցում <ph name="SEARCH_RESULT_TEXT" />։</translation>
 <translation id="6876155724392614295">Հեծանիվ</translation>
 <translation id="6876469544038980967">Օգտակար չէր</translation>
 <translation id="6878422606530379992">տվիչների օգտագործումը թույլատրված է</translation>
@@ -4620,7 +4596,6 @@
 <translation id="7207631048330366454">Որոնել հավելվածներ</translation>
 <translation id="7210499381659830293">Ընդլայնում-տպիչներ</translation>
 <translation id="7212097698621322584">Մուտքագրեք ձեր ընթացիկ PIN կոդը՝ այն փոխելու համար: Եթե չգիտեք ձեր PIN կոդը, զրոյացրեք անվտանգության բանալու կարգավորումները և նշեք նոր PIN կոդ։</translation>
-<translation id="721467499098558573">Անվտանգության բանալու վրա գտնվող կոճակը սեղմած պահեք առնվազն 5 վայրկյան</translation>
 <translation id="7216409898977639127">Բջջային օպերատոր</translation>
 <translation id="7216595297012131718">Դասավորեք լեզուներն ըստ ձեր նախընտրության</translation>
 <translation id="7220019174139618249">Չհաջողվեց գատնաբառերն արտահանել «<ph name="FOLDER" />» պանակ</translation>
@@ -4641,7 +4616,6 @@
 <translation id="7240339475467890413">Միանա՞լ նոր թեժ կետին</translation>
 <translation id="7240847845291869311">Ձեր երեխան ուզում է G Suite for Education-ի Google հաշիվ ավելացնել այս սարքում։ <ph name="LINK_BEGIN" />G Suite for Education-ի գաղտնիության ծանուցման<ph name="LINK_END" /> մեջ օգտատերերին և ծնողներին տրամադրվում է տեղեկություն այն մասին, թե ծառայությունն ինչպիսի տվյալներ է հավաքում և ինչպես է դրանք օգտագործում։</translation>
 <translation id="7241389281993241388">Սպասառուի վկայագիրը ներմուծելու համար մուտք գործեք <ph name="TOKEN_NAME" />:</translation>
-<translation id="7241443820034350811">Եթե անվտանգության բանալին ցանկում չկա, սեղմեք և 5 վայրկյան պահեք բանալու վրայի կոճակը։</translation>
 <translation id="7243632151880336635">Մաքրել և դուրս գալ</translation>
 <translation id="7243784282103630670">Չհաջողվեց նորացնել Լինուքսը։ Մենք կվերականգնենք զետեղարանը՝ օգտագործելով ձեր պահուստավորված տվյալները։</translation>
 <translation id="7245628041916450754"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (լավագույն)</translation>
@@ -4856,7 +4830,6 @@
 <translation id="7531779363494549572">Անցեք Կարգավորումներ &gt; Հավելվածներ և ծանուցումներ &gt; Ծանուցումներ։</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> հավելվածը չի արձագանքում: Ընտրեք «Ստիպողաբար փակել» տարբերակը:</translation>
 <translation id="7537451260744431038">Ձեր աշխատանքը բարելավելու նպատակով կայքերը չեն կարող օգտագործել քուքիներ, օրինակ, որպեսզի պահեն ձեր ընտրած ապրանքները զամբյուղում կամ հիշեն ձեր մուտքը հաշիվ։</translation>
-<translation id="7539856059004947393">Bluetooth անվտանգության բանալի</translation>
 <translation id="7540972813190816353">Թարմացումներն ստուգելիս սխալ տեղի ունեցավ` <ph name="ERROR" /></translation>
 <translation id="7541773865713908457"><ph name="ACTION_NAME" /> <ph name="APP_NAME" /> հավելվածում</translation>
 <translation id="7543104066686362383">Միացնել վրիպազերծման գործառույթները այս <ph name="IDS_SHORT_PRODUCT_NAME" /> սարքի վրա</translation>
@@ -4980,7 +4953,6 @@
 <translation id="7704305437604973648">Խնդիր</translation>
 <translation id="7704317875155739195">Ավտոմատ լրացնել որոնման հարցումները և URL-ները</translation>
 <translation id="7704521324619958564">Բացել Play Խանութը</translation>
-<translation id="7704628569466676326">Զուգակցեք անվտանգության բանալին այս սարքի հետ, որպեսզի կարողանաք այն օգտագործել ձեր հաշիվ մտնելու համար</translation>
 <translation id="7705276765467986571">Չհաջողվեց բեռնել էջանիշի մոդելը:</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7706963867324547089">Միացնել ընթերցման ռեժիմը</translation>
@@ -5069,7 +5041,6 @@
 <translation id="7817361223956157679">Էկրանի ստեղնաշարն առայժմ չի աշխատում Լինուքսի հավելվածներում</translation>
 <translation id="7818135753970109980">Ավելացվել է նոր թեմա (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA կամ RSN)</translation>
-<translation id="7819992334107904369">Chrome Sync</translation>
 <translation id="782057141565633384">Պատճենել տեսանյութի հասցեն</translation>
 <translation id="7824864914877854148">Չհաջողվեց ավարտել սխալի պատճառով</translation>
 <translation id="782590969421016895">Օգտագործել ընթացիկ էջերը</translation>
@@ -5223,7 +5194,6 @@
 <translation id="7988355189918024273">Միացնել մատչելիության գործառույթները</translation>
 <translation id="7991296728590311172">Switch Access-ի կարգավորումներ</translation>
 <translation id="7992202128769240372">Անցնում է թույլատրելի սահմանաչափը (<ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" />)</translation>
-<translation id="7994350303002908848">Չհաջողվեց տեղադրել Plugin VM-ը։ Նորից փորձեք կամ կապվեք կազմակերպության սարքի ադմինիստրատորի հետ։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="7994702968232966508">EAP եղանակ</translation>
 <translation id="7997826902155442747">Գործընթացների առաջնահերթություն</translation>
 <translation id="7999229196265990314">Ստեղծվել են հետևյալ ֆայլերը՝
@@ -5321,7 +5291,6 @@
 <translation id="8118488170956489476">Ձեր <ph name="BEGIN_LINK" />դիտարկիչը կառավարվում է<ph name="END_LINK" /> ձեր կազմակերպության կողմից</translation>
 <translation id="8118860139461251237">Կառավարել ձեր ներբեռնումները</translation>
 <translation id="811942868379260654"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE_1" />, <ph name="RECENT_PERMISSIONS_CHANGE_2" /> և այլ փոփոխություններ</translation>
-<translation id="8120715633374652536">Սարքի հիշողությունը սպառվում է։ Plugin VM-ն օգտագործելու համար անհրաժեշտ է առնվազն <ph name="MINIMUM_SPACE" /> տարածք, սակայն խորհուրդ է տրվում ունենալ <ph name="RECOMMENDED_SPACE" />-ից ավել տարածք։ Տարածք ազատելու համար սարքի հիշողությունից ֆայլեր ջնջեք։</translation>
 <translation id="8123590694679414600">Տվյալները գաղտնագրվել են ձեր համաժամացման անցաբառով
           <ph name="TIME" />-ին։ Գաղտնագրումը չի կիրառվում վճարման եղանակների և Google Pay-ի հասցեների համար։</translation>
 <translation id="81238879832906896">Դեղին ու սպիտակ ծաղիկ</translation>
@@ -5635,7 +5604,6 @@
 <translation id="8551388862522347954">Լիցենզիաներ</translation>
 <translation id="8553342806078037065">Կառավարել այլ օգտատերերի</translation>
 <translation id="8554899698005018844">Լեզու նշված չէ</translation>
-<translation id="8556135141412663091">Plugin VM-ն օգտագործելու համար թարմացրեք ձեր սարքը։</translation>
 <translation id="8557022314818157177">Հպեք անվտանգության բանալուն և պահեք, մինչև ձեր մատնահետքն ավելացվի:</translation>
 <translation id="855773602626431402">Կասեցվել է պաշտպանված միջավայրից դուրս փլագինի գործարկումն այս էջի վրա:</translation>
 <translation id="8557930019681227453">Մանիֆեստ</translation>
@@ -5708,7 +5676,6 @@
 <translation id="8655295600908251630">Վարկած</translation>
 <translation id="8655319619291175901">Ինչ-որ սխալ տեղի ունեցավ:</translation>
 <translation id="8655972064210167941">Մուտքը չհաջողվեց, քանի որ ձեր գաղտնաբառը չհաջողվեց հաստատել: Կապվեք ադմինիստրատորի հետ կամ նորից փորձեք:</translation>
-<translation id="8656619792520327915">Ավելացնել ևս մեկ Bluetooth անվտանգության բանալի</translation>
 <translation id="8656768832129462377">Չստուգել</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> հավելվածը կիսվում է ձեր էկրանով և ձայնով <ph name="TAB_NAME" />-ի հետ:</translation>
 <translation id="8661290697478713397">Բացել հղումը ինկոգ&amp;նիտո պատուհանով</translation>
@@ -5897,13 +5864,11 @@
 <translation id="8871696467337989339">Դուք օգտագործում եք հրամանատողի չաջակցվող դրոշ՝ <ph name="BAD_FLAG" />: Կայունությունն ու անվտանգությունը կխախտվեն:</translation>
 <translation id="8871974300055371298">Բովանդակության կարգավորումներ</translation>
 <translation id="8872155268274985541">Գտնվել է Kiosk հավելվածի արտաքին թարմացման մանիֆեստի սխալ ֆայլ: Չհաջողվեց թարմացնել Kiosk հավելվածը: Հեռացրեք USB հիշողությունը:</translation>
-<translation id="8872187374998143710">Վերագործարկեք սարքը՝ Plugin VM-ն օգտագործելու համար։</translation>
 <translation id="8872777911145321141">Հարցնել, երբ որևէ կայք ուզում է օգտագործել վիրտուալ իրականության ձեր սարքերն ու տվյալները (խորհուրդ է տրվում)</translation>
 <translation id="8874184842967597500">Կապ չկա</translation>
 <translation id="8875775314572167244">Ethernet-ի կարգավորումներ</translation>
 <translation id="8876307312329369159">Այս կարգավորումը հնարավոր չէ փոխել ցուցադրական աշխատաշրջանում:</translation>
 <translation id="8877448029301136595">[վերադաս գրացուցակ]</translation>
-<translation id="8878384954777710821">Plugin VM-ը հեռացվում է…</translation>
 <translation id="8879284080359814990">&amp;Ցույց տալ որպես ներդիր</translation>
 <translation id="8879921471468674457">Հիշել մուտքային տվյալները</translation>
 <translation id="8881020143150461183">Նորից փորձեք: Տեխնիկական աջակցման համար կապվեք <ph name="CARRIER_NAME" />-ի հետ։</translation>
@@ -5934,7 +5899,6 @@
 <translation id="8912810933860534797">Միացնել ավտոմատ որոնումը</translation>
 <translation id="8915370057835397490">Առաջարկը բեռնվում է</translation>
 <translation id="8916476537757519021">Ինկոգնիտո ռեժիմի ենթաշրջանակ՝ <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8921366488406707015">Անվտանգության բանալու հաստատում...</translation>
 <translation id="8922013791253848639">Միշտ թույլատրել գովազդն այս կայքում</translation>
 <translation id="8923880975836399332">Մուգ փիրուզագույն</translation>
 <translation id="8925458182817574960">&amp;Կարգավորումներ</translation>

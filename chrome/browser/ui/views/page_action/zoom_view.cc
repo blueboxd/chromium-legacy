@@ -33,7 +33,7 @@ void ZoomView::UpdateImpl() {
 }
 
 bool ZoomView::ShouldBeVisible(bool can_show_bubble) const {
-  if (delegate()->IsLocationBarUserInputInProgress())
+  if (delegate()->ShouldHidePageActionIcons())
     return false;
 
   if (can_show_bubble)

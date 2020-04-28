@@ -17,20 +17,21 @@ namespace content {
 
 class CONTENT_EXPORT SmsProviderGmsUserConsent : public SmsProvider {
  public:
-  SmsProviderGmsUserConsent(base::WeakPtr<RenderFrameHost> rfh);
+  SmsProviderGmsUserConsent();
   ~SmsProviderGmsUserConsent() override;
 
-  void Retrieve() override;
+  void Retrieve(RenderFrameHost* render_frame_host) override;
 
+  // Implements JNI method SmsUserConsentReceiver.Natives.onReceive().
   void OnReceive(JNIEnv*, jstring message);
 
+  // Implements JNI method SmsUserConsentReceiver.Natives.onTimeout().
   void OnTimeout(JNIEnv* env);
 
   base::android::ScopedJavaGlobalRef<jobject> GetSmsReceiverForTesting() const;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_sms_receiver_;
-  const base::WeakPtr<RenderFrameHost> render_frame_host_;
 
   DISALLOW_COPY_AND_ASSIGN(SmsProviderGmsUserConsent);
 };

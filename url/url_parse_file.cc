@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_file.h"
 #include "url/url_parse_internal.h"

@@ -441,8 +441,7 @@ void MagnificationController::OnMouseEvent(ui::MouseEvent* event) {
     }
 
     if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED &&
-        event->pointer_details().pointer_type !=
-            ui::EventPointerType::POINTER_TYPE_PEN) {
+        event->pointer_details().pointer_type != ui::EventPointerType::kPen) {
       OnMouseMove(event->root_location());
     }
   }

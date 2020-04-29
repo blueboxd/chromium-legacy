@@ -29,12 +29,15 @@ js_library("result_saver") {
 js_library("video_saver") {
   sources = [
     "async_writer.js",
-    "video_processor.js",
+    "mp4_video_processor.js",
+    "nop_video_processor.js",
     "video_saver.js",
+    "waitable_event.js",
   ]
   deps = [
     "..:intent",
     "../externs:w3c_fileapi",
     "../lib:comlink",
+    "../lib:ffmpeg",
   ]
 }

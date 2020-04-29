@@ -41,16 +41,16 @@ std::unique_ptr<ui::Event> PenEventProcessor::GenerateEvent(
   // We are now creating a fake mouse event with pointer type of pen from
   // the WM_POINTER message and then setting up an associated pointer
   // details in the MouseEvent which contains the pen's information.
-  ui::EventPointerType input_type = ui::EventPointerType::POINTER_TYPE_PEN;
+  ui::EventPointerType input_type = ui::EventPointerType::kPen;
   // For the pointerup event, the penFlags is not set to PEN_FLAG_ERASER, so we
   // have to check if previously the pointer type is an eraser.
   if (pointer_pen_info.penFlags & PEN_FLAG_ERASER) {
-    input_type = ui::EventPointerType::POINTER_TYPE_ERASER;
+    input_type = ui::EventPointerType::kEraser;
     DCHECK(!eraser_pointer_id_ || *eraser_pointer_id_ == mapped_pointer_id);
     eraser_pointer_id_ = mapped_pointer_id;
   } else if (eraser_pointer_id_ && *eraser_pointer_id_ == mapped_pointer_id &&
              (message == WM_POINTERUP || message == WM_NCPOINTERUP)) {
-    input_type = ui::EventPointerType::POINTER_TYPE_ERASER;
+    input_type = ui::EventPointerType::kEraser;
     eraser_pointer_id_.reset();
   }
 

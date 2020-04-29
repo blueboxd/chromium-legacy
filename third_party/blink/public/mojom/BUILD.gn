@@ -77,6 +77,7 @@ mojom("mojom_platform") {
     "input/gesture_event.mojom",
     "input/input_event.mojom",
     "input/input_event_result.mojom",
+    "input/pointer_lock_context.mojom",
     "input/pointer_lock_result.mojom",
     "input/scroll_direction.mojom",
     "input/touch_event.mojom",

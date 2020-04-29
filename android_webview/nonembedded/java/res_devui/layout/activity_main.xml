@@ -14,19 +14,12 @@
     <include
         android:layout_alignParentTop="true"
         layout="@layout/persistent_error_message"
-        android:id="@+id/webview_package_error"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <include
-        android:layout_below="@id/webview_package_error"
-        layout="@layout/persistent_error_message"
-        android:id="@+id/crash_consent_error"
+        android:id="@+id/main_error_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
     <FrameLayout
-        android:layout_below="@id/crash_consent_error"
+        android:layout_below="@id/main_error_view"
         android:layout_above="@id/bottom_divider"
         android:id="@+id/content_fragment"
         android:layout_width="match_parent"

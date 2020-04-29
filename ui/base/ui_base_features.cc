@@ -96,8 +96,14 @@ const base::Feature kCompositorThreadedScrollbarScrolling = {
 
 // Enables the use of a touch fling curve that is based on the behavior of
 // native apps on Windows.
-const base::Feature kExperimentalFlingAnimation{
-    "ExperimentalFlingAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kExperimentalFlingAnimation {
+  "ExperimentalFlingAnimation",
+#if defined(OS_WIN) || defined(OS_LINUX)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 #if defined(OS_WIN)
 const base::Feature kElasticOverscrollWin = {"ElasticOverscrollWin",

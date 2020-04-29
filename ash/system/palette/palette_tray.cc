@@ -159,8 +159,7 @@ class StylusEventHandler : public ui::EventHandler {
 
   // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override {
-    if (event->pointer_details().pointer_type ==
-        ui::EventPointerType::POINTER_TYPE_PEN) {
+    if (event->pointer_details().pointer_type == ui::EventPointerType::kPen) {
       palette_tray_->OnStylusEvent(*event);
     }
   }

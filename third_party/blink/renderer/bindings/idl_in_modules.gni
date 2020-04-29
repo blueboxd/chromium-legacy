@@ -9,7 +9,6 @@ import("//third_party/blink/renderer/config.gni")
 # modules/modules_idl_files.gni in addition to this list.
 static_idl_files_in_modules = get_path_info(
         [
-          "//third_party/blink/renderer/modules/accessibility/testing/internals_accessibility.idl",
           "//third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.idl",
           "//third_party/blink/renderer/modules/animationworklet/css_animation_worklet.idl",
           "//third_party/blink/renderer/modules/animationworklet/worklet_animation.idl",
@@ -359,7 +358,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/mediastream/navigator_media_stream.idl",
           "//third_party/blink/renderer/modules/mediastream/navigator_user_media.idl",
           "//third_party/blink/renderer/modules/mediastream/overconstrained_error.idl",
-          "//third_party/blink/renderer/modules/mediastream/testing/internals_media_stream.idl",
           "//third_party/blink/renderer/modules/mediastream/window_media_stream.idl",
           "//third_party/blink/renderer/modules/native_file_system/choose_file_system_entries_options.idl",
           "//third_party/blink/renderer/modules/native_file_system/choose_file_system_entries_options_accepts.idl",
@@ -386,7 +384,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils.idl",
           "//third_party/blink/renderer/modules/netinfo/navigator_network_information.idl",
           "//third_party/blink/renderer/modules/netinfo/network_information.idl",
-          "//third_party/blink/renderer/modules/netinfo/testing/internals_net_info.idl",
           "//third_party/blink/renderer/modules/netinfo/worker_navigator_network_information.idl",
           "//third_party/blink/renderer/modules/nfc/ndef_message.idl",
           "//third_party/blink/renderer/modules/nfc/ndef_message_init.idl",
@@ -513,8 +510,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/peerconnection/rtc_stats_response.idl",
           "//third_party/blink/renderer/modules/peerconnection/rtc_track_event.idl",
           "//third_party/blink/renderer/modules/peerconnection/rtc_track_event_init.idl",
-          "//third_party/blink/renderer/modules/peerconnection/testing/internals_rtc_certificate.idl",
-          "//third_party/blink/renderer/modules/peerconnection/testing/internals_rtc_peer_connection.idl",
           "//third_party/blink/renderer/modules/permissions/clipboard_permission_descriptor.idl",
           "//third_party/blink/renderer/modules/permissions/midi_permission_descriptor.idl",
           "//third_party/blink/renderer/modules/permissions/navigator_permissions.idl",
@@ -523,7 +518,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/permissions/permissions.idl",
           "//third_party/blink/renderer/modules/permissions/camera_device_permission_descriptor.idl",
           "//third_party/blink/renderer/modules/permissions/push_permission_descriptor.idl",
-          "//third_party/blink/renderer/modules/permissions/testing/internals_permission.idl",
           "//third_party/blink/renderer/modules/permissions/worker_navigator_permissions.idl",
           "//third_party/blink/renderer/modules/picture_in_picture/document_picture_in_picture.idl",
           "//third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.idl",
@@ -611,7 +605,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/service_worker/service_worker_container.idl",
           "//third_party/blink/renderer/modules/service_worker/service_worker_global_scope.idl",
           "//third_party/blink/renderer/modules/service_worker/service_worker_registration.idl",
-          "//third_party/blink/renderer/modules/service_worker/testing/internals_service_worker.idl",
           "//third_party/blink/renderer/modules/service_worker/window_client.idl",
           "//third_party/blink/renderer/modules/shapedetection/barcode_detector.idl",
           "//third_party/blink/renderer/modules/shapedetection/barcode_detector_options.idl",
@@ -639,7 +632,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/speech/speech_synthesis_event_init.idl",
           "//third_party/blink/renderer/modules/speech/speech_synthesis_utterance.idl",
           "//third_party/blink/renderer/modules/speech/speech_synthesis_voice.idl",
-          "//third_party/blink/renderer/modules/speech/testing/internals_speech_synthesis.idl",
           "//third_party/blink/renderer/modules/speech/window_speech.idl",
           "//third_party/blink/renderer/modules/speech/window_speech_synthesis.idl",
           "//third_party/blink/renderer/modules/srcobject/html_media_element_src_object.idl",
@@ -648,7 +640,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/storage/storage_event_init.idl",
           "//third_party/blink/renderer/modules/storage/window_storage.idl",
           "//third_party/blink/renderer/modules/vibration/navigator_vibration.idl",
-          "//third_party/blink/renderer/modules/vibration/testing/internals_vibration.idl",
           "//third_party/blink/renderer/modules/video_rvfc/html_video_element_request_video_frame_callback.idl",
           "//third_party/blink/renderer/modules/video_rvfc/video_frame_metadata.idl",
           "//third_party/blink/renderer/modules/video_rvfc/video_frame_request_callback.idl",
@@ -718,7 +709,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/webaudio/script_processor_node.idl",
           "//third_party/blink/renderer/modules/webaudio/stereo_panner_node.idl",
           "//third_party/blink/renderer/modules/webaudio/stereo_panner_options.idl",
-          "//third_party/blink/renderer/modules/webaudio/testing/internals_web_audio.idl",
           "//third_party/blink/renderer/modules/webaudio/wave_shaper_node.idl",
           "//third_party/blink/renderer/modules/webaudio/wave_shaper_options.idl",
           "//third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.idl",
@@ -1029,3 +1019,18 @@ if (support_webgl2_compute_context) {
           ],
           "abspath")
 }
+
+static_idl_files_in_modules_for_testing = get_path_info(
+        [
+          "//third_party/blink/renderer/modules/accessibility/testing/internals_accessibility.idl",
+          "//third_party/blink/renderer/modules/mediastream/testing/internals_media_stream.idl",
+          "//third_party/blink/renderer/modules/netinfo/testing/internals_net_info.idl",
+          "//third_party/blink/renderer/modules/peerconnection/testing/internals_rtc_certificate.idl",
+          "//third_party/blink/renderer/modules/peerconnection/testing/internals_rtc_peer_connection.idl",
+          "//third_party/blink/renderer/modules/permissions/testing/internals_permission.idl",
+          "//third_party/blink/renderer/modules/service_worker/testing/internals_service_worker.idl",
+          "//third_party/blink/renderer/modules/speech/testing/internals_speech_synthesis.idl",
+          "//third_party/blink/renderer/modules/vibration/testing/internals_vibration.idl",
+          "//third_party/blink/renderer/modules/webaudio/testing/internals_web_audio.idl",
+        ],
+        "abspath")

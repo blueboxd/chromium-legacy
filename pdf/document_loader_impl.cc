@@ -10,7 +10,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
 #include "pdf/url_loader_wrapper.h"

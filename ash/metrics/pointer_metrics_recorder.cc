@@ -44,7 +44,7 @@ DownEventMetric2 FindCombination(int destination,
 }
 
 void RecordUMA(ui::EventPointerType type, ui::EventTarget* event_target) {
-  DCHECK_NE(type, ui::EventPointerType::POINTER_TYPE_UNKNOWN);
+  DCHECK_NE(type, ui::EventPointerType::kUnknown);
   views::Widget* target = views::Widget::GetTopLevelWidgetForNativeView(
       static_cast<aura::Window*>(event_target));
   DownEventFormFactor form_factor = DownEventFormFactor::kClamshell;
@@ -61,18 +61,18 @@ void RecordUMA(ui::EventPointerType type, ui::EventTarget* event_target) {
 
   DownEventSource input_type = DownEventSource::kUnknown;
   switch (type) {
-    case ui::EventPointerType::POINTER_TYPE_UNKNOWN:
+    case ui::EventPointerType::kUnknown:
       return;
-    case ui::EventPointerType::POINTER_TYPE_MOUSE:
+    case ui::EventPointerType::kMouse:
       input_type = DownEventSource::kMouse;
       break;
-    case ui::EventPointerType::POINTER_TYPE_PEN:
+    case ui::EventPointerType::kPen:
       input_type = DownEventSource::kStylus;
       break;
-    case ui::EventPointerType::POINTER_TYPE_TOUCH:
+    case ui::EventPointerType::kTouch:
       input_type = DownEventSource::kTouch;
       break;
-    case ui::EventPointerType::POINTER_TYPE_ERASER:
+    case ui::EventPointerType::kEraser:
       input_type = DownEventSource::kStylus;
       break;
   }

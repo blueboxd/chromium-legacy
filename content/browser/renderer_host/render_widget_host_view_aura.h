@@ -672,12 +672,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   uint32_t latest_capture_sequence_number_ = 0u;
 
   // The pointer type of the most recent gesture/mouse/touch event.
-  ui::EventPointerType last_pointer_type_ =
-      ui::EventPointerType::POINTER_TYPE_UNKNOWN;
+  ui::EventPointerType last_pointer_type_ = ui::EventPointerType::kUnknown;
   // The pointer type that caused the most recent focus. This value will be
   // incorrect if the focus was not triggered by a user gesture.
   ui::EventPointerType last_pointer_type_before_focus_ =
-      ui::EventPointerType::POINTER_TYPE_UNKNOWN;
+      ui::EventPointerType::kUnknown;
 
   bool is_first_navigation_ = true;
   viz::LocalSurfaceIdAllocation inset_surface_id_allocation_;

@@ -974,9 +974,12 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
       extension_urls::IsWebstoreUpdateUrl(fetch_data->url)
           ? GetWebstoreVerifierFormat(false)
           : crx_format_requirement_;
+  CRXFileInfo crx_info(crx_path, required_format);
+  crx_info.expected_hash = package_hash;
+  crx_info.extension_id = id;
+  crx_info.expected_version = version;
   delegate_->OnExtensionDownloadFinished(
-      CRXFileInfo(id, crx_path, package_hash, required_format),
-      file_ownership_passed, url, version, ping_results_[id], request_ids,
+      crx_info, file_ownership_passed, url, ping_results_[id], request_ids,
       from_cache ? base::BindRepeating(&ExtensionDownloader::CacheInstallDone,
                                        weak_ptr_factory_.GetWeakPtr(),
                                        base::Passed(&fetch_data))

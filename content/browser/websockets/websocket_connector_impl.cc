@@ -18,11 +18,11 @@ WebSocketConnectorImpl::WebSocketConnectorImpl(
     int process_id,
     int frame_id,
     const url::Origin& origin,
-    const net::NetworkIsolationKey& network_isolation_key)
+    const net::IsolationInfo& isolation_info)
     : process_id_(process_id),
       frame_id_(frame_id),
       origin_(origin),
-      network_isolation_key_(network_isolation_key) {}
+      isolation_info_(isolation_info) {}
 
 WebSocketConnectorImpl::~WebSocketConnectorImpl() = default;
 
@@ -47,7 +47,7 @@ void WebSocketConnectorImpl::Connect(
     GetContentClient()->browser()->CreateWebSocket(
         frame,
         base::BindOnce(ConnectCalledByContentBrowserClient, requested_protocols,
-                       site_for_cookies, network_isolation_key_, process_id_,
+                       site_for_cookies, isolation_info_, process_id_,
                        frame_id_, origin_, options),
         url, site_for_cookies, user_agent, std::move(handshake_client));
     return;
@@ -58,7 +58,7 @@ void WebSocketConnectorImpl::Connect(
         net::HttpRequestHeaders::kUserAgent, *user_agent));
   }
   process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
-      url, requested_protocols, site_for_cookies, network_isolation_key_,
+      url, requested_protocols, site_for_cookies, isolation_info_,
       std::move(headers), process_id_, frame_id_, origin_, options,
       std::move(handshake_client), mojo::NullRemote(), mojo::NullRemote());
 }
@@ -66,7 +66,7 @@ void WebSocketConnectorImpl::Connect(
 void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
     const std::vector<std::string>& requested_protocols,
     const net::SiteForCookies& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const net::IsolationInfo& isolation_info,
     int process_id,
     int frame_id,
     const url::Origin& origin,
@@ -84,7 +84,7 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
     return;
   }
   process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
-      url, requested_protocols, site_for_cookies, network_isolation_key,
+      url, requested_protocols, site_for_cookies, isolation_info,
       std::move(additional_headers), process_id, frame_id, origin, options,
       std::move(handshake_client), std::move(auth_handler),
       std::move(trusted_header_client));

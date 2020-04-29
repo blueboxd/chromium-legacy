@@ -828,6 +828,17 @@ void AutofillMetrics::LogLocalCardMigrationBubbleUserInteractionMetric(
 }
 
 // static
+void AutofillMetrics::LogLocalCardMigrationBubbleResultMetric(
+    LocalCardMigrationBubbleResultMetric metric,
+    bool is_reshow) {
+  DCHECK_LT(metric, NUM_LOCAL_CARD_MIGRATION_BUBBLE_RESULT_METRICS);
+  std::string suffix = is_reshow ? ".Reshows" : ".FirstShow";
+  base::UmaHistogramEnumeration(
+      "Autofill.LocalCardMigrationBubbleResult" + suffix, metric,
+      NUM_LOCAL_CARD_MIGRATION_BUBBLE_RESULT_METRICS);
+}
+
+// static
 void AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
     LocalCardMigrationDialogOfferMetric metric) {
   DCHECK_LT(metric, NUM_LOCAL_CARD_MIGRATION_DIALOG_OFFER_METRICS);

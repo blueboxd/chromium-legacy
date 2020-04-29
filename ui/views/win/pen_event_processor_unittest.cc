@@ -245,7 +245,7 @@ TEST(PenProcessorTest, PenEraserFlagDMEnabled) {
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsTouchEvent());
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, event->AsTouchEvent()->type());
-  EXPECT_EQ(ui::EventPointerType::POINTER_TYPE_ERASER,
+  EXPECT_EQ(ui::EventPointerType::kEraser,
             event->AsTouchEvent()->pointer_details().pointer_type);
 
   pen_info.pointerInfo.pointerFlags = POINTER_FLAG_UP;
@@ -255,7 +255,7 @@ TEST(PenProcessorTest, PenEraserFlagDMEnabled) {
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsTouchEvent());
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, event->AsTouchEvent()->type());
-  EXPECT_EQ(ui::EventPointerType::POINTER_TYPE_ERASER,
+  EXPECT_EQ(ui::EventPointerType::kEraser,
             event->AsTouchEvent()->pointer_details().pointer_type);
 }
 

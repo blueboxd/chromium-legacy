@@ -41,7 +41,8 @@ const char kOAuth2IssueTokenBodyFormat[] =
     "&scope=%s"
     "&client_id=%s"
     "&origin=%s"
-    "&lib_ver=%s";
+    "&lib_ver=%s"
+    "&release_channel=%s";
 const char kOAuth2IssueTokenBodyFormatDeviceIdAddendum[] =
     "&device_id=%s&device_type=chrome";
 const char kOAuth2IssueTokenBodyFormatConsentResultAddendum[] =
@@ -147,6 +148,7 @@ OAuth2MintTokenFlow::Parameters::Parameters(
     const std::string& device_id,
     const std::string& consent_result,
     const std::string& version,
+    const std::string& channel,
     Mode mode_arg)
     : extension_id(eid),
       client_id(cid),
@@ -154,6 +156,7 @@ OAuth2MintTokenFlow::Parameters::Parameters(
       device_id(device_id),
       consent_result(consent_result),
       version(version),
+      channel(channel),
       mode(mode_arg) {}
 
 OAuth2MintTokenFlow::Parameters::Parameters(const Parameters& other) = default;
@@ -219,7 +222,8 @@ std::string OAuth2MintTokenFlow::CreateApiCallBody() {
           .c_str(),
       net::EscapeUrlEncodedData(parameters_.client_id, true).c_str(),
       net::EscapeUrlEncodedData(parameters_.extension_id, true).c_str(),
-      net::EscapeUrlEncodedData(parameters_.version, true).c_str());
+      net::EscapeUrlEncodedData(parameters_.version, true).c_str(),
+      net::EscapeUrlEncodedData(parameters_.channel, true).c_str());
   if (!parameters_.device_id.empty()) {
     body.append(base::StringPrintf(
         kOAuth2IssueTokenBodyFormatDeviceIdAddendum,

@@ -4,5 +4,6 @@
 
 typemaps = [
   "//ui/events/mojom/event.typemap",
+  "//ui/events/mojom/event_constants.typemap",
   "//ui/events/mojom/scroll_granularity.typemap",
 ]

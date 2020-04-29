@@ -242,7 +242,7 @@ bool ExtensionDevToolsClientHost::Attach() {
 
 ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
   if (infobar_)
-    infobar_->Remove(this);
+    infobar_->Unregister(this);
   g_attached_client_hosts.Get().erase(this);
 }
 

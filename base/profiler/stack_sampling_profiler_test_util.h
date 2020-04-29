@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/native_library.h"
 #include "base/profiler/frame.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
+#include "base/profiler/stack_sampler.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 
@@ -91,6 +93,16 @@ class UnwindScenario {
 // any special unwinding setup, to exercise the "normal" unwind scenario.
 FunctionAddressRange CallWithPlainFunction(OnceClosure wait_for_sample);
 
+// Calls into |wait_for_sample| after using alloca(), to test unwinding with a
+// frame pointer.
+FunctionAddressRange CallWithAlloca(OnceClosure wait_for_sample);
+
+// Calls into |wait_for_sample| through a function within another library, to
+// test unwinding through multiple modules and scenarios involving unloaded
+// modules.
+FunctionAddressRange CallThroughOtherLibrary(NativeLibrary library,
+                                             OnceClosure wait_for_sample);
+
 // The callback to perform profiling on the provided thread.
 using ProfileCallback = OnceCallback<void(SamplingProfilerThreadToken)>;
 
@@ -121,6 +133,12 @@ void ExpectStackContains(const std::vector<Frame>& stack,
 void ExpectStackDoesNotContain(
     const std::vector<Frame>& stack,
     const std::vector<FunctionAddressRange>& functions);
+
+// Loads the other library, which defines a function to be called in the
+// WITH_OTHER_LIBRARY configuration.
+NativeLibrary LoadOtherLibrary();
+
+uintptr_t GetAddressInOtherLibrary(NativeLibrary library);
 
 }  // namespace base
 

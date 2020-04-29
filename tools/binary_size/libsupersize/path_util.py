@@ -12,9 +12,13 @@ import os
 _STATUS_DETECTED = 1
 _STATUS_VERIFIED = 2
 
-SRC_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
-    os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                 os.pardir, os.pardir, os.pardir)))
+# Src root of SuperSize being run. Not to be confused with src root of the input
+# binary being archived.
+TOOLS_SRC_ROOT = os.environ.get(
+    'CHECKOUT_SOURCE_ROOT',
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__), os.pardir, os.pardir, os.pardir)))
 
 _SAMPLE_TOOL_SUFFIX = 'readelf'
 
@@ -93,7 +97,7 @@ class ToolPrefixFinder(_PathFinder):
     if output_directory:
       ret = None
       if self.IsLld():
-        ret = os.path.join(SRC_ROOT, 'third_party', 'llvm-build',
+        ret = os.path.join(TOOLS_SRC_ROOT, 'third_party', 'llvm-build',
                            'Release+Asserts', 'bin', 'llvm-')
       else:
         # Auto-detect from build_vars.txt
@@ -137,16 +141,42 @@ def _LoadBuildVars(output_directory):
   return dict()
 
 
-def FromSrcRootRelative(path):
-  ret = os.path.relpath(os.path.join(SRC_ROOT, path))
+def GetSrcRootFromOutputDirectory(output_directory):
+  """Returns the source root directory from output directory.
+
+  Typical case: '/.../chromium/src/out/Release' -> '/.../chromium/src/'.
+  Heuristic: Look for .gn in the current and successive parent directories.
+
+  Args:
+    output_directory: Starting point of search. This may be relative to CWD.
+
+  Returns:
+    Source root directory.
+  """
+  if output_directory:
+    cur_dir = os.path.abspath(output_directory)
+    while True:
+      gn_path = os.path.join(cur_dir, '.gn')
+      if os.path.isfile(gn_path):
+        return cur_dir
+      cur_dir, prev_dir = os.path.dirname(cur_dir), cur_dir
+      if cur_dir == prev_dir:  # Reached root.
+        break
+  logging.warning('Cannot deduce src root from output directory. Falling back '
+                  'to tools src root.')
+  return TOOLS_SRC_ROOT
+
+
+def FromToolsSrcRootRelative(path):
+  ret = os.path.relpath(os.path.join(TOOLS_SRC_ROOT, path))
   # Need to maintain a trailing /.
   if path.endswith(os.path.sep):
     ret += os.path.sep
   return ret
 
 
-def ToSrcRootRelative(path):
-  ret = os.path.relpath(path, SRC_ROOT)
+def ToToolsSrcRootRelative(path):
+  ret = os.path.relpath(path, TOOLS_SRC_ROOT)
   # Need to maintain a trailing /.
   if path.endswith(os.path.sep):
     ret += os.path.sep
@@ -164,14 +194,14 @@ def GetNmPath(tool_prefix):
 
 
 def GetApkAnalyzerPath():
-  default_path = FromSrcRootRelative(
+  default_path = FromToolsSrcRootRelative(
       os.path.join('third_party', 'android_sdk', 'public', 'cmdline-tools',
                    'latest', 'bin', 'apkanalyzer'))
   return os.environ.get('APK_ANALYZER', default_path)
 
 
 def GetJavaHome():
-  return FromSrcRootRelative(os.path.join('third_party', 'jdk', 'current'))
+  return FromToolsSrcRootRelative(os.path.join('third_party', 'jdk', 'current'))
 
 
 def GetObjDumpPath(tool_prefix):

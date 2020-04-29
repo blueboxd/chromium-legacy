@@ -20,8 +20,14 @@ IOSTrustedVaultClient::~IOSTrustedVaultClient() = default;
 std::unique_ptr<IOSTrustedVaultClient::Subscription>
 IOSTrustedVaultClient::AddKeysChangedObserver(
     const base::RepeatingClosure& closure) {
-  // TODO(crbug.com/1019685): observers need to be implemented.
-  return nullptr;
+  ios::ChromeBrowserProvider* browser_provider =
+      ios::GetChromeBrowserProvider();
+  ios::ChromeTrustedVaultService* trusted_vault_service =
+      browser_provider->GetChromeTrustedVaultService();
+  if (!trusted_vault_service) {
+    return nullptr;
+  }
+  return trusted_vault_service->AddKeysChangedObserver(closure);
 }
 
 void IOSTrustedVaultClient::FetchKeys(
@@ -36,6 +42,7 @@ void IOSTrustedVaultClient::FetchKeys(
       identity_service->GetIdentityWithGaiaID(account_info.gaia);
   ios::ChromeTrustedVaultService* trusted_vault_service =
       browser_provider->GetChromeTrustedVaultService();
+  DCHECK(trusted_vault_service);
   trusted_vault_service->FetchKeys(identity, std::move(callback));
 }
 

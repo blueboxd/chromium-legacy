@@ -173,6 +173,7 @@
 <translation id="122082903575839559">Алгоритъм за подписа на сертификата</translation>
 <translation id="1221024147024329929">PKCS 1 MD2 с RSA шифроване</translation>
 <translation id="1221825588892235038">Само избраното</translation>
+<translation id="1223484782328004593">Изисква се лиценз за <ph name="APP_NAME" /></translation>
 <translation id="1223853788495130632">Администраторът ви препоръчва конкретна стойност за тази настройка.</translation>
 <translation id="1224275271335624810">Най-бърза</translation>
 <translation id="1225177025209879837">Заявката се обработва...</translation>
@@ -211,6 +212,7 @@
 <translation id="1272978324304772054">Този профил на потребител не принадлежи на домейна, с който е записано устройството.  Ако искате да регистрирате устройството с друг домейн, първо трябва да преминете през процеса на възстановяване.</translation>
 <translation id="1274977772557788323">Настройки за хранилището на Adobe Flash Player</translation>
 <translation id="1274997165432133392">„Бисквитки“ и други данни за сайтове</translation>
+<translation id="1276994519141842946">Деинсталирането на <ph name="APP_NAME" /> не бе успешно</translation>
 <translation id="1280820357415527819">Търсят се мобилни мрежи</translation>
 <translation id="1280965841156951489">Редактиране на файловете</translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
@@ -319,6 +321,7 @@
 <translation id="1426870617281699524">Кликнете върху „Нов опит“ и приемете подканата на компютъра си</translation>
 <translation id="1427269577154060167">Държава</translation>
 <translation id="142758023928848008">Оставащите клавиши да се активират (за изпълняване на клавишни комбинации чрез последователно натискане)</translation>
+<translation id="142765311413773645">Лицензът за <ph name="APP_NAME" /> е изтекъл</translation>
 <translation id="1429300045468813835">Всичко бе изчистено</translation>
 <translation id="143027896309062157">Четене и промяна на всичките ви данни на компютъра и в посещаваните от вас уебсайтове</translation>
 <translation id="1430915738399379752">Печат</translation>
@@ -1003,6 +1006,7 @@
 <translation id="2325444234681128157">Запомняне на паролата</translation>
 <translation id="2326931316514688470">&amp;Презареждане на приложението</translation>
 <translation id="2327492829706409234">Активиране на приложението</translation>
+<translation id="2328561734797404498">Рестартирайте устройството си, за да използвате <ph name="APP_NAME" />.</translation>
 <translation id="2329597144923131178">Влезте в профила си и получете своите отметки, история, пароли и др. настройки на всички у-ва.</translation>
 <translation id="2332131598580221120">Преглед в магазина</translation>
 <translation id="2332192922827071008">Отваряне на предпочитанията</translation>
@@ -1261,6 +1265,7 @@
 <translation id="2665717534925640469">Тази страница сега е на цял екран и е деактивирала курсора на мишката ви.</translation>
 <translation id="2665919335226618153">Ужас! При форматирането възникна грешка.</translation>
 <translation id="2667463864537187133">Управление на проверката на правописа</translation>
+<translation id="2669241540496514785">Отварянето на <ph name="APP_NAME" /> не бе успешно</translation>
 <translation id="2670102641511624474"><ph name="APP_NAME" /> споделя раздел в Chrome.</translation>
 <translation id="2670429602441959756">Тази страница съдържа функции, които още не се поддържат във VR. Режимът се затваря...</translation>
 <translation id="2671451824761031126">Отметките и настройките ви са готови</translation>
@@ -1337,6 +1342,7 @@
 <translation id="2757338480560142065">Уверете се, че запазваната парола съвпада с тази за <ph name="WEBSITE" /></translation>
 <translation id="2762441749940182211">Достъпът до камерата е блокиран</translation>
 <translation id="2765217105034171413">Малък</translation>
+<translation id="2766091842833763951">Настройването на <ph name="APP_NAME" /> не бе успешно поради проблем с конфигурирането. Свържете се с администратора на устройства за организацията си. Код на грешката: <ph name="ERROR_CODE" />.</translation>
 <translation id="2766161002040448006">Питане на родител</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> ще може да редактира <ph name="FILENAME" />, докато не затворите всички раздели със сайта</translation>
 <translation id="276969039800130567">Влезли сте като <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2420,6 +2426,7 @@
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Езици</translation>
 <translation id="4184885522552335684">Преместете екраните с плъзгане, за да ги пренаредите</translation>
+<translation id="4187424053537113647"><ph name="APP_NAME" /> се настройва...</translation>
 <translation id="4194570336751258953">Активиране на кликване с докосване</translation>
 <translation id="4195643157523330669">Отваряне в нов раздел</translation>
 <translation id="4195814663415092787">Продължаване оттам, откъдето сте прекъснали</translation>
@@ -2538,6 +2545,7 @@
 <translation id="4379281552162875326">Да се деинсталира ли <ph name="APP_NAME" />?</translation>
 <translation id="4380648069038809855">Влязохте в режима на цял екран</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" /> и още 1 профил}other{<ph name="EMAIL" /> и още <ph name="EXTRA_ACCOUNTS" /> профила}}</translation>
+<translation id="43829217466934313">Използването на <ph name="APP_NAME" /> не е разрешено на това устройство. Свържете се с администратора на устройства за организацията си. Код на грешката: <ph name="ERROR_CODE" />.</translation>
 <translation id="4384312707950789900">Добавяне към предпочитаните</translation>
 <translation id="4384652540891215547">Активиране на разширението</translation>
 <translation id="438503109373656455">Светкавица</translation>
@@ -2870,6 +2878,7 @@
 <translation id="4863769717153320198">Разделителната способност е <ph name="WIDTH" /> x <ph name="HEIGHT" /> (по подразбиране)</translation>
 <translation id="4864369630010738180">Извършва се влизане...</translation>
 <translation id="486635084936119914">Автоматично отваряне на определени файлови типове след изтегляне</translation>
+<translation id="4869289251183233431">Мястото в хранилището на устройството ви е малко. За използването на <ph name="APP_NAME" /> e необходимо свободно място от поне <ph name="MINIMUM_SPACE" />. Препоръчва се да разполагате с над <ph name="RECOMMENDED_SPACE" />. За да освободите място, изтрийте файлове от устройството.</translation>
 <translation id="48704129375571883">Добавяне на допълнителни функции</translation>
 <translation id="4870758487381879312">Въведете паролата, предоставена от администратора, за да получите информация за конфигуриране</translation>
 <translation id="4870903493621965035">Няма сдвоени устройства</translation>
@@ -2922,6 +2931,7 @@
 <translation id="4920887663447894854">Следните сайтове бяха блокирани от проследяване на местоположението ви на тази страница:</translation>
 <translation id="49226369361073053">{0,plural, =0{Актуализирайте устройството сега}=1{Актуализирайте устройството в рамките на 1 секунда}other{Актуализирайте устройството в рамките на # секунди}}</translation>
 <translation id="492299503953721473">Премахване на приложенията за Android</translation>
+<translation id="492363500327720082"><ph name="APP_NAME" /> се деинсталира...</translation>
 <translation id="4924352752174756392">12x</translation>
 <translation id="4925320384394644410">Портовете ще се покажат тук</translation>
 <translation id="4925542575807923399">Този администратор изисква профилът му да е първият, в който да се влезе, при сесия с централизиран вход.</translation>
@@ -3484,6 +3494,7 @@
 <translation id="5692875591060376599">Избраният файл е неизвестен и може да бъде опасен. Искате ли да го изпратите до програмата на Google за разширена защита, за да бъде сканиран?</translation>
 <translation id="569425414730375234">Текущата сесия в режим „инкогнито“: <ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /></translation>
 <translation id="5696143504434933566">Подаване на сигнал за злоупотреба за <ph name="EXTENSION_NAME" /></translation>
+<translation id="5696177755977520104">Синхронизиране на настройките за Chrome OS</translation>
 <translation id="5696679855467848181">Понастоящем използван PPD файл: <ph name="PPD_NAME" /></translation>
 <translation id="570043786759263127">Приложения и услуги в Google Play</translation>
 <translation id="5700836101007545240">Опцията за добавяне на връзка е деактивирана от администратора ви</translation>
@@ -3794,6 +3805,7 @@
 <translation id="6103681770816982672">Предупреждение: превключвате към канала за програмисти</translation>
 <translation id="6104068876731806426">Профили в Google</translation>
 <translation id="6104311680260824317">Устройството не може да се присъедини към домейна. Сървърът не поддържа посочените типове шифроване в Kerberos. Вижте „Още опции“ за настройки на шифроването.</translation>
+<translation id="6105994589138235234">Синхронизиране в браузъра Chrome</translation>
 <translation id="6112294629795967147">Докоснете за преоразмеряване</translation>
 <translation id="6112727384379533756">Добавяне на пропуск</translation>
 <translation id="6112931163620622315">Проверете телефона си</translation>
@@ -3831,6 +3843,7 @@
 <translation id="6155141482566063812">Раздел на заден план споделя екрана ви</translation>
 <translation id="6156323911414505561">Показване на лентата на отметките</translation>
 <translation id="6156863943908443225">Кеш за скриптове</translation>
+<translation id="6157197137667039897">Инсталирането на <ph name="APP_NAME" /> не бе успешно. Опитайте отново или се свържете с администратора на устройства за организацията си. Код на грешката: <ph name="ERROR_CODE" />.</translation>
 <translation id="6160625263637492097">Предоставяне на сертификати за удостоверяване</translation>
 <translation id="6163363155248589649">&amp;Нормален</translation>
 <translation id="6163522313638838258">Разгъване на всички...</translation>
@@ -4031,6 +4044,7 @@
 <translation id="6430814529589430811">ASCII с кодиране Base64, единичен сертификат</translation>
 <translation id="6431347207794742960"><ph name="PRODUCT_NAME" /> ще настрои автоматични актуализации за всички потребители на този компютър.</translation>
 <translation id="6434309073475700221">Отхвърляне</translation>
+<translation id="6434325376267409267">Устройството ви трябва да бъде актуализирано, преди да можете да използвате <ph name="APP_NAME" />.</translation>
 <translation id="6436164536244065364">Преглед в уеб магазина</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> – възпроизвежда се звук</translation>
 <translation id="6442187272350399447">Щастливец</translation>
@@ -4074,6 +4088,7 @@
 <translation id="6491376743066338510">Упълномощаването не бе успешно</translation>
 <translation id="6494445798847293442">Не е сертифициращ орган</translation>
 <translation id="6495925982925244349">Мрежа <ph name="NETWORK_INDEX" /> от <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" />%, управлява се от администратора ви, подробности</translation>
+<translation id="6496965928959882519">Мястото в хранилището на устройството ви е малко. За използването на <ph name="APP_NAME" /> е препоръчително да разполагате с поне <ph name="RECOMMENDED_SPACE" /> свободно място. За да освободите място, изтрийте файлове от устройството.</translation>
 <translation id="6498249116389603658">&amp;Всичките ви езици</translation>
 <translation id="6499143127267478107">Получава се разрешение от хоста в скрипта за прокси сървъра...</translation>
 <translation id="6499681088828539489">Забраняване на прокси сървърите за споделените мрежи</translation>
@@ -4745,6 +4760,7 @@
 <translation id="7421925624202799674">&amp;Преглед на изходния код на страницата</translation>
 <translation id="7422192691352527311">Предпочитания...</translation>
 <translation id="7423098979219808738">Първо ще се извежда запитване</translation>
+<translation id="7423807071740419372">За стартирането на <ph name="APP_NAME" /> е необходимо разрешение</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">Фонова страница: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7427798576651127129">Обаждане от <ph name="DEVICE_NAME" /></translation>
@@ -4775,6 +4791,7 @@
 <translation id="746216226901520237">Следващия път телефонът ви ще отключи устройството ви <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="7463006580194749499">Добавяне на човек</translation>
 <translation id="7465522323587461835">{NUM_OPEN_TABS,plural, =1{# отворен раздел – натиснете за превключване на лентата с раздели}other{# отворени раздела – натиснете за превключване на лентата с раздели}}</translation>
+<translation id="7465635034594602553">Нещо се обърка. Изчакайте няколко минути и стартирайте <ph name="APP_NAME" /> отново.</translation>
 <translation id="7465778193084373987">URL адрес за анулиране на сертификат на Netscape</translation>
 <translation id="7469894403370665791">Автоматично свързване с тази мрежа</translation>
 <translation id="747114903913869239">Грешка: Разширението не може да се декодира</translation>
@@ -5818,6 +5835,7 @@
 <translation id="8818958672113348984">Потвърждаване чрез телефона ви</translation>
 <translation id="8820817407110198400">Отметки</translation>
 <translation id="8821045908425223359">Автоматично конфигуриране на IP адреса</translation>
+<translation id="8821268776955756404">Приложението <ph name="APP_NAME" /> е готово за използване.</translation>
 <translation id="882204272221080310">За допълнителна сигурност актуализирайте фърмуера.</translation>
 <translation id="8823514049557262177">Копиране на тек&amp;ста на връзката</translation>
 <translation id="8823559166155093873">Блокиране на „бисквитките“</translation>
@@ -5888,6 +5906,7 @@
 <translation id="8902667442496790482">Отваряне на настройките на Прочитане на глас</translation>
 <translation id="8903263458134414071">Изберете профил, в който да влезете</translation>
 <translation id="890616557918890486">Промяна на източника</translation>
+<translation id="8909298138148012791">Деинсталирането на <ph name="APP_NAME" /> бе успешно</translation>
 <translation id="8909833622202089127">Сайтът следи местоположението ви</translation>
 <translation id="8910146161325739742">Споделяне на екрана ви</translation>
 <translation id="8910222113987937043">Промените във вашите отметки, история, пароли и други настройки повече няма да се синхронизират с профила ви в Google. Съществуващите ви данни обаче ще продължат да се съхраняват в него. Можете да ги управлявате от <ph name="BEGIN_LINK" />Google Табло за управление<ph name="END_LINK" />.</translation>

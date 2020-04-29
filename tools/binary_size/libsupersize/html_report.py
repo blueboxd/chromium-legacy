@@ -293,8 +293,9 @@ def Run(args, on_config_error):
       '    https://chrome-supersize.firebaseapp.com/viewer.html'
       '?load_url=oneoffs/{2}.ndjson',
   ]
-  supersize_path = os.path.relpath(os.path.join(
-      path_util.SRC_ROOT, 'tools', 'binary_size', 'supersize'))
+  supersize_path = os.path.relpath(
+      os.path.join(path_util.TOOLS_SRC_ROOT, 'tools', 'binary_size',
+                   'supersize'))
   # Use a random UUID as the filename so user can copy-and-paste command
   # directly without a name collision.
   upload_id = uuid.uuid4()

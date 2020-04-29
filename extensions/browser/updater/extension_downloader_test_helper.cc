@@ -37,7 +37,7 @@ void MockExtensionDownloaderDelegate::DelegateTo(
       .WillByDefault(Invoke(
           delegate,
           &ExtensionDownloaderDelegate::OnExtensionDownloadStageChanged));
-  ON_CALL(*this, OnExtensionDownloadFinished(_, _, _, _, _, _, _))
+  ON_CALL(*this, OnExtensionDownloadFinished(_, _, _, _, _, _))
       .WillByDefault(Invoke(
           delegate, &ExtensionDownloaderDelegate::OnExtensionDownloadFinished));
   ON_CALL(*this, OnExtensionDownloadRetryForTests())

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <cstdlib>
+#include <cstring>
 #include <utility>
 
 #include "base/bind.h"

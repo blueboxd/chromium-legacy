@@ -138,6 +138,8 @@ copy("chrome_camera_app_js_lib") {
   sources = [
     "src/js/lib/analytics.js",
     "src/js/lib/comlink.js",
+    "src/js/lib/ffmpeg.js",
+    "src/js/lib/ffmpeg.wasm",
   ]
 
   outputs = [ "$chrome_camera_app_dir/js/lib/{{source_file_part}}" ]
@@ -148,9 +150,11 @@ copy("chrome_camera_app_js_models") {
     "src/js/models/async_writer.js",
     "src/js/models/filenamer.js",
     "src/js/models/filesystem.js",
+    "src/js/models/mp4_video_processor.js",
+    "src/js/models/nop_video_processor.js",
     "src/js/models/result_saver.js",
-    "src/js/models/video_processor.js",
     "src/js/models/video_saver.js",
+    "src/js/models/waitable_event.js",
   ]
 
   outputs = [ "$chrome_camera_app_dir/js/models/{{source_file_part}}" ]

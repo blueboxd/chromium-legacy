@@ -45,8 +45,7 @@ void FastInkPointerController::OnTouchEvent(ui::TouchEvent* event) {
   if (!enabled_)
     return;
 
-  if (event->pointer_details().pointer_type !=
-      ui::EventPointerType::POINTER_TYPE_PEN)
+  if (event->pointer_details().pointer_type != ui::EventPointerType::kPen)
     return;
 
   if (event->type() != ui::ET_TOUCH_MOVED &&

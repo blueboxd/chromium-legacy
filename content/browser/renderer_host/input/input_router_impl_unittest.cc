@@ -117,13 +117,6 @@ class MockInputRouterImplClient : public InputRouterImplClient {
                         mojom::WidgetInputHandlerHost::RequestMouseLockCallback
                             response) override {}
 
-  void RequestMouseLockChange(
-      bool unadjusted_movement,
-      mojom::WidgetInputHandlerHost::RequestMouseLockCallback response)
-      override {}
-
-  void UnlockMouse() override {}
-
   gfx::Size GetRootWidgetViewportSize() override {
     return gfx::Size(1920, 1080);
   }

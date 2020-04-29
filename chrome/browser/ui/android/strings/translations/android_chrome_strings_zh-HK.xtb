@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-HK">
-<translation id="1006017844123154345">在線上開啟</translation>
 <translation id="1028699632127661925">正在傳送至 <ph name="DEVICE_NAME" />…</translation>
+<translation id="1036348656032585052">停用</translation>
 <translation id="1036727731225946849">正在新增「<ph name="WEBAPK_NAME" />」…</translation>
 <translation id="1041308826830691739">來自網站</translation>
 <translation id="1049743911850919806">無痕模式</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">Chrome 首頁</translation>
 <translation id="3157842584138209013">只要㩒一下 [更多選項] 按鈕，就可以翻查慳咗嘅數據用量</translation>
 <translation id="3166827708714933426">分頁和視窗快速鍵</translation>
+<translation id="3169472444629675720">探索</translation>
 <translation id="3181954750937456830">安全瀏覽 (保護您和裝置免受危險網站攻擊)</translation>
 <translation id="3205824638308738187">即將完成！</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
@@ -372,7 +373,6 @@
 <translation id="4116038641877404294">下載網頁，以便在離線時使用</translation>
 <translation id="4135200667068010335">要共用分頁嘅裝置清單閂咗。</translation>
 <translation id="4149994727733219643">使用簡化檢視模式查看網頁</translation>
-<translation id="4165986682804962316">網站設定</translation>
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
 <translation id="4179980317383591987">已使用 <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">語言</translation>
@@ -583,6 +583,7 @@
 <translation id="5853623416121554550">已暫停</translation>
 <translation id="5854790677617711513">超過 30 天</translation>
 <translation id="5858741533101922242">Chrome 無法開啟藍牙適配器</translation>
+<translation id="5860491529813859533">開啟</translation>
 <translation id="5862731021271217234">如要取得其他裝置上的分頁，請開啟同步處理功能</translation>
 <translation id="5864174910718532887">詳情：依網站名稱排序</translation>
 <translation id="5864419784173784555">正在等待其他下載程序完成…</translation>

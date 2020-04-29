@@ -618,21 +618,5 @@ TEST_F(AppTimeControllerTest, SetLastResetTimeTest) {
   EXPECT_EQ(test_api()->GetLastResetTime(), reset_time);
 }
 
-TEST_F(AppTimeControllerTest, WebTimeLimitDisabled) {
-  DisableWebTimeLimit();
-
-  // Simulate chrome install
-  controller()->app_registry()->OnAppInstalled(GetChromeAppId());
-  controller()->app_registry()->OnAppAvailable(GetChromeAppId());
-
-  // Set the time limit to 30 minutes but run chrome for 1 hour.
-  CreateActivityForApp(GetChromeAppId(), kOneHour, kOneHour / 2);
-
-  EXPECT_EQ(controller()->app_registry()->GetWebTimeLimit(), base::nullopt);
-
-  EXPECT_EQ(controller()->app_registry()->GetAppState(GetChromeAppId()),
-            AppState::kAvailable);
-}
-
 }  // namespace app_time
 }  // namespace chromeos

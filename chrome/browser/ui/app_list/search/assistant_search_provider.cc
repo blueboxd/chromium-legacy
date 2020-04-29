@@ -80,6 +80,12 @@ class AssistantSearchResult : public ChromeSearchResult {
         ash::kAssistantIcon,
         ash::AppListConfig::instance().suggestion_chip_icon_dimension(),
         gfx::kPlaceholderColor));
+
+    // If |action_url_| is an Assistant deep link, odds are we'll be going to
+    // launcher embedded Assistant UI when opening this result so we need to
+    // make sure that the app list view is *not* eagerly dismissed.
+    if (ash::assistant::util::IsDeepLinkUrl(action_url_))
+      set_dismiss_view_on_open(false);
   }
 
   AssistantSearchResult(const AssistantSearchResult&) = delete;
@@ -92,7 +98,6 @@ class AssistantSearchResult : public ChromeSearchResult {
     return ash::SearchResultType::ASSISTANT;
   }
 
-  // TODO(b:154152631): Prevent eager dismissal of launcher when opening.
   void Open(int event_flags) override {
     // Opening of |action_url_| is delegated to the Assistant controller as only
     // the Assistant controller knows how to handle Assistant deep links.

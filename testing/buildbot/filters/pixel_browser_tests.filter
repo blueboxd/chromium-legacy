@@ -14,7 +14,7 @@ ImportLockDialogViewBrowserTest.*
 NativeFileSystemUsageBubbleViewTest.*
 OutdatedUpgradeBubbleTest.*
 PageInfoBubbleViewBrowserTest.*
-PasswordBubbleBrowserTest.*
+*PasswordBubbleBrowserTest.*
 PasswordReuseModalWarningTest.*
 ProfileSigninConfirmationDialogTest.*
 RelaunchRecommendedBubbleViewDialogTest.*

@@ -105,4 +105,16 @@ public interface StreamActionApi extends ActionApi {
      * token to it.
      */
     void openUrlInNewWindow(String url, String consistencyTokenQueryParamName);
+
+    /**
+     * Reports that a particular view with corresponding content and action payload has become
+     * visible.
+     */
+    void reportViewVisible(View view, String contentId, ActionPayload payload);
+
+    /**
+     * Reports that a particular view with corresponding content and action payload has become
+     * hidden.
+     */
+    void reportViewHidden(View view, String contentId);
 }

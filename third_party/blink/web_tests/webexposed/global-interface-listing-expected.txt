@@ -1533,6 +1533,12 @@ interface DelayNode : AudioNode
     attribute @@toStringTag
     getter delayTime
     method constructor
+interface DelegatedInkTrailPresenter
+    attribute @@toStringTag
+    getter expectedImprovement
+    getter presentationArea
+    method constructor
+    method updateInkTrailStartPoint
 interface DeviceMotionEvent : Event
     attribute @@toStringTag
     getter acceleration
@@ -4594,6 +4600,10 @@ interface ImageDecoder
     getter type
     method constructor
     method decode
+interface Ink
+    attribute @@toStringTag
+    method constructor
+    method requestPresenter
 interface InputDeviceCapabilities
     attribute @@toStringTag
     getter firesTouchEvents
@@ -5478,6 +5488,7 @@ interface Navigator
     getter geolocation
     getter hardwareConcurrency
     getter hid
+    getter ink
     getter keyboard
     getter language
     getter languages

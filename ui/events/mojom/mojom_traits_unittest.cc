@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
+#include "ui/events/ipc/ui_events_param_traits_macros.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/mojom/event.mojom.h"
 #include "ui/events/mojom/event_mojom_traits.h"
@@ -125,30 +126,29 @@ TEST(StructTraitsTest, MouseEvent) {
   const MouseEvent kTestData[] = {
       {ET_MOUSE_PRESSED, gfx::Point(10, 10), gfx::Point(20, 30),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(201), EF_NONE, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, kPointerIdMouse)},
+       PointerDetails(EventPointerType::kMouse, kPointerIdMouse)},
       {ET_MOUSE_DRAGGED, gfx::Point(1, 5), gfx::Point(5, 1),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(202),
        EF_LEFT_MOUSE_BUTTON, EF_LEFT_MOUSE_BUTTON,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, kPointerIdMouse)},
+       PointerDetails(EventPointerType::kMouse, kPointerIdMouse)},
       {ET_MOUSE_RELEASED, gfx::Point(411, 130), gfx::Point(20, 30),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(203),
        EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON, EF_RIGHT_MOUSE_BUTTON,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, kPointerIdMouse)},
+       PointerDetails(EventPointerType::kMouse, kPointerIdMouse)},
       {ET_MOUSE_MOVED, gfx::Point(0, 1), gfx::Point(2, 3),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(204), EF_ALT_DOWN,
-       0,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, kPointerIdMouse)},
+       0, PointerDetails(EventPointerType::kMouse, kPointerIdMouse)},
       {ET_MOUSE_ENTERED, gfx::Point(6, 7), gfx::Point(8, 9),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(205), EF_NONE, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, kPointerIdMouse)},
+       PointerDetails(EventPointerType::kMouse, kPointerIdMouse)},
       {ET_MOUSE_EXITED, gfx::Point(10, 10), gfx::Point(20, 30),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(206),
        EF_BACK_MOUSE_BUTTON, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, kPointerIdMouse)},
+       PointerDetails(EventPointerType::kMouse, kPointerIdMouse)},
       {ET_MOUSE_CAPTURE_CHANGED, gfx::Point(99, 99), gfx::Point(99, 99),
        base::TimeTicks() + base::TimeDelta::FromMicroseconds(207),
        EF_CONTROL_DOWN, 0,
-       PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, kPointerIdMouse)},
+       PointerDetails(EventPointerType::kMouse, kPointerIdMouse)},
   };
 
   for (size_t i = 0; i < base::size(kTestData); i++) {
@@ -332,13 +332,11 @@ TEST(StructTraitsTest, ScrollEvent) {
 
 TEST(StructTraitsTest, PointerDetails) {
   const PointerDetails kTestData[] = {
-      {EventPointerType::POINTER_TYPE_UNKNOWN, 1, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f},
-      {EventPointerType::POINTER_TYPE_MOUSE, 1, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f},
-      {EventPointerType::POINTER_TYPE_PEN, 11, 12.f, 13.f, 14.f, 15.f, 16.f,
-       17.f},
-      {EventPointerType::POINTER_TYPE_TOUCH, 1, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f},
-      {EventPointerType::POINTER_TYPE_ERASER, 21, 22.f, 23.f, 24.f, 25.f, 26.f,
-       27.f},
+      {EventPointerType::kUnknown, 1, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f},
+      {EventPointerType::kMouse, 1, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f},
+      {EventPointerType::kPen, 11, 12.f, 13.f, 14.f, 15.f, 16.f, 17.f},
+      {EventPointerType::kTouch, 1, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f},
+      {EventPointerType::kEraser, 21, 22.f, 23.f, 24.f, 25.f, 26.f, 27.f},
   };
   for (size_t i = 0; i < base::size(kTestData); i++) {
     // Set |offset| as the constructor used above does not modify it.
@@ -358,8 +356,7 @@ TEST(StructTraitsTest, TouchEvent) {
       {ET_TOUCH_RELEASED,
        {1, 2},
        base::TimeTicks::Now(),
-       {EventPointerType::POINTER_TYPE_UNKNOWN, 1, 2.f, 3.f, 4.f, 5.f, 6.f,
-        7.f},
+       {EventPointerType::kUnknown, 1, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f},
        EF_SHIFT_DOWN},
       {ET_TOUCH_PRESSED, {1, 2}, base::TimeTicks::Now(), {}, EF_CONTROL_DOWN},
       {ET_TOUCH_MOVED, {1, 2}, base::TimeTicks::Now(), {}, EF_NONE},

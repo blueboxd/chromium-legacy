@@ -23,6 +23,7 @@ class URLFetcherResponseWriter;
 namespace web {
 
 class DownloadTaskObserver;
+class WebState;
 
 // Provides API for a single browser download task. This is the model class that
 // stores all the state for a download. Must be used on the UI thread.
@@ -41,6 +42,9 @@ class DownloadTask {
     // Download is completely finished.
     kComplete,
   };
+
+  // Returns WebState which requested this download.
+  virtual WebState* GetWebState() = 0;
 
   // Returns the download task state.
   virtual State GetState() const = 0;

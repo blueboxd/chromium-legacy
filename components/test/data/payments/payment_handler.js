@@ -75,6 +75,22 @@ async function launch() { // eslint-disable-line no-unused-vars
   }
 }
 
+/**
+ * Launches the payment handler without waiting for a response to be returned.
+ * @return {string} The 'success' or error message.
+ */
+function launchWithoutWaitForResponse() { // eslint-disable-line no-unused-vars
+  try {
+    const request = new PaymentRequest([{supportedMethods: methodName}], {
+      total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}},
+    });
+    request.show();
+    return 'success';
+  } catch (e) {
+    return e.toString();
+  }
+}
+
 var paymentOptions = null;
 
 /**

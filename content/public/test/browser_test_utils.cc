@@ -1148,9 +1148,8 @@ void SimulateTapWithModifiersAt(WebContents* web_contents,
 
 #if defined(USE_AURA)
 void SimulateTouchPressAt(WebContents* web_contents, const gfx::Point& point) {
-  ui::TouchEvent touch(
-      ui::ET_TOUCH_PRESSED, point, base::TimeTicks(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, point, base::TimeTicks(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   static_cast<RenderWidgetHostViewAura*>(
       web_contents->GetRenderWidgetHostView())
       ->OnTouchEvent(&touch);
@@ -1162,7 +1161,7 @@ void SimulateLongTapAt(WebContents* web_contents, const gfx::Point& point) {
 
   ui::TouchEvent touch_start(
       ui::ET_TOUCH_PRESSED, point, base::TimeTicks(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   rwhva->OnTouchEvent(&touch_start);
 
   ui::GestureEventDetails tap_down_details(ui::ET_GESTURE_TAP_DOWN);
@@ -1178,9 +1177,8 @@ void SimulateLongTapAt(WebContents* web_contents, const gfx::Point& point) {
                               touch_start.unique_event_id());
   rwhva->OnGestureEvent(&long_press);
 
-  ui::TouchEvent touch_end(
-      ui::ET_TOUCH_RELEASED, point, base::TimeTicks(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent touch_end(ui::ET_TOUCH_RELEASED, point, base::TimeTicks(),
+                           ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   rwhva->OnTouchEvent(&touch_end);
 
   ui::GestureEventDetails long_tap_details(ui::ET_GESTURE_LONG_TAP);
@@ -2285,11 +2283,10 @@ void SendRoutedTouchTapSequence(content::WebContents* web_contents,
       web_contents->GetRenderWidgetHostView());
   ui::TouchEvent touch_start(
       ui::ET_TOUCH_PRESSED, point, base::TimeTicks::Now(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   rwhva->OnTouchEvent(&touch_start);
-  ui::TouchEvent touch_end(
-      ui::ET_TOUCH_RELEASED, point, base::TimeTicks::Now(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent touch_end(ui::ET_TOUCH_RELEASED, point, base::TimeTicks::Now(),
+                           ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   rwhva->OnTouchEvent(&touch_end);
 }
 

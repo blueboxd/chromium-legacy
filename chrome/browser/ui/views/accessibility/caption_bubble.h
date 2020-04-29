@@ -16,7 +16,12 @@ class ImageButton;
 class ImageView;
 }
 
+namespace ui {
+struct AXNodeData;
+}
+
 namespace captions {
+class CaptionBubbleFrameView;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Caption Bubble
@@ -48,6 +53,11 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   gfx::Rect GetBubbleBounds() override;
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -63,6 +73,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   views::Label* error_message_;
   views::ImageView* error_icon_;
   views::ImageButton* close_button_;
+  CaptionBubbleFrameView* frame_;
 
   bool has_error_ = false;
 

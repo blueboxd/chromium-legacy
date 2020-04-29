@@ -13,7 +13,7 @@ import org.chromium.components.feed.core.proto.wire.ActionPayloadProto.ActionPay
 import java.util.List;
 
 /** Allows Stream to notify the Feed library of actions taken */
-public interface ActionManager {
+public interface ActionManager extends ViewActionManager {
     /**
      * Dismiss content for the content ID in the session, along with executing the provided stream
      * data operations on the session.

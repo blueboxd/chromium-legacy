@@ -18,7 +18,6 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/metrics/histogram.h"
 #include "base/synchronization/condition_variable.h"
 #include "build/build_config.h"
 #include "leveldb/cache.h"
@@ -140,14 +139,7 @@ LEVELDB_EXPORT std::string DatabaseNameForRewriteDB(
 // space. A value of -1 will return leveldb's default write buffer size.
 LEVELDB_EXPORT extern size_t WriteBufferSize(int64_t disk_space);
 
-class LEVELDB_EXPORT UMALogger {
- public:
-  virtual void RecordErrorAt(MethodID method) const = 0;
-  virtual void RecordOSError(MethodID method,
-                             base::File::Error error) const = 0;
-};
-
-class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env, public UMALogger {
+class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env {
  public:
   using ScheduleFunc = void(void*);
 
@@ -203,9 +195,6 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env, public UMALogger {
   static const char* FileErrorString(base::File::Error error);
 
  private:
-  void RecordErrorAt(MethodID method) const override;
-  void RecordOSError(MethodID method, base::File::Error error) const override;
-  base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
   void RemoveBackupFiles(const base::FilePath& dir);
 
   // BGThread() is the body of the background thread
@@ -214,14 +203,12 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env, public UMALogger {
     reinterpret_cast<ChromiumEnv*>(arg)->BGThread();
   }
 
-  base::HistogramBase* GetMethodIOErrorHistogram() const;
 
   const std::unique_ptr<storage::FilesystemProxy> filesystem_;
 
   base::FilePath test_directory_;
 
   std::string name_;
-  std::string uma_ioerror_base_name_;
 
   base::Lock mu_;
   base::ConditionVariable bgsignal_;

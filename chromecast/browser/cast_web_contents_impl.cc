@@ -988,6 +988,9 @@ void CastWebContentsImpl::MediaStartedPlaying(
     const content::MediaPlayerId& id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   metrics::CastMetricsHelper::GetInstance()->LogMediaPlay();
+  for (Observer& observer : observer_list_) {
+    observer.MediaPlaybackChanged(true /* media_playing */);
+  }
 }
 
 void CastWebContentsImpl::MediaStoppedPlaying(
@@ -996,6 +999,9 @@ void CastWebContentsImpl::MediaStoppedPlaying(
     content::WebContentsObserver::MediaStoppedReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
+  for (Observer& observer : observer_list_) {
+    observer.MediaPlaybackChanged(false /* media_playing */);
+  }
 }
 
 void CastWebContentsImpl::TracePageLoadBegin(const GURL& url) {

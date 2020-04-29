@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_view.h"
@@ -70,8 +71,7 @@ bool IsExitUiEnabled() {
 #else
   // Kiosk mode is a fullscreen experience, which makes the exit UI
   // inappropriate.
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kKioskMode);
+  return !chrome::IsRunningInAppMode();
 #endif
 }
 

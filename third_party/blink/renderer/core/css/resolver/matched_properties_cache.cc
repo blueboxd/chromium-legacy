@@ -161,6 +161,10 @@ bool MatchedPropertiesCache::IsStyleCacheable(const ComputedStyle& style) {
   // cacheable.
   if (style.HasVariableReferenceFromNonInheritedProperty())
     return false;
+  // -internal-light-dark() values in UA sheets have different computed values
+  // based on the used value of color-scheme.
+  if (style.HasNonInheritedLightDarkValue())
+    return false;
   return true;
 }
 

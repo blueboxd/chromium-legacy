@@ -34,6 +34,14 @@
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 }
 
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+
+  // OverlayContainerView should cover all subviews of BrowserContainerView.
+  [self.view
+      bringSubviewToFront:self.webContentsOverlayContainerViewController.view];
+}
+
 - (void)dismissViewControllerAnimated:(BOOL)animated
                            completion:(void (^)())completion {
   if (!self.presentedViewController) {

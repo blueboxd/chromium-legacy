@@ -32,7 +32,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/memory/oom_memory_details.h"
-#include "chrome/browser/performance_manager/graph/policies/policy_features.h"
+#include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"

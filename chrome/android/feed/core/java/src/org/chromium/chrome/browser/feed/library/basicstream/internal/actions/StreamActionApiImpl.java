@@ -330,4 +330,18 @@ public class StreamActionApiImpl implements StreamActionApi {
             mActionManager.createAndStoreAction(contentId, payload);
         }
     }
+
+    @Override
+    public void reportViewVisible(View view, String contentId, ActionPayload payload) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+            mActionManager.onViewVisible(view, contentId, payload);
+        }
+    }
+
+    @Override
+    public void reportViewHidden(View view, String contentId) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+            mActionManager.onViewHidden(view, contentId);
+        }
+    }
 }

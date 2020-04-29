@@ -31,4 +31,12 @@ interface PlayerFrameViewDelegate {
      * @param y Y coordinate of the point clicked.
      */
     void onClick(int x, int y);
+
+    /**
+     * Called when a fling gesture is performed.
+     * @param velocityX Horizontal velocity value in pixels.
+     * @param velocityY Vertical velocity value in pixels.
+     * @return Whether this fling was consumed.
+     */
+    boolean onFling(float velocityX, float velocityY);
 }

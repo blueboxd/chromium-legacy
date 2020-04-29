@@ -60,7 +60,7 @@ void ReleaseCopiedNativeEvent(const MSG& event) {}
 
 PointerDetails GetTouchPointerDetailsFromNative(const MSG& native_event) {
   NOTIMPLEMENTED();
-  return PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
+  return PointerDetails(EventPointerType::kTouch,
                         /* pointer_id*/ 0,
                         /* radius_x */ 1.0,
                         /* radius_y */ 1.0,

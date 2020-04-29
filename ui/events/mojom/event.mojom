@@ -64,7 +64,7 @@ struct ScrollData {
 
 // This mirrors the C++ class of the same name, see it for details.
 struct PointerDetails {
-  PointerKind pointer_type;
+  EventPointerType pointer_type;
   float radius_x;
   float radius_y;
   float force;

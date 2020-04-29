@@ -326,7 +326,6 @@
     UnionTypesTest unionTypesTest();
     CallbackFunctionTest callbackFunctionTest();
     [RaisesException] void setScrollChain(ScrollState scrollState, sequence<Element> elements);
-    void scheduleBlinkGC();
 
     void revealSelection();
 

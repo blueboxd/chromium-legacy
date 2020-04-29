@@ -470,8 +470,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
              int flags,
              int changed_button_flags,
              const PointerDetails& pointer_details =
-                 PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                                kPointerIdMouse));
+                 PointerDetails(EventPointerType::kMouse, kPointerIdMouse));
 
   // DEPRECATED: Prefer constructor that takes gfx::PointF.
   MouseEvent(EventType type,
@@ -481,8 +480,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
              int flags,
              int changed_button_flags,
              const PointerDetails& pointer_details =
-                 PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
-                                kPointerIdMouse));
+                 PointerDetails(EventPointerType::kMouse, kPointerIdMouse));
 
   MouseEvent(const MouseEvent& copy);
   ~MouseEvent() override;
@@ -641,7 +639,7 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
   gfx::Vector2d offset_;
 };
 
-// NOTE: Pen (stylus) events use TouchEvent with POINTER_TYPE_PEN. They were
+// NOTE: Pen (stylus) events use TouchEvent with kPen. They were
 // originally implemented as MouseEvent but switched to TouchEvent when UX
 // decided not to show hover effects for pen.
 class EVENTS_EXPORT TouchEvent : public LocatedEvent {

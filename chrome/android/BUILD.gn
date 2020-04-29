@@ -549,9 +549,9 @@ java_group("chrome_all_java") {
     ":chrome_java",
     "//chrome/android/features/keyboard_accessory:internal_java",
     "//chrome/android/features/media_router:java",
-    "//chrome/android/features/test_dummy/internal:base_module_java",
     "//chrome/android/modules/extra_icu/provider:java",
     "//chrome/browser/download/internal/android:java",
+    "//chrome/browser/test_dummy/internal:base_module_java",
     "//chrome/browser/touch_to_fill/android/internal:java",
     "//chrome/browser/ui/android/appmenu/internal:java",
   ]
@@ -3007,6 +3007,7 @@ native_java_unittests_tests = [
   "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionUnitTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizationsUnitTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinderUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/payments/AndroidPaymentAppUnitTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/payments/PaymentManifestVerifierTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/tabmodel/TabPersistentStoreUnitTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/toolbar/ToolbarSecurityIconTest.java",

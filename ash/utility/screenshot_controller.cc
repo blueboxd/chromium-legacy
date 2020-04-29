@@ -441,7 +441,7 @@ void ScreenshotController::SetSelectedWindow(aura::Window* selected) {
 bool ScreenshotController::ShouldProcessEvent(
     const ui::PointerDetails& pointer_details) const {
   return !pen_events_only_ ||
-         pointer_details.pointer_type == ui::EventPointerType::POINTER_TYPE_PEN;
+         pointer_details.pointer_type == ui::EventPointerType::kPen;
 }
 
 void ScreenshotController::OnKeyEvent(ui::KeyEvent* event) {

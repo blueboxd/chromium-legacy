@@ -249,7 +249,7 @@ class EventGenerator {
   void MoveMouseToCenterOf(EventTarget* window);
 
   // Enter pen-pointer mode, which will cause any generated mouse events to have
-  // a pointer type ui::EventPointerType::POINTER_TYPE_PEN.
+  // a pointer type ui::EventPointerType::kPen.
   void EnterPenPointerMode();
 
   // Exit pen-pointer mode. Generated mouse events will use the default pointer

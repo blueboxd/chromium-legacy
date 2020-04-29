@@ -231,6 +231,7 @@ void WebviewController::OnPageStopped(CastWebContents* cast_web_contents,
     event->set_url(contents_->GetURL().spec());
     event->set_current_page_state(current_state());
     event->set_stopped_error_code(error_code);
+    event->set_stopped_error_description(net::ErrorToShortString(error_code));
     client_->EnqueueSend(std::move(response));
   } else {
     // Can't destroy in an observer callback, so post a task to do it.

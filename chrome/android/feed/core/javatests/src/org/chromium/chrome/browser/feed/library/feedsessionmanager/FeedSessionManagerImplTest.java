@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.feed.library.feedsessionmanager.FeedSessionMa
 import org.chromium.chrome.browser.feed.library.feedsessionmanager.internal.HeadSessionImpl;
 import org.chromium.chrome.browser.feed.library.feedsessionmanager.internal.Session;
 import org.chromium.chrome.browser.feed.library.feedsessionmanager.internal.SessionCache;
+import org.chromium.chrome.browser.feed.library.testing.actionmanager.FakeViewActionManager;
 import org.chromium.chrome.browser.feed.library.testing.host.logging.FakeBasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.testing.protocoladapter.FakeProtocolAdapter;
 import org.chromium.chrome.browser.feed.library.testing.requestmanager.FakeActionUploadRequestManager;
@@ -142,8 +143,9 @@ public class FeedSessionManagerImplTest {
                 FakeMainThreadRunner.runTasksImmediatelyWithThreadChecks(mFakeThreadUtils);
         mFakeTaskQueue = new FakeTaskQueue(mFakeClock, mFakeThreadUtils);
         mAppLifecycleListener = new FeedAppLifecycleListener(mFakeThreadUtils);
-        mFakeActionUploadRequestManager = new FakeActionUploadRequestManager(mFakeThreadUtils);
         mFakeStore = new FakeStore(mConfiguration, mFakeThreadUtils, mFakeTaskQueue, mFakeClock);
+        mFakeActionUploadRequestManager = new FakeActionUploadRequestManager(
+                mFakeStore, new FakeViewActionManager(mFakeStore), mFakeThreadUtils);
         mFakeProtocolAdapter = new FakeProtocolAdapter();
         mFakeRequestManager = new FakeFeedRequestManager(
                 mFakeThreadUtils, mFakeMainThreadRunner, mFakeProtocolAdapter, mFakeTaskQueue);

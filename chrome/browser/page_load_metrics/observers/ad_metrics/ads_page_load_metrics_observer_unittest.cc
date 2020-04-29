@@ -1771,7 +1771,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, CreativeOriginStatus) {
 // computed heavy ad types for ad frames
 TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureOff_UMARecorded) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kHeavyAdIntervention);
+  feature_list.InitWithFeatures({}, {features::kHeavyAdIntervention,
+                                     features::kHeavyAdInterventionWarning});
   OverrideVisibilityTrackerWithMockClock();
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
@@ -2072,7 +2073,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdPeakCpuUsage_InterventionFired) {
 
 TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureDisabled_NotFired) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kHeavyAdIntervention);
+  feature_list.InitWithFeatures({}, {features::kHeavyAdIntervention,
+                                     features::kHeavyAdInterventionWarning});
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
@@ -2134,7 +2136,8 @@ TEST_F(AdsPageLoadMetricsObserverTest,
 TEST_F(AdsPageLoadMetricsObserverTest,
        HeavyAdFrameRemoved_FrameMarkedAsRemoved) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kHeavyAdIntervention);
+  feature_list.InitWithFeatures({}, {features::kHeavyAdIntervention,
+                                     features::kHeavyAdInterventionWarning});
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
@@ -2318,10 +2321,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
 TEST_F(AdsPageLoadMetricsObserverTest,
        HeavyAdReportingOnly_ReportSentNoUnload) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeaturesAndParameters(
-      {{features::kHeavyAdIntervention,
-        {{kHeavyAdReportingOnlyParamName, "true"}}}},
-      {});
+  feature_list.InitWithFeatures({features::kHeavyAdInterventionWarning},
+                                {features::kHeavyAdIntervention});
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
@@ -2333,7 +2334,7 @@ TEST_F(AdsPageLoadMetricsObserverTest,
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
 
   const char kReportOnlyMessage[] =
-      "A future version of Chrome will remove this ad because its network "
+      "A future version of Chrome may remove this ad because its network "
       "usage exceeded the limit. "
       "See https://www.chromestatus.com/feature/4800491902992384";
 
@@ -2352,10 +2353,8 @@ TEST_F(AdsPageLoadMetricsObserverTest,
 
 TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdReportingDisabled_NoReportSent) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeaturesAndParameters(
-      {{features::kHeavyAdIntervention,
-        {{kHeavyAdReportingEnabledParamName, "false"}}}},
-      {});
+  feature_list.InitWithFeatures({features::kHeavyAdIntervention},
+                                {features::kHeavyAdInterventionWarning});
 
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);

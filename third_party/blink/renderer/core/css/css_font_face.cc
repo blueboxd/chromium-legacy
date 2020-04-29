@@ -228,11 +228,15 @@ void CSSFontFace::SetLoadStatus(FontFace::LoadStatusType new_status) {
   }
 }
 
-void CSSFontFace::UpdatePeriod() {
+bool CSSFontFace::UpdatePeriod() {
   if (LoadStatus() == FontFace::kLoaded)
-    return;
-  for (CSSFontFaceSource* source : sources_)
-    source->UpdatePeriod();
+    return false;
+  bool changed = false;
+  for (CSSFontFaceSource* source : sources_) {
+    if (source->UpdatePeriod())
+      changed = true;
+  }
+  return changed;
 }
 
 void CSSFontFace::Trace(Visitor* visitor) {

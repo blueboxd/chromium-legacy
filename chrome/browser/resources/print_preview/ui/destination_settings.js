@@ -140,15 +140,9 @@ Polymer({
     pdfPrinterDisabled_: Boolean,
 
     /** @private */
-    shouldHideSpinner_: {
+    loaded_: {
       type: Boolean,
-      computed: 'computeShouldHideSpinner_(destinationState, destination)',
-    },
-
-    /** @private {string} */
-    statusText_: {
-      type: String,
-      computed: 'computeStatusText_(destination)',
+      computed: 'computeLoaded_(destinationState, destination)',
     },
 
     /** @private {!Array<string>} */
@@ -447,27 +441,12 @@ Polymer({
   },
 
   /** @private */
-  computeShouldHideSpinner_() {
+  computeLoaded_() {
     return this.destinationState === DestinationState.ERROR ||
         this.destinationState === DestinationState.UPDATED ||
         (this.destinationState === DestinationState.SET && !!this.destination &&
          (!!this.destination.capabilities ||
           this.destination.id === Destination.GooglePromotedId.SAVE_AS_PDF));
-  },
-
-  /**
-   * @return {string} The connection status text to display.
-   * @private
-   */
-  computeStatusText_() {
-    // |destination| can be either undefined, or null here.
-    if (!this.destination) {
-      return '';
-    }
-
-    return this.destination.shouldShowInvalidCertificateError ?
-        this.i18n('noLongerSupportedFragment') :
-        this.destination.connectionStatusText;
   },
 
   // <if expr="chromeos">

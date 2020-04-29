@@ -30,11 +30,14 @@ from .code_node_cxx import CxxFuncDefNode
 from .code_node_cxx import CxxLikelyIfNode
 from .code_node_cxx import CxxMultiBranchesNode
 from .code_node_cxx import CxxNamespaceNode
+from .code_node_cxx import CxxSwitchNode
 from .code_node_cxx import CxxUnlikelyIfNode
 from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
 from .codegen_expr import CodeGenExpr
+from .codegen_expr import expr_and
 from .codegen_expr import expr_from_exposure
+from .codegen_expr import expr_of_feature_selector
 from .codegen_expr import expr_or
 from .codegen_format import format_template as _format
 from .codegen_utils import component_export
@@ -4718,22 +4721,6 @@ ${prototype_object}->Delete(
             nodes.append(
                 TextNode(_format(pattern, property_name=property_name)))
 
-    if class_like.identifier == "Window":
-        nodes.append(
-            TextNode("""\
-// TODO(yukishiino): Remove the following empty check.  Since Blink is
-//   creating a new object from a boilerplate (i.e. CreateWrapperFromCache),
-//   we can install all context-dependent properties at a time onto all of
-//   instance_object, prototype_object, and interface_object by refactoring
-//   V8PerContextData.
-if (!${instance_object}.IsEmpty()) {
-  // [CachedAccessor=kWindowProxy]
-  V8PrivateProperty::GetCachedAccessor(
-      ${isolate}, V8PrivateProperty::CachedAccessor::kWindowProxy)
-      .Set(${instance_object}, ${v8_context}->Global());
-}
-"""))
-
     if ("Global" in class_like.extended_attributes
             and class_like.indexed_and_named_properties
             and class_like.indexed_and_named_properties.has_named_properties):
@@ -4808,9 +4795,9 @@ def make_install_interface_template(cg_context, function_name, class_name,
 
     func_def = CxxFuncDefNode(
         name=function_name,
-        class_name=class_name,
         arg_decls=arg_decls,
-        return_type=return_type)
+        return_type=return_type,
+        class_name=class_name)
     func_def.set_base_template_vars(cg_context.template_bindings())
 
     body = func_def.body
@@ -5034,6 +5021,16 @@ def make_install_properties(cg_context, function_name, class_name,
             "v8::Local<v8::Object> prototype_object",
             "v8::Local<v8::Function> interface_object",
             "v8::Local<v8::FunctionTemplate> interface_template",
+            "FeatureSelector feature_selector",
+        ]
+        arg_names = [
+            "context",
+            "world",
+            "instance_object",
+            "prototype_object",
+            "interface_object",
+            "interface_template",
+            "feature_selector",
         ]
     else:
         arg_decls = [
@@ -5042,6 +5039,13 @@ def make_install_properties(cg_context, function_name, class_name,
             "v8::Local<v8::ObjectTemplate> instance_template",
             "v8::Local<v8::ObjectTemplate> prototype_template",
             "v8::Local<v8::FunctionTemplate> interface_template",
+        ]
+        arg_names = [
+            "isolate",
+            "world",
+            "instance_template",
+            "prototype_template",
+            "interface_template",
         ]
     return_type = "void"
 
@@ -5053,27 +5057,10 @@ def make_install_properties(cg_context, function_name, class_name,
             arg_decls=arg_decls,
             return_type=return_type,
             static=True)
-        if is_context_dependent:
-            args = [
-                "context",
-                "world",
-                "instance_object",
-                "prototype_object",
-                "interface_object",
-                "interface_template",
-            ]
-        else:
-            args = [
-                "isolate",
-                "world",
-                "instance_template",
-                "prototype_template",
-                "interface_template",
-            ]
         text = _format(
             "return {func}({args});",
             func=trampoline_var_name,
-            args=", ".join(args))
+            args=", ".join(arg_names))
         trampoline_def.body.append(TextNode(text))
 
     func_decl = CxxFuncDeclNode(
@@ -5084,32 +5071,26 @@ def make_install_properties(cg_context, function_name, class_name,
 
     func_def = CxxFuncDefNode(
         name=function_name,
-        class_name=class_name,
         arg_decls=arg_decls,
-        return_type=return_type)
+        return_type=return_type,
+        class_name=class_name)
     func_def.set_base_template_vars(cg_context.template_bindings())
 
     body = func_def.body
-    if is_context_dependent:
-        body.add_template_vars({
-            "v8_context": "context",  # 'context' is reserved by Mako.
-            "world": "world",
-            "instance_object": "instance_object",
-            "prototype_object": "prototype_object",
-            "interface_object": "interface_object",
-            "interface_template": "interface_template",
-        })
-    else:
-        body.add_template_vars({
-            "isolate": "isolate",
-            "world": "world",
-            "instance_template": "instance_template",
-            "prototype_template": "prototype_template",
-            "interface_template": "interface_template",
-        })
+    for arg_name in arg_names:
+        if arg_name == "context":  # 'context' is reserved by Mako.
+            body.add_template_var("v8_context", "context")
+        else:
+            body.add_template_var(arg_name, arg_name)
     bind_installer_local_vars(body, cg_context)
 
-    body.append(install_prototype_object_node)
+    if is_context_dependent and install_prototype_object_node:
+        body.extend([
+            CxxLikelyIfNode(
+                cond="${feature_selector}.AnyOf()",
+                body=[install_prototype_object_node]),
+            EmptyNode(),
+        ])
 
     def group_by_condition(entries):
         unconditional_entries = []
@@ -5135,6 +5116,11 @@ def make_install_properties(cg_context, function_name, class_name,
                 ]))
             body.append(EmptyNode())
         for conditional, entries in conditional_to_entries.items():
+            if is_context_dependent:
+                conditional = expr_and([
+                    expr_of_feature_selector(entries[0].property_.exposure),
+                    conditional,
+                ])
             body.append(
                 CxxUnlikelyIfNode(
                     cond=conditional,
@@ -5731,9 +5717,9 @@ def make_cross_component_init(
 
     func_def = CxxFuncDefNode(
         name=function_name,
-        class_name=class_name,
         arg_decls=[],
-        return_type="void")
+        return_type="void",
+        class_name=class_name)
     func_def.set_base_template_vars(cg_context.template_bindings())
 
     body = func_def.body
@@ -5756,19 +5742,14 @@ def make_cross_component_init(
 # WrapperTypeInfo
 # ----------------------------------------------------------------------------
 
-# FN = function name
-FN_GET_WRAPPER_TYPE_INFO = name_style.func("GetWrapperTypeInfo")
 
-# MN = member name
-MN_WRAPPER_TYPE_INFO = name_style.member_var("wrapper_type_info_")
-
-
-def make_wrapper_type_info(cg_context, function_name, member_var_name,
-                           install_context_dependent_func_name):
+def make_wrapper_type_info(cg_context, function_name,
+                           has_context_dependent_props):
     assert isinstance(cg_context, CodeGenContext)
-    assert isinstance(function_name, str)
-    assert isinstance(member_var_name, str)
-    assert _is_none_or_str(install_context_dependent_func_name)
+    assert function_name == "GetWrapperTypeInfo"
+    assert isinstance(has_context_dependent_props, bool)
+
+    F = lambda *args, **kwargs: TextNode(_format(*args, **kwargs))
 
     func_def = CxxFuncDefNode(
         name=function_name,
@@ -5776,22 +5757,45 @@ def make_wrapper_type_info(cg_context, function_name, member_var_name,
         return_type="constexpr const WrapperTypeInfo*",
         static=True)
     func_def.set_base_template_vars(cg_context.template_bindings())
-    func_def.body.append(TextNode("return &{};".format(member_var_name)))
+    func_def.body.append(TextNode("return &wrapper_type_info_;"))
 
     member_var_def = TextNode(
-        "static const WrapperTypeInfo {};".format(member_var_name))
+        "static const WrapperTypeInfo wrapper_type_info_;")
 
-    pattern = """\
-// Migration adapter
+    wrapper_type_info_def = ListNode()
+    wrapper_type_info_def.set_base_template_vars(
+        cg_context.template_bindings())
+
+    wrapper_type_info_def.append(
+        TextNode("""\
+// Migration adapters
 v8::Local<v8::FunctionTemplate> ${class_name}::DomTemplate(
     v8::Isolate* isolate,
-    const DOMWrapperWorld& world) {{
+    const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
       isolate, world,
       const_cast<WrapperTypeInfo*>(${class_name}::GetWrapperTypeInfo()),
       ${class_name}::InstallInterfaceTemplate);
+}
+"""))
+    if has_context_dependent_props:
+        pattern = """\
+static void InstallContextDependentPropertiesAdapter(
+    v8::Local<v8::Context> context,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instance_object,
+    v8::Local<v8::Object> prototype_object,
+    v8::Local<v8::Function> interface_object,
+    v8::Local<v8::FunctionTemplate> interface_template) {{
+  ${class_name}::{}(
+      context, world, instance_object, prototype_object, interface_object,
+      interface_template,
+      bindings::V8InterfaceBridgeBase::FeatureSelector(world));
 }}
-
+"""
+        wrapper_type_info_def.append(
+            F(pattern, FN_INSTALL_CONTEXT_DEPENDENT_PROPS))
+    pattern = """\
 const WrapperTypeInfo ${class_name}::wrapper_type_info_{{
     gin::kEmbedderBlink,
     ${class_name}::DomTemplate,
@@ -5801,11 +5805,12 @@ const WrapperTypeInfo ${class_name}::wrapper_type_info_{{
     {wrapper_type_prototype},
     {wrapper_class_id},
     {active_script_wrappable_inheritance},
-}};"""
+}};
+"""
     class_like = cg_context.class_like
-    if install_context_dependent_func_name:
-        install_context_dependent_func = _format(
-            "${class_name}::{}", install_context_dependent_func_name)
+    if has_context_dependent_props:
+        install_context_dependent_func = (
+            "InstallContextDependentPropertiesAdapter")
     else:
         install_context_dependent_func = "nullptr"
     if class_like.inherited:
@@ -5823,21 +5828,21 @@ const WrapperTypeInfo ${class_name}::wrapper_type_info_{{
         "WrapperTypeInfo::kInheritFromActiveScriptWrappable"
         if class_like.code_generator_info.is_active_script_wrappable else
         "WrapperTypeInfo::kNotInheritFromActiveScriptWrappable")
-    text = _format(
-        pattern,
-        install_context_dependent_func=install_context_dependent_func,
-        wrapper_type_info_of_inherited=wrapper_type_info_of_inherited,
-        wrapper_type_prototype=wrapper_type_prototype,
-        wrapper_class_id=wrapper_class_id,
-        active_script_wrappable_inheritance=active_script_wrappable_inheritance
-    )
-    bridge_wrapper_type_info_def = TextNode(text)
+    wrapper_type_info_def.append(
+        F(pattern,
+          install_context_dependent_func=install_context_dependent_func,
+          wrapper_type_info_of_inherited=wrapper_type_info_of_inherited,
+          wrapper_type_prototype=wrapper_type_prototype,
+          wrapper_class_id=wrapper_class_id,
+          active_script_wrappable_inheritance=(
+              active_script_wrappable_inheritance)))
 
     blink_class = blink_class_name(class_like)
-    pattern = ("const WrapperTypeInfo& {blink_class}::wrapper_type_info_ = "
-               "${class_name}::wrapper_type_info_;")
-    blink_wrapper_type_info_def = TextNode(
-        _format(pattern, blink_class=blink_class))
+    pattern = """\
+const WrapperTypeInfo& {blink_class}::wrapper_type_info_ =
+    ${class_name}::wrapper_type_info_;
+"""
+    wrapper_type_info_def.append(F(pattern, blink_class=blink_class))
 
     if class_like.code_generator_info.is_active_script_wrappable:
         pattern = """\
@@ -5863,18 +5868,7 @@ static_assert(
                  decltype(&ScriptWrappable::HasPendingActivity)>::value,
     "{blink_class} is overriding hasPendingActivity() without "
     "[ActiveScriptWrappable] extended attribute.");"""
-    check_active_script_wrappable = TextNode(
-        _format(pattern, blink_class=blink_class))
-
-    wrapper_type_info_def = ListNode([
-        bridge_wrapper_type_info_def,
-        EmptyNode(),
-        blink_wrapper_type_info_def,
-        EmptyNode(),
-        check_active_script_wrappable,
-    ])
-    wrapper_type_info_def.set_base_template_vars(
-        cg_context.template_bindings())
+    wrapper_type_info_def.append(F(pattern, blink_class=blink_class))
 
     return func_def, member_var_def, wrapper_type_info_def
 
@@ -6256,11 +6250,9 @@ def generate_interface(interface):
     (get_wrapper_type_info_def, wrapper_type_info_var_def,
      wrapper_type_info_init) = make_wrapper_type_info(
          cg_context,
-         FN_GET_WRAPPER_TYPE_INFO,
-         MN_WRAPPER_TYPE_INFO,
-         install_context_dependent_func_name=(
-             install_context_dependent_props_def
-             and FN_INSTALL_CONTEXT_DEPENDENT_PROPS))
+         "GetWrapperTypeInfo",
+         has_context_dependent_props=bool(
+             install_context_dependent_props_decl))
 
     # Cross-component trampolines
     if is_cross_components:
@@ -6270,12 +6262,11 @@ def generate_interface(interface):
              cg_context,
              "Init",
              class_name=impl_class_name,
-             has_unconditional_props=bool(
-                 install_unconditional_props_trampoline),
+             has_unconditional_props=bool(install_unconditional_props_decl),
              has_context_independent_props=bool(
-                 install_context_independent_props_trampoline),
+                 install_context_independent_props_decl),
              has_context_dependent_props=bool(
-                 install_context_dependent_props_trampoline))
+                 install_context_dependent_props_decl))
 
     # Header part (copyright, include directives, and forward declarations)
     api_header_node.extend([
@@ -6453,6 +6444,193 @@ def generate_interface(interface):
                                 path_manager.gen_path_to(impl_source_path))
 
 
+def generate_install_properties_per_feature(web_idl_database):
+    # Filepaths
+    header_path = PathManager.component_path(
+        "modules", "properties_per_feature_installer.h")
+    source_path = PathManager.component_path(
+        "modules", "properties_per_feature_installer.cc")
+
+    # Root nodes
+    header_node = ListNode(tail="\n")
+    header_node.set_accumulator(CodeGenAccumulator())
+    header_node.set_renderer(MakoRenderer())
+    source_node = ListNode(tail="\n")
+    source_node.set_accumulator(CodeGenAccumulator())
+    source_node.set_renderer(MakoRenderer())
+
+    # Namespaces
+    header_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
+    source_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
+    header_bindings_ns = CxxNamespaceNode(name_style.namespace("bindings"))
+    source_bindings_ns = CxxNamespaceNode(name_style.namespace("bindings"))
+    header_blink_ns.body.extend([
+        make_forward_declarations(header_node.accumulator),
+        EmptyNode(),
+        header_bindings_ns,
+    ])
+    source_blink_ns.body.append(source_bindings_ns)
+
+    # Function nodes
+    arg_decls = [
+        "ScriptState* script_state",
+        "OriginTrialFeature feature",
+    ]
+    func_decl = CxxFuncDeclNode(
+        name="InstallPropertiesPerFeature",
+        arg_decls=arg_decls,
+        return_type="void")
+    func_def = CxxFuncDefNode(
+        name="InstallPropertiesPerFeature",
+        arg_decls=arg_decls,
+        return_type="void")
+    func_def.body.add_template_vars({
+        "script_state": "script_state",
+        "feature": "feature",
+    })
+    helper_func_def = CxxFuncDefNode(
+        name="InstallPropertiesPerFeatureInternal",
+        arg_decls=[
+            "ScriptState* script_state",
+            "OriginTrialFeature feature",
+            "base::span<const std::pair<"
+            "const WrapperTypeInfo*, InstallFuncType>> "
+            "wrapper_type_info_list",
+        ],
+        return_type="void")
+
+    # Assemble the parts.
+    header_node.accumulator.add_class_decl("ScriptState")
+    header_node.accumulator.add_include_headers([
+        "third_party/blink/renderer/platform/runtime_enabled_features.h",
+    ])
+    header_node.extend([
+        make_copyright_header(),
+        EmptyNode(),
+        enclose_with_header_guard(
+            ListNode([
+                make_header_include_directives(header_node.accumulator),
+                EmptyNode(),
+                header_blink_ns,
+            ]), name_style.header_guard(header_path)),
+    ])
+    source_node.accumulator.add_include_headers([
+        "base/containers/span.h",
+        "third_party/blink/renderer/platform/bindings/script_state.h",
+    ])
+    source_node.extend([
+        make_copyright_header(),
+        EmptyNode(),
+        TextNode("#include \"{}\"".format(header_path)),
+        EmptyNode(),
+        make_header_include_directives(source_node.accumulator),
+        EmptyNode(),
+        source_blink_ns,
+    ])
+    header_bindings_ns.body.extend([
+        TextNode("""\
+// Install ES properties associated with the given origin trial feature.\
+"""),
+        func_decl,
+    ])
+    source_bindings_ns.body.extend([
+        CxxNamespaceNode(
+            name="",
+            body=[
+                TextNode("""\
+using InstallFuncType =
+    V8InterfaceBridgeBase::InstallContextDependentPropertiesFuncType;\
+"""),
+            ]),
+        EmptyNode(),
+        helper_func_def,
+        EmptyNode(),
+        func_def,
+    ])
+
+    # The public function
+    feature_to_interfaces = {}
+    set_of_interfaces = set()
+    for interface in web_idl_database.interfaces:
+        for member in itertools.chain(interface.attributes,
+                                      interface.constants,
+                                      interface.operation_groups):
+            for feature in (member.exposure.
+                            context_dependent_runtime_enabled_features):
+                feature_to_interfaces.setdefault(feature, set()).add(interface)
+            if member.exposure.context_dependent_runtime_enabled_features:
+                set_of_interfaces.add(interface)
+
+    switch_node = CxxSwitchNode(cond="${feature}")
+    switch_node.append(case=None, body=TextNode("NOTREACHED();"))
+    for feature, interfaces in sorted(feature_to_interfaces.items()):
+        entries = [
+            TextNode("{{"
+                     "{0}::GetWrapperTypeInfo(), "
+                     "{0}::InstallContextDependentProperties"
+                     "}}, ".format(v8_bridge_class_name(interface)))
+            for interface in sorted(interfaces, key=lambda x: x.identifier)
+        ]
+        table_def = ListNode([
+            TextNode("static const std::pair<"
+                     "const WrapperTypeInfo*, "
+                     "InstallFuncType> wti_list[] = {"),
+            ListNode(entries),
+            TextNode("};"),
+        ])
+        switch_node.append(
+            case="OriginTrialFeature::k{}".format(feature),
+            body=[
+                table_def,
+                TextNode("selected_wti_list = wti_list;"),
+            ])
+
+    func_def.body.extend([
+        TextNode("base::span<const std::pair<"
+                 "const WrapperTypeInfo*, "
+                 "InstallFuncType>> selected_wti_list;"),
+        EmptyNode(),
+        switch_node,
+        EmptyNode(),
+        TextNode("InstallPropertiesPerFeatureInternal"
+                 "(${script_state}, ${feature}, selected_wti_list);"),
+    ])
+
+    for interface in set_of_interfaces:
+        path_manager = PathManager(interface)
+        source_node.accumulator.add_include_header(
+            path_manager.api_path(ext="h"))
+
+    # The helper function
+    helper_func_def.body.append(
+        TextNode("""\
+V8PerContextData* per_context_data = script_state->PerContextData();
+v8::Isolate* isolate = script_state->GetIsolate();
+v8::Local<v8::Context> context = script_state->GetContext();
+const DOMWrapperWorld& world = script_state->World();
+v8::Local<v8::Object> instance_object;
+v8::Local<v8::Object> prototype_object;
+v8::Local<v8::Function> interface_object;
+v8::Local<v8::FunctionTemplate> interface_template;
+V8InterfaceBridgeBase::FeatureSelector feature_selector(world, feature);
+
+for (const auto& pair : wrapper_type_info_list) {
+  const WrapperTypeInfo* wrapper_type_info = pair.first;
+  InstallFuncType install_func = pair.second;
+  if (per_context_data->GetExistingConstructorAndPrototypeForType(
+          wrapper_type_info, &prototype_object, &interface_object)) {
+    interface_template = wrapper_type_info->DomTemplate(isolate, world);
+    install_func(context, world, instance_object, prototype_object,
+                 interface_object, interface_template, feature_selector);
+  }
+}\
+"""))
+
+    # Write down to the files.
+    write_code_node_to_file(header_node, path_manager.gen_path_to(header_path))
+    write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
+
+
 def generate_init_idl_interfaces(web_idl_database):
     # Filepaths
     header_path = PathManager.component_path("modules",
@@ -6554,4 +6732,5 @@ def generate_interfaces(web_idl_database):
         map(lambda interface: (interface, package_initializer()),
             web_idl_database.interfaces)).get(timeout_in_sec)
 
+    generate_install_properties_per_feature(web_idl_database)
     generate_init_idl_interfaces(web_idl_database)

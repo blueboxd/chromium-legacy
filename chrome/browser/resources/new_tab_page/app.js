@@ -35,9 +35,6 @@ class AppElement extends PolymerElement {
   static get properties() {
     return {
       /** @private */
-      darkMode_: Boolean,
-
-      /** @private */
       oneGoogleBarLoaded_: {
         type: Boolean,
         value: false,
@@ -47,7 +44,7 @@ class AppElement extends PolymerElement {
       oneGoogleBarDarkThemeEnabled_: {
         type: Boolean,
         computed: `computeOneGoogleBarDarkThemeEnabled_(oneGoogleBarLoaded_,
-            theme_, backgroundSelection_, darkMode_)`,
+            theme_, backgroundSelection_)`,
         observer: 'onOneGoogleBarDarkThemeEnabledChange_',
       },
 
@@ -126,7 +123,7 @@ class AppElement extends PolymerElement {
       realboxEnabled_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('realboxEnabled'),
-      }
+      },
     };
   }
 
@@ -170,22 +167,6 @@ class AppElement extends PolymerElement {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(assert(this.setThemeListenerId_));
     this.eventTracker_.removeAll();
-    this.mediaListenerDarkMode_.removeListener(
-        assert(this.boundOnDarkModeChange_));
-  }
-
-  /** @override */
-  ready() {
-    super.ready();
-    const {matchMedia} = BrowserProxy.getInstance();
-    /** @private {!Function} */
-    this.boundOnDarkModeChange_ = () => {
-      this.darkMode_ = this.mediaListenerDarkMode_.matches;
-    };
-    /** @private {!MediaQueryList} */
-    this.mediaListenerDarkMode_ = matchMedia('(prefers-color-scheme: dark)');
-    this.mediaListenerDarkMode_.addListener(this.boundOnDarkModeChange_);
-    this.boundOnDarkModeChange_();
   }
 
   /**
@@ -197,14 +178,13 @@ class AppElement extends PolymerElement {
       return false;
     }
     switch (this.backgroundSelection_.type) {
-      case BackgroundSelectionType.NO_SELECTION:
-        return this.theme_.isDark;
       case BackgroundSelectionType.IMAGE:
         return true;
       case BackgroundSelectionType.NO_BACKGROUND:
       case BackgroundSelectionType.DAILY_REFRESH:
+      case BackgroundSelectionType.NO_SELECTION:
       default:
-        return this.darkMode_;
+        return this.theme_.isDark;
     }
   }
 
@@ -382,9 +362,9 @@ class AppElement extends PolymerElement {
    * @private
    */
   computeDoodleAllowed_() {
-    return !this.showBackgroundImage_ &&
-        (!this.theme_ ||
-         this.theme_.type === newTabPage.mojom.ThemeType.DEFAULT);
+    return !this.showBackgroundImage_ && this.theme_ &&
+        this.theme_.type === newTabPage.mojom.ThemeType.DEFAULT &&
+        !this.theme_.isDark;
   }
 
   /**
@@ -393,14 +373,15 @@ class AppElement extends PolymerElement {
    */
   computeLogoColor_() {
     switch (this.backgroundSelection_.type) {
-      case BackgroundSelectionType.NO_SELECTION:
-        return this.theme_ && this.theme_.logoColor || null;
       case BackgroundSelectionType.IMAGE:
         return hexColorToSkColor('#ffffff');
+      case BackgroundSelectionType.NO_SELECTION:
       case BackgroundSelectionType.NO_BACKGROUND:
       case BackgroundSelectionType.DAILY_REFRESH:
       default:
-        return null;
+        return this.theme_ &&
+            (this.theme_.logoColor ||
+             (this.theme_.isDark ? hexColorToSkColor('#ffffff') : null));
     }
   }
 
@@ -410,14 +391,13 @@ class AppElement extends PolymerElement {
    */
   computeSingleColoredLogo_() {
     switch (this.backgroundSelection_.type) {
-      case BackgroundSelectionType.NO_SELECTION:
-        return this.theme_ && !!this.theme_.logoColor;
       case BackgroundSelectionType.IMAGE:
         return true;
-      case BackgroundSelectionType.NO_BACKGROUND:
       case BackgroundSelectionType.DAILY_REFRESH:
+      case BackgroundSelectionType.NO_BACKGROUND:
+      case BackgroundSelectionType.NO_SELECTION:
       default:
-        return false;
+        return this.theme_ && (!!this.theme_.logoColor || this.theme_.isDark);
     }
   }
 

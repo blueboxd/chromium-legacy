@@ -219,13 +219,12 @@ void ExternalCacheImpl::OnExtensionDownloadFinished(
     const extensions::CRXFileInfo& file,
     bool file_ownership_passed,
     const GURL& download_url,
-    const std::string& version,
     const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
     const std::set<int>& request_ids,
     const InstallCallback& callback) {
   DCHECK(file_ownership_passed);
   local_cache_.PutExtension(
-      file.extension_id, file.expected_hash, file.path, version,
+      file.extension_id, file.expected_hash, file.path, file.expected_version,
       base::Bind(&ExternalCacheImpl::OnPutExtension,
                  weak_ptr_factory_.GetWeakPtr(), file.extension_id));
   if (!callback.is_null())

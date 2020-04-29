@@ -197,16 +197,16 @@ void WidgetDelegate::SetWindowTitle(const base::string16& title) {
     GetWidget()->UpdateWindowTitle();
 }
 
-void WidgetDelegate::SetShouldShowCloseButton(bool show_close_button) {
+void WidgetDelegate::SetShowCloseButton(bool show_close_button) {
   params_.show_close_button = show_close_button;
 }
 
-void WidgetDelegate::SetShouldShowTitle(bool show_title) {
+void WidgetDelegate::SetShowTitle(bool show_title) {
   params_.show_title = show_title;
 }
 
 #if defined(USE_AURA)
-void WidgetDelegate::SetShouldCenterTitle(bool center_title) {
+void WidgetDelegate::SetCenterTitle(bool center_title) {
   params_.center_title = center_title;
 }
 #endif

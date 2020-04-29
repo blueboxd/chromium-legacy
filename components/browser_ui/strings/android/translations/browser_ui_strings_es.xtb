@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
+<translation id="1006017844123154345">Abrir versión online</translation>
 <translation id="1044891598689252897">Los sitios web funcionarán con normalidad</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1178581264944972037">Pausar</translation>
@@ -110,6 +111,7 @@
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5335288049665977812">Permitir que los sitios web utilicen JavaScript (recomendado)</translation>
 <translation id="534295439873310000">Dispositivos NFC</translation>
+<translation id="5354152178998424783">Esta acción borrará <ph name="DATASIZE" /> de datos y cookies almacenados por sitios web.</translation>
 <translation id="5391532827096253100">Tu conexión a este sitio web no es segura. Información del sitio web</translation>
 <translation id="5494752089476963479">Bloquea anuncios invasivos o engañosos en los sitios web que los muestran</translation>
 <translation id="5505264765875738116">Los sitios web no pueden preguntarte si quieres que te envíen notificaciones</translation>
@@ -178,6 +180,7 @@
 <translation id="7817023149356982970">Se cerrará tu sesión en este sitio web.</translation>
 <translation id="7828557259026017104">Las cookies son archivos que crean los sitios web que visitas. Estos las usan para recordar tus preferencias. Las cookies de terceros las crean otros sitios web. Parte del contenido que ves en la página web que visitas, como anuncios o imágenes, pertenece a esos otros sitios web.</translation>
 <translation id="7846076177841592234">Cancelar selección</translation>
+<translation id="7846621471902887024">Se cerrarán tus sesiones en todos los sitios web.</translation>
 <translation id="7882806643839505685">Permite que se reproduzcan sonidos en un sitio web específico.</translation>
 <translation id="7993619969781047893">Es posible que las funciones de algunos sitios web no funcionen correctamente</translation>
 <translation id="7999064672810608036">¿Seguro que quieres borrar todos los datos locales, incluidas las cookies, y restablecer todos los permisos de este sitio web?</translation>

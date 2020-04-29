@@ -55,8 +55,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     content::SyntheticPointerActionParams::Button::BUTTON_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventDispatchType,
                           content::InputEventDispatchType::DISPATCH_TYPE_MAX)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPointerProperties::PointerType,
-                          blink::WebPointerProperties::PointerType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(
     cc::OverscrollBehavior::OverscrollBehaviorType,
     cc::OverscrollBehavior::OverscrollBehaviorType::kOverscrollBehaviorTypeMax)

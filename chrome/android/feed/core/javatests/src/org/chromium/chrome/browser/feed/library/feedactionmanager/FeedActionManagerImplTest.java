@@ -8,24 +8,32 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import android.app.Activity;
+import android.graphics.Rect;
+import android.view.View;
+
 import com.google.protobuf.ByteString;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.FeedLoggingBridge;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
-import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ActionManager;
 import org.chromium.chrome.browser.feed.library.api.internal.common.Model;
 import org.chromium.chrome.browser.feed.library.api.internal.sessionmanager.FeedSessionManager;
 import org.chromium.chrome.browser.feed.library.api.internal.store.LocalActionMutation;
@@ -37,6 +45,8 @@ import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeMa
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeTaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeThreadUtils;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamStructure;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamStructure.Operation;
@@ -46,23 +56,43 @@ import org.chromium.components.feed.core.proto.wire.ConsistencyTokenProto.Consis
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 /** Tests of the {@link FeedActionManagerImpl} class. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
 public class FeedActionManagerImplTest {
     private static final String CONTENT_ID_STRING = "contentIdString";
     private static final String SESSION_ID = "session";
     private static final long DEFAULT_TIME = Duration.ofDays(42).toMillis();
     private static final long DEFAULT_TIME_SECONDS = Duration.ofDays(42).getSeconds();
+    // View dimensions on screen. We satisfy or violate exposure and coverage (see
+    // FeedActionManagerImpl.VIEW_EXPOSURE_THRESHOLD and
+    // FeedActionManagerImpl.VIEWPORT_COVERAGE_THRESHOLD for definitions and values). Dimensions are
+    // chosen according to the default exposure and coverage thresholds, and the size of the
+    // viewport.
+    private static final Rect VIEWPORT_RECT = new Rect(0, 0, 100, 100);
+    private static final Rect VISIBLE_RECT = new Rect(0, 0, 100, 50);
+    private static final Rect INVISIBLE_RECT = new Rect(0, -50, 100, 10);
+    // Durations for VIEW actions. Chosen according to the default VIEW duration threshold
+    // FeedActionManagerImpl.VIEW_DURATION_MS_THRESHOLD_DEFAULT.
+    private static final long LONG_DURATION_MS = 1000;
+    private static final long LONG_DURATION_S = Duration.ofMillis(LONG_DURATION_MS).toSeconds();
+    private static final long SHORT_DURATION_MS = 400;
+    private static final ActionPayload ACTION_PAYLOAD = ActionPayload.getDefaultInstance();
 
     private final FakeClock mFakeClock = new FakeClock();
     private final FakeMainThreadRunner mFakeMainThreadRunner =
             FakeMainThreadRunner.runTasksImmediately();
     private final FakeThreadUtils mFakeThreadUtils = FakeThreadUtils.withThreadChecks();
+
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Mock
     private FeedSessionManager mFeedSessionManager;
@@ -76,6 +106,8 @@ public class FeedActionManagerImplTest {
     private Consumer<Result<Model>> mModelConsumer;
     @Mock
     private FeedLoggingBridge mFeedLoggingBridge;
+    @Mock
+    private Runnable mStoreViewActionsRunnable;
     @Captor
     private ArgumentCaptor<Integer> mActionTypeCaptor;
     @Captor
@@ -91,18 +123,35 @@ public class FeedActionManagerImplTest {
     @Captor
     private ArgumentCaptor<StreamUploadableAction> mUploadableActionCaptor;
 
-    private ActionManager mActionManager;
+    private FeedActionManagerImpl mActionManager;
+
+    private TestView mViewport;
 
     @Before
     public void setUp() throws Exception {
         initMocks(this);
-        mActionManager = new FeedActionManagerImpl(mFeedSessionManager, mStore, mFakeThreadUtils,
-                getTaskQueue(), mFakeMainThreadRunner, mFakeClock, mFeedLoggingBridge);
+        mActionManager = new FeedActionManagerImpl(mStore, mFakeThreadUtils, getTaskQueue(),
+                mFakeMainThreadRunner, new TestViewHandler(), mFakeClock, mFeedLoggingBridge);
+        mActionManager.initialize(mFeedSessionManager);
+
+        when(mFeedSessionManager.getUpdateConsumer(any(MutationContext.class)))
+                .thenReturn(mModelConsumer);
+
+        when(mLocalActionMutation.add(anyInt(), anyString())).thenReturn(mLocalActionMutation);
+        when(mStore.editLocalActions()).thenReturn(mLocalActionMutation);
+
+        when(mUploadableActionMutation.upsert(any(StreamUploadableAction.class), anyString()))
+                .thenReturn(mUploadableActionMutation);
+        when(mStore.editUploadableActions()).thenReturn(mUploadableActionMutation);
+
+        mFakeClock.set(DEFAULT_TIME);
+        mViewport = new TestView();
+        mViewport.setRectOnScreen(VIEWPORT_RECT);
+        mActionManager.setViewport(mViewport);
     }
 
     @Test
     public void dismissLocal() throws Exception {
-        setUpDismissMocks();
         StreamDataOperation dataOperation = buildBasicDismissOperation();
 
         mActionManager.dismissLocal(Collections.singletonList(CONTENT_ID_STRING),
@@ -126,7 +175,6 @@ public class FeedActionManagerImplTest {
 
     @Test
     public void dismissLocal_sessionIdSet() throws Exception {
-        setUpDismissMocks();
         StreamDataOperation dataOperation = buildBasicDismissOperation();
 
         mActionManager.dismissLocal(Collections.singletonList(CONTENT_ID_STRING),
@@ -154,7 +202,6 @@ public class FeedActionManagerImplTest {
 
     @Test
     public void dismiss() throws Exception {
-        setUpDismissMocks();
         StreamDataOperation dataOperation = buildBasicDismissOperation();
 
         mActionManager.dismiss(Collections.singletonList(dataOperation), null);
@@ -170,7 +217,6 @@ public class FeedActionManagerImplTest {
 
     @Test
     public void dismiss_sessionIdSet() throws Exception {
-        setUpDismissMocks();
         StreamDataOperation dataOperation = buildBasicDismissOperation();
 
         mActionManager.dismiss(Collections.singletonList(dataOperation), SESSION_ID);
@@ -190,29 +236,26 @@ public class FeedActionManagerImplTest {
 
     @Test
     public void triggerCreateAndUploadAction() throws Exception {
-        ActionPayload payload = ActionPayload.getDefaultInstance();
         mFakeClock.set(DEFAULT_TIME);
-        mActionManager.createAndUploadAction(CONTENT_ID_STRING, payload);
+        mActionManager.createAndUploadAction(CONTENT_ID_STRING, ACTION_PAYLOAD);
         verify(mFeedSessionManager).triggerUploadActions(mActionCaptor.capture());
         StreamUploadableAction action =
                 (StreamUploadableAction) mActionCaptor.getValue().toArray()[0];
         assertThat(action.getFeatureContentId()).isEqualTo(CONTENT_ID_STRING);
         assertThat(action.getTimestampSeconds()).isEqualTo(DEFAULT_TIME_SECONDS);
-        assertThat(action.getPayload()).isEqualTo(payload);
+        assertThat(action.getPayload()).isEqualTo(ACTION_PAYLOAD);
     }
 
     @Test
     public void triggerCreateAndStoreAction() throws Exception {
-        setupCreateAndStoreMocks();
-        ActionPayload payload = ActionPayload.getDefaultInstance();
         mFakeClock.set(DEFAULT_TIME);
-        mActionManager.createAndStoreAction(CONTENT_ID_STRING, payload);
+        mActionManager.createAndStoreAction(CONTENT_ID_STRING, ACTION_PAYLOAD);
         verify(mUploadableActionMutation)
                 .upsert(mUploadableActionCaptor.capture(), mContentIdStringCaptor.capture());
         StreamUploadableAction action = mUploadableActionCaptor.getValue();
         assertThat(action.getFeatureContentId()).isEqualTo(CONTENT_ID_STRING);
         assertThat(action.getTimestampSeconds()).isEqualTo(DEFAULT_TIME_SECONDS);
-        assertThat(action.getPayload()).isEqualTo(payload);
+        assertThat(action.getPayload()).isEqualTo(ACTION_PAYLOAD);
         assertThat(mContentIdStringCaptor.getValue()).isEqualTo(CONTENT_ID_STRING);
     }
 
@@ -230,6 +273,299 @@ public class FeedActionManagerImplTest {
         mActionManager.uploadAllActionsAndUpdateUrl(url, param, consumer);
         verify(mFeedSessionManager).fetchActionsAndUpload(mConsumerCaptor.capture());
         mConsumerCaptor.getValue().accept(Result.success(token));
+    }
+
+    @Test
+    public void onShow_viewTracked_coverage() {
+        showThenHide(
+                // View covers >50% (FeedActionManagerImpl.VIEWPORT_COVERAGE_THRESHOLD) of viewport,
+                // but <50% (FeedActionManagerImpl.VIEW_EXPOSURE_THRESHOLD) of the view is visible.
+                new Rect(0, -1000, 100, 51), CONTENT_ID_STRING, LONG_DURATION_MS);
+        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S);
+    }
+
+    @Test
+    public void onShow_viewTracked_exposure() {
+        showThenHide(
+                // >50% (FeedActionManagerImpl.VIEW_EXPOSURE_THRESHOLD) of the view is visible, but
+                // it covers <50% (FeedActionManagerImpl.VIEWPORT_COVERAGE_THRESHOLD) of the
+                // viewport.
+                new Rect(0, -48, 100, 49), CONTENT_ID_STRING, LONG_DURATION_MS);
+        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S);
+    }
+
+    @Test
+    public void onShow_viewTracked_noExposure_noCoverage() {
+        showThenHide(
+                // <50% (FeedActionManagerImpl.VIEW_EXPOSURE_THRESHOLD) of the view is visible and
+                // it covers <50% (FeedActionManagerImpl.VIEWPORT_COVERAGE_THRESHOLD) of the
+                // viewport.
+                new Rect(0, -50, 100, 49), CONTENT_ID_STRING, LONG_DURATION_MS);
+        verifyNoActionUpserted();
+    }
+
+    @Test
+    public void onShow_viewTracked_visible_tooShort() {
+        showThenHide(VISIBLE_RECT, CONTENT_ID_STRING, SHORT_DURATION_MS);
+        verifyNoActionUpserted();
+    }
+
+    @Test
+    public void onShow_viewTracked_visible_repeated_tooShort() {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(VISIBLE_RECT);
+        mViewport.children.add(view);
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        mFakeClock.advance(SHORT_DURATION_MS);
+        mActionManager.onHide();
+
+        mFakeClock.advance(1000);
+
+        mActionManager.onShow();
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        mFakeClock.advance(SHORT_DURATION_MS);
+        mActionManager.onHide();
+
+        verifyNoActionUpserted();
+    }
+
+    @Test
+    public void onShow_viewTracked_visible_repeated() {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(VISIBLE_RECT);
+        mViewport.children.add(view);
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onHide();
+
+        mFakeClock.advance(1000);
+
+        mActionManager.onShow();
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onHide();
+
+        verifyActionsUpserted(StreamUploadableAction.newBuilder()
+                                      .setFeatureContentId(CONTENT_ID_STRING)
+                                      .setPayload(ACTION_PAYLOAD)
+                                      .setTimestampSeconds(DEFAULT_TIME_SECONDS + LONG_DURATION_S)
+                                      .build(),
+                StreamUploadableAction.newBuilder()
+                        .setFeatureContentId(CONTENT_ID_STRING)
+                        .setPayload(ACTION_PAYLOAD)
+                        .setTimestampSeconds(
+                                DEFAULT_TIME_SECONDS + LONG_DURATION_S + 1 + LONG_DURATION_S)
+                        .build());
+    }
+
+    @Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    @Test
+    public void onShow_viewTrackedVisible_featureDisabled() {
+        showThenHide(VISIBLE_RECT, CONTENT_ID_STRING, LONG_DURATION_MS);
+        verifyNoActionUpserted();
+    }
+
+    @Test
+    public void onShow_viewNotTracked() {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(VISIBLE_RECT);
+        mViewport.children.add(view);
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onHide();
+        verifyNoActionUpserted();
+    }
+
+    @Test
+    public void onShow_multipleViewsTracked() {
+        TestView view1 = new TestView();
+        TestView parentview = new TestView();
+        TestView view2 = new TestView();
+        TestView view3 = new TestView();
+        TestView view4 = new TestView();
+
+        mActionManager.onShow();
+
+        // Four views in the viewport, in vertical sequence, all visible except the last one.
+        view1.setRectOnScreen(new Rect(0, 0, 100, 20));
+        mViewport.children.add(view1);
+        view2.setRectOnScreen(new Rect(0, 30, 100, 50));
+        view3.setRectOnScreen(new Rect(0, 60, 100, 80));
+        view4.setRectOnScreen(new Rect(0, 90, 100, 1000));
+        parentview.children.add(view2);
+        parentview.children.add(view3);
+        parentview.children.add(view4);
+        mViewport.children.add(parentview);
+
+        // All views tracked except the second one.
+        mActionManager.onViewVisible(view1, "contentId1", ACTION_PAYLOAD);
+        mActionManager.onViewVisible(view3, "contentId3", ACTION_PAYLOAD);
+        mActionManager.onViewVisible(view4, "contentId4", ACTION_PAYLOAD);
+
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onHide();
+
+        verifyActionsUpserted(StreamUploadableAction.newBuilder()
+                                      .setFeatureContentId("contentId1")
+                                      .setPayload(ACTION_PAYLOAD)
+                                      .setTimestampSeconds(DEFAULT_TIME_SECONDS + LONG_DURATION_S)
+                                      .build(),
+                StreamUploadableAction.newBuilder()
+                        .setFeatureContentId("contentId3")
+                        .setPayload(ACTION_PAYLOAD)
+                        .setTimestampSeconds(DEFAULT_TIME_SECONDS + LONG_DURATION_S)
+                        .build());
+    }
+
+    private void showThenHide(Rect viewRect, String contentId, long preHideDurationMs) {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(viewRect);
+        mViewport.children.add(view);
+        mActionManager.onViewVisible(view, contentId, ACTION_PAYLOAD);
+        mFakeClock.advance(preHideDurationMs);
+        mActionManager.onHide();
+    }
+
+    @Test
+    public void onScroll_visible() {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(INVISIBLE_RECT);
+        mViewport.children.add(view);
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        mActionManager.onScrollStart();
+        view.setRectOnScreen(VISIBLE_RECT);
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onScrollEnd();
+        mFakeClock.advance(1000);
+        mActionManager.onHide();
+        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S + 1);
+    }
+
+    @Test
+    public void onScroll_notVisible() {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(VISIBLE_RECT);
+        mViewport.children.add(view);
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        mActionManager.onScrollStart();
+        view.setRectOnScreen(INVISIBLE_RECT);
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onScrollEnd();
+        mActionManager.onHide();
+        verifyNoActionUpserted();
+    }
+
+    @Test
+    public void onAnimationFinished_visible() {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(INVISIBLE_RECT);
+        mViewport.children.add(view);
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        view.setRectOnScreen(VISIBLE_RECT);
+        mActionManager.onAnimationFinished();
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onHide();
+        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S);
+    }
+
+    @Test
+    public void onAnimationFinished_notVisible() {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(VISIBLE_RECT);
+        mViewport.children.add(view);
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        view.setRectOnScreen(INVISIBLE_RECT);
+        mActionManager.onAnimationFinished();
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onHide();
+        verifyNoActionUpserted();
+    }
+
+    @Test
+    public void onLayoutChange_visible() {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(INVISIBLE_RECT);
+        mViewport.children.add(view);
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        view.setRectOnScreen(VISIBLE_RECT);
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onLayoutChange();
+        mFakeClock.advance(1000);
+        mActionManager.onHide();
+        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S + 1);
+    }
+
+    @Test
+    public void onLayoutChange_notVisible() {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(VISIBLE_RECT);
+        mViewport.children.add(view);
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        view.setRectOnScreen(INVISIBLE_RECT);
+        mActionManager.onLayoutChange();
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onHide();
+        verifyNoActionUpserted();
+    }
+
+    @Test
+    public void storeViewActions() {
+        mActionManager.onShow();
+        TestView view = new TestView();
+        view.setRectOnScreen(VISIBLE_RECT);
+        mViewport.children.add(view);
+        mActionManager.onViewVisible(view, CONTENT_ID_STRING, ACTION_PAYLOAD);
+        mFakeClock.advance(LONG_DURATION_MS);
+        mActionManager.onLayoutChange();
+        verifyNoActionUpserted();
+        mActionManager.storeViewActions(() -> {
+            verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S);
+            mStoreViewActionsRunnable.run();
+        });
+        verify(mStoreViewActionsRunnable).run();
+    }
+
+    @Test
+    public void storeViewActions_calledbackNoActions() {
+        mActionManager.storeViewActions(() -> {
+            verifyNoActionUpserted();
+            mStoreViewActionsRunnable.run();
+        });
+        verify(mStoreViewActionsRunnable, times(1)).run();
+    }
+
+    private void verifyActionUpserted(ActionPayload payload, String contentId, long durationS) {
+        verifyActionsUpserted(StreamUploadableAction.newBuilder()
+                                      .setFeatureContentId(contentId)
+                                      .setPayload(payload)
+                                      .setTimestampSeconds(DEFAULT_TIME_SECONDS + durationS)
+                                      .build());
+    }
+
+    private void verifyActionsUpserted(StreamUploadableAction... actions) {
+        verify(mUploadableActionMutation, times(actions.length))
+                .upsert(mUploadableActionCaptor.capture(), mContentIdStringCaptor.capture());
+        assertThat(mUploadableActionCaptor.getAllValues())
+                .containsExactlyElementsIn(Arrays.asList(actions));
+        List<String> contentIds = new LinkedList<>();
+        for (StreamUploadableAction action : actions) {
+            contentIds.add(action.getFeatureContentId());
+        }
+        assertThat(mContentIdStringCaptor.getAllValues()).containsExactlyElementsIn(contentIds);
+    }
+
+    private void verifyNoActionUpserted() {
+        verify(mUploadableActionMutation, never())
+                .upsert(any(StreamUploadableAction.class), anyString());
     }
 
     private StreamDataOperation buildBasicDismissOperation() {
@@ -257,5 +593,40 @@ public class FeedActionManagerImplTest {
         FakeTaskQueue fakeTaskQueue = new FakeTaskQueue(mFakeClock, mFakeThreadUtils);
         fakeTaskQueue.initialize(() -> {});
         return fakeTaskQueue;
+    }
+
+    private class TestView extends View {
+        private Rect mRectOnScreen;
+        public final List<View> children = new LinkedList<>();
+
+        public TestView() {
+            super(Robolectric.buildActivity(Activity.class).get());
+            mRectOnScreen = new Rect(0, 0, 0, 0);
+        }
+
+        public void setRectOnScreen(Rect rect) {
+            mRectOnScreen = new Rect(rect);
+        }
+
+        public Rect getRectOnScreen() {
+            return new Rect(mRectOnScreen);
+        }
+    }
+
+    private class TestViewHandler extends FeedActionManagerImpl.ViewHandler {
+        @Override
+        public int getChildCount(View view) {
+            return ((TestView) view).children.size();
+        }
+
+        @Override
+        public View getChildAt(View view, int index) {
+            return ((TestView) view).children.get(index);
+        }
+
+        @Override
+        public Rect getRectOnScreen(View view) {
+            return ((TestView) view).getRectOnScreen();
+        }
     }
 }

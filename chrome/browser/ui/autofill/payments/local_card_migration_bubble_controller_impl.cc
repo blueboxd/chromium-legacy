@@ -100,12 +100,42 @@ void LocalCardMigrationBubbleControllerImpl::OnCancelButtonClicked() {
       AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_DENIED, is_reshow_);
 }
 
-void LocalCardMigrationBubbleControllerImpl::OnBubbleClosed() {
+void LocalCardMigrationBubbleControllerImpl::OnBubbleClosed(
+    PaymentsBubbleClosedReason closed_reason) {
   local_card_migration_bubble_ = nullptr;
   UpdateLocalCardMigrationIcon();
   if (should_add_strikes_on_bubble_close_) {
     should_add_strikes_on_bubble_close_ = false;
     AddStrikesForBubbleClose();
+  }
+
+  // Log local card migration bubble result according to the closed reason.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableFixedPaymentsBubbleLogging)) {
+    switch (closed_reason) {
+      case PaymentsBubbleClosedReason::kAccepted:
+        AutofillMetrics::LogLocalCardMigrationBubbleResultMetric(
+            AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_ACCEPTED, is_reshow_);
+        return;
+      case PaymentsBubbleClosedReason::kClosed:
+        AutofillMetrics::LogLocalCardMigrationBubbleResultMetric(
+            AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_CLOSED, is_reshow_);
+        return;
+      case PaymentsBubbleClosedReason::kNotInteracted:
+        AutofillMetrics::LogLocalCardMigrationBubbleResultMetric(
+            AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_NOT_INTERACTED,
+            is_reshow_);
+        return;
+      case PaymentsBubbleClosedReason::kLostFocus:
+        AutofillMetrics::LogLocalCardMigrationBubbleResultMetric(
+            AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_LOST_FOCUS,
+            is_reshow_);
+        return;
+      case PaymentsBubbleClosedReason::kUnknown:
+      case PaymentsBubbleClosedReason::kCancelled:
+        NOTREACHED();
+        return;
+    }
   }
 }
 
@@ -144,7 +174,6 @@ void LocalCardMigrationBubbleControllerImpl::DidFinishNavigation(
   }
   if (bubble_was_visible) {
     local_card_migration_bubble_->Hide();
-    OnBubbleClosed();
   } else {
     UpdateLocalCardMigrationIcon();
   }

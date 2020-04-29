@@ -458,19 +458,16 @@ TEST_F(TabletEventConverterEvdevTest, Tap) {
 
   ui::MouseEvent* event = dispatched_event(0);
   EXPECT_EQ(ui::ET_MOUSE_MOVED, event->type());
-  EXPECT_EQ(ui::EventPointerType::POINTER_TYPE_PEN,
-            event->pointer_details().pointer_type);
+  EXPECT_EQ(ui::EventPointerType::kPen, event->pointer_details().pointer_type);
   EXPECT_FLOAT_EQ(5.625f, event->pointer_details().tilt_x);
   EXPECT_FLOAT_EQ(0.f, event->pointer_details().tilt_y);
   event = dispatched_event(1);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, event->type());
-  EXPECT_EQ(ui::EventPointerType::POINTER_TYPE_PEN,
-            event->pointer_details().pointer_type);
+  EXPECT_EQ(ui::EventPointerType::kPen, event->pointer_details().pointer_type);
   EXPECT_FLOAT_EQ((float)992 / 2047, event->pointer_details().force);
   EXPECT_EQ(true, event->IsLeftMouseButton());
   event = dispatched_event(2);
-  EXPECT_EQ(ui::EventPointerType::POINTER_TYPE_PEN,
-            event->pointer_details().pointer_type);
+  EXPECT_EQ(ui::EventPointerType::kPen, event->pointer_details().pointer_type);
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, event->type());
   EXPECT_FLOAT_EQ(0.0f, event->pointer_details().force);
   EXPECT_EQ(true, event->IsLeftMouseButton());

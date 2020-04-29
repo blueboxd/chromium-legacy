@@ -164,7 +164,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
        Launcher_ButtonPressed_MouseIsRecordedWhenIconActivatedByTouch) {
   const ui::TouchEvent touch_event(
       ui::ET_GESTURE_TAP, gfx::Point(), base::TimeTicks(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   base::UserActionTester user_action_tester;
   ButtonPressed(touch_event);

@@ -482,4 +482,36 @@ TEST_F(FeedStoreTest, RemoveActions) {
   EXPECT_EQ(receiver.GetResult().value(), false);
 }
 
+TEST_F(FeedStoreTest, ClearAllSuccess) {
+  // Write at least one record of each type.
+  MakeFeedStore({});
+  store_->OverwriteStream(MakeTypicalInitialModelState(), base::DoNothing());
+  fake_db_->UpdateCallback(true);
+  store_->WriteActions({MakeAction(0)}, base::DoNothing());
+  fake_db_->UpdateCallback(true);
+  ASSERT_NE("", StoreToString());
+
+  // ClearAll() and verify the DB is empty.
+  CallbackReceiver<bool> receiver;
+  store_->ClearAll(receiver.Bind());
+  fake_db_->UpdateCallback(true);
+
+  ASSERT_TRUE(receiver.GetResult());
+  EXPECT_TRUE(*receiver.GetResult());
+  EXPECT_EQ("", StoreToString());
+}
+
+TEST_F(FeedStoreTest, ClearAllFail) {
+  // Just verify that we can handle a storage failure. Note that |FakeDB| will
+  // actually perform operations even when UpdateCallback(false) is called.
+  MakeFeedStore({});
+
+  CallbackReceiver<bool> receiver;
+  store_->ClearAll(receiver.Bind());
+  fake_db_->UpdateCallback(false);
+
+  ASSERT_TRUE(receiver.GetResult());
+  EXPECT_FALSE(*receiver.GetResult());
+}
+
 }  // namespace feed

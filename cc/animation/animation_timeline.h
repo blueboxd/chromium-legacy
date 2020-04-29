@@ -43,7 +43,6 @@ class CC_ANIMATION_EXPORT AnimationTimeline
   void AttachAnimation(scoped_refptr<Animation> animation);
   void DetachAnimation(scoped_refptr<Animation> animation);
 
-  std::vector<Animation*> GetAnimations() const;
   void ClearAnimations();
   bool HasAnimation() const { return !id_to_animation_map_.empty(); }
   bool TickTimeLinkedAnimations(

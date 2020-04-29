@@ -220,10 +220,10 @@ class VIEWS_EXPORT WidgetDelegate {
   // Setters for data parameters of the WidgetDelegate. If you use these
   // setters, there is no need to override the corresponding virtual getters.
   void SetWindowTitle(const base::string16& title);
-  void SetShouldShowCloseButton(bool show_close_button);
-  void SetShouldShowTitle(bool show_title);
+  void SetShowCloseButton(bool show_close_button);
+  void SetShowTitle(bool show_title);
 #if defined(USE_AURA)
-  void SetShouldCenterTitle(bool center_title);
+  void SetCenterTitle(bool center_title);
 #endif
 
  protected:

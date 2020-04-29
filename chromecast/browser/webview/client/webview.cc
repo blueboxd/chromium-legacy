@@ -445,8 +445,7 @@ void WebviewClient::SendTouchInput(const Webview* webview,
   touch_input->set_y(y);
   touch_input->set_root_x(x);
   touch_input->set_root_y(y);
-  touch_input->set_pointer_type(
-      static_cast<int>(ui::EventPointerType::POINTER_TYPE_TOUCH));
+  touch_input->set_pointer_type(static_cast<int>(ui::EventPointerType::kTouch));
   touch_input->set_pointer_id(id);
 
   auto input_event = std::make_unique<InputEvent>();

@@ -95,6 +95,7 @@ message AsyncPageEvent {
   bool resource_load_failed = 3;
   bool did_first_visually_non_empty_paint = 4;
   string url = 5;
+  string stopped_error_description = 6;
 }
 
 message StopPageRequest {

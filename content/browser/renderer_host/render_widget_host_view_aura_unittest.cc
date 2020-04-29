@@ -1377,15 +1377,15 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   widget_host_->OnMessageReceived(
       WidgetHostMsg_HasTouchEventHandlers(0, false));
 
-  ui::TouchEvent press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  ui::TouchEvent move(
-      ui::ET_TOUCH_MOVED, gfx::Point(20, 20), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  ui::TouchEvent release(
-      ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
+                       ui::EventTimeForNow(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+                      ui::EventTimeForNow(),
+                      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20),
+                         ui::EventTimeForNow(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   // The touch events should get forwarded from the view but only the discrete
   // events should make it all the way to the renderer.
@@ -1454,18 +1454,18 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, events.size());
 
-  ui::TouchEvent move2(
-      ui::ET_TOUCH_MOVED, gfx::Point(20, 20), base::TimeTicks::Now(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+                       base::TimeTicks::Now(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   view_->OnTouchEvent(&move2);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(ui::MotionEvent::Action::MOVE, pointer_state().GetAction());
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
 
-  ui::TouchEvent release2(
-      ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), base::TimeTicks::Now(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20),
+                          base::TimeTicks::Now(),
+                          ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   view_->OnTouchEvent(&release2);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(press.synchronous_handling_disabled());
@@ -2359,9 +2359,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   view_->Show();
   view_->UseFakeDispatcher();
 
-  ui::TouchEvent press0(
-      ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent press0(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
+                        ui::EventTimeForNow(),
+                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   view_->OnTouchEvent(&press0);
   view_->GetFocusedWidget()->input_router()->OnSetTouchAction(
@@ -2377,9 +2377,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
-  ui::TouchEvent move0(
-      ui::ET_TOUCH_MOVED, gfx::Point(20, 20), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent move0(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+                       ui::EventTimeForNow(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   view_->OnTouchEvent(&move0);
   base::RunLoop().RunUntilIdle();
@@ -2393,9 +2393,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
 
   // For the second touchstart, only the state of the second touch point is
   // StatePressed, the state of the first touch point is StateStationary.
-  ui::TouchEvent press1(
-      ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
+                        ui::EventTimeForNow(),
+                        ui::PointerDetails(ui::EventPointerType::kTouch, 1));
 
   view_->OnTouchEvent(&press1);
   base::RunLoop().RunUntilIdle();
@@ -2410,9 +2410,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
 
   // For the touchmove of second point, the state of the second touch point is
   // StateMoved, the state of the first touch point is StateStationary.
-  ui::TouchEvent move1(
-      ui::ET_TOUCH_MOVED, gfx::Point(30, 30), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(30, 30),
+                       ui::EventTimeForNow(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 1));
 
   view_->OnTouchEvent(&move1);
   base::RunLoop().RunUntilIdle();
@@ -2426,9 +2426,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
 
   // For the touchmove of first point, the state of the first touch point is
   // StateMoved, the state of the second touch point is StateStationary.
-  ui::TouchEvent move2(
-      ui::ET_TOUCH_MOVED, gfx::Point(10, 10), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(10, 10),
+                       ui::EventTimeForNow(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   view_->OnTouchEvent(&move2);
   base::RunLoop().RunUntilIdle();
@@ -2440,9 +2440,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   EXPECT_EQ(2U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
-  ui::TouchEvent cancel0(
-      ui::ET_TOUCH_CANCELLED, gfx::Point(10, 10), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent cancel0(ui::ET_TOUCH_CANCELLED, gfx::Point(10, 10),
+                         ui::EventTimeForNow(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   // For the touchcancel, only the state of the current touch point is
   // StateCancelled, the state of the other touch point is StateStationary.
@@ -2453,9 +2453,9 @@ TEST_F(RenderWidgetHostViewAuraTest, MultiTouchPointsStates) {
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
   EXPECT_EQ(1U, view_->dispatcher_->GetAndResetProcessedTouchEventCount());
 
-  ui::TouchEvent cancel1(
-      ui::ET_TOUCH_CANCELLED, gfx::Point(30, 30), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent cancel1(ui::ET_TOUCH_CANCELLED, gfx::Point(30, 30),
+                         ui::EventTimeForNow(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch, 1));
 
   view_->OnTouchEvent(&cancel1);
   base::RunLoop().RunUntilIdle();
@@ -2473,15 +2473,15 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
 
   widget_host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
 
-  ui::TouchEvent press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  ui::TouchEvent move(
-      ui::ET_TOUCH_MOVED, gfx::Point(20, 20), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  ui::TouchEvent release(
-      ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
+                       ui::EventTimeForNow(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+                      ui::EventTimeForNow(),
+                      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20),
+                         ui::EventTimeForNow(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   view_->OnTouchEvent(&press);
   EXPECT_TRUE(press.synchronous_handling_disabled());
@@ -3352,15 +3352,15 @@ TEST_F(RenderWidgetHostViewAuraTest, SourceEventTypeExistsInLatencyInfo) {
             ui::SourceEventType::WHEEL);
 
   // TOUCH source exists.
-  ui::TouchEvent press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  ui::TouchEvent move(
-      ui::ET_TOUCH_MOVED, gfx::Point(20, 20), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  ui::TouchEvent release(
-      ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
+                       ui::EventTimeForNow(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20),
+                      ui::EventTimeForNow(),
+                      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20),
+                         ui::EventTimeForNow(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   view_->OnTouchEvent(&press);
   view_->OnTouchEvent(&move);
   EXPECT_EQ(widget_host_->lastWheelOrTouchEventLatencyInfo.source_event_type(),
@@ -3429,9 +3429,9 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventPositionsArentRounded) {
   view_->InitAsChild(nullptr);
   view_->Show();
 
-  ui::TouchEvent press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(),
+                       ui::EventTimeForNow(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   press.set_location_f(gfx::PointF(kX, kY));
   press.set_root_location_f(gfx::PointF(kX, kY));
 
@@ -4938,14 +4938,14 @@ TEST_F(RenderWidgetHostViewAuraTest,
 
   widget_host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
 
-  ui::TouchEvent press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
+                       ui::EventTimeForNow(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   // Construct a move with a touch id which doesn't exist.
   ui::TouchEvent invalid_move(
       ui::ET_TOUCH_MOVED, gfx::Point(30, 30), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 1));
 
   // Valid press is handled asynchronously.
   view_->OnTouchEvent(&press);
@@ -5080,9 +5080,9 @@ TEST_F(RenderWidgetHostViewAuraTest, CorrectNumberOfAcksAreDispatched) {
   view_->Show();
   view_->UseFakeDispatcher();
 
-  ui::TouchEvent press1(
-      ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
+                        ui::EventTimeForNow(),
+                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   view_->OnTouchEvent(&press1);
   base::RunLoop().RunUntilIdle();
@@ -5092,9 +5092,9 @@ TEST_F(RenderWidgetHostViewAuraTest, CorrectNumberOfAcksAreDispatched) {
   events[1]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
 
-  ui::TouchEvent press2(
-      ui::ET_TOUCH_PRESSED, gfx::Point(20, 20), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(20, 20),
+                        ui::EventTimeForNow(),
+                        ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   view_->OnTouchEvent(&press2);
   base::RunLoop().RunUntilIdle();
   events = GetAndResetDispatchedMessages();
@@ -6221,8 +6221,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusReasonTouch) {
 
   ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
   tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-  tap_details.set_primary_pointer_type(
-      ui::EventPointerType::POINTER_TYPE_TOUCH);
+  tap_details.set_primary_pointer_type(ui::EventPointerType::kTouch);
   ui::GestureEvent touch_event(0, 0, 0, base::TimeTicks(), tap_details);
 
   parent_view_->OnGestureEvent(&touch_event);
@@ -6238,7 +6237,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusReasonPen) {
 
   ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
   tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-  tap_details.set_primary_pointer_type(ui::EventPointerType::POINTER_TYPE_PEN);
+  tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
   ui::GestureEvent pen_event(0, 0, 0, base::TimeTicks(), tap_details);
 
   parent_view_->OnGestureEvent(&pen_event);
@@ -6256,8 +6255,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusReasonMultipleEventsOnSameNode) {
   {
     ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
     tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-    tap_details.set_primary_pointer_type(
-        ui::EventPointerType::POINTER_TYPE_TOUCH);
+    tap_details.set_primary_pointer_type(ui::EventPointerType::kTouch);
     ui::GestureEvent touch_event(0, 0, 0, base::TimeTicks(), tap_details);
 
     parent_view_->OnGestureEvent(&touch_event);
@@ -6267,8 +6265,7 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusReasonMultipleEventsOnSameNode) {
   {
     ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
     tap_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-    tap_details.set_primary_pointer_type(
-        ui::EventPointerType::POINTER_TYPE_PEN);
+    tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
     ui::GestureEvent pen_event(0, 0, 0, base::TimeTicks(), tap_details);
 
     parent_view_->OnGestureEvent(&pen_event);
@@ -6421,7 +6418,7 @@ class RenderWidgetHostViewAuraKeyboardTest
 };
 
 TEST_F(RenderWidgetHostViewAuraKeyboardTest, KeyboardObserverDestroyed) {
-  parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_TOUCH);
+  parent_view_->SetLastPointerType(ui::EventPointerType::kTouch);
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
@@ -6438,7 +6435,7 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest, NoKeyboardObserverForMouseInput) {
   // removed after it has been registered with a touch input and we received a
   // mouse event.
   // Do not show virtual keyboard for mouse inputs.
-  parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_MOUSE);
+  parent_view_->SetLastPointerType(ui::EventPointerType::kMouse);
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(parent_view_->keyboard_observer_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 0u);
@@ -6448,7 +6445,7 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest, NoKeyboardObserverForMouseInput) {
 TEST_F(RenderWidgetHostViewAuraKeyboardTest,
        KeyboardObserverForOnlyTouchInput) {
   // Show virtual keyboard for touch inputs.
-  parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_TOUCH);
+  parent_view_->SetLastPointerType(ui::EventPointerType::kTouch);
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
@@ -6458,7 +6455,7 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest,
 TEST_F(RenderWidgetHostViewAuraKeyboardTest,
        KeyboardObserverForFocusedNodeChanged) {
   // Show virtual keyboard for touch inputs.
-  parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_TOUCH);
+  parent_view_->SetLastPointerType(ui::EventPointerType::kTouch);
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(IsKeyboardVisible(), true);
   EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
@@ -6478,7 +6475,7 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest,
 
 TEST_F(RenderWidgetHostViewAuraKeyboardTest, KeyboardObserverForPenInput) {
   // Show virtual keyboard for pen inputs.
-  parent_view_->SetLastPointerType(ui::EventPointerType::POINTER_TYPE_PEN);
+  parent_view_->SetLastPointerType(ui::EventPointerType::kPen);
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);

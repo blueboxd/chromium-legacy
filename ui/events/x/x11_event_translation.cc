@@ -113,7 +113,7 @@ std::unique_ptr<MouseEvent> CreateMouseEvent(EventType type,
   if (enter_or_leave && xev.xcrossing.detail == NotifyInferior)
     return nullptr;
 
-  PointerDetails details{EventPointerType::POINTER_TYPE_MOUSE};
+  PointerDetails details{EventPointerType::kMouse};
   auto event = std::make_unique<MouseEvent>(
       type, EventLocationFromXEvent(xev), EventSystemLocationFromXEvent(xev),
       EventTimeFromXEvent(xev), EventFlagsFromXEvent(xev),

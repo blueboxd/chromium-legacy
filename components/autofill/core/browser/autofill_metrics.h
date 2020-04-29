@@ -516,6 +516,8 @@ class AutofillMetrics {
   };
 
   // Metrics to track user interactions with the bubble.
+  // TODO(crbug.com/1070799): Remove this enum once the old logging is cleaned
+  // up.
   enum LocalCardMigrationBubbleUserInteractionMetric {
     // The user explicitly accepts the offer.
     LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_ACCEPTED = 0,
@@ -528,6 +530,20 @@ class AutofillMetrics {
     // while the bubble was hidden.
     LOCAL_CARD_MIGRATION_BUBBLE_CLOSED_NAVIGATED_WHILE_HIDDEN = 3,
     NUM_LOCAL_CARD_MIGRATION_BUBBLE_USER_INTERACTION_METRICS,
+  };
+
+  // Metrics to track user action result of the bubble when the bubble is
+  // closed.
+  enum LocalCardMigrationBubbleResultMetric {
+    // The user explicitly accepted the offer.
+    LOCAL_CARD_MIGRATION_BUBBLE_ACCEPTED = 0,
+    // The user explicitly closed the bubble with the close button or ESC.
+    LOCAL_CARD_MIGRATION_BUBBLE_CLOSED = 1,
+    // The user did not interact with the bubble.
+    LOCAL_CARD_MIGRATION_BUBBLE_NOT_INTERACTED = 2,
+    // The bubble lost its focus and was deactivated.
+    LOCAL_CARD_MIGRATION_BUBBLE_LOST_FOCUS = 3,
+    NUM_LOCAL_CARD_MIGRATION_BUBBLE_RESULT_METRICS,
   };
 
   // Metrics to track events when local card migration dialog is offered.
@@ -1044,8 +1060,13 @@ class AutofillMetrics {
   static void LogLocalCardMigrationBubbleOfferMetric(
       LocalCardMigrationBubbleOfferMetric metric,
       bool is_reshow);
+  // TODO(crbug.com/1070799): Delete the user interaction metrics when the
+  // experiment is fully launched.
   static void LogLocalCardMigrationBubbleUserInteractionMetric(
       LocalCardMigrationBubbleUserInteractionMetric metric,
+      bool is_reshow);
+  static void LogLocalCardMigrationBubbleResultMetric(
+      LocalCardMigrationBubbleResultMetric metric,
       bool is_reshow);
   static void LogLocalCardMigrationDialogOfferMetric(
       LocalCardMigrationDialogOfferMetric metric);

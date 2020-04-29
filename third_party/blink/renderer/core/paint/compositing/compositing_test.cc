@@ -999,6 +999,21 @@ TEST_P(CompositingSimTest, SafeOpaqueBackgroundColorGetsSet) {
               (squashed_bg_color == SK_ColorCYAN));
 }
 
+// Test that a pleasant checkerboard color is used in the presence of blending.
+TEST_P(CompositingSimTest, RootScrollingContentsSafeOpaqueBackgroundColor) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <div style="mix-blend-mode: multiply;"></div>
+      <div id="forcescroll" style="height: 10000px;"></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto* scrolling_contents = ScrollingContentsCcLayerByScrollElementId(
+      RootCcLayer(),
+      MainFrame().GetFrameView()->LayoutViewport()->GetScrollElementId());
+  EXPECT_EQ(scrolling_contents->SafeOpaqueBackgroundColor(), SK_ColorWHITE);
+}
+
 TEST_P(CompositingSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions. When
   // CAP gets closer to launch, this test should be updated to pass.

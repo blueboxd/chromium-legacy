@@ -115,7 +115,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
       const URLRequestContext* context,
       const url::Origin& origin,
       const SiteForCookies& site_for_cookies,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const IsolationInfo& isolation_info,
       const HttpRequestHeaders& additional_headers,
       std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
       std::unique_ptr<WebSocketStreamRequestAPI> api_delegate)
@@ -126,6 +126,9 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
                                             kTrafficAnnotation)),
         connect_delegate_(std::move(connect_delegate)),
         api_delegate_(std::move(api_delegate)) {
+    DCHECK_EQ(IsolationInfo::RedirectMode::kUpdateNothing,
+              isolation_info.redirect_mode());
+
     HttpRequestHeaders headers = additional_headers;
     headers.SetHeader(websockets::kUpgrade, websockets::kWebSocketLowercase);
     headers.SetHeader(HttpRequestHeaders::kConnection, websockets::kUpgrade);
@@ -142,8 +145,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
     url_request_->SetExtraRequestHeaders(headers);
     url_request_->set_initiator(origin);
     url_request_->set_site_for_cookies(site_for_cookies);
-    url_request_->set_isolation_info(IsolationInfo::CreatePartial(
-        IsolationInfo::RedirectMode::kUpdateNothing, network_isolation_key));
+    url_request_->set_isolation_info(isolation_info);
 
     auto create_helper = std::make_unique<WebSocketHandshakeStreamCreateHelper>(
         connect_delegate_.get(), requested_subprotocols, this);
@@ -470,14 +472,14 @@ std::unique_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
     const SiteForCookies& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const IsolationInfo& isolation_info,
     const HttpRequestHeaders& additional_headers,
     URLRequestContext* url_request_context,
     const NetLogWithSource& net_log,
     std::unique_ptr<ConnectDelegate> connect_delegate) {
   auto request = std::make_unique<WebSocketStreamRequestImpl>(
       socket_url, requested_subprotocols, url_request_context, origin,
-      site_for_cookies, network_isolation_key, additional_headers,
+      site_for_cookies, isolation_info, additional_headers,
       std::move(connect_delegate), nullptr);
   request->Start(std::make_unique<base::OneShotTimer>());
   return std::move(request);
@@ -489,7 +491,7 @@ WebSocketStream::CreateAndConnectStreamForTesting(
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
     const SiteForCookies& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const IsolationInfo& isolation_info,
     const HttpRequestHeaders& additional_headers,
     URLRequestContext* url_request_context,
     const NetLogWithSource& net_log,
@@ -498,7 +500,7 @@ WebSocketStream::CreateAndConnectStreamForTesting(
     std::unique_ptr<WebSocketStreamRequestAPI> api_delegate) {
   auto request = std::make_unique<WebSocketStreamRequestImpl>(
       socket_url, requested_subprotocols, url_request_context, origin,
-      site_for_cookies, network_isolation_key, additional_headers,
+      site_for_cookies, isolation_info, additional_headers,
       std::move(connect_delegate), std::move(api_delegate));
   request->Start(std::move(timer));
   return std::move(request);

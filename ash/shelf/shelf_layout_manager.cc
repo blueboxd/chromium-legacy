@@ -111,6 +111,17 @@ constexpr int kNotificationBubbleGapHeight = 6;
 // the auto hidden shelf when the shelf is on the boundary between displays.
 constexpr int kMaxAutoHideShowShelfRegionSize = 10;
 
+aura::Window* GetDragHandleNudgeWindow(ShelfWidget* shelf_widget) {
+  if (!shelf_widget->GetDragHandle())
+    return nullptr;
+  if (!shelf_widget->GetDragHandle()->drag_handle_nudge())
+    return nullptr;
+  return shelf_widget->GetDragHandle()
+      ->drag_handle_nudge()
+      ->GetWidget()
+      ->GetNativeWindow();
+}
+
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
@@ -1922,10 +1933,14 @@ bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
       shelf_->hotseat_widget()->GetNativeWindow();
   const aura::Window* status_area_window =
       shelf_widget_->status_area_widget()->GetNativeWindow();
+  const aura::Window* drag_handle_nudge_window =
+      GetDragHandleNudgeWindow(shelf_widget_);
   return (shelf_window && shelf_window->Contains(window)) ||
          (navigation_window && navigation_window->Contains(window)) ||
          (hotseat_window && hotseat_window->Contains(window)) ||
-         (status_area_window && status_area_window->Contains(window));
+         (status_area_window && status_area_window->Contains(window)) ||
+         (drag_handle_nudge_window &&
+          drag_handle_nudge_window->Contains(window));
 }
 
 bool ShelfLayoutManager::IsStatusAreaWindow(aura::Window* window) {

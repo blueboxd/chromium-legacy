@@ -61,6 +61,7 @@ class RendererController final : public mojom::RemotingSource,
   void OnPlaying() override;
   void OnPaused() override;
   void OnDataSourceInitialized(const GURL& url_after_redirects) override;
+  void OnHlsManifestDetected() override;
   void SetClient(MediaObserverClient* client) override;
 
   base::WeakPtr<RendererController> GetWeakPtr() {
@@ -212,6 +213,8 @@ class RendererController final : public mojom::RemotingSource,
 
   // Current data source information.
   GURL url_after_redirects_;
+
+  bool is_hls_ = false;
 
   // Records session events of interest.
   SessionMetricsRecorder metrics_recorder_;

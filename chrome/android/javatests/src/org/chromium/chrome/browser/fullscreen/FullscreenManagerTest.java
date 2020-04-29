@@ -293,15 +293,12 @@ public class FullscreenManagerTest {
                     @Override
                     public void onBottomControlsHeightChanged(
                             int bottomControlsHeight, int bottomControlsMinHeight) {}
-                    @Override
-                    public void onUpdateViewportSize() {
-                        viewportCallback.notifyCalled();
-                    }
                 };
 
         ChromeFullscreenManager fullscreenManager =
                 mActivityTestRule.getActivity().getFullscreenManager();
         fullscreenManager.addListener(fullscreenListener);
+        fullscreenManager.setViewportSizeDelegate(viewportCallback::notifyCalled);
 
         Assert.assertEquals(0, scrollStartCallback.getCallCount());
         Assert.assertEquals(0, viewportCallback.getCallCount());

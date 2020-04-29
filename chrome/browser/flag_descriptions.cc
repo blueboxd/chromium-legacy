@@ -436,6 +436,12 @@ const char kDebugShortcutsName[] = "Debugging keyboard shortcuts";
 const char kDebugShortcutsDescription[] =
     "Enables additional keyboard shortcuts that are useful for debugging Ash.";
 
+const char kDetectTargetEmbeddingLookalikesName[] =
+    "Detect target embedding domains as lookalikes.";
+const char kDetectTargetEmbeddingLookalikesDescription[] =
+    "Shows a lookalike interstitial when navigating to target embedding domains"
+    "(e.g. google.com.example.com).";
+
 const char kDeviceDiscoveryNotificationsName[] =
     "Device Discovery Notifications";
 const char kDeviceDiscoveryNotificationsDescription[] =
@@ -3842,6 +3848,11 @@ const char kInstallableInkDropName[] = "Use InstallableInkDrop where supported";
 const char kInstallableInkDropDescription[] =
     "InstallableInkDrop is part of an InkDrop refactoring effort. This enables "
     "the pilot implementation where available.";
+
+const char kTextfieldFocusOnTapUpName[] = "Focus UI text fields on touch-up";
+const char kTextfieldFocusOnTapUpDescription[] =
+    "When enabled, Views-based text fields take focus on touch-up instead of "
+    "touch-down. This includes the Omnibox.";
 
 const char kReopenTabInProductHelpName[] = "Reopen tab in-product help";
 const char kReopenTabInProductHelpDescription[] =

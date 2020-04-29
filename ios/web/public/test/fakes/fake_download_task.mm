@@ -25,6 +25,10 @@ FakeDownloadTask::~FakeDownloadTask() {
     observer.OnDownloadDestroyed(this);
 }
 
+WebState* FakeDownloadTask::GetWebState() {
+  return web_state_;
+}
+
 DownloadTask::State FakeDownloadTask::GetState() const {
   return state_;
 }
@@ -113,6 +117,10 @@ void FakeDownloadTask::AddObserver(DownloadTaskObserver* observer) {
 void FakeDownloadTask::RemoveObserver(DownloadTaskObserver* observer) {
   DCHECK(observers_.HasObserver(observer));
   observers_.RemoveObserver(observer);
+}
+
+void FakeDownloadTask::SetWebState(WebState* web_state) {
+  web_state_ = web_state;
 }
 
 void FakeDownloadTask::SetDone(bool done) {

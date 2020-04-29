@@ -593,9 +593,8 @@ IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
   WaitForDBToInitialize();
   GURL test_url(embedded_test_server()->GetURL("foo.com", "/mainpage.html"));
   auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
-  content::ConsoleObserverDelegate console_observer(
-      web_contents, "below-viewport iframe loaded");
-  web_contents->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents);
+  console_observer.SetPattern("below-viewport iframe loaded");
 
   {
     uint64_t data_savings_before_navigation =
@@ -611,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
     waiter->Wait();
     EXPECT_EQ(50000U, GetDataSavings(test_url.HostNoBrackets()) -
                           data_savings_before_navigation);
-    EXPECT_EQ(std::string(), console_observer.message());
+    EXPECT_TRUE(console_observer.messages().empty());
   }
 
   // Reload will not have any savings.
@@ -630,6 +629,7 @@ IN_PROC_BROWSER_TEST_F(LazyLoadWithLiteModeBrowserTest,
     console_observer.Wait();
     EXPECT_EQ(0U, GetDataSavings(test_url.HostNoBrackets()) -
                       data_savings_before_navigation);
-    EXPECT_EQ("below-viewport iframe loaded", console_observer.message());
+    EXPECT_EQ("below-viewport iframe loaded",
+              console_observer.GetMessageAt(0u));
   }
 }

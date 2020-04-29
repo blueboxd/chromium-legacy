@@ -156,9 +156,6 @@ bool BrowserPluginEmbedder::AreAnyGuestsCurrentlyAudible() {
 // static
 bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
                                                            WebContents* guest) {
-  *mouse_unlocked |= static_cast<WebContentsImpl*>(guest)
-                         ->GetBrowserPluginGuest()
-                         ->mouse_locked();
   guest->GotResponseToLockMouseRequest(
       blink::mojom::PointerLockResult::kUserRejected);
 

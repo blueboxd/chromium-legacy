@@ -4577,6 +4577,13 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Shown"/>
 </enum>
 
+<enum name="AutofillLocalCardMigrationBubbleResult">
+  <int value="0" label="User explicitly accepted the bubble"/>
+  <int value="1" label="User explicitly closed the the bubble"/>
+  <int value="2" label="User did not interact with the bubble"/>
+  <int value="3" label="Bubble lost focus and was deactivated"/>
+</enum>
+
 <enum name="AutofillLocalCardMigrationBubbleUserInteraction">
   <int value="0" label="User explicitly accepted bubble"/>
   <int value="1" label="User explicitly denied bubble"/>
@@ -20066,6 +20073,7 @@ Called by update_document_policy_enum.py.-->
   <int value="694" label="VoiceInteractionQuickAnswersEnabled"/>
   <int value="695" label="DeviceCrostiniArcAdbSideloadingAllowed"/>
   <int value="696" label="OnFileDownloadedEnterpriseConnector"/>
+  <int value="697" label="OnBulkDataEntryEnterpriseConnector"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -37980,6 +37988,8 @@ from previous Chrome versions.
   <int value="-2030217301" label="password-export:disabled"/>
   <int value="-2029912304" label="StaleWhileRevalidate2:enabled"/>
   <int value="-2028232016" label="spurious-power-button-lid-angle-change"/>
+  <int value="-2028202891"
+      label="AutofillEnableFixedPaymentsBubbleLogging:disabled"/>
   <int value="-2026156288"
       label="LookalikeUrlNavigationSuggestionsUI:disabled"/>
   <int value="-2025367104" label="enable-material-design-ntp"/>
@@ -38047,6 +38057,7 @@ from previous Chrome versions.
   <int value="-1955923385" label="EnableGamepadButtonAxisEvents:enabled"/>
   <int value="-1954246274"
       label="enable-experimental-accessibility-switch-access"/>
+  <int value="-1953145846" label="TargetEmbeddingLookalikes:disabled"/>
   <int value="-1953121360" label="EphemeralTab:disabled"/>
   <int value="-1948540128" label="disable-webrtc-hw-encoding (deprecated)"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>
@@ -38867,6 +38878,7 @@ from previous Chrome versions.
   <int value="-1052782474" label="enable-cloud-devices"/>
   <int value="-1052415111" label="malware-interstitial-v2"/>
   <int value="-1052219252" label="disable-captive-portal-bypass-proxy"/>
+  <int value="-1052115254" label="TextfieldFocusOnTapUp:disabled"/>
   <int value="-1051509976" label="ServiceWorkerOnUI:disabled"/>
   <int value="-1048901516" label="ChromeMemex:enabled"/>
   <int value="-1048011353" label="LongPressBackNewDesign:disabled"/>
@@ -39074,6 +39086,7 @@ from previous Chrome versions.
   <int value="-832561975" label="enable-picture-in-picture"/>
   <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
   <int value="-824199802" label="ContextualSearchSimplifiedServer:enabled"/>
+  <int value="-823394398" label="TargetEmbeddingLookalikes:enabled"/>
   <int value="-823165021" label="MaterialDesignUserMenu:enabled"/>
   <int value="-820041355" label="enable-transition-compositing"/>
   <int value="-816984237" label="OfflinePagesAsyncDownload:enabled"/>
@@ -39543,6 +39556,7 @@ from previous Chrome versions.
   <int value="-263150202" label="BundledConnectionHelp:disabled"/>
   <int value="-262122630" label="ArcEnableDocumentsProviderInFilesApp:enabled"/>
   <int value="-258081634" label="AutofillAssistantDirectActions:disabled"/>
+  <int value="-257478609" label="TextfieldFocusOnTapUp:enabled"/>
   <int value="-255264176" label="OmniboxSearchEngineLogo:disabled"/>
   <int value="-254887599" label="google-profile-info"/>
   <int value="-254158542" label="SubresourceRedirectPreviews:enabled"/>
@@ -41430,6 +41444,8 @@ from previous Chrome versions.
   <int value="1960169775" label="NewPhotoPicker:disabled"/>
   <int value="1961425320" label="force-qtkit"/>
   <int value="1962485086" label="DesktopPWAsLocalUpdating:enabled"/>
+  <int value="1963766060"
+      label="AutofillEnableFixedPaymentsBubbleLogging:enabled"/>
   <int value="1964816410" label="AndroidPayIntegrationV2:enabled"/>
   <int value="1965055310" label="SyncSetupFriendlySettings:enabled"/>
   <int value="1965976546" label="NewOverviewAnimations:disabled"/>

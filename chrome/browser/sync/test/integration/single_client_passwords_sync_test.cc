@@ -536,6 +536,35 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   EXPECT_EQ(passwords_helper::GetAllLogins(profile_store).size(), 1u);
   EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
 }
+
+// Regression test for crbug.com/1076378.
+IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
+                       EnablesPasswordSyncOnOptingInToSync) {
+  AddTestPasswordToFakeServer();
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Setup Sync for a secondary account (i.e. in transport mode).
+  AccountInfo account_info = secondary_account_helper::SignInSecondaryAccount(
+      GetProfile(0), &test_url_loader_factory_, "user@email.com");
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // The user is not opted in to the account-scoped password storage, so the
+  // passwords data type should *not* be active.
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+
+  // Make the account primary and turn on Sync-the-feature.
+  secondary_account_helper::MakeAccountPrimary(GetProfile(0), "user@email.com");
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+      kSetSourceFromTest);
+  ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // Now password sync should be active.
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+}
 #endif  // !defined(OS_CHROMEOS)
 
 }  // namespace

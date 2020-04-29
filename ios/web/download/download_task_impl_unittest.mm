@@ -228,6 +228,7 @@ class DownloadTaskImplTest : public PlatformTest {
 
 // Tests DownloadTaskImpl default state after construction.
 TEST_F(DownloadTaskImplTest, DefaultState) {
+  EXPECT_EQ(&web_state_, task_->GetWebState());
   EXPECT_EQ(DownloadTask::State::kNotStarted, task_->GetState());
   EXPECT_FALSE(task_->GetResponseWriter());
   EXPECT_NSEQ(task_delegate_.configuration().identifier,

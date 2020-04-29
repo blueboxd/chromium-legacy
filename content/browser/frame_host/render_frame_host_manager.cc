@@ -949,10 +949,8 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // done earlier to keep browser and renderer state in sync.  This is
       // important to do before CommitPending(), which destroys the
       // corresponding proxy. See https://crbug.com/487872.
-      if (GetRenderFrameProxyHost(dest_site_instance.get())) {
-        navigation_rfh->Send(
-            new FrameMsg_SwapIn(navigation_rfh->GetRoutingID()));
-      }
+      if (GetRenderFrameProxyHost(dest_site_instance.get()))
+        navigation_rfh->SwapIn();
       CommitPending(std::move(speculative_render_frame_host_), nullptr,
                     request->require_coop_browsing_instance_swap());
     }
@@ -3104,8 +3102,7 @@ void RenderFrameHostManager::CreateNewFrameForInnerDelegateAttachIfNecessary() {
   }
   // Swap in the speculative frame. It will later be replaced when
   // WebContents::AttachToOuterWebContentsFrame is called.
-  speculative_render_frame_host_->Send(
-      new FrameMsg_SwapIn(speculative_render_frame_host_->GetRoutingID()));
+  speculative_render_frame_host_->SwapIn();
   CommitPending(std::move(speculative_render_frame_host_), nullptr,
                 false /* clear_proxies_on_commit */);
   NotifyPrepareForInnerDelegateAttachComplete(true /* success */);

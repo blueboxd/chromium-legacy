@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.library.basicstream.internal;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -16,6 +17,7 @@ import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
+import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ViewActionManager;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.FeedViewHolder;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -26,6 +28,8 @@ public class StreamItemAnimatorTest {
     @Mock
     private ContentChangedListener mContentChangedListener;
     @Mock
+    private ViewActionManager mViewActionManager;
+    @Mock
     private FeedViewHolder mFeedViewHolder;
 
     private StreamItemAnimatorForTest mStreamItemAnimator;
@@ -33,13 +37,23 @@ public class StreamItemAnimatorTest {
     @Before
     public void setup() {
         initMocks(this);
-        mStreamItemAnimator = new StreamItemAnimatorForTest(mContentChangedListener);
+        mStreamItemAnimator =
+                new StreamItemAnimatorForTest(mContentChangedListener, mViewActionManager);
     }
 
     @Test
     public void testOnAnimationFinished() {
         mStreamItemAnimator.onAnimationFinished(mFeedViewHolder);
         verify(mContentChangedListener).onContentChanged();
+        verify(mViewActionManager, never()).onAnimationFinished();
+    }
+
+    @Test
+    public void testOnAnimationFinished_visible() {
+        mStreamItemAnimator.setStreamVisibility(true);
+        mStreamItemAnimator.onAnimationFinished(mFeedViewHolder);
+        verify(mContentChangedListener).onContentChanged();
+        verify(mViewActionManager).onAnimationFinished();
     }
 
     @Test
@@ -51,8 +65,9 @@ public class StreamItemAnimatorTest {
     private static class StreamItemAnimatorForTest extends StreamItemAnimator {
         private boolean mAnimationsEnded;
 
-        StreamItemAnimatorForTest(ContentChangedListener contentChangedListener) {
-            super(contentChangedListener);
+        StreamItemAnimatorForTest(
+                ContentChangedListener contentChangedListener, ViewActionManager actionManager) {
+            super(contentChangedListener, actionManager);
         }
 
         @Override

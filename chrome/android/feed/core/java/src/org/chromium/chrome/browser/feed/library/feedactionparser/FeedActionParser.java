@@ -12,6 +12,7 @@ import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.OPEN_URL_INCOGNITO;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.OPEN_URL_NEW_TAB;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.OPEN_URL_NEW_WINDOW;
+import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.REPORT_VIEW;
 
 import android.view.View;
 
@@ -35,6 +36,7 @@ import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedAct
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.OpenUrlData;
+import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.ViewReportData;
 import org.chromium.components.feed.core.proto.ui.piet.ActionsProto.Action;
 import org.chromium.components.feed.core.proto.ui.piet.LogDataProto.LogData;
 
@@ -217,6 +219,22 @@ public final class FeedActionParser implements ActionParser {
             case SEND_FEEDBACK:
                 Log.d(TAG, "SendFeedback menu item clicked.");
                 streamActionApi.sendFeedback(this.mContentMetadata.get());
+                break;
+            case REPORT_VIEW:
+                ViewReportData viewReportData = feedActionMetadata.getViewReportData();
+                String contentId =
+                        mProtocolAdapter.getStreamContentId(viewReportData.getContentId());
+                switch (viewReportData.getVisibility()) {
+                    case SHOW:
+                        streamActionApi.reportViewVisible(
+                                view, contentId, viewReportData.getPayload());
+                        break;
+                    case HIDE:
+                        streamActionApi.reportViewHidden(view, contentId);
+                        break;
+                    default:
+                        Log.d(TAG, "Unrecognized view report data visibility.");
+                }
                 break;
             default:
                 Logger.wtf(TAG, "Haven't implemented host handling of %s",

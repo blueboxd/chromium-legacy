@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
-<translation id="1006017844123154345">Отваряне онлайн</translation>
 <translation id="1028699632127661925">Изпраща се до <ph name="DEVICE_NAME" />...</translation>
+<translation id="1036348656032585052">Изключване</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> се добавя...</translation>
 <translation id="1041308826830691739">От уебсайтове</translation>
 <translation id="1049743911850919806">„Инкогнито“</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">Началната страница на Chrome</translation>
 <translation id="3157842584138209013">Използвайте бутона „Още опции“, за да видите колко данни сте спестили</translation>
 <translation id="3166827708714933426">Комбинации за раздели и прозорци</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3181954750937456830">„Безопасно сърфиране“ (защитава вас и устройството ви от опасни сайтове)</translation>
 <translation id="3205824638308738187">Още съвсем малко!</translation>
 <translation id="3207960819495026254">С отметка</translation>
@@ -372,7 +373,6 @@
 <translation id="4116038641877404294">Изтеглете страниците, за да ги използвате офлайн</translation>
 <translation id="4135200667068010335">Списъкът с устройства, с които да се сподели даден раздел, е затворен.</translation>
 <translation id="4149994727733219643">Опростен изглед на уеб страниците</translation>
-<translation id="4165986682804962316">Настройки за сайта</translation>
 <translation id="4170011742729630528">Няма достъп до услугата. Опитайте отново по-късно.</translation>
 <translation id="4179980317383591987">Използвани: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Езици</translation>
@@ -583,6 +583,7 @@
 <translation id="5853623416121554550">на пауза</translation>
 <translation id="5854790677617711513">По-стари от 30 дни</translation>
 <translation id="5858741533101922242">Chrome не може да включи адаптера за Bluetooth</translation>
+<translation id="5860491529813859533">Включване</translation>
 <translation id="5862731021271217234">Включете синхронизирането, за да получите разделите си от другите си устройства</translation>
 <translation id="5864174910718532887">Подробности: сортирани по име на сайта</translation>
 <translation id="5864419784173784555">Изчаква се друго изтегляне…</translation>

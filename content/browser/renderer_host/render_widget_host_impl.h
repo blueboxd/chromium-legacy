@@ -152,7 +152,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public IPC::Listener,
       public RenderFrameMetadataProvider::Observer,
       public blink::mojom::FrameWidgetHost,
-      public blink::mojom::WidgetHost {
+      public blink::mojom::WidgetHost,
+      public blink::mojom::PointerLockContext {
  public:
   // |routing_id| must not be MSG_ROUTING_NONE.
   // If this object outlives |delegate|, DetachDelegate() must be called when
@@ -723,11 +724,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       bool privileged,
       bool unadjusted_movement,
       InputRouterImpl::RequestMouseLockCallback response) override;
+  gfx::Size GetRootWidgetViewportSize() override;
+
+  // PointerLockContext overrides
   void RequestMouseLockChange(
       bool unadjusted_movement,
-      InputRouterImpl::RequestMouseLockCallback response) override;
-  void UnlockMouse() override;
-  gfx::Size GetRootWidgetViewportSize() override;
+      PointerLockContext::RequestMouseLockChangeCallback response) override;
 
   // FrameTokenMessageQueue::Client:
   void OnInvalidFrameToken(uint32_t frame_token) override;
@@ -872,6 +874,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
                           blink::mojom::InputEventResultSource ack_source,
                           blink::mojom::InputEventResultState ack_result);
+
+  // Release the mouse lock
+  void UnlockMouse();
 
   // IPC message handlers
   void OnClose();
@@ -1069,6 +1074,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // this is independent of |is_hidden_|. For widgets not associated with
   // RenderFrame/View, assume false.
   bool intersects_viewport_ = false;
+
+  // One side of a pipe that is held open while the pointer is locked.
+  // The other side is held be the renderer.
+  mojo::Receiver<blink::mojom::PointerLockContext> mouse_lock_context_{this};
 
 #if defined(OS_ANDROID)
   // Tracks the current importance of widget.

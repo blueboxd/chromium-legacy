@@ -21,6 +21,7 @@ class FakeDownloadTask : public DownloadTask {
   ~FakeDownloadTask() override;
 
   // DownloadTask overrides:
+  WebState* GetWebState() override;
   DownloadTask::State GetState() const override;
   void Start(std::unique_ptr<net::URLFetcherResponseWriter> writer) override;
   void Cancel() override;
@@ -44,6 +45,7 @@ class FakeDownloadTask : public DownloadTask {
   void RemoveObserver(DownloadTaskObserver* observer) override;
 
   // Setters for task properties. Setters invoke OnDownloadUpdated callback.
+  void SetWebState(WebState* web_state);
   void SetDone(bool done);
   void SetErrorCode(int error_code);
   void SetHttpCode(int http_code);
@@ -62,6 +64,7 @@ class FakeDownloadTask : public DownloadTask {
 
   base::ObserverList<DownloadTaskObserver, true>::Unchecked observers_;
 
+  WebState* web_state_ = nullptr;
   State state_ = State::kNotStarted;
   std::unique_ptr<net::URLFetcherResponseWriter> writer_;
   GURL original_url_;

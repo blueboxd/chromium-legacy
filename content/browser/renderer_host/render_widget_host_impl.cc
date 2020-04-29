@@ -247,9 +247,6 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
   void MouseCaptureLost() override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
-  void MouseLockLost() override {
-    DLOG(WARNING) << "Input request on unbound interface";
-  }
   void SetEditCommandsForNextKeyEvent(
       const std::vector<content::EditCommand>& commands) override {
     DLOG(WARNING) << "Input request on unbound interface";
@@ -1119,7 +1116,7 @@ void RenderWidgetHostImpl::LostMouseLock() {
 }
 
 void RenderWidgetHostImpl::SendMouseLockLost() {
-  widget_input_handler_->MouseLockLost();
+  mouse_lock_context_.reset();
 }
 
 void RenderWidgetHostImpl::ViewDestroyed() {
@@ -2054,7 +2051,8 @@ void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary(
     DCHECK(request_mouse_callback_);
     pending_mouse_lock_request_ = false;
     mouse_lock_raw_movement_ = false;
-    std::move(request_mouse_callback_).Run(reason);
+    std::move(request_mouse_callback_)
+        .Run(reason, /*context=*/mojo::NullRemote());
 
   } else if (IsMouseLocked()) {
     view_->UnlockMouse();
@@ -2531,12 +2529,14 @@ void RenderWidgetHostImpl::RequestMouseLock(
     bool unadjusted_movement,
     InputRouterImpl::RequestMouseLockCallback response) {
   if (pending_mouse_lock_request_) {
-    std::move(response).Run(blink::mojom::PointerLockResult::kAlreadyLocked);
+    std::move(response).Run(blink::mojom::PointerLockResult::kAlreadyLocked,
+                            /*context=*/mojo::NullRemote());
     return;
   }
 
   if (!view_ || !view_->HasFocus()) {
-    std::move(response).Run(blink::mojom::PointerLockResult::kWrongDocument);
+    std::move(response).Run(blink::mojom::PointerLockResult::kWrongDocument,
+                            /*context=*/mojo::NullRemote());
     return;
   }
 
@@ -2564,7 +2564,7 @@ void RenderWidgetHostImpl::RequestMouseLock(
 
 void RenderWidgetHostImpl::RequestMouseLockChange(
     bool unadjusted_movement,
-    InputRouterImpl::RequestMouseLockCallback response) {
+    PointerLockContext::RequestMouseLockChangeCallback response) {
   if (pending_mouse_lock_request_) {
     std::move(response).Run(blink::mojom::PointerLockResult::kAlreadyLocked);
     return;
@@ -2865,16 +2865,30 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(
 
   DCHECK(request_mouse_callback_);
   pending_mouse_lock_request_ = false;
-  if (view_ && view_->HasFocus()) {
-    blink::mojom::PointerLockResult result =
-        view_->LockMouse(mouse_lock_raw_movement_);
-    std::move(request_mouse_callback_).Run(result);
-    return result == blink::mojom::PointerLockResult::kSuccess;
+  if (!view_ || !view_->HasFocus()) {
+    std::move(request_mouse_callback_)
+        .Run(blink::mojom::PointerLockResult::kWrongDocument,
+             /*context=*/mojo::NullRemote());
+    return false;
   }
 
+  blink::mojom::PointerLockResult result =
+      view_->LockMouse(mouse_lock_raw_movement_);
+
+  if (result != blink::mojom::PointerLockResult::kSuccess) {
+    std::move(request_mouse_callback_)
+        .Run(result, /*context=*/mojo::NullRemote());
+    return false;
+  }
+
+  mojo::PendingRemote<blink::mojom::PointerLockContext> context =
+      mouse_lock_context_.BindNewPipeAndPassRemote();
+
   std::move(request_mouse_callback_)
-      .Run(blink::mojom::PointerLockResult::kWrongDocument);
-  return false;
+      .Run(blink::mojom::PointerLockResult::kSuccess, std::move(context));
+  mouse_lock_context_.set_disconnect_handler(base::BindOnce(
+      &RenderWidgetHostImpl::UnlockMouse, weak_factory_.GetWeakPtr()));
+  return true;
 }
 
 void RenderWidgetHostImpl::GotResponseToKeyboardLockRequest(bool allowed) {

@@ -1171,7 +1171,7 @@ void NetworkContext::CreateWebSocket(
     const GURL& url,
     const std::vector<std::string>& requested_protocols,
     const net::SiteForCookies& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const net::IsolationInfo& isolation_info,
     std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t process_id,
     int32_t render_frame_id,
@@ -1184,7 +1184,7 @@ void NetworkContext::CreateWebSocket(
   if (!websocket_factory_)
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);
   websocket_factory_->CreateWebSocket(
-      url, requested_protocols, site_for_cookies, network_isolation_key,
+      url, requested_protocols, site_for_cookies, isolation_info,
       std::move(additional_headers), process_id, render_frame_id, origin,
       options, std::move(handshake_client), std::move(auth_handler),
       std::move(header_client));

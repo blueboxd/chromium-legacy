@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_handler.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 
 namespace blink {
@@ -45,8 +46,8 @@ class CONTENT_EXPORT MouseLockDispatcher {
                        blink::WebLocalFrame* requester_frame,
                        blink::WebWidgetClient::PointerLockCallback callback,
                        bool request_unadjusted_movement);
-  // Request to unlock the mouse. An asynchronous response to
-  // target->OnMouseLockLost() will follow.
+  // Request to unlock the mouse. This call destroys the |mouse_lock_context_|.
+  // A response to target->OnMouseLockLost() will follow.
   void UnlockMouse(LockTarget* target);
   // Clears out the reference to the |target| because it has or is being
   // destroyed. Unlocks if locked. The pointer will not be accessed.
@@ -60,18 +61,18 @@ class CONTENT_EXPORT MouseLockDispatcher {
 
   // Subclasses or users have to call these methods to report mouse lock events
   // from the browser.
-  void OnLockMouseACK(blink::mojom::PointerLockResult result);
+  void OnLockMouseACK(
+      blink::mojom::PointerLockResult result,
+      mojo::PendingRemote<blink::mojom::PointerLockContext> context);
   void OnChangeLockAck(blink::mojom::PointerLockResult result);
-  void OnMouseLockLost();
+
+  void FlushContextPipeForTesting();
 
  protected:
   // Subclasses must implement these methods to send mouse lock requests to the
   // browser.
   virtual void SendLockMouseRequest(blink::WebLocalFrame* requester_frame,
                                     bool request_unadjusted_movement) = 0;
-  virtual void SendChangeLockRequest(blink::WebLocalFrame* requester_frame,
-                                     bool request_unadjusted_movement) {}
-  virtual void SendUnlockMouseRequest() = 0;
 
   base::WeakPtr<MouseLockDispatcher> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -79,16 +80,19 @@ class CONTENT_EXPORT MouseLockDispatcher {
 
  private:
   bool MouseLockedOrPendingAction() const {
-    return mouse_locked_ || pending_lock_request_ || pending_unlock_request_;
+    return mouse_lock_context_ || pending_lock_request_ ||
+           pending_unlock_request_;
   }
 
-  bool mouse_locked_;
+  void OnMouseLockLost();
+
   // If both |pending_lock_request_| and |pending_unlock_request_| are true,
   // it means a lock request was sent before an unlock request and we haven't
   // received responses for them. The logic in LockMouse() makes sure that a
   // lock request won't be sent when there is a pending unlock request.
   bool pending_lock_request_;
   bool pending_unlock_request_;
+  mojo::Remote<blink::mojom::PointerLockContext> mouse_lock_context_;
 
   blink::WebWidgetClient::PointerLockCallback lock_mouse_callback_;
 

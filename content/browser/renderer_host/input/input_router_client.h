@@ -84,12 +84,6 @@ class CONTENT_EXPORT InputRouterClient {
       bool unadjusted_movement,
       mojom::WidgetInputHandlerHost::RequestMouseLockCallback response) = 0;
 
-  virtual void RequestMouseLockChange(
-      bool unadjusted_movement,
-      mojom::WidgetInputHandlerHost::RequestMouseLockCallback response) = 0;
-
-  virtual void UnlockMouse() = 0;
-
   // Returns the size of visible viewport in screen space, in DIPs.
   virtual gfx::Size GetRootWidgetViewportSize() = 0;
 

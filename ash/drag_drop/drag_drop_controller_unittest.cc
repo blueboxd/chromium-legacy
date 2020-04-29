@@ -1146,28 +1146,24 @@ TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
   gfx::Point end = start + gfx::Vector2d(drag_view->bounds().width() / 3, 0);
 
   base::TimeTicks timestamp = ui::EventTimeForNow();
-  ui::TouchEvent press(
-      ui::ET_TOUCH_PRESSED, start, timestamp,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, start, timestamp,
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   generator.Dispatch(&press);
 
   DispatchGesture(ui::ET_GESTURE_LONG_PRESS, start);
   UpdateDragData();
   timestamp += base::TimeDelta::FromMilliseconds(10);
-  ui::TouchEvent move1(
-      ui::ET_TOUCH_MOVED, mid, timestamp,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, mid, timestamp,
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   generator.Dispatch(&move1);
   // Doing two moves instead of one will guarantee to generate a fling at the
   // end.
   timestamp += base::TimeDelta::FromMilliseconds(10);
-  ui::TouchEvent move2(
-      ui::ET_TOUCH_MOVED, end, timestamp,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, end, timestamp,
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   generator.Dispatch(&move2);
-  ui::TouchEvent release(
-      ui::ET_TOUCH_RELEASED, end, timestamp,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, end, timestamp,
+                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   generator.Dispatch(&release);
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);

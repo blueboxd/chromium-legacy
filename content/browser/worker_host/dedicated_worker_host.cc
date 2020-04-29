@@ -370,7 +370,7 @@ void DedicatedWorkerHost::CreateWebSocketConnector(
       std::make_unique<WebSocketConnectorImpl>(
           ancestor_render_frame_host_id_.child_id,
           ancestor_render_frame_host_id_.frame_routing_id, worker_origin_,
-          isolation_info_.network_isolation_key()),
+          isolation_info_),
       std::move(receiver));
 }
 

@@ -7,6 +7,7 @@ package org.chromium.components.query_tiles;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,11 +21,15 @@ public class QueryTile extends ImageTile {
     /** The next level tiles to be shown when this tile is clicked. */
     public final List<QueryTile> children;
 
+    /** The urls of the images to be shown for the tile. */
+    public final List<String> urls;
+
     /** Constructor. */
     public QueryTile(String id, String displayTitle, String accessibilityText, String queryText,
-            List<QueryTile> children) {
+            String[] urls, List<QueryTile> children) {
         super(id, displayTitle, accessibilityText);
         this.queryText = queryText;
+        this.urls = Arrays.asList(urls);
         this.children =
                 Collections.unmodifiableList(children == null ? new ArrayList<>() : children);
     }

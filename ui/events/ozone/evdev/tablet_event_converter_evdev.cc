@@ -23,8 +23,8 @@ float ScaleTilt(int value, int min_value, int num_values) {
 
 EventPointerType GetToolType(int button_tool) {
   if (button_tool == BTN_TOOL_RUBBER)
-    return EventPointerType::POINTER_TYPE_ERASER;
-  return EventPointerType::POINTER_TYPE_PEN;
+    return EventPointerType::kEraser;
+  return EventPointerType::kPen;
 }
 
 }  // namespace

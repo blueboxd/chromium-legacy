@@ -13,18 +13,18 @@ namespace {
 EventPointerType ToEventPointerType(MotionEvent::ToolType tool_type) {
   switch (tool_type) {
     case MotionEvent::ToolType::UNKNOWN:
-      return EventPointerType::POINTER_TYPE_UNKNOWN;
+      return EventPointerType::kUnknown;
     case MotionEvent::ToolType::FINGER:
-      return EventPointerType::POINTER_TYPE_TOUCH;
+      return EventPointerType::kTouch;
     case MotionEvent::ToolType::STYLUS:
-      return EventPointerType::POINTER_TYPE_PEN;
+      return EventPointerType::kPen;
     case MotionEvent::ToolType::MOUSE:
-      return EventPointerType::POINTER_TYPE_MOUSE;
+      return EventPointerType::kMouse;
     case MotionEvent::ToolType::ERASER:
-      return EventPointerType::POINTER_TYPE_ERASER;
+      return EventPointerType::kEraser;
     default:
       NOTREACHED() << "Invalid ToolType = " << tool_type;
-      return EventPointerType::POINTER_TYPE_UNKNOWN;
+      return EventPointerType::kUnknown;
   }
 }
 

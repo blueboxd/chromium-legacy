@@ -23,6 +23,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/extensions/api/identity.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -70,6 +71,10 @@ bool IsBrowserSigninAllowed(Profile* profile) {
 
 std::string GetOAuth2MintTokenFlowVersion() {
   return version_info::GetVersionNumber();
+}
+
+std::string GetOAuth2MintTokenFlowChannel() {
+  return version_info::GetChannelString(chrome::GetChannel());
 }
 
 }  // namespace
@@ -947,7 +952,8 @@ IdentityGetAuthTokenFunction::CreateMintTokenFlow() {
                 std::vector<std::string>(token_key_.scopes.begin(),
                                          token_key_.scopes.end()),
                 signin_scoped_device_id, consent_result_,
-                GetOAuth2MintTokenFlowVersion(), gaia_mint_token_mode_));
+                GetOAuth2MintTokenFlowVersion(),
+                GetOAuth2MintTokenFlowChannel(), gaia_mint_token_mode_));
   return mint_token_flow;
 }
 

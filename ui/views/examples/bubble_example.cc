@@ -78,7 +78,7 @@ class ExampleBubble : public BubbleDialogDelegateView {
   void Init() override {
     SetLayoutManager(std::make_unique<BoxLayout>(
         BoxLayout::Orientation::kVertical, gfx::Insets(50)));
-    AddChildView(new Label(GetArrowName(arrow())));
+    AddChildView(std::make_unique<Label>(GetArrowName(arrow())));
   }
 
  private:
@@ -94,18 +94,18 @@ BubbleExample::~BubbleExample() = default;
 void BubbleExample::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kHorizontal, gfx::Insets(), 10));
-  no_shadow_ = new LabelButton(this, ASCIIToUTF16("No Shadow"));
-  container->AddChildView(no_shadow_);
-  no_shadow_opaque_ = new LabelButton(this, ASCIIToUTF16("Opaque Border"));
-  container->AddChildView(no_shadow_opaque_);
-  big_shadow_ = new LabelButton(this, ASCIIToUTF16("Big Shadow"));
-  container->AddChildView(big_shadow_);
-  small_shadow_ = new LabelButton(this, ASCIIToUTF16("Small Shadow"));
-  container->AddChildView(small_shadow_);
-  no_assets_ = new LabelButton(this, ASCIIToUTF16("No Assets"));
-  container->AddChildView(no_assets_);
-  persistent_ = new LabelButton(this, ASCIIToUTF16("Persistent"));
-  container->AddChildView(persistent_);
+  no_shadow_ = container->AddChildView(
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("No Shadow")));
+  no_shadow_opaque_ = container->AddChildView(
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Opaque Border")));
+  big_shadow_ = container->AddChildView(
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Big Shadow")));
+  small_shadow_ = container->AddChildView(
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Small Shadow")));
+  no_assets_ = container->AddChildView(
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("No Assets")));
+  persistent_ = container->AddChildView(
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Persistent")));
 }
 
 void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {

@@ -125,4 +125,8 @@ UserAgentType WebClient::GetDefaultUserAgent(id<UITraitEnvironment> web_view,
   return UserAgentType::MOBILE;
 }
 
+bool WebClient::IsEmbedderBlockRestoreUrlEnabled() {
+  return false;
+}
+
 }  // namespace web

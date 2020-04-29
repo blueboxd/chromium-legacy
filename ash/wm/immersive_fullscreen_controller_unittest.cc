@@ -815,9 +815,9 @@ TEST_F(ImmersiveFullscreenControllerTest, EventsDoNotLeakToWindowUnderneath) {
   EXPECT_EQ(behind->GetBoundsInScreen().y(), window()->GetBoundsInScreen().y());
   int top = behind->GetBoundsInScreen().y();
 
-  ui::TouchEvent touch(
-      ui::ET_TOUCH_MOVED, gfx::Point(10, top), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent touch(ui::ET_TOUCH_MOVED, gfx::Point(10, top),
+                       ui::EventTimeForNow(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   aura::Window* root = window()->GetRootWindow();
   ui::EventTargeter* targeter =
       root->GetHost()->dispatcher()->GetDefaultEventTargeter();
@@ -828,9 +828,9 @@ TEST_F(ImmersiveFullscreenControllerTest, EventsDoNotLeakToWindowUnderneath) {
   // Make sure the windows are still aligned on top.
   EXPECT_EQ(behind->GetBoundsInScreen().y(), window()->GetBoundsInScreen().y());
   top = behind->GetBoundsInScreen().y();
-  ui::TouchEvent touch2(
-      ui::ET_TOUCH_MOVED, gfx::Point(10, top), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent touch2(ui::ET_TOUCH_MOVED, gfx::Point(10, top),
+                        ui::EventTimeForNow(),
+                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   // The event should still be targeted to window().
   EXPECT_EQ(window(), targeter->FindTargetForEvent(root, &touch2));
 }

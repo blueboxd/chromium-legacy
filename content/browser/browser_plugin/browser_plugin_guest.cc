@@ -68,7 +68,6 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       attached_(false),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
       focused_(false),
-      mouse_locked_(false),
       is_full_page_plugin_(false),
       has_render_view_(has_render_view),
       is_in_destruction_(false),
@@ -142,8 +141,6 @@ void BrowserPluginGuest::SetFocus(RenderWidgetHost* rwh,
         ->SetInitialFocus(focus_type == blink::mojom::FocusType::kBackward);
   }
   RenderWidgetHostImpl::From(rwh)->GetWidgetInputHandler()->SetFocus(focused);
-  if (!focused && mouse_locked_)
-    DidUnlockMouse();
 
   // Restore the last seen state of text input to the view.
   RenderWidgetHostViewBase* rwhv = static_cast<RenderWidgetHostViewBase*>(
@@ -520,20 +517,6 @@ void BrowserPluginGuest::OnSetFocus(int browser_plugin_instance_id,
   RenderWidgetHostView* rwhv = web_contents()->GetRenderWidgetHostView();
   RenderWidgetHost* rwh = rwhv ? rwhv->GetRenderWidgetHost() : nullptr;
   SetFocus(rwh, focused, focus_type);
-}
-
-void BrowserPluginGuest::OnUnlockMouseAck(int browser_plugin_instance_id) {
-  // mouse_locked_ could be false here if the lock attempt was cancelled due
-  // to window focus, or for various other reasons before the guest was informed
-  // of the lock's success.
-  if (mouse_locked_) {
-    mojom::WidgetInputHandler* input_handler = GetWebContents()
-                                                   ->GetRenderViewHost()
-                                                   ->GetWidget()
-                                                   ->GetWidgetInputHandler();
-    input_handler->MouseLockLost();
-  }
-  mouse_locked_ = false;
 }
 
 void BrowserPluginGuest::OnSynchronizeVisualProperties(

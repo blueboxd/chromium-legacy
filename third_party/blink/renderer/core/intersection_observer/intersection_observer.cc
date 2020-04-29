@@ -314,10 +314,6 @@ void IntersectionObserver::observe(Element* target,
   if (!target || root() == target)
     return;
 
-  LocalFrame* target_frame = target->GetDocument().GetFrame();
-  if (!target_frame)
-    return;
-
   if (target->EnsureIntersectionObserverData().GetObservationFor(*this))
     return;
 
@@ -335,7 +331,7 @@ void IntersectionObserver::observe(Element* target,
     target->GetDocument()
         .EnsureIntersectionObserverController()
         .AddTrackedObservation(*observation);
-    if (LocalFrameView* frame_view = target_frame->View()) {
+    if (LocalFrameView* frame_view = target->GetDocument().View()) {
       // The IntersectionObsever spec requires that at least one observation
       // be recorded after observe() is called, even if the frame is throttled.
       frame_view->SetIntersectionObservationState(LocalFrameView::kRequired);

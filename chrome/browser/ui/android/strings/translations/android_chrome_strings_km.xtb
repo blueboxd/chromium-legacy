@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="km">
-<translation id="1006017844123154345">បើកលើអ៊ីនធឺណិត</translation>
 <translation id="1028699632127661925">កំពុងផ្ញើទៅ <ph name="DEVICE_NAME" />...</translation>
+<translation id="1036348656032585052">បិទ</translation>
 <translation id="1036727731225946849">កំពុងបញ្ចូល <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">ពីគេហទំព័រ</translation>
 <translation id="1049743911850919806">អនាមិក</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">ទំព័រដើម​របស់ Chrome</translation>
 <translation id="3157842584138209013">មើលចំនួនទិន្នន័យដែល​អ្នក​បានរក្សាទុក​ពីប៊ូតុង​ជម្រើសច្រើនទៀត</translation>
 <translation id="3166827708714933426">ផ្លូវកាត់ផ្ទាំង និងផ្ទាំងវិនដូ</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3181954750937456830">មុខងាររុករក​ដោយ​សុវត្ថិភាព (ការពារអ្នក​ និងឧបករណ៍​របស់អ្នក​ពីគេហទំព័រ​គ្រោះថ្នាក់)</translation>
 <translation id="3205824638308738187">ជិត​បញ្ចប់​ហើយ!</translation>
 <translation id="3207960819495026254">បានចំណាំ</translation>
@@ -372,7 +373,6 @@
 <translation id="4116038641877404294">ទាញយក​ទំព័រ​ដើម្បី​ប្រើ​ពួកវាដោយគ្មានអ៊ីនធឺណិត</translation>
 <translation id="4135200667068010335">បានបិទ​បញ្ជីឧបករណ៍​ដែលត្រូវ​ចែករំលែក​ផ្ទាំងជាមួយ។</translation>
 <translation id="4149994727733219643">ទិដ្ឋភាព​សាមញ្ញ​សម្រាប់​ទំព័របណ្ដាញ</translation>
-<translation id="4165986682804962316">ការកំណត់គេហទំព័រ</translation>
 <translation id="4170011742729630528">សេវាកម្មនេះមិនមានទេ។ សូមព្យាយាមម្តងទៀតពេលក្រោយ។</translation>
 <translation id="4179980317383591987">បាន​ប្រើអស់ <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">ភាសា</translation>
@@ -583,6 +583,7 @@
 <translation id="5853623416121554550">បាន​ផ្អាក</translation>
 <translation id="5854790677617711513">ចាស់ជាង 30 ថ្ងៃ</translation>
 <translation id="5858741533101922242">Chrome មិនអាចបើក​អាដាប់ទ័រ​ប៊្លូធូស​បានទេ</translation>
+<translation id="5860491529813859533">បើក</translation>
 <translation id="5862731021271217234">ដើម្បីទទួលបានផ្ទាំងរបស់អ្នកពីឧបករណ៍ផ្សេងទៀតរបស់អ្នក សូមបើកសមកាលកម្ម</translation>
 <translation id="5864174910718532887">ព័ត៌មាន​លម្អិត៖ ​តម្រៀបតាមឈ្មោះ​គេហទំព័រ</translation>
 <translation id="5864419784173784555">កំពុង​រង់ចាំ​ការទាញយក​ផ្សេង​ទៀត…</translation>

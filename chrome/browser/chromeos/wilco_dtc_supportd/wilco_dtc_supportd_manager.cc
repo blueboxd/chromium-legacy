@@ -59,6 +59,7 @@ bool AreOnlyAffiliatedUsersLoggedIn() {
       user_manager::UserManager::Get()->GetLoggedInUsers();
   for (user_manager::User* user : logged_in_users) {
     if (!user->IsAffiliated()) {
+      VLOG(2) << "Non-affiliated user is logged in";
       return false;
     }
   }

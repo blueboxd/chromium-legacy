@@ -76,7 +76,7 @@ AtomicString FontFaceSetDocument::status() const {
 
 void FontFaceSetDocument::DidLayout() {
   if (GetDocument()->GetFrame()->IsMainFrame() && loading_fonts_.IsEmpty())
-    histogram_.Record();
+    font_load_histogram_.Record();
   if (!ShouldSignalReady())
     return;
   HandlePendingEventsAndPromisesSoon();
@@ -102,13 +102,13 @@ void FontFaceSetDocument::BeginFontLoading(FontFace* font_face) {
 }
 
 void FontFaceSetDocument::NotifyLoaded(FontFace* font_face) {
-  histogram_.UpdateStatus(font_face);
+  font_load_histogram_.UpdateStatus(font_face);
   loaded_fonts_.push_back(font_face);
   RemoveFromLoadingFonts(font_face);
 }
 
 void FontFaceSetDocument::NotifyError(FontFace* font_face) {
-  histogram_.UpdateStatus(font_face);
+  font_load_histogram_.UpdateStatus(font_face);
   failed_fonts_.push_back(font_face);
   RemoveFromLoadingFonts(font_face);
 }
@@ -238,6 +238,15 @@ size_t FontFaceSetDocument::ApproximateBlankCharacterCount(Document& document) {
   return 0;
 }
 
+void FontFaceSetDocument::AlignTimeoutWithLCPGoal(FontFace* font_face) {
+  bool affected = font_face->CssFontFace()->UpdatePeriod();
+  if (font_face->display() == "auto") {
+    font_display_auto_align_histogram_.SetHasFontDisplayAuto();
+    if (affected)
+      font_display_auto_align_histogram_.CountAffected();
+  }
+}
+
 void FontFaceSetDocument::LCPLimitReached(TimerBase*) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kAlignFontDisplayAutoTimeoutWithLCPGoal));
@@ -245,9 +254,10 @@ void FontFaceSetDocument::LCPLimitReached(TimerBase*) {
     return;
   has_reached_lcp_limit_ = true;
   for (FontFace* font_face : CSSConnectedFontFaceList())
-    font_face->CssFontFace()->UpdatePeriod();
+    AlignTimeoutWithLCPGoal(font_face);
   for (FontFace* font_face : non_css_connected_faces_)
-    font_face->CssFontFace()->UpdatePeriod();
+    AlignTimeoutWithLCPGoal(font_face);
+  font_display_auto_align_histogram_.Record();
 }
 
 void FontFaceSetDocument::Trace(Visitor* visitor) {
@@ -269,6 +279,19 @@ void FontFaceSetDocument::FontLoadHistogram::Record() {
     base::UmaHistogramBoolean("WebFont.HadBlankText", status_ == kHadBlankText);
     status_ = kReported;
   }
+}
+
+void FontFaceSetDocument::FontDisplayAutoAlignHistogram::Record() {
+  if (!base::FeatureList::IsEnabled(
+          features::kAlignFontDisplayAutoTimeoutWithLCPGoal)) {
+    return;
+  }
+  if (!has_font_display_auto_ || reported_)
+    return;
+  base::UmaHistogramCounts100(
+      "WebFont.Clients.AlignFontDisplayAuto.FontFacesAffected",
+      affected_count_);
+  reported_ = true;
 }
 
 }  // namespace blink

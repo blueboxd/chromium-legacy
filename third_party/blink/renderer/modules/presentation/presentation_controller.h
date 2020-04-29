@@ -8,8 +8,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/presentation/presentation.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
@@ -22,6 +21,7 @@
 namespace blink {
 
 class ControllerPresentationConnection;
+class LocalDOMWindow;
 class PresentationAvailabilityObserver;
 class PresentationAvailabilityState;
 
@@ -29,20 +29,17 @@ class PresentationAvailabilityState;
 // from which websites can implement the controlling side of a presentation.
 class MODULES_EXPORT PresentationController
     : public GarbageCollected<PresentationController>,
-      public Supplement<LocalFrame>,
+      public Supplement<LocalDOMWindow>,
       public mojom::blink::PresentationController {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
 
  public:
   static const char kSupplementName[];
 
-  PresentationController(LocalFrame&);
+  explicit PresentationController(LocalDOMWindow&);
   ~PresentationController() override;
 
-  static PresentationController* From(LocalFrame&);
-
-  static void ProvideTo(LocalFrame&);
-
+  static PresentationController* From(LocalDOMWindow&);
   static PresentationController* FromContext(ExecutionContext*);
 
   // Implementation of Supplement.

@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ur">
-<translation id="1006017844123154345">آن لائن کھولیں</translation>
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> پر بھیجا جا رہا ہے…</translation>
+<translation id="1036348656032585052">آف کریں</translation>
 <translation id="1036727731225946849">شامل ہو رہا ہے <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">ویب سائٹس سے</translation>
 <translation id="1049743911850919806">پوشیدگی</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">‏Chrome کا ہوم پیج</translation>
 <translation id="3157842584138209013">مزید اختیارات بٹن سے اپنا محفوظ کردہ ڈیٹا دیکھیں</translation>
 <translation id="3166827708714933426">ٹیب اور ونڈو شارٹ کٹس</translation>
+<translation id="3169472444629675720">دریافت کریں</translation>
 <translation id="3181954750937456830">محفوظ براؤزنگ (آپ اور آپ کے آلہ کی خطرناک سائٹس سے حفاظت کرتی ہے)</translation>
 <translation id="3205824638308738187">تقریباً مکمل!</translation>
 <translation id="3207960819495026254">بُک مارک بنایا ہوا</translation>
@@ -371,7 +372,6 @@
 <translation id="4116038641877404294">آف لائن صفحات استعمال کرنے کے لیے انہیں ڈاؤن لوڈ کریں</translation>
 <translation id="4135200667068010335">ان آلات کی فہرست بند ہے جن کے ساتھ ٹیب کا اشتراک کرنا ہے۔</translation>
 <translation id="4149994727733219643">ویب صفحات کیلئے سادہ منظر</translation>
-<translation id="4165986682804962316">سائٹ کی ترتیبات</translation>
 <translation id="4170011742729630528">سروس دستیاب نہیں ہے؛ بعد میں دوبارہ کوشش کریں۔</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> استعمال شدہ</translation>
 <translation id="4181841719683918333">زبانیں</translation>
@@ -582,6 +582,7 @@
 <translation id="5853623416121554550">موقوف ہو گیا</translation>
 <translation id="5854790677617711513">30 دن سے زیادہ پرانا</translation>
 <translation id="5858741533101922242">‏Chrome بلوٹوتھ اڈاپٹر آن کرنے سے قاصر ہے</translation>
+<translation id="5860491529813859533">آن کریں</translation>
 <translation id="5862731021271217234">اپنے دیگر آلات سے اپنے ٹیبز حاصل کرنے کیلئے، سِنک کو آن کریں</translation>
 <translation id="5864174910718532887">تفصیلات: سائٹ کے نام کے لحاظ سے ترتیب دیا گیا</translation>
 <translation id="5864419784173784555">ایک اور ڈاؤن لوڈ کا منتظر…</translation>

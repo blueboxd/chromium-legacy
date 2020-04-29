@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   InfoBarService* service3 = InfoBarService::FromWebContents(
       another_browser->tab_strip_model()->GetWebContentsAt(1));
 
-  // Attach should create infobars in both browsers.
+  // Attaching to one tab should create infobars in both browsers.
   attach_function = new DebuggerAttachFunction();
   attach_function->set_extension(extension());
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   EXPECT_EQ(1u, service2->infobar_count());
   EXPECT_EQ(1u, service3->infobar_count());
 
-  // Second attach should not create infobars.
+  // Attaching to another tab should not create more infobars.
   attach_function = new DebuggerAttachFunction();
   attach_function->set_extension(extension());
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   EXPECT_EQ(1u, service2->infobar_count());
   EXPECT_EQ(1u, service3->infobar_count());
 
-  // Detach from one of the tabs should not remove infobars.
+  // Detaching from one of the tabs should not remove infobars.
   detach_function = new DebuggerDetachFunction();
   detach_function->set_extension(extension());
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
@@ -254,17 +254,19 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   EXPECT_EQ(1u, service2->infobar_count());
   EXPECT_EQ(1u, service3->infobar_count());
 
-  // Detach should remove all infobars.
+  // Detaching from the other tab also should not remove infobars, since even
+  // though there is no longer an extension attached, the infobar can only be
+  // dismissed by explicit user action.
   detach_function = new DebuggerDetachFunction();
   detach_function->set_extension(extension());
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       detach_function.get(), base::StringPrintf("[{\"tabId\": %d}]", tab_id),
       browser(), api_test_utils::NONE));
-  EXPECT_EQ(0u, service1->infobar_count());
-  EXPECT_EQ(0u, service2->infobar_count());
-  EXPECT_EQ(0u, service3->infobar_count());
+  EXPECT_EQ(1u, service1->infobar_count());
+  EXPECT_EQ(1u, service2->infobar_count());
+  EXPECT_EQ(1u, service3->infobar_count());
 
-  // Attach again.
+  // Attach again; should not create infobars.
   attach_function = new DebuggerAttachFunction();
   attach_function->set_extension(extension());
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
@@ -275,11 +277,10 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   EXPECT_EQ(1u, service2->infobar_count());
   EXPECT_EQ(1u, service3->infobar_count());
 
-  // Calling delegate()->InfoBarDismissed() on a global infobar should
-  // cause detach and removal of all infobars, except the one used to
-  // fetch the delegate (i.e., service2->infobar_at(0) itself).
-  // Afterwards, service2->infobar_at(0) must be explicitly removed.
-  // See InfoBarView::ButtonPressed for an example.
+  // Remove the global infobar by simulating what happens when the user clicks
+  // the close button (see InfoBarView::ButtonPressed()).  The
+  // InfoBarDismissed() call will remove the infobars everywhere except on
+  // |service2| itself; the RemoveSelf() call removes that one.
   service2->infobar_at(0)->delegate()->InfoBarDismissed();
   service2->infobar_at(0)->RemoveSelf();
   EXPECT_EQ(0u, service1->infobar_count());
@@ -292,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
       detach_function.get(), base::StringPrintf("[{\"tabId\": %d}]", tab_id),
       browser(), api_test_utils::NONE));
 
-  // And again...
+  // Attaching once again should create a new infobar.
   attach_function = new DebuggerAttachFunction();
   attach_function->set_extension(extension());
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
@@ -315,13 +316,13 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   another_browser = nullptr;
   EXPECT_EQ(1u, service1->infobar_count());
 
-  // Detach should remove the remaining infobar.
+  // Detach should not affect anything.
   detach_function = new DebuggerDetachFunction();
   detach_function->set_extension(extension());
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       detach_function.get(), base::StringPrintf("[{\"tabId\": %d}]", tab_id),
       browser(), api_test_utils::NONE));
-  EXPECT_EQ(0u, service1->infobar_count());
+  EXPECT_EQ(1u, service1->infobar_count());
 }
 
 class DebuggerExtensionApiTest : public ExtensionApiTest {

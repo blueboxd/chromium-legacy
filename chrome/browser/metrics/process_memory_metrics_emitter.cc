@@ -58,10 +58,22 @@ const char kEffectiveSize[] = "effective_size";
 const char kSize[] = "size";
 const char kAllocatedObjectsSize[] = "allocated_objects_size";
 
+constexpr int kKiB = 1024;
+constexpr int kMiB = 1024 * 1024;
+
+struct MetricRange {
+  const int min;
+  const int max;
+};
+
+const MetricRange ImageSizeMetricRange = {1, 500 * kMiB /*500 MiB*/};
+
+// Prefer predefined ranges kLarge, kSmall and kTiny over custom ranges.
 enum class MetricSize {
-  kLarge,  // 1MB - 64GB
-  kSmall,  // 10KB - 500MB
-  kTiny,   // 1B - 500KB
+  kLarge,   // 1MiB - 64,000MiB
+  kSmall,   // 10 - 500,000KiB
+  kTiny,    // 1 - 500,000B
+  kCustom,  // custom range, in bytes
 };
 
 enum class EmitTo {
@@ -86,6 +98,9 @@ struct Metric {
   const EmitTo target;
   // The setter method for the metric in UKM recorder.
   Memory_Experimental& (Memory_Experimental::*ukm_setter)(int64_t);
+  // Size range for the kCustom |metric_size|. Represents the min and max of the
+  // size range, in bytes.
+  const MetricRange range;
 };
 
 const Metric kAllocatorDumpNamesForMetrics[] = {
@@ -158,20 +173,22 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      &Memory_Experimental::SetExtensions_ValueStore},
     {"font_caches", "FontCaches", MetricSize::kSmall, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetFontCaches},
-    {"gpu/discardable_cache", "ServiceDiscardableManager", MetricSize::kTiny,
-     kSize, EmitTo::kSizeInUmaOnly, nullptr},
+    {"gpu/discardable_cache", "ServiceDiscardableManager", MetricSize::kCustom,
+     kSize, EmitTo::kSizeInUmaOnly, nullptr, ImageSizeMetricRange},
     {"gpu/discardable_cache", "ServiceDiscardableManager.AvgImageSize",
-     MetricSize::kTiny, "average_size", EmitTo::kSizeInUmaOnly, nullptr},
+     MetricSize::kCustom, "average_size", EmitTo::kSizeInUmaOnly, nullptr,
+     ImageSizeMetricRange},
     {"gpu/gl", "CommandBuffer", MetricSize::kLarge, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetCommandBuffer},
     {"gpu/gr_shader_cache", "Gpu.GrShaderCache", MetricSize::kSmall,
      kEffectiveSize, EmitTo::kSizeInUmaOnly, nullptr},
     {"gpu/shared_images", "gpu::SharedImageStub", MetricSize::kSmall,
      kEffectiveSize, EmitTo::kIgnored, nullptr},
-    {"gpu/transfer_cache", "ServiceTransferCache", MetricSize::kTiny, kSize,
-     EmitTo::kSizeInUmaOnly, nullptr},
+    {"gpu/transfer_cache", "ServiceTransferCache", MetricSize::kCustom, kSize,
+     EmitTo::kSizeInUmaOnly, nullptr, ImageSizeMetricRange},
     {"gpu/transfer_cache", "ServiceTransferCache.AvgImageSize",
-     MetricSize::kTiny, "average_size", EmitTo::kSizeInUmaOnly, nullptr},
+     MetricSize::kCustom, "average_size", EmitTo::kSizeInUmaOnly, nullptr,
+     ImageSizeMetricRange},
     {"history", "History", MetricSize::kSmall, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetHistory},
     {"java_heap", "JavaHeap", MetricSize::kLarge, kEffectiveSize,
@@ -373,21 +390,26 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
 #define VERSION_SUFFIX_NORMAL "2."
 #define VERSION_SUFFIX_SMALL "2.Small."
 #define VERSION_SUFFIX_TINY "2.Tiny."
-
-// Used to measure KB-granularity memory stats. Range is from 10KB to 500,000KB
-// (500MB).
-#define MEMORY_METRICS_HISTOGRAM_KB(name, value) \
-  base::UmaHistogramCustomCounts(name, value, 10, 500000, 100)
-// Used to measure byte granularity memory stats. Range is from 1 byte to
-// 500,000 bytes (500KB).
-#define MEMORY_METRICS_HISTOGRAM_BYTE(name, value) \
-  base::UmaHistogramCustomCounts(name, value, 1, 500000, 100)
+#define VERSION_SUFFIX_CUSTOM "2.Custom."
 
 void EmitProcessUkm(const Metric& item,
                     uint64_t value,
                     Memory_Experimental* builder) {
   DCHECK(item.ukm_setter) << "UKM metrics must provide a setter";
   (builder->*(item.ukm_setter))(value);
+}
+
+const char* MetricSizeToVersionSuffix(MetricSize size) {
+  switch (size) {
+    case MetricSize::kLarge:
+      return VERSION_SUFFIX_NORMAL;
+    case MetricSize::kSmall:
+      return VERSION_SUFFIX_SMALL;
+    case MetricSize::kTiny:
+      return VERSION_SUFFIX_TINY;
+    case MetricSize::kCustom:
+      return VERSION_SUFFIX_CUSTOM;
+  }
 }
 
 void EmitProcessUma(HistogramProcessType process_type,
@@ -402,24 +424,24 @@ void EmitProcessUma(HistogramProcessType process_type,
         EXPERIMENTAL_UMA_PREFIX "Gpu" VERSION_SUFFIX_NORMAL "CommandBuffer";
     DCHECK(item.metric_size == MetricSize::kLarge);
   } else {
-    const char* version_suffix =
-        item.metric_size == MetricSize::kLarge ? VERSION_SUFFIX_NORMAL:
-        item.metric_size == MetricSize::kTiny  ? VERSION_SUFFIX_TINY:
-                                                 VERSION_SUFFIX_SMALL;
     uma_name = std::string(EXPERIMENTAL_UMA_PREFIX) +
-               HistogramProcessTypeToString(process_type) + version_suffix +
-               item.uma_name;
+               HistogramProcessTypeToString(process_type) +
+               MetricSizeToVersionSuffix(item.metric_size) + item.uma_name;
   }
 
   switch (item.metric_size) {
-    case MetricSize::kLarge:
-      MEMORY_METRICS_HISTOGRAM_MB(uma_name, value / 1024 / 1024);
+    case MetricSize::kLarge:  // 1 - 64,000 MiB
+      MEMORY_METRICS_HISTOGRAM_MB(uma_name, value / kMiB);
       break;
-    case MetricSize::kSmall:
-      MEMORY_METRICS_HISTOGRAM_KB(uma_name, value / 1024);
+    case MetricSize::kSmall:  // 10 - 500,000 KiB
+      base::UmaHistogramCustomCounts(uma_name, value / kKiB, 10, 500000, 100);
       break;
-    case MetricSize::kTiny:
-      MEMORY_METRICS_HISTOGRAM_BYTE(uma_name, value);
+    case MetricSize::kTiny:  // 1 - 500,000 bytes
+      base::UmaHistogramCustomCounts(uma_name, value, 1, 500000, 100);
+      break;
+    case MetricSize::kCustom:
+      base::UmaHistogramCustomCounts(uma_name, value, item.range.min,
+                                     item.range.max, 100);
       break;
   }
 }
@@ -449,7 +471,7 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
         break;
       case EmitTo::kSizeInUkmAndUma:
         // For each 'size' metric, emit size as MB.
-        EmitProcessUkm(item, value.value() / 1024 / 1024, builder);
+        EmitProcessUkm(item, value.value() / kMiB, builder);
         if (record_uma)
           EmitProcessUma(process_type, item, value.value());
         break;
@@ -462,14 +484,14 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
 
 #if !defined(OS_MACOSX)
   // Resident set is not populated on Mac.
-  builder->SetResident(pmd.os_dump().resident_set_kb / 1024);
+  builder->SetResident(pmd.os_dump().resident_set_kb / kKiB);
 #endif
 
-  builder->SetPrivateMemoryFootprint(pmd.os_dump().private_footprint_kb / 1024);
-  builder->SetSharedMemoryFootprint(pmd.os_dump().shared_footprint_kb / 1024);
+  builder->SetPrivateMemoryFootprint(pmd.os_dump().private_footprint_kb / kKiB);
+  builder->SetSharedMemoryFootprint(pmd.os_dump().shared_footprint_kb / kKiB);
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   builder->SetPrivateSwapFootprint(pmd.os_dump().private_footprint_swap_kb /
-                                   1024);
+                                   kKiB);
 #endif
   if (uptime)
     builder->SetUptime(uptime.value().InSeconds());
@@ -483,17 +505,17 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
 #else
   MEMORY_METRICS_HISTOGRAM_MB(
       std::string(kMemoryHistogramPrefix) + process_name + ".ResidentSet",
-      pmd.os_dump().resident_set_kb / 1024);
+      pmd.os_dump().resident_set_kb / kKiB);
 #endif
   MEMORY_METRICS_HISTOGRAM_MB(GetPrivateFootprintHistogramName(process_type),
-                              pmd.os_dump().private_footprint_kb / 1024);
+                              pmd.os_dump().private_footprint_kb / kKiB);
   MEMORY_METRICS_HISTOGRAM_MB(std::string(kMemoryHistogramPrefix) +
                                   process_name + ".SharedMemoryFootprint",
-                              pmd.os_dump().shared_footprint_kb / 1024);
+                              pmd.os_dump().shared_footprint_kb / kKiB);
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   MEMORY_METRICS_HISTOGRAM_MB(std::string(kMemoryHistogramPrefix) +
                                   process_name + ".PrivateSwapFootprint",
-                              pmd.os_dump().private_footprint_swap_kb / 1024);
+                              pmd.os_dump().private_footprint_swap_kb / kKiB);
 #endif
 }
 
@@ -916,25 +938,25 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
 
     UMA_HISTOGRAM_MEMORY_LARGE_MB(
         "Memory.Experimental.Total2.PrivateMemoryFootprint",
-        private_footprint_total_kb / 1024);
+        private_footprint_total_kb / kKiB);
 #if defined(OS_MACOSX)
     // Resident set is not populated on Mac.
     DCHECK_EQ(resident_set_total_kb, 0U);
 #else
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.ResidentSet",
-                                  resident_set_total_kb / 1024);
+                                  resident_set_total_kb / kKiB);
 
 #endif
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
-                                  private_footprint_total_kb / 1024);
+                                  private_footprint_total_kb / kKiB);
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.RendererPrivateMemoryFootprint",
-                                  renderer_private_footprint_total_kb / 1024);
+                                  renderer_private_footprint_total_kb / kKiB);
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.SharedMemoryFootprint",
-                                  shared_footprint_total_kb / 1024);
+                                  shared_footprint_total_kb / kKiB);
 
     Memory_Experimental(ukm::UkmRecorder::GetNewSourceID())
-        .SetTotal2_PrivateMemoryFootprint(private_footprint_total_kb / 1024)
-        .SetTotal2_SharedMemoryFootprint(shared_footprint_total_kb / 1024)
+        .SetTotal2_PrivateMemoryFootprint(private_footprint_total_kb / kKiB)
+        .SetTotal2_SharedMemoryFootprint(shared_footprint_total_kb / kKiB)
         .Record(GetUkmRecorder());
 
     // Renderer metrics-by-tab only make sense if we're visiting all render

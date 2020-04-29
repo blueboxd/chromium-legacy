@@ -362,7 +362,6 @@ class CONTENT_EXPORT RenderWidget
       blink::WebLocalFrame* requester_frame,
       blink::WebWidgetClient::PointerLockCallback callback,
       bool request_unadjusted_movement) override;
-  void PointerLockLost();
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
   void StartDragging(network::mojom::ReferrerPolicy policy,

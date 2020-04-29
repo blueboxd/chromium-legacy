@@ -17,8 +17,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import androidx.fragment.app.Fragment;
-
 import org.chromium.android_webview.devui.util.WebViewPackageHelper;
 import org.chromium.ui.widget.Toast;
 
@@ -28,7 +26,7 @@ import java.util.Locale;
  * Dev UI main fragment.
  * It shows a summary about WebView package and the device.
  */
-public class HomeFragment extends Fragment {
+public class HomeFragment extends DevUiBaseFragment {
     private Context mContext;
 
     @Override

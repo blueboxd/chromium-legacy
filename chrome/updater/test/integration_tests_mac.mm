@@ -82,17 +82,19 @@ void ExpectClean() {
 }
 
 void ExpectInstalled() {
-  InfoPlist info_plist(GetInfoPlistPath());
-  EXPECT_TRUE(info_plist.Valid());
+  const base::FilePath info_plist_path = GetInfoPlistPath();
+  const std::unique_ptr<InfoPlist> info_plist =
+      InfoPlist::Create(info_plist_path);
+  EXPECT_TRUE(info_plist != nullptr);
 
   // Files must exist on the file system.
   EXPECT_TRUE(base::PathExists(GetProductPath()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent,
-      info_plist.GoogleUpdateCheckLaunchdNameVersioned()));
+      info_plist->GoogleUpdateCheckLaunchdNameVersioned()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent,
-      info_plist.GoogleUpdateServiceLaunchdNameVersioned()));
+      info_plist->GoogleUpdateServiceLaunchdNameVersioned()));
 }
 
 void Install() {

@@ -122,4 +122,10 @@ export class BrowserProxy {
    * @abstract
    */
   addDummyHistoryIfNotAvailable() {}
+
+  /**
+   * @return {boolean}
+   * @abstract
+   */
+  isMp4RecordingEnabled() {}
 }

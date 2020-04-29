@@ -177,9 +177,8 @@ TEST_F(WindowManagerTest, Focus) {
   // Touch on a sub-window (w122) to focus it.
   gfx::Point click_point = w122->bounds().CenterPoint();
   aura::Window::ConvertPointToTarget(w122->parent(), root_window, &click_point);
-  ui::TouchEvent touchev(
-      ui::ET_TOUCH_PRESSED, click_point, getTime(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent touchev(ui::ET_TOUCH_PRESSED, click_point, getTime(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   details = sink->OnEventFromSource(&touchev);
   ASSERT_FALSE(details.dispatcher_destroyed);
   focus_client = aura::client::GetFocusClient(w122.get());
@@ -434,9 +433,8 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
   // Touch window2.
   gfx::Point press_point = w2->bounds().CenterPoint();
   aura::Window::ConvertPointToTarget(w2->parent(), root_window, &press_point);
-  ui::TouchEvent touchev1(
-      ui::ET_TOUCH_PRESSED, press_point, getTime(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent touchev1(ui::ET_TOUCH_PRESSED, press_point, getTime(),
+                          ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   ui::EventSink* sink = root_window->GetHost()->event_sink();
   ui::EventDispatchDetails details = sink->OnEventFromSource(&touchev1);
@@ -456,9 +454,8 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
   press_point = w1->bounds().CenterPoint();
   aura::Window::ConvertPointToTarget(w1->parent(), root_window, &press_point);
   d1.set_activate(false);
-  ui::TouchEvent touchev2(
-      ui::ET_TOUCH_PRESSED, press_point, getTime(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+  ui::TouchEvent touchev2(ui::ET_TOUCH_PRESSED, press_point, getTime(),
+                          ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   details = sink->OnEventFromSource(&touchev2);
   ASSERT_FALSE(details.dispatcher_destroyed);
 

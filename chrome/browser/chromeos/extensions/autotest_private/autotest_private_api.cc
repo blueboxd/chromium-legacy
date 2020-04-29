@@ -404,21 +404,32 @@ std::string SetWhitelistedPref(Profile* profile,
     return std::string();
   }
 
-  if (pref_name == chromeos::assistant::prefs::kAssistantEnabled ||
-      pref_name == chromeos::assistant::prefs::kAssistantHotwordEnabled) {
+  if (pref_name == chromeos::assistant::prefs::kAssistantEnabled) {
     DCHECK(value.is_bool());
+    // Validate the Assistant service allowed state.
     ash::mojom::AssistantAllowedState allowed_state =
         assistant::IsAssistantAllowedForProfile(profile);
     if (allowed_state != ash::mojom::AssistantAllowedState::ALLOWED) {
       return base::StringPrintf("Assistant not allowed - state: %d",
                                 allowed_state);
     }
+  } else if (pref_name ==
+                 chromeos::assistant::prefs::kAssistantContextEnabled ||
+             pref_name ==
+                 chromeos::assistant::prefs::kAssistantHotwordEnabled) {
+    DCHECK(value.is_bool());
+    // Assistant service must be enabled first for those prefs to take effect.
+    if (!profile->GetPrefs()->GetBoolean(
+            chromeos::assistant::prefs::kAssistantEnabled)) {
+      return std::string(
+          "Unable to set the pref because Assistant has not been enabled.");
+    }
   } else if (pref_name == ash::prefs::kAccessibilityVirtualKeyboardEnabled) {
     DCHECK(value.is_bool());
   } else if (pref_name == prefs::kLanguagePreloadEngines) {
     DCHECK(value.is_string());
   } else {
-    return "The pref " + pref_name + "is not whitelisted.";
+    return "The pref " + pref_name + " is not whitelisted.";
   }
 
   // Set value for the specified user pref after validation.

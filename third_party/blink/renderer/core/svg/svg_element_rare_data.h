@@ -76,7 +76,7 @@ class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
     return web_animated_attributes_dirty_;
   }
 
-  HashSet<const QualifiedName*>& WebAnimatedAttributes() {
+  HashSet<QualifiedName>& WebAnimatedAttributes() {
     return web_animated_attributes_;
   }
 
@@ -117,7 +117,7 @@ class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
   bool use_override_computed_style_ : 1;
   bool needs_override_computed_style_update_ : 1;
   bool web_animated_attributes_dirty_ : 1;
-  HashSet<const QualifiedName*> web_animated_attributes_;
+  HashSet<QualifiedName> web_animated_attributes_;
   Member<MutableCSSPropertyValueSet> animated_smil_style_properties_;
   scoped_refptr<ComputedStyle> override_computed_style_;
   // Used by <animateMotion>

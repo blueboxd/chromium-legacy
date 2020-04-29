@@ -1928,7 +1928,7 @@ class ServiceManifestOwnerTest(unittest.TestCase):
                          'const service_manager::Manifest& GetManifest() {}',
                        ])]
     mock_output_api = MockOutputApi()
-    errors = PRESUBMIT._CheckIpcOwners(
+    errors = PRESUBMIT._CheckSecurityOwners(
         mock_input_api, mock_output_api)
     self.assertEqual(1, len(errors))
     self.assertEqual(
@@ -1943,7 +1943,66 @@ class ServiceManifestOwnerTest(unittest.TestCase):
                          'const char kNoEnforcement[] = "not a manifest!";',
                        ])]
     mock_output_api = MockOutputApi()
-    errors = PRESUBMIT._CheckIpcOwners(
+    errors = PRESUBMIT._CheckSecurityOwners(
+        mock_input_api, mock_output_api)
+    self.assertEqual([], errors)
+
+
+class FuchsiaSecurityOwnerTest(unittest.TestCase):
+  def testFidlChangeNeedsSecurityOwner(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('potentially/scary/ipc.fidl',
+                       [
+                         'library test.fidl'
+                       ])]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckSecurityOwners(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertEqual(
+        'Found OWNERS files that need to be updated for IPC security review ' +
+        'coverage.\nPlease update the OWNERS files below:', errors[0].message)
+
+  def testComponentManifestV1ChangeNeedsSecurityOwner(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('potentially/scary/v2_manifest.cmx',
+                       [
+                         '{ "that is no": "manifest!" }'
+                       ])]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckSecurityOwners(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertEqual(
+        'Found OWNERS files that need to be updated for IPC security review ' +
+        'coverage.\nPlease update the OWNERS files below:', errors[0].message)
+
+  def testComponentManifestV2NeedsSecurityOwner(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('potentially/scary/v2_manifest.cml',
+                       [
+                         '{ "that is no": "manifest!" }'
+                       ])]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckSecurityOwners(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertEqual(
+        'Found OWNERS files that need to be updated for IPC security review ' +
+        'coverage.\nPlease update the OWNERS files below:', errors[0].message)
+
+  def testOtherFuchsiaChangesDoNotRequireSecurityOwner(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('some/non/service/thing/fuchsia_fidl_cml_cmx_magic.cc',
+                       [
+                         'const char kNoEnforcement[] = "Security?!? Pah!";',
+                       ])]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckSecurityOwners(
         mock_input_api, mock_output_api)
     self.assertEqual([], errors)
 

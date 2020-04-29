@@ -46,11 +46,11 @@ void BoxLayoutExample::CreateAdditionalControls(int vertical_pos) {
       base::ASCIIToUTF16("Cross axis"), cross_axis_values, 4, &vertical_pos);
 
   between_child_spacing_ =
-      CreateTextfield(base::ASCIIToUTF16("Child spacing"), &vertical_pos);
+      CreateAndAddTextfield(base::ASCIIToUTF16("Child spacing"), &vertical_pos);
   default_flex_ =
-      CreateTextfield(base::ASCIIToUTF16("Default flex"), &vertical_pos);
-  min_cross_axis_size_ =
-      CreateTextfield(base::ASCIIToUTF16("Min cross axis"), &vertical_pos);
+      CreateAndAddTextfield(base::ASCIIToUTF16("Default flex"), &vertical_pos);
+  min_cross_axis_size_ = CreateAndAddTextfield(
+      base::ASCIIToUTF16("Min cross axis"), &vertical_pos);
 
   CreateMarginsTextFields(base::ASCIIToUTF16("Insets"), &border_insets_,
                           &vertical_pos);

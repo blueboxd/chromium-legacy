@@ -61,6 +61,10 @@ LocalFrame& V8TestingScope::GetFrame() {
   return holder_->GetFrame();
 }
 
+LocalDOMWindow& V8TestingScope::GetWindow() {
+  return *GetFrame().DomWindow();
+}
+
 Document& V8TestingScope::GetDocument() {
   return holder_->GetDocument();
 }

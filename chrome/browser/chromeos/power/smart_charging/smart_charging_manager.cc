@@ -243,7 +243,7 @@ void SmartChargingManager::OnUserActivity(const ui::Event* event) {
   }
   if (event->IsTouchEvent()) {
     if (event->AsTouchEvent()->pointer_details().pointer_type ==
-        ui::EventPointerType::POINTER_TYPE_PEN) {
+        ui::EventPointerType::kPen) {
       stylus_counter_->Log(time_since_boot);
       return;
     }

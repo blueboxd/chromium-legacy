@@ -31,7 +31,7 @@ import org.chromium.chrome.test.pagecontroller.utils.UiLocatorHelper;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ChromeBundleSmokeTest {
     private static final String TARGET_ACTIVITY =
-            "org.chromium.chrome.features.test_dummy.TestDummyActivity";
+            "org.chromium.chrome.browser.test_dummy.TestDummyActivity";
 
     public ChromeUiAutomatorTestRule mRule = new ChromeUiAutomatorTestRule();
     public ChromeUiApplicationTestRule mChromeUiRule = new ChromeUiApplicationTestRule();

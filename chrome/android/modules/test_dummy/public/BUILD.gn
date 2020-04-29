@@ -10,7 +10,7 @@ android_library("java") {
   ]
   deps = [
     "//base:base_java",
-    "//chrome/android/features/test_dummy/public:java",
+    "//chrome/browser/test_dummy:java",
     "//components/module_installer/android:module_installer_java",
     "//components/module_installer/android:module_interface_java",
   ]

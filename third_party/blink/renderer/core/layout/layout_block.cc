@@ -437,7 +437,7 @@ void LayoutBlock::UpdateBlockLayout(bool) {
 void LayoutBlock::AddVisualOverflowFromChildren() {
   // It is an error to call this function on a LayoutBlock that it itself inside
   // a display-locked subtree.
-  DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*this));
+  DCHECK(!DisplayLockUtilities::LockedAncestorPreventingPrePaint(*this));
   if (PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 
@@ -2120,8 +2120,7 @@ void LayoutBlock::RecalcChildVisualOverflow() {
   DCHECK(!IsTable());
   // It is an error to call this function on a LayoutBlock that it itself inside
   // a display-locked subtree.
-  DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*this));
-
+  DCHECK(!DisplayLockUtilities::LockedAncestorPreventingPrePaint(*this));
   if (PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 

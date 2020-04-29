@@ -38,17 +38,19 @@ TEST_F(TrustTokenRequestCanonicalizerTest, Empty) {
       cbor::Value("key", cbor::Value::Type::BYTE_STRING);
 
   std::unique_ptr<net::URLRequest> request = MakeURLRequest("");
-  EXPECT_EQ(canonicalizer.Canonicalize(
-                request.get(), /*public_key=*/"key",
-                mojom::TrustTokenSignRequestData::kHeadersOnly),
-            cbor::Writer::Write(cbor::Value(expected_cbor)));
+  EXPECT_EQ(
+      canonicalizer.Canonicalize(
+          request->url(), request->extra_request_headers(),
+          /*public_key=*/"key", mojom::TrustTokenSignRequestData::kHeadersOnly),
+      cbor::Writer::Write(cbor::Value(expected_cbor)));
 
   expected_cbor[cbor::Value(
       TrustTokenRequestSigningHelper::kCanonicalizedRequestDataUrlKey)] =
       cbor::Value("");
   EXPECT_EQ(
-      canonicalizer.Canonicalize(request.get(), /*public_key=*/"key",
-                                 mojom::TrustTokenSignRequestData::kInclude),
+      canonicalizer.Canonicalize(
+          request->url(), request->extra_request_headers(),
+          /*public_key=*/"key", mojom::TrustTokenSignRequestData::kInclude),
       cbor::Writer::Write(cbor::Value(expected_cbor)));
 }
 
@@ -69,17 +71,19 @@ TEST_F(TrustTokenRequestCanonicalizerTest, Simple) {
 
   std::unique_ptr<net::URLRequest> request =
       MakeURLRequest("https://issuer.com/");
-  EXPECT_EQ(canonicalizer.Canonicalize(
-                request.get(), /*public_key=*/"key",
-                mojom::TrustTokenSignRequestData::kHeadersOnly),
-            cbor::Writer::Write(cbor::Value(expected_cbor)));
+  EXPECT_EQ(
+      canonicalizer.Canonicalize(
+          request->url(), request->extra_request_headers(),
+          /*public_key=*/"key", mojom::TrustTokenSignRequestData::kHeadersOnly),
+      cbor::Writer::Write(cbor::Value(expected_cbor)));
 
   expected_cbor[cbor::Value(
       TrustTokenRequestSigningHelper::kCanonicalizedRequestDataUrlKey)] =
       cbor::Value("https://issuer.com/");
   EXPECT_EQ(
-      canonicalizer.Canonicalize(request.get(), /*public_key=*/"key",
-                                 mojom::TrustTokenSignRequestData::kInclude),
+      canonicalizer.Canonicalize(
+          request->url(), request->extra_request_headers(),
+          /*public_key=*/"key", mojom::TrustTokenSignRequestData::kInclude),
       cbor::Writer::Write(cbor::Value(expected_cbor)));
 }
 
@@ -122,17 +126,19 @@ TEST_F(TrustTokenRequestCanonicalizerTest, WithSignedHeaders) {
   expected_cbor[cbor::Value("second_header")] =
       cbor::Value("second_header_value");
 
-  EXPECT_EQ(canonicalizer.Canonicalize(
-                request.get(), /*public_key=*/"key",
-                mojom::TrustTokenSignRequestData::kHeadersOnly),
-            cbor::Writer::Write(cbor::Value(expected_cbor)));
+  EXPECT_EQ(
+      canonicalizer.Canonicalize(
+          request->url(), request->extra_request_headers(),
+          /*public_key=*/"key", mojom::TrustTokenSignRequestData::kHeadersOnly),
+      cbor::Writer::Write(cbor::Value(expected_cbor)));
 
   expected_cbor[cbor::Value(
       TrustTokenRequestSigningHelper::kCanonicalizedRequestDataUrlKey)] =
       cbor::Value("https://issuer.com/");
   EXPECT_EQ(
-      canonicalizer.Canonicalize(request.get(), /*public_key=*/"key",
-                                 mojom::TrustTokenSignRequestData::kInclude),
+      canonicalizer.Canonicalize(
+          request->url(), request->extra_request_headers(),
+          /*public_key=*/"key", mojom::TrustTokenSignRequestData::kInclude),
       cbor::Writer::Write(cbor::Value(expected_cbor)));
 }
 
@@ -149,8 +155,8 @@ TEST_F(TrustTokenRequestCanonicalizerTest, RejectsMalformedSignedHeaders) {
                                        "\"", /*overwrite=*/true);
 
   EXPECT_FALSE(canonicalizer.Canonicalize(
-      request.get(), /*public_key=*/"key",
-      mojom::TrustTokenSignRequestData::kHeadersOnly));
+      request->url(), request->extra_request_headers(),
+      /*public_key=*/"key", mojom::TrustTokenSignRequestData::kHeadersOnly));
 }
 
 // Canonicalizing a request with an empty key should fail.
@@ -161,7 +167,7 @@ TEST_F(TrustTokenRequestCanonicalizerTest, RejectsEmptyKey) {
       MakeURLRequest("https://issuer.com/");
 
   EXPECT_FALSE(canonicalizer.Canonicalize(
-      request.get(), /*public_key=*/"",
-      mojom::TrustTokenSignRequestData::kHeadersOnly));
+      request->url(), request->extra_request_headers(),
+      /*public_key=*/"", mojom::TrustTokenSignRequestData::kHeadersOnly));
 }
 }  // namespace network

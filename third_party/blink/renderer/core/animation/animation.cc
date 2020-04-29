@@ -1702,10 +1702,6 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
   if (!Playing())
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
-  // TODO(crbug.com/916117): Support accelerated scroll linked animations.
-  if (timeline_->IsScrollTimeline())
-    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
-
   return reasons;
 }
 
@@ -2013,6 +2009,8 @@ void Animation::AttachCompositorTimeline() {
     return;
 
   compositor_timeline->AnimationAttached(*this);
+  // Note that while we attach here but we don't detach because the
+  // |compositor_timeline| is detached in its destructor.
   if (compositor_timeline->GetAnimationTimeline()->IsScrollTimeline())
     document_->AttachCompositorTimeline(compositor_timeline);
 }
@@ -2026,11 +2024,6 @@ void Animation::DetachCompositorTimeline() {
     return;
 
   compositor_timeline->AnimationDestroyed(*this);
-
-  if (compositor_timeline->GetAnimationTimeline()->IsScrollTimeline() &&
-      !compositor_timeline->GetAnimationTimeline()->HasAnimation()) {
-    document_->DetachCompositorTimeline(compositor_timeline);
-  }
 }
 
 void Animation::UpdateCompositorScrollTimeline() {

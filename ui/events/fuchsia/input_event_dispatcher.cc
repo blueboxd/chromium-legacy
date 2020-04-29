@@ -133,7 +133,7 @@ bool InputEventDispatcher::ProcessTouchEvent(
 
   // TODO(crbug.com/876933): Add more detailed fields such as
   // force/orientation/tilt once they are added to PointerEvent.
-  ui::PointerDetails pointer_details(ui::EventPointerType::POINTER_TYPE_TOUCH,
+  ui::PointerDetails pointer_details(ui::EventPointerType::kTouch,
                                      event.pointer_id);
 
   ui::TouchEvent touch_event(event_type, gfx::Point(),

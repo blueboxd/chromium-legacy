@@ -722,16 +722,13 @@ favor of a consistent policy.
 PAC scripts can invoke `myIpAddress()` to obtain the client's IP address. This
 function returns a single IP literal, or `"127.0.0.1"` on failure.
 
-`myIpAddress()` is fundamentally broken for multi-homed hosts.
+This API is [inherently ambiguous when used on multi-homed
+hosts](#myIpAddress_myIpAddressEx_and-multi_homed-hosts), as such hosts can
+have multiple IP addresses and yet the browser can pick just one to return.
 
-Consider what happens when a machine has multiple network interfaces, each with
-its own IP address. Answering "what is my IP address" depends on what interface
-the request is sent out on. Which in turn depends on what the destination IP
-is. Which in turn depends on the result of proxy resolution + fallback, which
-is what we are currently blocked in!
-
-Chrome's algorithm uses these ordered steps to find an IP address
-(short-circuiting when a candidate is found).
+Chrome's algorithm for `myIpAddress()` favors returning the IP that would be
+used if we were to connect to the public internet, by executing the following
+ordered steps and short-circuiting once the first candidate IP is found:
 
 1. Select the IP of an interface that can route to public Internet:
     * Probe for route to `8.8.8.8`.
@@ -745,29 +742,15 @@ Chrome's algorithm uses these ordered steps to find an IP address
     * Probe for route to `192.168.0.0`.
     * Probe for route to `FC00::`.
 
-When searching for candidate IP addresses, link-local and loopback addresses
-are skipped over. Link-local or loopback address will only be returned as a
+Note that when searching for candidate IP addresses, link-local and loopback
+addresses are skipped over. Link-local or loopback address will only be returned as a
 last resort when no other IP address was found by following these steps.
 
-This sequence of steps explicitly favors IPv4 over IPv6 results.
+This sequence of steps explicitly favors IPv4 over IPv6 results, to match
+Internet Explorer's IPv6 support.
 
 *Historical note*: Prior to M72, Chrome's implementation of `myIpAddress()` was
 effectively just `getaddrinfo(gethostname)`. This is now step 2 of the heuristic.
-
-### What about pacUseMultihomedDNS?
-
-In Firefox, if you define a global variable named `pacUseMultihomedDNS` in your
-PAC script, it causes `myIpAddress()` to report the IP address of the interface
-that would (likely) have been used had we connected to it DIRECT.
-
-In particular, it will do a DNS resolution of the target host (the hostname of
-the URL that the proxy resolution is being done for), and then
-connect a datagram socket to get the source address.
-
-Chrome does not recognize the `pacUseMultihomedDNS` global as having special
-meaning. A PAC script is free to define such a global, and it won't have
-side-effects. Chrome has no APIs or settings to change `myIpAddress()`'s
-algorithm.
 
 ## Resolving client's IP address within a PAC script using myIpAddressEx()
 
@@ -784,13 +767,13 @@ There are some differences with Chrome's implementation:
 
 * In Chrome the function is unconditionally defined, whereas in Internet
   Explorer one must have used the `FindProxyForURLEx` entrypoint.
-* Chrome does not enumerate all of the host's network interfaces
+* Chrome [does not necessarily enumerate all of the host's network
+  interfaces](#myIpAddress_myIpAddressEx_and-multi_homed-hosts)
 * Chrome does not return link-local or loopback addresses (except if no other
   addresses were found).
 
 The algorithm that Chrome uses is nearly identical to that of `myIpAddress()`
-described earlier. The main difference is that we don't short-circuit
-after finding the first candidate IP, so multiple IPs may be returned.
+described earlier, but in certain cases may return multiple IPs.
 
 1. Select all the IPs of interfaces that can route to public Internet:
     * Probe for route to `8.8.8.8`.
@@ -808,6 +791,29 @@ after finding the first candidate IP, so multiple IPs may be returned.
 Note that short-circuiting happens whenever steps 1-3 find a candidate IP. So
 for example if at least one IP address was discovered by checking routes to
 public Internet, only those IPs will be returned, and steps 2-3 will not run.
+
+## myIpAddress() / myIpAddressEx() and multi-homed hosts
+
+`myIpAddress()` is a poor API for hosts that have multiple IP addresses, as it
+can only return a single IP, which may or may not be the one you wanted. Both
+`myIpAddress()` and `myIpAddressEx()` favor returning the IP for the interface
+that would be used to route to the public internet.
+
+As an API, `myIpAddressEx()` offers more flexibility since it can return
+multiple IP addresses. However Chrome's implementation restricts which IPs a
+PAC script can see [due to privacy
+concerns](https://bugs.chromium.org/p/chromium/issues/detail?id=905366). So
+using `myIpAddressEx()` is not as powerful as enumerating all the host's IPs,
+and may not address all use-cases.
+
+A more reliable strategy for PAC scripts to check which network(s) a user is on
+is to probe test domains using `dnsResolve()` / `dnsResolveEx()`.
+
+Moreover, note that Chrome does not support the Firefox-specific
+`pacUseMultihomedDNS` option, so adding that global to a PAC script has no
+special side-effect in Chrome. Whereas in Firefox it reconfigures
+`myIpAddress()` to be dependent on the target URL that `FindProxyForURL()` was
+called with.
 
 ## Android quirks
 

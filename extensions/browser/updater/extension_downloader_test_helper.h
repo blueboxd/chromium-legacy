@@ -34,11 +34,10 @@ class MockExtensionDownloaderDelegate : public ExtensionDownloaderDelegate {
                void(const ExtensionId&, Stage));
   MOCK_METHOD2(OnExtensionDownloadCacheStatusRetrieved,
                void(const ExtensionId&, CacheStatus));
-  MOCK_METHOD7(OnExtensionDownloadFinished,
+  MOCK_METHOD6(OnExtensionDownloadFinished,
                void(const extensions::CRXFileInfo&,
                     bool,
                     const GURL&,
-                    const std::string&,
                     const PingResult&,
                     const std::set<int>&,
                     const InstallCallback&));

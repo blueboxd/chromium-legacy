@@ -286,15 +286,12 @@ void ViewPainter::PaintRootElementGroup(
   } else {
     const auto& view_contents_state =
         layout_view_.FirstFragment().ContentsProperties();
-    GeometryMapper::SourceToDestinationRect(view_contents_state.Transform(),
-                                            background_paint_state.Transform(),
-                                            paint_rect);
-    if (paint_rect.IsEmpty())
-      background_renderable = false;
-    // TODO(pdr): There are additional reasons for a transform node, such as
-    // will-change: transform. This check should be updated to include these, or
-    // possibly check if the |paint_rect| mapping below had an effect.
-    if (root_object->StyleRef().HasTransform()) {
+    if (view_contents_state != background_paint_state) {
+      GeometryMapper::SourceToDestinationRect(
+          view_contents_state.Transform(), background_paint_state.Transform(),
+          paint_rect);
+      if (paint_rect.IsEmpty())
+        background_renderable = false;
       // With transforms, paint offset is encoded in paint property nodes but we
       // can use the |paint_rect|'s adjusted location as the offset from the
       // view to the root element.

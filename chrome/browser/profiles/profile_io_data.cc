@@ -62,7 +62,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/ssl/client_cert_store.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/public_buildflags.h"

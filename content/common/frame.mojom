@@ -244,6 +244,15 @@ interface FrameNavigationControl {
       pending_associated_receiver<blink.mojom.PortalClient> portal_client,
       blink.mojom.TransferableMessage data)
       => (blink.mojom.PortalActivateResult result);
+
+  // Requests that a provisional RenderFrame swap itself into the frame tree,
+  // replacing the RenderFrameProxy that it is associated with. This is used
+  // with remote-to-local frame navigations when the RenderFrameProxy
+  // corresponds to a non-live (crashed) frame. In that case, the browser
+  // process will send this message as part of an early commit to stop showing
+  // the sad iframe without waiting for the provisional RenderFrame's navigation
+  // to commit.
+  SwapIn();
 };
 
 // Implemented by the frame (e.g. renderer processes).

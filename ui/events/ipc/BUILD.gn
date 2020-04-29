@@ -17,6 +17,7 @@ jumbo_component("ipc") {
   public_deps = [
     "//base",
     "//ipc",
+    "//ui/events:event_constants",
     "//ui/events/types:headers",
   ]
 }

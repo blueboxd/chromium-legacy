@@ -5,6 +5,8 @@
 #include "services/network/websocket_factory.h"
 
 #include "base/bind.h"
+#include "mojo/public/cpp/bindings/message.h"
+#include "net/base/isolation_info.h"
 #include "net/base/url_util.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -28,7 +30,7 @@ void WebSocketFactory::CreateWebSocket(
     const GURL& url,
     const std::vector<std::string>& requested_protocols,
     const net::SiteForCookies& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const net::IsolationInfo& isolation_info,
     std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t process_id,
     int32_t render_frame_id,
@@ -37,6 +39,13 @@ void WebSocketFactory::CreateWebSocket(
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
     mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
     mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) {
+  if (isolation_info.redirect_mode() !=
+      net::IsolationInfo::RedirectMode::kUpdateNothing) {
+    mojo::ReportBadMessage(
+        "WebSocket's IsolationInfo::RedirectMode must be kUpdateNothing");
+    return;
+  }
+
   if (throttler_.HasTooManyPendingConnections(process_id)) {
     // Too many websockets!
     mojo::Remote<mojom::WebSocketHandshakeClient> handshake_client_remote(
@@ -50,7 +59,7 @@ void WebSocketFactory::CreateWebSocket(
       context_->network_service()->HasRawHeadersAccess(
           process_id, net::ChangeWebSocketSchemeToHttpScheme(url)));
   connections_.insert(std::make_unique<WebSocket>(
-      this, url, requested_protocols, site_for_cookies, network_isolation_key,
+      this, url, requested_protocols, site_for_cookies, isolation_info,
       std::move(additional_headers), process_id, render_frame_id, origin,
       options, has_raw_headers_access, std::move(handshake_client),
       std::move(auth_handler), std::move(header_client),

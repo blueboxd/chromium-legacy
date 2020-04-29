@@ -99,7 +99,7 @@ class ASH_EXPORT SelectToSpeakEventHandler : public ui::EventHandler {
 
   ui::PointerId touch_id_ = ui::kPointerIdUnknown;
 
-  ui::EventPointerType touch_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
+  ui::EventPointerType touch_type_ = ui::EventPointerType::kUnknown;
 
   // The delegate used to send key events to the Select-to-Speak extension.
   SelectToSpeakEventHandlerDelegate* delegate_;

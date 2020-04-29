@@ -203,6 +203,9 @@ extern const char kDecodeJpeg420ImagesToYUVDescription[];
 extern const char kDecodeLossyWebPImagesToYUVName[];
 extern const char kDecodeLossyWebPImagesToYUVDescription[];
 
+extern const char kDetectTargetEmbeddingLookalikesName[];
+extern const char kDetectTargetEmbeddingLookalikesDescription[];
+
 extern const char kDoubleBufferCompositingName[];
 extern const char kDoubleBufferCompositingDescription[];
 
@@ -2244,6 +2247,9 @@ extern const char kEnableMDRoundedCornersOnDialogsDescription[];
 
 extern const char kInstallableInkDropName[];
 extern const char kInstallableInkDropDescription[];
+
+extern const char kTextfieldFocusOnTapUpName[];
+extern const char kTextfieldFocusOnTapUpDescription[];
 
 extern const char kReopenTabInProductHelpName[];
 extern const char kReopenTabInProductHelpDescription[];

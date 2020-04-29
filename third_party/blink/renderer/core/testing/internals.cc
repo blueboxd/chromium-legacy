@@ -3210,10 +3210,6 @@ void Internals::revealSelection() {
   GetFrame()->Selection().RevealSelection(ScrollAlignment::ToEdgeIfNeeded());
 }
 
-void Internals::scheduleBlinkGC() {
-  ThreadState::Current()->ScheduleForcedGCForTesting();
-}
-
 String Internals::selectedHTMLForClipboard() {
   if (!GetFrame())
     return String();

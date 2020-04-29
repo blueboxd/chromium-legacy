@@ -71,6 +71,8 @@ class ASH_EXPORT DragHandle : public views::View,
   // ShellObserver:
   void OnShellDestroying() override;
 
+  ContextualNudge* drag_handle_nudge() { return drag_handle_nudge_; }
+
   bool gesture_nudge_target_visibility() const {
     return gesture_nudge_target_visibility_;
   }
@@ -93,10 +95,6 @@ class ASH_EXPORT DragHandle : public views::View,
 
   void fire_hide_drag_handle_timer_for_testing() {
     hide_drag_handle_nudge_timer_.FireNow();
-  }
-
-  ContextualNudge* drag_handle_nudge_for_testing() {
-    return drag_handle_nudge_;
   }
 
  private:

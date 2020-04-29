@@ -4,13 +4,16 @@
 
 import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, getSelectDropdownBackground} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {getGoogleDriveDestination, selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
 
 window.destination_select_test = {};
 destination_select_test.suiteName = 'DestinationSelectTest';
 /** @enum {string} */
 destination_select_test.TestNames = {
+  UpdateStatus: 'update status',
   ChangeIcon: 'change icon',
+  EulaIsDisplayed: 'eula is displayed'
 };
 
 suite(destination_select_test.suiteName, function() {
@@ -18,6 +21,8 @@ suite(destination_select_test.suiteName, function() {
   let destinationSelect = null;
 
   const account = 'foo@chromium.org';
+
+  let recentDestinationList = [];
 
   /** @override */
   setup(function() {
@@ -28,19 +33,21 @@ suite(destination_select_test.suiteName, function() {
     destinationSelect.activeUser = account;
     destinationSelect.appKioskMode = false;
     destinationSelect.disabled = false;
+    destinationSelect.loaded = false;
     destinationSelect.noDestinations = false;
-    destinationSelect.recentDestinationList = [
+    recentDestinationList = [
       new Destination(
           'ID1', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'One',
           DestinationConnectionStatus.ONLINE),
       new Destination(
           'ID2', DestinationType.CLOUD, DestinationOrigin.COOKIES, 'Two',
-          DestinationConnectionStatus.ONLINE, {account: account}),
+          DestinationConnectionStatus.OFFLINE, {account: account}),
       new Destination(
           'ID3', DestinationType.CLOUD, DestinationOrigin.COOKIES, 'Three',
           DestinationConnectionStatus.ONLINE,
           {account: account, isOwned: true}),
     ];
+    destinationSelect.recentDestinationList = recentDestinationList;
 
     document.body.appendChild(destinationSelect);
   });
@@ -53,12 +60,28 @@ suite(destination_select_test.suiteName, function() {
     assertEquals(expected, icon);
   }
 
+  test(assert(destination_select_test.TestNames.UpdateStatus), function() {
+    assertFalse(destinationSelect.$$('.throbber-container').hidden);
+    assertTrue(destinationSelect.$$('.md-select').hidden);
+
+    destinationSelect.loaded = true;
+    assertTrue(destinationSelect.$$('.throbber-container').hidden);
+    assertFalse(destinationSelect.$$('.md-select').hidden);
+
+    destinationSelect.destination = recentDestinationList[0];
+    destinationSelect.updateDestination();
+    assertTrue(destinationSelect.$$('.destination-additional-info').hidden);
+
+    destinationSelect.destination = recentDestinationList[1];
+    destinationSelect.updateDestination();
+    assertFalse(destinationSelect.$$('.destination-additional-info').hidden);
+  });
+
   test(assert(destination_select_test.TestNames.ChangeIcon), function() {
-    const destination = new Destination(
-        'ID1', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'One',
-        DestinationConnectionStatus.ONLINE);
+    const destination = recentDestinationList[0];
     destinationSelect.destination = destination;
     destinationSelect.updateDestination();
+    destinationSelect.loaded = true;
     const selectEl = destinationSelect.$$('.md-select');
     compareIcon(selectEl, 'print');
     const driveId = Destination.GooglePromotedId.DOCS;
@@ -85,9 +108,7 @@ suite(destination_select_test.suiteName, function() {
           compareIcon(selectEl, 'printer-shared');
 
           // Update destination.
-          destinationSelect.destination = new Destination(
-              'ID2', DestinationType.GOOGLE, DestinationOrigin.COOKIES, 'Two',
-              DestinationConnectionStatus.ONLINE, {account: account});
+          destinationSelect.destination = recentDestinationList[1];
           compareIcon(selectEl, 'printer-shared');
 
           // Select a destination with a standard printer icon.
@@ -98,4 +119,19 @@ suite(destination_select_test.suiteName, function() {
           compareIcon(selectEl, 'print');
         });
   });
+
+  if (isChromeOS) {
+    /**
+     * Tests that destinations with a EULA will display the EULA URL.
+     */
+    test(assert(destination_select_test.TestNames.EulaIsDisplayed), function() {
+      destinationSelect.destination = recentDestinationList[0];
+      destinationSelect.loaded = true;
+      assertTrue(destinationSelect.$.destinationEulaWrapper.hidden);
+
+      destinationSelect.set('destination.eulaUrl', 'chrome://os-credits/eula');
+      const eulaWrapper = destinationSelect.$.destinationEulaWrapper;
+      assertFalse(destinationSelect.$.destinationEulaWrapper.hidden);
+    });
+  }
 });

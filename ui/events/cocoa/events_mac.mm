@@ -126,7 +126,7 @@ int GetChangedMouseButtonFlagsFromNative(const PlatformEvent& native_event) {
 
 PointerDetails GetMousePointerDetailsFromNative(
     const PlatformEvent& native_event) {
-  return PointerDetails(EventPointerType::POINTER_TYPE_MOUSE);
+  return PointerDetails(EventPointerType::kMouse);
 }
 
 gfx::Vector2d GetMouseWheelOffset(const PlatformEvent& event) {
@@ -165,7 +165,7 @@ void ClearTouchIdIfReleased(const PlatformEvent& native_event) {
 PointerDetails GetTouchPointerDetailsFromNative(
     const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
-  return PointerDetails(EventPointerType::POINTER_TYPE_UNKNOWN,
+  return PointerDetails(EventPointerType::kUnknown,
                         /* pointer_id*/ 0,
                         /* radius_x */ 1.0,
                         /* radius_y */ 1.0,

@@ -1046,9 +1046,19 @@ var PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {
   }
 };
 
+TEST_F('PrintPreviewDestinationSelectTest', 'UpdateStatus', function() {
+  this.runMochaTest(destination_select_test.TestNames.UpdateStatus);
+});
+
 TEST_F('PrintPreviewDestinationSelectTest', 'ChangeIcon', function() {
   this.runMochaTest(destination_select_test.TestNames.ChangeIcon);
 });
+
+GEN('#if defined(OS_CHROMEOS)');
+TEST_F('PrintPreviewDestinationSelectTest', 'EulaIsDisplayed', function() {
+  this.runMochaTest(destination_select_test.TestNames.EulaIsDisplayed);
+});
+GEN('#endif');
 
 // eslint-disable-next-line no-var
 var PrintPreviewDestinationSettingsTest = class extends PrintPreviewTest {
@@ -1149,8 +1159,8 @@ TEST_F('PrintPreviewDestinationSettingsTest', 'NoDestinations', function() {
 });
 
 GEN('#if defined(OS_CHROMEOS)');
-TEST_F('PrintPreviewDestinationSettingsTest', 'EulaIsDisplayed', function() {
-  this.runMochaTest(destination_settings_test.TestNames.EulaIsDisplayed);
+TEST_F('PrintPreviewDestinationSettingsTest', 'EulaIsRetrieved', function() {
+  this.runMochaTest(destination_settings_test.TestNames.EulaIsRetrieved);
 });
 GEN('#endif');
 

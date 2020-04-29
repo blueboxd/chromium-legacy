@@ -130,7 +130,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   bool NeedsInterventionToAlignWithLCPGoal() const;
 
   DisplayPeriod ComputePeriod() const;
-  void UpdatePeriod() override;
+  bool UpdatePeriod() override;
   bool ShouldTriggerWebFontsIntervention();
   bool IsLowPriorityLoadingAllowedForRemoteFont() const override;
   FontDisplay GetFontDisplayWithFeaturePolicyCheck(FontDisplay,

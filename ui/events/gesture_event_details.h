@@ -227,8 +227,7 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   bool is_source_touch_event_set_non_blocking_ = false;
 
   // The pointer type for the first touch point in the gesture.
-  EventPointerType primary_pointer_type_ =
-      EventPointerType::POINTER_TYPE_UNKNOWN;
+  EventPointerType primary_pointer_type_ = EventPointerType::kUnknown;
 
   int touch_points_;  // Number of active touch points in the gesture.
 

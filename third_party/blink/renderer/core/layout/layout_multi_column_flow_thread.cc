@@ -1173,10 +1173,7 @@ static inline bool NeedsToReinsertIntoFlowThread(
   if (old_style.CanContainFixedPositionObjects(false) !=
       new_style.CanContainFixedPositionObjects(false))
     return true;
-  return (old_style.HasInFlowPosition() &&
-          new_style.GetPosition() == EPosition::kStatic) ||
-         (new_style.HasInFlowPosition() &&
-          old_style.GetPosition() == EPosition::kStatic);
+  return old_style.GetPosition() != new_style.GetPosition();
 }
 
 static inline bool NeedsToRemoveFromFlowThread(const ComputedStyle& old_style,

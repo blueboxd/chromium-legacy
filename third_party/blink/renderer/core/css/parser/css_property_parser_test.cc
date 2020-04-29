@@ -670,6 +670,9 @@ TEST(CSSPropertyParserTest, InternalLightDarkAuthor) {
       context));
   ASSERT_FALSE(CSSParser::ParseSingleValue(
       CSSPropertyID::kColor, "-internal-light-dark(red, green)", context));
+  ASSERT_FALSE(CSSParser::ParseSingleValue(
+      CSSPropertyID::kBackgroundImage,
+      "-internal-light-dark(url(light.png), url(dark.png))", context));
 }
 
 TEST(CSSPropertyParserTest, UAInternalLightDarkColor) {
@@ -706,6 +709,76 @@ TEST(CSSPropertyParserTest, UAInternalLightDarkColorSerialization) {
       CSSPropertyID::kColor, "-internal-light-dark(red,#aaa)", ua_context);
   ASSERT_TRUE(value);
   EXPECT_EQ("-internal-light-dark(red, rgb(170, 170, 170))", value->CssText());
+}
+
+TEST(CSSPropertyParserTest, UAInternalLightDarkBackgroundImage) {
+  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
+      kUASheetMode, SecureContextMode::kInsecureContext);
+
+  const struct {
+    const char* value;
+    bool valid;
+  } tests[] = {
+      {"-internal-light-dark()", false},
+      {"-internal-light-dark(url(light.png))", false},
+      {"-internal-light-dark(url(light.png) url(dark.png))", false},
+      {"-internal-light-dark(url(light.png),,url(dark.png))", false},
+      {"-internal-light-dark(url(light.png), url(dark.png))", true},
+      {"-internal-light-dark(url(light.png), none)", true},
+      {"-internal-light-dark(none, -webkit-image-set(url(dark.png) 1x))", true},
+      {"-internal-light-dark(  none  ,  none   )", true},
+      {"-internal-light-dark(  url(light.png)  ,  url(dark.png)   )", true},
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(!!CSSParser::ParseSingleValue(CSSPropertyID::kBackgroundImage,
+                                            test.value, ua_context),
+              test.valid)
+        << test.value;
+  }
+}
+
+namespace {
+
+bool ParseCSSValue(CSSPropertyID property_id,
+                   const String& value,
+                   const CSSParserContext* context) {
+  CSSTokenizer tokenizer(value);
+  const auto tokens = tokenizer.TokenizeToEOF();
+  const CSSParserTokenRange range(tokens);
+  HeapVector<CSSPropertyValue, 256> parsed_properties;
+  return CSSPropertyParser::ParseValue(property_id, false, range, context,
+                                       parsed_properties,
+                                       StyleRule::RuleType::kStyle);
+}
+
+}  // namespace
+
+TEST(CSSPropertyParserTest, UAInternalLightDarkBackgroundShorthand) {
+  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
+      kUASheetMode, SecureContextMode::kInsecureContext);
+
+  const struct {
+    const char* value;
+    bool valid;
+  } tests[] = {
+      {"-internal-light-dark()", false},
+      {"-internal-light-dark(url(light.png))", false},
+      {"-internal-light-dark(url(light.png) url(dark.png))", false},
+      {"-internal-light-dark(url(light.png),,url(dark.png))", false},
+      {"-internal-light-dark(url(light.png), url(dark.png))", true},
+      {"-internal-light-dark(url(light.png), none)", true},
+      {"-internal-light-dark(none, -webkit-image-set(url(dark.png) 1x))", true},
+      {"-internal-light-dark(  none  ,  none   )", true},
+      {"-internal-light-dark(  url(light.png)  ,  url(dark.png)   )", true},
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(
+        !!ParseCSSValue(CSSPropertyID::kBackground, test.value, ua_context),
+        test.valid)
+        << test.value;
+  }
 }
 
 TEST(CSSPropertyParserTest, ParseRevert) {

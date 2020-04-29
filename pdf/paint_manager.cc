@@ -10,7 +10,7 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"

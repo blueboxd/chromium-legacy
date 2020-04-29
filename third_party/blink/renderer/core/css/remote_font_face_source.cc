@@ -266,8 +266,9 @@ void RemoteFontFaceSource::SetDisplay(FontDisplay display) {
   UpdatePeriod();
 }
 
-void RemoteFontFaceSource::UpdatePeriod() {
+bool RemoteFontFaceSource::UpdatePeriod() {
   DisplayPeriod new_period = ComputePeriod();
+  bool changed = new_period != period_;
 
   // Fallback font is invisible iff the font is loading and in the block period.
   // Invalidate the font if its fallback visibility has changed.
@@ -279,6 +280,7 @@ void RemoteFontFaceSource::UpdatePeriod() {
     histograms_.RecordFallbackTime();
   }
   period_ = new_period;
+  return changed;
 }
 
 FontDisplay RemoteFontFaceSource::GetFontDisplayWithFeaturePolicyCheck(

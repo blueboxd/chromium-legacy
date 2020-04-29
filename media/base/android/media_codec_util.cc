@@ -239,19 +239,6 @@ std::set<int> MediaCodecUtil::GetEncoderColorFormats(
 }
 
 // static
-bool MediaCodecUtil::IsHLSPath(const GURL& url) {
-  return (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile()) &&
-         base::EndsWith(url.path(), ".m3u8",
-                        base::CompareCase::INSENSITIVE_ASCII);
-}
-
-// static
-bool MediaCodecUtil::IsHLSURL(const GURL& url) {
-  return (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile()) &&
-         url.spec().find("m3u8") != std::string::npos;
-}
-
-// static
 bool MediaCodecUtil::IsVp8DecoderAvailable() {
   return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kVp8MimeType);
 }

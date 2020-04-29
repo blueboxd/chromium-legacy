@@ -245,7 +245,7 @@ class _Session(object):
     tool_prefix = self._tool_prefix_finder.Tentative()
     orig_tool_prefix = size_info.metadata.get(models.METADATA_TOOL_PREFIX)
     if orig_tool_prefix:
-      orig_tool_prefix = path_util.FromSrcRootRelative(orig_tool_prefix)
+      orig_tool_prefix = path_util.FromToolsSrcRootRelative(orig_tool_prefix)
       if os.path.exists(path_util.GetObjDumpPath(orig_tool_prefix)):
         tool_prefix = orig_tool_prefix
 

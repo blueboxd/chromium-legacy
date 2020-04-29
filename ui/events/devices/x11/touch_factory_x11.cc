@@ -72,10 +72,10 @@ void TouchFactory::SetTouchDeviceListFromCommandLine() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   AddPointerDevicesFromString(
       command_line->GetSwitchValueASCII(switches::kTouchDevices),
-      EventPointerType::POINTER_TYPE_TOUCH, &devices);
+      EventPointerType::kTouch, &devices);
   AddPointerDevicesFromString(
       command_line->GetSwitchValueASCII(switches::kPenDevices),
-      EventPointerType::POINTER_TYPE_PEN, &devices);
+      EventPointerType::kPen, &devices);
   if (!devices.empty())
     ui::TouchFactory::GetInstance()->SetTouchDeviceList(devices);
 }
@@ -126,8 +126,7 @@ void TouchFactory::UpdateDeviceList(XDisplay* display) {
           continue;
 
         touch_device_lookup_[master_id] = true;
-        touch_device_list_[master_id] = {true,
-                                         EventPointerType::POINTER_TYPE_TOUCH};
+        touch_device_list_[master_id] = {true, EventPointerType::kTouch};
 
         if (devinfo.use != XIMasterPointer)
           CacheTouchscreenIds(devinfo.deviceid);
@@ -135,8 +134,8 @@ void TouchFactory::UpdateDeviceList(XDisplay* display) {
         if (devinfo.use == XISlavePointer) {
           device_master_id_list_[devinfo.deviceid] = master_id;
           touch_device_lookup_[devinfo.deviceid] = true;
-          touch_device_list_[devinfo.deviceid] = {
-              false, EventPointerType::POINTER_TYPE_TOUCH};
+          touch_device_list_[devinfo.deviceid] = {false,
+                                                  EventPointerType::kTouch};
         }
       }
       pointer_device_lookup_[devinfo.deviceid] =
@@ -318,7 +317,7 @@ void TouchFactory::SetTouchDeviceForTest(
   for (auto iter = devices.begin(); iter != devices.end(); ++iter) {
     DCHECK(IsValidDevice(*iter));
     touch_device_lookup_[*iter] = true;
-    touch_device_list_[*iter] = {true, EventPointerType::POINTER_TYPE_TOUCH};
+    touch_device_list_[*iter] = {true, EventPointerType::kTouch};
   }
   SetTouchscreensEnabled(true);
 }

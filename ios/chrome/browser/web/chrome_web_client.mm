@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/elements/windowed_container_view.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/browser/web/features.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
@@ -315,4 +316,11 @@ web::UserAgentType ChromeWebClient::GetDefaultUserAgent(
                               UIUserInterfaceSizeClassRegular;
   return isRegularRegular ? web::UserAgentType::DESKTOP
                           : web::UserAgentType::MOBILE;
+}
+
+bool ChromeWebClient::IsEmbedderBlockRestoreUrlEnabled() {
+  if (@available(iOS 13, *)) {
+    return base::FeatureList::IsEnabled(kEmbedderBlockRestoreUrl);
+  }
+  return false;
 }

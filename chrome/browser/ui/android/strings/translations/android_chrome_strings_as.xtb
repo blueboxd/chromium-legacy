@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="as">
-<translation id="1006017844123154345">অনলাইনত খোলক</translation>
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" />লৈ পঠিয়াই থকা হৈছে...</translation>
+<translation id="1036348656032585052">অফ কৰক</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> যোগ কৰি থকা হৈছে...</translation>
 <translation id="1041308826830691739">ৱেবছাইটৰ পৰা</translation>
 <translation id="1049743911850919806">ইনক’গনিট’</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">Chromeৰ গৃহপৃষ্ঠা</translation>
 <translation id="3157842584138209013">অধিক বিকল্প বুটামটোলৈ গৈ আপুনি কিমান ডেটা ৰাহি কৰিলে সেয়া চাওক</translation>
 <translation id="3166827708714933426">টেব আৰু ৱিণ্ড’ৰ শ্বৰ্টকাট</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3181954750937456830">সুৰক্ষিত ব্ৰাউজিং (আপোনাৰ ডিভাইচটোক বিপজ্জনক ছাইটৰ পৰা সুৰক্ষা প্ৰদান কৰে)</translation>
 <translation id="3205824638308738187">প্ৰায় সম্পূর্ণ হৈছে!</translation>
 <translation id="3207960819495026254">বুকমার্ক কৰা হৈছে</translation>
@@ -372,7 +373,6 @@
 <translation id="4116038641877404294">অফলাইন ব্যৱহাৰ কৰিবলৈ পৃষ্ঠা ডাউনল’ড কৰক</translation>
 <translation id="4135200667068010335">এটা টেব শ্বেয়াৰ কৰিবলৈ থকা ডিভাইচসমূহৰ সূচী বন্ধ আছে।</translation>
 <translation id="4149994727733219643">ৱেবপৃষ্ঠাৰ বাবে সৰলকৰণ কৰা ভিউ</translation>
-<translation id="4165986682804962316">ছাইটৰ ছেটিংসমূহ</translation>
 <translation id="4170011742729630528">সেৱাটো উপলব্ধ নহয়, পাছত পুনৰ চেষ্টা কৰক।</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> ব্যৱহাৰ কৰা হৈছে</translation>
 <translation id="4181841719683918333">ভাষাসমূহ</translation>
@@ -583,6 +583,7 @@
 <translation id="5853623416121554550">পজ কৰা হ’ল</translation>
 <translation id="5854790677617711513">৩০ দিনতকৈ পুৰণি</translation>
 <translation id="5858741533101922242">Chromeএ ব্লুটুথ এডাপ্টৰটো অন কৰিবলৈ সক্ষম নহ’ল</translation>
+<translation id="5860491529813859533">অন কৰক</translation>
 <translation id="5862731021271217234">আপোনাৰ অন্য ডিভাইচৰ টেবসমূহ পাবলৈ ছিংক অন কৰক</translation>
 <translation id="5864174910718532887">সবিশেষ: ছাইটৰ নাম অনুযায়ী সজোৱা হৈছে</translation>
 <translation id="5864419784173784555">অন্য এটা ডাউনল’ডৰ বাবে অপেক্ষা কৰি থকা হৈছে…</translation>

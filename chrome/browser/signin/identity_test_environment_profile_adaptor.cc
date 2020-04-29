@@ -79,4 +79,5 @@ IdentityTestEnvironmentProfileAdaptor::BuildIdentityManagerForTests(
 
 IdentityTestEnvironmentProfileAdaptor::IdentityTestEnvironmentProfileAdaptor(
     Profile* profile)
-    : identity_test_env_(IdentityManagerFactory::GetForProfile(profile)) {}
+    : identity_test_env_(IdentityManagerFactory::GetForProfile(profile),
+                         ChromeSigninClientFactory::GetForProfile(profile)) {}

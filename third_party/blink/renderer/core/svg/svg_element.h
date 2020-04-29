@@ -278,6 +278,7 @@ class CORE_EXPORT SVGElement : public Element {
   }
   void WillRecalcStyle(const StyleRecalcChange) override;
   static SVGElementSet& GetDependencyTraversalVisitedSet();
+  void UpdateWebAnimatedAttributeOnBaseValChange(const QualifiedName&);
 
   HeapHashSet<WeakMember<SVGElement>> elements_with_relative_lengths_;
 

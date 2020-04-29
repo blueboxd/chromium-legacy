@@ -15,11 +15,15 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#import "ios/chrome/browser/download/confirm_download_closing_overlay.h"
+#import "ios/chrome/browser/download/confirm_download_replacing_overlay.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
 #include "ios/chrome/browser/download/download_manager_metric_names.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/download/external_app_util.h"
 #include "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/overlays/public/common/alerts/alert_overlay.h"
+#import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -571,6 +575,7 @@ TEST_F(DownloadManagerCoordinatorTest, QuitDuringInProgressDownload) {
 // should present the confirmation dialog.
 TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
   web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  task.SetWebState(&web_state_);
   task.Start(std::make_unique<net::URLFetcherStringWriter>());
   coordinator_.downloadTask = &task;
   [coordinator_ start];
@@ -581,66 +586,87 @@ TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
   ASSERT_EQ(0, user_action_tester_.GetActionCount(
                    "IOSDownloadTryCloseWhenInProgress"));
+
+  OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
+      &web_state_, OverlayModality::kWebContentArea);
+  ASSERT_EQ(0U, queue->size());
   @autoreleasepool {
     // This call will retain coordinator, which should outlive thread bundle.
     [viewController.delegate
         downloadManagerViewControllerDidClose:viewController];
   }
-  // Verify that UIAlert is presented.
-  ASSERT_TRUE([base_view_controller_.presentedViewController
-      isKindOfClass:[UIAlertController class]]);
-  UIAlertController* alert = base::mac::ObjCCast<UIAlertController>(
-      base_view_controller_.presentedViewController);
-  EXPECT_NSEQ(@"Stop Download?", alert.title);
-  EXPECT_FALSE(alert.message);
+  // Verify that confirm request was sent.
+  ASSERT_EQ(1U, queue->size());
+
+  alert_overlays::AlertRequest* config =
+      queue->front_request()->GetConfig<alert_overlays::AlertRequest>();
+  ASSERT_TRUE(config);
+  EXPECT_NSEQ(@"Stop Download?", config->title());
+  EXPECT_FALSE(config->message());
+  ASSERT_EQ(2U, config->button_configs().size());
+  EXPECT_NSEQ(@"Stop", config->button_configs()[0].title);
+  EXPECT_EQ(kDownloadCloseActionName,
+            config->button_configs()[0].user_action_name);
+  EXPECT_NSEQ(@"Continue", config->button_configs()[1].title);
+  EXPECT_EQ(kDownloadDoNotCloseActionName,
+            config->button_configs()[1].user_action_name);
 
   // Stop to avoid holding a dangling pointer to destroyed task.
+  queue->CancelAllRequests();
   @autoreleasepool {
     // task_environment_ has to outlive the coordinator. Dismissing coordinator
     // retains are autoreleases it.
     [coordinator_ stop];
   }
 
-  // |stop| should dismiss the alert.
-  ASSERT_TRUE(
-      WaitUntilConditionOrTimeout(base::test::ios::kWaitForUIElementTimeout, ^{
-        return !base_view_controller_.presentedViewController;
-      }));
+  EXPECT_EQ(0U, queue->size());
   EXPECT_EQ(1, user_action_tester_.GetActionCount(
                    "IOSDownloadTryCloseWhenInProgress"));
-  EXPECT_EQ(0, user_action_tester_.GetActionCount("IOSDownloadConfirmClose"));
-  EXPECT_EQ(0, user_action_tester_.GetActionCount("IOSDownloadDoNotClose"));
+  EXPECT_EQ(0, user_action_tester_.GetActionCount(kDownloadCloseActionName));
+  EXPECT_EQ(0,
+            user_action_tester_.GetActionCount(kDownloadDoNotCloseActionName));
 }
 
 // Tests downloadManagerTabHelper:decidePolicyForDownload:completionHandler:.
 // Coordinator should present the confirmation dialog.
 TEST_F(DownloadManagerCoordinatorTest, DecidePolicyForDownload) {
   web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
+  task.SetWebState(&web_state_);
+  coordinator_.downloadTask = &task;
+
+  OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
+      &web_state_, OverlayModality::kWebContentArea);
+  ASSERT_EQ(0U, queue->size());
   [coordinator_ downloadManagerTabHelper:&tab_helper_
                  decidePolicyForDownload:&task
                        completionHandler:^(NewDownloadPolicy){
                        }];
 
-  // Verify that UIAlert is presented.
-  ASSERT_TRUE([base_view_controller_.presentedViewController
-      isKindOfClass:[UIAlertController class]]);
-  UIAlertController* alert = base::mac::ObjCCast<UIAlertController>(
-      base_view_controller_.presentedViewController);
-  EXPECT_NSEQ(@"Start New Download?", alert.title);
-  EXPECT_NSEQ(@"This will stop all progress for your current download.",
-              alert.message);
+  // Verify that confirm request was sent.
+  ASSERT_EQ(1U, queue->size());
 
+  alert_overlays::AlertRequest* config =
+      queue->front_request()->GetConfig<alert_overlays::AlertRequest>();
+  ASSERT_TRUE(config);
+  EXPECT_NSEQ(@"Start New Download?", config->title());
+  EXPECT_NSEQ(@"This will stop all progress for your current download.",
+              config->message());
+  ASSERT_EQ(2U, config->button_configs().size());
+  EXPECT_NSEQ(@"OK", config->button_configs()[0].title);
+  EXPECT_EQ(kDownloadReplaceActionName,
+            config->button_configs()[0].user_action_name);
+  EXPECT_NSEQ(@"Cancel", config->button_configs()[1].title);
+  EXPECT_EQ(kDownloadDoNotReplaceActionName,
+            config->button_configs()[1].user_action_name);
+
+  queue->CancelAllRequests();
   @autoreleasepool {
     // task_environment_ has to outlive the coordinator. Dismissing coordinator
     // retains are autoreleases it.
     [coordinator_ stop];
   }
 
-  // |stop| should dismiss the alert.
-  ASSERT_TRUE(
-      WaitUntilConditionOrTimeout(base::test::ios::kWaitForUIElementTimeout, ^{
-        return !base_view_controller_.presentedViewController;
-      }));
+  EXPECT_EQ(0U, queue->size());
 }
 
 // Tests starting the download. Verifies that download task is started and its

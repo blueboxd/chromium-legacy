@@ -7,7 +7,7 @@ import {assert} from '../chrome_util.js';
 /**
  * Asynchronous job queue.
  */
-class AsyncJobQueue {
+export class AsyncJobQueue {
   /**
    * @public
    */

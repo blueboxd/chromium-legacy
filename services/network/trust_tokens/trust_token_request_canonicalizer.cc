@@ -17,7 +17,8 @@ namespace network {
 
 base::Optional<std::vector<uint8_t>>
 TrustTokenRequestCanonicalizer::Canonicalize(
-    net::URLRequest* request,
+    const GURL& destination,
+    const net::HttpRequestHeaders& headers,
     base::StringPiece public_key,
     mojom::TrustTokenSignRequestData sign_request_data) const {
   DCHECK(sign_request_data == mojom::TrustTokenSignRequestData::kInclude ||
@@ -38,7 +39,7 @@ TrustTokenRequestCanonicalizer::Canonicalize(
   if (sign_request_data == mojom::TrustTokenSignRequestData::kInclude) {
     canonicalized_request.emplace(
         TrustTokenRequestSigningHelper::kCanonicalizedRequestDataUrlKey,
-        request->url().spec());
+        destination.spec());
   }
 
   // 2. If sign-request-data is 'include' or 'headers-only', for each value
@@ -48,8 +49,8 @@ TrustTokenRequestCanonicalizer::Canonicalize(
   // - Each key and value are of CBOR type “text string”.
   std::vector<std::string> headers_to_add;
   std::string signed_headers_header;
-  if (request->extra_request_headers().GetHeader(
-          kTrustTokensRequestHeaderSignedHeaders, &signed_headers_header)) {
+  if (headers.GetHeader(kTrustTokensRequestHeaderSignedHeaders,
+                        &signed_headers_header)) {
     base::Optional<std::vector<std::string>> maybe_headers_to_add =
         internal::ParseTrustTokenSignedHeadersHeader(signed_headers_header);
     if (!maybe_headers_to_add)
@@ -59,9 +60,7 @@ TrustTokenRequestCanonicalizer::Canonicalize(
 
   for (const std::string& header_name : headers_to_add) {
     std::string header_value;
-    // GetHeader matches case-insensitive names.
-    if (request->extra_request_headers().GetHeader(header_name,
-                                                   &header_value)) {
+    if (headers.GetHeader(header_name, &header_value)) {
       canonicalized_request.emplace(base::ToLowerASCII(header_name),
                                     header_value);
     }

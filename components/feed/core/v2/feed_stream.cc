@@ -26,6 +26,7 @@
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/stream_model_update_request.h"
 #include "components/feed/core/v2/surface_updater.h"
+#include "components/feed/core/v2/tasks/clear_all_task.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
 #include "components/feed/core/v2/tasks/wait_for_store_initialize_task.h"
 #include "components/offline_pages/task/closure_task.h"
@@ -244,6 +245,10 @@ base::Time FeedStream::GetLastFetchTime() {
   return fetch_time;
 }
 
+bool FeedStream::HasSurfaceAttached() const {
+  return surface_updater_->HasSurfaceAttached();
+}
+
 void FeedStream::LoadModelForTesting(std::unique_ptr<StreamModel> model) {
   LoadModel(std::move(model));
 }
@@ -386,9 +391,7 @@ void FeedStream::BackgroundRefreshComplete(LoadStreamTask::Result result) {
 void FeedStream::ClearAll() {
   metrics_reporter_->OnClearAll(clock_->Now() - GetLastFetchTime());
 
-  // TODO(harringtond): This should result in clearing feed data
-  // and triggering a model load attempt if there are connected surfaces.
-  // That work should be embedded in a task.
+  task_queue_.AddTask(std::make_unique<ClearAllTask>(this));
 }
 
 void FeedStream::LoadModel(std::unique_ptr<StreamModel> model) {

@@ -133,9 +133,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                 bool focused,
                 blink::mojom::FocusType focus_type);
 
-  // Return true if the mouse is locked.
-  bool mouse_locked() const { return mouse_locked_; }
-
   // Creates a new guest WebContentsImpl with the provided |params| with |this|
   // as the |opener|.
   WebContentsImpl* CreateNewGuestWindow(
@@ -290,7 +287,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // Additionally, it will slow down Javascript execution and garbage
   // collection. See RenderThreadImpl::IdleHandler (executed when hidden) and
   // RenderThreadImpl::IdleHandlerInForegroundTab (executed when visible).
-  void OnUnlockMouseAck(int instance_id);
   void OnSynchronizeVisualProperties(
       int instance_id,
       const FrameVisualProperties& visual_properties);
@@ -324,7 +320,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   int browser_plugin_instance_id_;
   gfx::Rect frame_rect_;
   bool focused_;
-  bool mouse_locked_;
   // Whether the browser plugin is inside a plugin document.
   bool is_full_page_plugin_;
 

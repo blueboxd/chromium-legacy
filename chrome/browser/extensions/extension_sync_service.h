@@ -50,19 +50,6 @@ class ExtensionSyncService : public syncer::SyncableService,
   // is synced as part of ExtensionSyncData (e.g. incognito_enabled).
   void SyncExtensionChangeIfNeeded(const extensions::Extension& extension);
 
-  // Returns whether the extension with the given |id| will be re-enabled once
-  // it is updated to the given |version|. This happens when we get a Sync
-  // update telling us to re-enable a newer version than what is currently
-  // installed.
-  // TODO(crbug/1019813): The logic for this function was broken after forced
-  // custodian installations were removed. See
-  // ExtensionServiceTestSupervised.
-  // UpdateWithPermissionIncreaseApprovalNewVersion
-  // for an example of when this function should return true but returns false
-  // instead in the test code.
-  bool HasPendingReenable(const std::string& id,
-                          const base::Version& version) const;
-
   // syncer::SyncableService implementation.
   void WaitUntilReadyToSync(base::OnceClosure done) override;
   base::Optional<syncer::ModelError> MergeDataAndStartSyncing(

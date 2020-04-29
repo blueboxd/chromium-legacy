@@ -3175,10 +3175,6 @@ bool RenderWidget::RequestPointerLockChange(
       request_unadjusted_movement);
 }
 
-void RenderWidget::PointerLockLost() {
-  mouse_lock_dispatcher_->OnMouseLockLost();
-}
-
 void RenderWidget::RequestPointerUnlock() {
   mouse_lock_dispatcher_->UnlockMouse(webwidget_mouse_lock_target_.get());
 }

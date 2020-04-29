@@ -221,17 +221,17 @@ static void ForSelfAndInstances(SVGElement* element, T callback) {
 void SVGElement::SetWebAnimatedAttribute(const QualifiedName& attribute,
                                          SVGPropertyBase* value) {
   SetAnimatedAttribute(attribute, value);
-  EnsureSVGRareData()->WebAnimatedAttributes().insert(&attribute);
+  EnsureSVGRareData()->WebAnimatedAttributes().insert(attribute);
 }
 
 void SVGElement::ClearWebAnimatedAttributes() {
   if (!HasSVGRareData())
     return;
-  for (const QualifiedName* attribute :
-       SvgRareData()->WebAnimatedAttributes()) {
-    ClearAnimatedAttribute(*attribute);
-  }
-  SvgRareData()->WebAnimatedAttributes().clear();
+  HashSet<QualifiedName>& animated_attributes =
+      SvgRareData()->WebAnimatedAttributes();
+  for (const QualifiedName& attribute : animated_attributes)
+    ClearAnimatedAttribute(attribute);
+  animated_attributes.clear();
 }
 
 ElementSMILAnimations* SVGElement::GetSMILAnimations() {
@@ -893,14 +893,20 @@ void SVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 
 void SVGElement::SvgAttributeBaseValChanged(const QualifiedName& attribute) {
   SvgAttributeChanged(attribute);
+  UpdateWebAnimatedAttributeOnBaseValChange(attribute);
+}
 
-  if (!HasSVGRareData() || SvgRareData()->WebAnimatedAttributes().IsEmpty())
+void SVGElement::UpdateWebAnimatedAttributeOnBaseValChange(
+    const QualifiedName& attribute) {
+  if (!HasSVGRareData())
     return;
-
+  const auto& animated_attributes = SvgRareData()->WebAnimatedAttributes();
+  if (animated_attributes.IsEmpty() || !animated_attributes.Contains(attribute))
+    return;
   // TODO(alancutter): Only mark attributes as dirty if their animation depends
   // on the underlying value.
   SvgRareData()->SetWebAnimatedAttributesDirty(true);
-  GetElementData()->SetAnimatedSvgAttributesAreDirty(true);
+  EnsureAttributeAnimValUpdated();
 }
 
 void SVGElement::EnsureAttributeAnimValUpdated() {
@@ -920,11 +926,6 @@ void SVGElement::SynchronizeAnimatedSVGAttribute(
   if (!GetElementData() ||
       !GetElementData()->animated_svg_attributes_are_dirty())
     return;
-
-  // We const_cast here because we have deferred baseVal mutation animation
-  // updates to this point in time.
-  const_cast<SVGElement*>(this)->EnsureAttributeAnimValUpdated();
-
   if (name == AnyQName()) {
     AttributeToPropertyMap::const_iterator::ValuesIterator it =
         attribute_to_property_map_.Values().begin();

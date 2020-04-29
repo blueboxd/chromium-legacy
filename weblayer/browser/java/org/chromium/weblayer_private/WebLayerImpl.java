@@ -159,20 +159,13 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     private void onNativeLoaded(IObjectWrapper appContextWrapper) {
         CrashReporterControllerImpl.getInstance().notifyNativeInitialized();
         NetworkChangeNotifier.init();
-        configureNetworkChangeNotifier(new WebLayerNetworkChangeNotifierRegistrationPolicy());
+        NetworkChangeNotifier.registerToReceiveNotificationsAlways();
 
         // This issues JNI calls which require native code to be loaded.
         MetricsServiceClient.init();
 
         assert mInited;
         WebLayerImplJni.get().setIsWebViewCompatMode(mIsWebViewCompatMode);
-    }
-
-    // Configure NetworkChangeNotifier to auto detect changes in network
-    // connectivity.
-    private void configureNetworkChangeNotifier(
-            WebLayerNetworkChangeNotifierRegistrationPolicy registrationPolicy) {
-        NetworkChangeNotifier.setAutoDetectConnectivityState(registrationPolicy);
     }
 
     private void init(IObjectWrapper appContextWrapper, IObjectWrapper remoteContextWrapper) {

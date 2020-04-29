@@ -1354,11 +1354,11 @@ ui::TextInputClient::FocusReason RenderWidgetHostViewAura::GetFocusReason()
     return ui::TextInputClient::FOCUS_REASON_NONE;
 
   switch (last_pointer_type_before_focus_) {
-    case ui::EventPointerType::POINTER_TYPE_MOUSE:
+    case ui::EventPointerType::kMouse:
       return ui::TextInputClient::FOCUS_REASON_MOUSE;
-    case ui::EventPointerType::POINTER_TYPE_PEN:
+    case ui::EventPointerType::kPen:
       return ui::TextInputClient::FOCUS_REASON_PEN;
-    case ui::EventPointerType::POINTER_TYPE_TOUCH:
+    case ui::EventPointerType::kTouch:
       return ui::TextInputClient::FOCUS_REASON_TOUCH;
     default:
       return ui::TextInputClient::FOCUS_REASON_OTHER;
@@ -1718,7 +1718,7 @@ bool RenderWidgetHostViewAura::RequiresDoubleTapGestureEvents() const {
 // RenderWidgetHostViewAura, ui::EventHandler implementation:
 
 void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
-  last_pointer_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
+  last_pointer_type_ = ui::EventPointerType::kUnknown;
   event_handler_->OnKeyEvent(event);
 }
 
@@ -1733,7 +1733,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     last_mouse_move_location_ = event->location();
   }
 #endif
-  last_pointer_type_ = ui::EventPointerType::POINTER_TYPE_MOUSE;
+  last_pointer_type_ = ui::EventPointerType::kMouse;
   event_handler_->OnMouseEvent(event);
 }
 
@@ -1785,7 +1785,7 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
 
 #if defined(OS_WIN)
   bool dismiss_virtual_keyboard =
-      last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH;
+      last_pointer_type_ == ui::EventPointerType::kTouch;
   if (dismiss_virtual_keyboard && !editable && virtual_keyboard_requested_ &&
       window_) {
     virtual_keyboard_requested_ = false;
@@ -2424,12 +2424,11 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
       state->mode != ui::TEXT_INPUT_MODE_NONE) {
     bool show_virtual_keyboard = true;
 #if defined(OS_FUCHSIA)
-    show_virtual_keyboard =
-        last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH;
+    show_virtual_keyboard = last_pointer_type_ == ui::EventPointerType::kTouch;
 #elif defined(OS_WIN)
     show_virtual_keyboard =
-        last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_TOUCH ||
-        last_pointer_type_ == ui::EventPointerType::POINTER_TYPE_PEN;
+        last_pointer_type_ == ui::EventPointerType::kTouch ||
+        last_pointer_type_ == ui::EventPointerType::kPen;
 #endif
 
 #if !defined(OS_WIN)

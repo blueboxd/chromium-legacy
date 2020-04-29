@@ -11,6 +11,20 @@ namespace identity {
     DOMString id;
   };
 
+  enum AccountStatus {
+    // Sync is enabled for the primary account.
+    SYNC,
+    // Any primary account, if exists.
+    ANY
+  };
+
+  dictionary ProfileDetails {
+    // A status of the primary account signed into a profile whose
+    // <code>ProfileUserInfo</code> should be returned. Defaults to
+    // <code>SYNC</code> account status.
+    AccountStatus? accountStatus;
+  };
+
   dictionary ProfileUserInfo {
     // An email address for the user account signed into the current
     // profile. Empty if the user is not signed in or the
@@ -108,10 +122,20 @@ namespace identity {
     // Retrieves email address and obfuscated gaia id of the user
     // signed into a profile.
     //
+    // Requires the <code>identity.email</code> manifest permission. Otherwise,
+    // returns an empty result.
+    //
     // This API is different from identity.getAccounts in two
     // ways. The information returned is available offline, and it
     // only applies to the primary account for the profile.
-    static void getProfileUserInfo(GetProfileUserInfoCallback callback);
+    //
+    // |details|: Profile options.
+    // |callback|: Called with the <code>ProfileUserInfo</code> of the primary
+    // Chrome account, of an empty <code>ProfileUserInfo</code> if the account
+    // with given <code>details</code> doesn't exist.
+    static void getProfileUserInfo(
+        optional ProfileDetails details,
+        GetProfileUserInfoCallback callback);
 
     // Removes an OAuth2 access token from the Identity API's token cache.
     //

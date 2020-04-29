@@ -4,7 +4,7 @@
 
 #include "pdf/pdfium/pdfium_unsupported_features.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "third_party/pdfium/public/fpdf_ext.h"
 

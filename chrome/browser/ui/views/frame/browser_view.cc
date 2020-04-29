@@ -3078,7 +3078,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
 #if defined(OS_CHROMEOS)
   // Kiosk mode needs the whole screen.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+  if (chrome::IsRunningInAppMode())
     return false;
 
   // In Public Session, always use immersive fullscreen.

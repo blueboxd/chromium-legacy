@@ -65,13 +65,16 @@ template("collect_idl_files") {
     # List input file names in a temporary file.
     response_file_contents = rebase_path(inputs, root_build_dir)
     args = [
-      "--idl-list-file",
+      "--idl_list_file",
       "{{response_file_name}}",
       "--component",
       invoker.component,
       "--output",
       rebase_path(invoker.output, root_build_dir),
     ]
+    if (defined(invoker.for_testing) && invoker.for_testing) {
+      args += [ "--for_testing" ]
+    }
 
     if (defined(invoker.deps)) {
       deps = invoker.deps
@@ -83,27 +86,31 @@ collect_idl_files("web_idl_in_core") {
   component = "core"
 
   inputs = static_idl_files_in_core
-  deps = []
 
+  # Supplemental IDL definitions to support the migration from the old bindings
+  # generator to the new one.
+  inputs += [ "${bindings_scripts_dir}/web_idl/migration_adapter.idl" ]
+
+  output = "${bindings_output_dir}/web_idl_in_core.pickle"
+}
+
+collect_idl_files("web_idl_in_core_for_testing") {
+  component = "core"
+  for_testing = true
+
+  inputs = static_idl_files_in_core_for_testing
   inputs += get_path_info(
           [
             "$root_gen_dir/third_party/blink/renderer/core/testing/internal_runtime_flags.idl",
             "$root_gen_dir/third_party/blink/renderer/core/testing/internal_settings_generated.idl",
           ],
           "abspath")
-  deps += [
+  deps = [
     "//third_party/blink/renderer/core:generated_testing_idls_internal_runtime_flags",
     "//third_party/blink/renderer/core:generated_testing_idls_settings",
   ]
 
-  # Supplemental IDL definitions to support the migration from the old bindings
-  # generator to the new one.
-  inputs += [ "${bindings_scripts_dir}/web_idl/migration_adapter.idl" ]
-
-  # Additional IDL files to test and demonstrate the new IDL compiler.
-  inputs += [ "${bindings_scripts_dir}/web_idl/demonstration_and_testing.idl" ]
-
-  output = "${bindings_output_dir}/web_idl_in_core.pickle"
+  output = "${bindings_output_dir}/web_idl_in_core_for_testing.pickle"
 }
 
 collect_idl_files("web_idl_in_modules") {
@@ -114,11 +121,22 @@ collect_idl_files("web_idl_in_modules") {
   output = "${bindings_output_dir}/web_idl_in_modules.pickle"
 }
 
+collect_idl_files("web_idl_in_modules_for_testing") {
+  component = "modules"
+  for_testing = true
+
+  inputs = static_idl_files_in_modules_for_testing
+
+  output = "${bindings_output_dir}/web_idl_in_modules_for_testing.pickle"
+}
+
 action_with_pydeps("web_idl_database") {
   script = "${bindings_scripts_dir}/build_web_idl_database.py"
 
   input_data_files = get_target_outputs(":web_idl_in_core") +
-                     get_target_outputs(":web_idl_in_modules")
+                     get_target_outputs(":web_idl_in_core_for_testing") +
+                     get_target_outputs(":web_idl_in_modules") +
+                     get_target_outputs(":web_idl_in_modules_for_testing")
   runtime_enabled_features_file = "../platform/runtime_enabled_features.json5"
   runtime_enabled_features_test_file =
       "${bindings_scripts_dir}/web_idl/runtime_enabled_features.json5"
@@ -141,7 +159,9 @@ action_with_pydeps("web_idl_database") {
 
   deps = [
     ":web_idl_in_core",
+    ":web_idl_in_core_for_testing",
     ":web_idl_in_modules",
+    ":web_idl_in_modules_for_testing",
   ]
 }
 

@@ -77,6 +77,10 @@ class IsolatedPrerenderTabHelper
     //   0b1101.
     int64_t ordered_eligible_pages_bitmask_ = 0;
 
+    // The number of SRP links that were predicted. Only set on Google SRP pages
+    // for eligible users.
+    size_t predicted_urls_count_ = 0;
+
     // The number of SRP links that were eligible to be prefetched.
     size_t prefetch_eligible_count_ = 0;
 

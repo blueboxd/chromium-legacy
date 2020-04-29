@@ -322,9 +322,9 @@ PointerDetails GetMousePointerDetailsFromMSG(const MSG& native_event) {
   // We should filter out all the mouse events Synthesized from touch events.
   // TODO(lanwei): Will set the pointer ID, see https://crbug.com/616771.
   if ((GetMessageExtraInfo() & SIGNATURE_MASK) != MOUSEEVENTF_FROMTOUCHPEN)
-    return PointerDetails(EventPointerType::POINTER_TYPE_MOUSE);
+    return PointerDetails(EventPointerType::kMouse);
 
-  return PointerDetails(EventPointerType::POINTER_TYPE_PEN);
+  return PointerDetails(EventPointerType::kPen);
 }
 
 gfx::Vector2d GetMouseWheelOffsetFromMSG(const MSG& native_event) {
@@ -352,7 +352,7 @@ int GetTouchIdFromMSG(const MSG& xev) {
 
 PointerDetails GetTouchPointerDetailsFromMSG(const MSG& native_event) {
   NOTIMPLEMENTED();
-  return PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
+  return PointerDetails(EventPointerType::kTouch,
                         /* pointer_id*/ 0,
                         /* radius_x */ 1.0,
                         /* radius_y */ 1.0,

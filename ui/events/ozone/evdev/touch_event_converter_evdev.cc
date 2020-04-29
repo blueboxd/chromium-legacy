@@ -68,11 +68,11 @@ int32_t AbsCodeToMtCode(int32_t code) {
 ui::EventPointerType GetEventPointerType(int tool_code) {
   switch (tool_code) {
     case BTN_TOOL_PEN:
-      return ui::EventPointerType::POINTER_TYPE_PEN;
+      return ui::EventPointerType::kPen;
     case BTN_TOOL_RUBBER:
-      return ui::EventPointerType::POINTER_TYPE_ERASER;
+      return ui::EventPointerType::kEraser;
     default:
-      return ui::EventPointerType::POINTER_TYPE_TOUCH;
+      return ui::EventPointerType::kTouch;
   }
 }
 

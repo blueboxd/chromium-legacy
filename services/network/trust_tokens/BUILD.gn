@@ -91,6 +91,10 @@ source_set("test_support") {
   sources = [
     "test/signed_request_verification_util.cc",
     "test/signed_request_verification_util.h",
+    "test/test_server_handler_registration.cc",
+    "test/test_server_handler_registration.h",
+    "test/trust_token_request_handler.cc",
+    "test/trust_token_request_handler.h",
     "test/trust_token_test_util.cc",
     "test/trust_token_test_util.h",
   ]
@@ -99,6 +103,7 @@ source_set("test_support") {
     ":trust_tokens",
     "//base",
     "//base/test:test_support",
+    "//components/cbor",
     "//net",
     "//net:test_support",
     "//net/traffic_annotation:test_support",

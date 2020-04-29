@@ -116,6 +116,11 @@ class ChromeSearchResult {
   double relevance() const { return relevance_; }
   void set_relevance(double relevance) { relevance_ = relevance; }
 
+  bool dismiss_view_on_open() const { return dismiss_view_on_open_; }
+  void set_dismiss_view_on_open(bool dismiss_view_on_open) {
+    dismiss_view_on_open_ = dismiss_view_on_open;
+  }
+
   // Invokes a custom action on the result. It does nothing by default.
   virtual void InvokeAction(int action_index, int event_flags);
 
@@ -166,6 +171,13 @@ class ChromeSearchResult {
   // SearchModel in Ash. We'll update metadata_->display_score based on the
   // sorted order, group multiplier and group boost.
   double relevance_ = 0;
+
+  // More often than not, calling Open() on a ChromeSearchResult will cause the
+  // app list view to be closed as a side effect. Because opening apps can take
+  // some time, the app list view is eagerly dismissed by default after invoking
+  // Open() for added polish. Some ChromeSearchResults may not appreciate this
+  // behavior so it can be disabled as needed.
+  bool dismiss_view_on_open_ = true;
 
   std::unique_ptr<ash::SearchResultMetadata> metadata_;
 

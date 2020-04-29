@@ -285,7 +285,7 @@ class TouchHudProjectionTest : public TouchHudTestBase {
                                    int touch_id) {
     ui::TouchEvent event(
         type, location, event_time,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, touch_id));
+        ui::PointerDetails(ui::EventPointerType::kTouch, touch_id));
     GetInternalTouchHudProjection()->OnTouchEvent(&event);
 
     // Advance time for next event.

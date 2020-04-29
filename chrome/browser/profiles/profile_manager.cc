@@ -1827,6 +1827,11 @@ void ProfileManager::OnBrowserClosed(Browser* browser) {
 }
 
 void ProfileManager::UpdateLastUser(Profile* last_active) {
+  // The profile may incorrectly become "active" during its destruction, caused
+  // by the UI teardown. See https://crbug.com/1073451
+  if (IsProfileDirectoryMarkedForDeletion(last_active->GetPath()))
+    return;
+
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
   // Only keep track of profiles that we are managing; tests may create others.

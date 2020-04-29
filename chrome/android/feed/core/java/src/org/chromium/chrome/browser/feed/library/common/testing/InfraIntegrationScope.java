@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.feed.library.feedstore.FeedStore;
 import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryContentStorage;
 import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryJournalStorage;
 import org.chromium.chrome.browser.feed.library.sharedstream.piet.PietRequiredContentAdapter;
+import org.chromium.chrome.browser.feed.library.testing.actionmanager.FakeViewActionManager;
 import org.chromium.chrome.browser.feed.library.testing.host.logging.FakeBasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.testing.host.scheduler.FakeSchedulerApi;
 import org.chromium.chrome.browser.feed.library.testing.requestmanager.FakeActionUploadRequestManager;
@@ -103,7 +104,8 @@ public class InfraIntegrationScope {
         mFakeFeedRequestManager = new FakeFeedRequestManager(
                 fakeThreadUtils, fakeMainThreadRunner, mFeedProtocolAdapter, mTaskQueue);
         FakeActionUploadRequestManager fakeActionUploadRequestManager =
-                new FakeActionUploadRequestManager(FakeThreadUtils.withThreadChecks());
+                new FakeActionUploadRequestManager(mStore, new FakeViewActionManager(mStore),
+                        FakeThreadUtils.withThreadChecks());
         mFeedSessionManager = new FeedSessionManagerFactory(mTaskQueue, mStore, timingUtils,
                 fakeThreadUtils, mFeedProtocolAdapter, mFakeFeedRequestManager,
                 fakeActionUploadRequestManager, schedulerApi, configuration, fakeClock,

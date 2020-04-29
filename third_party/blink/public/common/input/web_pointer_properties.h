@@ -8,6 +8,7 @@
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/public/mojom/input/input_event.mojom-shared.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/point_f.h"
 
 #include <limits>
@@ -23,6 +24,8 @@ class WebPointerProperties {
  public:
   using Button = mojom::Button;
 
+  using PointerType = ui::EventPointerType;
+
   enum class Buttons : unsigned {
     kNoButton = 0,
     kLeft = 1 << 0,
@@ -31,15 +34,6 @@ class WebPointerProperties {
     kBack = 1 << 3,
     kForward = 1 << 4,
     kEraser = 1 << 5
-  };
-
-  enum class PointerType {
-    kUnknown,
-    kMouse,
-    kPen,
-    kEraser,
-    kTouch,
-    kMaxValue = kTouch  // Must be the last entry in the list
   };
 
   explicit WebPointerProperties(

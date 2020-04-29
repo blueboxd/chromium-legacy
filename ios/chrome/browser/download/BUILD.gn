@@ -11,6 +11,10 @@ source_set("download") {
     "browser_download_service.mm",
     "browser_download_service_factory.h",
     "browser_download_service_factory.mm",
+    "confirm_download_closing_overlay.h",
+    "confirm_download_closing_overlay.mm",
+    "confirm_download_replacing_overlay.h",
+    "confirm_download_replacing_overlay.mm",
     "download_directory_util.h",
     "download_directory_util.mm",
     "download_manager_metric_names.h",
@@ -30,11 +34,17 @@ source_set("download") {
     "//base",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
+    "//components/strings:components_strings_grit",
+    "//ios/chrome/app/strings:ios_strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/network_activity",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/common/confirmation",
+    "//ios/chrome/browser/overlays/public/common/confirmation:util",
     "//ios/web/common",
     "//ios/web/public",
     "//ios/web/public/download",
+    "//ui/base",
   ]
 
   libs = [

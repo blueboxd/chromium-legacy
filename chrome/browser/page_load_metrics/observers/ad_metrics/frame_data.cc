@@ -198,9 +198,8 @@ bool FrameData::MaybeTriggerHeavyAdIntervention() {
   // Only check if the feature is enabled once we have a heavy ad. This is done
   // to ensure that any experiment for this feature will only be comparing
   // groups who have seen a heavy ad.
-  if (!base::FeatureList::IsEnabled(features::kHeavyAdIntervention))
-    return false;
-  return true;
+  return base::FeatureList::IsEnabled(features::kHeavyAdIntervention) ||
+         base::FeatureList::IsEnabled(features::kHeavyAdInterventionWarning);
 }
 
 

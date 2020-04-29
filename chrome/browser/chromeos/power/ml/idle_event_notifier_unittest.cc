@@ -536,7 +536,7 @@ TEST_F(IdleEventNotifierTest, UserInputEventsOneIdleEvent) {
                              gfx::Point(0, 0), base::TimeTicks(), 0, 0);
   ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), base::TimeTicks::UnixEpoch(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   const base::Time first_activity_time = base::Time::Now();
   // This key event will be too old to be counted.
@@ -599,7 +599,7 @@ TEST_F(IdleEventNotifierTest, UserInputEventsTwoIdleEvents) {
                              gfx::Point(0, 0), base::TimeTicks(), 0, 0);
   ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), base::TimeTicks::UnixEpoch(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
 
   const base::Time now_1 = base::Time::Now();
   idle_event_notifier_->OnUserActivity(&key_event);

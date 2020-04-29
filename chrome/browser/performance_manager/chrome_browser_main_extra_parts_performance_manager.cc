@@ -15,14 +15,14 @@
 #include "chrome/browser/performance_manager/decorators/helpers/page_live_state_decorator_helper.h"
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
-#include "chrome/browser/performance_manager/graph/policies/background_tab_loading_policy.h"
-#include "chrome/browser/performance_manager/graph/policies/high_pmf_memory_pressure_policy.h"
-#include "chrome/browser/performance_manager/graph/policies/policy_features.h"
-#include "chrome/browser/performance_manager/graph/policies/urgent_page_discarding_policy.h"
-#include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy.h"
 #include "chrome/browser/performance_manager/metrics/memory_pressure_metrics.h"
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
+#include "chrome/browser/performance_manager/policies/background_tab_loading_policy.h"
+#include "chrome/browser/performance_manager/policies/high_pmf_memory_pressure_policy.h"
+#include "chrome/browser/performance_manager/policies/policy_features.h"
+#include "chrome/browser/performance_manager/policies/urgent_page_discarding_policy.h"
+#include "chrome/browser/performance_manager/policies/working_set_trimmer_policy.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
@@ -35,7 +35,7 @@
 #if defined(OS_LINUX)
 #include "base/allocator/buildflags.h"
 #if BUILDFLAG(USE_TCMALLOC)
-#include "chrome/browser/performance_manager/graph/policies/dynamic_tcmalloc_policy_linux.h"
+#include "chrome/browser/performance_manager/policies/dynamic_tcmalloc_policy_linux.h"
 #include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // defined(OS_LINUX)

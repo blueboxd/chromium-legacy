@@ -209,6 +209,35 @@ promise_test(async t => {
   return onmessagePromise;
 }, 'RTCRtpSender readable stream transferred to a Worker and the Worker sends an RTCEncodedAudioFrame back');
 
+promise_test(async t => {
+  const caller = new RTCPeerConnection({forceEncodedAudioInsertableStreams:true});
+  t.add_cleanup(() => caller.close());
+  const callee = new RTCPeerConnection();
+  t.add_cleanup(() => callee.close());
+
+  const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+  const track = stream.getTracks()[0];
+  t.add_cleanup(() => track.stop());
+
+  const sender = caller.addTrack(track)
+  const streams = sender.createEncodedAudioStreams();
+  const transformer = new TransformStream({
+    transform(frame, controller) {
+      // Inserting the same frame twice will result in failure since the frame
+      // will be neutered after the first insertion is processed.
+      controller.enqueue(frame);
+      controller.enqueue(frame);
+    }
+  });
+
+  exchangeIceCandidates(caller, callee);
+  await doSignalingHandshake(caller, callee);
+
+  await promise_rejects_dom(
+      t, 'OperationError',
+      streams.readableStream.pipeThrough(transformer).pipeTo(streams.writableStream));
+}, 'Enqueuing the same frame twice fails');
+
 </script>
 </body>
 </html>

@@ -17,11 +17,13 @@
 namespace upboarding {
 namespace {
 
+const char kRequestContentType[] = "application/x-protobuf";
+
 class TileFetcherImpl : public TileFetcher {
  public:
   TileFetcherImpl(
       const GURL& url,
-      const std::string& locale,
+      const std::string& country_code,
       const std::string& accept_languages,
       const std::string& api_key,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -32,7 +34,7 @@ class TileFetcherImpl : public TileFetcher {
     tile_info_request_status_ = TileInfoRequestStatus::kInit;
     // Start fetching.
     auto resource_request =
-        BuildGetRequest(url, locale, accept_languages, api_key);
+        BuildGetRequest(url, country_code, accept_languages, api_key);
     url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                    traffic_annotation);
 
@@ -50,12 +52,16 @@ class TileFetcherImpl : public TileFetcher {
   // Build the request to get tile info.
   std::unique_ptr<network::ResourceRequest> BuildGetRequest(
       const GURL& url,
-      const std::string& locale,
+      const std::string& country_code,
       const std::string& accept_languages,
       const std::string& api_key) {
     auto request = std::make_unique<network::ResourceRequest>();
     request->method = net::HttpRequestHeaders::kGetMethod;
     request->headers.SetHeader("x-goog-api-key", api_key);
+    request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                               kRequestContentType);
+    request->url =
+        net::AppendOrReplaceQueryParameter(url, "country_code", country_code);
     if (!accept_languages.empty())
       request->headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
                                  accept_languages);
@@ -99,14 +105,14 @@ class TileFetcherImpl : public TileFetcher {
 // static
 std::unique_ptr<TileFetcher> TileFetcher::CreateAndFetchForTileInfo(
     const GURL& url,
-    const std::string& locale,
+    const std::string& country_code,
     const std::string& accept_languages,
     const std::string& api_key,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     FinishedCallback callback) {
   return std::make_unique<TileFetcherImpl>(
-      url, locale, accept_languages, api_key, traffic_annotation,
+      url, country_code, accept_languages, api_key, traffic_annotation,
       url_loader_factory, std::move(callback));
 }
 

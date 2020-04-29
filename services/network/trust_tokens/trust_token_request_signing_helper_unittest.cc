@@ -28,6 +28,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/test/signed_request_verification_util.h"
 #include "services/network/trust_tokens/test/trust_token_test_util.h"
 #include "services/network/trust_tokens/trust_token_request_canonicalizer.h"
 #include "services/network/trust_tokens/trust_token_store.h"
@@ -100,76 +101,24 @@ class FailingSigner : public TrustTokenRequestSigningHelper::Signer {
   }
 };
 
-base::Optional<base::flat_map<std::string, net::structured_headers::Item>>
-DeserializeSecSignatureHeader(base::StringPiece header) {
-  base::StringPairs kvs;
-  if (!base::SplitStringIntoKeyValuePairs(header, '=', ',', &kvs))
-    return base::nullopt;
-
-  base::flat_map<std::string, net::structured_headers::Item> ret;
-  for (const std::pair<std::string, std::string>& kv : kvs) {
-    auto maybe_item = net::structured_headers::ParseItem(kv.second);
-    if (!maybe_item || !maybe_item->params.empty())
-      return base::nullopt;
-    ret[kv.first] = std::move(maybe_item->item);
-  }
-
-  return ret;
-}
-
 // Reconstructs |request|'s canonical request data, extracts the signature from
 // |request|'s Sec-Signature header, and uses the verification algorithm
 // provided by the template parameter |Signer| to check that the Sec-Signature
 // header's contained signature verifies.
 template <typename Signer>
 void ReconstructSigningDataAndAssertSignatureVerifies(
-    net::URLRequest* request,
-    const TrustTokenRequestCanonicalizer& canonicalizer) {
-  std::string signature_header;
-  ASSERT_TRUE(request->extra_request_headers().GetHeader("Sec-Signature",
-                                                         &signature_header));
+    net::URLRequest* request) {
+  std::string error;
+  bool success = test::ReconstructSigningDataAndVerifySignature(
+      request->url(), request->extra_request_headers(),
+      base::BindOnce([](base::span<const uint8_t> data,
+                        base::span<const uint8_t> signature,
+                        base::span<const uint8_t> verification_key) {
+        return Signer().Verify(data, signature, verification_key);
+      }),
+      &error);
 
-  base::Optional<base::flat_map<std::string, net::structured_headers::Item>>
-      maybe_map = DeserializeSecSignatureHeader(signature_header);
-  ASSERT_TRUE(maybe_map);
-
-  auto it = maybe_map->find("sig");
-  ASSERT_TRUE(it != maybe_map->end());
-  ASSERT_TRUE(it->second.is_byte_sequence());
-  base::StringPiece signature = it->second.GetString();
-
-  it = maybe_map->find("public-key");
-  ASSERT_TRUE(it != maybe_map->end());
-  ASSERT_TRUE(it->second.is_byte_sequence());
-  base::StringPiece public_key = it->second.GetString();
-
-  it = maybe_map->find("sign-request-data");
-  ASSERT_TRUE(it != maybe_map->end());
-  ASSERT_TRUE(it->second.is_token());
-  base::StringPiece sign_request_data = it->second.GetString();
-
-  ASSERT_THAT(sign_request_data,
-              AnyOf(StrEq("include"), StrEq("headers-only")));
-
-  base::Optional<std::vector<uint8_t>> written_reconstructed_cbor =
-      canonicalizer.Canonicalize(
-          request, public_key,
-          sign_request_data == "include"
-              ? mojom::TrustTokenSignRequestData::kInclude
-              : mojom::TrustTokenSignRequestData::kHeadersOnly);
-  ASSERT_TRUE(written_reconstructed_cbor);
-
-  std::vector<uint8_t> reconstructed_signing_data(
-      std::begin(
-          TrustTokenRequestSigningHelper::kRequestSigningDomainSeparator),
-      std::end(TrustTokenRequestSigningHelper::kRequestSigningDomainSeparator));
-  reconstructed_signing_data.insert(reconstructed_signing_data.end(),
-                                    written_reconstructed_cbor->begin(),
-                                    written_reconstructed_cbor->end());
-
-  ASSERT_TRUE(Signer().Verify(base::make_span(reconstructed_signing_data),
-                              base::as_bytes(base::make_span(signature)),
-                              base::as_bytes(base::make_span(public_key))));
+  ASSERT_TRUE(success) << error;
 }
 
 // Verifies that |request| has a Sec-Signature header with a "sig" field and
@@ -180,15 +129,15 @@ void AssertHasSignatureAndExtract(const net::URLRequest& request,
   ASSERT_TRUE(request.extra_request_headers().GetHeader("Sec-Signature",
                                                         &signature_header));
 
-  base::StringPairs kvs;
-  base::SplitStringIntoKeyValuePairs(signature_header, '=', ',', &kvs);
-  base::Optional<base::flat_map<std::string, net::structured_headers::Item>>
-      maybe_map = DeserializeSecSignatureHeader(std::move(signature_header));
-  ASSERT_TRUE(maybe_map);
-  auto it = maybe_map->find("sig");
-  ASSERT_TRUE(it != maybe_map->end());
-  ASSERT_TRUE(it->second.is_byte_sequence());
-  *signature_out = it->second.GetString();
+  base::Optional<net::structured_headers::Dictionary> maybe_dictionary =
+      net::structured_headers::ParseDictionary(signature_header);
+  ASSERT_TRUE(maybe_dictionary);
+  ASSERT_TRUE(maybe_dictionary->contains("sig"));
+
+  net::structured_headers::Item& sig_item =
+      maybe_dictionary->at("sig").member.front().item;
+  ASSERT_TRUE(sig_item.is_byte_sequence());
+  *signature_out = sig_item.GetString();
 }
 
 // Assert that the given signing data is a concatenation of the domain separator
@@ -459,7 +408,6 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyMinimal) {
   // this canonical data's construction and checks that the reconstructed data
   // matches what |helper| produced.
   auto canonicalizer = std::make_unique<TrustTokenRequestCanonicalizer>();
-  auto* raw_canonicalizer = canonicalizer.get();
   TrustTokenRequestSigningHelper helper(store.get(), std::move(params),
                                         std::make_unique<IdentitySigner>(),
                                         std::move(canonicalizer));
@@ -473,7 +421,7 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyMinimal) {
 
   ASSERT_NO_FATAL_FAILURE(
       ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
-          my_request.get(), *raw_canonicalizer));
+          my_request.get()));
 }
 
 // Test a round-trip sign-and-verify with signed headers.
@@ -492,7 +440,6 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyWithHeaders) {
       std::vector<std::string>{"Sec-Signed-Redemption-Record"};
 
   auto canonicalizer = std::make_unique<TrustTokenRequestCanonicalizer>();
-  auto* raw_canonicalizer = canonicalizer.get();
   TrustTokenRequestSigningHelper helper(store.get(), std::move(params),
                                         std::make_unique<IdentitySigner>(),
                                         std::move(canonicalizer));
@@ -505,7 +452,7 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyWithHeaders) {
   EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
   ASSERT_NO_FATAL_FAILURE(
       ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
-          my_request.get(), *raw_canonicalizer));
+          my_request.get()));
 }
 
 // Test a round-trip sign-and-verify with signed headers when adding a timestamp
@@ -526,7 +473,6 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyTimestampHeader) {
   store->SetRedemptionRecord(params.issuer, params.toplevel, record);
 
   auto canonicalizer = std::make_unique<TrustTokenRequestCanonicalizer>();
-  auto* raw_canonicalizer = canonicalizer.get();
   TrustTokenRequestSigningHelper helper(store.get(), std::move(params),
                                         std::make_unique<IdentitySigner>(),
                                         std::move(canonicalizer));
@@ -540,7 +486,7 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyTimestampHeader) {
   EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
   ASSERT_NO_FATAL_FAILURE(
       ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
-          my_request.get(), *raw_canonicalizer));
+          my_request.get()));
 
   std::string signature_string;
   ASSERT_NO_FATAL_FAILURE(
@@ -569,7 +515,6 @@ TEST_F(TrustTokenRequestSigningHelperTest,
       std::vector<std::string>{"Sec-Signed-Redemption-Record"};
 
   auto canonicalizer = std::make_unique<TrustTokenRequestCanonicalizer>();
-  auto* raw_canonicalizer = canonicalizer.get();
   TrustTokenRequestSigningHelper helper(store.get(), std::move(params),
                                         std::make_unique<IdentitySigner>(),
                                         std::move(canonicalizer));
@@ -587,7 +532,7 @@ TEST_F(TrustTokenRequestSigningHelperTest,
 
   ASSERT_NO_FATAL_FAILURE(
       ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
-          my_request.get(), *raw_canonicalizer));
+          my_request.get()));
 
   // Because we're using an IdentitySigner, |signature_string| will have value
   // equal to the base64-encoded request signing data.

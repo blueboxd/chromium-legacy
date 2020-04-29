@@ -535,6 +535,12 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   [SigninEarlGreyUI tapAddAccountButton];
 
   [self assertFakeSSOScreenIsVisible];
+  // Close sign-in screen and Settings.
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)]
+      performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
 // Tests that an add account operation triggered from the web is handled.

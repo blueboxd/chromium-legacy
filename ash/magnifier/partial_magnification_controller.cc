@@ -265,7 +265,7 @@ void PartialMagnificationController::OnLocatedEvent(
   if (!is_enabled_)
     return;
 
-  if (pointer_details.pointer_type != ui::EventPointerType::POINTER_TYPE_PEN)
+  if (pointer_details.pointer_type != ui::EventPointerType::kPen)
     return;
 
   // Compute the event location in screen space.

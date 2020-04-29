@@ -1076,7 +1076,7 @@
   },
 
   "BuiltinCertificateVerifierEnabled": {
-    "os": ["chromeos", "linux", "mac" ],
+    "os": ["mac" ],
     "policy_pref_mapping_test": [
       {
         "policies": { "BuiltinCertificateVerifierEnabled": true },
@@ -7004,6 +7004,39 @@
           ]
         },
         "prefs": { "enterprise_connectors.on_file_downloaded": { "local_state": true } }
+      }
+    ]
+  },
+
+  "OnBulkDataEntryEnterpriseConnector": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "OnBulkDataEntryEnterpriseConnector": [
+            {
+              "service_provider": "Google",
+              "enable": [
+                {
+                  "url_list": ["*"],
+                  "tags": ["malware"]
+                },
+                {
+                  "url_list": ["*.them.com", "*.others.com"],
+                  "tags": ["dlp"]
+                }
+              ],
+              "disable": [
+                {
+                  "url_list": ["*.us.com"],
+                  "tags": ["malware"]
+                }
+              ],
+              "block_until_verdict": 0
+            }
+          ]
+        },
+        "prefs": { "enterprise_connectors.on_bulk_data_entry": { "local_state": true } }
       }
     ]
   },

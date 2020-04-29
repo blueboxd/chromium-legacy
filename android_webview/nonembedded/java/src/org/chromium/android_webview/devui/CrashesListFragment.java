@@ -33,7 +33,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
-import androidx.fragment.app.Fragment;
 
 import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.DeveloperModeUtils;
@@ -56,14 +55,13 @@ import java.util.Locale;
 /**
  * A fragment to show a list of recent WebView crashes.
  */
-public class CrashesListFragment extends Fragment {
+public class CrashesListFragment extends DevUiBaseFragment {
     private static final String TAG = "WebViewDevTools";
 
     // Max number of crashes to show in the crashes list.
     private static final int MAX_CRASHES_NUMBER = 20;
 
     private CrashListExpandableAdapter mCrashListViewAdapter;
-    private PersistentErrorView mCrashConsentError;
     private Context mContext;
 
     // There is a limit on the length of this query string, see https://crbug.com/1015923
@@ -120,31 +118,11 @@ public class CrashesListFragment extends Fragment {
         mCrashListViewAdapter = new CrashListExpandableAdapter(crashesSummaryView);
         ExpandableListView crashListView = view.findViewById(R.id.crashes_list);
         crashListView.setAdapter(mCrashListViewAdapter);
-
-        mCrashConsentError =
-                buildCrashConsentError(PlatformServiceBridge.getInstance().canUseGms());
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // Check if crash collection is enabled and show or hide the error message.
-        // Firstly, check for the flag value in commandline, since it doesn't require any IPCs.
-        // Then check for flags value in the DeveloperUi ContentProvider (it involves an IPC but
-        // it's guarded by quick developer mode check). Finally check the GMS service since it
-        // is the slowest check.
-        if (isCrashUploadsEnabledFromCommandLine() || isCrashUploadsEnabledFromFlagsUi()) {
-            mCrashConsentError.hide();
-        } else {
-            PlatformServiceBridge.getInstance().queryMetricsSetting(enabled -> {
-                if (Boolean.TRUE.equals(enabled)) {
-                    mCrashConsentError.hide();
-                } else {
-                    mCrashConsentError.show();
-                }
-            });
-        }
-
         mCrashListViewAdapter.updateCrashes();
     }
 
@@ -434,13 +412,31 @@ public class CrashesListFragment extends Fragment {
         }
     }
 
-    private PersistentErrorView buildCrashConsentError(boolean canUseGms) {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(mContext);
-        dialogBuilder.setTitle("Error Showing Crashes");
-        if (canUseGms) {
-            dialogBuilder.setMessage(
-                    "Crash collection is disabled. Please turn on 'Usage & diagnostics' "
-                    + "to enable WebView crash collection.");
+    @Override
+    void maybeShowErrorView(PersistentErrorView errorView) {
+        buildCrashConsentError(errorView);
+        // Check if crash collection is enabled and show or hide the error message.
+        // Firstly, check for the flag value in commandline, since it doesn't require any IPCs.
+        // Then check for flags value in the DeveloperUi ContentProvider (it involves an IPC but
+        // it's guarded by quick developer mode check). Finally check the GMS service since it
+        // is the slowest check.
+        if (isCrashUploadsEnabledFromCommandLine() || isCrashUploadsEnabledFromFlagsUi()) {
+            errorView.hide();
+        } else {
+            PlatformServiceBridge.getInstance().queryMetricsSetting(enabled -> {
+                if (Boolean.TRUE.equals(enabled)) {
+                    errorView.hide();
+                } else {
+                    errorView.show();
+                }
+            });
+        }
+    }
+
+    private void buildCrashConsentError(PersistentErrorView errorView) {
+        if (PlatformServiceBridge.getInstance().canUseGms()) {
+            errorView.setText("Crash collection is disabled. Please turn on 'Usage & diagnostics' "
+                    + "from the three-dotted menu in Google settings.");
             // Open Google Settings activity, "Usage & diagnostics" activity is not exported and
             // cannot be opened directly.
             Intent settingsIntent = new Intent("com.android.settings.action.EXTRA_SETTINGS");
@@ -448,19 +444,13 @@ public class CrashesListFragment extends Fragment {
                     mContext.getPackageManager().queryIntentActivities(settingsIntent, 0);
             // Show a button to open GMS settings activity only if it exists.
             if (intentResolveInfo.size() > 0) {
-                dialogBuilder.setPositiveButton(
-                        "Settings", (dialog, id) -> startActivity(settingsIntent));
+                errorView.setActionButton("Open Settings", v -> startActivity(settingsIntent));
             } else {
                 Log.e(TAG, "Cannot find GMS settings activity");
             }
         } else {
-            dialogBuilder.setMessage("Crash collection is not supported at the moment.");
+            errorView.setText("Crash collection is not supported at the moment.");
         }
-
-        Activity activity = (Activity) mContext;
-        return new PersistentErrorView(activity, R.id.crash_consent_error)
-                .setText("Crash collection is disabled. Tap for more info.")
-                .setDialog(dialogBuilder.create());
     }
 
     private AlertDialog buildCrashBugDialog(CrashInfo crashInfo) {
@@ -487,11 +477,5 @@ public class CrashesListFragment extends Fragment {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onDestroyView() {
-        mCrashConsentError.hide();
-        super.onDestroyView();
     }
 }

@@ -136,7 +136,7 @@ class EVENTS_DEVICES_X11_EXPORT TouchFactory {
   // device is master and multi-touch capable).
   struct TouchDeviceDetails {
     bool is_master = false;
-    EventPointerType pointer_type = EventPointerType::POINTER_TYPE_TOUCH;
+    EventPointerType pointer_type = EventPointerType::kTouch;
   };
   std::map<int, TouchDeviceDetails> touch_device_list_;
 

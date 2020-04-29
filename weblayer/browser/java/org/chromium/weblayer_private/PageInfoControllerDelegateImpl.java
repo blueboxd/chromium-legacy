@@ -80,6 +80,7 @@ public class PageInfoControllerDelegateImpl implements PageInfoControllerDelegat
     public void initPreviewUiParams(
             PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss) {
         // Preview UI is not supported for WebLayer.
+        viewParams.previewUIShown = false;
     }
 
     /**
@@ -151,6 +152,7 @@ public class PageInfoControllerDelegateImpl implements PageInfoControllerDelegat
     public void initOfflinePageUiParams(
             PageInfoViewParams viewParams, Consumer<Runnable> runAfterDismiss) {
         // Offline Pages are not supported for WebLayer.
+        viewParams.openOnlineButtonShown = false;
     }
 
     /**

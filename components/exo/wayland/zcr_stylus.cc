@@ -30,9 +30,9 @@ class WaylandTouchStylusDelegate : public TouchStylusDelegate {
   void OnTouchDestroying(Touch* touch) override { touch_ = nullptr; }
   void OnTouchTool(int touch_id, ui::EventPointerType type) override {
     uint wayland_type = ZCR_TOUCH_STYLUS_V2_TOOL_TYPE_TOUCH;
-    if (type == ui::EventPointerType::POINTER_TYPE_PEN)
+    if (type == ui::EventPointerType::kPen)
       wayland_type = ZCR_TOUCH_STYLUS_V2_TOOL_TYPE_PEN;
-    else if (type == ui::EventPointerType::POINTER_TYPE_ERASER)
+    else if (type == ui::EventPointerType::kEraser)
       wayland_type = ZCR_TOUCH_STYLUS_V2_TOOL_TYPE_ERASER;
     zcr_touch_stylus_v2_send_tool(resource_, touch_id, wayland_type);
   }

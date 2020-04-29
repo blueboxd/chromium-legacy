@@ -72,7 +72,7 @@ class CORE_EXPORT CSSFontFaceSource
 
   // Recalculate the font loading timeline period for the font face.
   // https://drafts.csswg.org/css-fonts-4/#font-display-timeline
-  virtual void UpdatePeriod() {}
+  virtual bool UpdatePeriod() { return false; }
 
   // For UMA reporting
   virtual bool HadBlankText() { return false; }

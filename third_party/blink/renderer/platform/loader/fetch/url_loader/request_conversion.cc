@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/request_conversion.h"
 
+#include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -18,6 +19,7 @@
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -339,8 +341,13 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
                             kStylesheetAcceptHeader);
   } else if (resource_type == mojom::ResourceType::kImage ||
              resource_type == mojom::ResourceType::kFavicon) {
-    dest->headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                            kImageAcceptHeader);
+    std::string header(kImageAcceptHeader);
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+    if (base::FeatureList::IsEnabled(features::kAVIF)) {
+      header.insert(0, "image/avif,");
+    }
+#endif
+    dest->headers.SetHeader(net::HttpRequestHeaders::kAccept, header);
   } else {
     // Calling SetHeaderIfMissing() instead of SetHeader() because JS can
     // manually set an accept header on an XHR.

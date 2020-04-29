@@ -80,7 +80,8 @@ bool DrawingDisplayItem::Equals(const DisplayItem& other) const {
 
 SkColor DrawingDisplayItem::BackgroundColor() const {
   if (GetType() != DisplayItem::kBoxDecorationBackground &&
-      GetType() != DisplayItem::kDocumentBackground)
+      GetType() != DisplayItem::kDocumentBackground &&
+      GetType() != DisplayItem::kDocumentRootBackdrop)
     return SK_ColorTRANSPARENT;
 
   if (!record_)

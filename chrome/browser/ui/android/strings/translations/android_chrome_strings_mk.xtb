@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mk">
-<translation id="1006017844123154345">Отвори онлајн</translation>
 <translation id="1028699632127661925">Се испраќа до <ph name="DEVICE_NAME" />…</translation>
+<translation id="1036348656032585052">Исклучи</translation>
 <translation id="1036727731225946849">Се додава <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">Од веб-сајтови</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">Почетна страница на Chrome</translation>
 <translation id="3157842584138209013">Видете колку мобилен интернет сте заштедиле преку копчето „Повеќе опции“</translation>
 <translation id="3166827708714933426">Кратенки за картичката и прозорецот</translation>
+<translation id="3169472444629675720">Откриј</translation>
 <translation id="3181954750937456830">Безбедно прелистување (ве заштитува вас и вашиот уред од опасни сајтови)</translation>
 <translation id="3205824638308738187">Речиси готово!</translation>
 <translation id="3207960819495026254">Обележано</translation>
@@ -372,7 +373,6 @@
 <translation id="4116038641877404294">Преземете ги страниците за да ги користите офлајн</translation>
 <translation id="4135200667068010335">Списокот со уреди за споделување картичка е затворен.</translation>
 <translation id="4149994727733219643">Поедноставен приказ за веб-страници</translation>
-<translation id="4165986682804962316">Поставки на локација</translation>
 <translation id="4170011742729630528">Услугата не е достапна, обидете се повторно подоцна.</translation>
 <translation id="4179980317383591987">Искористено: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Јазици</translation>
@@ -583,6 +583,7 @@
 <translation id="5853623416121554550">паузирано</translation>
 <translation id="5854790677617711513">Постари од 30 дена</translation>
 <translation id="5858741533101922242">Chrome не може да го вклучи Bluetooth адаптерот</translation>
+<translation id="5860491529813859533">Вклучи</translation>
 <translation id="5862731021271217234">За да ги добиете вашите картички од другите уреди, вклучете ја синхронизацијата</translation>
 <translation id="5864174910718532887">Детали: подредени по име на сајт</translation>
 <translation id="5864419784173784555">Се чека друго преземање…</translation>

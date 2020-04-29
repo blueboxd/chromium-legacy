@@ -144,7 +144,9 @@ import java.util.List;
         }
         if (hasForcedDIPScale()) displayMetrics.density = sForcedDIPScale.floatValue();
         boolean isWideColorGamut = false;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        // Although this API was added in Android O, it was buggy.
+        // Restrict to Android Q, where it was fixed.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             isWideColorGamut = ApiHelperForO.isWideColorGamut(display);
         }
 

@@ -391,7 +391,8 @@ cr.define('accessibility', function() {
   function createErrorMessageElement(data) {
     const errorMessageElement = document.createElement('div');
     const errorMessage = data.error;
-    errorMessageElement.innerHTML = errorMessage + '&nbsp;';
+    const nbsp = '\u00a0';
+    errorMessageElement.textContent = errorMessage + nbsp;
     const closeLink = document.createElement('a');
     closeLink.href = '#';
     closeLink.textContent = '[close]';

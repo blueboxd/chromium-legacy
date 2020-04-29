@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.os.Parcel;
 import android.util.Pair;
 import android.view.View;
+import android.widget.Scroller;
 
 import androidx.annotation.NonNull;
 
@@ -17,8 +18,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.UnguessableToken;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
@@ -32,6 +36,7 @@ import java.util.List;
  * Tests for the {@link PlayerFrameMediator} class.
  */
 @RunWith(BaseRobolectricTestRunner.class)
+@Config(shadows = {PaintPreviewCustomFlingingShadowScroller.class})
 public class PlayerFrameMediatorTest {
     private static final int CONTENT_WIDTH = 560;
     private static final int CONTENT_HEIGHT = 1150;
@@ -39,6 +44,7 @@ public class PlayerFrameMediatorTest {
     private UnguessableToken mFrameGuid;
     private PropertyModel mModel;
     private TestPlayerCompositorDelegate mCompositorDelegate;
+    private Scroller mScroller;
     private PlayerFrameMediator mMediator;
 
     /**
@@ -159,8 +165,9 @@ public class PlayerFrameMediatorTest {
         mFrameGuid = frameGuid();
         mModel = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         mCompositorDelegate = new TestPlayerCompositorDelegate();
+        mScroller = new Scroller(ContextUtils.getApplicationContext());
         mMediator = new PlayerFrameMediator(
-                mModel, mCompositorDelegate, mFrameGuid, CONTENT_WIDTH, CONTENT_HEIGHT);
+                mModel, mCompositorDelegate, mScroller, mFrameGuid, CONTENT_WIDTH, CONTENT_HEIGHT);
     }
 
     private static Rect getRectForTile(int tileWidth, int tileHeight, int row, int col) {
@@ -607,6 +614,52 @@ public class PlayerFrameMediatorTest {
         mMediator.scrollBy(0, 200);
         expectedVisibleViews.clear();
         Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+    }
+
+    /**
+     * View port should be updated on fling events, but it shouldn't go out of content bounds.
+     */
+    @Test
+    public void testViewPortOnFling() {
+        // Initial view port setup.
+        mMediator.setLayoutDimensions(100, 200);
+        Rect expectedViewPort = new Rect(0, 0, 100, 200);
+
+        mMediator.onFling(100, 0);
+        expectedViewPort.offsetTo(mScroller.getFinalX(), mScroller.getFinalY());
+        ShadowLooper.runUiThreadTasks();
+        Assert.assertTrue(mScroller.isFinished());
+        Assert.assertEquals(expectedViewPort, mModel.get(PlayerFrameProperties.VIEWPORT));
+
+        mMediator.onFling(-100, 0);
+        expectedViewPort.offsetTo(mScroller.getFinalX(), mScroller.getFinalY());
+        ShadowLooper.runUiThreadTasks();
+        Assert.assertTrue(mScroller.isFinished());
+        Assert.assertEquals(expectedViewPort, mModel.get(PlayerFrameProperties.VIEWPORT));
+
+        mMediator.onFling(0, 200);
+        expectedViewPort.offsetTo(mScroller.getFinalX(), mScroller.getFinalY());
+        ShadowLooper.runUiThreadTasks();
+        Assert.assertTrue(mScroller.isFinished());
+        Assert.assertEquals(expectedViewPort, mModel.get(PlayerFrameProperties.VIEWPORT));
+
+        mMediator.onFling(0, -200);
+        expectedViewPort.offsetTo(mScroller.getFinalX(), mScroller.getFinalY());
+        ShadowLooper.runUiThreadTasks();
+        Assert.assertTrue(mScroller.isFinished());
+        Assert.assertEquals(expectedViewPort, mModel.get(PlayerFrameProperties.VIEWPORT));
+
+        mMediator.onFling(100, 200);
+        expectedViewPort.offsetTo(mScroller.getFinalX(), mScroller.getFinalY());
+        ShadowLooper.runUiThreadTasks();
+        Assert.assertTrue(mScroller.isFinished());
+        Assert.assertEquals(expectedViewPort, mModel.get(PlayerFrameProperties.VIEWPORT));
+
+        mMediator.onFling(-100, -200);
+        expectedViewPort.offsetTo(mScroller.getFinalX(), mScroller.getFinalY());
+        ShadowLooper.runUiThreadTasks();
+        Assert.assertTrue(mScroller.isFinished());
+        Assert.assertEquals(expectedViewPort, mModel.get(PlayerFrameProperties.VIEWPORT));
     }
 
     /**

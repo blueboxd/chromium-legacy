@@ -90,11 +90,11 @@ class BackGestureEventHandlerTest : public AshTestBase {
 
   // Send touch event with |type| to the toplevel window event handler.
   void SendTouchEvent(const gfx::Point& position, ui::EventType type) {
-    ui::TouchEvent event = ui::TouchEvent(
-        type, position, base::TimeTicks::Now(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                           /*pointer_id=*/5, /*radius_x=*/5.0f,
-                           /*radius_y=*/5.0, /*force=*/1.0f));
+    ui::TouchEvent event =
+        ui::TouchEvent(type, position, base::TimeTicks::Now(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch,
+                                          /*pointer_id=*/5, /*radius_x=*/5.0f,
+                                          /*radius_y=*/5.0, /*force=*/1.0f));
     ui::Event::DispatcherApi(&event).set_target(top_window_.get());
     Shell::Get()->back_gesture_event_handler()->OnTouchEvent(&event);
   }

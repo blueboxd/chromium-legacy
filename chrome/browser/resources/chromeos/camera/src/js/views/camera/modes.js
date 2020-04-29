@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {browserProxy} from '../../browser_proxy/browser_proxy.js';
 import {assert, assertInstanceof} from '../../chrome_util.js';
 import {
   CaptureCandidate,           // eslint-disable-line no-unused-vars
@@ -591,7 +592,9 @@ class ModeBase {
  * Video recording MIME type. Mkv with AVC1 is the only preferred format.
  * @type {string}
  */
-const VIDEO_MIMETYPE = 'video/x-matroska;codecs=avc1';
+const VIDEO_MIMETYPE = browserProxy.isMp4RecordingEnabled() ?
+    'video/x-matroska;codecs=avc1,pcm' :
+    'video/x-matroska;codecs=avc1';
 
 /**
  * Video mode capture controller.
@@ -737,7 +740,7 @@ class Video extends ModeBase {
       };
       this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
       this.mediaRecorder_.addEventListener('stop', onstop);
-      this.mediaRecorder_.start(3000);
+      this.mediaRecorder_.start(100);
     });
   }
 }

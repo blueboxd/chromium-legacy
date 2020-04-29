@@ -58,6 +58,7 @@ import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.OpenUrl
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.TooltipData;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.TooltipData.FeatureName;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.UndoAction;
+import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.ViewReportData;
 import org.chromium.components.feed.core.proto.ui.action.PietExtensionsProto.PietFeedActionPayload;
 import org.chromium.components.feed.core.proto.ui.piet.ActionsProto.Action;
 import org.chromium.components.feed.core.proto.ui.piet.LogDataProto.LogData;
@@ -666,6 +667,63 @@ public class FeedActionParserTest {
                 DOWNLOAD_URL_FEED_ACTION, mStreamActionApi, /* view= */ null, ActionSource.CLICK);
         verify(mStreamActionApi).downloadUrl(CONTENT_METADATA);
         verify(mStreamActionApi).onClientAction(ActionType.DOWNLOAD);
+    }
+
+    @Test
+    public void testParseAction_reportViewVisible() {
+        FeedAction reportViewAction =
+                FeedAction.newBuilder()
+                        .setMetadata(
+                                FeedActionMetadata.newBuilder()
+                                        .setType(Type.REPORT_VIEW)
+                                        .setViewReportData(
+                                                ViewReportData.newBuilder()
+                                                        .setContentId(CONTENT_ID)
+                                                        .setVisibility(
+                                                                ViewReportData.Visibility.SHOW)
+                                                        .setPayload(ActionPayload
+                                                                            .getDefaultInstance())))
+                        .build();
+
+        FeedActionPayload reportViewActionPayload =
+                FeedActionPayload.newBuilder()
+                        .setExtension(FeedAction.feedActionExtension, reportViewAction)
+                        .build();
+
+        View view = new View(Robolectric.buildActivity(Activity.class).get());
+
+        mFeedActionParser.parseFeedActionPayload(
+                reportViewActionPayload, mStreamActionApi, view, ActionSource.VIEW);
+        verify(mStreamActionApi)
+                .reportViewVisible(view, CONTENT_ID_STRING, ActionPayload.getDefaultInstance());
+    }
+
+    @Test
+    public void testParseAction_reportViewHidden() {
+        FeedAction reportViewAction =
+                FeedAction.newBuilder()
+                        .setMetadata(
+                                FeedActionMetadata.newBuilder()
+                                        .setType(Type.REPORT_VIEW)
+                                        .setViewReportData(
+                                                ViewReportData.newBuilder()
+                                                        .setContentId(CONTENT_ID)
+                                                        .setVisibility(
+                                                                ViewReportData.Visibility.HIDE)
+                                                        .setPayload(ActionPayload
+                                                                            .getDefaultInstance())))
+                        .build();
+
+        FeedActionPayload reportViewActionPayload =
+                FeedActionPayload.newBuilder()
+                        .setExtension(FeedAction.feedActionExtension, reportViewAction)
+                        .build();
+
+        View view = new View(Robolectric.buildActivity(Activity.class).get());
+
+        mFeedActionParser.parseFeedActionPayload(
+                reportViewActionPayload, mStreamActionApi, view, ActionSource.VIEW);
+        verify(mStreamActionApi).reportViewHidden(view, CONTENT_ID_STRING);
     }
 
     @Test

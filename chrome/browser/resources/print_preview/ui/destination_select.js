@@ -10,6 +10,7 @@ import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
 import 'chrome://resources/polymer/v3_0/iron-meta/iron-meta.js';
 import './icons.js';
 import './print_preview_shared_css.js';
+import './throbber_css.js';
 import '../strings.m.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -39,12 +40,20 @@ Polymer({
 
     driveDestinationReady: Boolean,
 
+    loaded: Boolean,
+
     noDestinations: Boolean,
 
     pdfPrinterDisabled: Boolean,
 
     /** @type {!Array<!Destination>} */
     recentDestinationList: Array,
+
+    /** @private {string} */
+    statusText_: {
+      type: String,
+      computed: 'computeStatusText_(destination)',
+    },
   },
 
   /** @private {!IronMetaElement} */
@@ -143,5 +152,20 @@ Polymer({
 
   onProcessSelectChange(value) {
     this.fire('selected-option-change', value);
+  },
+
+  /**
+   * @return {string} The connection status text to display.
+   * @private
+   */
+  computeStatusText_() {
+    // |destination| can be either undefined, or null here.
+    if (!this.destination) {
+      return '';
+    }
+
+    return this.destination.shouldShowInvalidCertificateError ?
+        this.i18n('noLongerSupportedFragment') :
+        this.destination.connectionStatusText;
   },
 });

@@ -127,12 +127,6 @@ bool ShouldUseBuiltinCertVerifier(Profile* profile) {
     return true;
   }
 
-  const PrefService::Preference* builtin_cert_verifier_enabled_pref =
-      g_browser_process->local_state()->FindPreference(
-          prefs::kBuiltinCertificateVerifierEnabled);
-  if (builtin_cert_verifier_enabled_pref->IsManaged())
-    return builtin_cert_verifier_enabled_pref->GetValue()->GetBool();
-
   return base::FeatureList::IsEnabled(
       net::features::kCertVerifierBuiltinFeature);
 }

@@ -132,7 +132,7 @@ class DependentIOBuffer : public WrappedIOBuffer {
 
  private:
   ~DependentIOBuffer() override = default;
-  scoped_refptr<net::IOBuffer> buffer_;
+  scoped_refptr<IOBuffer> buffer_;
 };
 
 void LogCloseCodeForUma(uint16_t code) {
@@ -230,7 +230,7 @@ class WebSocketChannel::ConnectDelegate
  public:
   explicit ConnectDelegate(WebSocketChannel* creator) : creator_(creator) {}
 
-  void OnCreateRequest(net::URLRequest* request) override {
+  void OnCreateRequest(URLRequest* request) override {
     creator_->OnCreateURLRequest(request);
   }
 
@@ -315,11 +315,11 @@ void WebSocketChannel::SendAddChannelRequest(
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
     const SiteForCookies& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const IsolationInfo& isolation_info,
     const HttpRequestHeaders& additional_headers) {
   SendAddChannelRequestWithSuppliedCallback(
       socket_url, requested_subprotocols, origin, site_for_cookies,
-      network_isolation_key, additional_headers,
+      isolation_info, additional_headers,
       base::BindOnce(&WebSocketStream::CreateAndConnectStream));
 }
 
@@ -459,12 +459,12 @@ void WebSocketChannel::SendAddChannelRequestForTesting(
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
     const SiteForCookies& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const IsolationInfo& isolation_info,
     const HttpRequestHeaders& additional_headers,
     WebSocketStreamRequestCreationCallback callback) {
   SendAddChannelRequestWithSuppliedCallback(
       socket_url, requested_subprotocols, origin, site_for_cookies,
-      network_isolation_key, additional_headers, std::move(callback));
+      isolation_info, additional_headers, std::move(callback));
 }
 
 void WebSocketChannel::SetClosingHandshakeTimeoutForTesting(
@@ -482,7 +482,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
     const std::vector<std::string>& requested_subprotocols,
     const url::Origin& origin,
     const SiteForCookies& site_for_cookies,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const IsolationInfo& isolation_info,
     const HttpRequestHeaders& additional_headers,
     WebSocketStreamRequestCreationCallback callback) {
   DCHECK_EQ(FRESHLY_CONSTRUCTED, state_);
@@ -497,7 +497,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
   auto connect_delegate = std::make_unique<ConnectDelegate>(this);
   stream_request_ = std::move(callback).Run(
       socket_url_, requested_subprotocols, origin, site_for_cookies,
-      network_isolation_key, additional_headers, url_request_context_,
+      isolation_info, additional_headers, url_request_context_,
       NetLogWithSource(), std::move(connect_delegate));
   SetState(CONNECTING);
 }

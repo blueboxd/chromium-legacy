@@ -32,7 +32,9 @@ import java.util.Map;
  * It shows persistent errors and helps to navigate to WebView developer tools.
  */
 public class MainActivity extends FragmentActivity {
+    private PersistentErrorView mErrorView;
     private WebViewPackageError mDifferentPackageError;
+    private boolean mDifferentPackageErrorVisible = false;
     private boolean mSwitchFragmentOnResume;
     final Map<Integer, Integer> mFragmentIdMap = new HashMap<>();
 
@@ -51,7 +53,8 @@ public class MainActivity extends FragmentActivity {
         // Let onResume handle showing the initial Fragment.
         mSwitchFragmentOnResume = true;
 
-        mDifferentPackageError = new WebViewPackageError(this);
+        mErrorView = new PersistentErrorView(this, R.id.main_error_view);
+        mDifferentPackageError = new WebViewPackageError(this, mErrorView);
 
         // Set up bottom navigation bar:
         mFragmentIdMap.put(R.id.navigation_home, FRAGMENT_ID_HOME);
@@ -68,10 +71,24 @@ public class MainActivity extends FragmentActivity {
             View v = bottomNavBar.getChildAt(i);
             v.setOnClickListener(listener);
         }
+
+        FragmentManager fm = getSupportFragmentManager();
+        fm.registerFragmentLifecycleCallbacks(
+                new FragmentManager.FragmentLifecycleCallbacks() {
+                    @Override
+                    public void onFragmentResumed(FragmentManager fm, Fragment f) {
+                        if (!mDifferentPackageErrorVisible) {
+                            if (f instanceof DevUiBaseFragment) {
+                                ((DevUiBaseFragment) f).maybeShowErrorView(mErrorView);
+                            }
+                        }
+                    }
+                },
+                /* recursive */ false);
     }
 
     private void switchFragment(int chosenFragmentId) {
-        Fragment fragment = null;
+        DevUiBaseFragment fragment = null;
         switch (chosenFragmentId) {
             default:
                 chosenFragmentId = FRAGMENT_ID_HOME;
@@ -131,10 +148,11 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         // Check package status in onResume() to hide/show the error message if the user
         // changes WebView implementation from system settings and then returns back to the
         // activity.
-        mDifferentPackageError.showMessageIfDifferent();
+        mDifferentPackageErrorVisible = mDifferentPackageError.showMessageIfDifferent();
 
         // Don't change Fragment unless we have a new Intent, since the user might just be coming
         // back to this through the task switcher.

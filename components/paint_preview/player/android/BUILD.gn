@@ -143,6 +143,7 @@ source_set("test_support") {
 junit_binary("paint_preview_junit_tests") {
   sources = [
     "junit/src/org/chromium/components/paintpreview/player/PlayerManagerTest.java",
+    "junit/src/org/chromium/components/paintpreview/player/frame/PaintPreviewCustomFlingingShadowScroller.java",
     "junit/src/org/chromium/components/paintpreview/player/frame/PlayerFrameBitmapPainterTest.java",
     "junit/src/org/chromium/components/paintpreview/player/frame/PlayerFrameMediatorTest.java",
   ]

@@ -621,6 +621,7 @@ class CONTENT_EXPORT RenderFrameImpl
       mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
       blink::TransferableMessage data,
       OnPortalActivatedCallback callback) override;
+  void SwapIn() override;
 
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() override;
@@ -1003,12 +1004,12 @@ class CONTENT_EXPORT RenderFrameImpl
   void RemoveObserver(RenderFrameObserver* observer);
 
   // Swaps the current frame into the frame tree, replacing the
-  // RenderFrameProxy it is associated with.  Return value indicates whether
-  // the swap operation succeeded.  This should only be used for provisional
-  // frames associated with a proxy, while the proxy is still in the frame
-  // tree. If the associated proxy has been detached before this is called,
-  // this returns false and aborts the swap.
-  bool SwapIn();
+  // RenderFrameProxy it is associated with. Return value indicates whether
+  // the swap operation succeeded. This should only be used for provisional
+  // frames associated with a proxy, while the proxy is still in the frame tree.
+  // If the associated proxy has been detached before this is called, this
+  // returns false and aborts the swap.
+  bool SwapInInternal();
 
   // Returns the RenderWidget associated with the main frame.
   // TODO(ajwong): This method should go away when cross-frame property setting
@@ -1022,7 +1023,6 @@ class CONTENT_EXPORT RenderFrameImpl
   //
   // The documentation for these functions should be in
   // content/common/*_messages.h for the message that the function is handling.
-  void OnSwapIn();
   void OnUnload(int proxy_routing_id,
                 bool is_loading,
                 const FrameReplicationState& replicated_frame_state);

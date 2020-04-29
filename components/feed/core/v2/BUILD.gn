@@ -46,6 +46,8 @@ source_set("feed_core_v2") {
     "stream_model_update_request.h",
     "surface_updater.cc",
     "surface_updater.h",
+    "tasks/clear_all_task.cc",
+    "tasks/clear_all_task.h",
     "tasks/load_more_task.cc",
     "tasks/load_more_task.h",
     "tasks/load_stream_from_store_task.cc",

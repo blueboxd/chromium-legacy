@@ -25,6 +25,7 @@ namespace net {
 
 class HttpRequestHeaders;
 class HttpResponseHeaders;
+class IsolationInfo;
 class URLRequest;
 class WebSocketStream;
 class WebSocketStreamRequest;
@@ -40,14 +41,13 @@ class WebSocketStreamCreateTestBase : public WithTaskEnvironment {
 
   // A wrapper for CreateAndConnectStreamForTesting that knows about our default
   // parameters.
-  void CreateAndConnectStream(
-      const GURL& socket_url,
-      const std::vector<std::string>& sub_protocols,
-      const url::Origin& origin,
-      const SiteForCookies& site_for_cookies,
-      const net::NetworkIsolationKey& network_isolation_key,
-      const HttpRequestHeaders& additional_headers,
-      std::unique_ptr<base::OneShotTimer> timer);
+  void CreateAndConnectStream(const GURL& socket_url,
+                              const std::vector<std::string>& sub_protocols,
+                              const url::Origin& origin,
+                              const SiteForCookies& site_for_cookies,
+                              const IsolationInfo& isolation_info,
+                              const HttpRequestHeaders& additional_headers,
+                              std::unique_ptr<base::OneShotTimer> timer);
 
   static std::vector<HeaderKeyValuePair> RequestHeadersToVector(
       const HttpRequestHeaders& headers);

@@ -35,6 +35,17 @@ class MockWebRtcTransformedFrameCallback
                void(std::unique_ptr<webrtc::TransformableFrameInterface>));
 };
 
+class FakeAudioFrame : public webrtc::TransformableFrameInterface {
+ public:
+  rtc::ArrayView<const uint8_t> GetData() const override {
+    return rtc::ArrayView<const uint8_t>();
+  }
+
+  void SetData(rtc::ArrayView<const uint8_t> data) override {}
+  uint32_t GetTimestamp() const override { return 0xDEADBEEF; }
+  uint32_t GetSsrc() const override { return 0; }
+};
+
 }  // namespace
 
 class RTCEncodedAudioUnderlyingSinkTest : public testing::Test {
@@ -69,7 +80,7 @@ class RTCEncodedAudioUnderlyingSinkTest : public testing::Test {
 
   ScriptValue CreateEncodedAudioFrameChunk(ScriptState* script_state) {
     RTCEncodedAudioFrame* frame = MakeGarbageCollected<RTCEncodedAudioFrame>(
-        std::unique_ptr<webrtc::TransformableFrameInterface>());
+        std::make_unique<FakeAudioFrame>());
     return ScriptValue(script_state->GetIsolate(),
                        ToV8(frame, script_state->GetContext()->Global(),
                             script_state->GetIsolate()));

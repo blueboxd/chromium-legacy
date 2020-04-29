@@ -11,4 +11,6 @@
   <item type="id" name="feed_content_card" />
   <!-- Id to use for root RecyclerView used in Stream. -->
   <item type="id" name="feed_stream_recycler_view" />
+  <!-- Tag id for storing the contentId of the content on a view for view reporting. -->
+  <item type="id" name="tag_view_actions_content_id" />
 </resources>

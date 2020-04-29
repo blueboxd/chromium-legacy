@@ -1402,6 +1402,70 @@ TEST_F(AnimationAnimationTestCompositing, InfiniteDurationAnimation) {
             animation->CheckCanStartAnimationOnCompositor(nullptr));
 }
 
+TEST_F(AnimationAnimationTestCompositing,
+       ScrollLinkedAnimationCanBeComposited) {
+  ResetWithCompositedAnimation();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { will-change: transform; overflow: scroll; width: 100px; height: 100px; }
+      #target { width: 100px; height: 200px; will-change: opacity;}
+      #spacer { width: 200px; height: 2000px; }
+    </style>
+    <div id ='scroller'>
+      <div id ='target'></div>
+      <div id ='spacer'></div>
+    </div>
+  )HTML");
+
+  // Create ScrollTimeline
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 20),
+                                   mojom::blink::ScrollType::kProgrammatic);
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(GetElementById("scroller"));
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+
+  // Create KeyframeEffect
+  Timing timing;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+
+  Persistent<StringKeyframe> start_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
+  start_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "1.0",
+                                      SecureContextMode::kInsecureContext,
+                                      nullptr);
+  Persistent<StringKeyframe> end_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
+  end_keyframe->SetCSSPropertyValue(CSSPropertyID::kOpacity, "0.0",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
+
+  StringKeyframeVector keyframes;
+  keyframes.push_back(start_keyframe);
+  keyframes.push_back(end_keyframe);
+
+  Element* element = GetElementById("target");
+  auto* model = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
+
+  // Create scroll-linked animation
+  NonThrowableExceptionState exception_state;
+  Animation* scroll_animation = Animation::Create(
+      MakeGarbageCollected<KeyframeEffect>(element, model, timing),
+      scroll_timeline, exception_state);
+
+  model->SnapshotAllCompositorKeyframesIfNecessary(
+      *element, *ComputedStyle::Create(), nullptr);
+  scroll_animation->play();
+  EXPECT_EQ(scroll_animation->CheckCanStartAnimationOnCompositor(nullptr),
+            CompositorAnimations::kNoFailure);
+}
+
 // Verifies correctness of scroll linked animation current and start times in
 // various animation states.
 TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {

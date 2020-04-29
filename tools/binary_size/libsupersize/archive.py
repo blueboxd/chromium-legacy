@@ -38,7 +38,7 @@ import string_extract
 import zip_util
 
 
-sys.path.insert(1, os.path.join(path_util.SRC_ROOT, 'tools', 'grit'))
+sys.path.insert(1, os.path.join(path_util.TOOLS_SRC_ROOT, 'tools', 'grit'))
 from grit.format import data_pack
 
 _OWNERS_FILENAME = 'OWNERS'
@@ -116,8 +116,9 @@ class SectionSizeKnobs(object):
 
 # Parameters and states for archiving a container.
 class ContainerArchiveOptions:
-  def __init__(self, sub_args):
-    self.src_root = sub_args.source_directory or path_util.SRC_ROOT
+  def __init__(self, sub_args, output_directory=''):
+    self.src_root = (sub_args.source_directory or
+                     path_util.GetSrcRootFromOutputDirectory(output_directory))
 
     # An estimate of pak translation compression ratio to make comparisons
     # between .size files reasonable. Otherwise this can differ every pak
@@ -532,36 +533,41 @@ def _CreateMergeStringsReplacements(merge_string_syms,
   return ret
 
 
-def _ParseComponentFromOwners(filename):
+def _ParseComponentFromOwners(filename, opts):
   """Searches an OWNERS file for lines that start with `# COMPONENT:`.
 
-  If an OWNERS file has no COMPONENT but references another OWNERS file, follow
-  the reference and check that file instead.
+  If an OWNERS file has no COMPONENT but references exactly one other OWNERS
+  file, follows the reference and checks that file instead.
 
   Args:
     filename: Path to the file to parse.
+    opts: Instance of ContainerArchiveOptions.
   Returns:
     The text that follows the `# COMPONENT:` prefix, such as 'component>name'.
-    Empty string if no component found or the file didn't exist.
+    Empty string if no component found or the file doesn't exist.
   """
-  reference_paths = []
-  try:
-    with open(filename) as f:
-      for line in f:
-        component_matches = _COMPONENT_REGEX.match(line)
-        path_matches = _FILE_PATH_REGEX.match(line)
-        if component_matches:
-          return component_matches.group(1)
-        elif path_matches:
-          reference_paths.append(path_matches.group(1))
-  except IOError:
-    return ''
-
-  if len(reference_paths) == 1:
-    newpath = os.path.join(path_util.SRC_ROOT, reference_paths[0])
-    return _ParseComponentFromOwners(newpath)
-  else:
-    return ''
+  seen = set()
+  while True:
+    seen.add(filename)
+    reference_paths = []
+    try:
+      with open(filename) as f:
+        for line in f:
+          component_matches = _COMPONENT_REGEX.match(line)
+          path_matches = _FILE_PATH_REGEX.match(line)
+          if component_matches:
+            return component_matches.group(1)
+          elif path_matches:
+            reference_paths.append(path_matches.group(1))
+    except IOError:
+      break
+    if len(reference_paths) != 1:
+      break
+    filename = os.path.join(opts.src_root, reference_paths[0])
+    if filename in seen:
+      logging.warning('OWNER dependence loop found for %s' % filename)
+      break
+  return ''
 
 
 def _FindComponentRoot(start_path, cache, opts):
@@ -569,7 +575,7 @@ def _FindComponentRoot(start_path, cache, opts):
 
   Args:
     start_path: Path of directory to start searching from. Must be relative to
-      SRC_ROOT.
+      |opts.src_root|.
     cache: Dict of OWNERS paths. Used instead of filesystem if paths are present
       in the dict.
     opts: Instance of ContainerArchiveOptions.
@@ -580,14 +586,15 @@ def _FindComponentRoot(start_path, cache, opts):
   prev_dir = None
   test_dir = start_path
   # This loop will traverse the directory structure upwards until reaching
-  # SRC_ROOT, where test_dir and prev_dir will both equal an empty string.
+  # |opts.src_root|, where |test_dir| and |prev_dir| will both equal an empty
+  # string.
   while test_dir != prev_dir:
     cached_component = cache.get(test_dir)
     if cached_component:
       return cached_component
-    elif cached_component is None:
+    if cached_component is None:  # Excludes ''.
       owners_path = os.path.join(opts.src_root, test_dir, _OWNERS_FILENAME)
-      component = _ParseComponentFromOwners(owners_path)
+      component = _ParseComponentFromOwners(owners_path, opts)
       cache[test_dir] = component
       if component:
         return component
@@ -751,7 +758,7 @@ def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path,
     shorten_path = os.path.basename
 
   if tool_prefix:
-    relative_tool_prefix = path_util.ToSrcRootRelative(tool_prefix)
+    relative_tool_prefix = path_util.ToToolsSrcRootRelative(tool_prefix)
     metadata[models.METADATA_TOOL_PREFIX] = relative_tool_prefix
 
   if linker_name:
@@ -1871,7 +1878,8 @@ def _DeduceMainPaths(args, on_config_error):
       apk_path: Path to .apk file that can be opened for processing, but whose
         filename is unimportant (e.g., can be a temp file).
     """
-    opts = ContainerArchiveOptions(sub_args)
+    output_directory = output_directory_finder.Tentative()
+    opts = ContainerArchiveOptions(sub_args, output_directory=output_directory)
     if apk_prefix:
       # Allow either .minimal.apks or just .apks.
       apk_prefix = apk_prefix.replace('.minimal.apks', '.aab')
@@ -1882,8 +1890,8 @@ def _DeduceMainPaths(args, on_config_error):
     tool_prefix = None
     if opts.analyze_native:
       elf_path, map_path, apk_so_path = _DeduceNativeInfo(
-          output_directory_finder.Tentative(), apk_path, sub_args.elf_file,
-          sub_args.map_file, on_config_error)
+          output_directory, apk_path, sub_args.elf_file, sub_args.map_file,
+          on_config_error)
       if map_path:
         linker_name = _DetectLinkerName(map_path)
         logging.info('Linker name: %s' % linker_name)

@@ -2,6 +2,12 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script type="module">
+
+// Keep FinalizationRegistry global to avoid it being reclaimed by garbage
+// collections that may happen until the registry is processed in microtasks.
+let fr1;
+let fr2;
+
 async_test(t => {
   let last_task_that_ran = "";
   let num_microtasks_that_ran = 0;
@@ -18,8 +24,8 @@ async_test(t => {
     }));
   };
 
-  const fr1 = new FinalizationRegistry(callback);
-  const fr2 = new FinalizationRegistry(callback);
+  fr1 = new FinalizationRegistry(callback);
+  fr2 = new FinalizationRegistry(callback);
 
   (function() {
     let garbage = {};

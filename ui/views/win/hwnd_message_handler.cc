@@ -3121,9 +3121,8 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
 
   ui::TouchEvent event(
       event_type, touch_point, event_time,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                         mapped_pointer_id, radius_x, radius_y, pressure,
-                         rotation_angle),
+      ui::PointerDetails(ui::EventPointerType::kTouch, mapped_pointer_id,
+                         radius_x, radius_y, pressure, rotation_angle),
       ui::GetModifiersFromKeyState());
 
   event.latency()->AddLatencyNumberWithTimestamp(
@@ -3277,9 +3276,8 @@ void HWNDMessageHandler::GenerateTouchEvent(ui::EventType event_type,
                                             size_t id,
                                             base::TimeTicks time_stamp,
                                             TouchEvents* touch_events) {
-  ui::TouchEvent event(
-      event_type, point, time_stamp,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, id));
+  ui::TouchEvent event(event_type, point, time_stamp,
+                       ui::PointerDetails(ui::EventPointerType::kTouch, id));
 
   event.set_flags(ui::GetModifiersFromKeyState());
 

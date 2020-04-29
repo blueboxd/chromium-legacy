@@ -131,6 +131,11 @@ class ChromeAppBrowserProxy {
     // in platform apps, set it to 1 manually.
     window.history.length = 1;
   }
+
+  /** @override */
+  isMp4RecordingEnabled() {
+    return true;
+  }
 }
 
 export const browserProxy = new ChromeAppBrowserProxy();

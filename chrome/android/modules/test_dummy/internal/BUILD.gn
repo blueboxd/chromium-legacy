@@ -9,9 +9,9 @@ android_library("java") {
   sources = [ "java/src/org/chromium/chrome/modules/test_dummy/TestDummyProviderImpl.java" ]
   deps = [
     "//base:base_java",
-    "//chrome/android/features/test_dummy/internal:java",
-    "//chrome/android/features/test_dummy/public:java",
     "//chrome/android/modules/test_dummy/public:java",
+    "//chrome/browser/test_dummy:java",
+    "//chrome/browser/test_dummy/internal:java",
   ]
 }
 
@@ -28,7 +28,7 @@ component("test_dummy") {
   deps = [
     ":jni_registration",
     "//base",
-    "//chrome/android/features/test_dummy/internal:native",
+    "//chrome/browser/test_dummy/internal:native",
   ]
 
   # Test dummy native entrypoints belong in the partition.
@@ -39,7 +39,7 @@ component("test_dummy") {
 
 generate_jni_registration("jni_registration") {
   no_transitive_deps = true
-  targets = [ "//chrome/android/features/test_dummy/internal:java" ]
+  targets = [ "//chrome/browser/test_dummy/internal:java" ]
   header_output = "$target_gen_dir/jni_registration.h"
   namespace = "test_dummy"
 }

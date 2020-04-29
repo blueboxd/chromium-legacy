@@ -20,6 +20,7 @@
 #include "base/sequence_checker.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
+#include "services/tracing/public/cpp/buildflags.h"
 #include "services/tracing/public/cpp/perfetto/interning_index.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 
@@ -105,6 +106,21 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
     base::RepeatingClosure sample_callback_for_testing_;
   };
 
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+  // This class can be implemented to check whether the loader lock is held
+  // whenever stack frames are sampled. Exposed for testing.
+  class LoaderLockSampler {
+   public:
+    virtual ~LoaderLockSampler() = default;
+
+    virtual bool IsLoaderLockHeld() const = 0;
+  };
+
+  // The name of a trace event that will be recorded when the loader lock is
+  // held.
+  static const char kLoaderLockHeldEventName[];
+#endif
+
   // Creates sampling profiler on main thread. The profiler *must* be
   // destroyed prior to process shutdown.
   static std::unique_ptr<TracingSamplerProfiler> CreateOnMainThread();
@@ -123,6 +139,12 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   static void StartTracingForTesting(tracing::PerfettoProducer* producer);
   static void StopTracingForTesting();
   static void MangleModuleIDIfNeeded(std::string* module_id);
+
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+  // Registers a mock LoaderLockSampler to be called during tests. |sampler| is
+  // owned by the caller. It must be reset to |nullptr| at the end of the test.
+  static void SetLoaderLockSamplerForTesting(LoaderLockSampler* sampler);
+#endif
 
   // Returns whether of not the sampler profiling is able to unwind the stack
   // on this platform.

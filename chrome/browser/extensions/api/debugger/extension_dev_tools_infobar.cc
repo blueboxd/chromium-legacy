@@ -131,17 +131,18 @@ ExtensionDevToolsInfoBar::~ExtensionDevToolsInfoBar() {
     infobar_->Close();
 }
 
-void ExtensionDevToolsInfoBar::Remove(
+void ExtensionDevToolsInfoBar::Unregister(
     ExtensionDevToolsClientHost* client_host) {
   callbacks_.erase(client_host);
-  if (callbacks_.empty())
-    delete this;
 }
 
 void ExtensionDevToolsInfoBar::InfoBarDismissed() {
   std::map<ExtensionDevToolsClientHost*, base::Closure> copy = callbacks_;
   for (const auto& pair : copy)
     pair.second.Run();
+  // This should have resulted in every host unregistering itself.
+  DCHECK(callbacks_.empty());
+  delete this;
 }
 
 }  // namespace extensions

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/child_accounts/child_user_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_controller.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_utils.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/chromeos/login/test/scoped_policy_update.h"
@@ -76,9 +77,18 @@ class AppTimeTest : public MixinBasedInProcessBrowserTest {
   AppTimeTest& operator=(const AppTimeTest&) = delete;
   ~AppTimeTest() override = default;
 
+  virtual bool ShouldEnableWebTimeLimit() { return true; }
+
   // MixinBasedInProcessBrowserTest:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kPerAppTimeLimits);
+    std::vector<base::Feature> enabled_features{features::kPerAppTimeLimits};
+    std::vector<base::Feature> disabled_features;
+    if (ShouldEnableWebTimeLimit())
+      enabled_features.push_back(features::kWebTimeLimits);
+    else
+      disabled_features.push_back(features::kWebTimeLimits);
+
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     MixinBasedInProcessBrowserTest::SetUp();
   }
 
@@ -313,6 +323,30 @@ IN_PROC_BROWSER_TEST_F(AppTimeTest, PerAppTimeLimitsPolicyMultipleEntries) {
   ASSERT_TRUE(app_registry_test.GetAppLimit(app4));
   EXPECT_EQ(AppRestriction::kTimeLimit,
             app_registry_test.GetAppLimit(app4)->restriction());
+}
+
+class WebTimeLimitDisabledTest : public AppTimeTest {
+ protected:
+  WebTimeLimitDisabledTest() = default;
+  WebTimeLimitDisabledTest(const WebTimeLimitDisabledTest&) = delete;
+  WebTimeLimitDisabledTest& operator=(const WebTimeLimitDisabledTest&) = delete;
+  ~WebTimeLimitDisabledTest() override = default;
+
+  bool ShouldEnableWebTimeLimit() override { return false; }
+};
+
+IN_PROC_BROWSER_TEST_F(WebTimeLimitDisabledTest, WebTimeLimitDisabled) {
+  AppTimeLimitsPolicyBuilder policy;
+  policy.SetResetTime(6, 0);
+  policy.AddAppLimit(GetChromeAppId(), AppLimit(AppRestriction::kTimeLimit,
+                                                base::TimeDelta::FromMinutes(0),
+                                                base::Time::Now()));
+
+  UpdatePerAppTimeLimitsPolicy(policy.value());
+
+  AppActivityRegistry* app_registry = GetAppRegistry();
+  AppActivityRegistry::TestApi app_registry_test(app_registry);
+  EXPECT_FALSE(app_registry_test.GetAppLimit(GetChromeAppId()));
 }
 
 }  // namespace app_time

@@ -6,8 +6,10 @@ package org.chromium.components.paintpreview.player.frame;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.os.Handler;
 import android.util.Pair;
 import android.view.View;
+import android.widget.Scroller;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -49,6 +51,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private final List<Pair<View, Rect>> mSubFrames = new ArrayList<>();
     private final PropertyModel mModel;
     private final PlayerCompositorDelegate mCompositorDelegate;
+    private final Scroller mScroller;
+    private final Handler mScrollerHandler;
     /** The user-visible area for this frame. */
     private final Rect mViewportRect = new Rect();
     /** Rect used for requesting a new bitmap from Paint Preview compositor. */
@@ -70,12 +74,14 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private float mScaleFactor;
 
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
-            UnguessableToken frameGuid, int contentWidth, int contentHeight) {
+            Scroller scroller, UnguessableToken frameGuid, int contentWidth, int contentHeight) {
         mModel = model;
         mCompositorDelegate = compositorDelegate;
+        mScroller = scroller;
         mGuid = frameGuid;
         mContentWidth = contentWidth;
         mContentHeight = contentHeight;
+        mScrollerHandler = new Handler();
     }
 
     /**
@@ -247,6 +253,11 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
      */
     @Override
     public boolean scrollBy(float distanceX, float distanceY) {
+        mScroller.forceFinished(true);
+        return scrollByInternal(distanceX, distanceY);
+    }
+
+    private boolean scrollByInternal(float distanceX, float distanceY) {
         // TODO(crbug.com/1020702): These values should be scaled for scale factors other than 1.
         int validDistanceX = 0;
         int validDistanceY = 0;
@@ -278,6 +289,33 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     @Override
     public void onClick(int x, int y) {
         mCompositorDelegate.onClick(mGuid, mViewportRect.left + x, mViewportRect.top + y);
+    }
+
+    @Override
+    public boolean onFling(float velocityX, float velocityY) {
+        mScroller.forceFinished(true);
+        mScroller.fling(mViewportRect.left, mViewportRect.top, (int) -velocityX, (int) -velocityY,
+                0, mContentWidth - mViewportRect.width(), 0,
+                mContentHeight - mViewportRect.height());
+
+        mScrollerHandler.post(this::handleFling);
+        return true;
+    }
+
+    /**
+     * Handles a fling update by computing the next scroll offset and programmatically scrolling.
+     */
+    private void handleFling() {
+        if (mScroller.isFinished()) return;
+
+        boolean shouldContinue = mScroller.computeScrollOffset();
+        int deltaX = mScroller.getCurrX() - mViewportRect.left;
+        int deltaY = mScroller.getCurrY() - mViewportRect.top;
+        scrollByInternal(deltaX, deltaY);
+
+        if (shouldContinue) {
+            mScrollerHandler.post(this::handleFling);
+        }
     }
 
     /**

@@ -1250,9 +1250,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
                                                  net::ERR_BLOCKED_BY_CLIENT);
 
   auto waiter = CreateAdsPageLoadMetricsTestWaiter();
-  auto console_delegate = std::make_unique<content::ConsoleObserverDelegate>(
-      web_contents, "Ad was removed*");
-  web_contents->SetDelegate(console_delegate.get());
+  content::WebContentsConsoleObserver console_observer(web_contents);
+  console_observer.SetPattern("Ad was removed*");
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
@@ -1284,7 +1283,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 
   // Every frame should get a report (ad_with_incomplete_resource.html loads two
   // frames).
-  EXPECT_EQ(4u, console_delegate->messages().size());
+  EXPECT_EQ(4u, console_observer.messages().size());
 }
 
 // Verifies that the frame is navigated to the intervention page when a
@@ -1333,7 +1332,9 @@ class AdsPageLoadMetricsObserverResourceBrowserTestWithoutHeavyAdIntervention
     : public AdsPageLoadMetricsObserverResourceBrowserTest {
  public:
   AdsPageLoadMetricsObserverResourceBrowserTestWithoutHeavyAdIntervention() {
-    feature_list_.InitAndDisableFeature(features::kHeavyAdIntervention);
+    // The experiment is "on" if either intervention or reporting is active.
+    feature_list_.InitWithFeatures({}, {features::kHeavyAdIntervention,
+                                        features::kHeavyAdInterventionWarning});
   }
 
  private:

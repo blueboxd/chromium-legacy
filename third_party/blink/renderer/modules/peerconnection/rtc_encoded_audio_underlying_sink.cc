@@ -36,20 +36,24 @@ ScriptPromise RTCEncodedAudioUnderlyingSink::write(
       V8RTCEncodedAudioFrame::ToImplWithTypeCheck(script_state->GetIsolate(),
                                                   chunk.V8Value());
   if (!encoded_frame) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kTypeMismatchError,
-                                      "Invalid frame");
+    exception_state.ThrowTypeError("Invalid frame");
     return ScriptPromise();
   }
 
-  // Get webrtc frame and send it to the decoder.
   if (!transformer_callback_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Stream closed");
     return ScriptPromise();
   }
 
-  transformer_callback_.Run()->SendFrameToSink(
-      encoded_frame->PassWebRtcFrame());
+  auto webrtc_frame = encoded_frame->PassWebRtcFrame();
+  if (!webrtc_frame) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "Empty frame");
+    return ScriptPromise();
+  }
+
+  transformer_callback_.Run()->SendFrameToSink(std::move(webrtc_frame));
   return ScriptPromise::CastUndefined(script_state);
 }
 

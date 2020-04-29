@@ -239,6 +239,8 @@ IN_PROC_BROWSER_TEST_F(MojoWebUIControllerBrowserTest,
                             "})()"));
 
   content::ScopedAllowRendererCrashes allow;
+  content::RenderProcessHostWatcher watcher(web_contents,
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
 
   // Attempt to get a remote for a disallowed interface.
   EXPECT_FALSE(content::EvalJs(web_contents,
@@ -248,6 +250,8 @@ IN_PROC_BROWSER_TEST_F(MojoWebUIControllerBrowserTest,
                                "  return resp.value;"
                                "})()")
                    .error.empty());
+  watcher.Wait();
+  EXPECT_FALSE(watcher.did_exit_normally());
   EXPECT_TRUE(web_contents->IsCrashed());
 }
 

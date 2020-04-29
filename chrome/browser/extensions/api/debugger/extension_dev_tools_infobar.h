@@ -20,12 +20,18 @@ class ExtensionDevToolsClientHost;
 // browser (which has security consequences).
 class ExtensionDevToolsInfoBar {
  public:
+  // Ensures a global infobar corresponding to the supplied extension is
+  // showing and registers |dismissed_callback| with it to be called back on
+  // destruction.
   static ExtensionDevToolsInfoBar* Create(
       const std::string& extension_id,
       const std::string& extension_name,
       ExtensionDevToolsClientHost* client_host,
       const base::Closure& dismissed_callback);
-  void Remove(ExtensionDevToolsClientHost* client_host);
+
+  // Unregisters the callback associated with |client_host|, so it will not be
+  // called on infobar destruction.
+  void Unregister(ExtensionDevToolsClientHost* client_host);
 
  private:
   ExtensionDevToolsInfoBar(const std::string& extension_id,

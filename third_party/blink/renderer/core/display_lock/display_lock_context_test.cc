@@ -1843,6 +1843,62 @@ TEST_F(DisplayLockContextRenderingTest,
 }
 
 TEST_F(DisplayLockContextRenderingTest,
+       VisualOverflowCalculateOnChildPaintLayerInForcedLock) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .hidden { content-visibility: hidden }
+      .paint_layer { contain: paint }
+      .composited { will-change: transform }
+    </style>
+    <div id=lockable class=paint_layer>
+      <div id=parent class=paint_layer>
+        <div id=child class=paint_layer>
+          <span>content</span>
+          <span>content</span>
+          <span>content</span>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* parent = GetDocument().getElementById("parent");
+  auto* parent_box = ToLayoutBoxModelObject(parent->GetLayoutObject());
+  ASSERT_TRUE(parent_box);
+  EXPECT_TRUE(parent_box->Layer());
+  EXPECT_TRUE(parent_box->HasSelfPaintingLayer());
+
+  // Lock the container.
+  auto* lockable = GetDocument().getElementById("lockable");
+  lockable->classList().Add("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* child = GetDocument().getElementById("child");
+  auto* child_layer = ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  child_layer->SetNeedsVisualOverflowRecalc();
+  EXPECT_TRUE(child_layer->NeedsVisualOverflowRecalc());
+
+  ASSERT_TRUE(lockable->GetDisplayLockContext());
+  {
+    DisplayLockContext::ScopedForcedUpdate forced_scope =
+        lockable->GetDisplayLockContext()->GetScopedForcedUpdate();
+
+    // The following should not crash/DCHECK.
+    UpdateAllLifecyclePhasesForTest();
+  }
+
+  // Verify that the display lock doesn't keep extra state since the update was
+  // processed.
+  EXPECT_FALSE(DescendantDependentFlagUpdateWasBlocked(
+      lockable->GetDisplayLockContext()));
+  EXPECT_FALSE(child_layer->NeedsVisualOverflowRecalc());
+
+  // After unlocking, we should not need to do any extra work.
+  lockable->classList().Remove("hidden");
+  EXPECT_FALSE(child_layer->NeedsVisualOverflowRecalc());
+
+  UpdateAllLifecyclePhasesForTest();
+}
+TEST_F(DisplayLockContextRenderingTest,
        SelectionOnAnonymousColumnSpannerDoesNotCrash) {
   SetHtmlInnerHTML(R"HTML(
     <style>

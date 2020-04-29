@@ -90,7 +90,7 @@ class PresentationConnection : public EventTargetWithInlineData,
  protected:
   static void DispatchEventAsync(EventTarget*, Event*);
 
-  PresentationConnection(LocalFrame&, const String& id, const KURL&);
+  PresentationConnection(LocalDOMWindow&, const String& id, const KURL&);
 
   // EventTarget implementation.
   void AddedEventListener(const AtomicString& event_type,
@@ -180,7 +180,7 @@ class ControllerPresentationConnection final : public PresentationConnection {
       const mojom::blink::PresentationInfo&,
       PresentationRequest*);
 
-  ControllerPresentationConnection(LocalFrame&,
+  ControllerPresentationConnection(LocalDOMWindow&,
                                    PresentationController*,
                                    const String& id,
                                    const KURL&);
@@ -216,7 +216,7 @@ class ReceiverPresentationConnection final : public PresentationConnection {
       mojo::PendingReceiver<mojom::blink::PresentationConnection>
           receiver_connection_receiver);
 
-  ReceiverPresentationConnection(LocalFrame&,
+  ReceiverPresentationConnection(LocalDOMWindow&,
                                  PresentationReceiver*,
                                  const String& id,
                                  const KURL&);

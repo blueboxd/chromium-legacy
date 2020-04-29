@@ -1404,9 +1404,9 @@ TEST_P(AppListPresenterDelegateTest, LongPressOutsideCloseAppList) {
   outside_point.Offset(0, -10);
 
   // Dispatch LONG_PRESS to AppListPresenterDelegate.
-  ui::TouchEvent long_press(
-      ui::ET_GESTURE_LONG_PRESS, outside_point, base::TimeTicks::Now(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH));
+  ui::TouchEvent long_press(ui::ET_GESTURE_LONG_PRESS, outside_point,
+                            base::TimeTicks::Now(),
+                            ui::PointerDetails(ui::EventPointerType::kTouch));
   GetEventGenerator()->Dispatch(&long_press);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
@@ -1423,7 +1423,7 @@ TEST_P(AppListPresenterDelegateTest, TwoFingerTapOutsideCloseAppList) {
   // Dispatch TWO_FINGER_TAP to AppListPresenterDelegate.
   ui::TouchEvent two_finger_tap(
       ui::ET_GESTURE_TWO_FINGER_TAP, outside_point, base::TimeTicks::Now(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH));
+      ui::PointerDetails(ui::EventPointerType::kTouch));
   GetEventGenerator()->Dispatch(&two_finger_tap);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);

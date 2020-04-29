@@ -13,7 +13,10 @@
 #include "chrome/browser/ui/views/accessibility/caption_bubble.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -21,6 +24,11 @@
 #include "ui/views/widget/widget.h"
 
 namespace captions {
+
+namespace {
+// Test constants.
+static constexpr int kArrowKeyDisplacement = 16;
+}  // namespace
 
 class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
  public:
@@ -301,4 +309,58 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, CloseButtonCloses) {
   ClickCloseButton();
   EXPECT_FALSE(GetCaptionWidget());
 }
+
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
+                       MovesWithArrowsWhenFocused) {
+  GetController()->OnCaptionReceived("Nearly all ants are female.");
+  // Not focused initially.
+  EXPECT_FALSE(GetBubble()->HasFocus());
+
+  // Key presses do not change the bounds when it is not focused.
+  gfx::Rect bounds = GetCaptionWidget()->GetClientAreaBoundsInScreen();
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_UP, false,
+                                              false, false, false));
+  EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_LEFT, false,
+                                              false, false, false));
+  EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
+
+  // Focus the bubble, and try the arrow keys.
+  GetBubble()->RequestFocus();
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_UP, false,
+                                              false, false, false));
+  bounds.Offset(0, -kArrowKeyDisplacement);
+  EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_LEFT, false,
+                                              false, false, false));
+  bounds.Offset(-kArrowKeyDisplacement, 0);
+  EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_RIGHT, false,
+                                              false, false, false));
+  bounds.Offset(kArrowKeyDisplacement, 0);
+  EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_DOWN, false,
+                                              false, false, false));
+  bounds.Offset(0, kArrowKeyDisplacement);
+  EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
+
+  // Down shouldn't move the bubble again because we started at the bottom of
+  // the screen.
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_DOWN, false,
+                                              false, false, false));
+  EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
+
+#if !defined(OS_MACOSX)
+  // TODO(crbug.com/1055150): Get this working for Mac.
+  // Hitting the escape key should remove focus from the view, so arrows no
+  // longer work.
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
+                                              false, false, false));
+  EXPECT_FALSE(GetBubble()->HasFocus());
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_UP, false,
+                                              false, false, false));
+  EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
+#endif
+}
+
 }  // namespace captions

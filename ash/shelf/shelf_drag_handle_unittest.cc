@@ -7,6 +7,7 @@
 #include "ash/home_screen/drag_window_from_shelf_controller_test_api.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shelf/drag_handle.h"
@@ -357,6 +358,67 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeNotShownForHiddenShelf) {
   EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
 }
 
+// Tapping the drag handle nudge when auto hide shelf is enabled should hide the
+// drag handle nudge but should not hide the shelf or hotseat.
+TEST_F(DragHandleContextualNudgeTest,
+       DragHandleNudgeTapDoesNotHideAutoHiddenShelf) {
+  // Sets shelf auto hide behavior.
+  GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  // Creates a widget to put shelf into in-app state.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+
+  ShelfWidget* const shelf_widget = GetShelfWidget();
+  DragHandle* const drag_handle = shelf_widget->GetDragHandle();
+
+  // The shelf and drag handle should be hidden and the nudge should not be
+  // scheduled because shelf auto hide is set.
+  EXPECT_TRUE(GetPrimaryShelf()->GetAutoHideState() ==
+              ShelfAutoHideState::SHELF_AUTO_HIDE_HIDDEN);
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
+  EXPECT_FALSE(drag_handle->has_show_drag_handle_timer_for_testing());
+
+  // Swipe up to show the shelf. This should show the shelf, extend the hotseat,
+  // and schedule the drag handle nudge.
+  SwipeUpOnShelf();
+  EXPECT_TRUE(GetPrimaryShelf()->GetAutoHideState() ==
+              ShelfAutoHideState::SHELF_AUTO_HIDE_SHOWN);
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+  ASSERT_TRUE(drag_handle->has_show_drag_handle_timer_for_testing());
+  // Firing the show timer should create the nudge set the target visibility for
+  // animations..
+  drag_handle->fire_show_drag_handle_timer_for_testing();
+  EXPECT_TRUE(drag_handle->gesture_nudge_target_visibility());
+  EXPECT_TRUE(drag_handle->drag_handle_nudge() != nullptr);
+
+  // Tapping the drag handle nudge should hide the nudge but not affect the
+  // visibility of the shelf or hotseat.
+  GetEventGenerator()->GestureTapAt(
+      drag_handle->drag_handle_nudge()->GetBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(drag_handle->gesture_nudge_target_visibility());
+  EXPECT_TRUE(GetPrimaryShelf()->GetAutoHideState() ==
+              ShelfAutoHideState::SHELF_AUTO_HIDE_SHOWN);
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Swiping down on shelf should hide the shelf and hotseat.
+  SwipeDownOnShelf();
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+  EXPECT_TRUE(GetPrimaryShelf()->GetAutoHideState() ==
+              ShelfAutoHideState::SHELF_AUTO_HIDE_HIDDEN);
+
+  // Swiping up on shelf should show the shelf and drag handle but not the
+  // nudge or hotseat.
+  SwipeUpOnShelf();
+  EXPECT_TRUE(GetPrimaryShelf()->GetAutoHideState() ==
+              ShelfAutoHideState::SHELF_AUTO_HIDE_SHOWN);
+  EXPECT_FALSE(drag_handle->has_show_drag_handle_timer_for_testing());
+  EXPECT_TRUE(drag_handle->drag_handle_nudge() == nullptr);
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+}
+
 // Tests that drag handle show is canceled when the shelf is hidden while the
 // drag handle is scheduled to be shown.
 TEST_F(DragHandleContextualNudgeTest, HidingShelfCancelsDragHandleShow) {
@@ -448,9 +510,8 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeBoundsInScreen) {
 
   // Verify that nudge widget is centered in shelf.
   gfx::Rect shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
-  gfx::Rect nudge_bounds = drag_handle->drag_handle_nudge_for_testing()
-                               ->label()
-                               ->GetBoundsInScreen();
+  gfx::Rect nudge_bounds =
+      drag_handle->drag_handle_nudge()->label()->GetBoundsInScreen();
   EXPECT_LE(margin_diff(nudge_bounds, shelf_bounds), 1);
 
   // Verify that the nudge vertical bounds - within the shelf bounds, and above
@@ -466,9 +527,7 @@ TEST_F(DragHandleContextualNudgeTest, DragHandleNudgeBoundsInScreen) {
 
   // Verify that nudge widget is centered in shelf.
   shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
-  nudge_bounds = drag_handle->drag_handle_nudge_for_testing()
-                     ->label()
-                     ->GetBoundsInScreen();
+  nudge_bounds = drag_handle->drag_handle_nudge()->label()->GetBoundsInScreen();
   EXPECT_LE(margin_diff(nudge_bounds, shelf_bounds), 1);
 
   // Verify that the nudge vertical bounds - within the shelf bounds, and above

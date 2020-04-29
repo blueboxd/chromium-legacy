@@ -3742,8 +3742,7 @@ TEST_F(TextfieldTest, FocusReasonTouchTap) {
             textfield_->GetFocusReason());
 
   ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-  tap_details.set_primary_pointer_type(
-      ui::EventPointerType::POINTER_TYPE_TOUCH);
+  tap_details.set_primary_pointer_type(ui::EventPointerType::kTouch);
   GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
   textfield_->OnGestureEvent(&tap);
 
@@ -3758,7 +3757,7 @@ TEST_F(TextfieldTest, FocusReasonPenTap) {
             textfield_->GetFocusReason());
 
   ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-  tap_details.set_primary_pointer_type(ui::EventPointerType::POINTER_TYPE_PEN);
+  tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
   GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
   textfield_->OnGestureEvent(&tap);
 
@@ -3775,16 +3774,14 @@ TEST_F(TextfieldTest, FocusReasonMultipleEvents) {
   // Pen tap, followed by a touch tap
   {
     ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-    tap_details.set_primary_pointer_type(
-        ui::EventPointerType::POINTER_TYPE_PEN);
+    tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
     GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
     textfield_->OnGestureEvent(&tap);
   }
 
   {
     ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-    tap_details.set_primary_pointer_type(
-        ui::EventPointerType::POINTER_TYPE_TOUCH);
+    tap_details.set_primary_pointer_type(ui::EventPointerType::kTouch);
     GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
     textfield_->OnGestureEvent(&tap);
   }
@@ -3801,7 +3798,7 @@ TEST_F(TextfieldTest, FocusReasonFocusBlurFocus) {
 
   // Pen tap, blur, then programmatic focus.
   ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-  tap_details.set_primary_pointer_type(ui::EventPointerType::POINTER_TYPE_PEN);
+  tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
   GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
   textfield_->OnGestureEvent(&tap);
 
@@ -3817,7 +3814,7 @@ TEST_F(TextfieldTest, KeyboardObserverForPenInput) {
   InitTextfield();
 
   ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-  tap_details.set_primary_pointer_type(ui::EventPointerType::POINTER_TYPE_PEN);
+  tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
   GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
   textfield_->OnGestureEvent(&tap);
 

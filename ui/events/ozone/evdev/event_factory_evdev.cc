@@ -465,12 +465,12 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&EventFactoryEvdev::DispatchMouseMoveEvent,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     MouseMoveEventParams(
-                         -1 /* device_id */, EF_NONE, cursor_->GetLocation(),
-                         PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
-                         EventTimeForNow())));
+      base::BindOnce(
+          &EventFactoryEvdev::DispatchMouseMoveEvent,
+          weak_ptr_factory_.GetWeakPtr(),
+          MouseMoveEventParams(
+              -1 /* device_id */, EF_NONE, cursor_->GetLocation(),
+              PointerDetails(EventPointerType::kMouse), EventTimeForNow())));
 }
 
 int EventFactoryEvdev::NextDeviceId() {

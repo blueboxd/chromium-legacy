@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_remote_playback_availability_callback.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -48,8 +49,8 @@ class MockEventListenerForRemotePlayback : public NativeEventListener {
 
 class MockPresentationController final : public PresentationController {
  public:
-  explicit MockPresentationController(LocalFrame& frame)
-      : PresentationController(frame) {}
+  explicit MockPresentationController(LocalDOMWindow& window)
+      : PresentationController(window) {}
   ~MockPresentationController() override = default;
 
   MOCK_METHOD1(AddAvailabilityObserver,
@@ -391,11 +392,11 @@ TEST_F(RemotePlaybackTest, IsListening) {
       MakeGarbageCollected<HTMLVideoElement>(page_holder->GetDocument());
   RemotePlayback& remote_playback = RemotePlayback::From(*element);
 
-  LocalFrame& frame = page_holder->GetFrame();
+  LocalDOMWindow& window = *page_holder->GetFrame().DomWindow();
   MockPresentationController* mock_controller =
-      MakeGarbageCollected<MockPresentationController>(frame);
-  Supplement<LocalFrame>::ProvideTo(
-      frame, static_cast<PresentationController*>(mock_controller));
+      MakeGarbageCollected<MockPresentationController>(window);
+  Supplement<LocalDOMWindow>::ProvideTo(
+      window, static_cast<PresentationController*>(mock_controller));
 
   EXPECT_CALL(*mock_controller,
               AddAvailabilityObserver(testing::Eq(&remote_playback)))

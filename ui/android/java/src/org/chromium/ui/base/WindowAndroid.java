@@ -872,7 +872,9 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     @TargetApi(Build.VERSION_CODES.O)
     @CalledByNative
     public void setWideColorEnabled(boolean enabled) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+        // Although this API was added in Android O, it was buggy.
+        // Restrict to Android Q, where it was fixed.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             assert !enabled;
             return;
         }

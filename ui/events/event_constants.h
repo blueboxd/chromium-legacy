@@ -174,11 +174,12 @@ enum EventDeviceId {
 
 // Pointing device type.
 enum class EventPointerType : int {
-  POINTER_TYPE_UNKNOWN = 0,
-  POINTER_TYPE_MOUSE,
-  POINTER_TYPE_PEN,
-  POINTER_TYPE_TOUCH,
-  POINTER_TYPE_ERASER,
+  kUnknown,
+  kMouse,
+  kPen,
+  kTouch,
+  kEraser,
+  kMaxValue = kEraser,
 };
 
 // Device type for gesture events.

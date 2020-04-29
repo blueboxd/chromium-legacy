@@ -630,6 +630,52 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
   }
 }
 
+TEST(ComputedStyleTest, ApplyInternalLightDarkBackgroundImage) {
+  using css_test_helpers::ParseDeclarationBlock;
+
+  ScopedCSSCascadeForTest scoped_cascade_enabled(true);
+  ScopedCSSColorSchemeForTest scoped_property_enabled(true);
+  ScopedCSSColorSchemeUARenderingForTest scoped_ua_enabled(true);
+
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
+      std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
+  const ComputedStyle* initial = &ComputedStyle::InitialStyle();
+
+  ColorSchemeHelper color_scheme_helper(dummy_page_holder_->GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
+  StyleResolverState state(dummy_page_holder_->GetDocument(),
+                           *dummy_page_holder_->GetDocument().documentElement(),
+                           initial, initial);
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  state.SetStyle(style);
+
+  auto* bgimage_declaration = ParseDeclarationBlock(
+      "background-image:-internal-light-dark(none, url(dummy.png))",
+      kUASheetMode);
+  auto* dark_declaration = ParseDeclarationBlock("color-scheme:dark");
+  auto* light_declaration = ParseDeclarationBlock("color-scheme:light");
+
+  EXPECT_FALSE(style->HasNonInheritedLightDarkValue());
+
+  StyleCascade cascade1(state);
+  cascade1.MutableMatchResult().AddMatchedProperties(bgimage_declaration);
+  cascade1.MutableMatchResult().AddMatchedProperties(dark_declaration);
+  cascade1.Apply();
+  EXPECT_TRUE(style->HasBackgroundImage());
+  EXPECT_TRUE(style->HasNonInheritedLightDarkValue());
+
+  style = ComputedStyle::Create();
+  state.SetStyle(style);
+
+  StyleCascade cascade2(state);
+  cascade2.MutableMatchResult().AddMatchedProperties(bgimage_declaration);
+  cascade2.MutableMatchResult().AddMatchedProperties(light_declaration);
+  cascade2.Apply();
+  EXPECT_FALSE(style->HasBackgroundImage());
+  EXPECT_TRUE(style->HasNonInheritedLightDarkValue());
+}
+
 TEST(ComputedStyleTest, StrokeWidthZoomAndCalc) {
   std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);

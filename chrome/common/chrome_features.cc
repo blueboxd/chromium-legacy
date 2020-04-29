@@ -672,6 +672,11 @@ const base::Feature kTreatUnsafeDownloadsAsActive{
 const base::Feature kHeavyAdIntervention{"HeavyAdIntervention",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables reporting on the intervention that unloads ad iframes
+// with intensive resource usage.
+const base::Feature kHeavyAdInterventionWarning{
+    "HeavyAdInterventionWarning", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables or disables the privacy mitigations for the heavy ad intervention.
 // This throttles the amount of interventions that can occur on a given host in
 // a time period. It also adds noise to the thresholds used. This is separate

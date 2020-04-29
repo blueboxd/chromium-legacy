@@ -8,6 +8,25 @@ mojom("mojom") {
   sources = [ "image.mojom" ]
 
   public_deps = [ "//skia/public/mojom" ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.ImageSkia"
+          cpp = "::gfx::ImageSkia"
+          nullable_is_same_type = true
+        },
+        {
+          mojom = "gfx.mojom.ImageSkiaRep"
+          cpp = "::gfx::ImageSkiaRep"
+          nullable_is_same_type = true
+        },
+      ]
+      traits_headers = [ "image_skia_mojom_traits.h" ]
+      traits_public_deps = [ ":mojom_traits" ]
+    },
+  ]
 }
 
 source_set("mojom_traits") {

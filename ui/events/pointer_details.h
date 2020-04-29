@@ -45,7 +45,7 @@ struct EVENTS_BASE_EXPORT PointerDetails {
   bool operator==(const PointerDetails& other) const;
 
   // The type of pointer device.
-  EventPointerType pointer_type = EventPointerType::POINTER_TYPE_UNKNOWN;
+  EventPointerType pointer_type = EventPointerType::kUnknown;
 
   // Radius of the X (major) axis of the touch ellipse. 0.0 if unknown.
   float radius_x = 0.0;

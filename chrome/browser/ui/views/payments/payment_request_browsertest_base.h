@@ -217,6 +217,9 @@ class PaymentRequestBrowserTestBase
                            const DialogEvent& dialog_event,
                            PaymentRequestDialogView* dialog_view);
 
+  // Returns whether a given view is visible in the current dialog.
+  bool IsViewVisible(DialogViewID view_id) const;
+
   // Getting/setting the |value| in the textfield of a given |type|.
   base::string16 GetEditorTextfieldValue(autofill::ServerFieldType type);
   void SetEditorTextfieldValue(const base::string16& value,

@@ -14,6 +14,7 @@ import "third_party/blink/public/mojom/input/input_event.mojom";
 import "third_party/blink/public/mojom/input/input_event_result.mojom";
 import "third_party/blink/public/mojom/input/pointer_lock_result.mojom";
 import "third_party/blink/public/mojom/input/touch_event.mojom";
+import "third_party/blink/public/mojom/input/pointer_lock_context.mojom";
 import "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom";
 import "ui/base/ime/mojom/ime_types.mojom";
 import "ui/events/mojom/event.mojom";
@@ -51,7 +52,7 @@ struct PointerData {
   float tangential_pressure;
   int32 twist;
   blink.mojom.Button button;
-  PointerType pointer_type;
+  ui.mojom.EventPointerType pointer_type;
   int32 movement_x;
   int32 movement_y;
   bool is_raw_movement_event;
@@ -126,7 +127,7 @@ struct GestureData {
   gfx.mojom.PointF widget_position;
   blink.mojom.GestureDevice source_device;
   bool is_source_touch_event_set_non_blocking;
-  PointerType primary_pointer_type;
+  ui.mojom.EventPointerType primary_pointer_type;
   int32 unique_touch_event_id;
   gfx.mojom.Size? contact_size;
   ScrollData? scroll_data;
@@ -211,23 +212,15 @@ interface WidgetInputHandlerHost {
   // |unadjusted_movement| indicates whether the request asked for raw mouse
   // movement data or just what the operating system returns (often accelerated
   // mouse movement).
-  // TODO(jameshollyer-https://crbug.com/1056036): Add a context to this call
-  // so that both sides have a shared state telling them if the mouse is
-  // locked.
+  // |result| kSuccess if the mouse has been locked or the appropriate error
+  // reason if not.
+  // |context| is one end of a mojo pipe that will stay connected as long as
+  // the mouse is locked. Is a NullRemote if |result| is not kSuccess.
   RequestMouseLock(bool from_user_gesture,
                    bool privileged,
                    bool unadjusted_movement)
-                      => (blink.mojom.PointerLockResult result);
-
-  // A request to change the current mouse lock to have the given unadjusted
-  // movement.
-  RequestMouseLockChange(bool unadjusted_movement)
-                          => (blink.mojom.PointerLockResult result);
-
-  // Unlocks the mouse back to its default behavior. This will also returns
-  // mouse movement back to the platform's adjusted movement if unadjusted
-  // movement was true while locking.
-  UnlockMouse();
+      => (blink.mojom.PointerLockResult result,
+          pending_remote<blink.mojom.PointerLockContext>? context);
 };
 
 // Interface exposed by the renderer to the browser. This class represents
@@ -239,9 +232,6 @@ interface WidgetInputHandler {
 
   // Tells widget mouse capture has been lost.
   MouseCaptureLost();
-
-  // Tells the render side that the mouse has been unlocked.
-  MouseLockLost();
 
   // This message notifies the renderer that the next key event is bound to one
   // or more pre-defined edit commands. If the next key event is not handled

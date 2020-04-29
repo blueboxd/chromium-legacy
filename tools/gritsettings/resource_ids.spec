@@ -194,6 +194,9 @@
   "chrome/browser/supervised_user/supervised_user_unscaled_resources.grd": {
     "includes": [1930],
   },
+  "chrome/browser/test_dummy/internal/android/resources/resources.grd": {
+    "includes": [1940],
+  },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
     "includes": [1950],
   },
@@ -254,12 +257,9 @@
   # END chrome/ WebUI resources section
 
   # START chrome/ miscellaneous section.
-  "chrome/android/features/test_dummy/internal/resources/resources.grd": {
+  "chrome/common/common_resources.grd": {
     # Big alignment at start of section.
     "META": {"align": 100},
-    "includes": [2300],
-  },
-  "chrome/common/common_resources.grd": {
     "includes": [2320],
   },
   "chrome/credential_provider/gaiacp/gaia_resources.grd": {

@@ -380,12 +380,6 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
         invalidateSelf();
     }
 
-    @Override
-    public void onUpdateViewportSize() {
-        askForTouchableAreaUpdate();
-        invalidateSelf();
-    }
-
     private void askForTouchableAreaUpdate() {
         if (mDelegate != null) {
             mDelegate.updateTouchableArea();

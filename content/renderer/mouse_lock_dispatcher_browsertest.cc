@@ -8,6 +8,7 @@
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
@@ -23,6 +24,13 @@ class MockLockTarget : public MouseLockDispatcher::LockTarget {
    MOCK_METHOD0(OnMouseLockLost, void());
    MOCK_METHOD1(HandleMouseLockedInputEvent,
                 bool(const blink::WebMouseEvent&));
+};
+
+class PointerLockContextImpl : public blink::mojom::PointerLockContext {
+ public:
+  void RequestMouseLockChange(
+      bool unadjusted_movement,
+      PointerLockContext::RequestMouseLockChangeCallback response) override {}
 };
 
 // MouseLockDispatcher is a RenderViewObserver, and we test it by creating a
@@ -66,19 +74,27 @@ TEST_F(MouseLockDispatcherTest, BasicWebWidget) {
   EXPECT_TRUE(widget()->RequestPointerLock(
       view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
+
+  mojo::PendingRemote<blink::mojom::PointerLockContext> remote_context;
+  auto receiver_context = mojo::MakeSelfOwnedReceiver(
+      std::make_unique<PointerLockContextImpl>(),
+      remote_context.InitWithNewPipeAndPassReceiver());
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess,
+                               std::move(remote_context));
   EXPECT_TRUE(widget()->IsPointerLocked());
 
   // Unlock.
   widget()->RequestPointerUnlock();
-  widget()->PointerLockLost();
+  receiver_context->Close();
+  dispatcher()->FlushContextPipeForTesting();
   EXPECT_FALSE(widget()->IsPointerLocked());
 
   // Attempt a lock, and have it fail.
   EXPECT_TRUE(widget()->RequestPointerLock(
       view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kUnknownError);
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kUnknownError,
+                               mojo::NullRemote());
   EXPECT_FALSE(widget()->IsPointerLocked());
 }
 
@@ -98,22 +114,28 @@ TEST_F(MouseLockDispatcherTest, BasicMockLockTarget) {
   EXPECT_TRUE(dispatcher()->LockMouse(
       target_, view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
+  mojo::PendingRemote<blink::mojom::PointerLockContext> remote_context;
+  auto receiver_context = mojo::MakeSelfOwnedReceiver(
+      std::make_unique<PointerLockContextImpl>(),
+      remote_context.InitWithNewPipeAndPassReceiver());
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess,
+                               std::move(remote_context));
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Receive mouse event.
   dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());
 
   // Unlock.
-  dispatcher()->UnlockMouse(target_);
-  widget()->PointerLockLost();
+  receiver_context->Close();
+  dispatcher()->FlushContextPipeForTesting();
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 
   // Attempt a lock, and have it fail.
   EXPECT_TRUE(dispatcher()->LockMouse(
       target_, view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kUnknownError);
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kUnknownError,
+                               mojo::NullRemote());
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 }
 
@@ -122,22 +144,28 @@ TEST_F(MouseLockDispatcherTest, DeleteAndUnlock) {
   ::testing::InSequence expect_calls_in_sequence;
   EXPECT_CALL(*target_, OnLockMouseACK(/*succeeded=*/true));
   EXPECT_CALL(*target_, HandleMouseLockedInputEvent(_)).Times(0);
-  EXPECT_CALL(*target_, OnMouseLockLost()).Times(0);
+  EXPECT_CALL(*target_, OnMouseLockLost()).Times(1);
 
   // Lock.
   EXPECT_TRUE(dispatcher()->LockMouse(
       target_, view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
+  mojo::PendingRemote<blink::mojom::PointerLockContext> remote_context;
+  auto receiver_context = mojo::MakeSelfOwnedReceiver(
+      std::make_unique<PointerLockContextImpl>(),
+      remote_context.InitWithNewPipeAndPassReceiver());
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess,
+                               std::move(remote_context));
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
-  // Unlock, with a deleted target.
-  // Don't receive mouse events or lock lost.
+  // Unlock, with a deleted target and context destruction.
+  // Don't receive mouse events.
   dispatcher()->OnLockTargetDestroyed(target_);
   delete target_;
   target_ = nullptr;
   dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());
-  widget()->PointerLockLost();
+  receiver_context->Close();
+  dispatcher()->FlushContextPipeForTesting();
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 }
 
@@ -158,7 +186,9 @@ TEST_F(MouseLockDispatcherTest, DeleteWithPendingLockSuccess) {
   target_ = nullptr;
 
   // Lock response.
-  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
+  mojo::PendingRemote<blink::mojom::PointerLockContext> context;
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess,
+                               std::move(context));
 }
 
 // Test deleting a target that is pending a lock request failure response.
@@ -178,7 +208,8 @@ TEST_F(MouseLockDispatcherTest, DeleteWithPendingLockFail) {
   target_ = nullptr;
 
   // Lock response.
-  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kUnknownError);
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kUnknownError,
+                               mojo::NullRemote());
 }
 
 // Test not receiving mouse events when a target is not locked.
@@ -197,15 +228,20 @@ TEST_F(MouseLockDispatcherTest, MouseEventsNotReceived) {
   EXPECT_TRUE(dispatcher()->LockMouse(
       target_, view()->GetMainRenderFrame()->GetWebFrame(), base::DoNothing(),
       false /* unadjusted_movement */));
-  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
+  mojo::PendingRemote<blink::mojom::PointerLockContext> remote_context;
+  auto receiver_context = mojo::MakeSelfOwnedReceiver(
+      std::make_unique<PointerLockContextImpl>(),
+      remote_context.InitWithNewPipeAndPassReceiver());
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess,
+                               std::move(remote_context));
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Receive mouse event.
   dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());
 
   // Unlock.
-  dispatcher()->UnlockMouse(target_);
-  widget()->PointerLockLost();
+  receiver_context->Close();
+  dispatcher()->FlushContextPipeForTesting();
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 
   // (Don't) receive mouse event.
@@ -234,7 +270,14 @@ TEST_F(MouseLockDispatcherTest, MultipleTargets) {
       base::DoNothing(), false /* unadjusted_movement */));
 
   // Lock completion for target.
-  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess);
+
+  mojo::PendingRemote<blink::mojom::PointerLockContext> remote_context;
+  auto receiver_context = mojo::MakeSelfOwnedReceiver(
+      std::make_unique<PointerLockContextImpl>(),
+      remote_context.InitWithNewPipeAndPassReceiver());
+
+  dispatcher()->OnLockMouseACK(blink::mojom::PointerLockResult::kSuccess,
+                               std::move(remote_context));
   EXPECT_TRUE(dispatcher()->IsMouseLockedTo(target_));
 
   // Fail attempt to lock alternate.
@@ -252,9 +295,10 @@ TEST_F(MouseLockDispatcherTest, MultipleTargets) {
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(alternate_target_));
 
   // Though the call to UnlockMouse should not unlock any target, we will
-  // cause an unlock (as if e.g. user escaped mouse lock) and verify the
-  // correct target is unlocked.
-  widget()->PointerLockLost();
+  // cause an unlock by disconnecting the pipe (e.g. user escaped
+  // mouse lock) and verify the correct target is unlocked.
+  receiver_context->Close();
+  dispatcher()->FlushContextPipeForTesting();
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 }
 

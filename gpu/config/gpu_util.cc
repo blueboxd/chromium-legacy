@@ -681,6 +681,8 @@ void SetKeysForCrashLogging(const GPUInfo& gpu_info) {
   crash_keys::gpu_driver_version.Set(active_gpu.driver_version);
   crash_keys::gpu_pixel_shader_version.Set(gpu_info.pixel_shader_version);
   crash_keys::gpu_vertex_shader_version.Set(gpu_info.vertex_shader_version);
+  crash_keys::gpu_generation_intel.Set(
+      base::StringPrintf("%d", GetIntelGpuGeneration(gpu_info)));
 #if defined(OS_MACOSX)
   crash_keys::gpu_gl_version.Set(gpu_info.gl_version);
 #elif defined(OS_POSIX)

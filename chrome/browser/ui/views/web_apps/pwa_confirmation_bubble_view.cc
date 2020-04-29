@@ -86,6 +86,11 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
       web_app_info_(std::move(web_app_info)),
       callback_(std::move(callback)) {
   DCHECK(web_app_info_);
+
+  WidgetDelegate::SetShowCloseButton(true);
+  WidgetDelegate::SetWindowTitle(
+      l10n_util::GetStringUTF16(IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE));
+
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_INSTALL_PWA_BUTTON_LABEL));
@@ -125,15 +130,6 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
 }
 
 PWAConfirmationBubbleView::~PWAConfirmationBubbleView() = default;
-
-bool PWAConfirmationBubbleView::ShouldShowCloseButton() const {
-  return true;
-}
-
-base::string16 PWAConfirmationBubbleView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE);
-}
 
 views::View* PWAConfirmationBubbleView::GetInitiallyFocusedView() {
   return nullptr;

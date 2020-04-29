@@ -31,7 +31,7 @@ destination_settings_test.TestNames = {
   ResetDestinationOnSignOut: 'reset destination on sign out',
   DisabledSaveAsPdf: 'disabled save as pdf',
   NoDestinations: 'no destinations',
-  EulaIsDisplayed: 'eula is displayed'
+  EulaIsRetrieved: 'eula is retrieved'
 };
 
 suite(destination_settings_test.suiteName, function() {
@@ -100,17 +100,17 @@ suite(destination_settings_test.suiteName, function() {
       function() {
         const dropdown = destinationSettings.$.destinationSelect;
         // Initial state: No destination store means that there is no
-        // destination yet, so the dropdown is hidden.
-        assertTrue(dropdown.hidden);
+        // destination yet.
+        assertFalse(dropdown.loaded);
         destinationSettings.cloudPrintInterface = cloudPrintInterface;
 
         // Set up the destination store, but no destination yet. Dropdown is
-        // still hidden.
+        // still not loaded.
         destinationSettings.init(
             'FooDevice' /* printerName */, false /* pdfPrinterDisabled */,
             '' /* serializedDefaultDestinationSelectionRulesStr */,
             [] /* userAccounts */, true /* syncAvailable */);
-        assertTrue(dropdown.hidden);
+        assertFalse(dropdown.loaded);
 
         return eventToPromise(
                    DestinationStore.EventType
@@ -122,7 +122,7 @@ suite(destination_settings_test.suiteName, function() {
               // though |state| has not yet transitioned to READY. This is to
               // prevent brief losses of focus when the destination changes.
               assertFalse(dropdown.disabled);
-              assertFalse(dropdown.hidden);
+              assertTrue(dropdown.loaded);
               destinationSettings.state = State.READY;
               destinationSettings.disabled = false;
 
@@ -889,74 +889,72 @@ suite(destination_settings_test.suiteName, function() {
     });
   });
 
-  /**
-   * Tests that destinations with a EULA will display the EULA URL.
-   */
-  test(assert(destination_settings_test.TestNames.EulaIsDisplayed), function() {
-    // Recent destinations start out empty.
-    assertRecentDestinations([]);
+  if (isChromeOS) {
+    /**
+     * Tests that destinations with a EULA will fetch the EULA URL when
+     * selected.
+     */
+    test(
+        assert(destination_settings_test.TestNames.EulaIsRetrieved),
+        function() {
+          // Recent destinations start out empty.
+          assertRecentDestinations([]);
 
-    const expectedUrl = 'chrome://os-credits/eula';
+          const expectedUrl = 'chrome://os-credits/eula';
 
-    assertEquals(0, nativeLayer.getCallCount('getEulaUrl'));
-
-    initialize();
-
-    return nativeLayer.whenCalled('getEulaUrl')
-        .then(() => {
-          assertEquals(1, nativeLayer.getCallCount('getEulaUrl'));
-          nativeLayer.resetResolver('getEulaUrl');
-          // Assert that the EULA URL is hidden.
-          assertTrue(destinationSettings.$.destinationEulaWrapper.hidden);
-
-          // Add printers to the store.
-          destinationSettings.destinationStore_.startLoadAllDestinations();
-          return nativeLayer.whenCalled('getPrinters');
-        })
-        .then(() => {
-          nativeLayer.setEulaUrl('chrome://os-credits/eula');
-          // Simulate selecting a destination that has a EULA URL from the
-          // dialog.
-          selectDestination(destinations[0]);
-          return nativeLayer.whenCalled('getEulaUrl');
-        })
-        .then(() => {
-          assertEquals(1, nativeLayer.getCallCount('getEulaUrl'));
-          nativeLayer.resetResolver('getEulaUrl');
-          // Assert that the EULA URL is displayed.
-          assertFalse(destinationSettings.$.destinationEulaWrapper.hidden);
-          assertEquals(expectedUrl, destinationSettings.destination.eulaUrl);
-
-          nativeLayer.setEulaUrl('');
-          // Select a destination without a EULA URL.
-          selectDestination(destinations[1]);
-          return nativeLayer.whenCalled('getEulaUrl');
-        })
-        .then(() => {
-          assertEquals(1, nativeLayer.getCallCount('getEulaUrl'));
-          nativeLayer.resetResolver('getEulaUrl');
-          // Assert that switching to a destination without a EULA does
-          // not display the EULA URL.
-          assertTrue(destinationSettings.$.destinationEulaWrapper.hidden);
-          assertEquals('', destinationSettings.destination.eulaUrl);
-
-          // Reselect a destination with a EULA URL. This destination already
-          // had its EULA URL set, so expect that it still retains it.
-          // Since capabilities for this destination are already set, we don't
-          // try to fetch the license again.
-          nativeLayer.resetResolver('getPrinterCapabilities');
-          destinationSettings.$.destinationSelect.fire(
-              'selected-option-change', 'ID1/chrome_os/');
-        })
-        .then(() => {
-          assertEquals(0, nativeLayer.getCallCount('getPrinterCapabilities'));
           assertEquals(0, nativeLayer.getCallCount('getEulaUrl'));
-          assertRecentDestinations(['ID1', 'ID2', 'Save as PDF']);
 
-          // Assert that switching back to a destination with a EULA displays
-          // the EULA URL.
-          assertFalse(destinationSettings.$.destinationEulaWrapper.hidden);
-          assertEquals(expectedUrl, destinationSettings.destination.eulaUrl);
+          initialize();
+
+          return nativeLayer.whenCalled('getEulaUrl')
+              .then(() => {
+                assertEquals(1, nativeLayer.getCallCount('getEulaUrl'));
+                nativeLayer.resetResolver('getEulaUrl');
+
+                // Add printers to the store.
+                destinationSettings.destinationStore_
+                    .startLoadAllDestinations();
+                return nativeLayer.whenCalled('getPrinters');
+              })
+              .then(() => {
+                nativeLayer.setEulaUrl('chrome://os-credits/eula');
+                // Simulate selecting a destination that has a EULA URL from the
+                // dialog.
+                selectDestination(destinations[0]);
+                return nativeLayer.whenCalled('getEulaUrl');
+              })
+              .then(() => {
+                assertEquals(1, nativeLayer.getCallCount('getEulaUrl'));
+                nativeLayer.resetResolver('getEulaUrl');
+                assertEquals(
+                    expectedUrl, destinationSettings.destination.eulaUrl);
+
+                nativeLayer.setEulaUrl('');
+                // Select a destination without a EULA URL.
+                selectDestination(destinations[1]);
+                return nativeLayer.whenCalled('getEulaUrl');
+              })
+              .then(() => {
+                assertEquals(1, nativeLayer.getCallCount('getEulaUrl'));
+                nativeLayer.resetResolver('getEulaUrl');
+                assertEquals('', destinationSettings.destination.eulaUrl);
+
+                // Reselect a destination with a EULA URL. This destination
+                // already had its EULA URL set, so expect that it still retains
+                // it. Since capabilities for this destination are already set,
+                // we don't try to fetch the license again.
+                nativeLayer.resetResolver('getPrinterCapabilities');
+                destinationSettings.$.destinationSelect.fire(
+                    'selected-option-change', 'ID1/chrome_os/');
+              })
+              .then(() => {
+                assertEquals(
+                    0, nativeLayer.getCallCount('getPrinterCapabilities'));
+                assertEquals(0, nativeLayer.getCallCount('getEulaUrl'));
+                assertRecentDestinations(['ID1', 'ID2', 'Save as PDF']);
+                assertEquals(
+                    expectedUrl, destinationSettings.destination.eulaUrl);
+              });
         });
-  });
+  }
 });

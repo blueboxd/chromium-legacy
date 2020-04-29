@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -535,6 +536,8 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     // This test requires these callbacks to be fired on account
     // update/removal.
     identity_test_env()->EnableRemovalOfExtendedAccountInfo();
+
+    identity_test_env()->SetTestURLLoaderFactory(&test_url_loader_factory_);
   }
 
   void TearDownOnMainThread() override {
@@ -698,7 +701,6 @@ class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
     return api::identity::ProfileUserInfo::FromValue(*value);
   }
 
- private:
   scoped_refptr<const Extension> CreateExtensionWithEmailPermission() {
     return ExtensionBuilder("Test").AddPermission("identity.email").Build();
   }
@@ -720,6 +722,16 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest, SignedIn) {
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
+                       SignedInUnconsented) {
+  identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(
+      "test@example.com");
+  std::unique_ptr<api::identity::ProfileUserInfo> info =
+      RunGetProfileUserInfoWithEmail();
+  EXPECT_TRUE(info->email.empty());
+  EXPECT_TRUE(info->id.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
                        NotSignedInNoEmail) {
   std::unique_ptr<api::identity::ProfileUserInfo> info =
       RunGetProfileUserInfo();
@@ -734,6 +746,68 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
       RunGetProfileUserInfo();
   EXPECT_TRUE(info->email.empty());
   EXPECT_TRUE(info->id.empty());
+}
+
+class IdentityGetProfileUserInfoFunctionTestWithAccountStatusParam
+    : public IdentityGetProfileUserInfoFunctionTest,
+      public ::testing::WithParamInterface<std::string> {
+ protected:
+  std::unique_ptr<api::identity::ProfileUserInfo>
+  RunGetProfileUserInfoWithAccountStatus() {
+    scoped_refptr<IdentityGetProfileUserInfoFunction> func(
+        new IdentityGetProfileUserInfoFunction);
+    func->set_extension(CreateExtensionWithEmailPermission());
+    std::string args = base::StringPrintf(R"([{"accountStatus": "%s"}])",
+                                          account_status().c_str());
+    std::unique_ptr<base::Value> value(
+        utils::RunFunctionAndReturnSingleResult(func.get(), args, browser()));
+    return api::identity::ProfileUserInfo::FromValue(*value);
+  }
+
+  std::string account_status() { return GetParam(); }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    IdentityGetProfileUserInfoFunctionTestWithAccountStatusParam,
+    ::testing::Values("SYNC", "ANY"));
+
+IN_PROC_BROWSER_TEST_P(
+    IdentityGetProfileUserInfoFunctionTestWithAccountStatusParam,
+    NotSignedIn) {
+  std::unique_ptr<api::identity::ProfileUserInfo> info =
+      RunGetProfileUserInfoWithAccountStatus();
+  EXPECT_TRUE(info->email.empty());
+  EXPECT_TRUE(info->id.empty());
+}
+
+IN_PROC_BROWSER_TEST_P(
+    IdentityGetProfileUserInfoFunctionTestWithAccountStatusParam,
+    SignedIn) {
+  SignIn("test@example.com");
+  std::unique_ptr<api::identity::ProfileUserInfo> info =
+      RunGetProfileUserInfoWithAccountStatus();
+  EXPECT_EQ("test@example.com", info->email);
+  EXPECT_EQ("gaia_id_for_test_example.com", info->id);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    IdentityGetProfileUserInfoFunctionTestWithAccountStatusParam,
+    SignedInUnconsented) {
+  identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(
+      "test@example.com");
+  std::unique_ptr<api::identity::ProfileUserInfo> info =
+      RunGetProfileUserInfoWithAccountStatus();
+  // The unconsented (Sync off) primary account is returned conditionally,
+  // depending on the accountStatus parameter.
+  if (account_status() == "ANY") {
+    EXPECT_EQ("test@example.com", info->email);
+    EXPECT_EQ("gaia_id_for_test_example.com", info->id);
+  } else {
+    // accountStatus is SYNC or unspecified.
+    EXPECT_TRUE(info->email.empty());
+    EXPECT_TRUE(info->id.empty());
+  }
 }
 
 class GetAuthTokenFunctionTest

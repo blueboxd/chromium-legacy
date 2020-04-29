@@ -18,15 +18,19 @@ source_set("overlays") {
     "infobar_overlay_request_inserter.mm",
     "infobar_overlay_tab_helper.h",
     "infobar_overlay_tab_helper.mm",
+    "translate_infobar_placeholder_overlay_request_cancel_handler.h",
+    "translate_infobar_placeholder_overlay_request_cancel_handler.mm",
   ]
   public_deps = [ ":overlay_type" ]
   deps = [
     ":util",
     "//base",
     "//components/infobars/core",
+    "//components/translate/core/browser",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/common",
     "//ios/chrome/browser/overlays/public/common/infobars",
     "//ios/chrome/browser/overlays/public/infobar_banner",
     "//ios/chrome/browser/overlays/public/infobar_modal",
@@ -82,6 +86,7 @@ source_set("unit_tests") {
     "infobar_overlay_request_factory_impl_unittest.mm",
     "infobar_overlay_request_inserter_unittest.mm",
     "infobar_overlay_tab_helper_unittest.mm",
+    "translate_infobar_placeholder_overlay_request_cancel_handler_unittest.mm",
   ]
   deps = [
     ":overlays",
@@ -89,11 +94,15 @@ source_set("unit_tests") {
     ":util",
     "//base/test:test_support",
     "//components/password_manager/core/browser:test_support",
+    "//components/sync_preferences:test_support",
+    "//components/translate/core/browser",
+    "//components/translate/core/browser:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/infobars/test",
     "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/common",
     "//ios/chrome/browser/overlays/public/common/infobars",
     "//ios/chrome/browser/overlays/public/infobar_banner",
     "//ios/chrome/browser/overlays/public/infobar_modal",

@@ -278,6 +278,7 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
             mScrollRestorer.maybeRestoreScroll();
         }
         mAdapter.setShown(true);
+        mActionManager.onShow();
     }
 
     @Override
@@ -290,6 +291,7 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     public void onHide() {
         mAdapter.setShown(false);
         mContextMenuManager.dismissPopup();
+        mActionManager.onHide();
     }
 
     @Override
@@ -309,6 +311,7 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
         }
         mStreamOfflineMonitor.onDestroy();
         mUiSessionRequestLogger.onDestroy();
+        mActionManager.setViewport(null);
         mIsDestroyed = true;
     }
 
@@ -467,8 +470,8 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
             checkNotNull(mAdapter, "onCreate must be called before so that adapter is set.")
                     .rebind();
         }
-
         mContextMenuManager.dismissPopup();
+        mActionManager.onLayoutChange();
     }
 
     private void setupRecyclerView() {
@@ -496,11 +499,14 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
                     mStreamConfiguration.getPaddingBottom());
         }
 
-        mItemAnimator = new StreamItemAnimator(mStreamContentChangedListener);
+        mItemAnimator = new StreamItemAnimator(mStreamContentChangedListener, mActionManager);
         mItemAnimator.setStreamVisibility(mIsStreamContentVisible);
 
         mRecyclerView.setItemAnimator(mItemAnimator);
         mRecyclerView.addOnLayoutChangeListener(this);
+
+        mActionManager.setViewport(mRecyclerView);
+        addScrollListener(mActionManager.getScrollListener());
     }
 
     private void updateAdapterAfterSessionStart(ModelProvider modelProvider) {

@@ -65,8 +65,7 @@ struct COMPONENT_EXPORT(EVDEV) InProgressTouchEvdev {
   int tool_code = 0;
   float tilt_x = 0;
   float tilt_y = 0;
-  ui::EventPointerType reported_tool_type =
-      ui::EventPointerType::POINTER_TYPE_TOUCH;
+  ui::EventPointerType reported_tool_type = ui::EventPointerType::kTouch;
   bool stylus_button = false;
 };
 

@@ -5,6 +5,8 @@
 #ifndef CHROME_UPDATER_MAC_SETUP_INFO_PLIST_H_
 #define CHROME_UPDATER_MAC_SETUP_INFO_PLIST_H_
 
+#include <memory>
+
 #import "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 
@@ -19,14 +21,14 @@ namespace updater {
 // installs of the updater.
 class InfoPlist {
  public:
-  // If the file at info_plist_path can't be loaded, |this| will be invalid.
-  // The status can be obtained using the |Valid()| method.
-  explicit InfoPlist(const base::FilePath& info_plist_path);
+  // If the file at info_plist_path can't be loaded, returns a nullptr.
+  static std::unique_ptr<InfoPlist> Create(
+      const base::FilePath& info_plist_path);
   InfoPlist(const InfoPlist&) = delete;
   InfoPlist& operator=(const InfoPlist&) = delete;
   ~InfoPlist();
 
-  bool Valid();
+  base::scoped_nsobject<NSString> BundleVersion() const;
   base::FilePath UpdaterVersionedFolderPath(
       const base::FilePath& updater_folder_path) const;
 
@@ -43,9 +45,11 @@ class InfoPlist {
       const;
 
  private:
+  InfoPlist(base::scoped_nsobject<NSDictionary> info_plist_dictionary,
+            base::scoped_nsobject<NSString> bundle_version);
+
   const base::scoped_nsobject<NSDictionary> info_plist_;
   const std::string bundle_version_;
-  bool valid_;
 };
 
 }  // namespace updater

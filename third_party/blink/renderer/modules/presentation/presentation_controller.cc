@@ -19,9 +19,9 @@
 
 namespace blink {
 
-PresentationController::PresentationController(LocalFrame& frame)
-    : Supplement<LocalFrame>(frame),
-      presentation_controller_receiver_(this, frame.DomWindow()) {}
+PresentationController::PresentationController(LocalDOMWindow& window)
+    : Supplement<LocalDOMWindow>(window),
+      presentation_controller_receiver_(this, &window) {}
 
 PresentationController::~PresentationController() = default;
 
@@ -29,14 +29,14 @@ PresentationController::~PresentationController() = default;
 const char PresentationController::kSupplementName[] = "PresentationController";
 
 // static
-PresentationController* PresentationController::From(LocalFrame& frame) {
-  return Supplement<LocalFrame>::From<PresentationController>(frame);
-}
-
-// static
-void PresentationController::ProvideTo(LocalFrame& frame) {
-  Supplement<LocalFrame>::ProvideTo(
-      frame, MakeGarbageCollected<PresentationController>(frame));
+PresentationController* PresentationController::From(LocalDOMWindow& window) {
+  PresentationController* controller =
+      Supplement<LocalDOMWindow>::From<PresentationController>(window);
+  if (!controller) {
+    controller = MakeGarbageCollected<PresentationController>(window);
+    Supplement<LocalDOMWindow>::ProvideTo(window, controller);
+  }
+  return controller;
 }
 
 // static
@@ -44,8 +44,7 @@ PresentationController* PresentationController::FromContext(
     ExecutionContext* execution_context) {
   if (!execution_context || execution_context->IsContextDestroyed())
     return nullptr;
-  return PresentationController::From(
-      *To<LocalDOMWindow>(execution_context)->GetFrame());
+  return From(*To<LocalDOMWindow>(execution_context));
 }
 
 void PresentationController::Trace(Visitor* visitor) {
@@ -53,7 +52,7 @@ void PresentationController::Trace(Visitor* visitor) {
   visitor->Trace(presentation_);
   visitor->Trace(connections_);
   visitor->Trace(availability_state_);
-  Supplement<LocalFrame>::Trace(visitor);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 void PresentationController::SetPresentation(Presentation* presentation) {

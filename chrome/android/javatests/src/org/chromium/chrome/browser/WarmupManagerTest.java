@@ -19,12 +19,17 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
+import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
+import org.chromium.base.test.params.ParameterProvider;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -34,6 +39,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -41,8 +47,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Tests for {@link WarmupManager} */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 public class WarmupManagerTest {
+    /** Provides parameter for testPreconnect to run it with both regular and incognito profiles.*/
+    public static class IncognitoParamsForProfile implements ParameterProvider {
+        @Override
+        public Iterable<ParameterSet> getParameters() {
+            return Arrays.asList(new ParameterSet().value(true).name("IncognitoProfile"),
+                    new ParameterSet().value(false).name("RegularProfile"));
+        }
+    }
+
     @Rule
     public final RuleChain mChain =
             RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
@@ -206,10 +222,16 @@ public class WarmupManagerTest {
         Assert.assertTrue(mWarmupManager.hasViewHierarchyWithToolbar(layoutId));
     }
 
-    /** Tests that preconnects can be initiated from the Java side. */
+    /**
+     * Tests that pre-connects can be initiated from the Java side.
+     *
+     * @param isIncognito Boolean to use regular or incognito profile for pre-connect.
+     * @throws InterruptedException May come from tryAcquire method call.
+     */
     @Test
     @SmallTest
-    public void testPreconnect() throws Exception {
+    @UseMethodParameter(IncognitoParamsForProfile.class)
+    public void testPreconnect(boolean isIncognito) throws InterruptedException {
         EmbeddedTestServer server = new EmbeddedTestServer();
         try {
             // The predictor prepares 2 connections when asked to preconnect. Initializes the
@@ -230,12 +252,20 @@ public class WarmupManagerTest {
 
             final String url = server.getURL("/hello_world.html");
             PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                    () -> mWarmupManager.maybePreconnectUrlAndSubResources(
-                                    Profile.getLastUsedProfile(), url));
-            if (!connectionsSemaphore.tryAcquire(5, TimeUnit.SECONDS)) {
+                    ()
+                            -> mWarmupManager.maybePreconnectUrlAndSubResources(isIncognito
+                                            ? Profile.getLastUsedRegularProfile()
+                                                      .getOffTheRecordProfile()
+                                            : Profile.getLastUsedRegularProfile(),
+                                    url));
+            boolean isAcquired = connectionsSemaphore.tryAcquire(5, TimeUnit.SECONDS);
+            if (!isIncognito && !isAcquired) {
                 // Starts at -1.
                 int actualConnections = connectionsSemaphore.availablePermits() + 1;
-                Assert.fail("Expected 2 connections, got " + actualConnections);
+                Assert.fail("Pre-connect failed for regular profile: Expected 2 connections, got "
+                        + actualConnections);
+            } else if (isIncognito && isAcquired) {
+                Assert.fail("Pre-connect should fail for incognito profile.");
             }
         } finally {
             server.stopAndDestroyServer();

@@ -37,7 +37,6 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
 
   void SetFocus(bool focused) override;
   void MouseCaptureLost() override;
-  void MouseLockLost() override;
   void SetEditCommandsForNextKeyEvent(
       const std::vector<EditCommand>& commands) override;
   void CursorVisibilityChanged(bool visible) override;

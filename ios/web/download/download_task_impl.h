@@ -45,7 +45,7 @@ class DownloadTaskImpl : public DownloadTask {
 
   // Constructs a new DownloadTaskImpl objects. |web_state|, |identifier| and
   // |delegate| must be valid.
-  DownloadTaskImpl(const WebState* web_state,
+  DownloadTaskImpl(WebState* web_state,
                    const GURL& original_url,
                    NSString* http_method,
                    const std::string& content_disposition,
@@ -59,6 +59,7 @@ class DownloadTaskImpl : public DownloadTask {
   void ShutDown();
 
   // DownloadTask overrides:
+  WebState* GetWebState() override;
   DownloadTask::State GetState() const override;
   void Start(std::unique_ptr<net::URLFetcherResponseWriter> writer) override;
   void Cancel() override;
@@ -134,7 +135,7 @@ class DownloadTaskImpl : public DownloadTask {
   NSString* identifier_ = nil;
   bool has_performed_background_download_ = false;
 
-  const WebState* web_state_ = nullptr;
+  WebState* web_state_ = nullptr;
   Delegate* delegate_ = nullptr;
   NSURLSession* session_ = nil;
   NSURLSessionTask* session_task_ = nil;

@@ -78,7 +78,7 @@ bool MakeUITouchEventsFromWebTouchEvents(
       location = point.PositionInScreen();
     auto uievent = std::make_unique<ui::TouchEvent>(
         type, gfx::Point(), timestamp,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, point.id,
+        ui::PointerDetails(ui::EventPointerType::kTouch, point.id,
                            point.radius_x, point.radius_y, point.force,
                            point.rotation_angle),
         flags);

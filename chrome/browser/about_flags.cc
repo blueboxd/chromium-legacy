@@ -39,7 +39,7 @@
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
-#include "chrome/browser/performance_manager/graph/policies/policy_features.h"
+#include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
@@ -90,6 +90,7 @@
 #include "components/games/core/games_features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
+#include "components/lookalikes/core/features.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/network_session_configurator/common/network_features.h"
@@ -3908,6 +3909,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kTreatUnsafeDownloadsAsActive)},
 
+    {"detect-target-embedding-lookalikes",
+     flag_descriptions::kDetectTargetEmbeddingLookalikesName,
+     flag_descriptions::kDetectTargetEmbeddingLookalikesDescription,
+     kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         lookalikes::features::kDetectTargetEmbeddingLookalikes)},
+
 #if defined(OS_CHROMEOS)
     {"enable-play-store-search", flag_descriptions::kEnablePlayStoreSearchName,
      flag_descriptions::kEnablePlayStoreSearchDescription, kOsCrOS,
@@ -5412,6 +5420,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableGoogleIssuedCardName,
      flag_descriptions::kAutofillEnableGoogleIssuedCardDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableGoogleIssuedCard)},
+
+#if defined(TOOLKIT_VIEWS)
+    {"textfield-focus-on-tap-up", flag_descriptions::kTextfieldFocusOnTapUpName,
+     flag_descriptions::kTextfieldFocusOnTapUpDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(views::features::kTextfieldFocusOnTapUp)},
+#endif  // defined(TOOLKIT_VIEWS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

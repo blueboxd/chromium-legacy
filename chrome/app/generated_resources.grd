@@ -3251,8 +3251,8 @@ are declared in tools/grit/grit_rule.gni.
       </if>
 
       <!-- DevTools attached infobar -->
-      <message name="IDS_DEV_TOOLS_INFOBAR_LABEL" desc="Label displayed in an infobar when external debugger is attached to the browser">
-        "<ph name="CLIENT_NAME">$1<ex>Extension Foo</ex></ph>" is debugging this browser
+      <message name="IDS_DEV_TOOLS_INFOBAR_LABEL" desc="Label displayed in an infobar when external debugger is attached to the browser.  The label does not disappear until the user dismisses it, even if the debugger is detached, and so should not imply that the debugger must still be debugging the browser, only that it was, and could still be.">
+        "<ph name="CLIENT_NAME">$1<ex>Extension Foo</ex></ph>" started debugging this browser
       </message>
 
       <!-- DevTools file system access -->
@@ -6877,19 +6877,19 @@ the Bookmarks menu.">
 
       <!-- Share via QR code strings -->
       <if expr="not use_titlecase">
-        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE" desc="The label for the Generate QR code for this Page context menu item.">
-          Generate QR code for this page
+        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE" desc="The label for the Create QR code for this Page context menu item.">
+          Create QR code for this page
         </message>
-        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_IMAGE" desc="The label for the Generate QR code for this Image context menu item.">
-          Generate QR code for this image
+        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_IMAGE" desc="The label for the Create QR code for this Image context menu item.">
+          Create QR code for this image
         </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE" desc="The label for the Generate QR code for this Page context menu item.">
-          Generate QR code for this Page
+        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE" desc="The label for the Create QR code for this Page context menu item.">
+          Create QR code for this Page
         </message>
-        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_IMAGE" desc="The label for the Generate QR code for this Image context menu item.">
-          Generate QR code for this Image
+        <message name="IDS_CONTEXT_MENU_GENERATE_QR_CODE_IMAGE" desc="The label for the Create QR code for this Image context menu item.">
+          Create QR code for this Image
         </message>
       </if>
       <if expr="not is_android">
@@ -6897,7 +6897,7 @@ the Bookmarks menu.">
           QR code
         </message>
         <message name="IDS_OMNIBOX_QRCODE_GENERATOR_ICON_TOOLTIP" desc="Tooltip for the omnibox icon label for the QR code Generator">
-          Generate QR code for this Page
+          Create QR code for this Page
         </message>
       </if>
       <message name="IDS_BROWSER_SHARING_QR_CODE_DIALOG_TITLE"

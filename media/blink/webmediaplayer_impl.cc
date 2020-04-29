@@ -1788,6 +1788,9 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
   if (found_hls && mb_data_source_) {
     demuxer_found_hls_ = true;
 
+    if (observer_)
+      observer_->OnHlsManifestDetected();
+
     UMA_HISTOGRAM_BOOLEAN("Media.WebMediaPlayerImpl.HLS.IsCorsCrossOrigin",
                           mb_data_source_->IsCorsCrossOrigin());
     if (mb_data_source_->IsCorsCrossOrigin()) {
@@ -3232,7 +3235,7 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
       stats.audio_memory_usage + video_memory_usage + data_source_memory_usage +
       demuxer_memory_usage;
 
-  DVLOG(2) << "Memory Usage -- Total: " << current_memory_usage
+  DVLOG(3) << "Memory Usage -- Total: " << current_memory_usage
            << " Audio: " << stats.audio_memory_usage
            << ", Video: " << video_memory_usage
            << ", DataSource: " << data_source_memory_usage

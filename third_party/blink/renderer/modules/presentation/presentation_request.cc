@@ -136,16 +136,16 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  LocalFrame* frame = LocalDOMWindow::From(script_state)->GetFrame();
-  if (frame->GetSettings()->GetPresentationRequiresUserGesture() &&
-      !LocalFrame::HasTransientUserActivation(frame)) {
+  LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+  if (window->GetFrame()->GetSettings()->GetPresentationRequiresUserGesture() &&
+      !LocalFrame::HasTransientUserActivation(window->GetFrame())) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "PresentationRequest::start() requires user gesture.");
     return ScriptPromise();
   }
 
-  PresentationController* controller = PresentationController::From(*frame);
+  PresentationController* controller = PresentationController::From(*window);
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   controller->GetPresentationService()->StartPresentation(

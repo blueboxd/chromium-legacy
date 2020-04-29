@@ -170,6 +170,9 @@ class CastWebContents {
     // the underlying OnRendererProcessStarted() method.
     virtual void OnRenderProcessReady(const base::Process& process) {}
 
+    // Notify media playback state changes for the underlying WebContents.
+    virtual void MediaPlaybackChanged(bool media_playing) {}
+
     // Adds |this| to the ObserverList in the implementation of
     // |cast_web_contents|.
     void Observe(CastWebContents* cast_web_contents);

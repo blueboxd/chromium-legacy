@@ -20,4 +20,12 @@ public interface ActionUploadRequestManager {
      */
     void triggerUploadActions(Set<StreamUploadableAction> actions, ConsistencyToken token,
             Consumer<Result<ConsistencyToken>> consumer);
+
+    /**
+     * Issues a request to collect all pending actions (such as View actions) and record them.
+     *
+     * <p> The provided {@code consumer} will be executed on a background thread.
+     */
+    void triggerUploadAllActions(
+            ConsistencyToken token, Consumer<Result<ConsistencyToken>> consumer);
 }

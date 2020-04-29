@@ -157,6 +157,8 @@ class FeedStream : public FeedStreamApi,
   // Returns the time of the last content fetch.
   base::Time GetLastFetchTime();
 
+  bool HasSurfaceAttached() const;
+
   // Determines if we should attempt loading the stream or refreshing at all.
   // Returns |LoadStreamStatus::kNoStatus| if loading may be attempted.
   LoadStreamStatus ShouldAttemptLoad(bool model_loading = false);
@@ -166,11 +168,13 @@ class FeedStream : public FeedStreamApi,
   // Otherwise returns the reason.
   LoadStreamStatus ShouldMakeFeedQueryRequest(bool is_load_more = false);
 
-  // Loads |model|. Should be used for testing in place of typical model
-  // loading from network or storage.
-  void LoadModelForTesting(std::unique_ptr<StreamModel> model);
-  offline_pages::TaskQueue* GetTaskQueueForTesting();
-  void UnloadModelForTesting() { UnloadModel(); }
+  // Unloads the model. Surfaces are not updated, and will remain frozen until a
+  // model load is requested.
+  void UnloadModel();
+
+  // Triggers a stream load. The load will be aborted if |ShouldAttemptLoad()|
+  // is not true.
+  void TriggerStreamLoad();
 
   // Returns the model if it is loaded, or null otherwise.
   StreamModel* GetModel() { return model_.get(); }
@@ -183,11 +187,15 @@ class FeedStream : public FeedStreamApi,
     return wire_response_translator_;
   }
 
+  // Testing functionality.
+  offline_pages::TaskQueue* GetTaskQueueForTesting();
+  // Loads |model|. Should be used for testing in place of typical model
+  // loading from network or storage.
+  void LoadModelForTesting(std::unique_ptr<StreamModel> model);
   void SetWireResponseTranslatorForTesting(
       WireResponseTranslator* wire_response_translator) {
     wire_response_translator_ = wire_response_translator;
   }
-
   void SetIdleCallbackForTesting(base::RepeatingClosure idle_callback);
   void SetUserClassifierForTesting(
       std::unique_ptr<UserClassifier> user_classifier);
@@ -197,8 +205,6 @@ class FeedStream : public FeedStreamApi,
   // A single function task to delete stored feed data and force a refresh.
   // To only be called from within a |Task|.
   void ForceRefreshForDebuggingTask();
-  void TriggerStreamLoad();
-  void UnloadModel();
 
   void InitialStreamLoadComplete(LoadStreamTask::Result result);
   void LoadMoreComplete(LoadMoreTask::Result result);

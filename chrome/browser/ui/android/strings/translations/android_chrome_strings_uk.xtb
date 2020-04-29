@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
-<translation id="1006017844123154345">Відкрити в режимі онлайн</translation>
 <translation id="1028699632127661925">Надсилання на пристрій "<ph name="DEVICE_NAME" />"…</translation>
+<translation id="1036348656032585052">Вимкнути</translation>
 <translation id="1036727731225946849">Додається <ph name="WEBAPK_NAME" />…</translation>
 <translation id="1041308826830691739">З веб-сайтів</translation>
 <translation id="1049743911850919806">Анонімний перегляд</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">Головна сторінка Chrome</translation>
 <translation id="3157842584138209013">Перевірте обсяг збережених даних за допомогою кнопки "Більше опцій"</translation>
 <translation id="3166827708714933426">Комбінації клавіш для роботи з вкладками та вікнами</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3181954750937456830">Безпечний перегляд (захищає вас і ваш пристрій від небезпечних сайтів)</translation>
 <translation id="3205824638308738187">Майже готово.</translation>
 <translation id="3207960819495026254">Створено закладку</translation>
@@ -372,7 +373,6 @@
 <translation id="4116038641877404294">Завантажуйте сторінки, щоб переглядати їх офлайн</translation>
 <translation id="4135200667068010335">Список пристроїв, на які можна надіслати вкладку, закрито.</translation>
 <translation id="4149994727733219643">Спрощений перегляд веб-сторінок</translation>
-<translation id="4165986682804962316">Налаштування сайту</translation>
 <translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
 <translation id="4179980317383591987">Використано <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Мови</translation>
@@ -583,6 +583,7 @@
 <translation id="5853623416121554550">призупинено</translation>
 <translation id="5854790677617711513">Понад 30 днів тому</translation>
 <translation id="5858741533101922242">Chrome не може ввімкнути адаптер Bluetooth</translation>
+<translation id="5860491529813859533">Увімкнути</translation>
 <translation id="5862731021271217234">Щоб мати доступ до вкладок з інших пристроїв, увімкніть синхронізацію</translation>
 <translation id="5864174910718532887">Деталі: відсортовано за назвою сайту</translation>
 <translation id="5864419784173784555">Очікується інше завантаження…</translation>

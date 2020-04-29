@@ -3114,7 +3114,7 @@ class TabletModeOverviewSessionTest : public OverviewSessionTest {
         ui::ET_GESTURE_LONG_PRESS,
         gfx::ToRoundedPoint(item->target_bounds().CenterPoint()),
         base::TimeTicks::Now(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH));
+        ui::PointerDetails(ui::EventPointerType::kTouch));
     GetEventGenerator()->Dispatch(&long_press);
   }
 

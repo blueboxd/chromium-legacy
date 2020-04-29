@@ -1092,6 +1092,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
                         const base::string16& target_origin,
                         blink::TransferableMessage message);
 
+  // Requests to swap the current frame into the frame tree, replacing the
+  // RenderFrameProxy it is associated with.
+  void SwapIn();
+
   // Manual RTTI to ensure safe downcasts in tests.
   virtual bool IsTestRenderFrameHost() const;
 

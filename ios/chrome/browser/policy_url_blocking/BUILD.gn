@@ -11,14 +11,26 @@ source_set("policy_url_blocking") {
     "policy_url_blocking_tab_helper.mm",
   ]
   deps = [
+    ":util",
     "//base",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/policy/core/browser",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/net",
     "//ios/web",
+    "//net",
+  ]
+}
+
+source_set("util") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "policy_url_blocking_util.h",
+    "policy_url_blocking_util.mm",
+  ]
+  deps = [
+    "//ios/net",
     "//net",
   ]
 }

@@ -296,17 +296,22 @@ void RendererController::OnDataSourceInitialized(
   UpdateRemotePlaybackAvailabilityMonitoringState();
 }
 
+void RendererController::OnHlsManifestDetected() {
+#if defined(OS_ANDROID)
+  is_hls_ = true;
+  UpdateRemotePlaybackAvailabilityMonitoringState();
+#else
+  NOTREACHED();
+#endif
+}
+
 void RendererController::UpdateRemotePlaybackAvailabilityMonitoringState() {
 // Currently RemotePlayback-initated media remoting only supports URL flinging
 // thus the source is supported when the URL is either http or https, video and
 // audio codecs are supported by the remote playback device; HLS is playable by
 // Chrome on Android (which is not detected by the pipeline metadata atm).
 #if defined(OS_ANDROID)
-  // TODO(tguilbert): Detect the presence of HLS based on demuxing results,
-  // rather than the URL string. See crbug.com/663503.
-  const bool is_media_supported =
-      MediaCodecUtil::IsHLSURL(url_after_redirects_) ||
-      IsRemotePlaybackSupported();
+  const bool is_media_supported = is_hls_ || IsRemotePlaybackSupported();
 #else
   const bool is_media_supported = IsAudioOrVideoSupported();
 #endif

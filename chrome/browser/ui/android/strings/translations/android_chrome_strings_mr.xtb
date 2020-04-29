@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
-<translation id="1006017844123154345">ऑनलाइन उघडा</translation>
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> ला पाठवत आहे…</translation>
+<translation id="1036348656032585052">बंद करा</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> जोडत आहे…</translation>
 <translation id="1041308826830691739">वेबसाइटवरून</translation>
 <translation id="1049743911850919806">गुप्त</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">Chrome चे होम पेज</translation>
 <translation id="3157842584138209013">आणिखी पर्याय बटणावरून तुम्ही किती डेटा सेव्ह केला आहे ते पहा</translation>
 <translation id="3166827708714933426">टॅब आणि विंडो शॉर्टकट</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3181954750937456830">सुरक्षित ब्राउझिंग (तुम्हाला आणि तुमच्या डिव्हाइसना धोकादायक साइटपासून सुरक्षित ठेवते)</translation>
 <translation id="3205824638308738187">जवळजवळ पूर्ण झाले!</translation>
 <translation id="3207960819495026254">बुकमार्क केलेली</translation>
@@ -372,7 +373,6 @@
 <translation id="4116038641877404294">पेज ऑफलाइन वापरण्यासाठी ती डाउनलोड करा</translation>
 <translation id="4135200667068010335">बंद केलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="4149994727733219643">वेब पेजसाठी सोपा केलेला व्ह्यू</translation>
-<translation id="4165986682804962316">साइट सेटिंग्ज</translation>
 <translation id="4170011742729630528">सेवा उपलब्ध नाही; नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> वापरला</translation>
 <translation id="4181841719683918333">भाषा</translation>
@@ -583,6 +583,7 @@
 <translation id="5853623416121554550">थांबवले</translation>
 <translation id="5854790677617711513">30 दिवसांपेक्षा जुना</translation>
 <translation id="5858741533101922242">ब्लूटूथ अडॅप्टर सुरू करण्यात Chrome अक्षम आहे</translation>
+<translation id="5860491529813859533">चालू करा</translation>
 <translation id="5862731021271217234">तुमच्या इतर डिव्हाइसवरून तुमचे टॅब मिळवण्यासाठी, सिंक सुरू करा</translation>
 <translation id="5864174910718532887">तपशील: साइटच्या नावानुसार क्रमाने लावलेले</translation>
 <translation id="5864419784173784555">दुसर्‍या डाउनलोडची वाट पाहत आहे…</translation>

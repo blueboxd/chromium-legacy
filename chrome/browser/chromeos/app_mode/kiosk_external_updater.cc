@@ -262,8 +262,9 @@ void KioskExternalUpdater::ProcessParsedManifest(
       NOTREACHED();
     }
     update.external_crx = extensions::CRXFileInfo(
-        app_id, extensions::GetExternalVerifierFormat(),
-        external_update_path_.AppendASCII(external_crx_str));
+        external_update_path_.AppendASCII(external_crx_str),
+        extensions::GetExternalVerifierFormat());
+    update.external_crx.extension_id = app_id;
     update.update_status = PENDING;
     external_updates_[app_id] = update;
   }

@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
-<translation id="1006017844123154345">ఆన్‌లైన్‌లో తెరువు</translation>
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" />కు పంపుతోంది...</translation>
+<translation id="1036348656032585052">ఆఫ్ చేయి</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" />ని జోడిస్తోంది...</translation>
 <translation id="1041308826830691739">వెబ్‌సైట్‌ల నుండి</translation>
 <translation id="1049743911850919806">అజ్ఞాత మోడ్</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">Chrome హోమ్ పేజీ</translation>
 <translation id="3157842584138209013">'మరిన్ని ఎంపికలు' బటన్ నుండి మీరు ఎంత డేటాను సేవ్ చేసారో చూడండి</translation>
 <translation id="3166827708714933426">ట్యాబ్ మరియు విండో షార్ట్‌కట్‌లు</translation>
+<translation id="3169472444629675720">కనుగొను</translation>
 <translation id="3181954750937456830">సురక్షిత బ్రౌజింగ్ (ప్రమాదకరమైన సైట్‌ల నుండి మిమ్మల్ని, మీ పరికరాన్ని రక్షిస్తుంది)</translation>
 <translation id="3205824638308738187">దాదాపు పూర్తయింది!</translation>
 <translation id="3207960819495026254">బుక్‌మార్క్ చేయబడింది</translation>
@@ -372,7 +373,6 @@
 <translation id="4116038641877404294">పేజీలను ఆఫ్‌లైన్‌లో ఉపయోగించడం కోసం వాటిని డౌన్‌లోడ్ చేసుకోండి</translation>
 <translation id="4135200667068010335">ట్యాబ్‌ను షేర్ చేయాల్సిన పరికరాల జాబితా మూసివేయబడింది.</translation>
 <translation id="4149994727733219643">వెబ్ పేజీల కోసం సరళమైన వీక్షణ</translation>
-<translation id="4165986682804962316">సైట్ సెట్టింగ్‌లు</translation>
 <translation id="4170011742729630528">సేవ అందుబాటులో లేదు; తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> వినియోగించబడింది</translation>
 <translation id="4181841719683918333">భాషలు</translation>
@@ -583,6 +583,7 @@
 <translation id="5853623416121554550">పాజ్ చేయబడింది</translation>
 <translation id="5854790677617711513">30 రోజుల కన్నా పాతవి</translation>
 <translation id="5858741533101922242">Chrome బ్లూటూత్ అడాప్టర్‌ను ఆన్ చేయలేకపోయింది</translation>
+<translation id="5860491529813859533">ఆన్ చేయండి</translation>
 <translation id="5862731021271217234">మీ ఇతర పరికరాలలో ఉన్న మీ అన్ని ట్యాబ్‌లను పొందాలనుకుంటే, సమకాలీకరణ ఎంపికను ఆన్ చేయాలి</translation>
 <translation id="5864174910718532887">వివరాలు: సైట్ పేరుతో క్రమీకరించబడ్డాయి</translation>
 <translation id="5864419784173784555">మరొక డౌన్‌లోడ్ కోసం వేచి ఉంది…</translation>

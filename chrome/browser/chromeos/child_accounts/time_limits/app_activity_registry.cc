@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_notification_delegate.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_policy_helpers.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/persisted_app_info.h"
-#include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -71,16 +70,6 @@ enterprise_management::AppActivity::AppState AppStateForReporting(
     default:
       return enterprise_management::AppActivity::UNKNOWN;
   }
-}
-
-chromeos::app_time::AppId GetAndroidChromeAppId() {
-  return chromeos::app_time::AppId(apps::mojom::AppType::kArc,
-                                   "com.android.chrome");
-}
-
-bool IsWebAppOrExtension(const AppId& app_id) {
-  return app_id.app_type() == apps::mojom::AppType::kWeb ||
-         app_id.app_type() == apps::mojom::AppType::kExtension;
 }
 
 }  // namespace
@@ -521,11 +510,6 @@ bool AppActivityRegistry::SetAppLimit(
     const base::Optional<AppLimit>& app_limit) {
   DCHECK(base::Contains(activity_registry_, app_id));
 
-  // If app_id is a web app or a chrome app then we will have to check if web
-  // time limit is enabled.
-  if (!WebTimeLimitEnforcer::IsEnabled() && IsWebAppOrExtension(app_id))
-    return false;
-
   // If an application is not installed but present in the registry return
   // early.
   if (!IsAppInstalled(app_id))
@@ -545,8 +529,16 @@ bool AppActivityRegistry::SetAppLimit(
       ShowLimitUpdatedNotificationIfNeeded(app_id, details.limit, app_limit);
   details.limit = app_limit;
 
-  // Limit 'data' is the same - no action needed.
-  if (!did_change)
+  // If |did_change| is false, handle the following corner case before
+  // returning. The default value for app limit during construction at the
+  // beginning of the session is base::nullopt. If the application was paused in
+  // the previous session, and its limit was removed or feature is disabled in
+  // the current session, the |app_limit| provided will be base::nullopt. Since
+  // both values(the default app limit and the |app_limit| provided as an
+  // argument for this method) are the same base::nullopt, |did_change| will be
+  // false. But we still need to update the state to available as the new app
+  // limit is base::nullopt.
+  if (!did_change && (IsAppAvailable(app_id) || app_limit.has_value()))
     return updated;
 
   if (IsWhitelistedApp(app_id)) {

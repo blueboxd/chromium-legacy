@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
-<translation id="1006017844123154345">Открыть в Интернете</translation>
 <translation id="1028699632127661925">Отправка на устройство "<ph name="DEVICE_NAME" />"…</translation>
+<translation id="1036348656032585052">Отключить</translation>
 <translation id="1036727731225946849">Добавление файла "<ph name="WEBAPK_NAME" />"…</translation>
 <translation id="1041308826830691739">От сайтов</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">Главная страница Chrome</translation>
 <translation id="3157842584138209013">Чтобы узнать, сколько трафика вы сэкономили, нажмите кнопку "Ещё"</translation>
 <translation id="3166827708714933426">Работа с вкладками и окнами</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3181954750937456830">Безопасный просмотр (защищает вас и ваше устройство от опасных сайтов)</translation>
 <translation id="3205824638308738187">Почти готово!</translation>
 <translation id="3207960819495026254">Добавлено в закладки.</translation>
@@ -372,7 +373,6 @@
 <translation id="4116038641877404294">Скачивайте страницы и открывайте их без подключения к Интернету</translation>
 <translation id="4135200667068010335">Список устройств для отправки вкладки закрыт.</translation>
 <translation id="4149994727733219643">Упрощенный просмотр веб-страниц</translation>
-<translation id="4165986682804962316">Настройки сайтов</translation>
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
 <translation id="4179980317383591987">Использовано: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Языки</translation>
@@ -583,6 +583,7 @@
 <translation id="5853623416121554550">пауза</translation>
 <translation id="5854790677617711513">Сохраненные более 30 дней назад</translation>
 <translation id="5858741533101922242">Не удалось включить адаптер Bluetooth</translation>
+<translation id="5860491529813859533">Включить</translation>
 <translation id="5862731021271217234">Чтобы получить доступ к вкладкам на всех устройствах, включите синхронизацию.</translation>
 <translation id="5864174910718532887">Сортировка по названию сайта</translation>
 <translation id="5864419784173784555">Завершение предыдущего скачивания…</translation>

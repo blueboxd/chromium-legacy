@@ -344,8 +344,18 @@ void AppTimeController::TimeLimitsPolicyUpdated(const std::string& pref_name) {
     LOG(WARNING) << "Invalid PerAppTimeLimits policy.";
     return;
   }
-  bool updated =
-      app_registry_->UpdateAppLimits(policy::AppLimitsFromDict(*policy));
+  std::map<AppId, AppLimit> app_limits = policy::AppLimitsFromDict(*policy);
+
+  // If web time limit feature is not enabled, then remove chrome or android
+  // chrome's time limit from here.
+  if (!WebTimeLimitEnforcer::IsEnabled()) {
+    if (base::Contains(app_limits, GetChromeAppId()))
+      app_limits.erase(GetChromeAppId());
+    if (base::Contains(app_limits, GetAndroidChromeAppId()))
+      app_limits.erase(GetAndroidChromeAppId());
+  }
+
+  bool updated = app_registry_->UpdateAppLimits(app_limits);
 
   app_registry_->SetReportingEnabled(
       policy::ActivityReportingEnabledFromDict(*policy));
@@ -432,6 +442,9 @@ void AppTimeController::OnAppLimitRemoved(const AppId& app_id) {
 }
 
 void AppTimeController::OnAppInstalled(const AppId& app_id) {
+  if (!WebTimeLimitEnforcer::IsEnabled() && IsWebAppOrExtension(app_id))
+    return;
+
   const base::Value* whitelist_policy = pref_registrar_->prefs()->GetDictionary(
       prefs::kPerAppTimeLimitsWhitelistPolicy);
   if (whitelist_policy && whitelist_policy->is_dict()) {
@@ -450,6 +463,7 @@ void AppTimeController::OnAppInstalled(const AppId& app_id) {
     return;
   }
 
+  // Update the application's time limit.
   const std::map<AppId, AppLimit> limits = policy::AppLimitsFromDict(*policy);
   // Update the limit for newly installed app, if it exists.
   auto result = limits.find(app_id);

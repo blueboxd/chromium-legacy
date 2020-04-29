@@ -607,6 +607,10 @@
       status: "test",
     },
     {
+      name: "DelegatedInkTrails",
+      status: "test",
+    },
+    {
       name: "DesktopCaptureDisableLocalEchoControl",
       status: "experimental",
     },

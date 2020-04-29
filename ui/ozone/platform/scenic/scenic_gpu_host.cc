@@ -63,14 +63,6 @@ void ScenicGpuHost::AttachSurfaceToWindow(
   scenic_window->AttachSurfaceView(std::move(surface_view_holder_token));
 }
 
-void ScenicGpuHost::OnGpuProcessLaunched(
-    int host_id,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-    base::RepeatingCallback<void(IPC::Message*)> send_callback) {
-  NOTREACHED();
-}
-
 void ScenicGpuHost::OnChannelDestroyed(int host_id) {}
 
 void ScenicGpuHost::OnGpuServiceLaunched(
@@ -98,10 +90,6 @@ void ScenicGpuHost::OnGpuServiceLaunchedOnUI(
 
   gpu_service_.Bind(std::move(gpu_service));
   gpu_service_->Initialize(gpu_receiver_.BindNewPipeAndPassRemote());
-}
-
-void ScenicGpuHost::OnMessageReceived(const IPC::Message& message) {
-  NOTREACHED();
 }
 
 }  // namespace ui

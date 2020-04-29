@@ -74,6 +74,7 @@ source_set("unittests") {
   if (is_android) {
     sources += [
       "android/android_payment_app_finder_unittest.cc",
+      "android/android_payment_app_unittest.cc",
       "android/payment_app_service_bridge_unittest.cc",
       "android/payment_manifest_verifier_unittest.cc",
     ]

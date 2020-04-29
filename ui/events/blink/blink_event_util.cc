@@ -127,15 +127,15 @@ WebPointerProperties::PointerType ToWebPointerType(
 WebPointerProperties::PointerType ToWebPointerType(
     EventPointerType event_pointer_type) {
   switch (event_pointer_type) {
-    case EventPointerType::POINTER_TYPE_UNKNOWN:
+    case EventPointerType::kUnknown:
       return WebPointerProperties::PointerType::kUnknown;
-    case EventPointerType::POINTER_TYPE_MOUSE:
+    case EventPointerType::kMouse:
       return WebPointerProperties::PointerType::kMouse;
-    case EventPointerType::POINTER_TYPE_PEN:
+    case EventPointerType::kPen:
       return WebPointerProperties::PointerType::kPen;
-    case EventPointerType::POINTER_TYPE_TOUCH:
+    case EventPointerType::kTouch:
       return WebPointerProperties::PointerType::kTouch;
-    case EventPointerType::POINTER_TYPE_ERASER:
+    case EventPointerType::kEraser:
       return WebPointerProperties::PointerType::kEraser;
     default:
       NOTREACHED() << "Invalid EventPointerType = "
@@ -1225,18 +1225,18 @@ EventPointerType WebPointerTypeToEventPointerType(
     WebPointerProperties::PointerType type) {
   switch (type) {
     case WebPointerProperties::PointerType::kMouse:
-      return EventPointerType::POINTER_TYPE_MOUSE;
+      return EventPointerType::kMouse;
     case WebPointerProperties::PointerType::kPen:
-      return EventPointerType::POINTER_TYPE_PEN;
+      return EventPointerType::kPen;
     case WebPointerProperties::PointerType::kEraser:
-      return EventPointerType::POINTER_TYPE_ERASER;
+      return EventPointerType::kEraser;
     case WebPointerProperties::PointerType::kTouch:
-      return EventPointerType::POINTER_TYPE_TOUCH;
+      return EventPointerType::kTouch;
     case WebPointerProperties::PointerType::kUnknown:
-      return EventPointerType::POINTER_TYPE_UNKNOWN;
+      return EventPointerType::kUnknown;
   }
   NOTREACHED() << "Invalid pointer type";
-  return EventPointerType::POINTER_TYPE_UNKNOWN;
+  return EventPointerType::kUnknown;
 }
 
 blink::WebGestureEvent ScrollBeginFromScrollUpdate(

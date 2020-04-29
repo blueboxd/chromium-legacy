@@ -739,7 +739,7 @@ EventPointerType GetTouchPointerTypeFromXEvent(const XEvent& xev) {
 
 PointerDetails GetTouchPointerDetailsFromXEvent(const XEvent& xev) {
   return PointerDetails(
-      EventPointerType::POINTER_TYPE_TOUCH, GetTouchIdFromXEvent(xev),
+      EventPointerType::kTouch, GetTouchIdFromXEvent(xev),
       GetTouchRadiusXFromXEvent(xev), GetTouchRadiusYFromXEvent(xev),
       GetTouchForceFromXEvent(xev), GetTouchAngleFromXEvent(xev));
 }

@@ -596,10 +596,6 @@ mojom("mojo_bindings") {
           cpp = "::net::NetworkChangeNotifier::ConnectionType"
         },
         {
-          mojom = "content.mojom.PointerType"
-          cpp = "::blink::WebPointerProperties::PointerType"
-        },
-        {
           mojom = "content.mojom.ScrollGranularity"
           cpp = "::ui::ScrollGranularity"
         },

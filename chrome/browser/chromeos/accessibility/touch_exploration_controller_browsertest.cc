@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, MAYBE_NoRewritingEventsWhenOff) {
   base::TimeTicks initial_time = Now();
   ui::TouchEvent initial_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(99, 200), initial_time,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   generator.Dispatch(&initial_press);
 
   // Since the touch exploration controller doesn't know if the user is
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, MAYBE_NoRewritingEventsWhenOff) {
       ui::ET_TOUCH_MOVED, gfx::Point(100, 200),
       initial_time + gesture_detector_config_.double_tap_timeout +
           base::TimeDelta::FromMilliseconds(1),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   generator.Dispatch(&touch_time_advance);
 
   EXPECT_EQ(0, event_handler_->num_mouse_events());
@@ -112,13 +112,13 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, MAYBE_NoRewritingEventsWhenOff) {
   initial_time = Now();
   ui::TouchEvent second_initial_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(499, 600), initial_time,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 2));
   generator.Dispatch(&second_initial_press);
   ui::TouchEvent second_touch_time_advance(
       ui::ET_TOUCH_MOVED, gfx::Point(500, 600),
       initial_time + gesture_detector_config_.double_tap_timeout +
           base::TimeDelta::FromMilliseconds(1),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 2));
   generator.Dispatch(&second_touch_time_advance);
   EXPECT_EQ(0, event_handler_->num_mouse_events());
   EXPECT_EQ(2, event_handler_->num_touch_events());
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, DISABLED_RewritesEventsWhenOn) {
   base::TimeTicks initial_time = Now();
   ui::TouchEvent initial_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), initial_time,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   generator.Dispatch(&initial_press);
 
   // Since the touch exploration controller doesn't know if the user is
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, DISABLED_RewritesEventsWhenOn) {
       ui::ET_TOUCH_MOVED, gfx::Point(100, 200),
       initial_time + gesture_detector_config_.double_tap_timeout +
           base::TimeDelta::FromMilliseconds(1),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   generator.Dispatch(&touch_time_advance);
 
   // Number of mouse events may be greater than 1 because of ET_MOUSE_ENTERED.
@@ -157,13 +157,13 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, DISABLED_RewritesEventsWhenOn) {
   initial_time = Now();
   ui::TouchEvent second_initial_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(500, 600), initial_time,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 2));
   generator.Dispatch(&second_initial_press);
   ui::TouchEvent second_touch_time_advance(
       ui::ET_TOUCH_MOVED, gfx::Point(500, 600),
       initial_time + gesture_detector_config_.double_tap_timeout +
           base::TimeDelta::FromMilliseconds(1),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 2));
   generator.Dispatch(&second_touch_time_advance);
   EXPECT_GT(event_handler_->num_mouse_events(), 0);
   EXPECT_EQ(1, event_handler_->num_touch_events());
@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, DISABLED_RewritesEventsWhenOn) {
       ui::ET_TOUCH_RELEASED, gfx::Point(500, 600),
       initial_time + gesture_detector_config_.double_tap_timeout +
           base::TimeDelta::FromMilliseconds(1),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 2));
   generator.Dispatch(&release_second_touch);
   EXPECT_GT(event_handler_->num_mouse_events(), 0);
   EXPECT_EQ(1, event_handler_->num_touch_events());
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, DISABLED_SplitTapExplore) {
   base::TimeTicks initial_time = Now();
   ui::TouchEvent initial_press(
       ui::ET_TOUCH_PRESSED, gfx::Point(100, 200), initial_time,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   generator.Dispatch(&initial_press);
   EXPECT_TRUE(cursor_client->IsMouseEventsEnabled());
   EXPECT_TRUE(cursor_client->IsCursorVisible());
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(TouchExplorationTest, DISABLED_SplitTapExplore) {
       ui::ET_TOUCH_MOVED, gfx::Point(100, 200),
       initial_time + gesture_detector_config_.double_tap_timeout +
           base::TimeDelta::FromMilliseconds(1),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   generator.Dispatch(&touch_time_advance);
   EXPECT_TRUE(cursor_client->IsMouseEventsEnabled());
   EXPECT_FALSE(cursor_client->IsCursorVisible());

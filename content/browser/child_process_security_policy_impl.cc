@@ -2143,15 +2143,14 @@ ChildProcessSecurityPolicyImpl::ParseIsolatedOrigins(
 // static
 std::string ChildProcessSecurityPolicyImpl::GetKilledProcessOriginLock(
     const SecurityState* security_state) {
-  std::string killed_process_origin_lock;
   if (!security_state)
     return "(child id not found)";
 
-  if (!security_state->GetBrowserOrResourceContext())
-    return "(context is null)";
-
-  if (security_state->origin_lock().is_empty())
-    return "(none)";
+  if (security_state->origin_lock().is_empty()) {
+    return security_state->GetBrowserOrResourceContext()
+               ? "(empty)"
+               : "(empty and null context)";
+  }
 
   return security_state->origin_lock().possibly_invalid_spec();
 }

@@ -28,11 +28,13 @@ import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest.HttpMethod;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpResponse;
 import org.chromium.chrome.browser.feed.library.common.Result;
+import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeMainThreadRunner;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeTaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeThreadUtils;
 import org.chromium.chrome.browser.feed.library.common.protoextensions.FeedExtensionRegistry;
 import org.chromium.chrome.browser.feed.library.common.testing.RequiredConsumer;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
+import org.chromium.chrome.browser.feed.library.testing.actionmanager.FakeViewActionManager;
 import org.chromium.chrome.browser.feed.library.testing.network.FakeNetworkClient;
 import org.chromium.chrome.browser.feed.library.testing.protocoladapter.FakeProtocolAdapter;
 import org.chromium.chrome.browser.feed.library.testing.store.FakeStore;
@@ -93,11 +95,12 @@ public class FeedActionUploadRequestManagerTest {
 
     private final Configuration mConfiguration = new Configuration.Builder().build();
     private final FakeClock mFakeClock = new FakeClock();
-
+    private FakeViewActionManager mFakeViewActionManager;
     private ExtensionRegistryLite mRegistry;
     private FakeNetworkClient mFakeNetworkClient;
     private FakeProtocolAdapter mFakeProtocolAdapter;
     private FakeStore mFakeStore;
+    private FakeMainThreadRunner mFakeMainThreadRunner = FakeMainThreadRunner.runTasksImmediately();
     private FakeTaskQueue mFakeTaskQueue;
     private FakeThreadUtils mFakeThreadUtils;
     private FeedActionUploadRequestManager mRequestManager;
@@ -114,6 +117,7 @@ public class FeedActionUploadRequestManagerTest {
         mFakeTaskQueue = new FakeTaskQueue(mFakeClock, mFakeThreadUtils);
         mFakeProtocolAdapter = new FakeProtocolAdapter();
         mFakeStore = new FakeStore(mConfiguration, mFakeThreadUtils, mFakeTaskQueue, mFakeClock);
+        mFakeViewActionManager = new FakeViewActionManager(mFakeStore);
         mConsumer = new RequiredConsumer<>(input -> { mFakeThreadUtils.checkNotMainThread(); });
 
         ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", VERSION_CODES.KITKAT);
@@ -406,6 +410,34 @@ public class FeedActionUploadRequestManagerTest {
                 .isEqualTo(SEMANTIC_PROPERTIES.getSemanticPropertiesData());
     }
 
+    @Test
+    public void testTriggerUploadAllActions() throws Exception {
+        Configuration configuration =
+                new Configuration.Builder()
+                        .put(ConfigKey.FEED_ACTION_SERVER_METHOD, HttpMethod.GET)
+                        .put(ConfigKey.FEED_ACTION_TTL_SECONDS, 1000L)
+                        .put(ConfigKey.FEED_ACTION_SERVER_MAX_SIZE_PER_REQUEST, 20L)
+                        .put(ConfigKey.FEED_ACTION_MAX_UPLOAD_ATTEMPTS, 1L)
+                        .put(ConfigKey.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST, 2L)
+                        .build();
+        mRequestManager = createRequestManager(configuration);
+
+        Set<StreamUploadableAction> actionSet = setOf(
+                StreamUploadableAction.newBuilder().setFeatureContentId(CONTENT_ID).build(),
+                StreamUploadableAction.newBuilder().setFeatureContentId(CONTENT_ID_2).build());
+        mFakeViewActionManager.mViewActions.addAll(actionSet);
+        mConsumer = new RequiredConsumer<>(input -> {
+            mFakeThreadUtils.checkNotMainThread();
+            assertThat(input.isSuccessful()).isTrue();
+            assertThat(input.getValue().toByteArray()).isEqualTo(TOKEN_3.toByteArray());
+        });
+        mFakeNetworkClient.addResponse(createHttpResponse(/* responseCode= */ 200, RESPONSE_1))
+                .addResponse(createHttpResponse(/* responseCode= */ 200, RESPONSE_2));
+        mRequestManager.triggerUploadAllActions(TOKEN_1, mConsumer);
+
+        assertThat(mConsumer.isCalled()).isTrue();
+    }
+
     private static void assertHttpRequestFormattedCorrectly(HttpRequest httpRequest) {
         assertThat(httpRequest.getBody()).hasLength(0);
         assertThat(httpRequest.getMethod()).isEqualTo(HttpMethod.GET);
@@ -440,9 +472,9 @@ public class FeedActionUploadRequestManagerTest {
     }
 
     private FeedActionUploadRequestManager createRequestManager(Configuration configuration) {
-        return new FeedActionUploadRequestManager(configuration, mFakeNetworkClient,
-                mFakeProtocolAdapter, new FeedExtensionRegistry(ArrayList::new), mFakeTaskQueue,
-                mFakeThreadUtils, mFakeStore, mFakeClock);
+        return new FeedActionUploadRequestManager(mFakeViewActionManager, configuration,
+                mFakeNetworkClient, mFakeProtocolAdapter, new FeedExtensionRegistry(ArrayList::new),
+                mFakeMainThreadRunner, mFakeTaskQueue, mFakeThreadUtils, mFakeStore, mFakeClock);
     }
 
     private static <T> Set<T> setOf(T... items) {

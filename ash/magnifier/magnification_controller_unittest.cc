@@ -120,10 +120,8 @@ class MagnificationControllerTest : public AshTestBase {
   // Performs a two-finger scroll gesture in the given |direction|.
   void PerformTwoFingersScrollGesture(ScrollDirection direction) {
     base::TimeTicks time = base::TimeTicks::Now();
-    ui::PointerDetails pointer_details1(
-        ui::EventPointerType::POINTER_TYPE_TOUCH, 0);
-    ui::PointerDetails pointer_details2(
-        ui::EventPointerType::POINTER_TYPE_TOUCH, 1);
+    ui::PointerDetails pointer_details1(ui::EventPointerType::kTouch, 0);
+    ui::PointerDetails pointer_details2(ui::EventPointerType::kTouch, 1);
 
     // The offset by which the two fingers will move according to the given
     // direction.
@@ -829,10 +827,8 @@ TEST_F(MagnificationControllerTest, PinchZoom) {
   ASSERT_EQ(2.0f, GetMagnificationController()->GetScale());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  ui::PointerDetails pointer_details1(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                                      0);
-  ui::PointerDetails pointer_details2(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                                      1);
+  ui::PointerDetails pointer_details1(ui::EventPointerType::kTouch, 0);
+  ui::PointerDetails pointer_details2(ui::EventPointerType::kTouch, 1);
 
   // Simulate pinch gesture.
   DispatchTouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(900, 10), time,
@@ -1009,10 +1005,8 @@ TEST_F(MagnificationControllerTest, ZoomsIntoCenter) {
             GetMagnificationController()->GetViewportRect().CenterPoint());
 
   base::TimeTicks time = base::TimeTicks::Now();
-  ui::PointerDetails pointer_details1(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                                      0);
-  ui::PointerDetails pointer_details2(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                                      1);
+  ui::PointerDetails pointer_details1(ui::EventPointerType::kTouch, 0);
+  ui::PointerDetails pointer_details2(ui::EventPointerType::kTouch, 1);
 
   // Simulate pinch gesture with keeping center of bounding box of touches at
   // (250, 250). Note that GestureProvider dispatches scroll gesture from this

@@ -3163,11 +3163,15 @@ PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
     if (const auto* document_element = document.documentElement()) {
       if (const auto* document_element_object =
               document_element->GetLayoutObject()) {
-        TransformationMatrix matrix;
-        document_element_object->GetTransformFromContainer(
-            box, PhysicalOffset(), matrix);
-        if (matrix.IsInvertible())
-          result.Unite(matrix.Inverse().MapRect(result));
+        const PropertyTreeState& document_element_state =
+            document_element_object->FirstFragment().LocalBorderBoxProperties();
+        const PropertyTreeState& view_contents_state =
+            box->FirstFragment().ContentsProperties();
+        IntRect result_in_view = result;
+        GeometryMapper::SourceToDestinationRect(
+            view_contents_state.Transform(), document_element_state.Transform(),
+            result_in_view);
+        result.Unite(result_in_view);
       }
     }
   }

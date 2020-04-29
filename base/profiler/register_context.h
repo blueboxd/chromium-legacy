@@ -101,7 +101,7 @@ inline uintptr_t& RegisterContextFramePointer(mcontext_t* context) {
 }
 
 inline uintptr_t& RegisterContextInstructionPointer(mcontext_t* context) {
-  return AsUintPtr(&context->arm_ip);
+  return AsUintPtr(&context->arm_pc);
 }
 
 #elif defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_64_BITS)

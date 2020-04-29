@@ -90,13 +90,17 @@ const gfx::Rect& StructTraits<viz::mojom::CopyOutputResultDataView,
 }
 
 // static
-const SkBitmap& StructTraits<viz::mojom::CopyOutputResultDataView,
-                             std::unique_ptr<viz::CopyOutputResult>>::
+base::Optional<SkBitmap> StructTraits<viz::mojom::CopyOutputResultDataView,
+                                      std::unique_ptr<viz::CopyOutputResult>>::
     bitmap(const std::unique_ptr<viz::CopyOutputResult>& result) {
-  // This will return a non-drawable bitmap if the result was not
-  // RGBA_BITMAP or if the result is empty.
+  if (result->format() != viz::CopyOutputResult::Format::RGBA_BITMAP)
+    return base::nullopt;
   return result->AsSkBitmap();
 }
+
+// static
+viz::mojom::CopyOutputResultDataView bitmap(
+    const std::unique_ptr<viz::CopyOutputResult>& result);
 
 // static
 base::Optional<gpu::Mailbox>
@@ -170,12 +174,16 @@ bool StructTraits<viz::mojom::CopyOutputResultDataView,
 
   switch (format) {
     case viz::CopyOutputResult::Format::RGBA_BITMAP: {
-      SkBitmap bitmap;
-      if (!data.ReadBitmap(&bitmap) || !bitmap.readyToDraw())
+      base::Optional<SkBitmap> bitmap_opt;
+      if (!data.ReadBitmap(&bitmap_opt))
+        return false;
+      if (!bitmap_opt)
+        return false;
+      if (!bitmap_opt->readyToDraw())
         return false;
 
       *out_p = std::make_unique<viz::CopyOutputSkBitmapResult>(
-          rect, std::move(bitmap));
+          rect, std::move(*bitmap_opt));
       return true;
     }
 

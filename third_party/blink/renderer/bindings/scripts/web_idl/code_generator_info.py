@@ -8,6 +8,7 @@ _CODE_GENERATOR_INFO_ATTRIBUTES = (
     'blink_headers',
     'defined_in_mixin',  # [LegacyTreatAsPartialInterface] makes this False
     'defined_in_partial',  # [LegacyTreatAsPartialInterface] makes this True
+    'for_testing',
     'is_active_script_wrappable',
     'is_legacy_unenumerable_named_properties',
     'property_implemented_as',

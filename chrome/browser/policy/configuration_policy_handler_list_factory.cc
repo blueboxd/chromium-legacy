@@ -1444,6 +1444,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
           key::kOnFileDownloadedEnterpriseConnector,
           enterprise_connectors::kOnFileDownloadedPref, chrome_schema));
+  handlers->AddHandler(
+      std::make_unique<
+          enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
+          key::kOnBulkDataEntryEnterpriseConnector,
+          enterprise_connectors::kOnBulkDataEntryPref, chrome_schema));
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

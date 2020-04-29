@@ -71,16 +71,16 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
 
   // Simulate a tap event.
   void Tap(const gfx::Point& tap_point) {
-    ui::TouchEvent press(
-        ui::ET_TOUCH_PRESSED, tap_point, simulated_clock_.NowTicks(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                           ui::kPointerIdUnknown));
+    ui::TouchEvent press(ui::ET_TOUCH_PRESSED, tap_point,
+                         simulated_clock_.NowTicks(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch,
+                                            ui::kPointerIdUnknown));
     generator_->Dispatch(&press);
     simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(kTapLengthMs));
-    ui::TouchEvent release(
-        ui::ET_TOUCH_RELEASED, tap_point, simulated_clock_.NowTicks(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                           ui::kPointerIdUnknown));
+    ui::TouchEvent release(ui::ET_TOUCH_RELEASED, tap_point,
+                           simulated_clock_.NowTicks(),
+                           ui::PointerDetails(ui::EventPointerType::kTouch,
+                                              ui::kPointerIdUnknown));
     generator_->Dispatch(&release);
   }
 

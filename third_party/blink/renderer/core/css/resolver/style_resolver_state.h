@@ -217,6 +217,13 @@ class CORE_EXPORT StyleResolverState {
 
   CSSParserMode GetParserMode() const;
 
+  // If the input CSSValue is a CSSLightDarkValuePair, return the light or dark
+  // CSSValue based on the UsedColorScheme. For all other values, just return a
+  // reference to the passed value. If the property is a non-inherited one, mark
+  // the ComputedStyle as having such a pair since that will make sure its not
+  // stored in the MatchedPropertiesCache.
+  const CSSValue& ResolveLightDarkPair(const CSSProperty&, const CSSValue&);
+
  private:
   enum class AnimatingElementType { kElement, kPseudoElement };
 

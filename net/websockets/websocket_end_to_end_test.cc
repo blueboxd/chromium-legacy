@@ -31,6 +31,7 @@
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/isolation_info.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -293,12 +294,14 @@ class WebSocketEndToEndTest : public TestWithTaskEnvironment {
     url::Origin origin = url::Origin::Create(GURL("http://localhost"));
     net::SiteForCookies site_for_cookies =
         net::SiteForCookies::FromOrigin(origin);
-    net::NetworkIsolationKey network_isolation_key(origin, origin);
+    IsolationInfo isolation_info = IsolationInfo::Create(
+        IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
+        SiteForCookies::FromOrigin(origin));
     event_interface_ = new ConnectTestingEventInterface();
     channel_ = std::make_unique<WebSocketChannel>(
         base::WrapUnique(event_interface_), &context_);
     channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols_, origin,
-                                    site_for_cookies, network_isolation_key,
+                                    site_for_cookies, isolation_info,
                                     HttpRequestHeaders());
     event_interface_->WaitForResponse();
     return !event_interface_->failed();

@@ -15,8 +15,10 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "media/media_buildflags.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "third_party/blink/public/common/features.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/test/ppapi/ppapi_test.h"
@@ -113,7 +115,15 @@ IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
   EXPECT_EQ("*/*", GetFor("/test.js"));
 
   // ResourceType::kImage
-  EXPECT_EQ("image/webp,image/apng,image/*,*/*;q=0.8", GetFor("/image.gif"));
+  const char* expected_image_accept_header =
+      "image/webp,image/apng,image/*,*/*;q=0.8";
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(blink::features::kAVIF)) {
+    expected_image_accept_header =
+        "image/avif,image/webp,image/apng,image/*,*/*;q=0.8";
+  }
+#endif
+  EXPECT_EQ(expected_image_accept_header, GetFor("/image.gif"));
 
   // ResourceType::kFontResource
   EXPECT_EQ("*/*", GetFor("/test.js"));

@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ky">
-<translation id="1006017844123154345">Онлайнда ачуу</translation>
 <translation id="1028699632127661925"><ph name="DEVICE_NAME" /> түзмөгүнө жөнөтүлүүдө...</translation>
+<translation id="1036348656032585052">Өчүрүү</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> кошулууда…</translation>
 <translation id="1041308826830691739">Вебсайттардан</translation>
 <translation id="1049743911850919806">Жашыруун</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">Chrome’дун башкы бети</translation>
 <translation id="3157842584138209013">"Дагы параметрлер" баскычын басып, канча трафикти үнөмдөп калганыңызды көрүңүз</translation>
 <translation id="3166827708714933426">Өтмөктүн жана терезенин кыска жолдору</translation>
+<translation id="3169472444629675720">Аныктоо</translation>
 <translation id="3181954750937456830">Коопсуз серептөө (сизди жана түзмөгүңүздү кооптуу сайттардан коргойт)</translation>
 <translation id="3205824638308738187">Бүткөнү калды!</translation>
 <translation id="3207960819495026254">Кыстармаланды</translation>
@@ -372,7 +373,6 @@
 <translation id="4116038641877404294">Оффлайн режиминде колдонуу үчүн барактарды жүктөп алуу</translation>
 <translation id="4135200667068010335">Жалпы түзмөктөрдүн тизмеси көрсөтүлгөн өтмөк жабылды.</translation>
 <translation id="4149994727733219643">Веб барактар үчүн жөнөкөйлөштүрүлгөн көрүнүш</translation>
-<translation id="4165986682804962316">Сайт жөндөөлөрү</translation>
 <translation id="4170011742729630528">Бул кызмат учурда иштебейт, бир аздан кийин аракет кылып көрүңүз.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> сарпталды</translation>
 <translation id="4181841719683918333">Тилдер</translation>
@@ -583,6 +583,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5853623416121554550">тындырылды</translation>
 <translation id="5854790677617711513">30 күндөн мурунку</translation>
 <translation id="5858741533101922242">Chrome Bluetooth адаптерин күйгүзө албай жатат</translation>
+<translation id="5860491529813859533">Күйгүзүү</translation>
 <translation id="5862731021271217234">Өтмөктөрүңүздү башка түзмөктөрүңүздөн алуу үчүн шайкештирүүнү күйгүзүңүз</translation>
 <translation id="5864174910718532887">Кошумча маалымат: Сайттын аталышы боюнча иргелди</translation>
 <translation id="5864419784173784555">Башка жүктөп алуу күтүлүүдө…</translation>

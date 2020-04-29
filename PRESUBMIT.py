@@ -2976,9 +2976,50 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
   return to_check
 
 
-def _CheckIpcOwners(input_api, output_api):
+def _AddOwnersFilesToCheckForFuchsiaSecurityOwners(input_api, to_check):
+  """Adds OWNERS files to check for correct Fuchsia security owners."""
+
+  file_patterns = [
+      # Component specifications.
+      '*.cml', # Component Framework v2.
+      '*.cmx', # Component Framework v1.
+
+      # Fuchsia IDL protocol specifications.
+      '*.fidl',
+  ]
+
+  def AddPatternToCheck(input_file, pattern):
+    owners_file = input_api.os_path.join(
+        input_api.os_path.dirname(input_file.LocalPath()), 'OWNERS')
+    if owners_file not in to_check:
+      to_check[owners_file] = {}
+    if pattern not in to_check[owners_file]:
+      to_check[owners_file][pattern] = {
+          'files': [],
+          'rules': [
+              'per-file %s=set noparent' % pattern,
+              'per-file %s=file://fuchsia/SECURITY_OWNERS' % pattern,
+          ]
+      }
+    to_check[owners_file][pattern]['files'].append(input_file)
+
+  # Iterate through the affected files to see what we actually need to check
+  # for. We should only nag patch authors about per-file rules if a file in that
+  # directory would match that pattern.
+  for f in input_api.AffectedFiles(include_deletes=False):
+    for pattern in file_patterns:
+      if input_api.fnmatch.fnmatch(
+          input_api.os_path.basename(f.LocalPath()), pattern):
+        AddPatternToCheck(f, pattern)
+        break
+
+  return to_check
+
+
+def _CheckSecurityOwners(input_api, output_api):
   """Checks that affected files involving IPC have an IPC OWNERS rule."""
   to_check = _GetOwnersFilesToCheckForIpcOwners(input_api)
+  _AddOwnersFilesToCheckForFuchsiaSecurityOwners(input_api, to_check)
 
   if to_check:
     # If there are any OWNERS files to check, there are IPC-related changes in
@@ -4213,7 +4254,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckSingletonInHeaders(input_api, output_api))
   results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
   results.extend(_CheckJavaStyle(input_api, output_api))
-  results.extend(_CheckIpcOwners(input_api, output_api))
+  results.extend(_CheckSecurityOwners(input_api, output_api))
   results.extend(_CheckSetNoParent(input_api, output_api))
   results.extend(_CheckUselessForwardDeclarations(input_api, output_api))
   results.extend(_CheckForRelativeIncludes(input_api, output_api))

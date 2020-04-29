@@ -145,6 +145,9 @@ def expr_uniq(terms):
 
 def expr_from_exposure(exposure, global_names=None):
     """
+    Returns an expression to determine whether this property should be exposed
+    or not.
+
     Args:
         exposure: web_idl.Exposure of the target construct.
         global_names: When specified, it's taken into account that the global
@@ -161,6 +164,18 @@ def expr_from_exposure(exposure, global_names=None):
             feature, arg))
 
     top_terms = [_Expr(True)]
+
+    # [SecureContext]
+    if exposure.only_in_secure_contexts is True:
+        top_terms.append(_Expr("${is_in_secure_context}"))
+    elif exposure.only_in_secure_contexts is False:
+        top_terms.append(_Expr(True))
+    else:
+        terms = map(ref_enabled, exposure.only_in_secure_contexts)
+        top_terms.append(
+            expr_or(
+                [_Expr("${is_in_secure_context}"),
+                 expr_not(expr_and(terms))]))
 
     # [Exposed]
     GLOBAL_NAME_TO_EXECUTION_CONTEXT_TEST = {
@@ -203,16 +218,19 @@ def expr_from_exposure(exposure, global_names=None):
         terms = map(ref_enabled, exposure.runtime_enabled_features)
         top_terms.append(expr_or(terms))
 
-    # [SecureContext]
-    if exposure.only_in_secure_contexts is True:
-        top_terms.append(_Expr("${is_in_secure_context}"))
-    elif exposure.only_in_secure_contexts is False:
-        top_terms.append(_Expr(True))
-    else:
-        terms = map(ref_enabled, exposure.only_in_secure_contexts)
-        top_terms.append(
-            expr_or(
-                [_Expr("${is_in_secure_context}"),
-                 expr_not(expr_and(terms))]))
-
     return expr_and(top_terms)
+
+
+def expr_of_feature_selector(exposure):
+    """
+    Returns an expression that tells whether this property is a target of the
+    feature selector or not.
+
+    Args:
+        exposure: web_idl.Exposure of the target construct.
+    """
+    assert isinstance(exposure, web_idl.Exposure)
+
+    features = map(lambda feature: "OriginTrialFeature::k{}".format(feature),
+                   exposure.context_dependent_runtime_enabled_features)
+    return _Expr("${{feature_selector}}.AnyOf({})".format(", ".join(features)))

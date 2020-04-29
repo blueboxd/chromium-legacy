@@ -47,33 +47,39 @@ def load_and_register_idl_definitions(filepaths, register_ir,
     assert callable(register_ir)
 
     for filepath in filepaths:
-        asts_per_component = AstGroup.read_from_file(filepath)
-        component = Component(asts_per_component.component)
+        asts = AstGroup.read_from_file(filepath)
         builder = _IRBuilder(
-            component=component,
+            component=Component(asts.component),
+            for_testing=asts.for_testing,
             create_ref_to_idl_def=create_ref_to_idl_def,
             idl_type_factory=idl_type_factory)
 
-        for file_node in asts_per_component:
+        for file_node in asts:
             assert file_node.GetClass() == 'File'
             for top_level_node in file_node.GetChildren():
                 register_ir(builder.build_top_level_def(top_level_node))
 
 
 class _IRBuilder(object):
-    def __init__(self, component, create_ref_to_idl_def, idl_type_factory):
+    def __init__(self, component, for_testing, create_ref_to_idl_def,
+                 idl_type_factory):
         """
         Args:
             component: A Component to which the built IRs are associated.
+            for_testing: True if the IDL definitions are meant for testing
+                purpose only.
             create_ref_to_idl_def: A callback function that creates a reference
                 to an IDL definition from the given identifier.
             idl_type_factory: All IdlType instances will be created through this
                 factory.
         """
+        assert isinstance(component, Component)
+        assert isinstance(for_testing, bool)
         assert callable(create_ref_to_idl_def)
         assert isinstance(idl_type_factory, IdlTypeFactory)
 
         self._component = component
+        self._for_testing = for_testing
         self._create_ref_to_idl_def = create_ref_to_idl_def
         self._idl_type_factory = idl_type_factory
 
@@ -87,7 +93,9 @@ class _IRBuilder(object):
             'Namespace': self._build_namespace,
             'Typedef': self._build_typedef,
         }
-        return build_functions[node.GetClass()](node)
+        ir = build_functions[node.GetClass()](node)
+        ir.code_generator_info.set_for_testing(self._for_testing)
+        return ir
 
     # Builder functions for top-level definitions
 

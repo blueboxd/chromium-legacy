@@ -121,7 +121,6 @@ class BASE_EXPORT OSInfo {
 
   const Version& version() const { return version_; }
   Version Kernel32Version() const;
-  Version UcrtVersion() const;
   base::Version Kernel32BaseVersion() const;
   // The next two functions return arrays of values, [major, minor(, build)].
   const VersionNumber& version_number() const { return version_number_; }

@@ -4,7 +4,7 @@
 
 #include "pdf/pdfium/pdfium_range.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_util.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 

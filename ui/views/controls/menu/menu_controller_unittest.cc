@@ -1518,7 +1518,7 @@ TEST_F(MenuControllerTest, NoTouchCloseWhenSendingGesturesToOwner) {
   location.Offset(1, 1);
   ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   controller->OnTouchEvent(sub_menu, &touch_event);
 
   // Menu should still be visible.
@@ -1592,9 +1592,8 @@ TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
   sub_menu->ShowAt(owner(), item->bounds(), false);
   gfx::Point location(sub_menu->bounds().bottom_right());
   location.Offset(1, 1);
-  ui::TouchEvent event(
-      ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent event(ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   controller->OnTouchEvent(sub_menu, &event);
   views::test::WaitForMenuClosureAnimation();
 

@@ -102,6 +102,7 @@ void WebKioskAppLauncher::LaunchApp() {
 
   Browser::CreateParams params = Browser::CreateParams::CreateForApp(
       app->name(), true, gfx::Rect(), profile_, false);
+  params.initial_show_state = ui::SHOW_STATE_FULLSCREEN;
   if (test_browser_window_) {
     params.window = test_browser_window_;
   }
@@ -112,9 +113,6 @@ void WebKioskAppLauncher::LaunchApp() {
   Navigate(&nav_params);
   CHECK(browser_);
   CHECK(browser_->window());
-  CHECK(browser_->window()->GetNativeWindow());
-  browser_->window()->GetNativeWindow()->SetProperty(
-      ash::kWindowPinTypeKey, ash::WindowPinType::kTrustedPinned);
   browser_->window()->Show();
 
   WebKioskAppManager::Get()->InitSession(browser_);

@@ -188,6 +188,7 @@ public class FakeTileProvider implements TileProvider {
     }
 
     private QueryTile findTile(String id) {
+        if (id == null) return null;
         for (QueryTile tile : mTiles) {
             if (tile.id.equals(id)) return tile;
             for (QueryTile subtile : tile.children) {
@@ -206,7 +207,7 @@ public class FakeTileProvider implements TileProvider {
         public String url;
 
         public FakeTile(String id, String displayTitle, String url, List<QueryTile> children) {
-            super(id, displayTitle, displayTitle, displayTitle, children);
+            super(id, displayTitle, displayTitle, displayTitle, new String[] {url}, children);
             this.url = url;
         }
     }

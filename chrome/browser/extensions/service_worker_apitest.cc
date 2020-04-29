@@ -1298,8 +1298,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
     base::FilePath path = test_dir.Pack();
     ExtensionService* const extension_service =
         ExtensionSystem::Get(profile())->extension_service();
-    EXPECT_TRUE(extension_service->UpdateExtension(
-        CRXFileInfo(id, GetTestVerifierFormat(), path), true, nullptr));
+    CRXFileInfo crx_info(path, GetTestVerifierFormat());
+    crx_info.extension_id = id;
+    EXPECT_TRUE(extension_service->UpdateExtension(crx_info, true, nullptr));
     EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
     EXPECT_EQ("0.2", ExtensionRegistry::Get(profile())
                          ->enabled_extensions()

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 90 tests; 45 PASS, 45 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 90 tests; 48 PASS, 42 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Basic sanity-checking (cross-origin)
 PASS Basic sanity-checking (same-origin + document.domain)
 PASS Basic sanity-checking (cross-site)
@@ -75,9 +75,9 @@ FAIL Same-origin observers get different accessors for cross-origin Window (cros
 FAIL Same-origin observers get different accessors for cross-origin Location (cross-origin) Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.
 FAIL Same-origin observers get different accessors for cross-origin Location (same-origin + document.domain) Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.
 FAIL Same-origin observers get different accessors for cross-origin Location (cross-site) Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.
-FAIL {}.toString.call() does the right thing on cross-origin objects (cross-origin) assert_equals: expected "[object Object]" but got "[object Location]"
-FAIL {}.toString.call() does the right thing on cross-origin objects (same-origin + document.domain) assert_equals: expected "[object Object]" but got "[object Location]"
-FAIL {}.toString.call() does the right thing on cross-origin objects (cross-site) assert_equals: expected "[object Object]" but got "[object Location]"
+PASS {}.toString.call() does the right thing on cross-origin objects (cross-origin)
+PASS {}.toString.call() does the right thing on cross-origin objects (same-origin + document.domain)
+PASS {}.toString.call() does the right thing on cross-origin objects (cross-site)
 PASS Resolving a promise with a cross-origin window without a 'then' subframe should work (cross-origin)
 PASS Resolving a promise with a cross-origin window without a 'then' subframe should work (same-origin + document.domain)
 PASS Resolving a promise with a cross-origin window without a 'then' subframe should work (cross-site)

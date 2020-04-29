@@ -8,17 +8,24 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/default_clock.h"
+#include "components/policy/policy_constants.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
 #import "ios/chrome/browser/app_launcher/fake_app_launcher_abuse_detector.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_switches.h"
 #import "ios/chrome/browser/chrome_url_util.h"
+#import "ios/chrome/browser/policy/enterprise_policy_test_helper.h"
+#import "ios/chrome/browser/policy/policy_features.h"
+#include "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
+#import "ios/web/common/features.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -411,4 +418,78 @@ TEST_F(AppLauncherTabHelperTest, LaunchSmsApp_JavaScriptRedirect) {
       TestShouldAllowRequest(sms_url_string, /*target_frame_is_main=*/true,
                              /*has_user_gesture=*/false, page_transition));
   EXPECT_EQ(1U, delegate_.app_launch_count());
+}
+
+// Test fixture for testing the app launcher interaction with enterprise policy
+// URLBlocklist.
+class BlockedUrlPolicyAppLauncherTabHelperTest
+    : public AppLauncherTabHelperTest {
+ protected:
+  BlockedUrlPolicyAppLauncherTabHelperTest() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kInstallURLBlocklistHandlers);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableEnterprisePolicy);
+  }
+
+  void SetUp() override {
+    AppLauncherTabHelperTest::SetUp();
+
+    ASSERT_TRUE(state_directory_.CreateUniqueTempDir());
+    enterprise_policy_helper_ = std::make_unique<EnterprisePolicyTestHelper>(
+        state_directory_.GetPath());
+    ASSERT_TRUE(enterprise_policy_helper_->GetBrowserState());
+
+    web_state_.SetBrowserState(enterprise_policy_helper_->GetBrowserState());
+
+    policy::PolicyMap policy_map;
+    auto value = std::make_unique<base::Value>(base::Value::Type::LIST);
+    value->Append("itms-apps://*");
+    policy_map.Set(policy::key::kURLBlacklist, policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                   std::move(value), nullptr);
+    enterprise_policy_helper_->GetPolicyProvider()->UpdateChromePolicy(
+        policy_map);
+
+    policy_blocklist_service_ = static_cast<PolicyBlocklistService*>(
+        PolicyBlocklistServiceFactory::GetForBrowserState(
+            enterprise_policy_helper_->GetBrowserState()));
+  }
+
+  // Temporary directory to hold preference files.
+  base::ScopedTempDir state_directory_;
+
+  // Enterprise policy boilerplate configuration.
+  std::unique_ptr<EnterprisePolicyTestHelper> enterprise_policy_helper_;
+  PolicyBlocklistService* policy_blocklist_service_;
+};
+
+// Tests that URLs to blocked domains do not open native apps.
+TEST_F(BlockedUrlPolicyAppLauncherTabHelperTest, BlockedUrl) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{kURLBlocklistIOS,
+                            web::features::kUseJSForErrorPage},
+      /*disabled_features=*/{});
+
+  NSString* url_string = @"itms-apps://itunes.apple.com/us/app/appname/id123";
+  EXPECT_FALSE(TestShouldAllowRequest(url_string, /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+  EXPECT_EQ(0U, delegate_.app_launch_count());
+}
+
+// Tests that URLs to non-blocked domains are able to open native apps when
+// policy is blocking other domains.
+TEST_F(BlockedUrlPolicyAppLauncherTabHelperTest, AllowedUrl) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{kURLBlocklistIOS,
+                            web::features::kUseJSForErrorPage},
+      /*disabled_features=*/{});
+
+  EXPECT_FALSE(TestShouldAllowRequest(@"valid://1234",
+                                      /*target_frame_is_main=*/true,
+                                      /*has_user_gesture=*/false));
+  EXPECT_EQ(1U, delegate_.app_launch_count());
+  EXPECT_EQ(GURL("valid://1234"), delegate_.last_launched_app_url());
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sq">
-<translation id="1006017844123154345">Hap versionin në linjë</translation>
 <translation id="1028699632127661925">Po dërgohet te <ph name="DEVICE_NAME" />...</translation>
+<translation id="1036348656032585052">Çaktivizo</translation>
 <translation id="1036727731225946849">Po shton <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Nga sajtet e uebit</translation>
 <translation id="1049743911850919806">I fshehtë</translation>
@@ -257,6 +257,7 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="314939179385989105">Faqja kryesore e Chrome</translation>
 <translation id="3157842584138209013">Shiko se sa të dhëna kurseve nga butoni "Më shumë opsione"</translation>
 <translation id="3166827708714933426">Shkurtoret e skedës dhe dritares</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3181954750937456830">"Shfletimi i sigurt" (të mbron ty dhe pajisjen tënde nga sajtet e rrezikshme)</translation>
 <translation id="3205824638308738187">Pothuajse mbaroi!</translation>
 <translation id="3207960819495026254">Regjistruar në faqeshënues</translation>
@@ -372,7 +373,6 @@ Vetëm ti mund të shohësh se çfarë po shikon kamera. Sajti nuk mund të shik
 <translation id="4116038641877404294">Shkarko faqet për t'i përdorur ato jashtë linje</translation>
 <translation id="4135200667068010335">Lista e pajisjeve për të ndarë një skedë është e mbyllur.</translation>
 <translation id="4149994727733219643">Pamje e thjeshtuar për faqet e uebit</translation>
-<translation id="4165986682804962316">Cilësimet e sajtit</translation>
 <translation id="4170011742729630528">Shërbimi nuk ofrohet. Provo përsëri më vonë.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> të përdorura</translation>
 <translation id="4181841719683918333">Gjuhët</translation>
@@ -583,6 +583,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5853623416121554550">në pauzë</translation>
 <translation id="5854790677617711513">Më të vjetra se 30 ditë</translation>
 <translation id="5858741533101922242">Chrome nuk mund ta aktivizojë përshtatësin e Bluetooth-it</translation>
+<translation id="5860491529813859533">Aktivizo</translation>
 <translation id="5862731021271217234">Për të marrë skedat e tua nga pajisjet e tjera, aktivizo sinkronizimin</translation>
 <translation id="5864174910718532887">Detajet: Renditur sipas emrit të sajtit</translation>
 <translation id="5864419784173784555">Në pritje të një shkarkimi tjetër…</translation>

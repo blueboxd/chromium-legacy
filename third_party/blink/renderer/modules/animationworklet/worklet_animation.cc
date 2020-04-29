@@ -630,6 +630,8 @@ bool WorkletAnimation::StartOnCompositor() {
       timeline_ ? timeline_->EnsureCompositorTimeline() : nullptr;
   if (compositor_timeline) {
     compositor_timeline->AnimationAttached(*this);
+    // Note that while we attach here but we don't detach because the
+    // |compositor_timeline| is detached in its destructor.
     if (compositor_timeline->GetAnimationTimeline()->IsScrollTimeline())
       document_->AttachCompositorTimeline(compositor_timeline);
   }
@@ -690,12 +692,6 @@ void WorkletAnimation::DestroyCompositorAnimation() {
     compositor_timeline->AnimationDestroyed(*this);
 
   if (compositor_animation_) {
-    if (compositor_timeline &&
-        compositor_timeline->GetAnimationTimeline()->IsScrollTimeline() &&
-        !compositor_timeline->GetAnimationTimeline()->HasAnimation()) {
-      document_->DetachCompositorTimeline(compositor_timeline);
-    }
-
     compositor_animation_->SetAnimationDelegate(nullptr);
     compositor_animation_ = nullptr;
   }

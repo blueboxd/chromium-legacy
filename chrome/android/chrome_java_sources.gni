@@ -1160,6 +1160,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestion.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionUiType.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionsDropdown.java",
+  "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionsDropdownDelegate.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionsList.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionsListAdapter.java",
   "java/src/org/chromium/chrome/browser/omnibox/suggestions/SuggestionCommonProperties.java",

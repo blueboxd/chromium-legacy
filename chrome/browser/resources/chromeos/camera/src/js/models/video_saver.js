@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {browserProxy} from '../browser_proxy/browser_proxy.js';
 import {Intent} from '../intent.js';  // eslint-disable-line no-unused-vars
 import * as Comlink from '../lib/comlink.js';
 
@@ -9,8 +10,12 @@ import {AsyncWriter} from './async_writer.js';
 import {createPrivateTempVideoFile} from './filesystem.js';
 import {getFileWriter} from './filesystem.js';
 
-const VideoProcessor =
-    Comlink.wrap(new Worker('/js/models/video_processor.js', {type: 'module'}));
+const VideoProcessor = (() => {
+  const url = browserProxy.isMp4RecordingEnabled() ?
+      '/js/models/mp4_video_processor.js' :
+      '/js/models/nop_video_processor.js';
+  return Comlink.wrap(new Worker(url, {type: 'module'}));
+})();
 
 /**
  * @param {!AsyncWriter} output

@@ -8,6 +8,7 @@ mojom("mojom") {
   generate_java = true
   sources = [
     "compositing/begin_frame_args.mojom",
+    "compositing/bitmap_in_shared_memory.mojom",
     "compositing/compositing_mode_watcher.mojom",
     "compositing/compositor_frame.mojom",
     "compositing/compositor_frame_metadata.mojom",

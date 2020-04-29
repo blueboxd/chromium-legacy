@@ -31,6 +31,8 @@ class TileService : public KeyedService, public base::SupportsUserData {
   virtual void GetQueryTiles(GetTilesCallback callback) = 0;
 
   // Called to retrieve thumbnail for the given tile id.
+  // TODO(shaktisahu): Remove this method since we are leaning towards using
+  // ImageFetcher in Java directly using URL.
   virtual void GetVisuals(const std::string& tile_id,
                           VisualsCallback callback) = 0;
 

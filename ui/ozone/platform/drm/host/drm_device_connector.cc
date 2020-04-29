@@ -21,14 +21,6 @@ DrmDeviceConnector::DrmDeviceConnector(
 
 DrmDeviceConnector::~DrmDeviceConnector() = default;
 
-void DrmDeviceConnector::OnGpuProcessLaunched(
-    int host_id,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-    base::RepeatingCallback<void(IPC::Message*)> send_callback) {
-  NOTREACHED();
-}
-
 void DrmDeviceConnector::OnChannelDestroyed(int host_id) {
   if (host_id != host_id_)
     return;
@@ -50,11 +42,6 @@ void DrmDeviceConnector::OnGpuServiceLaunched(
 
   host_drm_device_->OnGpuServiceLaunchedOnIOThread(std::move(drm_device),
                                                    ui_runner);
-}
-
-void DrmDeviceConnector::OnMessageReceived(const IPC::Message& message) {
-  NOTREACHED() << "This class should only be used with mojo transport but here "
-                  "we're wrongly getting invoked to handle IPC communication.";
 }
 
 void DrmDeviceConnector::BindInterfaceDrmDevice(

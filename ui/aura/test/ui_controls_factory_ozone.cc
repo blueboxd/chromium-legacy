@@ -313,8 +313,8 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                           int id,
                           int64_t display_id,
                           base::OnceClosure closure) {
-    ui::PointerDetails details(ui::EventPointerType::POINTER_TYPE_TOUCH, id,
-                               1.0f, 1.0f, 0.0f);
+    ui::PointerDetails details(ui::EventPointerType::kTouch, id, 1.0f, 1.0f,
+                               0.0f);
     ui::TouchEvent touch_event(type, host_location, host_location,
                                ui::EventTimeForNow(), details);
     SendEventToSink(&touch_event, display_id, std::move(closure));

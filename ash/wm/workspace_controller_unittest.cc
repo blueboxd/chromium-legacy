@@ -1380,9 +1380,9 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
       ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
       EXPECT_EQ(expected_target, target);
 
-      ui::TouchEvent touch(
-          ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
-          ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+      ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, location,
+                           ui::EventTimeForNow(),
+                           ui::PointerDetails(ui::EventPointerType::kTouch, 0));
       target = targeter->FindTargetForEvent(root, &touch);
       EXPECT_EQ(expected_target, target);
     }

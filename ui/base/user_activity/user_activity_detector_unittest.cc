@@ -139,7 +139,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
   AdvanceTime(advance_delta);
   ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), base::TimeTicks(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   OnEvent(&touch_event);
   EXPECT_FALSE(touch_event.handled());
   EXPECT_EQ(now_, detector_->last_activity_time());

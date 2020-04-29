@@ -124,16 +124,16 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
       }
       auto update = updates_.find(id);
       if (update != updates_.end()) {
-        CRXFileInfo info(id, update->second.path, "" /* no hash */,
-                         GetTestVerifierFormat());
-        std::string version = update->second.version;
+        CRXFileInfo crx_info(update->second.path, GetTestVerifierFormat());
+        crx_info.expected_version = update->second.version;
+        crx_info.extension_id = id;
         updates_.erase(update);
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
             base::BindOnce(
                 &ExtensionDownloaderDelegate::OnExtensionDownloadFinished,
-                base::Unretained(delegate), info,
-                false /* file_ownership_passed */, GURL(), version,
+                base::Unretained(delegate), crx_info,
+                false /* file_ownership_passed */, GURL(),
                 ExtensionDownloaderDelegate::PingResult(),
                 fetch_data->request_ids(),
                 ExtensionDownloaderDelegate::InstallCallback()));

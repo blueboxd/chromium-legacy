@@ -5,6 +5,7 @@
 #include "components/feed/core/v2/feed_stream.h"
 
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -412,7 +413,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
 
   void UnloadModel() {
     WaitForIdleTaskQueue();
-    stream_->UnloadModelForTesting();
+    stream_->UnloadModel();
   }
 
   // Dumps the state of |FeedStore| to a string for debugging.
@@ -1128,6 +1129,34 @@ TEST_F(FeedStreamTest, ReadNetworkResponse) {
   WaitForIdleTaskQueue();
 
   ASSERT_EQ("loading -> 10 slices", surface.DescribeUpdates());
+}
+
+TEST_F(FeedStreamTest, ClearAllAfterLoadResultsInRefresh) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  stream_->OnCacheDataCleared();  // triggers ClearAll().
+
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ("loading -> 2 slices -> loading -> 2 slices",
+            surface.DescribeUpdates());
+}
+
+TEST_F(FeedStreamTest, ClearAllWithNoSurfacesAttachedDoesNotReload) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  surface.Detach();
+
+  stream_->OnCacheDataCleared();  // triggers ClearAll().
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
+  // Also check that the storage is cleared.
+  EXPECT_EQ("", DumpStoreState());
 }
 
 }  // namespace

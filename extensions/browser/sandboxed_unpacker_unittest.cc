@@ -196,12 +196,11 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   void SetupUnpacker(const std::string& crx_name,
                      const std::string& package_hash) {
     base::FilePath crx_path = GetCrxFullPath(crx_name);
+    extensions::CRXFileInfo crx_info(crx_path, GetTestVerifierFormat());
+    crx_info.expected_hash = package_hash;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &SandboxedUnpacker::StartWithCrx, sandboxed_unpacker_,
-            extensions::CRXFileInfo(std::string(), crx_path, package_hash,
-                                    GetTestVerifierFormat())));
+        FROM_HERE, base::BindOnce(&SandboxedUnpacker::StartWithCrx,
+                                  sandboxed_unpacker_, crx_info));
     client_->WaitForUnpack();
   }
 

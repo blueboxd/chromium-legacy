@@ -43,21 +43,23 @@ public class WebViewPackageError {
      * @param context The {@link Activity} where the error is yield.
      * @param linearLayout the linearLayout to show error message at it's top.
      */
-    public WebViewPackageError(Activity context) {
+    public WebViewPackageError(Activity context, PersistentErrorView errorView) {
         mContext = context;
-        mErrorMessage = new PersistentErrorView(context, R.id.webview_package_error);
+        mErrorMessage = errorView;
     }
 
     /**
      * Show the persistent error message at the top of the LinearLayout, if the system uses a
      * different WebView implementation. Hide it otherwise.
      */
-    public void showMessageIfDifferent() {
+    public boolean showMessageIfDifferent() {
         if (WebViewPackageHelper.isCurrentSystemWebViewImplementation(mContext)) {
             mErrorMessage.hide();
+            return false;
         } else {
             buildErrorMessage();
             mErrorMessage.show();
+            return true;
         }
     }
 

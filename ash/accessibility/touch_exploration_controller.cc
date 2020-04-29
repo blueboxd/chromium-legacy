@@ -1149,9 +1149,8 @@ gfx::PointF TouchExplorationController::ConvertDIPToPixels(
 bool TouchExplorationController::IsTargetedToArcVirtualKeyboard(
     const gfx::Point& location) {
   // Copy event here as WindowTargeter::FindTargetForEvent modify touch event.
-  ui::TouchEvent event(
-      ui::ET_TOUCH_MOVED, gfx::Point(), Now(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  ui::TouchEvent event(ui::ET_TOUCH_MOVED, gfx::Point(), Now(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   event.set_location(location);
 
   // It's safe to static cast to aura::Window here. As current implementation of

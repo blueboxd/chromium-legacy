@@ -7,8 +7,9 @@
 #include <stdint.h>
 
 #include "base/base_paths.h"
+#include "base/check_op.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "pdf/range_set.h"
 #include "pdf/url_loader_wrapper.h"

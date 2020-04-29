@@ -140,17 +140,6 @@ void ExtensionSyncService::SyncExtensionChangeIfNeeded(
   }
 }
 
-bool ExtensionSyncService::HasPendingReenable(
-    const std::string& id,
-    const base::Version& version) const {
-  auto it = pending_updates_.find(id);
-  if (it == pending_updates_.end())
-    return false;
-  const PendingUpdate& pending = it->second;
-  return pending.version == version &&
-         pending.grant_permissions_and_reenable;
-}
-
 void ExtensionSyncService::WaitUntilReadyToSync(base::OnceClosure done) {
   // Wait for the extension system to be ready.
   ExtensionSystem::Get(profile_)->ready().Post(FROM_HERE, std::move(done));

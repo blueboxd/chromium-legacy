@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.feed.library.testing.requestmanager;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Consumer;
+import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ViewActionManager;
 import org.chromium.chrome.browser.feed.library.api.internal.requestmanager.ActionUploadRequestManager;
+import org.chromium.chrome.browser.feed.library.api.internal.store.Store;
 import org.chromium.chrome.browser.feed.library.common.Result;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeThreadUtils;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamUploadableAction;
@@ -18,13 +20,18 @@ import java.util.Set;
 
 /** Fake implements of {@link ActionUploadRequestManager}. */
 public final class FakeActionUploadRequestManager implements ActionUploadRequestManager {
+    private final Store mStore;
+    private final ViewActionManager mViewActionManager;
     private final FakeThreadUtils mFakeThreadUtils;
     private Result<ConsistencyToken> mResult =
             Result.success(ConsistencyToken.getDefaultInstance());
     @Nullable
     private Set<StreamUploadableAction> mActions;
 
-    public FakeActionUploadRequestManager(FakeThreadUtils fakeThreadUtils) {
+    public FakeActionUploadRequestManager(
+            Store store, ViewActionManager viewActionManager, FakeThreadUtils fakeThreadUtils) {
+        this.mStore = store;
+        this.mViewActionManager = viewActionManager;
         this.mFakeThreadUtils = fakeThreadUtils;
     }
 
@@ -38,6 +45,17 @@ public final class FakeActionUploadRequestManager implements ActionUploadRequest
         } finally {
             mFakeThreadUtils.enforceMainThread(policy);
         }
+    }
+
+    @Override
+    public void triggerUploadAllActions(
+            ConsistencyToken token, Consumer<Result<ConsistencyToken>> consumer) {
+        mViewActionManager.storeViewActions(() -> {
+            Result<Set<StreamUploadableAction>> actionsResult = mStore.getAllUploadableActions();
+            if (actionsResult.isSuccessful()) {
+                triggerUploadActions(actionsResult.getValue(), token, consumer);
+            }
+        });
     }
 
     /**

@@ -199,6 +199,9 @@ class WebClient {
   // content, based on the size class of |web_view| and the |url|.
   virtual UserAgentType GetDefaultUserAgent(id<UITraitEnvironment> web_view,
                                             const GURL& url);
+
+  // Returns whether the embedders could block restore urls.
+  virtual bool IsEmbedderBlockRestoreUrlEnabled();
 };
 
 }  // namespace web

@@ -6,29 +6,43 @@
 
 #include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 
 namespace updater {
 
-InfoPlist::InfoPlist(const base::FilePath& info_plist_path)
-    : info_plist_(
-          [NSDictionary dictionaryWithContentsOfFile:
-                            base::mac::FilePathToNSString(info_plist_path)],
-          base::scoped_policy::RETAIN),
-      bundle_version_(base::SysNSStringToUTF8([info_plist_
-          valueForKey:base::mac::CFToNSCast(kCFBundleVersionKey)])),
-      valid_(info_plist_ != nil && !bundle_version_.empty()) {}
+InfoPlist::InfoPlist(base::scoped_nsobject<NSDictionary> info_plist_dictionary,
+                     base::scoped_nsobject<NSString> bundle_version)
+    : info_plist_(info_plist_dictionary),
+      bundle_version_(base::SysNSStringToUTF8(bundle_version)) {}
 InfoPlist::~InfoPlist() {}
 
-bool InfoPlist::Valid() {
-  return valid_;
+// static
+std::unique_ptr<InfoPlist> InfoPlist::Create(
+    const base::FilePath& info_plist_path) {
+  base::scoped_nsobject<NSDictionary> info_plist_dictionary(
+      [NSDictionary dictionaryWithContentsOfFile:base::mac::FilePathToNSString(
+                                                     info_plist_path)],
+      base::scoped_policy::RETAIN);
+  base::scoped_nsobject<NSString> bundle_version(
+      [info_plist_dictionary
+          valueForKey:base::mac::CFToNSCast(kCFBundleVersionKey)],
+      base::scoped_policy::RETAIN);
+  return [bundle_version length] > 0
+             ? base::WrapUnique(
+                   new InfoPlist(info_plist_dictionary, bundle_version))
+             : nullptr;
+}
+
+base::scoped_nsobject<NSString> InfoPlist::BundleVersion() const {
+  return base::scoped_nsobject<NSString>(
+      base::SysUTF8ToNSString(bundle_version_));
 }
 
 base::FilePath InfoPlist::UpdaterVersionedFolderPath(
     const base::FilePath& updater_folder_path) const {
-  return valid_ ? updater_folder_path.Append(bundle_version_)
-                : base::FilePath();
+  return updater_folder_path.Append(bundle_version_);
 }
 
 base::FilePath InfoPlist::UpdaterExecutablePath(
@@ -36,29 +50,24 @@ base::FilePath InfoPlist::UpdaterExecutablePath(
     const base::FilePath& update_folder_name,
     const base::FilePath& updater_app_name,
     const base::FilePath& updater_app_executable_path) const {
-  return valid_ ? library_folder_path.Append(update_folder_name)
-                      .Append(bundle_version_)
-                      .Append(updater_app_name)
-                      .Append(updater_app_executable_path)
-                : base::FilePath();
+  return library_folder_path.Append(update_folder_name)
+      .Append(bundle_version_)
+      .Append(updater_app_name)
+      .Append(updater_app_executable_path);
 }
 
 base::ScopedCFTypeRef<CFStringRef>
 InfoPlist::GoogleUpdateCheckLaunchdNameVersioned() const {
-  return valid_ ? base::ScopedCFTypeRef<CFStringRef>(CFStringCreateWithFormat(
-                      kCFAllocatorDefault, nullptr, CFSTR("%@.%s"),
-                      CopyGoogleUpdateCheckLaunchDName().get(),
-                      bundle_version_.c_str()))
-                : base::ScopedCFTypeRef<CFStringRef>(CFSTR(""));
+  return base::ScopedCFTypeRef<CFStringRef>(CFStringCreateWithFormat(
+      kCFAllocatorDefault, nullptr, CFSTR("%@.%s"),
+      CopyGoogleUpdateCheckLaunchDName().get(), bundle_version_.c_str()));
 }
 
 base::ScopedCFTypeRef<CFStringRef>
 InfoPlist::GoogleUpdateServiceLaunchdNameVersioned() const {
-  return valid_ ? base::ScopedCFTypeRef<CFStringRef>(CFStringCreateWithFormat(
-                      kCFAllocatorDefault, nullptr, CFSTR("%@.%s"),
-                      CopyGoogleUpdateServiceLaunchDName().get(),
-                      bundle_version_.c_str()))
-                : base::ScopedCFTypeRef<CFStringRef>(CFSTR(""));
+  return base::ScopedCFTypeRef<CFStringRef>(CFStringCreateWithFormat(
+      kCFAllocatorDefault, nullptr, CFSTR("%@.%s"),
+      CopyGoogleUpdateServiceLaunchDName().get(), bundle_version_.c_str()));
 }
 
 }  // namespace updater

@@ -38,7 +38,7 @@ public final class FeedUploadableActionMutation implements UploadableActionMutat
         }
         actionsForId.upsertAction(action);
         mActions.put(contentId, actionsForId);
-        Logger.i(TAG, "Added action %d", action);
+        Logger.i(TAG, "Adding action %d", action);
         return this;
     }
 
@@ -51,7 +51,7 @@ public final class FeedUploadableActionMutation implements UploadableActionMutat
         }
         actionsForId.removeAction(action);
         mActions.put(contentId, actionsForId);
-        Logger.i(TAG, "Added action %d", action);
+        Logger.i(TAG, "Removing action %d", action);
         return this;
     }
 

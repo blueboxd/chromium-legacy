@@ -156,11 +156,11 @@ const base::Feature kDlcSettingsUi{"DlcSettingsUi",
 
 // If enabled, allows Unicorn users to add secondary EDU accounts.
 const base::Feature kEduCoexistence{"EduCoexistence",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables parent consent logging in EDU account addition flow.
-const base::Feature kEduCoexistenceConsentLog{
-    "EduCoexistenceConsentLog", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEduCoexistenceConsentLog{"EduCoexistenceConsentLog",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, emoji suggestion will be shown when user type "space".
 const base::Feature kEmojiSuggestAddition{"EmojiSuggestAddition",

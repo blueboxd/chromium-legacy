@@ -173,7 +173,7 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
 
 namespace web {
 
-DownloadTaskImpl::DownloadTaskImpl(const WebState* web_state,
+DownloadTaskImpl::DownloadTaskImpl(WebState* web_state,
                                    const GURL& original_url,
                                    NSString* http_method,
                                    const std::string& content_disposition,
@@ -225,6 +225,10 @@ void DownloadTaskImpl::ShutDown() {
   [session_task_ cancel];
   session_task_ = nil;
   delegate_ = nullptr;
+}
+
+WebState* DownloadTaskImpl::GetWebState() {
+  return web_state_;
 }
 
 DownloadTask::State DownloadTaskImpl::GetState() const {

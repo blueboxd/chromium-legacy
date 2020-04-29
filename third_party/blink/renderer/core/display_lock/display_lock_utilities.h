@@ -93,6 +93,11 @@ class CORE_EXPORT DisplayLockUtilities {
   static Element* NearestLockedInclusiveAncestor(const LayoutObject& object);
   static Element* NearestLockedExclusiveAncestor(const LayoutObject& object);
 
+  // Returns the nearest ancestor element which has a lock that prevents
+  // prepaint. Note that this is different from a nearest locked ancestor since
+  // the prepaint update can be forced.
+  static Element* LockedAncestorPreventingPrePaint(const LayoutObject& object);
+
   // Returns true if |node| is not in a locked subtree, or if it's possible to
   // activate all of the locked ancestors for |activation_reason|.
   static bool IsInUnlockedOrActivatableSubtree(

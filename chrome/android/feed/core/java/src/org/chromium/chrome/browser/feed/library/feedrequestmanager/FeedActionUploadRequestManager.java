@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest;
 import org.chromium.chrome.browser.feed.library.api.host.network.HttpRequest.HttpMethod;
 import org.chromium.chrome.browser.feed.library.api.host.network.NetworkClient;
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
+import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ViewActionManager;
 import org.chromium.chrome.browser.feed.library.api.internal.common.SemanticPropertiesWithId;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
 import org.chromium.chrome.browser.feed.library.api.internal.protocoladapter.ProtocolAdapter;
@@ -19,6 +20,7 @@ import org.chromium.chrome.browser.feed.library.api.internal.requestmanager.Acti
 import org.chromium.chrome.browser.feed.library.api.internal.store.Store;
 import org.chromium.chrome.browser.feed.library.api.internal.store.UploadableActionMutation;
 import org.chromium.chrome.browser.feed.library.common.Result;
+import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue.TaskType;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
@@ -41,10 +43,12 @@ import java.util.concurrent.TimeUnit;
 public final class FeedActionUploadRequestManager implements ActionUploadRequestManager {
     private static final String TAG = "ActionUploadRequest";
 
+    private final ViewActionManager mViewActionManager;
     private final Configuration mConfiguration;
     private final NetworkClient mNetworkClient;
     private final ProtocolAdapter mProtocolAdapter;
     private final FeedExtensionRegistry mExtensionRegistry;
+    private final MainThreadRunner mMainThreadRunner;
     private final TaskQueue mTaskQueue;
     private final ThreadUtils mThreadUtils;
     private final Store mStore;
@@ -58,13 +62,17 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
     private final long mMaxBytesPerRequest;
     private final long mMaxActionUploadTtl;
 
-    public FeedActionUploadRequestManager(Configuration configuration, NetworkClient networkClient,
+    public FeedActionUploadRequestManager(ViewActionManager viewActionManager,
+            Configuration configuration, NetworkClient networkClient,
             ProtocolAdapter protocolAdapter, FeedExtensionRegistry extensionRegistry,
-            TaskQueue taskQueue, ThreadUtils threadUtils, Store store, Clock clock) {
+            MainThreadRunner mainThreadRunner, TaskQueue taskQueue, ThreadUtils threadUtils,
+            Store store, Clock clock) {
+        this.mViewActionManager = viewActionManager;
         this.mConfiguration = configuration;
         this.mNetworkClient = networkClient;
         this.mProtocolAdapter = protocolAdapter;
         this.mExtensionRegistry = extensionRegistry;
+        this.mMainThreadRunner = mainThreadRunner;
         this.mTaskQueue = taskQueue;
         this.mThreadUtils = threadUtils;
         this.mStore = store;
@@ -82,12 +90,30 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
     @Override
     public void triggerUploadActions(Set<StreamUploadableAction> actions, ConsistencyToken token,
             Consumer<Result<ConsistencyToken>> consumer) {
+        mThreadUtils.checkNotMainThread();
         if (mMaxActionUploadAttempts == 0 || mMaxBytesPerRequest == 0
                 || mMaxActionsUploadsPerBatchedRequest == 0) {
             consumer.accept(Result.success(token));
             return;
         }
         triggerUploadActions(actions, token, consumer, /* uploadCount= */ 0);
+    }
+
+    @Override
+    public void triggerUploadAllActions(
+            ConsistencyToken token, Consumer<Result<ConsistencyToken>> consumer) {
+        mThreadUtils.checkNotMainThread();
+        mMainThreadRunner.execute("Store view actions and", () -> {
+            mViewActionManager.storeViewActions(() -> {
+                mTaskQueue.execute(Task.UPLOAD_ALL_ACTIONS, TaskType.IMMEDIATE, () -> {
+                    Result<Set<StreamUploadableAction>> actionsResult =
+                            mStore.getAllUploadableActions();
+                    if (actionsResult.isSuccessful()) {
+                        triggerUploadActions(actionsResult.getValue(), token, consumer);
+                    }
+                });
+            });
+        });
     }
 
     private void triggerUploadActions(Set<StreamUploadableAction> actions, ConsistencyToken token,

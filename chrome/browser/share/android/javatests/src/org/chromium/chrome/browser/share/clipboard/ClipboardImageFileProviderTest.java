@@ -20,6 +20,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.task.AsyncTask;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -32,6 +34,7 @@ import org.chromium.ui.base.Clipboard;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -44,6 +47,7 @@ public class ClipboardImageFileProviderTest {
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
+    private static final long WAIT_TIMEOUT_SECONDS = 30L;
     private static final String TEST_PNG_IMAGE_FILE_EXTENSION = ".png";
 
     private byte[] mTestImageData;
@@ -56,6 +60,22 @@ public class ClipboardImageFileProviderTest {
             Context appContext = ContextUtils.getApplicationContext();
             return FileProvider.getUriForFile(
                     appContext, appContext.getPackageName() + API_AUTHORITY_SUFFIX, file);
+        }
+    }
+
+    private class AsyncTaskRunnableHelper extends CallbackHelper implements Runnable {
+        @Override
+        public void run() {
+            notifyCalled();
+        }
+    }
+
+    private void waitForAsync() throws TimeoutException {
+        try {
+            AsyncTaskRunnableHelper runnableHelper = new AsyncTaskRunnableHelper();
+            AsyncTask.SERIAL_EXECUTOR.execute(runnableHelper);
+            runnableHelper.waitForCallback(0, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        } catch (TimeoutException ex) {
         }
     }
 
@@ -90,6 +110,11 @@ public class ClipboardImageFileProviderTest {
             }
         });
 
-        Assert.assertNotNull(Clipboard.getInstance().getImage());
+        // Make sure Clipboard::getImage is call on non UI thread.
+        AsyncTask.SERIAL_EXECUTOR.execute(
+                () -> { Assert.assertNotNull(Clipboard.getInstance().getImage()); });
+
+        // Wait for the above check to complete.
+        waitForAsync();
     }
 }

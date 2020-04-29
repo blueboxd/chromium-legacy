@@ -751,6 +751,7 @@ public class CompositorViewHolder extends FrameLayout
     public void onStart() {
         if (mFullscreenManager != null) {
             mFullscreenManager.addListener(this);
+            mFullscreenManager.setViewportSizeDelegate(this::onUpdateViewportSize);
         }
         requestRender();
     }
@@ -759,7 +760,10 @@ public class CompositorViewHolder extends FrameLayout
      * Called whenever the host activity is stopped.
      */
     public void onStop() {
-        if (mFullscreenManager != null) mFullscreenManager.removeListener(this);
+        if (mFullscreenManager != null) {
+            mFullscreenManager.removeListener(this);
+            mFullscreenManager.setViewportSizeDelegate(null);
+        }
     }
 
     @Override
@@ -805,8 +809,7 @@ public class CompositorViewHolder extends FrameLayout
         webContents.notifyBrowserControlsHeightChanged();
     }
 
-    @Override
-    public void onUpdateViewportSize() {
+    private void onUpdateViewportSize() {
         // Reflect the changes that may have happened in in view/control size.
         Point viewportSize = getViewportSize();
         setSize(getWebContents(), getContentView(), viewportSize.x, viewportSize.y);
@@ -972,6 +975,7 @@ public class CompositorViewHolder extends FrameLayout
     public void setFullscreenHandler(ChromeFullscreenManager fullscreen) {
         mFullscreenManager = fullscreen;
         mFullscreenManager.addListener(this);
+        mFullscreenManager.setViewportSizeDelegate(this::onUpdateViewportSize);
         onViewportChanged();
     }
 

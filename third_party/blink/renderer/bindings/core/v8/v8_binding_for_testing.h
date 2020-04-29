@@ -19,6 +19,7 @@ namespace blink {
 class Document;
 class DummyPageHolder;
 class ExecutionContext;
+class LocalDOMWindow;
 class LocalFrame;
 class KURL;
 class Page;
@@ -38,6 +39,7 @@ class V8TestingScope {
   ExceptionState& GetExceptionState();
   Page& GetPage();
   LocalFrame& GetFrame();
+  LocalDOMWindow& GetWindow();
   Document& GetDocument();
   ~V8TestingScope();
 

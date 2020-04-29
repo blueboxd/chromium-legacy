@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hy">
-<translation id="1006017844123154345">Բացել առցանց</translation>
 <translation id="1028699632127661925">Ուղարկվում է <ph name="DEVICE_NAME" /> սարքին...</translation>
+<translation id="1036348656032585052">Անջատել</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" />-ն ավելացվում է...</translation>
 <translation id="1041308826830691739">Կայքերից</translation>
 <translation id="1049743911850919806">Ինկոգնիտո</translation>
@@ -257,6 +257,7 @@
 <translation id="314939179385989105">Chrome-ի գլխավոր էջ</translation>
 <translation id="3157842584138209013">«Այլ ընտրանքներ» կոճակի միջոցով դիտեք պահված տվյալների ծավալը</translation>
 <translation id="3166827708714933426">Ներդիրների և պատուհանների դյուրանցումներ</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3181954750937456830">Անվտանգ դիտարկում (պաշտպանում է ձեզ և ձեր սարքը վտանգավոր կայքերից)</translation>
 <translation id="3205824638308738187">Գրեթե ավարտված է:</translation>
 <translation id="3207960819495026254">Էջանշված է</translation>
@@ -372,7 +373,6 @@
 <translation id="4116038641877404294">Ներբեռնեք էջերը՝ անցանց ռեժիմում օգտագործելու համար</translation>
 <translation id="4135200667068010335">Սարքերը, որոնց հետ կիսվելու եք ներդիրով, ցուցադրված չեն էկրանին:</translation>
 <translation id="4149994727733219643">Կայքերի պարզեցված դիտակերպ</translation>
-<translation id="4165986682804962316">Կայքի կարգավորումներ</translation>
 <translation id="4170011742729630528">Ծառայությունը մատչելի չէ: Կրկին փորձեք ավելի ուշ:</translation>
 <translation id="4179980317383591987">Օգտագործվել է <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Լեզուներ</translation>
@@ -583,6 +583,7 @@
 <translation id="5853623416121554550">դադարեցված է</translation>
 <translation id="5854790677617711513">30 օր և ավելի</translation>
 <translation id="5858741533101922242">Չհաջողվեց միացնել Bluetooth ադապտերը</translation>
+<translation id="5860491529813859533">Միացնել</translation>
 <translation id="5862731021271217234">Ձեր մյուս սարքերում եղած ներդիրներն օգտագործելու համար միացրեք համաժամացումը</translation>
 <translation id="5864174910718532887">Տեղեկություններ․ տեսակավորված է ըստ կայքի անվան</translation>
 <translation id="5864419784173784555">Նախորդ ներբեռնումն ավարտվում է…</translation>

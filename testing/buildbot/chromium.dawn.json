@@ -773,6 +773,34 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+      },
+      {
+        "args": [
+          "--driver-logging",
+          "--jobs=1",
+          "--no-xvfb",
+          "--additional-driver-flag=--use-vulkan=native"
+        ],
+        "isolate_name": "webgpu_blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-19.0.2",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu.template"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -982,6 +1010,34 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+      },
+      {
+        "args": [
+          "--driver-logging",
+          "--jobs=1",
+          "--no-xvfb",
+          "--additional-driver-flag=--use-vulkan=native"
+        ],
+        "isolate_name": "webgpu_blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-418.56",
+              "os": "Ubuntu-19.04",
+              "pool": "chromium.tests.gpu.template"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -1761,6 +1817,34 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+      },
+      {
+        "args": [
+          "--driver-logging",
+          "--jobs=1",
+          "--platform=mac-mac10.13"
+        ],
+        "isolate_name": "webgpu_blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "Mac-10.14.6",
+              "pool": "chromium.tests.gpu.template"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -1962,6 +2046,32 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+      },
+      {
+        "args": [
+          "--driver-logging",
+          "--jobs=1",
+          "--platform=mac-mac10.13"
+        ],
+        "isolate_name": "webgpu_blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.14.6"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -2735,6 +2845,34 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+      },
+      {
+        "args": [
+          "--driver-logging",
+          "--jobs=1",
+          "--additional-driver-flag=--disable-gpu-sandbox",
+          "--target=Release_x64"
+        ],
+        "isolate_name": "webgpu_blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-24.20.100.6286",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu.template"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -2944,6 +3082,34 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+      },
+      {
+        "args": [
+          "--driver-logging",
+          "--jobs=1",
+          "--additional-driver-flag=--disable-gpu-sandbox",
+          "--target=Release_x64"
+        ],
+        "isolate_name": "webgpu_blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-26.21.14.3102",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu.template"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -3715,6 +3881,33 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+      },
+      {
+        "args": [
+          "--driver-logging",
+          "--jobs=1",
+          "--additional-driver-flag=--disable-gpu-sandbox"
+        ],
+        "isolate_name": "webgpu_blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-24.20.100.6286",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu.template"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   },
@@ -3924,6 +4117,33 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:dawn_perf_tests/"
+      },
+      {
+        "args": [
+          "--driver-logging",
+          "--jobs=1",
+          "--additional-driver-flag=--disable-gpu-sandbox"
+        ],
+        "isolate_name": "webgpu_blink_web_tests",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webgpu_blink_web_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-26.21.14.3102",
+              "os": "Windows-10",
+              "pool": "chromium.tests.gpu.template"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://:webgpu_blink_web_tests/"
       }
     ]
   }

@@ -106,9 +106,9 @@ bool SystemTrayTestApi::Is24HourClock() {
 void SystemTrayTestApi::TapSelectToSpeakTray() {
   // The Select-to-Speak tray doesn't actually use the event, so construct
   // a bare bones event to perform the action.
-  ui::TouchEvent event(
-      ui::ET_TOUCH_PRESSED, gfx::Point(), base::TimeTicks::Now(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH), 0);
+  ui::TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(),
+                       base::TimeTicks::Now(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch), 0);
   StatusAreaWidget* status_area_widget =
       RootWindowController::ForWindow(GetTray()->GetWidget()->GetNativeWindow())
           ->GetStatusAreaWidget();

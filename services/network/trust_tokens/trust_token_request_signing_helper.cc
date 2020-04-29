@@ -347,8 +347,9 @@ TrustTokenRequestSigningHelper::GetSignature(
   // the semantics change across versions.)
 
   base::Optional<std::vector<uint8_t>> maybe_request_in_cbor =
-      canonicalizer_->Canonicalize(request, redemption_record.public_key(),
-                                   params_.sign_request_data);
+      canonicalizer_->Canonicalize(
+          request->url(), request->extra_request_headers(),
+          redemption_record.public_key(), params_.sign_request_data);
 
   if (!maybe_request_in_cbor)
     return base::nullopt;

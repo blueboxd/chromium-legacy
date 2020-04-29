@@ -267,12 +267,19 @@ var defaultTests = [
         chrome.test.callbackFail(
             'Assistant not allowed - state: 3'));
   },
+  // This test verifies the error message when trying to set Assistant-related
+  // preferences without enabling Assistant service first.
   function setWhitelistedPref() {
     chrome.autotestPrivate.setWhitelistedPref(
         'settings.voice_interaction.hotword.enabled' /* pref_name */,
         true /* value */,
         chrome.test.callbackFail(
-            'Assistant not allowed - state: 3'));
+            'Unable to set the pref because Assistant has not been enabled.'));
+    chrome.autotestPrivate.setWhitelistedPref(
+        'settings.voice_interaction.context.enabled' /* pref_name */,
+        true /* value */,
+        chrome.test.callbackFail(
+            'Unable to set the pref because Assistant has not been enabled.'));
   },
   // This test verifies that getArcState returns provisioned False in case ARC
   // is not provisioned by default.

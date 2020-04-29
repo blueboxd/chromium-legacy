@@ -19,6 +19,7 @@
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "services/tracing/public/cpp/buildflags.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,10 +28,17 @@
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+#include "base/test/trace_event_analyzer.h"
+#include "services/tracing/public/cpp/stack_sampling/loader_lock_sampler_win.h"
+#endif
+
 namespace tracing {
 namespace {
 
 using base::trace_event::TraceLog;
+using ::testing::Invoke;
+using ::testing::Return;
 
 class MockTraceWriter : public perfetto::TraceWriter {
  public:
@@ -137,6 +145,36 @@ class MockPerfettoProducer : public ProducerClient {
   DISALLOW_COPY_AND_ASSIGN(MockPerfettoProducer);
 };
 
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+
+class MockLoaderLockSampler : public TracingSamplerProfiler::LoaderLockSampler {
+ public:
+  MockLoaderLockSampler() = default;
+  ~MockLoaderLockSampler() override = default;
+
+  MOCK_METHOD(bool, IsLoaderLockHeld, (), (const, override));
+};
+
+class LoaderLockEventAnalyzer {
+ public:
+  LoaderLockEventAnalyzer() {
+    trace_analyzer::Start(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"));
+  }
+
+  size_t CountEvents() {
+    std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
+        trace_analyzer::Stop();
+    trace_analyzer::TraceEventVector events;
+    return analyzer->FindEvents(
+        trace_analyzer::Query::EventName() ==
+            trace_analyzer::Query::String(
+                TracingSamplerProfiler::kLoaderLockHeldEventName),
+        &events);
+  }
+};
+
+#endif  // BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+
 class TracingSampleProfilerTest : public testing::Test {
  public:
   TracingSampleProfilerTest() = default;
@@ -152,11 +190,22 @@ class TracingSampleProfilerTest : public testing::Test {
 
     producer_ =
         std::make_unique<MockPerfettoProducer>(std::move(perfetto_wrapper));
+
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+    ON_CALL(mock_loader_lock_sampler_, IsLoaderLockHeld())
+        .WillByDefault(Return(false));
+    TracingSamplerProfiler::SetLoaderLockSamplerForTesting(
+        &mock_loader_lock_sampler_);
+#endif
   }
 
   void TearDown() override {
     // Be sure there is no pending/running tasks.
     task_environment_.RunUntilIdle();
+
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+    TracingSamplerProfiler::SetLoaderLockSamplerForTesting(nullptr);
+#endif
   }
 
   void BeginTrace() {
@@ -202,7 +251,7 @@ class TracingSampleProfilerTest : public testing::Test {
 
   const MockPerfettoProducer* producer() const { return producer_.get(); }
 
- private:
+ protected:
   base::test::TaskEnvironment task_environment_;
 
   // We want our singleton torn down after each test.
@@ -214,6 +263,11 @@ class TracingSampleProfilerTest : public testing::Test {
   // Number of stack sampling events received.
   size_t events_stack_received_count_ = 0;
 
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+  MockLoaderLockSampler mock_loader_lock_sampler_;
+#endif
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(TracingSampleProfilerTest);
 };
 
@@ -341,6 +395,95 @@ TEST_F(TracingSampleProfilerTest, SamplingChildThread) {
       base::BindOnce(&TracingSamplerProfiler::DeleteOnChildThreadForTesting));
   base::RunLoop().RunUntilIdle();
 }
+
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+
+TEST_F(TracingSampleProfilerTest, SampleLoaderLockOnMainThread) {
+  LoaderLockEventAnalyzer event_analyzer;
+
+  bool lock_held = false;
+  size_t call_count = 0;
+  EXPECT_CALL(mock_loader_lock_sampler_, IsLoaderLockHeld())
+      .WillRepeatedly(Invoke([&lock_held, &call_count]() {
+        ++call_count;
+        lock_held = !lock_held;
+        return lock_held;
+      }));
+
+  auto profiler = TracingSamplerProfiler::CreateOnMainThread();
+  BeginTrace();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  EndTracing();
+  base::RunLoop().RunUntilIdle();
+
+  // Since the loader lock state changed each time it was sampled an event
+  // should be emitted each time.
+  EXPECT_EQ(event_analyzer.CountEvents(), call_count);
+
+  // Loader lock should have been sampled every time the stack is sampled,
+  // although not every stack sample generates a stack event.
+  EXPECT_GE(call_count, events_stack_received_count_);
+}
+
+TEST_F(TracingSampleProfilerTest, SampleLoaderLockAlwaysHeld) {
+  LoaderLockEventAnalyzer event_analyzer;
+
+  EXPECT_CALL(mock_loader_lock_sampler_, IsLoaderLockHeld())
+      .WillRepeatedly(Return(true));
+
+  auto profiler = TracingSamplerProfiler::CreateOnMainThread();
+  BeginTrace();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  EndTracing();
+  base::RunLoop().RunUntilIdle();
+
+  // An event should be emitted at the first sample when the loader lock was
+  // held, and then not again since the state never changed.
+  EXPECT_EQ(event_analyzer.CountEvents(), 1U);
+}
+
+TEST_F(TracingSampleProfilerTest, SampleLoaderLockNeverHeld) {
+  LoaderLockEventAnalyzer event_analyzer;
+
+  EXPECT_CALL(mock_loader_lock_sampler_, IsLoaderLockHeld())
+      .WillRepeatedly(Return(false));
+
+  auto profiler = TracingSamplerProfiler::CreateOnMainThread();
+  BeginTrace();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  EndTracing();
+  base::RunLoop().RunUntilIdle();
+
+  // No events should be emitted since the lock is never held.
+  EXPECT_EQ(event_analyzer.CountEvents(), 0U);
+}
+
+TEST_F(TracingSampleProfilerTest, SampleLoaderLockOnChildThread) {
+  LoaderLockEventAnalyzer event_analyzer;
+
+  // Loader lock should only be sampled on main thread.
+  EXPECT_CALL(mock_loader_lock_sampler_, IsLoaderLockHeld()).Times(0);
+
+  base::Thread sampled_thread("sampling_profiler_test");
+  sampled_thread.Start();
+  sampled_thread.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&TracingSamplerProfiler::CreateOnChildThread));
+  BeginTrace();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  EndTracing();
+  sampled_thread.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&TracingSamplerProfiler::DeleteOnChildThreadForTesting));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(event_analyzer.CountEvents(), 0U);
+}
+
+#endif  // BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
 
 TEST(TracingProfileBuilderTest, ValidModule) {
   TestModule module;

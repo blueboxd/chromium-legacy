@@ -29,7 +29,7 @@ CGFloat kTooltipFadeInTime = 0.2f;
   UITapGestureRecognizer* _tapBehindGesture;
 }
 
-static TooltipView* _active;
+static __weak TooltipView* _active;
 
 - (instancetype)initWithKeyWindow:(UIView*)keyWindow
                            target:(NSObject*)target

@@ -68,8 +68,6 @@ NSArray<id<Credential>>* allPasswords = @[
 @interface SCCredentialListCoordinator () <CredentialDetailsConsumerDelegate,
                                            CredentialListConsumerDelegate>
 @property(nonatomic, strong) CredentialListViewController* viewController;
-@property(nonatomic, strong)
-    CredentialDetailsViewController* detailsViewController;
 @end
 
 @implementation SCCredentialListCoordinator
@@ -81,10 +79,6 @@ NSArray<id<Credential>>* allPasswords = @[
   self.viewController.delegate = self;
   [self.baseViewController setHidesBarsOnSwipe:NO];
   [self.baseViewController pushViewController:self.viewController animated:YES];
-
-  self.detailsViewController = [[CredentialDetailsViewController alloc] init];
-  self.detailsViewController.title = @"CPE Password Details";
-  self.detailsViewController.delegate = self;
 
   [self.viewController presentSuggestedPasswords:suggestedPasswords
                                     allPasswords:allPasswords];
@@ -116,8 +110,11 @@ NSArray<id<Credential>>* allPasswords = @[
 }
 
 - (void)showDetailsForCredential:(id<Credential>)credential {
-  [self.detailsViewController presentCredential:credential];
-  [self.baseViewController pushViewController:self.detailsViewController
+  CredentialDetailsViewController* detailsViewController =
+      [[CredentialDetailsViewController alloc] init];
+  detailsViewController.delegate = self;
+  [detailsViewController presentCredential:credential];
+  [self.baseViewController pushViewController:detailsViewController
                                      animated:YES];
 }
 

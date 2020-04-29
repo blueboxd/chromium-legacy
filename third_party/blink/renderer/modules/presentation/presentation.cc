@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
@@ -15,13 +16,14 @@
 
 namespace blink {
 
-Presentation::Presentation(LocalFrame* frame) : ExecutionContextClient(frame) {}
+Presentation::Presentation(LocalDOMWindow* window)
+    : ExecutionContextClient(window) {}
 
 // static
-Presentation* Presentation::Create(LocalFrame* frame) {
-  DCHECK(frame);
-  Presentation* presentation = MakeGarbageCollected<Presentation>(frame);
-  PresentationController* controller = PresentationController::From(*frame);
+Presentation* Presentation::Create(LocalDOMWindow* window) {
+  DCHECK(window);
+  Presentation* presentation = MakeGarbageCollected<Presentation>(window);
+  PresentationController* controller = PresentationController::From(*window);
   DCHECK(controller);
   controller->SetPresentation(presentation);
   return presentation;
@@ -41,25 +43,24 @@ PresentationRequest* Presentation::defaultRequest() const {
 void Presentation::setDefaultRequest(PresentationRequest* request) {
   default_request_ = request;
 
-  if (!GetFrame())
+  if (!GetExecutionContext())
     return;
 
   PresentationController* controller =
-      PresentationController::From(*GetFrame());
-  if (!controller)
-    return;
+      PresentationController::FromContext(GetExecutionContext());
   controller->GetPresentationService()->SetDefaultPresentationUrls(
       request ? request->Urls() : WTF::Vector<KURL>());
 }
 
 PresentationReceiver* Presentation::receiver() {
-  if (!GetFrame() || !GetFrame()->GetSettings() ||
-      !GetFrame()->GetSettings()->GetPresentationReceiver()) {
+  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
+  if (!window ||
+      !window->GetFrame()->GetSettings()->GetPresentationReceiver()) {
     return nullptr;
   }
 
   if (!receiver_)
-    receiver_ = MakeGarbageCollected<PresentationReceiver>(GetFrame());
+    receiver_ = MakeGarbageCollected<PresentationReceiver>(window);
 
   return receiver_;
 }

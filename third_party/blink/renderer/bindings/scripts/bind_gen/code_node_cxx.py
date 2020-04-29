@@ -129,6 +129,68 @@ if (${{{clause}.cond}}) \\
         self._clauses.append(self._Clause(cond, body))
 
 
+class CxxSwitchNode(CodeNode):
+    class _Clause(object):
+        def __init__(self, case, body):
+            assert isinstance(case, CodeNode) or case is None
+            assert isinstance(body, SymbolScopeNode)
+            self.case = case
+            self.body = body
+
+    def __init__(self, cond):
+        cond = _to_conditional_node(cond)
+        cond_gensym = CodeNode.gensym()
+        clauses_gensym = CodeNode.gensym()
+        clauses = []
+        default_clauses_gensym = CodeNode.gensym()
+        default_clauses = []
+        template_text = format_template(
+            """\
+switch (${{{cond}}}) {{
+% for {clause} in {clauses}:
+  case ${{{clause}.case}}: {{
+    ${{{clause}.body}}
+    break;
+  }}
+% endfor
+% if {default_clauses}:
+  default: {{
+    ${{{default_clauses}[0].body}}
+    break;
+  }}
+% endif
+}}\
+""",
+            cond=cond_gensym,
+            clause=CodeNode.gensym(),
+            clauses=clauses_gensym,
+            default_clauses=default_clauses_gensym)
+        template_vars = {
+            cond_gensym: cond,
+            clauses_gensym: clauses,
+            default_clauses_gensym: default_clauses,
+        }
+
+        CodeNode.__init__(
+            self, template_text=template_text, template_vars=template_vars)
+
+        self._clauses = clauses
+        self._default_clauses = default_clauses
+
+    def append(self, case, body, likeliness=Likeliness.LIKELY):
+        if case is not None:  # None = default:
+            case = _to_maybe_text_node(case)
+            case.set_outer(self)
+        body = _to_symbol_scope_node(body, likeliness)
+        body.set_outer(self)
+
+        if case is not None:
+            self._clauses.append(self._Clause(case, body))
+        else:
+            assert not self._default_clauses
+            self._default_clauses.append(self._Clause(case, body))
+
+
 class CxxBreakableBlockNode(CompositeNode):
     def __init__(self, body, likeliness=Likeliness.LIKELY):
         template_format = ("do {{  // Dummy loop for use of 'break'.\n"

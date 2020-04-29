@@ -9,10 +9,13 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/path_service.h"
+#include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/profiler/unwinder.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -55,6 +58,17 @@ class TestProfileBuilder : public ProfileBuilder {
   CompletedCallback callback_;
   std::vector<Frame> sample_;
 };
+
+// The function to be executed by the code in the other library.
+void OtherLibraryCallback(void* arg) {
+  OnceClosure* wait_for_sample = static_cast<OnceClosure*>(arg);
+
+  std::move(*wait_for_sample).Run();
+
+  // Prevent tail call.
+  volatile int i = 0;
+  ALLOW_UNUSED_LOCAL(i);
+}
 
 }  // namespace
 
@@ -129,6 +143,47 @@ CallWithPlainFunction(OnceClosure wait_for_sample) {
 
   if (!wait_for_sample.is_null())
     std::move(wait_for_sample).Run();
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
+}
+
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE FunctionAddressRange CallWithAlloca(OnceClosure wait_for_sample) {
+  const void* start_program_counter = GetProgramCounter();
+
+  // Volatile to force a dynamic stack allocation.
+  const volatile size_t alloca_size = 100;
+  // Use the memory via volatile writes to prevent the allocation from being
+  // optimized out.
+  volatile char* const allocation =
+      const_cast<volatile char*>(static_cast<char*>(alloca(alloca_size)));
+  for (volatile char* p = allocation; p < allocation + alloca_size; ++p)
+    *p = '\0';
+
+  if (!wait_for_sample.is_null())
+    std::move(wait_for_sample).Run();
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
+}
+
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE FunctionAddressRange
+CallThroughOtherLibrary(NativeLibrary library, OnceClosure wait_for_sample) {
+  const void* start_program_counter = GetProgramCounter();
+
+  if (!wait_for_sample.is_null()) {
+    // A function whose arguments are a function accepting void*, and a void*.
+    using InvokeCallbackFunction = void (*)(void (*)(void*), void*);
+    EXPECT_TRUE(library);
+    InvokeCallbackFunction function = reinterpret_cast<InvokeCallbackFunction>(
+        GetFunctionPointerFromNativeLibrary(library, "InvokeCallbackFunction"));
+    EXPECT_TRUE(function);
+    (*function)(&OtherLibraryCallback, &wait_for_sample);
+  }
 
   // Volatile to prevent a tail call to GetProgramCounter().
   const void* volatile end_program_counter = GetProgramCounter();
@@ -245,6 +300,33 @@ void ExpectStackDoesNotContain(
                   << " was unexpectedly found in stack:\n"
                   << FormatSampleForDiagnosticOutput(stack);
   }
+}
+
+NativeLibrary LoadOtherLibrary() {
+  // The lambda gymnastics works around the fact that we can't use ASSERT_*
+  // macros in a function returning non-null.
+  const auto load = [](NativeLibrary* library) {
+    FilePath other_library_path;
+    ASSERT_TRUE(PathService::Get(DIR_MODULE, &other_library_path));
+    other_library_path = other_library_path.AppendASCII(
+        GetLoadableModuleName("base_profiler_test_support_library"));
+    NativeLibraryLoadError load_error;
+    *library = LoadNativeLibrary(other_library_path, &load_error);
+    ASSERT_TRUE(*library) << "error loading " << other_library_path.value()
+                          << ": " << load_error.ToString();
+  };
+
+  NativeLibrary library = nullptr;
+  load(&library);
+  return library;
+}
+
+uintptr_t GetAddressInOtherLibrary(NativeLibrary library) {
+  EXPECT_TRUE(library);
+  uintptr_t address = reinterpret_cast<uintptr_t>(
+      GetFunctionPointerFromNativeLibrary(library, "InvokeCallbackFunction"));
+  EXPECT_NE(address, 0u);
+  return address;
 }
 
 }  // namespace base

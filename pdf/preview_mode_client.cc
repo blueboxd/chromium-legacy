@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "pdf/document_layout.h"
 
 namespace chrome_pdf {

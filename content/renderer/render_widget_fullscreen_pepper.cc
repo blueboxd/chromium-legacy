@@ -55,7 +55,6 @@ class FullscreenMouseLockDispatcher : public MouseLockDispatcher {
   // MouseLockDispatcher implementation.
   void SendLockMouseRequest(blink::WebLocalFrame* requester_frame,
                             bool request_unadjusted_movement) override;
-  void SendUnlockMouseRequest() override;
 
   RenderWidgetFullscreenPepper* widget_;
 
@@ -125,12 +124,6 @@ void FullscreenMouseLockDispatcher::SendLockMouseRequest(
                            base::BindOnce(&MouseLockDispatcher::OnLockMouseACK,
                                           weak_ptr_factory_.GetWeakPtr()));
   }
-}
-
-void FullscreenMouseLockDispatcher::SendUnlockMouseRequest() {
-  auto* host = widget_->GetInputHandlerHost();
-  if (host)
-    host->UnlockMouse();
 }
 
 }  // anonymous namespace

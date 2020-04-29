@@ -36,7 +36,7 @@ class TileFetcher {
   // Method to create a fetcher and start the fetch task immediately.
   static std::unique_ptr<TileFetcher> CreateAndFetchForTileInfo(
       const GURL& url,
-      const std::string& locale,
+      const std::string& country_code,
       const std::string& accept_languages,
       const std::string& api_key,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,

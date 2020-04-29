@@ -71,10 +71,12 @@ void LocalCardMigrationBubbleViews::Hide() {
   // do that here. This will clear out |controller_|'s reference to |this|. Note
   // that WindowClosing() happens only after the _asynchronous_ Close() task
   // posted in CloseBubble() completes, but we need to fix references sooner.
-  if (controller_)
-    controller_->OnBubbleClosed();
-  controller_ = nullptr;
   CloseBubble();
+
+  if (controller_)
+    controller_->OnBubbleClosed(closed_reason_);
+
+  controller_ = nullptr;
 }
 
 void LocalCardMigrationBubbleViews::OnDialogAccepted() {
@@ -149,12 +151,34 @@ base::string16 LocalCardMigrationBubbleViews::GetWindowTitle() const {
 
 void LocalCardMigrationBubbleViews::WindowClosing() {
   if (controller_) {
-    controller_->OnBubbleClosed();
+    controller_->OnBubbleClosed(closed_reason_);
     controller_ = nullptr;
   }
 }
 
-LocalCardMigrationBubbleViews::~LocalCardMigrationBubbleViews() {}
+void LocalCardMigrationBubbleViews::OnWidgetClosing(views::Widget* widget) {
+  LocationBarBubbleDelegateView::OnWidgetDestroying(widget);
+  switch (widget->closed_reason()) {
+    case views::Widget::ClosedReason::kUnspecified:
+      closed_reason_ = PaymentsBubbleClosedReason::kNotInteracted;
+      return;
+    case views::Widget::ClosedReason::kEscKeyPressed:
+    case views::Widget::ClosedReason::kCloseButtonClicked:
+      closed_reason_ = PaymentsBubbleClosedReason::kClosed;
+      return;
+    case views::Widget::ClosedReason::kLostFocus:
+      closed_reason_ = PaymentsBubbleClosedReason::kLostFocus;
+      return;
+    case views::Widget::ClosedReason::kAcceptButtonClicked:
+      closed_reason_ = PaymentsBubbleClosedReason::kAccepted;
+      return;
+    case views::Widget::ClosedReason::kCancelButtonClicked:
+      NOTREACHED();
+      return;
+  }
+}
+
+LocalCardMigrationBubbleViews::~LocalCardMigrationBubbleViews() = default;
 
 void LocalCardMigrationBubbleViews::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());

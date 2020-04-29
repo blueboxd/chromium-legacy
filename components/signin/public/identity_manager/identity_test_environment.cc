@@ -33,6 +33,7 @@
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 #if defined(OS_IOS)
 #include "components/signin/internal/identity_manager/device_accounts_synchronizer_impl.h"
@@ -116,9 +117,11 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 }
 
 IdentityTestEnvironment::IdentityTestEnvironment(
-    IdentityManager* identity_manager) {
+    IdentityManager* identity_manager,
+    SigninClient* signin_client) {
   DCHECK(identity_manager);
   raw_identity_manager_ = identity_manager;
+  raw_signin_client_ = signin_client;
   Initialize();
 }
 
@@ -147,6 +150,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
   TestSigninClient* test_signin_client = dependencies_owner_->signin_client();
   if (test_url_loader_factory)
     test_signin_client->OverrideTestUrlLoaderFactory(test_url_loader_factory);
+  test_url_loader_factory_ = test_signin_client->GetTestURLLoaderFactory();
 
   sync_preferences::TestingPrefServiceSyncable* test_pref_service =
       dependencies_owner_->pref_service();
@@ -314,9 +318,7 @@ AccountInfo IdentityTestEnvironment::MakeAccountAvailableWithCookies(
     const std::string& email,
     const std::string& gaia_id) {
   return signin::MakeAccountAvailableWithCookies(
-      identity_manager(),
-      dependencies_owner_->signin_client()->GetTestURLLoaderFactory(), email,
-      gaia_id);
+      identity_manager(), test_url_loader_factory(), email, gaia_id);
 }
 
 void IdentityTestEnvironment::SetRefreshTokenForAccount(
@@ -344,10 +346,8 @@ void IdentityTestEnvironment::UpdatePersistentErrorOfRefreshTokenForAccount(
 
 void IdentityTestEnvironment::SetCookieAccounts(
     const std::vector<CookieParamsForTest>& cookie_accounts) {
-  signin::SetCookieAccounts(
-      identity_manager(),
-      dependencies_owner_->signin_client()->GetTestURLLoaderFactory(),
-      cookie_accounts);
+  signin::SetCookieAccounts(identity_manager(), test_url_loader_factory(),
+                            cookie_accounts);
 }
 
 void IdentityTestEnvironment::SetAutomaticIssueOfAccessTokens(bool grant) {
@@ -497,6 +497,16 @@ FakeProfileOAuth2TokenService* IdentityTestEnvironment::fake_token_service() {
       identity_manager()->GetTokenService());
 }
 
+network::TestURLLoaderFactory*
+IdentityTestEnvironment::test_url_loader_factory() {
+  CHECK(test_url_loader_factory_)
+      << "IdentityTestEnvironment cannot perform cookie-related operations if "
+         "TestURLLoaderFactory isn't set. This may happen if you built your "
+         "IdentityTestEnvironment from an existing profile. Please provide a "
+         "TestURLLoaderFactory by calling SetTestURLLoaderFactory()";
+  return test_url_loader_factory_;
+}
+
 void IdentityTestEnvironment::UpdateAccountInfoForAccount(
     AccountInfo account_info) {
   signin::UpdateAccountInfoForAccount(identity_manager(), account_info);
@@ -546,6 +556,23 @@ void IdentityTestEnvironment::SimulateMergeSessionFailure(
   static_cast<GaiaAuthConsumer*>(
       identity_manager()->GetGaiaCookieManagerService())
       ->OnMergeSessionFailure(auth_error);
+}
+
+void IdentityTestEnvironment::SetTestURLLoaderFactory(
+    network::TestURLLoaderFactory* test_url_loader_factory) {
+  if (dependencies_owner_) {
+    dependencies_owner_->signin_client()->OverrideTestUrlLoaderFactory(
+        test_url_loader_factory);
+  } else {
+    DCHECK(raw_signin_client_);
+    DCHECK_EQ(test_url_loader_factory->GetSafeWeakWrapper(),
+              raw_signin_client_->GetURLLoaderFactory())
+        << "SigninClient uses a factory different from the one passed in "
+           "SetTestURLLoaderFactory(). See "
+           "BuildChromeSigninClientWithURLLoader() method for setting up the "
+           "SigninClient properly.";
+  }
+  test_url_loader_factory_ = test_url_loader_factory;
 }
 
 }  // namespace signin

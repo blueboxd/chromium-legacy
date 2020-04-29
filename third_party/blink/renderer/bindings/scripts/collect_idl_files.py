@@ -21,7 +21,7 @@ _VALID_COMPONENTS = ('core', 'modules')
 def parse_options():
     parser = optparse.OptionParser()
     parser.add_option(
-        '--idl-list-file',
+        '--idl_list_file',
         type='string',
         help="a file path which lists IDL file paths to process")
     parser.add_option(
@@ -29,15 +29,18 @@ def parse_options():
         type='choice',
         choices=_VALID_COMPONENTS,
         help="specify a component name")
+    parser.add_option(
+        '--for_testing',
+        action='store_true',
+        help=("specify this option if the IDL definitions are meant for "
+              "testing only"))
     parser.add_option('--output', type='string', help="the output file path")
     options, args = parser.parse_args()
 
-    if options.idl_list_file is None:
-        parser.error("Specify a file listing IDL files with --idl-list-file.")
-    if options.output is None:
-        parser.error("Specify the output file path with --output.")
-    if options.component is None:
-        parser.error("Specify a component with --component.")
+    required_option_names = ('idl_list_file', 'component', 'output')
+    for opt_name in required_option_names:
+        if getattr(options, opt_name) is None:
+            parser.error("--{} is a required option.".format(opt_name))
 
     if args:
         parser.error("Unknown arguments {}".format(args))
@@ -50,7 +53,9 @@ def main():
 
     filepaths = utilities.read_idl_files_list_from_file(options.idl_list_file)
     parser = blink_idl_parser.BlinkIDLParser()
-    ast_group = web_idl.AstGroup(web_idl.Component(options.component))
+    ast_group = web_idl.AstGroup(
+        component=web_idl.Component(options.component),
+        for_testing=bool(options.for_testing))
     for filepath in filepaths:
         ast_group.add_ast_node(blink_idl_parser.parse_file(parser, filepath))
     ast_group.write_to_file(options.output)

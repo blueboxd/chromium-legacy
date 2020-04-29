@@ -24,8 +24,6 @@ class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
   ~PWAConfirmationBubbleView() override;
 
   // LocationBarBubbleDelegateView:
-  bool ShouldShowCloseButton() const override;
-  base::string16 GetWindowTitle() const override;
   views::View* GetInitiallyFocusedView() override;
   void WindowClosing() override;
   bool Accept() override;

@@ -13,6 +13,7 @@
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/bindings/modules/v8/module_bindings_initializer.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
@@ -66,7 +67,6 @@
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
-#include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_client.h"
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
@@ -190,8 +190,6 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
       frame, MakeGarbageCollected<PushMessagingClient>(frame));
 
   ScreenOrientationControllerImpl::ProvideTo(frame);
-  if (RuntimeEnabledFeatures::PresentationEnabled())
-    PresentationController::ProvideTo(frame);
   ::blink::ProvideSpeechRecognitionTo(frame);
   InspectorAccessibilityAgent::ProvideTo(&frame);
   ManifestManager::ProvideTo(frame);

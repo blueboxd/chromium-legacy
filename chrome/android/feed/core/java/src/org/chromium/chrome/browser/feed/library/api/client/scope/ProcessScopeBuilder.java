@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.feed.library.api.host.storage.ContentStorageD
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorage;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorageDirect;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipSupportedApi;
-import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ActionManager;
 import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ActionReader;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
 import org.chromium.chrome.browser.feed.library.api.internal.knowncontent.FeedKnownContent;
@@ -216,18 +215,19 @@ public final class ProcessScopeBuilder {
                 networkClient, protocolAdapter, extensionRegistry, schedulerApi, taskQueue,
                 timingUtils, threadUtils, actionReader, mContext, mApplicationInfo,
                 mainThreadRunner, mBasicLoggingApi, mTooltipSupportedApi);
-        ActionUploadRequestManager actionUploadRequestManager =
-                new FeedActionUploadRequestManager(mConfiguration, networkClient, protocolAdapter,
-                        extensionRegistry, taskQueue, threadUtils, store, mClock);
+        FeedActionManagerImpl actionManager = new FeedActionManagerImpl(
+                store, threadUtils, taskQueue, mainThreadRunner, mClock, mBasicLoggingApi);
+        ActionUploadRequestManager actionUploadRequestManager = new FeedActionUploadRequestManager(
+                actionManager, mConfiguration, networkClient, protocolAdapter, extensionRegistry,
+                mainThreadRunner, taskQueue, threadUtils, store, mClock);
         FeedSessionManagerFactory fsmFactory = new FeedSessionManagerFactory(taskQueue, store,
                 timingUtils, threadUtils, protocolAdapter, feedRequestManager,
                 actionUploadRequestManager, schedulerApi, mConfiguration, mClock, lifecycleListener,
                 mainThreadRunner, mBasicLoggingApi);
         FeedSessionManager feedSessionManager = fsmFactory.create();
+        actionManager.initialize(feedSessionManager);
         RequestManagerImpl clientRequestManager =
                 new RequestManagerImpl(feedRequestManager, feedSessionManager);
-        ActionManager actionManager = new FeedActionManagerImpl(feedSessionManager, store,
-                threadUtils, taskQueue, mainThreadRunner, mClock, mBasicLoggingApi);
 
         FeedKnownContent feedKnownContent =
                 new FeedKnownContentImpl(feedSessionManager, mainThreadRunner, threadUtils);

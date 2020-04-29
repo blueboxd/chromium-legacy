@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {browserProxy} from '../browser_proxy/browser_proxy.js';
+
 /**
  * The prefix of image files.
  * @type {string}
@@ -82,7 +84,8 @@ export class Filenamer {
    * @return {string} New filename.
    */
   newVideoName() {
-    return VIDEO_PREFIX + timestampToDatetimeName(this.timestamp_) + '.mkv';
+    const ext = browserProxy.isMp4RecordingEnabled() ? '.mp4' : '.mkv';
+    return VIDEO_PREFIX + timestampToDatetimeName(this.timestamp_) + ext;
   }
 
   /**

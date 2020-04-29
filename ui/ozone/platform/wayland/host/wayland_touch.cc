@@ -96,7 +96,7 @@ void WaylandTouch::Down(void* data,
   gfx::Point location(wl_fixed_to_double(x), wl_fixed_to_double(y));
   base::TimeTicks time_stamp =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(time);
-  PointerDetails pointer_details(EventPointerType::POINTER_TYPE_TOUCH, id);
+  PointerDetails pointer_details(EventPointerType::kTouch, id);
   TouchEvent event(type, location, time_stamp, pointer_details);
   touch->callback_.Run(&event);
 
@@ -121,7 +121,7 @@ void WaylandTouch::Up(void* data,
   EventType type = ET_TOUCH_RELEASED;
   base::TimeTicks time_stamp =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(time);
-  PointerDetails pointer_details(EventPointerType::POINTER_TYPE_TOUCH, id);
+  PointerDetails pointer_details(EventPointerType::kTouch, id);
   TouchEvent event(type, touch->current_points_[id].last_known_location,
                    time_stamp, pointer_details);
   touch->callback_.Run(&event);
@@ -150,7 +150,7 @@ void WaylandTouch::Motion(void* data,
   gfx::Point location(wl_fixed_to_double(x), wl_fixed_to_double(y));
   base::TimeTicks time_stamp =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(time);
-  PointerDetails pointer_details(EventPointerType::POINTER_TYPE_TOUCH, id);
+  PointerDetails pointer_details(EventPointerType::kTouch, id);
   TouchEvent event(type, location, time_stamp, pointer_details);
   touch->callback_.Run(&event);
   touch->current_points_[id].last_known_location = location;
@@ -166,7 +166,7 @@ void WaylandTouch::Cancel(void* data, wl_touch* obj) {
 
     EventType type = ET_TOUCH_CANCELLED;
     base::TimeTicks time_stamp = base::TimeTicks::Now();
-    PointerDetails pointer_details(EventPointerType::POINTER_TYPE_TOUCH, id);
+    PointerDetails pointer_details(EventPointerType::kTouch, id);
     TouchEvent event(type, gfx::Point(), time_stamp, pointer_details);
     touch->callback_.Run(&event);
 

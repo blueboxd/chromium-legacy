@@ -141,6 +141,11 @@ class WebUIBrowserProxy {
   addDummyHistoryIfNotAvailable() {
     // no-ops
   }
+
+  /** @override */
+  isMp4RecordingEnabled() {
+    return false;
+  }
 }
 
 export const browserProxy = new WebUIBrowserProxy();

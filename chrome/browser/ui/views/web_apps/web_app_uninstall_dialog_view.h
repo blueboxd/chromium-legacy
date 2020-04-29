@@ -53,10 +53,8 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
 
   // views::WidgetDelegate:
   ui::ModalType GetModalType() const override;
-  base::string16 GetWindowTitle() const override;
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
-  bool ShouldShowCloseButton() const override;
 
   // Uninstalls the web app. Returns true on success.
   bool Uninstall();
@@ -67,7 +65,6 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
   void OnDialogCanceled();
 
   WebAppUninstallDialogViews* dialog_;
-  base::string16 app_name_;
 
   views::Checkbox* checkbox_ = nullptr;
   gfx::ImageSkia image_;

@@ -299,6 +299,41 @@ public class StreamActionApiImplTest {
     }
 
     @Test
+    @Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testReportViewVisible_withFeature() {
+        String contentId = "contentId";
+        mStreamActionApi.reportViewVisible(mView, contentId, ACTION_PAYLOAD);
+
+        verify(mActionManager).onViewVisible(mView, contentId, ACTION_PAYLOAD);
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testReportViewVisible_withoutFeature() {
+        mStreamActionApi.reportViewHidden(mView, "contentId");
+
+        verify(mActionManager, never())
+                .onViewVisible(any(View.class), anyString(), any(ActionPayload.class));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testReportViewHidden_withFeature() {
+        String contentId = "contentId";
+        mStreamActionApi.reportViewHidden(mView, contentId);
+
+        verify(mActionManager).onViewHidden(mView, contentId);
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+    public void testReportViewHidden_withoutFeature() {
+        mStreamActionApi.reportViewHidden(mView, "contentId");
+
+        verify(mActionManager, never()).onViewHidden(any(View.class), anyString());
+    }
+
+    @Test
     public void testOnElementHide() {
         mStreamActionApi.onElementHide(ElementType.INTEREST_HEADER.getNumber());
 

@@ -35,7 +35,7 @@
       @media (prefers-color-scheme: light) {
         cr-icon-button {
           --cr-icon-button-fill-color: var(
-              --cr-toolbar-search-field-input-color,
+              --cr-toolbar-search-field-input-icon-color,
               white);
         }
       }
@@ -43,7 +43,7 @@
       @media (prefers-color-scheme: dark) {
         cr-icon-button {
           --cr-icon-button-fill-color: var(
-              --cr-toolbar-search-field-input-color,
+              --cr-toolbar-search-field-input-icon-color,
               var(--google-grey-refresh-500));
         }
       }
@@ -65,7 +65,7 @@
 
       paper-spinner-lite {
         --paper-spinner-color:
-            var(--cr-toolbar-search-field-input-color, white);
+            var(--cr-toolbar-search-field-input-icon-color, white);
         height: var(--cr-icon-size);
         margin: var(--cr-toolbar-search-field-paper-spinner-margin, 0 6px);
         opacity: 0;
@@ -111,7 +111,7 @@
         -webkit-appearance: none;
         background: transparent;
         border: none;
-        color: var(--cr-toolbar-search-field-input-color, white);
+        color: var(--cr-toolbar-search-field-input-text-color, white);
         font: inherit;
         outline: none;
         padding: 0;

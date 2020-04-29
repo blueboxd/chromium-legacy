@@ -71,7 +71,7 @@ class PlayerFrameGestureDetector
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        return false;
+        return mPlayerFrameViewDelegate.onFling(velocityX, velocityY);
     }
 
     @Override

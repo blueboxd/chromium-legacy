@@ -45,6 +45,20 @@ class FullPanel : public View {
   DISALLOW_COPY_AND_ASSIGN(FullPanel);
 };
 
+std::unique_ptr<Textfield> CreateCommonTextfield(
+    int vertical_pos,
+    int horizontal_pos,
+    TextfieldController* container) {
+  auto textfield = std::make_unique<Textfield>();
+  textfield->SetPosition(gfx::Point(horizontal_pos, vertical_pos));
+  textfield->SetDefaultWidthInChars(3);
+  textfield->SetTextInputType(ui::TEXT_INPUT_TYPE_NUMBER);
+  textfield->SizeToPreferredSize();
+  textfield->SetText(base::ASCIIToUTF16("0"));
+  textfield->set_controller(container);
+  return textfield;
+}
+
 }  // namespace
 
 LayoutExampleBase::ChildPanel::ChildPanel(LayoutExampleBase* example)
@@ -163,71 +177,38 @@ Combobox* LayoutExampleBase::CreateAndAddCombobox(
   return combo_box_ptr;
 }
 
-Textfield* LayoutExampleBase::CreateRawTextfield(int vertical_pos,
-                                                 bool add,
-                                                 int* horizontal_pos) {
-  Textfield* text_field = new Textfield();
-  text_field->SetPosition(gfx::Point(*horizontal_pos, vertical_pos));
-  text_field->SetDefaultWidthInChars(3);
-  text_field->SetTextInputType(ui::TEXT_INPUT_TYPE_NUMBER);
-  text_field->SizeToPreferredSize();
-  text_field->SetText(base::ASCIIToUTF16("0"));
-  text_field->set_controller(this);
-  *horizontal_pos += text_field->width() + kLayoutExampleVerticalSpacing;
-  if (add)
-    control_panel_->AddChildView(text_field);
-  return text_field;
-}
-
-Textfield* LayoutExampleBase::CreateTextfield(const base::string16& label_text,
-                                              int* vertical_pos) {
+Textfield* LayoutExampleBase::CreateAndAddTextfield(
+    const base::string16& label_text,
+    int* vertical_pos) {
   Label* label = new Label(label_text);
   label->SetPosition(gfx::Point(kLayoutExampleLeftPadding, *vertical_pos));
   label->SizeToPreferredSize();
   int horizontal_pos =
       label->x() + label->width() + kLayoutExampleVerticalSpacing;
-  Textfield* text_field =
-      CreateRawTextfield(*vertical_pos, false, &horizontal_pos);
-  label->SetSize(gfx::Size(label->width(), text_field->height()));
+  std::unique_ptr<Textfield> textfield =
+      CreateCommonTextfield(*vertical_pos, horizontal_pos, this);
+  label->SetSize(gfx::Size(label->width(), textfield->height()));
   control_panel_->AddChildView(label);
-  control_panel_->AddChildView(text_field);
-  *vertical_pos += text_field->height() + kLayoutExampleVerticalSpacing;
-  return text_field;
-}
-
-void LayoutExampleBase::CreateMarginsTextFields(
-    const base::string16& label_text,
-    Textfield* textfields[4],
-    int* vertical_pos) {
-  textfields[0] = CreateTextfield(label_text, vertical_pos);
-  int center = textfields[0]->x() + textfields[0]->width() / 2;
-  int horizontal_pos = std::max(
-      0, center - (textfields[0]->width() + kLayoutExampleVerticalSpacing / 2));
-  textfields[1] = CreateRawTextfield(*vertical_pos, true, &horizontal_pos);
-  textfields[3] = CreateRawTextfield(*vertical_pos, true, &horizontal_pos);
-  *vertical_pos = textfields[1]->y() + textfields[1]->height() +
-                  kLayoutExampleVerticalSpacing;
-  horizontal_pos = textfields[0]->x();
-  textfields[2] = CreateRawTextfield(*vertical_pos, true, &horizontal_pos);
-  *vertical_pos = textfields[2]->y() + textfields[2]->height() +
-                  kLayoutExampleVerticalSpacing;
+  auto* textfield_ptr = control_panel_->AddChildView(std::move(textfield));
+  *vertical_pos += textfield_ptr->height() + kLayoutExampleVerticalSpacing;
+  return textfield_ptr;
 }
 
 void LayoutExampleBase::CreateMarginsTextFields(
     const base::string16& label_text,
     InsetTextfields* textfields,
     int* vertical_pos) {
-  textfields->top = CreateTextfield(label_text, vertical_pos);
+  textfields->top = CreateAndAddTextfield(label_text, vertical_pos);
   int center = textfields->top->x() + textfields->top->width() / 2;
   int horizontal_pos = std::max(
       0,
       center - (textfields->top->width() + kLayoutExampleVerticalSpacing / 2));
-  textfields->left = CreateRawTextfield(*vertical_pos, true, &horizontal_pos);
-  textfields->right = CreateRawTextfield(*vertical_pos, true, &horizontal_pos);
+  textfields->left = CreateAndAddRawTextfield(*vertical_pos, &horizontal_pos);
+  textfields->right = CreateAndAddRawTextfield(*vertical_pos, &horizontal_pos);
   *vertical_pos = textfields->left->y() + textfields->left->height() +
                   kLayoutExampleVerticalSpacing;
   horizontal_pos = textfields->top->x();
-  textfields->bottom = CreateRawTextfield(*vertical_pos, true, &horizontal_pos);
+  textfields->bottom = CreateAndAddRawTextfield(*vertical_pos, &horizontal_pos);
   *vertical_pos = textfields->bottom->y() + textfields->bottom->height() +
                   kLayoutExampleVerticalSpacing;
 }
@@ -267,7 +248,7 @@ void LayoutExampleBase::CreateExampleView(View* container) {
   horizontal_pos += add_button_->width() + kLayoutExampleVerticalSpacing;
 
   preferred_width_view_ =
-      CreateRawTextfield(vertical_pos, true, &horizontal_pos);
+      CreateAndAddRawTextfield(vertical_pos, &horizontal_pos);
   preferred_width_view_->SetY(
       vertical_pos +
       (add_button_->height() - preferred_width_view_->height()) / 2);
@@ -275,7 +256,7 @@ void LayoutExampleBase::CreateExampleView(View* container) {
       base::NumberToString16(kLayoutExampleDefaultChildSize.width()));
 
   preferred_height_view_ =
-      CreateRawTextfield(vertical_pos, true, &horizontal_pos);
+      CreateAndAddRawTextfield(vertical_pos, &horizontal_pos);
   preferred_height_view_->SetY(
       vertical_pos +
       (add_button_->height() - preferred_height_view_->height()) / 2);
@@ -340,6 +321,14 @@ gfx::Insets LayoutExampleBase::TextfieldsToInsets(
 
   return gfx::Insets(std::max(0, top), std::max(0, left), std::max(0, bottom),
                      std::max(0, right));
+}
+
+Textfield* LayoutExampleBase::CreateAndAddRawTextfield(int vertical_pos,
+                                                       int* horizontal_pos) {
+  std::unique_ptr<Textfield> textfield =
+      CreateCommonTextfield(vertical_pos, *horizontal_pos, this);
+  *horizontal_pos += textfield->width() + kLayoutExampleVerticalSpacing;
+  return control_panel_->AddChildView(std::move(textfield));
 }
 
 }  // namespace examples

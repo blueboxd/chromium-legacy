@@ -47,6 +47,12 @@ const base::Feature kAutofillCreditCardAuthentication{
 const base::Feature kAutofillCreditCardUploadFeedback{
     "AutofillCreditCardUploadFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, autofill payments bubbles' result will be recorded as either
+// 'accepted', 'cancelled', 'closed', 'not interacted' or 'lost focus'.
+const base::Feature kAutofillEnableFixedPaymentsBubbleLogging{
+    "AutofillEnableFixedPaymentsBubbleLogging",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether we show a Google-issued card in the suggestions list.
 const base::Feature kAutofillEnableGoogleIssuedCard{
     "AutofillEnableGoogleIssuedCard", base::FEATURE_DISABLED_BY_DEFAULT};

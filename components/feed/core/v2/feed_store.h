@@ -44,6 +44,9 @@ class FeedStore {
 
   void Initialize(base::OnceClosure initialize_complete);
 
+  // Erase all data in the store.
+  void ClearAll(base::OnceCallback<void(bool)> callback);
+
   void LoadStream(base::OnceCallback<void(LoadStreamResult)> callback);
 
   // Stores the content of |update_request| in place of any existing stream
@@ -109,7 +112,6 @@ class FeedStore {
 
   void Write(std::vector<feedstore::Record> records,
              base::OnceCallback<void(bool)> callback);
-
   void ReadSingle(
       const std::string& key,
       base::OnceCallback<void(bool, std::unique_ptr<feedstore::Record>)>
@@ -131,12 +133,10 @@ class FeedStore {
           callback,
       bool success,
       std::unique_ptr<std::vector<feedstore::Record>> records);
-
   void OnReadActionsFinished(
       base::OnceCallback<void(std::vector<feedstore::StoredAction>)> callback,
       bool success,
       std::unique_ptr<std::vector<feedstore::Record>> records);
-
   void OnWriteFinished(base::OnceCallback<void(bool)> callback, bool success);
 
   // TODO(iwells): implement

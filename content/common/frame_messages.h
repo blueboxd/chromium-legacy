@@ -496,14 +496,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_UpdateOpener, int /* opener_routing_id */)
 // commit, activation and frame swap of the current DOM tree in blink.
 IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64_t /* id */)
 
-// Requests that a provisional RenderFrame swap itself into the frame tree,
-// replacing the RenderFrameProxy that it is associated with.  This is used
-// with remote-to-local frame navigations when the RenderFrameProxy corresponds
-// to a non-live (crashed) frame.  In that case, the browser process will send
-// this message as part of an early commit to stop showing the sad iframe
-// without waiting for the provisional RenderFrame's navigation to commit.
-IPC_MESSAGE_ROUTED0(FrameMsg_SwapIn)
-
 // Instructs the frame to stop the load in progress, if any.
 IPC_MESSAGE_ROUTED0(FrameMsg_Stop)
 

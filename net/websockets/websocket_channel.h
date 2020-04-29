@@ -36,6 +36,7 @@ class HttpRequestHeaders;
 class IOBuffer;
 class IPEndPoint;
 class NetLogWithSource;
+class IsolationInfo;
 class SiteForCookies;
 class URLRequest;
 class URLRequestContext;
@@ -56,7 +57,7 @@ class NET_EXPORT WebSocketChannel {
       const std::vector<std::string>&,
       const url::Origin&,
       const SiteForCookies&,
-      const NetworkIsolationKey&,
+      const IsolationInfo&,
       const HttpRequestHeaders&,
       URLRequestContext*,
       const NetLogWithSource&,
@@ -81,7 +82,7 @@ class NET_EXPORT WebSocketChannel {
       const std::vector<std::string>& requested_protocols,
       const url::Origin& origin,
       const SiteForCookies& site_for_cookies,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const IsolationInfo& isolation_info,
       const HttpRequestHeaders& additional_headers);
 
   // Sends a data frame to the remote side. It is the responsibility of the
@@ -130,7 +131,7 @@ class NET_EXPORT WebSocketChannel {
       const std::vector<std::string>& requested_protocols,
       const url::Origin& origin,
       const SiteForCookies& site_for_cookies,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const IsolationInfo& isolation_info,
       const HttpRequestHeaders& additional_headers,
       WebSocketStreamRequestCreationCallback callback);
 
@@ -192,7 +193,7 @@ class NET_EXPORT WebSocketChannel {
       const std::vector<std::string>& requested_protocols,
       const url::Origin& origin,
       const SiteForCookies& site_for_cookies,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const IsolationInfo& isolation_info,
       const HttpRequestHeaders& additional_headers,
       WebSocketStreamRequestCreationCallback callback);
 

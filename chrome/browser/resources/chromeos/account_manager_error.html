@@ -18,10 +18,8 @@
   <script src="account_manager_error.js"></script>
   <style>
     body {
-      height: calc(100% - 50px);
-      margin-inline-end: 32px;
-      margin-inline-start: 32px;
-      margin-top: 20px;
+      height: 100%;
+      margin: 0;
     }
   </style>
 </head>
@@ -35,7 +33,13 @@
         #content {
           display: flex;
           flex-direction: column;
+          height: calc(100% - 61px);
+          padding-bottom: 32px;
+          padding-inline-end: 0;
+          padding-inline-start: 0;
+          padding-top: 29px; /* 64px - 35px(dialog top border size) */
         }
+
         .image-container {
           align-items: center;
           display: flex;
@@ -43,24 +47,38 @@
           justify-content: center;
           width: 100%;
         }
+
         .main-image {
           height: 256px;
           width: 256px;
         }
+
+        .main-container {
+          display: flex;
+          flex-direction: column;
+          flex-grow: 1;
+          padding-inline-end: 64px;
+          padding-inline-start: 64px;
+        }
+
         .button-container {
+          padding-inline-end: 32px;
+          padding-inline-start: 32px;
           position: relative;
         }
       </style>
       <div id="content">
-        <if expr="_google_chrome">
-          <img id="google-logo" src="googleg.svg" alt="">
-        </if>
-        <h1>[[errorTitle_]]</h1>
-        <p>[[errorMessage_]]</p>
-        <div class="image-container">
-          <template is="dom-if" if="[[imageUrl_]]">
-            <img class="main-image" src="[[imageUrl_]]" alt="">
-          </template>
+        <div class="main-container">
+          <if expr="_google_chrome">
+            <img id="google-logo" src="googleg.svg" alt="">
+          </if>
+          <h1>[[errorTitle_]]</h1>
+          <p>[[errorMessage_]]</p>
+          <div class="image-container">
+            <template is="dom-if" if="[[imageUrl_]]">
+              <img class="main-image" src="[[imageUrl_]]" alt="">
+            </template>
+          </div>
         </div>
         <div class="button-container">
           <cr-button id="ok-button" class="action-button"

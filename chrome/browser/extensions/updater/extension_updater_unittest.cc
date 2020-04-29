@@ -1508,8 +1508,8 @@ class ExtensionUpdaterTest : public testing::Test {
       delegate.Wait();
     } else {
       EXPECT_TRUE(updater.downloader_->extension_loader_);
-      EXPECT_CALL(delegate, OnExtensionDownloadFinished(
-                                _, _, _, version.GetString(), _, requests, _))
+      EXPECT_CALL(delegate,
+                  OnExtensionDownloadFinished(_, _, _, _, requests, _))
           .WillOnce(
               DoAll(testing::SaveArg<0>(&crx_file_info),
                     InvokeWithoutArgs(&delegate,
@@ -1517,6 +1517,7 @@ class ExtensionUpdaterTest : public testing::Test {
       helper.test_url_loader_factory().AddResponse(
           test_url.spec(), "Any content. It is irrelevant.");
       delegate.Wait();
+      EXPECT_EQ(version.GetString(), crx_file_info.expected_version);
     }
 
     if (fail) {
@@ -1683,8 +1684,11 @@ class ExtensionUpdaterTest : public testing::Test {
     content::RunAllTasksUntilIdle();
 
     LoadErrorReporter::Init(false);
-    fake_crx_installer->InstallCrxFile(
-        CRXFileInfo(kTestExtensionId, filename, hash, GetTestVerifierFormat()));
+
+    CRXFileInfo crx_info(filename, GetTestVerifierFormat());
+    crx_info.extension_id = kTestExtensionId;
+    crx_info.expected_hash = hash;
+    fake_crx_installer->InstallCrxFile(crx_info);
 
     content::RunAllTasksUntilIdle();
 
@@ -1903,7 +1907,7 @@ class ExtensionUpdaterTest : public testing::Test {
           *updater.downloader_->extensions_queue_.active_request();
 
       CRXFileInfo crx_file_info;
-      EXPECT_CALL(delegate, OnExtensionDownloadFinished(_, _, _, _, _, _, _))
+      EXPECT_CALL(delegate, OnExtensionDownloadFinished(_, _, _, _, _, _))
           .WillOnce(
               DoAll(testing::SaveArg<0>(&crx_file_info),
                     InvokeWithoutArgs(&delegate,

@@ -16,8 +16,9 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

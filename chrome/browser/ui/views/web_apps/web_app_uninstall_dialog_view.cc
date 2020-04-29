@@ -53,8 +53,6 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
   auto* provider = web_app::WebAppProvider::Get(profile_);
   DCHECK(provider);
 
-  app_name_ = base::UTF8ToUTF16(provider->registrar().GetAppShortName(app_id_));
-
   app_launch_url_ = provider->registrar().GetAppLaunchURL(app_id_);
   DCHECK(!app_launch_url_.is_empty());
   DCHECK(app_launch_url_.is_valid());
@@ -64,6 +62,11 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
   image_ = gfx::ImageSkia(
       std::make_unique<WebAppInfoImageSource>(kIconSizeInDip, icon_bitmaps),
       image_size);
+
+  WidgetDelegate::SetShowCloseButton(false);
+  WidgetDelegate::SetWindowTitle(l10n_util::GetStringFUTF16(
+      IDS_EXTENSION_PROMPT_UNINSTALL_TITLE,
+      base::UTF8ToUTF16(provider->registrar().GetAppShortName(app_id_))));
 
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
@@ -133,21 +136,12 @@ ui::ModalType WebAppUninstallDialogDelegateView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-base::string16 WebAppUninstallDialogDelegateView::GetWindowTitle() const {
-  return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_TITLE,
-                                    app_name_);
-}
-
 gfx::ImageSkia WebAppUninstallDialogDelegateView::GetWindowIcon() {
   return image_;
 }
 
 bool WebAppUninstallDialogDelegateView::ShouldShowWindowIcon() const {
   return true;
-}
-
-bool WebAppUninstallDialogDelegateView::ShouldShowCloseButton() const {
-  return false;
 }
 
 bool WebAppUninstallDialogDelegateView::Uninstall() {

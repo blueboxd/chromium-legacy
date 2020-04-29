@@ -43,7 +43,7 @@ void SelectToSpeakEventHandler::SetSelectToSpeakStateSelecting(
     if (state_ != MOUSE_RELEASED)
       state_ = INACTIVE;
     touch_id_ = ui::kPointerIdUnknown;
-    touch_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
+    touch_type_ = ui::EventPointerType::kUnknown;
   }
 }
 
@@ -178,7 +178,7 @@ void SelectToSpeakEventHandler::OnTouchEvent(ui::TouchEvent* event) {
       state_ == CAPTURING_TOUCH_ONLY) {
     state_ = INACTIVE;
     touch_id_ = ui::kPointerIdUnknown;
-    touch_type_ = ui::EventPointerType::POINTER_TYPE_UNKNOWN;
+    touch_type_ = ui::EventPointerType::kUnknown;
   }
 
   // Create a mouse event to send to the extension, describing the touch.

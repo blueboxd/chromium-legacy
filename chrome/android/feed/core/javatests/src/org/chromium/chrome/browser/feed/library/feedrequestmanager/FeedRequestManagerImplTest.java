@@ -226,7 +226,7 @@ public class FeedRequestManagerImplTest {
         // TooltipSupportedApi.wouldTriggerHelpUi() returns false, then the capability should not be
         // added and only the BASE_UI should be present.
         mFakeTooltipSupportedApi.addUnsupportedFeature(FeatureName.CARD_MENU_TOOLTIP);
-        testCapabilityAdded(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, /* capability= */ null);
+        testCapabilityAdded(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE /* capability= empty */);
     }
 
     @Test
@@ -248,7 +248,7 @@ public class FeedRequestManagerImplTest {
     @Test
     @Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
     public void testTriggerRefresh_enableFeedActions() throws Exception {
-        testCapabilityAdded(Capability.CLICK_ACTION);
+        testCapabilityAdded(Capability.CLICK_ACTION, Capability.VIEW_ACTION);
     }
 
     @Test
@@ -886,18 +886,18 @@ public class FeedRequestManagerImplTest {
                                 .build());
     }
 
-    private void testCapabilityAdded(String configKey, Capability capability) throws Exception {
+    private void testCapabilityAdded(String configKey, Capability... capability) throws Exception {
         Configuration configuration = new Configuration.Builder().put(configKey, true).build();
         testCapabilityAddedWithConfig(configuration, capability);
     }
 
-    private void testCapabilityAdded(Capability capability) throws Exception {
+    private void testCapabilityAdded(Capability... capability) throws Exception {
         Configuration configuration = new Configuration.Builder().build();
         testCapabilityAddedWithConfig(configuration, capability);
     }
 
-    private void testCapabilityAddedWithConfig(Configuration configuration, Capability capability)
-            throws Exception {
+    private void testCapabilityAddedWithConfig(
+            Configuration configuration, Capability... capability) throws Exception {
         mRequestManager = new FeedRequestManagerImpl(configuration, mFakeNetworkClient,
                 mFakeProtocolAdapter, new FeedExtensionRegistry(ArrayList::new), mScheduler,
                 mFakeTaskQueue, mTimingUtils, mFakeThreadUtils, mFakeActionReader, mContext,
@@ -909,9 +909,7 @@ public class FeedRequestManagerImplTest {
         assertHttpRequestFormattedCorrectly(httpRequest, mContext);
 
         Set<Capability> expectedCap = EnumSet.of(Capability.BASE_UI);
-        if (capability != null) {
-            expectedCap.add(capability);
-        }
+        Collections.addAll(expectedCap, capability);
 
         Request request = getRequestFromHttpRequest(httpRequest);
         assertThat(request.getExtension(FeedRequest.feedRequest).getClientCapabilityList())

@@ -379,6 +379,7 @@ module.exports = {
     'blink': 'readable',
     'cca': 'readable',  // TODO(inker): remove this after resolving b/141518780.
     'cros': 'readable',
+    'globalThis': 'readable',
     'webkitRequestFileSystem': 'readable',
   },
   // Generally, the rules should be compatible to both bundled and the newest

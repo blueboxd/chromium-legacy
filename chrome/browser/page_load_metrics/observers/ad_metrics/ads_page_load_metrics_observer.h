@@ -270,17 +270,6 @@ class AdsPageLoadMetricsObserver
   std::unique_ptr<HeavyAdThresholdNoiseProvider>
       heavy_ad_threshold_noise_provider_;
 
-  // Whether we should only send reports, and not unload frames tagged as heavy
-  // ads by the intervention. This is null until the proper feature param is
-  // queried once a heavy ad is seen. Sending reports should still log entries
-  // to the blocklist as it is observable by the page. Reporting only should use
-  // a different message that indicates the frame was not unloaded.
-  base::Optional<bool> heavy_ad_send_reports_only_;
-
-  // Whether reports should be sent when the heavy ad intervention occurs. This
-  // is null until the proper feature param is queried once a heavy ad is seen.
-  base::Optional<bool> heavy_ad_reporting_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };
 

@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SendBadUtf8) {
   const GURL url = ws_server_.GetURL("close");
   const std::vector<std::string> requested_protocols;
   const net::SiteForCookies site_for_cookies;
-  const net::NetworkIsolationKey network_isolation_key;
+  const net::IsolationInfo isolation_info;
   std::vector<network::mojom::HttpHeaderPtr> additional_headers;
   const url::Origin origin;
   auto handshake_client = std::make_unique<InvalidUtf8HandshakeClient>(
@@ -535,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SendBadUtf8) {
       handshake_client_remote = handshake_client->Bind();
 
   process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
-      url, requested_protocols, site_for_cookies, network_isolation_key,
+      url, requested_protocols, site_for_cookies, isolation_info,
       std::move(additional_headers), process->GetID(), frame->GetRoutingID(),
       origin, network::mojom::kWebSocketOptionNone,
       std::move(handshake_client_remote), mojo::NullRemote(),

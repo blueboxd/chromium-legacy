@@ -509,4 +509,17 @@ void DisplayLockUtilities::SelectionRemovedFromDocument(Document& document) {
   document.GetDisplayLockDocumentState().NotifySelectionRemoved();
 }
 
+Element* DisplayLockUtilities::LockedAncestorPreventingPrePaint(
+    const LayoutObject& object) {
+  for (auto* ancestor = NearestLockedExclusiveAncestor(object); ancestor;
+       ancestor = NearestLockedExclusiveAncestor(*ancestor)) {
+    DCHECK(ancestor->GetDisplayLockContext());
+    if (!ancestor->GetDisplayLockContext()->ShouldPrePaint(
+            DisplayLockLifecycleTarget::kChildren)) {
+      return ancestor;
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace blink

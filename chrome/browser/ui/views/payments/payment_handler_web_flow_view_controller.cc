@@ -310,6 +310,10 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
   if (navigation_handle->IsSameDocument())
     return;
 
+  // The navigation must be committed because WebContents::GetLastCommittedURL()
+  // is assumed to be the URL loaded in the payment handler window.
+  DCHECK(navigation_handle->HasCommitted());
+
   if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(
           navigation_handle->GetWebContents())) {
     AbortPayment();

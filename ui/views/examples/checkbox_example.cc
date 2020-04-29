@@ -21,9 +21,9 @@ CheckboxExample::CheckboxExample() : ExampleBase("Checkbox") {}
 CheckboxExample::~CheckboxExample() = default;
 
 void CheckboxExample::CreateExampleView(View* container) {
-  button_ = new Checkbox(base::ASCIIToUTF16("Checkbox"), this);
   container->SetLayoutManager(std::make_unique<FillLayout>());
-  container->AddChildView(button_);
+  button_ = container->AddChildView(
+      std::make_unique<Checkbox>(base::ASCIIToUTF16("Checkbox"), this));
 }
 
 void CheckboxExample::ButtonPressed(Button* sender, const ui::Event& event) {

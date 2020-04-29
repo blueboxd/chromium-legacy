@@ -31,6 +31,7 @@
 
 namespace net {
 class NetworkIsolationKey;
+class IsolationInfo;
 }
 
 namespace network {
@@ -155,7 +156,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       const GURL& url,
       const std::vector<std::string>& requested_protocols,
       const net::SiteForCookies& site_for_cookies,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::IsolationInfo& isolation_info,
       std::vector<mojom::HttpHeaderPtr> additional_headers,
       int32_t process_id,
       int32_t render_frame_id,

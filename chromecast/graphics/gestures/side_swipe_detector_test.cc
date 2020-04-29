@@ -99,16 +99,14 @@ class SideSwipeDetectorTest : public aura::test::AuraTestBase {
             bool end_release = true) {
     ui::TouchEvent press(
         ui::ET_TOUCH_PRESSED, start_point, mock_clock()->NowTicks(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                           pointer_id));
+        ui::PointerDetails(ui::EventPointerType::kTouch, pointer_id));
     GetEventGenerator().Dispatch(&press);
     mock_task_runner()->AdvanceMockTickClock(start_hold_time);
     mock_task_runner()->FastForwardBy(start_hold_time);
 
     ui::TouchEvent move(
         ui::ET_TOUCH_MOVED, end_point, mock_clock()->NowTicks(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                           pointer_id));
+        ui::PointerDetails(ui::EventPointerType::kTouch, pointer_id));
     GetEventGenerator().Dispatch(&move);
     mock_task_runner()->AdvanceMockTickClock(drag_time);
     mock_task_runner()->FastForwardBy(drag_time);
@@ -116,8 +114,7 @@ class SideSwipeDetectorTest : public aura::test::AuraTestBase {
     if (end_release) {
       ui::TouchEvent release(
           ui::ET_TOUCH_RELEASED, end_point, mock_clock()->NowTicks(),
-          ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                             pointer_id));
+          ui::PointerDetails(ui::EventPointerType::kTouch, pointer_id));
       GetEventGenerator().Dispatch(&release);
     }
   }

@@ -38,7 +38,6 @@ import java.util.List;
  */
 @JNINamespace("weblayer")
 public class BrowserImpl extends IBrowser.Stub {
-    private static final ObserverList<Observer> sLifecycleObservers = new ObserverList<Observer>();
     private final ObserverList<VisibleSecurityStateObserver> mVisibleSecurityStateObservers =
             new ObserverList<VisibleSecurityStateObserver>();
 
@@ -75,24 +74,6 @@ public class BrowserImpl extends IBrowser.Stub {
     };
 
     /**
-     * Observer interface that can be implemented to observe when the first
-     * fragment requiring WebLayer is attached, and when the last such fragment
-     * is detached.
-     */
-    public static interface Observer {
-        public void onBrowserCreated();
-        public void onBrowserDestroyed();
-    }
-
-    public static void addObserver(Observer observer) {
-        sLifecycleObservers.addObserver(observer);
-    }
-
-    public static void removeObserver(Observer observer) {
-        sLifecycleObservers.removeObserver(observer);
-    }
-
-    /**
      * Allows observing of visible security state of the active tab.
      */
     public static interface VisibleSecurityStateObserver {
@@ -123,10 +104,6 @@ public class BrowserImpl extends IBrowser.Stub {
         createAttachmentState(windowAndroid);
         mNativeBrowser = BrowserImplJni.get().createBrowser(profile.getNativeProfile(), this);
         mUrlBarController = new UrlBarControllerImpl(this, mNativeBrowser);
-
-        for (Observer observer : sLifecycleObservers) {
-            observer.onBrowserCreated();
-        }
     }
 
     public WindowAndroid getWindowAndroid() {
@@ -407,9 +384,6 @@ public class BrowserImpl extends IBrowser.Stub {
             destroyTabImpl((TabImpl) tab);
         }
         destroyAttachmentState();
-        for (Observer observer : sLifecycleObservers) {
-            observer.onBrowserDestroyed();
-        }
 
         // mUrlBarController keeps a reference to mNativeBrowser, and hence must be destroyed before
         // mNativeBrowser.

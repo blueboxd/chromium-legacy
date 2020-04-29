@@ -151,6 +151,29 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
   return filter_value;
 }
 
+template <typename Func, typename... Args>
+CSSLightDarkValuePair* ConsumeInternalLightDark(Func consume_value,
+                                                CSSParserTokenRange& range,
+                                                const CSSParserContext& context,
+                                                Args&&... args) {
+  if (range.Peek().FunctionId() != CSSValueID::kInternalLightDark)
+    return nullptr;
+  if (!isValueAllowedInMode(CSSValueID::kInternalLightDark, context.Mode()))
+    return nullptr;
+  CSSParserTokenRange range_copy = range;
+  CSSParserTokenRange arg_range = ConsumeFunction(range_copy);
+  CSSValue* light_value =
+      consume_value(arg_range, context, std::forward<Args>(args)...);
+  if (!light_value || !ConsumeCommaIncludingWhitespace(arg_range))
+    return nullptr;
+  CSSValue* dark_value =
+      consume_value(arg_range, context, std::forward<Args>(args)...);
+  if (!dark_value || !arg_range.AtEnd())
+    return nullptr;
+  range = range_copy;
+  return MakeGarbageCollected<CSSLightDarkValuePair>(light_value, dark_value);
+}
+
 }  // namespace
 
 void Complete4Sides(CSSValue* side[4]) {
@@ -883,24 +906,6 @@ static bool ParseColorFunction(CSSParserTokenRange& range,
   return true;
 }
 
-static CSSLightDarkValuePair* ParseLightDarkColor(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context) {
-  if (range.Peek().FunctionId() != CSSValueID::kInternalLightDark)
-    return nullptr;
-  if (!isValueAllowedInMode(CSSValueID::kInternalLightDark, context.Mode()))
-    return nullptr;
-  CSSParserContext::ParserModeOverridingScope scope(context, kUASheetMode);
-  CSSParserTokenRange args = ConsumeFunction(range);
-  CSSValue* light_color = ConsumeColor(args, context);
-  if (!light_color || !ConsumeCommaIncludingWhitespace(args))
-    return nullptr;
-  CSSValue* dark_color = ConsumeColor(args, context);
-  if (!dark_color || !args.AtEnd())
-    return nullptr;
-  return MakeGarbageCollected<CSSLightDarkValuePair>(light_color, dark_color);
-}
-
 CSSValue* ConsumeColor(CSSParserTokenRange& range,
                        const CSSParserContext& context,
                        bool accept_quirky_colors) {
@@ -914,7 +919,8 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
   RGBA32 color = Color::kTransparent;
   if (!ParseHexColor(range, color, accept_quirky_colors) &&
       !ParseColorFunction(range, context, color)) {
-    return ParseLightDarkColor(range, context);
+    return ConsumeInternalLightDark(ConsumeColor, range, context,
+                                    accept_quirky_colors);
   }
   return cssvalue::CSSColorValue::Create(color);
 }
@@ -1842,6 +1848,7 @@ CSSValue* ConsumeImage(CSSParserTokenRange& range,
         IsGeneratedImage(id)) {
       return ConsumeGeneratedImage(range, context);
     }
+    return ConsumeInternalLightDark(ConsumeImageOrNone, range, context);
   }
   return nullptr;
 }

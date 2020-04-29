@@ -59,6 +59,7 @@ class MetricsServiceUserDemographicsBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    SyncTest::SetUpCommandLine(command_line);
     // Enable the metrics service for testing (in recording-only mode).
     command_line->AppendSwitch(switches::kMetricsRecordingOnly);
   }
@@ -118,6 +119,8 @@ IN_PROC_BROWSER_TEST_P(MetricsServiceUserDemographicsBrowserTest,
   test::AddUserBirthYearAndGenderToSyncServer(GetFakeServer()->AsWeakPtr(),
                                               test_birth_year, test_gender);
 
+  // TODO(crbug/1076461): Try to replace the below set-up code with functions
+  // from SyncTest.
   Profile* test_profile = ProfileManager::GetActiveUserProfile();
 
   // Enable sync for the test profile.

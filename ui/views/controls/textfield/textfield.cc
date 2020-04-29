@@ -704,7 +704,7 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
   if (!handled &&
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton())) {
     if (!had_focus)
-      RequestFocusWithPointer(ui::EventPointerType::POINTER_TYPE_MOUSE);
+      RequestFocusWithPointer(ui::EventPointerType::kMouse);
 #if !defined(OS_WIN)
     ShowVirtualKeyboardIfEnabled();
 #endif
@@ -712,7 +712,7 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (!handled && !had_focus && event.IsOnlyMiddleMouseButton())
-    RequestFocusWithPointer(ui::EventPointerType::POINTER_TYPE_MOUSE);
+    RequestFocusWithPointer(ui::EventPointerType::kMouse);
 #endif
 
   return selection_controller_.OnMousePressed(
@@ -2077,13 +2077,13 @@ void Textfield::RequestFocusWithPointer(ui::EventPointerType pointer_type) {
     return;
 
   switch (pointer_type) {
-    case ui::EventPointerType::POINTER_TYPE_MOUSE:
+    case ui::EventPointerType::kMouse:
       focus_reason_ = ui::TextInputClient::FOCUS_REASON_MOUSE;
       break;
-    case ui::EventPointerType::POINTER_TYPE_PEN:
+    case ui::EventPointerType::kPen:
       focus_reason_ = ui::TextInputClient::FOCUS_REASON_PEN;
       break;
-    case ui::EventPointerType::POINTER_TYPE_TOUCH:
+    case ui::EventPointerType::kTouch:
       focus_reason_ = ui::TextInputClient::FOCUS_REASON_TOUCH;
       break;
     default:
@@ -2098,9 +2098,8 @@ void Textfield::RequestFocusForGesture(const ui::GestureEventDetails& details) {
   bool show_virtual_keyboard = true;
 #if defined(OS_WIN)
   show_virtual_keyboard =
-      details.primary_pointer_type() ==
-          ui::EventPointerType::POINTER_TYPE_TOUCH ||
-      details.primary_pointer_type() == ui::EventPointerType::POINTER_TYPE_PEN;
+      details.primary_pointer_type() == ui::EventPointerType::kTouch ||
+      details.primary_pointer_type() == ui::EventPointerType::kPen;
 #endif
 
   RequestFocusWithPointer(details.primary_pointer_type());

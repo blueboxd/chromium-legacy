@@ -2175,7 +2175,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameImpl, msg)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_Unload, OnUnload)
-    IPC_MESSAGE_HANDLER(FrameMsg_SwapIn, OnSwapIn)
     IPC_MESSAGE_HANDLER(FrameMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(FrameMsg_CustomContextMenuAction,
@@ -2339,10 +2338,6 @@ void RenderFrameImpl::OnUnload(
       },
       routing_id, is_main_frame);
   task_runner->PostTask(FROM_HERE, std::move(send_unload_ack));
-}
-
-void RenderFrameImpl::OnSwapIn() {
-  SwapIn();
 }
 
 void RenderFrameImpl::OnDeleteFrame(FrameDeleteIntention intent) {
@@ -2607,6 +2602,10 @@ void RenderFrameImpl::OnPortalActivated(
   frame_->OnPortalActivated(portal_token, std::move(portal),
                             std::move(portal_client), std::move(data),
                             std::move(callback));
+}
+
+void RenderFrameImpl::SwapIn() {
+  SwapInInternal();
 }
 
 void RenderFrameImpl::ForwardMessageFromHost(
@@ -4207,7 +4206,7 @@ void RenderFrameImpl::DidCommitNavigation(
     // If this is a provisional frame associated with a proxy (i.e., a frame
     // created for a remote-to-local navigation), swap it into the frame tree
     // now.
-    if (!SwapIn())
+    if (!SwapInInternal())
       return;
   }
 
@@ -5444,7 +5443,7 @@ blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
   return blink::mojom::CommitResult::Ok;
 }
 
-bool RenderFrameImpl::SwapIn() {
+bool RenderFrameImpl::SwapInInternal() {
   CHECK_NE(previous_routing_id_, MSG_ROUTING_NONE);
   CHECK(!in_frame_tree_);
 

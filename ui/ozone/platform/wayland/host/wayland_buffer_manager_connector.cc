@@ -21,22 +21,10 @@ WaylandBufferManagerConnector::~WaylandBufferManagerConnector() {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
 }
 
-void WaylandBufferManagerConnector::OnGpuProcessLaunched(
-    int host_id,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-    base::RepeatingCallback<void(IPC::Message*)> send_callback) {}
-
 void WaylandBufferManagerConnector::OnChannelDestroyed(int host_id) {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
   if (host_id_ == host_id)
     buffer_manager_host_->OnChannelDestroyed();
-}
-
-void WaylandBufferManagerConnector::OnMessageReceived(
-    const IPC::Message& message) {
-  NOTREACHED() << "This class should only be used with mojo transport but here "
-                  "we're wrongly getting invoked to handle IPC communication.";
 }
 
 void WaylandBufferManagerConnector::OnGpuServiceLaunched(

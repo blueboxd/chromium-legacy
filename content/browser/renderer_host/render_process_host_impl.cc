@@ -2120,12 +2120,15 @@ void RenderProcessHostImpl::CreateWebSocketConnector(
   //
   // Shared Workers and service workers are not directly associated with a
   // frame, so the concept of "top-level frame" does not exist. Can use
-  // (origin, origin) for the NetworkIsolationKey for requests because these
+  // (origin, origin, origin) for the IsolationInfo for requests because these
   // workers can only be created when the site has cookie access.
-  mojo::MakeSelfOwnedReceiver(std::make_unique<WebSocketConnectorImpl>(
-                                  GetID(), MSG_ROUTING_NONE, origin,
-                                  net::NetworkIsolationKey(origin, origin)),
-                              std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<WebSocketConnectorImpl>(
+          GetID(), MSG_ROUTING_NONE, origin,
+          net::IsolationInfo::Create(
+              net::IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
+              net::SiteForCookies::FromOrigin(origin))),
+      std::move(receiver));
 }
 
 void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {

@@ -222,6 +222,15 @@ void FeedStore::ReadMany(
       /*target_prefix=*/"", std::move(callback));
 }
 
+void FeedStore::ClearAll(base::OnceCallback<void(bool)> callback) {
+  auto filter = [](const std::string& key) { return true; };
+
+  database_->UpdateEntriesWithRemoveFilter(
+      std::make_unique<
+          std::vector<std::pair<std::string, feedstore::Record>>>(),
+      base::BindRepeating(filter), std::move(callback));
+}
+
 void FeedStore::LoadStream(
     base::OnceCallback<void(LoadStreamResult)> callback) {
   if (!IsInitialized()) {

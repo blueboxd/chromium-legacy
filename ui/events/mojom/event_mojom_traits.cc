@@ -8,6 +8,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_event_details.h"
+#include "ui/events/ipc/ui_events_param_traits_macros.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/mojom/event_constants.mojom.h"

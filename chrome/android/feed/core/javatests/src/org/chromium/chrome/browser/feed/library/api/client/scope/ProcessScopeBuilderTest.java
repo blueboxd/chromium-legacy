@@ -16,7 +16,9 @@ import android.content.Context;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.Robolectric;
@@ -37,6 +39,8 @@ import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorageD
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipSupportedApi;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;
 import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
@@ -44,6 +48,7 @@ import java.util.ArrayList;
 /** Tests for {@link ProcessScopeBuilder}. */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
 public class ProcessScopeBuilderTest {
     // Mocks for required fields
     @Mock
@@ -64,6 +69,9 @@ public class ProcessScopeBuilderTest {
     private final ProtoExtensionProvider mProtoExtensionProvider = ArrayList::new;
     private Configuration mConfiguration = new Configuration.Builder().build();
     private Context mContext;
+
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Before
     public void setUp() {

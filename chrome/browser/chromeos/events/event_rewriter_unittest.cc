@@ -2835,7 +2835,7 @@ TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
   gfx::Point location(0, 0);
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, location, base::TimeTicks(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, kTouchId));
+      ui::PointerDetails(ui::EventPointerType::kTouch, kTouchId));
   press.set_flags(ui::EF_CONTROL_DOWN);
 
   TestEventRewriterContinuation continuation;

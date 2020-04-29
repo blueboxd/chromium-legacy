@@ -405,7 +405,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
   {
     // Stylus values for PointerDetails.
     base::TimeTicks timestamp = EventTimeForNow();
-    PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
+    PointerDetails pointer_details(EventPointerType::kPen,
                                    /* id */ 63,
                                    /* radius_x */ 0.0f,
                                    /* radius_y */ 0.0f,

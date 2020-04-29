@@ -166,6 +166,10 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     return tab_helper_->metrics().prefetch_total_redirect_count_;
   }
 
+  size_t predicted_urls_count() const {
+    return tab_helper_->metrics().predicted_urls_count_;
+  }
+
   void VerifyIsolationInfo(const net::IsolationInfo& isolation_info) {
     EXPECT_FALSE(isolation_info.IsEmpty());
     EXPECT_TRUE(isolation_info.opaque_and_non_transient());
@@ -295,6 +299,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, FeatureDisabled) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 0U);
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -326,6 +331,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, DataSaverDisabled) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 0U);
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -355,6 +361,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, GoogleSRPOnly) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 0U);
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -384,6 +391,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, SRPOnly) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 0U);
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -408,11 +416,12 @@ TEST_F(IsolatedPrerenderTabHelperTest, HTTPSPredictionsOnly) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
-  GURL doc_url("https://www.not-google.com/search?q=cats");
+  GURL doc_url("https://www.google.com/search?q=cats");
   GURL prediction_url("http://www.cat-food.com/");
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -442,6 +451,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, DontFetchGoogleLinks) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -471,6 +481,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, DontFetchIPAddresses) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -500,6 +511,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, WrongWebContents) {
   MakeNavigationPrediction(nullptr, doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 0U);
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -531,6 +543,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, HasPurposePrefetchHeader) {
   VerifyCommonRequestState(prediction_url);
   EXPECT_EQ(RequestHeader("Purpose"), "prefetch");
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -551,6 +564,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, NoCookies) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -583,6 +597,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, 2XXOnly) {
   MakeResponseAndWait(net::HTTP_NOT_FOUND, net::OK, kHTMLMimeType,
                       /*headers=*/{}, kHTMLBody);
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -619,6 +634,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, NetErrorOKOnly) {
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED, kHTMLMimeType,
                       /*headers=*/{}, kHTMLBody);
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -655,6 +671,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, NonHTML) {
   MakeResponseAndWait(net::HTTP_OK, net::OK, "application/javascript",
                       /*headers=*/{}, body);
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -692,6 +709,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, UserSettingDisabled) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 0U);
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -750,6 +768,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {
       request.trusted_params->isolation_info));
   VerifyIsolationInfo(resp->isolation_info());
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 1U);
@@ -784,6 +803,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches_Zero) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(RequestCount(), 0);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
@@ -829,7 +849,7 @@ TEST_F(IsolatedPrerenderTabHelperTest,
   MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
 
   EXPECT_EQ(RequestCount(), 0);
-
+  EXPECT_EQ(predicted_urls_count(), 3U);
   EXPECT_EQ(prefetch_eligible_count(), 3U);
   EXPECT_EQ(prefetch_attempted_count(), 3U);
   EXPECT_EQ(prefetch_successful_count(), 2U);
@@ -879,6 +899,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, OrderedBitMask) {
                                GURL("http://not-eligible-3.com"),
                            });
 
+  EXPECT_EQ(predicted_urls_count(), 6U);
   EXPECT_EQ(prefetch_eligible_count(), 3U);
   EXPECT_EQ(ordered_eligible_pages_bitmask(), 0b011100);
 }
@@ -909,7 +930,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, NumberOfPrefetches_UnlimitedByCmdLine) {
   MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
 
   EXPECT_EQ(RequestCount(), 0);
-
+  EXPECT_EQ(predicted_urls_count(), 3U);
   EXPECT_EQ(prefetch_eligible_count(), 3U);
   EXPECT_EQ(prefetch_attempted_count(), 3U);
   EXPECT_EQ(prefetch_successful_count(), 2U);
@@ -963,7 +984,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, LimitedNumberOfPrefetches) {
   MakeResponseAndWait(net::HTTP_OK, net::OK, kHTMLMimeType, {}, kHTMLBody);
 
   EXPECT_EQ(RequestCount(), 0);
-
+  EXPECT_EQ(predicted_urls_count(), 3U);
   EXPECT_EQ(prefetch_eligible_count(), 3U);
   EXPECT_EQ(prefetch_attempted_count(), 2U);
   EXPECT_EQ(prefetch_successful_count(), 1U);
@@ -1007,6 +1028,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingNotStartedWhileInvisible) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -1033,7 +1055,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingPausedWhenInvisible) {
 
   // But no more prefetches should start when hidden.
   EXPECT_EQ(RequestCount(), 0);
-
+  EXPECT_EQ(predicted_urls_count(), 2U);
   EXPECT_EQ(prefetch_eligible_count(), 2U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 1U);
@@ -1069,6 +1091,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, PrefetchingRestartedWhenVisible) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -1099,6 +1122,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerRegistered) {
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
   EXPECT_EQ(RequestCount(), 0);
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 0U);
   EXPECT_EQ(prefetch_attempted_count(), 0U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -1123,6 +1147,7 @@ TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerNotRegistered) {
 
   VerifyCommonRequestState(prediction_url);
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -1226,6 +1251,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Cookies) {
   ASSERT_TRUE(SetCookie(profile(), site_with_cookies, "testing"));
   RunNoRedirectTest(site_with_cookies);
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -1235,6 +1261,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Cookies) {
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure) {
   RunNoRedirectTest(GURL("http://insecure.com"));
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -1244,6 +1271,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure) {
 TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Google) {
   RunNoRedirectTest(GURL("https://www.google.com"));
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -1261,6 +1289,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_ServiceWorker) {
 
   RunNoRedirectTest(site_with_worker);
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 1U);
   EXPECT_EQ(prefetch_attempted_count(), 1U);
   EXPECT_EQ(prefetch_successful_count(), 0U);
@@ -1294,6 +1323,7 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, SuccessfulRedirect) {
   network::mojom::URLResponseHeadPtr head = resp->TakeHead();
   EXPECT_TRUE(head->headers->HasHeaderValue("X-Testing", "Hello World"));
 
+  EXPECT_EQ(predicted_urls_count(), 1U);
   EXPECT_EQ(prefetch_eligible_count(), 2U);
   EXPECT_EQ(prefetch_attempted_count(), 2U);
   EXPECT_EQ(prefetch_successful_count(), 1U);

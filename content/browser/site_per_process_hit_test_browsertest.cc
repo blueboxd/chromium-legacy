@@ -2465,7 +2465,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
                              .ExtractInt();
   const int inset_height = 200;
   parent_render_widget_host_aura->SetLastPointerType(
-      ui::EventPointerType::POINTER_TYPE_TOUCH);
+      ui::EventPointerType::kTouch);
   parent_render_widget_host_aura->SetInsets(gfx::Insets(0, 0, inset_height, 0));
 
   // After focus on editable element, we expect element to be scrolled
@@ -4725,13 +4725,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
     observer.Wait();
   }
 
-  ui::TouchEvent touch_event(
-      ui::ET_TOUCH_PRESSED, child_center, ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                         /* pointer_id*/ 0,
-                         /* radius_x */ 30.0f,
-                         /* radius_y */ 30.0f,
-                         /* force */ 0.0f));
+  ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, child_center,
+                             ui::EventTimeForNow(),
+                             ui::PointerDetails(ui::EventPointerType::kTouch,
+                                                /* pointer_id*/ 0,
+                                                /* radius_x */ 30.0f,
+                                                /* radius_y */ 30.0f,
+                                                /* force */ 0.0f));
   UpdateEventRootLocation(&touch_event, rwhv);
   rwhv->OnTouchEvent(&touch_event);
   waiter.Wait();
@@ -4796,13 +4796,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
     observer->Wait();
   }
 
-  ui::TouchEvent touch_event(
-      ui::ET_TOUCH_PRESSED, frame_center, ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                         /* pointer_id*/ 0,
-                         /* radius_x */ 30.0f,
-                         /* radius_y */ 30.0f,
-                         /* force */ 0.0f));
+  ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, frame_center,
+                             ui::EventTimeForNow(),
+                             ui::PointerDetails(ui::EventPointerType::kTouch,
+                                                /* pointer_id*/ 0,
+                                                /* radius_x */ 30.0f,
+                                                /* radius_y */ 30.0f,
+                                                /* force */ 0.0f));
   UpdateEventRootLocation(&touch_event, rwhv);
   rwhv->OnTouchEvent(&touch_event);
   {
@@ -4906,7 +4906,7 @@ uint32_t SendTouchTapWithExpectedTarget(
   }
   ui::TouchEvent touch_event_pressed(
       ui::ET_TOUCH_PRESSED, touch_point, ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+      ui::PointerDetails(ui::EventPointerType::kTouch,
                          /* pointer_id*/ 0,
                          /* radius_x */ 30.0f,
                          /* radius_y */ 30.0f,
@@ -4923,7 +4923,7 @@ uint32_t SendTouchTapWithExpectedTarget(
   EXPECT_EQ(expected_target, router_touch_target);
   ui::TouchEvent touch_event_released(
       ui::ET_TOUCH_RELEASED, touch_point, ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+      ui::PointerDetails(ui::EventPointerType::kTouch,
                          /* pointer_id*/ 0,
                          /* radius_x */ 30.0f,
                          /* radius_y */ 30.0f,
@@ -6069,7 +6069,7 @@ class SitePerProcessGestureHitTestBrowserTest
     // will crash in the renderer otherwise.
     ui::TouchEvent touch_pressed(
         ui::ET_TOUCH_PRESSED, position, ui::EventTimeForNow(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+        ui::PointerDetails(ui::EventPointerType::kTouch,
                            /* pointer_id*/ 0,
                            /* radius_x */ 1.0f,
                            /* radius_y */ 1.0f,
@@ -6134,7 +6134,7 @@ class SitePerProcessGestureHitTestBrowserTest
     // after pinch gestures.
     ui::TouchEvent touch_released(
         ui::ET_TOUCH_RELEASED, position, ui::EventTimeForNow(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+        ui::PointerDetails(ui::EventPointerType::kTouch,
                            /* pointer_id*/ 0,
                            /* radius_x */ 1.0f,
                            /* radius_y */ 1.0f,

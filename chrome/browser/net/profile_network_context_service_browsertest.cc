@@ -458,12 +458,6 @@ class ProfileNetworkContextServiceCertVerifierBrowsertestBase
   ~ProfileNetworkContextServiceCertVerifierBrowsertestBase() override = default;
 
  protected:
-  void SetPolicyValue(base::StringPiece policy_key, base::Value value) {
-    policy_values_.SetKey(policy_key, std::move(value));
-    user_policy_helper()->SetPolicy(policy_values_,
-                                    base::Value(base::Value::Type::DICTIONARY));
-  }
-
   bool IsSigninProfileUsingBuiltinCertVerifier() {
     Profile* const profile = chromeos::ProfileHelper::GetSigninProfile();
     ProfileNetworkContextService* const service =
@@ -481,8 +475,6 @@ class ProfileNetworkContextServiceCertVerifierBrowsertestBase
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
-  base::Value policy_values_{base::Value::Type::DICTIONARY};
-
   DISALLOW_COPY_AND_ASSIGN(
       ProfileNetworkContextServiceCertVerifierBrowsertestBase);
 };
@@ -521,20 +513,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(IsActiveProfileUsingBuiltinCertVerifier());
 }
 
-// If the built-in cert verifier is enabled, but user policy says to disable it,
-// it should be disabled in the user profile.
-IN_PROC_BROWSER_TEST_F(
-    ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest,
-    TurnedOffByLegacyPolicy) {
-  SkipToLoginScreen();
-
-  SetPolicyValue(policy::key::kBuiltinCertificateVerifierEnabled,
-                 base::Value(false));
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
-
-  EXPECT_FALSE(IsActiveProfileUsingBuiltinCertVerifier());
-}
-
 // When using this class, the built-in certificate verifier has been disabled
 // using the UseBuiltinCertVerifier feature.
 class ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest
@@ -570,20 +548,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(IsActiveProfileUsingBuiltinCertVerifier());
 }
 
-// If the built-in cert verifier feature is disabled, but policy force-enables
-// it for a profile, it should be enabled in the profile.
-IN_PROC_BROWSER_TEST_F(
-    ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest,
-    TurnedOffByFeatureOverrideByPolicy) {
-  SkipToLoginScreen();
-  EXPECT_TRUE(IsSigninProfileUsingBuiltinCertVerifier());
-
-  SetPolicyValue(policy::key::kBuiltinCertificateVerifierEnabled,
-                 base::Value(true));
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
-
-  EXPECT_TRUE(IsActiveProfileUsingBuiltinCertVerifier());
-}
 #elif BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 class ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest
     : public policy::PolicyTest,

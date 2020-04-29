@@ -7,7 +7,7 @@
 #include <math.h>
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ppapi/cpp/point.h"
 
 namespace chrome_pdf {

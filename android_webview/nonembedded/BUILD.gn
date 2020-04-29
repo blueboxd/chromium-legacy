@@ -35,6 +35,7 @@ android_library("nonembedded_java") {
 android_library("devui_java") {
   sources = [
     "java/src/org/chromium/android_webview/devui/CrashesListFragment.java",
+    "java/src/org/chromium/android_webview/devui/DevUiBaseFragment.java",
     "java/src/org/chromium/android_webview/devui/FlagsFragment.java",
     "java/src/org/chromium/android_webview/devui/HomeFragment.java",
     "java/src/org/chromium/android_webview/devui/MainActivity.java",

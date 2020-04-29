@@ -67,6 +67,9 @@ class MEDIA_EXPORT MediaObserver {
   // Remote Playback API spec: https://w3c.github.io/remote-playback
   virtual void OnRemotePlaybackDisabled(bool disabled) = 0;
 
+  // Called on Android, whenever we detect that we are playing back HLS.
+  virtual void OnHlsManifestDetected() = 0;
+
   // Called when the media is playing/paused.
   virtual void OnPlaying() = 0;
   virtual void OnPaused() = 0;

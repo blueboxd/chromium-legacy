@@ -44,7 +44,6 @@ class FakeVideoFrame : public webrtc::TransformableVideoFrameInterface {
     return rtc::ArrayView<const uint8_t>();
   }
 
-  // Copies |data| into the owned frame payload data.
   void SetData(rtc::ArrayView<const uint8_t> data) override {}
   uint32_t GetTimestamp() const override { return 0; }
   uint32_t GetSsrc() const override { return ssrc_; }

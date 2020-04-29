@@ -447,6 +447,9 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
   // start tracking metrics.
   InformPLMOfLikelyPrefetching(web_contents());
 
+  page_->metrics_->predicted_urls_count_ +=
+      prediction.value().sorted_predicted_urls().size();
+
   // It is possible, since it is not stipulated by the API contract, that the
   // navigation predictor will issue multiple predictions during a single page
   // load. Additional predictions should be treated as appending to the ordering

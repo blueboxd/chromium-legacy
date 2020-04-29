@@ -11,12 +11,16 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -24,6 +28,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -54,14 +59,56 @@ static constexpr int kFontSizePx = 16;
 static constexpr double kDefaultRatioInParentX = 0.5;
 static constexpr double kDefaultRatioInParentY = 1;
 static constexpr int kErrorImageSizeDip = 20;
+static constexpr int kFocusRingInnerInsetDip = 3;
+static constexpr int kWidgetDisplacementWithArrowKeyDip = 16;
 
-// CaptionBubble implementation of BubbleFrameView.
+}  // namespace
+
+namespace captions {
+// CaptionBubble implementation of BubbleFrameView. This class takes care
+// of making the caption draggable and handling the focus ring when the
+// Caption Bubble is focused.
 class CaptionBubbleFrameView : public views::BubbleFrameView {
  public:
   CaptionBubbleFrameView()
-      : views::BubbleFrameView(gfx::Insets(), gfx::Insets()) {}
+      : views::BubbleFrameView(gfx::Insets(), gfx::Insets()) {
+    // The focus ring is drawn on CaptionBubbleFrameView because it has the
+    // correct bounds, but focused state is taken from the CaptionBubble.
+    focus_ring_ = views::FocusRing::Install(this);
+
+    auto border = std::make_unique<views::BubbleBorder>(
+        views::BubbleBorder::FLOAT, views::BubbleBorder::DIALOG_SHADOW,
+        gfx::kPlaceholderColor);
+    border->SetCornerRadius(kCornerRadiusDip);
+#if defined(OS_MACOSX)
+    // Inset the border so that there's space to draw a focus ring on Mac
+    // without clipping by the system window.
+    border->set_insets(border->GetBorderAndShadowInsets() + gfx::Insets(1));
+#endif
+    gfx::Insets shadow = border->GetBorderAndShadowInsets();
+    gfx::Insets padding = gfx::Insets(kFocusRingInnerInsetDip);
+    focus_ring_->SetPathGenerator(
+        std::make_unique<views::RoundRectHighlightPathGenerator>(
+            shadow - padding, kCornerRadiusDip + 2));
+    views::BubbleFrameView::SetBubbleBorder(std::move(border));
+    focus_ring_->SetHasFocusPredicate([](View* view) {
+      auto* frame_view = static_cast<CaptionBubbleFrameView*>(view);
+      return frame_view->contents_focused();
+    });
+  }
+
   ~CaptionBubbleFrameView() override = default;
 
+  void UpdateFocusRing(bool focused) {
+    contents_focused_ = focused;
+    focus_ring_->SchedulePaint();
+  }
+
+  bool contents_focused() { return contents_focused_; }
+
+  // TODO(crbug.com/1055150): This does not work on Linux because the bubble is
+  // not a top-level view, so it doesn't receive events. See crbug.com/1074054
+  // for more about why it doesn't work.
   int NonClientHitTest(const gfx::Point& point) override {
     // Outside of the window bounds, do nothing.
     if (!bounds().Contains(point))
@@ -77,12 +124,18 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
     return (hit == HTCLIENT || hit == HTNOWHERE) ? HTCAPTION : hit;
   }
 
+  void Layout() override {
+    views::BubbleFrameView::Layout();
+    focus_ring_->Layout();
+  }
+
+  const char* GetClassName() const override { return "CaptionBubbleFrameView"; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CaptionBubbleFrameView);
+  std::unique_ptr<views::FocusRing> focus_ring_;
+  bool contents_focused_ = false;
 };
-}  // namespace
-
-namespace captions {
 
 CaptionBubble::CaptionBubble(views::View* anchor,
                              base::OnceClosure destroyed_callback)
@@ -94,6 +147,13 @@ CaptionBubble::CaptionBubble(views::View* anchor,
       ratio_in_parent_y_(kDefaultRatioInParentY) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_draggable(true);
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  // The CaptionBubble is focusable. It will alert the CaptionBubbleFrameView
+  // when its focus changes so that the focus ring can be updated.
+  // TODO(crbug.com/1055150): Consider using
+  // View::FocusBehavior::ACCESSIBLE_ONLY. However, that does not seem to get
+  // OnFocus() and OnBlur() called so we never draw the custom focus ring.
+  SetFocusBehavior(View::FocusBehavior::ALWAYS);
 }
 
 CaptionBubble::~CaptionBubble() = default;
@@ -284,13 +344,71 @@ bool CaptionBubble::ShouldShowCloseButton() const {
 
 views::NonClientFrameView* CaptionBubble::CreateNonClientFrameView(
     views::Widget* widget) {
-  CaptionBubbleFrameView* frame = new CaptionBubbleFrameView();
-  auto border = std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::FLOAT, views::BubbleBorder::DIALOG_SHADOW,
-      gfx::kPlaceholderColor);
-  border->SetCornerRadius(kCornerRadiusDip);
-  frame->SetBubbleBorder(std::move(border));
-  return frame;
+  frame_ = new CaptionBubbleFrameView();
+  return frame_;
+}
+
+void CaptionBubble::OnKeyEvent(ui::KeyEvent* event) {
+  // Use the arrow keys to move.
+  if (event->type() == ui::ET_KEY_PRESSED) {
+    gfx::Vector2d offset;
+    if (event->key_code() == ui::VKEY_UP) {
+      offset.set_y(-kWidgetDisplacementWithArrowKeyDip);
+    }
+    if (event->key_code() == ui::VKEY_DOWN) {
+      offset.set_y(kWidgetDisplacementWithArrowKeyDip);
+    }
+    if (event->key_code() == ui::VKEY_LEFT) {
+      offset.set_x(-kWidgetDisplacementWithArrowKeyDip);
+    }
+    if (event->key_code() == ui::VKEY_RIGHT) {
+      offset.set_x(kWidgetDisplacementWithArrowKeyDip);
+    }
+    if (offset != gfx::Vector2d()) {
+      gfx::Rect bounds = GetWidget()->GetWindowBoundsInScreen();
+      bounds.Offset(offset);
+      GetWidget()->SetBounds(bounds);
+      return;
+    }
+  }
+  views::BubbleDialogDelegateView::OnKeyEvent(event);
+}
+
+bool CaptionBubble::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
+  // We don't want to close when the user hits "escape", because this isn't a
+  // normal dialog bubble -- it's meant to be up all the time. We just want to
+  // release focus back to the page in that case.
+  // Users should use the "close" button to close the bubble.
+  // TODO(crbug.com/1055150): This doesn't work in Mac.
+  GetAnchorView()->RequestFocus();
+  return true;
+}
+
+void CaptionBubble::OnFocus() {
+  frame_->UpdateFocusRing(true);
+}
+
+void CaptionBubble::OnBlur() {
+  frame_->UpdateFocusRing(false);
+}
+
+// TODO(crbug.com/1055150): Determine how this should be best exposed for screen
+// readers without over-verbalizing. Currently it reads the full text when
+// focused and does not announce when text changes.
+void CaptionBubble::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  if (has_error_) {
+    node_data->SetName(error_message_->GetText());
+    node_data->SetNameFrom(ax::mojom::NameFrom::kContents);
+  } else if (label_->GetText().size()) {
+    node_data->SetName(label_->GetText());
+    node_data->SetNameFrom(ax::mojom::NameFrom::kContents);
+  } else {
+    node_data->SetName(title_->GetText());
+    node_data->SetNameFrom(ax::mojom::NameFrom::kTitle);
+  }
+  node_data->SetDescription(title_->GetText());
+  node_data->role = ax::mojom::Role::kCaption;
 }
 
 void CaptionBubble::ButtonPressed(views::Button* sender,

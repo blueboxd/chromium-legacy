@@ -208,7 +208,7 @@ void AdaptiveScreenBrightnessManager::OnUserActivity(
     key_counter_->Log(time_since_boot);
   } else if (event->IsTouchEvent()) {
     if (event->AsTouchEvent()->pointer_details().pointer_type ==
-        ui::EventPointerType::POINTER_TYPE_PEN) {
+        ui::EventPointerType::kPen) {
       stylus_counter_->Log(time_since_boot);
     } else {
       touch_counter_->Log(time_since_boot);

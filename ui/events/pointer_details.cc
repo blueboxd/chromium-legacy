@@ -39,9 +39,7 @@ PointerDetails::PointerDetails(EventPointerType pointer_type,
       twist(twist),
       id(pointer_id) {
   if (pointer_id == kPointerIdUnknown) {
-    id = (pointer_type == EventPointerType::POINTER_TYPE_MOUSE)
-             ? kPointerIdMouse
-             : 0;
+    id = (pointer_type == EventPointerType::kMouse) ? kPointerIdMouse : 0;
   }
 }
 

@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/rect.h"
 

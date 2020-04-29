@@ -155,15 +155,15 @@ class PresentationConnection::BlobLoader final
   std::unique_ptr<FileReaderLoader> loader_;
 };
 
-PresentationConnection::PresentationConnection(LocalFrame& frame,
+PresentationConnection::PresentationConnection(LocalDOMWindow& window,
                                                const String& id,
                                                const KURL& url)
-    : ExecutionContextLifecycleStateObserver(frame.DomWindow()),
+    : ExecutionContextLifecycleStateObserver(&window),
       id_(id),
       url_(url),
       state_(mojom::blink::PresentationConnectionState::CONNECTING),
       binary_type_(kBinaryTypeArrayBuffer),
-      file_reading_task_runner_(frame.GetTaskRunner(TaskType::kFileReading)) {
+      file_reading_task_runner_(window.GetTaskRunner(TaskType::kFileReading)) {
   UpdateStateIfNeeded();
 }
 
@@ -253,11 +253,11 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
 }
 
 ControllerPresentationConnection::ControllerPresentationConnection(
-    LocalFrame& frame,
+    LocalDOMWindow& window,
     PresentationController* controller,
     const String& id,
     const KURL& url)
-    : PresentationConnection(frame, id, url), controller_(controller) {}
+    : PresentationConnection(window, id, url), controller_(controller) {}
 
 ControllerPresentationConnection::~ControllerPresentationConnection() {}
 
@@ -310,7 +310,7 @@ ReceiverPresentationConnection* ReceiverPresentationConnection::Take(
 
   ReceiverPresentationConnection* connection =
       MakeGarbageCollected<ReceiverPresentationConnection>(
-          *receiver->GetFrame(), receiver, presentation_info.id,
+          *receiver->GetWindow(), receiver, presentation_info.id,
           presentation_info.url);
   connection->Init(std::move(controller_connection),
                    std::move(receiver_connection_receiver));
@@ -320,11 +320,11 @@ ReceiverPresentationConnection* ReceiverPresentationConnection::Take(
 }
 
 ReceiverPresentationConnection::ReceiverPresentationConnection(
-    LocalFrame& frame,
+    LocalDOMWindow& window,
     PresentationReceiver* receiver,
     const String& id,
     const KURL& url)
-    : PresentationConnection(frame, id, url), receiver_(receiver) {}
+    : PresentationConnection(window, id, url), receiver_(receiver) {}
 
 ReceiverPresentationConnection::~ReceiverPresentationConnection() = default;
 

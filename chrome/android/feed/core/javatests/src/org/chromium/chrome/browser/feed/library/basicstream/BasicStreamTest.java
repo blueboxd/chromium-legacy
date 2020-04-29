@@ -174,6 +174,8 @@ public class BasicStreamTest {
     private ViewLoggingUpdater mViewLoggingUpdater;
     @Mock
     private TooltipApi mTooltipApi;
+    @Mock
+    private ActionManager mActionManager;
 
     private FakeFeedKnownContent mFakeFeedKnownContent;
     private LinearLayoutManagerWithFakePositioning mLayoutManager;
@@ -542,6 +544,15 @@ public class BasicStreamTest {
         // change the width / height to simulate device rotation
         getStreamRecyclerView().layout(0, 0, 100, 300);
         verify(mAdapter, never()).rebind();
+    }
+
+    @Test
+    public void testOnLayoutChange_signalsViewActionManager() {
+        getStreamRecyclerView().layout(0, 0, 100, 300);
+        verify(mActionManager, times(1)).onLayoutChange(); // Initial layout.
+
+        getStreamRecyclerView().layout(0, 0, 300, 100); // New layout.
+        verify(mActionManager, times(2)).onLayoutChange();
     }
 
     @Test
@@ -1132,6 +1143,18 @@ public class BasicStreamTest {
     }
 
     @Test
+    public void testOnShow_signalsViewActionManager() {
+        mBasicStream.onShow();
+        verify(mActionManager).onShow();
+    }
+
+    @Test
+    public void testOnHide_signalsViewActionManager() {
+        mBasicStream.onHide();
+        verify(mActionManager).onHide();
+    }
+
+    @Test
     public void testOnHide_dismissesPopup() {
         mBasicStream.onHide();
         verify(mContextMenuManager).dismissPopup();
@@ -1262,9 +1285,8 @@ public class BasicStreamTest {
         return new BasicStreamForTest(mContext, mStreamConfiguration, mock(CardConfiguration.class),
                 mock(ImageLoaderApi.class), mock(ActionParserFactory.class), mock(ActionApi.class),
                 mock(CustomElementProvider.class), DebugBehavior.VERBOSE, new ThreadUtils(),
-                mHeaders, mClock, mModelProviderFactory, new HostBindingProvider(),
-                mock(ActionManager.class), CONFIGURATION, layoutManager,
-                mock(OfflineIndicatorApi.class), mStreamDriver);
+                mHeaders, mClock, mModelProviderFactory, new HostBindingProvider(), mActionManager,
+                CONFIGURATION, layoutManager, mock(OfflineIndicatorApi.class), mStreamDriver);
     }
 
     private class BasicStreamForTest extends BasicStream {

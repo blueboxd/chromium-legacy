@@ -295,7 +295,7 @@ void GestureInterpreterLibevdevCros::OnGestureMove(const Gesture* gesture,
   // TODO(spang): Use move->ordinal_dx, move->ordinal_dy
   dispatcher_->DispatchMouseMoveEvent(
       MouseMoveEventParams(id_, EF_NONE, cursor_->GetLocation(),
-                           PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
+                           PointerDetails(EventPointerType::kMouse),
                            StimeToTimeTicks(gesture->end_time)));
 }
 
@@ -500,8 +500,7 @@ void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int button,
   bool allow_remap = is_mouse_;
   dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
       id_, EF_NONE, cursor_->GetLocation(), button, down, allow_remap,
-      PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
-      StimeToTimeTicks(time)));
+      PointerDetails(EventPointerType::kMouse), StimeToTimeTicks(time)));
 }
 
 void GestureInterpreterLibevdevCros::DispatchChangedKeys(

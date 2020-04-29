@@ -571,11 +571,7 @@ public final class FeedSessionManagerImpl
             consumer.accept(Result.success(token));
             return;
         }
-        Result<Set<StreamUploadableAction>> actionsResult = mStore.getAllUploadableActions();
-        if (actionsResult.isSuccessful()) {
-            mActionUploadRequestManager.triggerUploadActions(
-                    actionsResult.getValue(), token, consumer);
-        }
+        mActionUploadRequestManager.triggerUploadAllActions(token, consumer);
     }
 
     @Override

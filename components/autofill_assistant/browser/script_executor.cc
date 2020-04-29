@@ -252,17 +252,21 @@ void ScriptExecutor::OnGetUserData(
 }
 
 void ScriptExecutor::OnAdditionalActionTriggered(
-    base::OnceCallback<void(int)> callback,
-    int index) {
+    base::OnceCallback<void(int, UserData*, const UserModel*)> callback,
+    int index,
+    UserData* user_data,
+    const UserModel* user_model) {
   delegate_->EnterState(AutofillAssistantState::RUNNING);
-  std::move(callback).Run(index);
+  std::move(callback).Run(index, user_data, user_model);
 }
 
 void ScriptExecutor::OnTermsAndConditionsLinkClicked(
-    base::OnceCallback<void(int)> callback,
-    int link) {
+    base::OnceCallback<void(int, UserData*, const UserModel*)> callback,
+    int link,
+    UserData* user_data,
+    const UserModel* user_model) {
   delegate_->EnterState(AutofillAssistantState::RUNNING);
-  std::move(callback).Run(link);
+  std::move(callback).Run(link, user_data, user_model);
 }
 
 void ScriptExecutor::GetFullCard(GetFullCardCallback callback) {
@@ -537,8 +541,8 @@ autofill::PersonalDataManager* ScriptExecutor::GetPersonalDataManager() {
   return delegate_->GetPersonalDataManager();
 }
 
-WebsiteLoginFetcher* ScriptExecutor::GetWebsiteLoginFetcher() {
-  return delegate_->GetWebsiteLoginFetcher();
+WebsiteLoginManager* ScriptExecutor::GetWebsiteLoginManager() {
+  return delegate_->GetWebsiteLoginManager();
 }
 
 content::WebContents* ScriptExecutor::GetWebContents() {

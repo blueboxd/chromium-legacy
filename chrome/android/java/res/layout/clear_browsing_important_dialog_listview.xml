@@ -11,6 +11,7 @@
          buttons take up the full height and make the list hidden.
          crbug.com/616535 -->
     <TextView
+        android:id="@+id/message"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:paddingTop="7dip"

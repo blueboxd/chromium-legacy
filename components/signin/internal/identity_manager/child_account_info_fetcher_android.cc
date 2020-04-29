@@ -9,9 +9,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
+#include "components/signin/core/browser/android/jni_headers/ChildAccountInfoFetcher_jni.h"
 #include "components/signin/internal/identity_manager/account_fetcher_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
-#include "components/signin/public/android/jni_headers/ChildAccountInfoFetcher_jni.h"
 
 using base::android::JavaParamRef;
 
@@ -32,7 +32,7 @@ ChildAccountInfoFetcherAndroid::Create(AccountFetcherService* service,
 }
 
 void ChildAccountInfoFetcherAndroid::InitializeForTests() {
-  signin::Java_ChildAccountInfoFetcher_initializeForTests(
+  Java_ChildAccountInfoFetcher_initializeForTests(
       base::android::AttachCurrentThread());
 }
 
@@ -41,19 +41,16 @@ ChildAccountInfoFetcherAndroid::ChildAccountInfoFetcherAndroid(
     const CoreAccountId& account_id,
     const std::string& account_name) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  j_child_account_info_fetcher_.Reset(
-      signin::Java_ChildAccountInfoFetcher_create(
-          env, reinterpret_cast<jlong>(service),
-          base::android::ConvertUTF8ToJavaString(env, account_id.ToString()),
-          base::android::ConvertUTF8ToJavaString(env, account_name)));
+  j_child_account_info_fetcher_.Reset(Java_ChildAccountInfoFetcher_create(
+      env, reinterpret_cast<jlong>(service),
+      base::android::ConvertUTF8ToJavaString(env, account_id.ToString()),
+      base::android::ConvertUTF8ToJavaString(env, account_name)));
 }
 
 ChildAccountInfoFetcherAndroid::~ChildAccountInfoFetcherAndroid() {
-  signin::Java_ChildAccountInfoFetcher_destroy(
-      base::android::AttachCurrentThread(), j_child_account_info_fetcher_);
+  Java_ChildAccountInfoFetcher_destroy(base::android::AttachCurrentThread(),
+                                       j_child_account_info_fetcher_);
 }
-
-namespace signin {
 
 // TODO(crbug.com/1028580) Pass |j_account_id| as a
 // org.chromium.components.signin.identitymanager.CoreAccountId and convert it
@@ -70,4 +67,3 @@ void JNI_ChildAccountInfoFetcher_SetIsChildAccount(
           base::android::ConvertJavaStringToUTF8(env, j_account_id)),
       is_child_account);
 }
-}  // namespace signin

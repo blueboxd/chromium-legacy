@@ -208,7 +208,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
                                                  false);
     content::DownloadManager* manager =
         content::BrowserContext::GetDownloadManager(browser()->profile());
-    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
+    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpenByUser();
 
     return true;
   }

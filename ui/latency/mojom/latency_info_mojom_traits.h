@@ -55,6 +55,7 @@ struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
       const ui::LatencyInfo& info);
   static float scroll_update_delta(const ui::LatencyInfo& info);
   static float predicted_scroll_update_delta(const ui::LatencyInfo& info);
+  static int64_t gesture_scroll_id(const ui::LatencyInfo& info);
   static bool Read(ui::mojom::LatencyInfoDataView data, ui::LatencyInfo* out);
 };
 

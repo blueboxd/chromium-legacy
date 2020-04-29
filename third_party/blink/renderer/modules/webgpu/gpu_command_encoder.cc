@@ -125,14 +125,14 @@ base::Optional<WGPUBufferCopyView> AsDawnType(
         "GPUBufferCopyView.rowPitch is deprecated: renamed to bytesPerRow");
   }
   if (webgpu_view->hasBytesPerRow()) {
-    dawn_view.rowPitch = webgpu_view->bytesPerRow();
+    dawn_view.bytesPerRow = webgpu_view->bytesPerRow();
   } else {
     if (!webgpu_view->hasRowPitch()) {
       exception_state.ThrowTypeError(
           "required member bytesPerRow is undefined.");
       return base::nullopt;
     }
-    dawn_view.rowPitch = webgpu_view->rowPitch();
+    dawn_view.bytesPerRow = webgpu_view->rowPitch();
   }
 
   // Note: in this case we check for the deprecated member first, because it is
@@ -140,9 +140,9 @@ base::Optional<WGPUBufferCopyView> AsDawnType(
   if (webgpu_view->hasImageHeight()) {
     device->AddConsoleWarning(
         "GPUBufferCopyView.imageHeight is deprecated: renamed to rowsPerImage");
-    dawn_view.imageHeight = webgpu_view->imageHeight();
+    dawn_view.rowsPerImage = webgpu_view->imageHeight();
   } else {
-    dawn_view.imageHeight = webgpu_view->rowsPerImage();
+    dawn_view.rowsPerImage = webgpu_view->rowsPerImage();
   }
 
   return dawn_view;

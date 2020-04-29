@@ -30,7 +30,6 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
-#include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_handle.h"
@@ -1330,4 +1329,14 @@ TEST_F(ManagePasswordsUIControllerTest,
   EXPECT_TRUE(controller()->opened_bubble());
   ExpectIconAndControllerStateIs(
       password_manager::ui::WILL_DELETE_UNSYNCED_ACCOUNT_PASSWORDS_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest, OpenBubbleForMovableForm) {
+  std::vector<const PasswordForm*> matches = {&test_local_form()};
+  auto test_form_manager = CreateFormManagerWithBestMatches(&matches);
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnShowMoveToAccountBubble(std::move(test_form_manager));
+  EXPECT_TRUE(controller()->opened_automatic_bubble());
+  ExpectIconAndControllerStateIs(
+      password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE);
 }

@@ -164,14 +164,10 @@ class DeepScanningRequestTest : public testing::Test {
     ListPrefUpdate(profile_->GetPrefs(), pref_name)->Append(url.host());
   }
 
-  void EnableFeatures(const std::vector<base::Feature>& features) {
+  void SetFeatures(const std::vector<base::Feature>& enabled,
+                   const std::vector<base::Feature>& disabled) {
     scoped_feature_list_.Reset();
-    scoped_feature_list_.InitWithFeatures(features, {});
-  }
-
-  void DisableFeatures(const std::vector<base::Feature>& features) {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.InitWithFeatures({}, features);
+    scoped_feature_list_.InitWithFeatures(enabled, disabled);
   }
 
   void SetLastResult(DownloadCheckResult result) { last_result_ = result; }
@@ -200,7 +196,8 @@ TEST_F(DeepScanningRequestTest, ChecksFeatureFlags) {
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
 
   {
-    EnableFeatures({kMalwareScanEnabled, kContentComplianceEnabled});
+    SetFeatures(/*enabled*/ {kMalwareScanEnabled, kContentComplianceEnabled},
+                /*disabled*/ {});
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::DoNothing(), &download_protection_service_);
@@ -213,7 +210,8 @@ TEST_F(DeepScanningRequestTest, ChecksFeatureFlags) {
                     .has_dlp_scan_request());
   }
   {
-    DisableFeatures({kMalwareScanEnabled, kContentComplianceEnabled});
+    SetFeatures(/*enabled*/ {},
+                /*disabled*/ {kContentComplianceEnabled, kMalwareScanEnabled});
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::DoNothing(), &download_protection_service_);
@@ -226,7 +224,8 @@ TEST_F(DeepScanningRequestTest, ChecksFeatureFlags) {
                      .has_dlp_scan_request());
   }
   {
-    EnableFeatures({kContentComplianceEnabled});
+    SetFeatures(/*enabled*/ {kContentComplianceEnabled},
+                /*disabled*/ {kMalwareScanEnabled});
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::DoNothing(), &download_protection_service_);
@@ -239,7 +238,8 @@ TEST_F(DeepScanningRequestTest, ChecksFeatureFlags) {
                     .has_dlp_scan_request());
   }
   {
-    EnableFeatures({kMalwareScanEnabled});
+    SetFeatures(/*enabled*/ {kMalwareScanEnabled},
+                /*disabled*/ {kContentComplianceEnabled});
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::DoNothing(), &download_protection_service_);
@@ -254,7 +254,8 @@ TEST_F(DeepScanningRequestTest, ChecksFeatureFlags) {
 }
 
 TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
-  EnableFeatures({kContentComplianceEnabled, kMalwareScanEnabled});
+  SetFeatures(/*enabled*/ {kContentComplianceEnabled, kMalwareScanEnabled},
+              /*disabled*/ {});
 
   {
     SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
@@ -622,7 +623,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
 }
 
 TEST_F(DeepScanningRequestTest, ShouldUploadItemByPolicy_MalwareListPolicy) {
-  EnableFeatures({kMalwareScanEnabled});
+  SetFeatures(/*enabled*/ {kMalwareScanEnabled},
+              /*disabled*/ {kContentComplianceEnabled});
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
 
   content::DownloadItemUtils::AttachInfo(&item_, profile_, nullptr);
@@ -647,7 +649,8 @@ TEST_F(DeepScanningRequestTest, PopulatesRequest) {
   SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
 
-  EnableFeatures({kMalwareScanEnabled, kContentComplianceEnabled});
+  SetFeatures(/*enabled*/ {kContentComplianceEnabled, kMalwareScanEnabled},
+              /*disabled*/ {});
   DeepScanningRequest request(
       &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
       base::DoNothing(), &download_protection_service_);

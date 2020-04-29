@@ -3199,9 +3199,14 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
 
   auto* blink_channel = MakeGarbageCollected<RTCDataChannel>(
       GetExecutionContext(), std::move(channel), peer_handler_.get());
-  ScheduleDispatchEvent(MakeGarbageCollected<RTCDataChannelEvent>(
-      event_type_names::kDatachannel, blink_channel));
   has_data_channels_ = true;
+  blink_channel->SetStateToOpenWithoutEvent();
+  DispatchEvent(*MakeGarbageCollected<RTCDataChannelEvent>(
+      event_type_names::kDatachannel, blink_channel));
+  // The event handler might have closed the channel.
+  if (blink_channel->readyState() == "open") {
+    blink_channel->DispatchOpenEvent();
+  }
 }
 
 void RTCPeerConnection::DidNoteInterestingUsage(int usage_pattern) {

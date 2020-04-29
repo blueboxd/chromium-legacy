@@ -224,6 +224,8 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
+  // Waits until the UI is fully presented before opening an URL.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Open new tab to cancel sign-in.
   [ChromeEarlGrey simulateExternalAppURLOpening];

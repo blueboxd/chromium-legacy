@@ -434,9 +434,8 @@ TEST_F(TrustTokenRequestSigningHelperTest,
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
   ASSERT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
-  EXPECT_THAT(*my_request, Header("Sec-Signed-Redemption-Record",
-                                  StrEq(base::Base64Encode(base::as_bytes(
-                                      base::make_span(my_record.body()))))));
+  EXPECT_THAT(*my_request,
+              Header("Sec-Signed-Redemption-Record", StrEq(my_record.body())));
   EXPECT_THAT(*my_request, Header("Sec-Time"));
   EXPECT_THAT(*my_request, Not(Header("Sec-Signature")));
 }

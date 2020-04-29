@@ -22,6 +22,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
@@ -35,6 +36,7 @@ import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.chrome.browser.ui.favicon.IconType;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 
@@ -299,16 +301,32 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
                 }
             }
         };
-        // We create our own ListView, as AlertDialog doesn't let us set a message and a list
-        // adapter at the same time.
+
+        Set<String> originsWithApps = WebappRegistry.getInstance().getOriginsWithInstalledApp();
+        boolean includesApp = false;
+        for (String domain : mImportantDomains) {
+            if (originsWithApps.contains(domain)) {
+                includesApp = true;
+                break;
+            }
+        }
+
+        int titleResource = includesApp ? R.string.important_sites_title_with_app
+                                        : R.string.important_sites_title;
+        int messageResource = includesApp
+                ? R.string.clear_browsing_data_important_dialog_text_with_app
+                : R.string.clear_browsing_data_important_dialog_text;
         View messageAndListView = getActivity().getLayoutInflater().inflate(
                 R.layout.clear_browsing_important_dialog_listview, null);
         mSitesListView = (ListView) messageAndListView.findViewById(R.id.select_dialog_listview);
         mSitesListView.setAdapter(mAdapter);
         mSitesListView.setOnItemClickListener(mAdapter);
+        TextView message = messageAndListView.findViewById(R.id.message);
+        message.setText(messageResource);
+
         final AlertDialog.Builder builder =
                 new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
-                        .setTitle(R.string.storage_clear_site_storage_title)
+                        .setTitle(titleResource)
                         .setPositiveButton(
                                 R.string.clear_browsing_data_important_dialog_button, listener)
                         .setNegativeButton(R.string.cancel, listener)

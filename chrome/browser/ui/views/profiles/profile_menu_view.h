@@ -41,6 +41,7 @@ class ProfileMenuView : public ProfileMenuViewBase {
 
  private:
   friend class ProfileMenuViewExtensionsTest;
+  friend class ProfileMenuViewSignoutTest;
 
   // views::BubbleDialogDelegateView:
   base::string16 GetAccessibleWindowTitle() const override;

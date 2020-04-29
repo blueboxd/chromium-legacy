@@ -27,7 +27,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
-import org.chromium.base.PathUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -43,7 +42,6 @@ import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
@@ -58,6 +56,7 @@ import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.PermissionCallback;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.ArrayList;
@@ -309,21 +308,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean shouldRequestFileAccess(String url) {
-        // If the tab is null, then do not attempt to prompt for access.
-        if (!hasValidTab()) return false;
-
-        // If the url points inside of Chromium's data directory, no permissions are necessary.
-        // This is required to prevent permission prompt when uses wants to access offline pages.
-        if (url.startsWith(UrlConstants.FILE_URL_PREFIX + PathUtils.getDataDirectory())) {
-            return false;
-        }
-
-        return !mTab.getWindowAndroid().hasPermission(permission.READ_EXTERNAL_STORAGE)
-                && mTab.getWindowAndroid().canRequestPermission(permission.READ_EXTERNAL_STORAGE);
-    }
-
-    @Override
     public void startFileIntent(
             final Intent intent, final String referrerUrl, final boolean needsToCloseTab) {
         PermissionCallback permissionCallback = new PermissionCallback() {
@@ -520,6 +504,12 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                     TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl), mTab);
         }
         return false;
+    }
+
+    @Override
+    public WindowAndroid getWindowAndroid() {
+        if (mTab == null) return null;
+        return mTab.getWindowAndroid();
     }
 
     @Override

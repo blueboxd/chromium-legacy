@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnFrameAddedToPacket(const quic::QuicFrame& frame) override;
   void OnStreamFrameCoalesced(const quic::QuicStreamFrame& frame) override;
 
-  // QuicConnectionDebugVisitorInterface
+  // QuicConnectionDebugVisitor Interface
   void OnPacketSent(const quic::SerializedPacket& serialized_packet,
                     quic::TransmissionType transmission_type,
                     quic::QuicTime sent_time) override;

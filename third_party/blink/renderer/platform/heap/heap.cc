@@ -237,13 +237,14 @@ bool ThreadHeap::ShouldRegisterMovingAddress() {
 }
 
 void ThreadHeap::FlushNotFullyConstructedObjects() {
-  if (!not_fully_constructed_worklist_->IsGlobalEmpty()) {
-    not_fully_constructed_worklist_->FlushToGlobal(
-        WorklistTaskId::MutatorThread);
+  NotFullyConstructedWorklist::View view(not_fully_constructed_worklist_.get(),
+                                         WorklistTaskId::MutatorThread);
+  if (!view.IsLocalViewEmpty()) {
+    view.FlushToGlobal();
     previously_not_fully_constructed_worklist_->MergeGlobalPool(
         not_fully_constructed_worklist_.get());
   }
-  DCHECK(not_fully_constructed_worklist_->IsGlobalEmpty());
+  DCHECK(view.IsLocalViewEmpty());
 }
 
 void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {

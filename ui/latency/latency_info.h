@@ -195,6 +195,8 @@ class LatencyInfo {
   float predicted_scroll_update_delta() const {
     return predicted_scroll_update_delta_;
   }
+  int64_t gesture_scroll_id() const { return gesture_scroll_id_; }
+  void set_gesture_scroll_id(int64_t id) { gesture_scroll_id_ = id; }
 
  private:
   void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
@@ -223,6 +225,14 @@ class LatencyInfo {
 
   float scroll_update_delta_;
   float predicted_scroll_update_delta_;
+
+  // The unique id for denoting a scroll gesture. This is only set for
+  // GestureScrollBegin, GestureScrollUpdate, and GestureScrollEnd events, and
+  // allows easy grouping of these global async events into a single logical
+  // scroll in the sql interface of TBMv3 (Trace Based Metrics v3). As a current
+  // implementation detail this unique id comes from the |trace_id| of the
+  // associated GestureScrollBegin (-1 if there was none or it wasn't valid).
+  int64_t gesture_scroll_id_;
 
 #if !defined(OS_IOS)
   friend struct IPC::ParamTraits<ui::LatencyInfo>;

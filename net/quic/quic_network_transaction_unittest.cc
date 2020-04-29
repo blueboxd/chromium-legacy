@@ -2696,8 +2696,10 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
 // alternate network as well, QUIC is marked as broken and the brokenness will
 // not expire when default network changes.
 TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 ||
+      GetQuicReloadableFlag(quic_use_idle_network_detector)) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    // TODO(fayang): Add time driven idle network detection test.
     return;
   }
   SetUpTestForRetryConnectionOnAlternateNetwork();
@@ -2804,8 +2806,10 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
 // alternate network, QUIC is marked as broken. The brokenness will expire when
 // the default network changes.
 TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 ||
+      GetQuicReloadableFlag(quic_use_idle_network_detector)) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    // TODO(fayang): Add time driven idle network detection test.
     return;
   }
 
@@ -2924,8 +2928,10 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
 // Much like above test, but verifies NetworkIsolationKeys are respected.
 TEST_P(QuicNetworkTransactionTest,
        RetryOnAlternateNetworkWhileTCPSucceedsWithNetworkIsolationKey) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 ||
+      GetQuicReloadableFlag(quic_use_idle_network_detector)) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    // TODO(fayang): Add time driven idle network detection test.
     return;
   }
 
@@ -3070,8 +3076,10 @@ TEST_P(QuicNetworkTransactionTest,
 // before handshake is confirmed. If TCP doesn't succeed but QUIC on the
 // alternative network succeeds, QUIC is not marked as broken.
 TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 ||
+      GetQuicReloadableFlag(quic_use_idle_network_detector)) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    // TODO(fayang): Add time driven idle network detection test.
     return;
   }
 

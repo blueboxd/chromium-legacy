@@ -36,6 +36,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/content_browser_test.h"
@@ -1004,8 +1005,8 @@ class SignedExchangeSubresourcePrefetchBrowserTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PrefetchBrowserTestBase::SetUpCommandLine(command_line);
-    // Needed to call internals.scheduleBlinkGC().
-    command_line->AppendSwitch(switches::kExposeInternalsForTesting);
+    // For window.gc().
+    command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
 
   void SetUp() override {
@@ -2279,8 +2280,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
           "<head><title>Next page</title>"
           "<script src=\"./script.js\" async defer></script></head>"));
   // Triggers GC.
-  EXPECT_TRUE(
-      ExecuteScript(shell()->web_contents(), "internals.scheduleBlinkGC();"));
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), "window.gc();"));
   // The script which was served via SXG must be kept in memory cache and must
   // be reused.
   NavigateToURLAndWaitTitle(next_page_url, "done");

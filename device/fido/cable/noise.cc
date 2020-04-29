@@ -4,6 +4,8 @@
 
 #include "device/fido/cable/noise.h"
 
+#include <string.h>
+
 #include "crypto/aead.h"
 #include "crypto/sha2.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"

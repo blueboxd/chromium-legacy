@@ -46,7 +46,7 @@ FakeScriptExecutorDelegate::GetPersonalDataManager() {
   return nullptr;
 }
 
-WebsiteLoginFetcher* FakeScriptExecutorDelegate::GetWebsiteLoginFetcher() {
+WebsiteLoginManager* FakeScriptExecutorDelegate::GetWebsiteLoginManager() {
   return nullptr;
 }
 

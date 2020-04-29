@@ -644,9 +644,9 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
 #endif
       base::FilePath path = download_->GetTargetFilePath();
       if (is_checked)
-        prefs->DisableAutoOpenBasedOnExtension(path);
+        prefs->DisableAutoOpenByUserBasedOnExtension(path);
       else
-        prefs->EnableAutoOpenBasedOnExtension(path);
+        prefs->EnableAutoOpenByUserBasedOnExtension(path);
       break;
     }
     case DownloadCommands::BYPASS_DEEP_SCANNING:

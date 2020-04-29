@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/passwords/move_to_account_store_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/password_generation_confirmation_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
@@ -81,11 +82,16 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
       view = new PasswordSaveUpdateView(web_contents, anchor_view, reason);
     }
   } else if (model_state == password_manager::ui::
-                                WILL_DELETE_UNSYNCED_ACCOUNT_PASSWORDS_STATE &&
-             base::FeatureList::IsEnabled(
-                 password_manager::features::kEnablePasswordsAccountStorage)) {
+                                WILL_DELETE_UNSYNCED_ACCOUNT_PASSWORDS_STATE) {
+    DCHECK(base::FeatureList::IsEnabled(
+        password_manager::features::kEnablePasswordsAccountStorage));
     view = new PasswordSaveUnsyncedCredentialsLocallyView(web_contents,
                                                           anchor_view);
+  } else if (model_state ==
+             password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE) {
+    DCHECK(base::FeatureList::IsEnabled(
+        password_manager::features::kEnablePasswordsAccountStorage));
+    view = new MoveToAccountStoreBubbleView(web_contents, anchor_view);
   } else {
     NOTREACHED();
   }

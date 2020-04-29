@@ -17,5 +17,5 @@ var function has a color swatch: true
 
 Running: testColorSwatchInComputedRules
 Initial color value: rgb(255, 0, 0)
-After shift-click color value: hsl(0 100% 50%)
+After shift-click color value: hsl(0deg 100% 50%)
 

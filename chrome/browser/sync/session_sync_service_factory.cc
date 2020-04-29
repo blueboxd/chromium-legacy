@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/sync/browser_synced_window_delegates_getter.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync_sessions/session_sync_prefs.h"
@@ -57,11 +58,6 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   ~SyncSessionsClientImpl() override {}
 
   // SyncSessionsClient implementation.
-  history::HistoryService* GetHistoryService() override {
-    return HistoryServiceFactory::GetForProfile(
-        profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  }
-
   sync_sessions::SessionSyncPrefs* GetSessionSyncPrefs() override {
     return &session_sync_prefs_;
   }
@@ -69,6 +65,16 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   syncer::RepeatingModelTypeStoreFactory GetStoreFactory() override {
     return ModelTypeStoreServiceFactory::GetForProfile(profile_)
         ->GetStoreFactory();
+  }
+
+  void ClearAllOnDemandFavicons() override {
+    history::HistoryService* history_service =
+        HistoryServiceFactory::GetForProfile(
+            profile_, ServiceAccessType::EXPLICIT_ACCESS);
+    if (!history_service) {
+      return;
+    }
+    history_service->ClearAllOnDemandFavicons();
   }
 
   bool ShouldSyncURL(const GURL& url) const override {

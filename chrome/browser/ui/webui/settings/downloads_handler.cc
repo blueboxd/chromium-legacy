@@ -78,7 +78,7 @@ void DownloadsHandler::SendAutoOpenDownloadsToJavascript() {
   content::DownloadManager* manager =
       content::BrowserContext::GetDownloadManager(profile_);
   bool auto_open_downloads =
-      DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed();
+      DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenByUserUsed();
   FireWebUIListener("auto-open-downloads-changed",
                     base::Value(auto_open_downloads));
 }
@@ -88,7 +88,7 @@ void DownloadsHandler::HandleResetAutoOpenFileTypes(
   base::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
   content::DownloadManager* manager =
       content::BrowserContext::GetDownloadManager(profile_);
-  DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
+  DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpenByUser();
 }
 
 void DownloadsHandler::HandleSelectDownloadLocation(

@@ -250,12 +250,9 @@ void TabSharingUIViews::DidFinishNavigation(content::NavigationHandle* handle) {
   }
   shared_tab_name_ = GetTabName(shared_tab_);
   for (const auto& infobars_entry : infobars_) {
-    if (infobars_entry.first == shared_tab_)
-      continue;
     // Recreate infobars to reflect the new shared tab name.
-    infobars_entry.second->owner()->RemoveObserver(this);
-    infobars_entry.second->RemoveSelf();
-    CreateInfobarForWebContents(infobars_entry.first);
+    if (infobars_entry.first != shared_tab_)
+      CreateInfobarForWebContents(infobars_entry.first);
   }
 }
 
@@ -274,6 +271,12 @@ void TabSharingUIViews::CreateInfobarsForAllTabs() {
 
 void TabSharingUIViews::CreateInfobarForWebContents(
     content::WebContents* contents) {
+  auto infobars_entry = infobars_.find(contents);
+  // Recreate the infobar if it already exists.
+  if (infobars_entry != infobars_.end()) {
+    infobars_entry->second->owner()->RemoveObserver(this);
+    infobars_entry->second->RemoveSelf();
+  }
   auto* infobar_service = InfoBarService::FromWebContents(contents);
   infobar_service->AddObserver(this);
   infobars_[contents] = TabSharingInfoBarDelegate::Create(

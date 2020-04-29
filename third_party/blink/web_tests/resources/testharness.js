@@ -398,20 +398,7 @@ policies and contribution forms [3].
         self.addEventListener("message",
                 function(event) {
                     if (event.data && event.data.type && event.data.type === "connect") {
-                        if (event.ports && event.ports[0]) {
-                            // If a MessageChannel was passed, then use it to
-                            // send results back to the main window.  This
-                            // allows the tests to work even if the browser
-                            // does not fully support MessageEvent.source in
-                            // ServiceWorkers yet.
-                            this_obj._add_message_port(event.ports[0]);
-                            event.ports[0].start();
-                        } else {
-                            // If there is no MessageChannel, then attempt to
-                            // use the MessageEvent.source to send results
-                            // back to the main window.
-                            this_obj._add_message_port(event.source);
-                        }
+                        this_obj._add_message_port(event.source);
                     }
                 }, false);
 
@@ -1847,6 +1834,49 @@ policies and contribution forms [3].
         }
     }
     expose(assert_any, "assert_any");
+
+    /**
+     * Assert that a feature is implemented, based on a 'truthy' condition.
+     *
+     * This function should be used to early-exit from tests in which there is
+     * no point continuing without support for a non-optional spec or spec
+     * feature. For example:
+     *
+     *     assert_implements(window.Foo, 'Foo is not supported');
+     *
+     * @param {object} condition The truthy value to test
+     * @param {string} description Error description for the case that the condition is not truthy.
+     */
+    function assert_implements(condition, description) {
+        assert(!!condition, "assert_implements", description);
+    }
+    expose(assert_implements, "assert_implements")
+
+    /**
+     * Assert that an optional feature is implemented, based on a 'truthy' condition.
+     *
+     * This function should be used to early-exit from tests in which there is
+     * no point continuing without support for an explicitly optional spec or
+     * spec feature. For example:
+     *
+     *     assert_implements_optional(video.canPlayType("video/webm"),
+     *                                "webm video playback not supported");
+     *
+     * @param {object} condition The truthy value to test
+     * @param {string} description Error description for the case that the condition is not truthy.
+     */
+    function assert_implements_optional(condition, description) {
+        if (!condition) {
+            // Due to the difficulty of changing logging statuses, we re-use
+            // the PRECONDITION_FAILED status for assert_implements_optional.
+            // See the RFC: https://github.com/web-platform-tests/rfcs/pull/48
+            //
+            // TODO(smcgruer): Once assert_precondition is removed, rename the
+            // exception and move this comment to where PRECONDITION_FAILED is used.
+            throw new PreconditionFailedError(description);
+        }
+    }
+    expose(assert_implements_optional, "assert_implements_optional")
 
     function assert_precondition(precondition, description) {
         if (!precondition) {

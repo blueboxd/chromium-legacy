@@ -41,7 +41,6 @@ class FilterEffect;
 class FilterOperations;
 class FloatRect;
 class ReferenceFilterOperation;
-class SVGFilterElement;
 class SVGFilterGraphNodeMap;
 
 class CORE_EXPORT FilterEffectBuilder final {
@@ -55,7 +54,7 @@ class CORE_EXPORT FilterEffectBuilder final {
                       SkBlurImageFilter::TileMode blur_tile_mode =
                           SkBlurImageFilter::kClampToBlack_TileMode);
 
-  Filter* BuildReferenceFilter(SVGFilterElement&,
+  Filter* BuildReferenceFilter(const ReferenceFilterOperation&,
                                FilterEffect* previous_effect,
                                SVGFilterGraphNodeMap* = nullptr) const;
 
@@ -65,9 +64,6 @@ class CORE_EXPORT FilterEffectBuilder final {
       const FilterOperations&) const;
 
  private:
-  Filter* BuildReferenceFilter(const ReferenceFilterOperation&,
-                               FilterEffect* previous_effect) const;
-
   FloatRect reference_box_;
   float zoom_;
   const PaintFlags* fill_flags_;

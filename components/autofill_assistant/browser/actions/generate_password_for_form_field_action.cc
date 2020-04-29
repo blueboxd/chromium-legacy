@@ -62,7 +62,7 @@ void GeneratePasswordForFormFieldAction::OnGetFormAndFieldDataForGeneration(
   }
 
   uint64_t max_length = field_data.max_length;
-  std::string password = delegate_->GetWebsiteLoginFetcher()->GeneratePassword(
+  std::string password = delegate_->GetWebsiteLoginManager()->GeneratePassword(
       autofill::CalculateFormSignature(form_data),
       autofill::CalculateFieldSignatureForField(field_data), max_length);
 
@@ -77,7 +77,7 @@ void GeneratePasswordForFormFieldAction::OnGetFormAndFieldDataForGeneration(
   // Ideally, a generated password should be presaved after form filling.
   // Otherwise, if filling fails and submission cannot happen for sure, the
   // presaved password is pointless.
-  delegate_->GetWebsiteLoginFetcher()->PresaveGeneratedPassword(
+  delegate_->GetWebsiteLoginManager()->PresaveGeneratedPassword(
       *delegate_->GetUserData()->selected_login_, password, form_data,
       base::BindOnce(&GeneratePasswordForFormFieldAction::EndAction,
                      weak_ptr_factory_.GetWeakPtr(),

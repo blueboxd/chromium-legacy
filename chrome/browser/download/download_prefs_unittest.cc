@@ -31,25 +31,26 @@ TEST(DownloadPrefsTest, Prerequisites) {
       base::FilePath(FILE_PATH_LITERAL("a.txt"))));
 }
 
-TEST(DownloadPrefsTest, NoAutoOpenForDisallowedFileTypes) {
+TEST(DownloadPrefsTest, NoAutoOpenByUserForDisallowedFileTypes) {
   const base::FilePath kDangerousFilePath(FILE_PATH_LITERAL("/b/very-bad.swf"));
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile;
   DownloadPrefs prefs(&profile);
 
-  EXPECT_FALSE(prefs.EnableAutoOpenBasedOnExtension(kDangerousFilePath));
+  EXPECT_FALSE(prefs.EnableAutoOpenByUserBasedOnExtension(kDangerousFilePath));
   EXPECT_FALSE(prefs.IsAutoOpenEnabledBasedOnExtension(kDangerousFilePath));
 }
 
-TEST(DownloadPrefsTest, NoAutoOpenForFilesWithNoExtension) {
+TEST(DownloadPrefsTest, NoAutoOpenByUserForFilesWithNoExtension) {
   const base::FilePath kFileWithNoExtension(FILE_PATH_LITERAL("abcd"));
 
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile;
   DownloadPrefs prefs(&profile);
 
-  EXPECT_FALSE(prefs.EnableAutoOpenBasedOnExtension(kFileWithNoExtension));
+  EXPECT_FALSE(
+      prefs.EnableAutoOpenByUserBasedOnExtension(kFileWithNoExtension));
   EXPECT_FALSE(prefs.IsAutoOpenEnabledBasedOnExtension(kFileWithNoExtension));
 }
 
@@ -63,7 +64,7 @@ TEST(DownloadPrefsTest, AutoOpenForSafeFiles) {
   TestingProfile profile;
   DownloadPrefs prefs(&profile);
 
-  EXPECT_TRUE(prefs.EnableAutoOpenBasedOnExtension(kSafeFilePath));
+  EXPECT_TRUE(prefs.EnableAutoOpenByUserBasedOnExtension(kSafeFilePath));
   EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(kSafeFilePath));
   EXPECT_TRUE(prefs.IsAutoOpenEnabledBasedOnExtension(kAnotherSafeFilePath));
 }
@@ -89,7 +90,7 @@ TEST(DownloadPrefsTest, PrefsInitializationSkipsInvalidFileTypes) {
   profile.GetPrefs()->SetString(prefs::kDownloadExtensionsToOpen,
                                 "swf:txt::.foo:baz");
   DownloadPrefs prefs(&profile);
-  prefs.DisableAutoOpenBasedOnExtension(
+  prefs.DisableAutoOpenByUserBasedOnExtension(
       base::FilePath(FILE_PATH_LITERAL("x.baz")));
 
   EXPECT_FALSE(prefs.IsAutoOpenEnabledBasedOnExtension(

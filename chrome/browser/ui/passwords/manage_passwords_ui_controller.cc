@@ -279,6 +279,14 @@ void ManagePasswordsUIController::OnCredentialLeak(
       CreateCredentialLeakPrompt(raw_controller));
 }
 
+void ManagePasswordsUIController::OnShowMoveToAccountBubble(
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move) {
+  passwords_data_.OnPasswordMovable(std::move(form_to_move));
+  // TODO(crbug.com/1060128): Add smartness like OnPasswordSubmitted?
+  bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+  UpdateBubbleAndIconVisibility();
+}
+
 void ManagePasswordsUIController::NotifyUnsyncedCredentialsWillBeDeleted(
     const std::vector<autofill::PasswordForm>& unsynced_credentials) {
   passwords_data_.ProcessUnsyncedCredentialsWillBeDeleted(unsynced_credentials);

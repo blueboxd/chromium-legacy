@@ -94,6 +94,12 @@ class PasswordsClientUIDelegate {
   virtual void OnCredentialLeak(password_manager::CredentialLeakType leak_type,
                                 const GURL& origin) = 0;
 
+  // Called after a form was submitted. This triggers a bubble that allows to
+  // move the just used profile credential in |form| to the user's account.
+  virtual void OnShowMoveToAccountBubble(
+      std::unique_ptr<password_manager::PasswordFormManagerForUI>
+          form_to_move) = 0;
+
  protected:
   virtual ~PasswordsClientUIDelegate() = default;
 };

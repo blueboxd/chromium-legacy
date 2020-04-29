@@ -30,9 +30,6 @@ is encouraged, but there are some gotchas:
 
 ### Lambdas and Method References
  * These are syntactic sugar for creating anonymous inner classes.
-   * Furthermore, stateless lambdas 
-     [become singletons](https://stackoverflow.com/questions/27524445/does-a-lambda-expression-create-an-object-on-the-heap-every-time-its-executed)
-     and so do not result in new instances when used in loops.
  * Use them only where the cost of an extra class & method definition is
    justified.
 

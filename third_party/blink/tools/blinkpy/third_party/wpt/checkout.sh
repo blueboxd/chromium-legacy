@@ -9,7 +9,7 @@ cd $DIR
 
 TARGET_DIR=$DIR/wpt
 REMOTE_REPO="https://github.com/web-platform-tests/wpt.git"
-WPT_HEAD=3061f228d3d8b900b3aec8c7642ff58fc04ea011
+WPT_HEAD=41d7c3597e5d3128ff3c42bb128781e4c382ba7b
 
 function clone {
   # Remove existing repo if already exists.
@@ -23,6 +23,7 @@ function clone {
   # Apply local changes.
   git cherry-pick 644a206e8ace488eac7e2b2a58a4b5354b02363a
   git cherry-pick 7e52ecb9b61b73425093d39dbadceb9c6e10b754
+  git cherry-pick 07ca316106218e6c21133fed91176d8e41df1d17
 }
 
 function reduce {

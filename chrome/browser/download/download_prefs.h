@@ -84,8 +84,8 @@ class DownloadPrefs {
   bool IsDownloadPathManaged() const;
 
   // Returns true if there is at least one file extension registered
-  // for auto-open.
-  bool IsAutoOpenUsed() const;
+  // by the user for auto-open.
+  bool IsAutoOpenByUserUsed() const;
 
   // Returns true if |path| should be opened automatically based on
   // |path.Extension()|.
@@ -97,10 +97,10 @@ class DownloadPrefs {
   // determined), or if the file type is one that is disallowed from being
   // opened automatically. See IsAllowedToOpenAutomatically() for details on the
   // latter.
-  bool EnableAutoOpenBasedOnExtension(const base::FilePath& file_name);
+  bool EnableAutoOpenByUserBasedOnExtension(const base::FilePath& file_name);
 
   // Disables auto-open based on file extension.
-  void DisableAutoOpenBasedOnExtension(const base::FilePath& file_name);
+  void DisableAutoOpenByUserBasedOnExtension(const base::FilePath& file_name);
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   // Store the user preference to disk. If |should_open| is true, also disable
@@ -112,7 +112,7 @@ class DownloadPrefs {
   bool ShouldOpenPdfInSystemReader() const;
 #endif
 
-  void ResetAutoOpen();
+  void ResetAutoOpenByUser();
 
   // If this is called, the download target path will not be sanitized going
   // forward - whatever has been passed to SetDownloadPath will be used.
@@ -148,7 +148,7 @@ class DownloadPrefs {
   };
   typedef std::set<base::FilePath::StringType,
                    AutoOpenCompareFunctor> AutoOpenSet;
-  AutoOpenSet auto_open_;
+  AutoOpenSet auto_open_by_user_;
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   bool should_open_pdf_in_system_reader_;

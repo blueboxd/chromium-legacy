@@ -2267,6 +2267,14 @@ crbug.com/1051044 external/wpt/css/filter-effects/effect-reference-feimage-003.h
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
 
+# Awaiting DevTools roll.
+crbug.com/1075869 http/tests/devtools/components/color.js [ Pass Failure ]
+crbug.com/1075869 http/tests/devtools/elements/styles-1/color-aware-property-value-edit.js [ Pass Failure Timeout ]
+crbug.com/1075869 http/tests/devtools/elements/styles-1/color-swatch.js [ Pass Failure ]
+crbug.com/1075869 http/tests/devtools/elements/styles-3/spectrum.js [ Pass Failure ]
+crbug.com/1075869 http/tests/devtools/elements/styles-4/styles-invalid-color-values.js [ Pass Failure ]
+crbug.com/1075869 http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Failure Timeout ]
+
 # Run the tests with the default MSE buffer sizes in the main test suite and the tests for 1MB buffers set via command line in a virtual test suite
 # with the --mse-audio-buffer-size-limit=1048576 and --mse-video-buffer-size-limit=1048576 command-line parameters.
 crbug.com/630342 virtual/mse-1mb-buffers/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Skip ]
@@ -5854,7 +5862,7 @@ crbug.com/958347 [ Linux ] external/wpt/editing/run/removeformat.html [ Pass Cra
 crbug.com/958426 [ Mac10.13 ] virtual/text-antialias/line-break-ascii.html [ Timeout Pass ]
 
 # Sheriff 2019-05-06
-crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-1/color-aware-property-value-edit.js [ Pass Timeout ]
+#crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-1/color-aware-property-value-edit.js [ Pass Timeout ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-1/edit-resource-referred-by-multiple-styletags.js [ Pass Timeout ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-3/style-autocomplete.js [ Pass Timeout ]
 crbug.com/959002 crbug.com/959042 http/tests/devtools/elements/styles-3/styles-variables.js [ Pass Timeout ]
@@ -6474,7 +6482,7 @@ crbug.com/1044562 [ Release Mac ] http/tests/devtools/modify-cross-domain-rule.j
 crbug.com/1044563 [ Release ] http/tests/devtools/background-services/background-services-panel.js [ Pass Timeout ]
 crbug.com/1044805 [ Release ] http/tests/devtools/elements/styles-2/inject-stylesheet.js [ Pass Timeout ]
 crbug.com/1044822 [ Release ] http/tests/devtools/cache-storage/cache-entry-deletion.js [ Pass Timeout ]
-crbug.com/1044823 [ Release ] http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Timeout ]
+#crbug.com/1044823 [ Release ] http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Timeout ]
 crbug.com/1044825 [ Release ] http/tests/devtools/network/resource-priority.js [ Pass Timeout ]
 crbug.com/1044829 [ Release Win ] http/tests/devtools/cache-storage/cache-deletion.js [ Pass Timeout ]
 crbug.com/1044829 [ Release Mac ] http/tests/devtools/cache-storage/cache-deletion.js [ Pass Timeout ]
@@ -6778,9 +6786,6 @@ crbug.com/1066178 external/wpt/html/user-activation/consumption-crossorigin.sub.
 # The "timeout" was detected by the wpt-importer bot.
 crbug.com/1069714 [ Mac10.13 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Pass Failure Timeout ]
 
-# Sheriff 2020-04-10
-crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html [ Pass Failure Timeout ]
-
 # Sheriff 2020-04-17
 crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]
 
@@ -6809,6 +6814,3 @@ crbug.com/1073792 [ Mac10.13 ] virtual/threaded-prefer-compositing/fast/scrollin
 # the inspector-protocol/media tests only work in the virtual test environment.
 crbug.com/1074129 inspector-protocol/media/media-player.js [ TIMEOUT ]
 
-# Sheriff 2020-04-28
-crbug.com/1075915 [ Mac ] external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Failure ]
-crbug.com/1075915 [ Mac ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Failure ]

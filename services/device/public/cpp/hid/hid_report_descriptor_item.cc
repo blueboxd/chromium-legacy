@@ -5,6 +5,7 @@
 #include "services/device/public/cpp/hid/hid_report_descriptor_item.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "base/check.h"
 

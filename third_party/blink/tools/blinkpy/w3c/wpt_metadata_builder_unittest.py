@@ -67,23 +67,37 @@ class WPTMetadataBuilderTest(unittest.TestCase):
                 'items': {
                     'reftest': {
                         'reftest.html': [
-                            ['reftest.html', [['reftest-ref.html', '==']], {}],
+                            'c3f2fb6f436da59d43aeda0a7e8a018084557033',
+                            [None, [['reftest-ref.html', '==']], {}],
                         ]
                     },
                     'testharness': {
-                        'test.html': [['test.html', {}]],
+                        'test.html': [
+                            'd933fd981d4a33ba82fb2b000234859bdda1494e',
+                            [None, {}]
+                        ],
                         'variant.html': [
+                            'b8db5972284d1ac6bbda0da81621d9bca5d04ee7',
                             ['variant.html?foo=bar/abc', {}],
                             ['variant.html?foo=baz', {}],
                         ],
-                        'dir/zzzz.html': [['dir/zzzz.html', {}]],
-                        'dir/multiglob.https.any.js': [
-                            ['dir/multiglob.https.any.window.html', {}],
-                            ['dir/multiglob.https.any.worker.html', {}],
-                        ],
+                        'dir': {
+                            'zzzz.html': [
+                                '03ada7aa0d4d43811652fc679a00a41b9653013d',
+                                [None, {}]
+                            ],
+                            'multiglob.https.any.js': [
+                                'd6498c3e388e0c637830fa080cca78b0ab0e5305',
+                                ['dir/multiglob.https.any.window.html', {}],
+                                ['dir/multiglob.https.any.worker.html', {}],
+                            ],
+                        },
                     },
                     'manual': {
-                        'x-manual.html': [['x-manual.html', {}]],
+                        'x-manual.html': [
+                            'b8db5972284d1ac6bbda0da81621d9bca5d04ee7',
+                            [None, {}]
+                        ],
                     },
                 },
             }))

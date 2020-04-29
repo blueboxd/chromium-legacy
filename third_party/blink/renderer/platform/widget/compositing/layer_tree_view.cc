@@ -331,11 +331,6 @@ LayerTreeView::GetBeginMainFrameMetrics() {
   return delegate_->GetBeginMainFrameMetrics();
 }
 
-void LayerTreeView::NotifyThroughputTrackerResults(
-    cc::CustomTrackerResults results) {
-  NOTREACHED();
-}
-
 void LayerTreeView::DidScheduleBeginMainFrame() {
   if (!delegate_ || !web_main_thread_scheduler_)
     return;

@@ -32,7 +32,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_array.h"
-#include "components/signin/public/android/jni_headers/AccountTrackerService_jni.h"
+#include "components/signin/core/browser/android/jni_headers/AccountTrackerService_jni.h"
 #endif
 
 namespace {
@@ -104,8 +104,7 @@ AccountTrackerService::AccountTrackerService() {
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> java_ref =
-      signin::Java_AccountTrackerService_create(
-          env, reinterpret_cast<intptr_t>(this));
+      Java_AccountTrackerService_create(env, reinterpret_cast<intptr_t>(this));
   java_ref_.Reset(env, java_ref.obj());
 #endif
 }

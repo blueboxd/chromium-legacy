@@ -172,10 +172,10 @@ jumbo_static_library("browser") {
     "web/web_controller_util.cc",
     "web/web_controller_util.h",
     "web/web_controller_worker.h",
-    "website_login_fetcher.cc",
-    "website_login_fetcher.h",
-    "website_login_fetcher_impl.cc",
-    "website_login_fetcher_impl.h",
+    "website_login_manager.cc",
+    "website_login_manager.h",
+    "website_login_manager_impl.cc",
+    "website_login_manager_impl.h",
   ]
 
   deps = [
@@ -213,8 +213,8 @@ static_library("unit_test_support") {
     "mock_service.h",
     "mock_user_model_observer.cc",
     "mock_user_model_observer.h",
-    "mock_website_login_fetcher.cc",
-    "mock_website_login_fetcher.h",
+    "mock_website_login_manager.cc",
+    "mock_website_login_manager.h",
     "web/mock_web_controller.cc",
     "web/mock_web_controller.h",
   ]

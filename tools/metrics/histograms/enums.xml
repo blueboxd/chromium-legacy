@@ -62428,6 +62428,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="15" label="DiceTurnOnSyncHelper::Abort"/>
   <int value="16" label="MachineLogon::CredentialProvider"/>
   <int value="17" label="TokenService::ExtractCredentials"/>
+  <int value="18" label="AccountReconcilor::RevokeTokensNotInCookies"/>
+  <int value="19" label="LogoutTabHelper::DidFinishNavigation"/>
 </enum>
 
 <enum name="SourceIdConsistency">

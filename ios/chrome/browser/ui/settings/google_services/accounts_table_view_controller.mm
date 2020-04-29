@@ -522,7 +522,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
               self.navigationController)
               popViewControllerOrCloseSettingsAnimated:YES];
         });
-    if (base::FeatureList::IsEnabled(kClearSyncedData) && forceClearData) {
+    // Get UMA metrics on the usage of the new UI, which is only available for
+    // users in the experiement with non-managed accounts.
+    if (base::FeatureList::IsEnabled(kClearSyncedData) &&
+        ![self authService]->IsAuthenticatedIdentityManaged()) {
       UMA_HISTOGRAM_BOOLEAN("Signin.UserRequestedWipeDataOnSignout",
                             forceClearData);
     }

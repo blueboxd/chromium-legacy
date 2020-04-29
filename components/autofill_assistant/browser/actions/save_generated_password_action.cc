@@ -57,13 +57,13 @@ void SaveGeneratedPasswordAction::InternalProcessAction(
     return;
   }
 
-  if (!delegate_->GetWebsiteLoginFetcher()->ReadyToCommitGeneratedPassword()) {
+  if (!delegate_->GetWebsiteLoginManager()->ReadyToCommitGeneratedPassword()) {
     VLOG(1) << "SaveGeneratedPasswordAction: no generated password to save.";
     EndAction(ClientStatus(PRECONDITION_FAILED));
     return;
   }
 
-  delegate_->GetWebsiteLoginFetcher()->CommitGeneratedPassword();
+  delegate_->GetWebsiteLoginManager()->CommitGeneratedPassword();
 
   delegate_->WriteUserData(
       base::BindOnce(&ClearAdditionalValue, save_password.memory_key()));

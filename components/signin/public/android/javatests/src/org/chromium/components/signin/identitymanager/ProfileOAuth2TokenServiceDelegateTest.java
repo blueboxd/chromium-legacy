@@ -19,8 +19,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
-import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
 
@@ -76,52 +76,58 @@ public class ProfileOAuth2TokenServiceDelegateTest {
         mContext = new AdvancedMockContext(InstrumentationRegistry.getTargetContext());
         mProfileOAuth2TokenServiceDelegate = new ProfileOAuth2TokenServiceDelegate(
                 0 /*nativeProfileOAuth2TokenServiceDelegateDelegate*/,
-                null /* AccountTrackerService */, AccountManagerFacadeProvider.getInstance());
+                null /* AccountTrackerService */, AccountManagerFacadeProvider.get());
     }
 
     @After
     public void tearDown() {
-        AccountManagerFacadeProvider.resetInstanceForTests();
+        AccountManagerFacadeProvider.resetAccountManagerFacadeForTests();
     }
 
     @Test
     @SmallTest
     @Feature({"Sync"})
     public void testGetAccountsNoAccountsRegistered() {
-        String[] sysAccounts = mProfileOAuth2TokenServiceDelegate.getSystemAccountNames();
-        Assert.assertEquals("There should be no accounts registered", 0, sysAccounts.length);
+        String[] accounts = ProfileOAuth2TokenServiceDelegate.getAccounts();
+        Assert.assertEquals("There should be no accounts registered", 0, accounts.length);
     }
 
     @Test
     @SmallTest
     @Feature({"Sync"})
     public void testGetAccountsOneAccountRegistered() {
-        Account account1 = AccountUtils.createAccountFromName("foo@gmail.com");
+        Account account1 = AccountManagerFacade.createAccountFromName("foo@gmail.com");
         AccountHolder accountHolder1 = AccountHolder.builder(account1).build();
         mAccountManagerTestRule.addAccount(accountHolder1);
 
         String[] sysAccounts = mProfileOAuth2TokenServiceDelegate.getSystemAccountNames();
         Assert.assertEquals("There should be one registered account", 1, sysAccounts.length);
         Assert.assertEquals("The account should be " + account1, account1.name, sysAccounts[0]);
+
+        String[] accounts = ProfileOAuth2TokenServiceDelegate.getAccounts();
+        Assert.assertEquals("There should be zero registered account", 0, accounts.length);
     }
 
     @Test
     @SmallTest
     @Feature({"Sync"})
     public void testGetAccountsTwoAccountsRegistered() {
-        Account account1 = AccountUtils.createAccountFromName("foo@gmail.com");
+        Account account1 = AccountManagerFacade.createAccountFromName("foo@gmail.com");
         AccountHolder accountHolder1 = AccountHolder.builder(account1).build();
         mAccountManagerTestRule.addAccount(accountHolder1);
-        Account account2 = AccountUtils.createAccountFromName("bar@gmail.com");
+        Account account2 = AccountManagerFacade.createAccountFromName("bar@gmail.com");
         AccountHolder accountHolder2 = AccountHolder.builder(account2).build();
         mAccountManagerTestRule.addAccount(accountHolder2);
 
         String[] sysAccounts = mProfileOAuth2TokenServiceDelegate.getSystemAccountNames();
-        Assert.assertEquals("There should be two registered account", 2, sysAccounts.length);
+        Assert.assertEquals("There should be one registered account", 2, sysAccounts.length);
         Assert.assertTrue("The list should contain " + account1,
                 Arrays.asList(sysAccounts).contains(account1.name));
         Assert.assertTrue("The list should contain " + account2,
                 Arrays.asList(sysAccounts).contains(account2.name));
+
+        String[] accounts = ProfileOAuth2TokenServiceDelegate.getAccounts();
+        Assert.assertEquals("There should be zero registered account", 0, accounts.length);
     }
 
     @Test
@@ -144,7 +150,7 @@ public class ProfileOAuth2TokenServiceDelegateTest {
 
     private void runTestOfGetOAuth2AccessTokenWithTimeout(String expectedToken) {
         String scope = "oauth2:http://example.com/scope";
-        Account account = AccountUtils.createAccountFromName("test@gmail.com");
+        Account account = AccountManagerFacade.createAccountFromName("test@gmail.com");
 
         // Add an account with given auth token for the given scope, already accepted auth popup.
         AccountHolder accountHolder = AccountHolder.builder(account)

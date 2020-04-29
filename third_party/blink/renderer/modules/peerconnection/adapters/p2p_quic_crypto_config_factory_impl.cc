@@ -104,7 +104,7 @@ class DummyProofSource : public quic::ProofSource {
     callback->Run(true, "Dummy signature", nullptr);
   }
 
-  TicketCrypter* SessionTicketCrypter() override { return nullptr; }
+  TicketCrypter* GetTicketCrypter() override { return nullptr; }
 };
 
 P2PQuicCryptoConfigFactoryImpl::P2PQuicCryptoConfigFactoryImpl(

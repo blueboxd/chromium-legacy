@@ -36,6 +36,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.location.LocationUtils;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -66,7 +67,16 @@ public class PageInfoViewTest {
 
     @Rule
     public RenderTestRule mRenderTestRule =
-            new RenderTestRule.SkiaGoldBuilder().setRevision(1).build();
+            new RenderTestRule.SkiaGoldBuilder().setRevision(2).build();
+
+    private boolean mIsSystemLocationSettingEnabled = true;
+
+    private class TestLocationUtils extends LocationUtils {
+        @Override
+        public boolean isSystemLocationSettingEnabled() {
+            return mIsSystemLocationSettingEnabled;
+        }
+    }
 
     @ClassRule
     public static DisableAnimationsTestRule disableAnimationsRule = new DisableAnimationsTestRule();
@@ -103,6 +113,9 @@ public class PageInfoViewTest {
 
     @Before
     public void setUp() throws InterruptedException {
+        // Some test devices have geolocation disabled. Override LocationUtils for a stable result.
+        LocationUtils.setFactory(TestLocationUtils::new);
+
         // Choose a fixed, "random" port to create stable screenshots.
         mTestServerRule.setServerPort(424242);
         mTestServerRule.setServerUsesHttps(true);
@@ -170,11 +183,13 @@ public class PageInfoViewTest {
 
     /**
      * Tests PageInfo on a website with permissions.
+     * Geolocation is blocked system wide in this test.
      */
     @Test
     @MediumTest
     @Feature({"RenderTest"})
     public void testShowWithPermissions() throws IOException {
+        mIsSystemLocationSettingEnabled = false;
         addSomePermissions(mTestServerRule.getServer().getURL("/"));
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(mPath));
         mRenderTestRule.render(getPageInfoView(), "PageInfo_Permissions");

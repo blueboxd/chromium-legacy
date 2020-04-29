@@ -58,21 +58,47 @@ class TrustTokenRequestRedemptionHelper : public TrustTokenRequestHelper {
   // Class Cryptographer executes the underlying cryptographic operations
   // required for redemption. The API is intended to correspond closely to the
   // BoringSSL API.
+  //
+  // Usage:
+  //   1x Initialize; then, if it succeeds,
+  //   1x BeginRedemption; then, if it succeeds,
+  //   1x ConfirmRedemption
   class Cryptographer {
    public:
     virtual ~Cryptographer() = default;
 
+    // Initializes the delegate. |issuer_configured_batch_size| must be the
+    // "batchsize" value, and |signed_Redemption_record_verification_key| the
+    // "srrkey" value, from an issuer-provided key commitment result.
+    //
+    // Returns true on success and false if the batch size or key is
+    // unacceptable or an internal error occurred in the underlying
+    // cryptographic library.
+    virtual bool Initialize(
+        int issuer_configured_batch_size,
+        base::StringPiece signed_redemption_record_verification_key) = 0;
+
     // Given a trust token to redeem and parameters to encode in the redemption
-    // request, returns an ASCII string suitable for attachment in the
-    // Sec-Trust-Token header, or nullopt on error.
+    // request, returns a base64-encoded string suitable for attachment in the
+    // Sec-Trust-Token header, or nullopt on error. The exact format of the
+    // redemption request is currently considered an implementation detail of
+    // the underlying cryptographic code.
+    //
+    // Some representation of each of |verification_key_to_bind| and
+    // |top_level_origin| is embedded in the redemption request so that a token
+    // redemption can be bound to a particular top-level origin and client-owned
+    // key pair; see the design doc for more details.
     virtual base::Optional<std::string> BeginRedemption(
         TrustToken token,
-        base::StringPiece verification_key,
+        base::StringPiece verification_key_to_bind,
         const url::Origin& top_level_origin) = 0;
 
-    // Given a base64-encoded redemption response header, validates and extracts
-    // the signed redemption record (SRR) contained in the header. If
-    // successful, returns the SRR. Otherwise, returns nullptr.
+    // Given a base64-encoded Sec-Trust-Token redemption response header,
+    // validates and extracts the signed redemption record (SRR) contained in
+    // the header. If successful, returns the SRR. Otherwise, returns nullopt.
+    //
+    // The Trust Tokens design doc is currently the normative source for the
+    // SRR's format.
     virtual base::Optional<std::string> ConfirmRedemption(
         base::StringPiece response_header) = 0;
   };

@@ -1461,14 +1461,27 @@ bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
   if (GetLocationBarView()->ActivateFirstInactiveBubbleForAccessibility())
     return true;
 
-  // TODO: this fixes http://crbug.com/1042010, but a more general solution
-  // should be desirable to find any bubbles anchored in the views hierarchy.
+  // TODO: this fixes crbug.com/1042010 and crbug.com/1052676, but a more
+  // general solution should be desirable to find any bubbles anchored in the
+  // views hierarchy.
   if (toolbar_ && toolbar_->app_menu_button()) {
     views::BubbleDialogDelegateView* bubble =
         toolbar_->app_menu_button()->GetProperty(views::kAnchoredDialogKey);
+    if (!bubble && GetLocationBarView())
+      bubble = GetLocationBarView()->GetProperty(views::kAnchoredDialogKey);
+
     if (bubble) {
-      bubble->GetInitiallyFocusedView()->RequestFocus();
-      return true;
+      View* focusable = bubble->GetInitiallyFocusedView();
+
+      // A PermissionPromptBubbleView will explicitly return nullptr due to
+      // crbug.com/619429. In that case, we explicitly focus the cancel button.
+      if (!focusable)
+        focusable = bubble->GetCancelButton();
+
+      if (focusable) {
+        focusable->RequestFocus();
+        return true;
+      }
     }
   }
 

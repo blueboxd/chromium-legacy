@@ -206,8 +206,6 @@ blink_core_sources("paint") {
     "selection_painting_utils.h",
     "svg_container_painter.cc",
     "svg_container_painter.h",
-    "svg_filter_painter.cc",
-    "svg_filter_painter.h",
     "svg_foreign_object_painter.cc",
     "svg_foreign_object_painter.h",
     "svg_image_painter.cc",

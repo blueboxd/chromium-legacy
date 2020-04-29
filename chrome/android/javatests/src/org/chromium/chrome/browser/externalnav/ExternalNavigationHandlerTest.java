@@ -41,6 +41,7 @@ import org.chromium.components.external_intents.RedirectHandlerImpl;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.net.URISyntaxException;
@@ -1358,7 +1359,7 @@ public class ExternalNavigationHandlerTest {
     public void testFileAccess() {
         String fileUrl = "file:///sdcard/Downloads/test.html";
 
-        mDelegate.shouldRequestFileAccess = false;
+        mUrlHandler.mShouldRequestFileAccess = false;
         // Verify no overrides if file access is allowed (under different load conditions).
         checkUrl(fileUrl).expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
         checkUrl(fileUrl)
@@ -1368,7 +1369,7 @@ public class ExternalNavigationHandlerTest {
                 .withPageTransition(PageTransition.AUTO_TOPLEVEL)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
-        mDelegate.shouldRequestFileAccess = true;
+        mUrlHandler.mShouldRequestFileAccess = true;
         // Verify that the file intent action is triggered if file access is not allowed.
         checkUrl(fileUrl)
                 .withPageTransition(PageTransition.AUTO_TOPLEVEL)
@@ -1730,6 +1731,7 @@ public class ExternalNavigationHandlerTest {
         public String defaultSmsPackageName;
         public String mLastCommittedUrl;
         public boolean mIsSerpReferrer;
+        public boolean mShouldRequestFileAccess;
 
         public ExternalNavigationHandlerForTesting(ExternalNavigationDelegate delegate) {
             super(delegate);
@@ -1753,6 +1755,11 @@ public class ExternalNavigationHandlerTest {
         @Override
         protected boolean isSerpReferrer() {
             return mIsSerpReferrer;
+        }
+
+        @Override
+        protected boolean shouldRequestFileAccess(String url) {
+            return mShouldRequestFileAccess;
         }
     };
 
@@ -1865,11 +1872,6 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean shouldRequestFileAccess(String url) {
-            return shouldRequestFileAccess;
-        }
-
-        @Override
         public void startFileIntent(Intent intent, String referrerUrl, boolean needsToCloseTab) {
             startFileIntentCalled = true;
         }
@@ -1918,6 +1920,11 @@ public class ExternalNavigationHandlerTest {
         public boolean maybeLaunchInstantApp(String url, String referrerUrl,
                 boolean isIncomingRedirect, boolean isSerpReferrer) {
             return mCanHandleWithInstantApp;
+        }
+
+        @Override
+        public WindowAndroid getWindowAndroid() {
+            return null;
         }
 
         @Override
@@ -2051,7 +2058,6 @@ public class ExternalNavigationHandlerTest {
         private boolean mIsIntentToInstantApp;
         private boolean mIsIntentToAutofillAssistant;
         private boolean mCanLoadUrlInTab;
-        public boolean shouldRequestFileAccess;
     }
 
     private void checkIntentSanity(Intent intent, String name) {

@@ -25,7 +25,7 @@ enum class Channel;
 
 namespace autofill_assistant {
 class AccessTokenFetcher;
-class WebsiteLoginFetcher;
+class WebsiteLoginManager;
 
 // A client interface that needs to be supplied to the controller by the
 // embedder.
@@ -61,7 +61,7 @@ class Client {
       const = 0;
 
   // Returns the currently active login fetcher.
-  virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() const = 0;
+  virtual WebsiteLoginManager* GetWebsiteLoginManager() const = 0;
 
   // Returns the locale.
   virtual std::string GetLocale() const = 0;

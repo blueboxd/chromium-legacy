@@ -20,9 +20,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
-import org.chromium.base.PathUtils;
 import org.chromium.base.task.PostTask;
-import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -34,6 +32,7 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.PermissionCallback;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -191,22 +190,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean shouldRequestFileAccess(String url) {
-        // If the tab is null, then do not attempt to prompt for access.
-        if (!hasValidTab()) return false;
-
-        // If the url points inside of Chromium's data directory, no permissions are necessary.
-        // This is required to prevent permission prompt when uses wants to access offline pages.
-        if (url.startsWith(UrlConstants.FILE_URL_PREFIX + PathUtils.getDataDirectory())) {
-            return false;
-        }
-
-        return !mTab.getBrowser().getWindowAndroid().hasPermission(permission.READ_EXTERNAL_STORAGE)
-                && mTab.getBrowser().getWindowAndroid().canRequestPermission(
-                        permission.READ_EXTERNAL_STORAGE);
-    }
-
-    @Override
     public void startFileIntent(
             final Intent intent, final String referrerUrl, final boolean needsToCloseTab) {
         PermissionCallback permissionCallback = new PermissionCallback() {
@@ -303,6 +286,12 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public boolean maybeLaunchInstantApp(
             String url, String referrerUrl, boolean isIncomingRedirect, boolean isSerpReferrer) {
         return false;
+    }
+
+    @Override
+    public WindowAndroid getWindowAndroid() {
+        if (mTab == null) return null;
+        return mTab.getBrowser().getWindowAndroid();
     }
 
     @Override

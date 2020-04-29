@@ -1092,7 +1092,7 @@ if (!is_ios) {
       "//testing/xvfb.py",
       "//third_party/blink/tools/",
       "//third_party/blink/web_tests/VirtualTestSuites",
-      "//third_party/blink/web_tests/external/WPT_BASE_MANIFEST_7.json",
+      "//third_party/blink/web_tests/external/WPT_BASE_MANIFEST_8.json",
       "//third_party/blink/web_tests/external/wpt/resources/",
       "//third_party/blink/web_tests/resources/",
       "//third_party/blink/web_tests/wpt_internal/",

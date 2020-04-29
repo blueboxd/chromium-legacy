@@ -417,7 +417,7 @@ class ProofSourceStub : public quic::ProofSource {
     callback->Run(true, "Test signature", nullptr);
   }
 
-  TicketCrypter* SessionTicketCrypter() override { return nullptr; }
+  TicketCrypter* GetTicketCrypter() override { return nullptr; }
 };
 
 // Creates crypto configs that will fail a QUIC handshake.

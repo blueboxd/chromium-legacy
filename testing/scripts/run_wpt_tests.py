@@ -77,7 +77,7 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             # update the manifest in cast it's stale.
             #"--no-manifest-update",
             "--manifest=../../third_party/blink/web_tests/external/"
-                "WPT_BASE_MANIFEST_7.json",
+                "WPT_BASE_MANIFEST_8.json",
             # (crbug.com/1023835) The flags below are temporary to aid debugging
             "--log-mach=-",
             "--log-mach-verbose",

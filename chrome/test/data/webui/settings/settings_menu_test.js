@@ -14,12 +14,6 @@ import {pageVisibility, Router, routes} from 'chrome://settings/settings.js';
 suite('SettingsMenu', function() {
   let settingsMenu = null;
 
-  suiteSetup(function() {
-    loadTimeData.overrideValues({
-      privacySettingsRedesignEnabled: true,
-    });
-  });
-
   setup(function() {
     PolymerTest.clearBody();
     settingsMenu = document.createElement('settings-menu');
@@ -94,11 +88,18 @@ suite('SettingsMenu', function() {
 suite('SettingsMenuReset', function() {
   let settingsMenu = null;
 
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      privacySettingsRedesignEnabled: true,
+    });
+  });
+
   setup(function() {
     PolymerTest.clearBody();
     Router.getInstance().navigateTo(routes.RESET, '');
     settingsMenu = document.createElement('settings-menu');
     document.body.appendChild(settingsMenu);
+    flush();
   });
 
   teardown(function() {
@@ -136,13 +137,14 @@ suite('SettingsMenuReset', function() {
   });
 
   test('pageVisibility', function() {
-    function assertPageVisibility(expectedHidden) {
+    function assertPagesHidden(expectedHidden) {
       assertEquals(expectedHidden, settingsMenu.$$('#people').hidden);
       assertEquals(expectedHidden, settingsMenu.$$('#appearance').hidden);
       assertEquals(expectedHidden, settingsMenu.$$('#onStartup').hidden);
       assertEquals(expectedHidden, settingsMenu.$$('#advancedButton').hidden);
       assertEquals(expectedHidden, settingsMenu.$$('#advancedSubmenu').hidden);
       assertEquals(expectedHidden, settingsMenu.$$('#reset').hidden);
+      assertEquals(expectedHidden, settingsMenu.$$('#safetyCheck').hidden);
 
       if (!isChromeOS) {
         assertEquals(expectedHidden, settingsMenu.$$('#defaultBrowser').hidden);
@@ -150,7 +152,7 @@ suite('SettingsMenuReset', function() {
     }
 
     // The default pageVisibility should not cause menu items to be hidden.
-    assertPageVisibility(false);
+    assertPagesHidden(false);
 
     // Set the visibility of the pages under test to "false".
     settingsMenu.pageVisibility = Object.assign(pageVisibility || {}, {
@@ -160,16 +162,16 @@ suite('SettingsMenuReset', function() {
       multidevice: false,
       onStartup: false,
       people: false,
-      reset: false
+      reset: false,
+      safetyCheck: false,
     });
     flush();
 
     // Now, the menu items should be hidden.
-    assertPageVisibility(true);
+    assertPagesHidden(true);
   });
 
   test('safetyCheckInMenu', function() {
-    flush();
     assertTrue(!!settingsMenu.$$('#safetyCheck'));
   });
 });
@@ -188,6 +190,7 @@ suite('SettingsMenuPrivacyRedesignFlagOff', function() {
     settingsMenu = document.createElement('settings-menu');
     settingsMenu.pageVisibility = pageVisibility;
     document.body.appendChild(settingsMenu);
+    flush();
   });
 
   teardown(function() {
@@ -195,7 +198,6 @@ suite('SettingsMenuPrivacyRedesignFlagOff', function() {
   });
 
   test('safetyCheckNotInMenu', function() {
-    flush();
     assertFalse(!!settingsMenu.$$('#safetyCheck'));
   });
 });

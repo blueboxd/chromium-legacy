@@ -121,7 +121,7 @@ void AddDlpVerdictToEvent(const safe_browsing::DlpDeepScanningVerdict& verdict,
 namespace extensions {
 
 const base::Feature SafeBrowsingPrivateEventRouter::kRealtimeReportingFeature{
-    "SafeBrowsingRealtimeReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingRealtimeReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Key names used with when building the dictionary to pass to the real-time
 // reporting API.

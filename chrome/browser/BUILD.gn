@@ -4641,6 +4641,8 @@ jumbo_static_library("browser") {
       "signin/dice_response_handler.h",
       "signin/dice_tab_helper.cc",
       "signin/dice_tab_helper.h",
+      "signin/logout_tab_helper.cc",
+      "signin/logout_tab_helper.h",
       "signin/process_dice_header_delegate_impl.cc",
       "signin/process_dice_header_delegate_impl.h",
       "signin/signin_util_win.cc",

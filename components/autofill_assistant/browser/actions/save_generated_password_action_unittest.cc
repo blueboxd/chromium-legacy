@@ -11,7 +11,7 @@
 #include "base/test/mock_callback.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
-#include "components/autofill_assistant/browser/mock_website_login_fetcher.h"
+#include "components/autofill_assistant/browser/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/value_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -32,8 +32,8 @@ using ::testing::Return;
 class SaveGeneratedPasswordActionTest : public testing::Test {
  public:
   void SetUp() override {
-    ON_CALL(mock_action_delegate_, GetWebsiteLoginFetcher)
-        .WillByDefault(Return(&mock_website_login_fetcher_));
+    ON_CALL(mock_action_delegate_, GetWebsiteLoginManager)
+        .WillByDefault(Return(&mock_website_login_manager_));
 
     ON_CALL(mock_action_delegate_, GetUserData)
         .WillByDefault(Return(&user_data_));
@@ -45,7 +45,7 @@ class SaveGeneratedPasswordActionTest : public testing::Test {
 
  protected:
   MockActionDelegate mock_action_delegate_;
-  MockWebsiteLoginFetcher mock_website_login_fetcher_;
+  MockWebsiteLoginManager mock_website_login_manager_;
   base::MockCallback<Action::ProcessActionCallback> callback_;
   ActionProto proto_;
   UserData user_data_;
@@ -59,7 +59,7 @@ TEST_F(SaveGeneratedPasswordActionTest, SavedPassword) {
   user_data_.additional_values_[kMemoryKeyForGeneratedPassword] =
       SimpleValue(std::string(kGeneratedPassword));
 
-  ON_CALL(mock_website_login_fetcher_, OnReadyToCommitGeneratedPassword)
+  ON_CALL(mock_website_login_manager_, OnReadyToCommitGeneratedPassword)
       .WillByDefault(Return(true));
 
   SaveGeneratedPasswordAction action(&mock_action_delegate_, proto_);
@@ -68,7 +68,7 @@ TEST_F(SaveGeneratedPasswordActionTest, SavedPassword) {
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
 
-  EXPECT_CALL(mock_website_login_fetcher_, OnCommitGeneratedPassword).Times(1);
+  EXPECT_CALL(mock_website_login_manager_, OnCommitGeneratedPassword).Times(1);
 
   action.ProcessAction(callback_.Get());
 
@@ -93,7 +93,7 @@ TEST_F(SaveGeneratedPasswordActionTest, PresaveNotCalledPreconditionFails) {
   user_data_.additional_values_[kMemoryKeyForGeneratedPassword] =
       SimpleValue(std::string(kGeneratedPassword));
 
-  ON_CALL(mock_website_login_fetcher_, OnReadyToCommitGeneratedPassword)
+  ON_CALL(mock_website_login_manager_, OnReadyToCommitGeneratedPassword)
       .WillByDefault(Return(false));
 
   SaveGeneratedPasswordAction action(&mock_action_delegate_, proto_);
@@ -101,9 +101,9 @@ TEST_F(SaveGeneratedPasswordActionTest, PresaveNotCalledPreconditionFails) {
   EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
                                               PRECONDITION_FAILED))));
 
-  EXPECT_CALL(mock_website_login_fetcher_, OnReadyToCommitGeneratedPassword)
+  EXPECT_CALL(mock_website_login_manager_, OnReadyToCommitGeneratedPassword)
       .Times(1);
-  EXPECT_CALL(mock_website_login_fetcher_, OnCommitGeneratedPassword).Times(0);
+  EXPECT_CALL(mock_website_login_manager_, OnCommitGeneratedPassword).Times(0);
 
   action.ProcessAction(callback_.Get());
 }

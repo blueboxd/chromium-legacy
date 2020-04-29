@@ -202,7 +202,7 @@ class AutofillAssistantPrivateAPI : public BrowserContextKeyedAPI,
   autofill::PersonalDataManager* GetPersonalDataManager() const override;
   password_manager::PasswordManagerClient* GetPasswordManagerClient()
       const override;
-  autofill_assistant::WebsiteLoginFetcher* GetWebsiteLoginFetcher()
+  autofill_assistant::WebsiteLoginManager* GetWebsiteLoginManager()
       const override;
   std::string GetLocale() const override;
   std::string GetCountryCode() const override;

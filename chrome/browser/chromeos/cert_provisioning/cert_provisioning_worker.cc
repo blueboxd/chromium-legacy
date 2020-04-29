@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_worker.h"
 
+#include "base/base64.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
@@ -76,6 +79,9 @@ int GetStateOrderedIndex(CertProvisioningWorkerState state) {
       res -= 1;
       FALLTHROUGH;
     case CertProvisioningWorkerState::kKeyRegistered:
+      res -= 1;
+      FALLTHROUGH;
+    case CertProvisioningWorkerState::kKeypairMarked:
       res -= 1;
       FALLTHROUGH;
     case CertProvisioningWorkerState::kSignCsrFinished:
@@ -176,6 +182,9 @@ void CertProvisioningWorkerImpl::DoStep() {
       RegisterKey();
       return;
     case CertProvisioningWorkerState::kKeyRegistered:
+      MarkKey();
+      return;
+    case CertProvisioningWorkerState::kKeypairMarked:
       SignCsr();
       return;
     case CertProvisioningWorkerState::kSignCsrFinished:
@@ -200,9 +209,11 @@ void CertProvisioningWorkerImpl::UpdateState(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(GetStateOrderedIndex(state_) < GetStateOrderedIndex(new_state));
 
+  prev_state_ = state_;
   state_ = new_state;
 
   if (IsFinished()) {
+    CleanUp();
     std::move(callback_).Run(state_ == CertProvisioningWorkerState::kSucceed);
   }
 }
@@ -329,6 +340,31 @@ void CertProvisioningWorkerImpl::OnRegisterKeyDone(
   DoStep();
 }
 
+void CertProvisioningWorkerImpl::MarkKey() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  platform_keys_service_->SetAttributeForKey(
+      GetPlatformKeysTokenId(cert_scope_), public_key_,
+      platform_keys::KeyAttributeType::CertificateProvisioningId,
+      cert_profile_.profile_id,
+      base::BindOnce(&CertProvisioningWorkerImpl::OnMarkKeyDone,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void CertProvisioningWorkerImpl::OnMarkKeyDone(
+    const std::string& error_message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!error_message.empty()) {
+    LOG(ERROR) << "Failed to mark a key: " << error_message;
+    UpdateState(CertProvisioningWorkerState::kFailed);
+    return;
+  }
+
+  UpdateState(CertProvisioningWorkerState::kKeypairMarked);
+  DoStep();
+}
+
 void CertProvisioningWorkerImpl::SignCsr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -414,19 +450,16 @@ void CertProvisioningWorkerImpl::OnDownloadCertDone(
 void CertProvisioningWorkerImpl::ImportCert() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  net::CertificateList cert_list =
-      net::X509Certificate::CreateCertificateListFromBytes(
-          pem_encoded_certificate_.data(), pem_encoded_certificate_.size(),
-          net::X509Certificate::FORMAT_AUTO);
-
-  if (cert_list.size() != 1) {
-    LOG(ERROR) << "Unexpected certificate content: size " << cert_list.size();
+  scoped_refptr<net::X509Certificate> cert = CreateSingleCertificateFromBytes(
+      pem_encoded_certificate_.data(), pem_encoded_certificate_.size());
+  if (!cert) {
+    LOG(ERROR) << "Failed to parse a certificate";
     UpdateState(CertProvisioningWorkerState::kFailed);
     return;
   }
 
   platform_keys_service_->ImportCertificate(
-      GetPlatformKeysTokenId(cert_scope_), cert_list.front(),
+      GetPlatformKeysTokenId(cert_scope_), cert,
       base::BindRepeating(&CertProvisioningWorkerImpl::OnImportCertDone,
                           weak_factory_.GetWeakPtr()));
 }
@@ -518,6 +551,26 @@ void CertProvisioningWorkerImpl::ScheduleNextStep(base::TimeDelta delay) {
 void CertProvisioningWorkerImpl::CancelScheduledTasks() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   weak_factory_.InvalidateWeakPtrs();
+}
+
+void CertProvisioningWorkerImpl::CleanUp() {
+  if (state_ == CertProvisioningWorkerState::kSucceed) {
+    return;
+  }
+
+  if (!public_key_.empty() &&
+      (GetStateOrderedIndex(prev_state_) >=
+       GetStateOrderedIndex(CertProvisioningWorkerState::kKeyRegistered))) {
+    auto on_remove_done = [](const std::string& error_message) {
+      if (!error_message.empty()) {
+        LOG(ERROR) << "Failed to delete a key: " << error_message;
+      }
+    };
+
+    platform_keys_service_->RemoveKey(GetPlatformKeysTokenId(cert_scope_),
+                                      public_key_,
+                                      base::BindOnce(on_remove_done));
+  }
 }
 
 }  // namespace cert_provisioning

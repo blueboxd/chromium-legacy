@@ -68,6 +68,7 @@ class FixedKeyCommitmentGetter : public TrustTokenKeyCommitmentGetter {
 class MockCryptographer
     : public TrustTokenRequestIssuanceHelper::Cryptographer {
  public:
+  MOCK_METHOD1(Initialize, bool(int issuer_configured_batch_size));
   MOCK_METHOD1(AddKey, bool(base::StringPiece key));
   MOCK_METHOD1(BeginIssuance, base::Optional<std::string>(size_t num_tokens));
   MOCK_METHOD1(
@@ -152,6 +153,37 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfKeyCommitmentFails) {
             mojom::TrustTokenOperationStatus::kFailedPrecondition);
 }
 
+// Reject if initializing the cryptography delegate fails.
+TEST_F(TrustTokenRequestIssuanceHelperTest,
+       RejectsIfInitializingCryptographerFails) {
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+
+  SuitableTrustTokenOrigin issuer =
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
+
+  auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
+  key_commitment_result->keys.push_back(
+      mojom::TrustTokenVerificationKey::New());
+  key_commitment_result->batch_size =
+      mojom::TrustTokenKeyCommitmentBatchSize::New(
+          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
+  auto getter = std::make_unique<FixedKeyCommitmentGetter>(
+      issuer, std::move(key_commitment_result));
+
+  auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_)).WillOnce(Return(false));
+
+  TrustTokenRequestIssuanceHelper helper(
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
+      store.get(), std::move(getter), std::move(cryptographer));
+
+  auto request = MakeURLRequest("https://issuer.com/");
+  request->set_initiator(issuer);
+
+  EXPECT_EQ(ExecuteBeginOperationAndWaitForResult(&helper, request.get()),
+            mojom::TrustTokenOperationStatus::kInternalError);
+}
+
 // Reject if one of the keys in the commitment is malformed.
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAddingKeyFails) {
   std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
@@ -162,10 +194,14 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAddingKeyFails) {
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
+  key_commitment_result->batch_size =
+      mojom::TrustTokenKeyCommitmentBatchSize::New(
+          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
   auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(false));
 
   TrustTokenRequestIssuanceHelper helper(
@@ -190,10 +226,14 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
+  key_commitment_result->batch_size =
+      mojom::TrustTokenKeyCommitmentBatchSize::New(
+          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
   auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
   // Return nullopt, denoting an error, when the issuance helper requests
   // blinded, unsigned tokens.
@@ -224,12 +264,16 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, SetsRequestHeader) {
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
+  key_commitment_result->batch_size =
+      mojom::TrustTokenKeyCommitmentBatchSize::New(
+          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
   // The result of providing blinded, unsigned tokens should be the exact value
   // of the Sec-Trust-Token header attached to the request.
   auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, BeginIssuance(_))
       .WillOnce(
@@ -262,12 +306,16 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, SetsLoadFlag) {
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
+  key_commitment_result->batch_size =
+      mojom::TrustTokenKeyCommitmentBatchSize::New(
+          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
   // The result of providing blinded, unsigned tokens should be the exact value
   // of the Sec-Trust-Token header attached to the request.
   auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, BeginIssuance(_))
       .WillOnce(
@@ -296,10 +344,14 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseOmitsHeader) {
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
+  key_commitment_result->batch_size =
+      mojom::TrustTokenKeyCommitmentBatchSize::New(
+          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
   auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, BeginIssuance(_))
       .WillOnce(
@@ -333,10 +385,14 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseIsUnusable) {
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
+  key_commitment_result->batch_size =
+      mojom::TrustTokenKeyCommitmentBatchSize::New(
+          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
   auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, BeginIssuance(_))
       .WillOnce(
@@ -381,10 +437,14 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, Success) {
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
+  key_commitment_result->batch_size =
+      mojom::TrustTokenKeyCommitmentBatchSize::New(
+          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
   auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, BeginIssuance(_))
       .WillOnce(
@@ -428,10 +488,14 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, AssociatesIssuerWithToplevel) {
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
+  key_commitment_result->batch_size =
+      mojom::TrustTokenKeyCommitmentBatchSize::New(
+          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
   auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, BeginIssuance(_))
       .WillOnce(
@@ -464,6 +528,9 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, StoresObtainedTokens) {
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New("key", /*expiry=*/base::Time()));
+  key_commitment_result->batch_size =
+      mojom::TrustTokenKeyCommitmentBatchSize::New(
+          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       issuer, std::move(key_commitment_result));
 
@@ -475,6 +542,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, StoresObtainedTokens) {
   unblinded_tokens->tokens.push_back("a signed, unblinded token");
 
   auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, BeginIssuance(_))
       .WillOnce(
@@ -554,6 +622,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RespectsMaximumBatchsize) {
       issuer, std::move(key_commitment_result));
 
   auto cryptographer = std::make_unique<MockCryptographer>();
+  EXPECT_CALL(*cryptographer, Initialize(_)).WillOnce(Return(true));
   EXPECT_CALL(*cryptographer, AddKey(_)).WillOnce(Return(true));
 
   // The batch size should be clamped to the configured maximum.

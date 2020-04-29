@@ -4,6 +4,7 @@
 
 package org.chromium.components.external_intents;
 
+import android.Manifest.permission;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -32,6 +33,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
+import org.chromium.base.PathUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -339,7 +341,7 @@ public class ExternalNavigationHandler {
     private boolean startFileIntentIfNecessary(
             ExternalNavigationParams params, Intent targetIntent) {
         if (params.getUrl().startsWith(UrlConstants.FILE_URL_SHORT_PREFIX)
-                && mDelegate.shouldRequestFileAccess(params.getUrl())) {
+                && shouldRequestFileAccess(params.getUrl())) {
             mDelegate.startFileIntent(targetIntent, params.getReferrerUrl(),
                     params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent());
             if (DEBUG) Log.i(TAG, "Requesting filesystem access");
@@ -1303,6 +1305,25 @@ public class ExternalNavigationHandler {
         }
         RecordHistogram.recordEnumeratedHistogram(
                 INTENT_ACTION_HISTOGRAM, standardAction, StandardActions.NUM_ENTRIES);
+    }
+
+    /**
+     * @param url The requested url.
+     * @return Whether we should block the navigation and request file access before proceeding.
+     */
+    protected boolean shouldRequestFileAccess(String url) {
+        // If the tab is null, then do not attempt to prompt for access.
+        if (!mDelegate.hasValidTab()) return false;
+
+        // If the url points inside of Chromium's data directory, no permissions are necessary.
+        // This is required to prevent permission prompt when uses wants to access offline pages.
+        if (url.startsWith(UrlConstants.FILE_URL_PREFIX + PathUtils.getDataDirectory())) {
+            return false;
+        }
+
+        return !mDelegate.getWindowAndroid().hasPermission(permission.READ_EXTERNAL_STORAGE)
+                && mDelegate.getWindowAndroid().canRequestPermission(
+                        permission.READ_EXTERNAL_STORAGE);
     }
 
     @Nullable

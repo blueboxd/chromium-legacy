@@ -639,7 +639,7 @@
     Select timezone
   </message>
   <message name="IDS_OOBE_EULA_SECTION_TITLE" desc="Title of Terms of Service screen">
-    Google universal Terms of Service (uToS)
+    Google terms of service
   </message>
   <message name="IDS_OOBE_EULA_IFRAME_LABEL" desc="Accessibility label on an iframe with full Chrome OS Terms text">
     Google Chrome OS Terms contents

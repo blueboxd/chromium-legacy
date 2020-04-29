@@ -103,6 +103,14 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
     return;
   }
 
+  if (!commitment_result->batch_size ||
+      !cryptographer_->Initialize(
+          commitment_result->batch_size->value,
+          commitment_result->signed_redemption_record_verification_key)) {
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
+    return;
+  }
+
   if (!key_pair_generator_->Generate(&signing_key_, &verification_key_)) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;

@@ -77,6 +77,11 @@ class ManagePasswordsState {
   // Move to INACTIVE_STATE.
   void OnInactive();
 
+  // Move to CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE. Triggers a bubble to move the
+  // just submitted form to the user's account store.
+  void OnPasswordMovable(
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move);
+
   // Moves the object to |state| without resetting the internal data. Allowed:
   // * -> MANAGE_STATE
   void TransitionToState(password_manager::ui::State state);

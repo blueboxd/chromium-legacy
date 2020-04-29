@@ -162,6 +162,7 @@ class ChromePasswordManagerClient
   void PromptUserToEnableAutosignin() override;
   bool IsIncognito() const override;
   const password_manager::PasswordManager* GetPasswordManager() const override;
+  using password_manager::PasswordManagerClient::GetPasswordFeatureManager;
   const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
       const override;
   password_manager::HttpAuthManager* GetHttpAuthManager() override;

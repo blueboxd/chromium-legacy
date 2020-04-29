@@ -448,32 +448,25 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
   if (sender.state == UIGestureRecognizerStateBegan) {
     [self.locationBarSteadyView becomeFirstResponder];
 
-    // TODO(crbug.com/862583): Investigate why it's necessary to delay showing
-    // the editing menu in the omnibox until the next runloop. If it's not
-    // delayed by a runloop, the menu appears and is hidden again right away
-    // when it's the first time setting the first responder.
-    dispatch_async(dispatch_get_main_queue(), ^{
-      UIMenuController* menu = [UIMenuController sharedMenuController];
-      UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
-          initWithTitle:l10n_util::GetNSString((IDS_IOS_SEARCH_COPIED_IMAGE))
-                 action:@selector(searchCopiedImage:)];
-      UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
-          initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
-                 action:@selector(visitCopiedLink:)];
-      UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
-          initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
-                 action:@selector(searchCopiedText:)];
-      [menu setMenuItems:@[
-        searchCopiedImage, visitCopiedLink, searchCopiedText
-      ]];
+    UIMenuController* menu = [UIMenuController sharedMenuController];
+    UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
+        initWithTitle:l10n_util::GetNSString((IDS_IOS_SEARCH_COPIED_IMAGE))
+               action:@selector(searchCopiedImage:)];
+    UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
+               action:@selector(visitCopiedLink:)];
+    UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
+               action:@selector(searchCopiedText:)];
+    [menu
+        setMenuItems:@[ searchCopiedImage, visitCopiedLink, searchCopiedText ]];
 
-      [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
-      [menu setMenuVisible:YES animated:YES];
-      // When we present the menu manually, it doesn't get focused by Voiceover.
-      // This notification forces voiceover to select the presented menu.
-      UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
-                                      menu);
-    });
+    [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
+    [menu setMenuVisible:YES animated:YES];
+    // When we present the menu manually, it doesn't get focused by Voiceover.
+    // This notification forces voiceover to select the presented menu.
+    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                    menu);
   }
 }
 

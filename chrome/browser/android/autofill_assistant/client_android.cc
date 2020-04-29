@@ -31,7 +31,7 @@
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/switches.h"
-#include "components/autofill_assistant/browser/website_login_fetcher_impl.h"
+#include "components/autofill_assistant/browser/website_login_manager_impl.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -467,8 +467,8 @@ ClientAndroid::GetPasswordManagerClient() const {
   return password_manager_client_;
 }
 
-WebsiteLoginFetcher* ClientAndroid::GetWebsiteLoginFetcher() const {
-  if (!website_login_fetcher_) {
+WebsiteLoginManager* ClientAndroid::GetWebsiteLoginManager() const {
+  if (!website_login_manager_) {
     auto* client = GetPasswordManagerClient();
     auto* factory =
         password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
@@ -477,10 +477,10 @@ WebsiteLoginFetcher* ClientAndroid::GetWebsiteLoginFetcher() const {
     // frame has a different origin than the main frame, passwords-related
     // features may not work.
     auto* driver = factory->GetDriverForFrame(web_contents_->GetMainFrame());
-    website_login_fetcher_ =
-        std::make_unique<WebsiteLoginFetcherImpl>(client, driver);
+    website_login_manager_ =
+        std::make_unique<WebsiteLoginManagerImpl>(client, driver);
   }
-  return website_login_fetcher_.get();
+  return website_login_manager_.get();
 }
 
 std::string ClientAndroid::GetLocale() const {

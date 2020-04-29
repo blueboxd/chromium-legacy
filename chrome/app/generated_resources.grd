@@ -5834,6 +5834,9 @@ the Bookmarks menu.">
         <message name="IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE" desc="Text for the 'Manage Passwords' icon's 'saving passwords' state">
           Manage your passwords
         </message>
+        <message name="IDS_PASSWORD_MANAGER_TOOLTIP_MOVE" desc="Text for the 'Manage Passwords' icon's 'move password to account' state">
+          Move your password
+        </message>
         <message name="IDS_PASSWORD_MANAGER_IMPORT_BUTTON" desc="The label of the button for importing passwords. The button appears next to the list of saved passwords in Chrome's settings.">
           Import
         </message>

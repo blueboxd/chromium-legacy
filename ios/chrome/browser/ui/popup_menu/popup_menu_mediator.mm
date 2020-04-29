@@ -803,12 +803,10 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   NSArray* tabActions = [@[ self.reloadStopItem ]
       arrayByAddingObjectsFromArray:[self itemsForNewTab]];
 
-#if !defined(NDEBUG)
   if (IsMultiwindowSupported() && IsIPadIdiom()) {
     tabActions =
         [tabActions arrayByAddingObjectsFromArray:[self itemsForNewWindow]];
   }
-#endif  // !defined(NDEBUG)
 
   NSArray* browserActions = [self actionItems];
 

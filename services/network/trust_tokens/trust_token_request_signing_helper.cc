@@ -246,9 +246,7 @@ void TrustTokenRequestSigningHelper::Begin(
     return;
   }
 
-  AttachSignedRedemptionRecordHeader(
-      request, base::Base64Encode(base::as_bytes(
-                   base::make_span(maybe_redemption_record->body()))));
+  AttachSignedRedemptionRecordHeader(request, maybe_redemption_record->body());
 
   if (params_.should_add_timestamp) {
     request->SetExtraRequestHeaderByName(kTrustTokensRequestHeaderSecTime,

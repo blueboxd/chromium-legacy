@@ -36,7 +36,7 @@ const base::Feature kCommittedSBInterstitials{
     "SafeBrowsingCommittedInterstitials", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentComplianceEnabled{
-    "SafeBrowsingContentComplianceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingContentComplianceEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDelayedWarnings{"SafeBrowsingDelayedWarnings",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -48,7 +48,7 @@ const base::Feature kEnhancedProtection{"SafeBrowsingEnhancedProtection",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMalwareScanEnabled{"SafeBrowsingMalwareScanEnabled",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable saved password protection by default only on desktop.
 #if BUILDFLAG(FULL_SAFE_BROWSING)

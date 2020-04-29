@@ -59,5 +59,19 @@ const char* GetPlatformKeysTokenId(CertScope scope) {
   }
 }
 
+scoped_refptr<net::X509Certificate> CreateSingleCertificateFromBytes(
+    const char* data,
+    size_t length) {
+  net::CertificateList cert_list =
+      net::X509Certificate::CreateCertificateListFromBytes(
+          data, length, net::X509Certificate::FORMAT_AUTO);
+
+  if (cert_list.size() != 1) {
+    return {};
+  }
+
+  return cert_list[0];
+}
+
 }  // namespace cert_provisioning
 }  // namespace chromeos

@@ -349,18 +349,6 @@ class PLATFORM_EXPORT ThreadState final {
 
   v8::Isolate* GetIsolate() const { return isolate_; }
 
-  // Use CollectAllGarbageForTesting below for testing!
-  void CollectGarbage(BlinkGC::CollectionType,
-                      BlinkGC::StackState,
-                      BlinkGC::MarkingType,
-                      BlinkGC::SweepingType,
-                      BlinkGC::GCReason);
-
-  // Forced garbage collection for testing.
-  void CollectAllGarbageForTesting(
-      BlinkGC::StackState stack_state =
-          BlinkGC::StackState::kNoHeapPointersOnStack);
-
   // Returns |true| if |object| resides on this thread's heap.
   // It is well-defined to call this method on any heap allocated
   // reference, provided its associated heap hasn't been detached
@@ -384,6 +372,24 @@ class PLATFORM_EXPORT ThreadState final {
 
   // Returns true if the marking verifier is enabled, false otherwise.
   bool IsVerifyMarkingEnabled() const;
+
+  // Performs stand-alone garbage collections considering only C++ objects for
+  // testing.
+  //
+  // Since it only considers C++ objects this type of GC is mostly useful for
+  // unit tests.
+  void CollectGarbageForTesting(BlinkGC::CollectionType,
+                                BlinkGC::StackState,
+                                BlinkGC::MarkingType,
+                                BlinkGC::SweepingType,
+                                BlinkGC::GCReason);
+
+  // Forced garbage collection for testing:
+  // - Performs stand-alone garbage collections.
+  // - Collects garbage as long as live memory decreases (capped at 5).
+  void CollectAllGarbageForTesting(
+      BlinkGC::StackState stack_state =
+          BlinkGC::StackState::kNoHeapPointersOnStack);
 
  private:
   class IncrementalMarkingScheduler;
@@ -435,6 +441,15 @@ class PLATFORM_EXPORT ThreadState final {
 
   void EnterStaticReferenceRegistrationDisabledScope();
   void LeaveStaticReferenceRegistrationDisabledScope();
+
+  // Performs stand-alone garbage collections considering only C++ objects.
+  //
+  // Use the public *ForTesting calls for calling GC in tests.
+  void CollectGarbage(BlinkGC::CollectionType,
+                      BlinkGC::StackState,
+                      BlinkGC::MarkingType,
+                      BlinkGC::SweepingType,
+                      BlinkGC::GCReason);
 
   // The following methods are used to compose RunAtomicPause. Public users
   // should use the CollectGarbage entrypoint. Internal users should use these

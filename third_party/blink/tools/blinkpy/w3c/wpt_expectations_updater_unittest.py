@@ -68,15 +68,17 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             json.dumps({
                 'items': {
                     'reftest': {
-                        'reftest.html':
-                        [['/reftest.html', [['/reftest-ref.html', '==']], {}]]
+                        'reftest.html': [
+                            'abcdef123',
+                            [None, [['/reftest-ref.html', '==']], {}]
+                        ]
                     },
                     'testharness': {
-                        'test/path.html': [['/test/path.html', {}]],
-                        'test/zzzz.html': [['/test/zzzz.html', {}]],
+                        'test/path.html': ['abcdef123', [None, {}]],
+                        'test/zzzz.html': ['ghijkl456', [None, {}]],
                     },
                     'manual': {
-                        'x-manual.html': [['/x-manual.html', {}]],
+                        'x-manual.html': ['abcdef123', [None, {}]],
                     },
                 },
             }))

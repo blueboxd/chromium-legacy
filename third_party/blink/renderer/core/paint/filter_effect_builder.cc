@@ -415,22 +415,17 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
 
 Filter* FilterEffectBuilder::BuildReferenceFilter(
     const ReferenceFilterOperation& reference_operation,
-    FilterEffect* previous_effect) const {
-  SVGResource* resource = reference_operation.Resource();
-  if (auto* filter =
-          DynamicTo<SVGFilterElement>(resource ? resource->Target() : nullptr))
-    return BuildReferenceFilter(*filter, previous_effect);
-  return nullptr;
-}
-
-Filter* FilterEffectBuilder::BuildReferenceFilter(
-    SVGFilterElement& filter_element,
     FilterEffect* previous_effect,
     SVGFilterGraphNodeMap* node_map) const {
+  SVGResource* resource = reference_operation.Resource();
+  auto* filter_element =
+      DynamicTo<SVGFilterElement>(resource ? resource->Target() : nullptr);
+  if (!filter_element)
+    return nullptr;
   FloatRect filter_region =
       SVGLengthContext::ResolveRectangle<SVGFilterElement>(
-          &filter_element,
-          filter_element.filterUnits()->CurrentValue()->EnumValue(),
+          filter_element,
+          filter_element->filterUnits()->CurrentValue()->EnumValue(),
           reference_box_);
   // TODO(fs): We rely on the presence of a node map here to opt-in to the
   // check for an empty filter region. The reason for this is that we lack a
@@ -439,7 +434,7 @@ Filter* FilterEffectBuilder::BuildReferenceFilter(
     return nullptr;
 
   bool primitive_bounding_box_mode =
-      filter_element.primitiveUnits()->CurrentValue()->EnumValue() ==
+      filter_element->primitiveUnits()->CurrentValue()->EnumValue() ==
       SVGUnitTypes::kSvgUnitTypeObjectboundingbox;
   Filter::UnitScaling unit_scaling =
       primitive_bounding_box_mode ? Filter::kBoundingBox : Filter::kUserSpace;
@@ -449,7 +444,7 @@ Filter* FilterEffectBuilder::BuildReferenceFilter(
     previous_effect = result->GetSourceGraphic();
   SVGFilterBuilder builder(previous_effect, node_map, fill_flags_,
                            stroke_flags_);
-  builder.BuildGraph(result, filter_element, reference_box_);
+  builder.BuildGraph(result, *filter_element, reference_box_);
   result->SetLastEffect(builder.LastEffect());
   return result;
 }

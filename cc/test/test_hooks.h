@@ -115,7 +115,6 @@ class TestHooks : public AnimationDelegate {
   virtual void DidReceiveCompositorFrameAck() {}
   virtual void ScheduleComposite() {}
   virtual void DidActivateSyncTree() {}
-  virtual void NotifyThroughputTrackerResults(CustomTrackerResults results) {}
 
   // AnimationDelegate implementation.
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,

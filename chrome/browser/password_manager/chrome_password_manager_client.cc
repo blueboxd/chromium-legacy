@@ -280,7 +280,10 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
 
 void ChromePasswordManagerClient::PromptUserToMovePasswordToAccount(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move) {
-  // TODO(crbug/com/1060128): Implement triggering the bubble.
+#if !defined(OS_ANDROID)
+  PasswordsClientUIDelegateFromWebContents(web_contents())
+      ->OnShowMoveToAccountBubble(std::move(form_to_move));
+#endif  // !defined(OS_ANDROID)
 }
 
 bool ChromePasswordManagerClient::ShowOnboarding(

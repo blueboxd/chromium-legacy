@@ -775,8 +775,17 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_CLEAR_BROWSING_DATA_TAB_PERIOD_EVERYTHING" desc="The option to delete browsing data from the beginning of time.">
         All time
       </message>
+      <message name="IDS_IMPORTANT_SITES_TITLE" desc="Title of clear storage dialogs used in a couple different places to confirm clearing site storage data. [CHAR-LIMIT=24]">
+        Also clear data from these sites?
+      </message>
+      <message name="IDS_IMPORTANT_SITES_TITLE_WITH_APP" desc="Title of clear storage dialogs used in a couple different places to confirm clearing site storage data (when there are also apps involved). [CHAR-LIMIT=24]">
+        Also clear data from these sites &amp; apps?
+      </message>
       <message name="IDS_CLEAR_BROWSING_DATA_IMPORTANT_DIALOG_TEXT" desc="The text of the dialog presenting the user with 'important' sites that they can exclude from clearing.">
-        This will clear data for all sites, including:
+        These sites seem important to you:
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_IMPORTANT_DIALOG_TEXT_WITH_APP" desc="The text of the dialog presenting the user with 'important' sites that they can exclude from clearing, and a site on the list is related to an installed app.">
+        These sites and apps seem important to you:
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_IMPORTANT_DIALOG_BUTTON" desc="The text of the button to perform the clear action in the dialog presenting the user with 'important' sites that they can exclude from clearing.">
         Clear

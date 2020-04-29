@@ -801,49 +801,72 @@ class PortTest(LoggingTestCase):
             json.dumps({
                 'items': {
                     'testharness': {
-                        'dom/ranges/Range-attributes.html':
-                        [['dom/ranges/Range-attributes.html', {}]],
-                        'dom/ranges/Range-attributes-slow.html': [[
-                            'dom/ranges/Range-attributes-slow.html',
-                            {
-                                'timeout': 'long'
-                            }
-                        ]],
-                        'console/console-is-a-namespace.any.js': [
-                            ['console/console-is-a-namespace.any.html', {}],
-                            [
-                                'console/console-is-a-namespace.any.worker.html',
-                                {
+                        'dom': {
+                            'ranges': {
+                                'Range-attributes.html':
+                                ['acbdef123', [None, {}]],
+                                'Range-attributes-slow.html':
+                                ['abcdef123', [None, {
                                     'timeout': 'long'
-                                }
+                                }]],
+                            },
+                        },
+                        'console': {
+                            'console-is-a-namespace.any.js': [
+                                'abcdef1234',
+                                [
+                                    'console/console-is-a-namespace.any.html',
+                                    {}
+                                ],
+                                [
+                                    'console/console-is-a-namespace.any.worker.html',
+                                    {
+                                        'timeout': 'long'
+                                    }
+                                ],
                             ],
-                        ],
-                        'html/parse.html': [
-                            ['html/parse.html?run_type=uri', {}],
-                            [
-                                'html/parse.html?run_type=write',
-                                {
-                                    'timeout': 'long'
-                                }
+                        },
+                        'html': {
+                            'parse.html': [
+                                'abcdef123',
+                                ['html/parse.html?run_type=uri', {}],
+                                [
+                                    'html/parse.html?run_type=write',
+                                    {
+                                        'timeout': 'long'
+                                    }
+                                ],
                             ],
-                        ],
+                        },
                     },
                     'manual': {},
                     'reftest': {
-                        'html/dom/elements/global-attributes/dir_auto-EN-L.html':
-                        [[
-                            'html/dom/elements/global-attributes/dir_auto-EN-L.html',
-                            [[
-                                '/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html',
-                                '=='
-                            ]], {
-                                'timeout': 'long'
+                        'html': {
+                            'dom': {
+                                'elements': {
+                                    'global-attributes': {
+                                        'dir_auto-EN-L.html': [
+                                            'abcdef123',
+                                            [
+                                                None,
+                                                [[
+                                                    '/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html',
+                                                    '=='
+                                                ]], {
+                                                    'timeout': 'long'
+                                                }
+                                            ],
+                                        ]
+                                    }
+                                }
                             }
-                        ]],
+                        }
                     },
                     'crashtest': {
-                        'portals/portals-no-frame-crash.html':
-                        [['portals/portals-no-frame-crash.html', {}]],
+                        'portals': {
+                            'portals-no-frame-crash.html':
+                            ['abcdef123', [None, {}]],
+                        },
                     },
                 }
             }))
@@ -864,7 +887,9 @@ class PortTest(LoggingTestCase):
             json.dumps({
                 'items': {
                     'testharness': {
-                        'dom/bar.html': [['dom/bar.html', {}]]
+                        'dom': {
+                            'bar.html': ['abcdef123', [None, {}]]
+                        }
                     }
                 }
             }))

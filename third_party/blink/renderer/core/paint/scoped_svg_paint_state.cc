@@ -27,9 +27,39 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 namespace blink {
+
+SVGFilterRecordingContext::SVGFilterRecordingContext(
+    const PaintInfo& initial_paint_info)
+    // Create a new controller and context so the contents of the filter can be
+    // drawn and cached.
+    : paint_controller_(std::make_unique<PaintController>()),
+      context_(std::make_unique<GraphicsContext>(*paint_controller_)),
+      paint_info_(*context_, initial_paint_info) {
+  // Use initial_paint_info's current paint chunk properties so that any new
+  // chunk created during painting the content will be in the correct state.
+  paint_controller_->UpdateCurrentPaintChunkProperties(
+      nullptr, initial_paint_info.context.GetPaintController()
+                   .CurrentPaintChunkProperties());
+  // Because we cache the filter contents and do not invalidate on paint
+  // invalidation rect changes, we need to paint the entire filter region so
+  // elements outside the initial paint (due to scrolling, etc) paint.
+  paint_info_.ApplyInfiniteCullRect();
+}
+
+SVGFilterRecordingContext::~SVGFilterRecordingContext() = default;
+
+sk_sp<PaintRecord> SVGFilterRecordingContext::GetPaintRecord(
+    const PaintInfo& initial_paint_info) {
+  paint_controller_->CommitNewDisplayItems();
+  return paint_controller_->GetPaintArtifact().GetPaintRecord(
+      initial_paint_info.context.GetPaintController()
+          .CurrentPaintChunkProperties());
+}
 
 static void PaintFilteredContent(GraphicsContext& context,
                                  const LayoutObject& object,
@@ -171,7 +201,7 @@ bool ScopedSVGPaintState::ApplyFilterIfNecessary(SVGResources* resources) {
   if (!filter)
     return true;
   filter->ClearInvalidationMask();
-  filter_data_ = SVGFilterPainter(*filter).PrepareEffect(object_);
+  filter_data_ = SVGResources::GetClient(object_)->UpdateFilterData();
   // If we have no filter data (== the filter was invalid) or if we
   // don't need to update the source graphics, we can short-circuit
   // here.

@@ -91,6 +91,9 @@ class ManagePasswordsUIController
       override;
   void OnCredentialLeak(password_manager::CredentialLeakType leak_dialog_type,
                         const GURL& origin) override;
+  void OnShowMoveToAccountBubble(
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move)
+      override;
 
   void NotifyUnsyncedCredentialsWillBeDeleted(
       const std::vector<autofill::PasswordForm>& unsynced_credentials);

@@ -25,6 +25,7 @@
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
+#include "chrome/browser/signin/logout_tab_helper.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -413,6 +414,13 @@ void SigninViewController::ShowGaiaLogoutTab(
   // already a logout tab.
   ShowTabOverwritingNTP(browser_,
                         GaiaUrls::GetInstance()->service_logout_url());
+
+  // Monitor the logout and fallback to local signout if it fails. The
+  // LogoutTabHelper deletes itself.
+  content::WebContents* logout_tab_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  DCHECK(logout_tab_contents);
+  LogoutTabHelper::CreateForWebContents(logout_tab_contents);
 }
 
 void SigninViewController::ShowModalSigninEmailConfirmationDialog(

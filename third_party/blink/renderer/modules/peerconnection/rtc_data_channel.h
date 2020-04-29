@@ -80,6 +80,12 @@ class MODULES_EXPORT RTCDataChannel final
   String binaryType() const;
   void setBinaryType(const String&, ExceptionState&);
 
+  // Functions called from RTCPeerConnection's DidAddRemoteDataChannel
+  // in order to make things happen in the specified order when announcing
+  // a remote channel.
+  void SetStateToOpenWithoutEvent();
+  void DispatchOpenEvent();
+
   void send(const String&, ExceptionState&);
   void send(DOMArrayBuffer*, ExceptionState&);
   void send(NotShared<DOMArrayBufferView>, ExceptionState&);

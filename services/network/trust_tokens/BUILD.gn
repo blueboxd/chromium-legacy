@@ -16,6 +16,10 @@ source_set("trust_tokens") {
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
 
   sources = [
+    "boringssl_trust_token_issuance_cryptographer.cc",
+    "boringssl_trust_token_issuance_cryptographer.h",
+    "boringssl_trust_token_redemption_cryptographer.cc",
+    "boringssl_trust_token_redemption_cryptographer.h",
     "ed25519_key_pair_generator.cc",
     "ed25519_key_pair_generator.h",
     "ed25519_trust_token_request_signer.cc",
@@ -26,6 +30,7 @@ source_set("trust_tokens") {
     "in_memory_trust_token_persister.h",
     "pending_trust_token_store.cc",
     "pending_trust_token_store.h",
+    "scoped_boringssl_bytes.h",
     "sqlite_trust_token_persister.cc",
     "sqlite_trust_token_persister.h",
     "suitable_trust_token_origin.cc",
@@ -84,6 +89,8 @@ source_set("test_support") {
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
 
   sources = [
+    "test/signed_request_verification_util.cc",
+    "test/signed_request_verification_util.h",
     "test/trust_token_test_util.cc",
     "test/trust_token_test_util.h",
   ]
@@ -107,6 +114,7 @@ source_set("tests") {
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
 
   sources = [
+    "boringssl_trust_token_issuance_cryptographer_unittest.cc",
     "ed25519_key_pair_generator_unittest.cc",
     "ed25519_trust_token_request_signer_unittest.cc",
     "has_trust_tokens_answerer_unittest.cc",
@@ -114,6 +122,7 @@ source_set("tests") {
     "sqlite_trust_token_persister_unittest.cc",
     "suitable_trust_token_origin_unittest.cc",
     "trust_token_client_data_canonicalization_unittest.cc",
+    "trust_token_cryptographers_test.cc",
     "trust_token_database_owner_unittest.cc",
     "trust_token_key_commitment_controller_unittest.cc",
     "trust_token_key_commitment_parser_unittest.cc",

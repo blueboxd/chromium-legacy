@@ -24,6 +24,7 @@
 ./tools/manifest/manifest.py
 ./tools/manifest/sourcefile.py
 ./tools/manifest/testpaths.py
+./tools/manifest/typedata.py
 ./tools/manifest/update.py
 ./tools/manifest/utils.py
 ./tools/manifest/vcs.py

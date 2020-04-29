@@ -283,8 +283,7 @@ TEST_F(RTCDataChannelTest, Open) {
       MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
       pc.get());
   channel->OnStateChange(webrtc::DataChannelInterface::kOpen);
-  ASSERT_EQ(1U, channel->scheduled_events_.size());
-  EXPECT_EQ("open", channel->scheduled_events_.back()->type().Utf8());
+  EXPECT_EQ("open", channel->readyState());
 }
 
 TEST_F(RTCDataChannelTest, Close) {
@@ -296,8 +295,7 @@ TEST_F(RTCDataChannelTest, Close) {
       MakeGarbageCollected<NullExecutionContext>(), webrtc_channel.get(),
       pc.get());
   channel->OnStateChange(webrtc::DataChannelInterface::kClosed);
-  ASSERT_EQ(1U, channel->scheduled_events_.size());
-  EXPECT_EQ("close", channel->scheduled_events_.back()->type().Utf8());
+  EXPECT_EQ("closed", channel->readyState());
 }
 
 TEST_F(RTCDataChannelTest, Message) {

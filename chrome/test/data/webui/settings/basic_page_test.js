@@ -10,6 +10,7 @@ import 'chrome://settings/settings.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {pageVisibility} from 'chrome://settings/settings.js';
 // clang-format on
 
 // Register mocha tests.
@@ -47,6 +48,17 @@ suite('SettingsBasicPage', function() {
       const sectionElement = page.$$(`settings-section[section=${section}]`);
       assertTrue(!!sectionElement);
     }
+  });
+
+  test('safetyCheckVisibilityTest', function() {
+    // Set the visibility of the pages under test to "false".
+    page.pageVisibility = Object.assign(pageVisibility || {}, {
+      safetyCheck: false,
+    });
+    flush();
+
+    const sectionElement = page.$$('settings-section-safety-check');
+    assertFalse(!!sectionElement);
   });
 });
 

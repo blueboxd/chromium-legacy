@@ -27,7 +27,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/password_access_authenticator.h"
 #include "components/password_manager/core/browser/password_account_storage_settings_watcher.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/ui/export_progress_status.h"
 #include "extensions/browser/extension_function.h"
@@ -100,14 +99,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   IdGenerator<std::string>& GetPasswordIdGeneratorForTesting();
 
-  // TODO(crbug.com/1049141): Move the strong alias out of PasswordManagerClient
-  // to avoid leaking implementation details here.
-  using GoogleReauthCallback = base::OnceCallback<void(
-      password_manager::PasswordManagerClient::ReauthSucceeded)>;
-  using GoogleAccountAuthenticator =
-      base::RepeatingCallback<void(content::WebContents*,
-                                   GoogleReauthCallback)>;
-
 #if defined(UNIT_TEST)
   // Use this in tests to mock the OS-level reauthentication.
   void set_os_reauth_call(
@@ -115,12 +106,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
           os_reauth_call) {
     password_access_authenticator_.set_os_reauth_call(
         std::move(os_reauth_call));
-  }
-  // Use this in tests to mock the Google account reauthentication.
-  void set_account_storage_opt_in_reauthenticator(
-      GoogleAccountAuthenticator account_storage_opt_in_reauthenticator) {
-    account_storage_opt_in_reauthenticator_ =
-        std::move(account_storage_opt_in_reauthenticator);
   }
 #endif  // defined(UNIT_TEST)
 
@@ -151,10 +136,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // returns true if the user passed that challenge.
   bool OsReauthCall(password_manager::ReauthPurpose purpose);
 
-  // Triggers a Google account reauthentication UI.
-  void InvokeGoogleReauth(content::WebContents* web_contents,
-                          GoogleReauthCallback callback);
-
   // Not owned by this class.
   Profile* profile_;
 
@@ -165,8 +146,6 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   std::unique_ptr<PasswordManagerPorter> password_manager_porter_;
 
   password_manager::PasswordAccessAuthenticator password_access_authenticator_;
-
-  GoogleAccountAuthenticator account_storage_opt_in_reauthenticator_;
 
   std::unique_ptr<password_manager::PasswordAccountStorageSettingsWatcher>
       password_account_storage_settings_watcher_;

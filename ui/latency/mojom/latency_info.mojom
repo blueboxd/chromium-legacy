@@ -67,4 +67,6 @@ struct LatencyInfo {
   SourceEventType source_event_type;
   float scroll_update_delta;
   float predicted_scroll_update_delta;
+  // optional: only valid on GestureScroll events.
+  int64 gesture_scroll_id;
 };

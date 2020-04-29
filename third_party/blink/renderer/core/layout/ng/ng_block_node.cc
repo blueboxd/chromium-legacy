@@ -942,9 +942,12 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
       PlaceChildrenInLayoutBox(physical_fragment, previous_break_token);
   }
 
+  if (UNLIKELY(!is_last_fragment))
+    return;
+
   LayoutBlock* block = DynamicTo<LayoutBlock>(box_);
   bool needs_full_invalidation = false;
-  if (LIKELY(block && is_last_fragment)) {
+  if (LIKELY(block)) {
     LayoutUnit overflow_block_size = layout_result.OverflowBlockSize();
     if (UNLIKELY(previous_break_token))
       overflow_block_size += previous_break_token->ConsumedBlockSize();

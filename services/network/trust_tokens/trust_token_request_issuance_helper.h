@@ -42,21 +42,40 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   // Class Cryptographer executes the underlying cryptographic
   // operations required for issuance. The API is intended to correspond closely
   // to the BoringSSL API.
+  //
+  // Usage:
+  //   1. 1x successful Initialize (without a success, don't call AddKey), then
+  //   2. >= 1x successful AddKey (without at least one success, don't call
+  //   BeginIssuance), then
+  //   3. 1x successful BeginIssuance (without a success, don't call
+  //   ConfirmIssuance), then
+  //   4. 1x ConfirmIssuance.
   class Cryptographer {
    public:
     virtual ~Cryptographer() = default;
+
+    // Initializes the delegate. |issuer_configured_batch_size| must be the
+    // "batchsize" value from an issuer-provided key commitment result.
+    //
+    // Returns true on success and false if the batch size is unacceptable or an
+    // internal error occurred in the underlying cryptographic library.
+    virtual bool Initialize(int issuer_configured_batch_size) = 0;
+
     // Stores a Trust Tokens issuance verification key for subsequent use
     // verifying signed tokens in |ConfirmIssuance|. May be called multiple
     // times to add multiple keys permissible for use during this issuance.
     // (Typically, an issuer will have around three simultaneously active public
     // keys.)
     //
-    // Returns true on success and false if the key is malformed or an internal
-    // error occurred in the underlying cryptographic library.
+    // Returns true on success and false if the key is malformed or if an
+    // internal error occurred in the underlying cryptographic library. Ignores
+    // duplicates.
     virtual bool AddKey(base::StringPiece key) = 0;
 
-    // Returns a base64-encoded string representing |num_tokens| many
-    // blinded, unsigned trust tokens, or nullopt on error.
+    // On success, returns a base64-encoded string representing |num_tokens|
+    // many blinded, unsigned trust tokens; on error, returns nullopt. The
+    // format of this string will eventually be specified, but it is currently
+    // considered an implementation detail of the underlying cryptographic code.
     virtual base::Optional<std::string> BeginIssuance(size_t num_tokens) = 0;
 
     struct UnblindedTokens {

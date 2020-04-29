@@ -613,7 +613,7 @@ class DownloadTest : public InProcessBrowserTest {
         prefs::kPromptForDownload, false);
 
     DownloadManager* manager = DownloadManagerForBrowser(browser());
-    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
+    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpenByUser();
 
     file_activity_observer_.reset(
         new DownloadTestFileActivityObserver(browser()->profile()));
@@ -2295,14 +2295,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, UserScriptDownload) {
 }
 
 // Test to make sure auto-open works.
-IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpenByUser) {
   base::FilePath file(FILE_PATH_LITERAL("download-autoopen.txt"));
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/download-autoopen.txt");
 
   ASSERT_TRUE(
-      GetDownloadPrefs(browser())->EnableAutoOpenBasedOnExtension(file));
+      GetDownloadPrefs(browser())->EnableAutoOpenByUserBasedOnExtension(file));
 
   DownloadAndWait(browser(), url);
 
@@ -4940,7 +4940,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpenClosesShelf) {
   GURL url = embedded_test_server()->GetURL("/download-autoopen.txt");
 
   ASSERT_TRUE(
-      GetDownloadPrefs(browser())->EnableAutoOpenBasedOnExtension(file));
+      GetDownloadPrefs(browser())->EnableAutoOpenByUserBasedOnExtension(file));
 
   DownloadAndWait(browser(), url);
 

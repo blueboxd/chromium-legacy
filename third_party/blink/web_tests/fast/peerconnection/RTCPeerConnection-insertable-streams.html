@@ -69,20 +69,27 @@ async function testVideoFlow(t, negotiationFunction) {
   // Pass frames as they come from the encoder.
   for (let i = 0; i < numFramesPassthrough; i++) {
     const result = await senderReader.read()
-    frameInfos.push({timestamp: result.value.timestamp, data: result.value.data});
+    frameInfos.push({
+      timestamp: result.value.timestamp,
+      data: result.value.data,
+      synchronizationSource: result.value.synchronizationSource
+    });
     senderWriter.write(result.value);
   }
 
   // Replace frame data with arbitrary buffers.
   for (let i = 0; i < numFramesReplaceData; i++) {
     const result = await senderReader.read()
-
     const buffer = new ArrayBuffer(100);
     const int8View = new Int8Array(buffer);
     int8View.fill(i);
 
     result.value.data = buffer;
-    frameInfos.push({timestamp: result.value.timestamp, data: result.value.data});
+    frameInfos.push({
+      timestamp: result.value.timestamp,
+      data: result.value.data,
+      synchronizationSource: result.value.synchronizationSource
+    });
     senderWriter.write(result.value);
   }
 
@@ -92,7 +99,11 @@ async function testVideoFlow(t, negotiationFunction) {
     const int8View = new Int8Array(result.value.data);
     int8View.fill(i);
 
-    frameInfos.push({timestamp: result.value.timestamp, data: result.value.data});
+    frameInfos.push({
+      timestamp: result.value.timestamp,
+      data: result.value.data,
+      synchronizationSource: result.value.synchronizationSource
+    });
     senderWriter.write(result.value);
   }
 
@@ -228,7 +239,7 @@ async function testNormalDataFlowWithInsertableStreamsForOtherKind(t, normalKind
             return;
           }
         });
-        if (++numGetStats >= 20) {
+        if (++numGetStats >= 60) {
           clearInterval(intervalId);
           reject('No bytes received.');
           return;
@@ -236,7 +247,6 @@ async function testNormalDataFlowWithInsertableStreamsForOtherKind(t, normalKind
       }, 50);
     });
   });
-
 
   exchangeIceCandidates(caller, callee);
   await doSignalingHandshake(caller, callee);

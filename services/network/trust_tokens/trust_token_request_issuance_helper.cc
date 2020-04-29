@@ -11,11 +11,13 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "services/network/public/mojom/trust_tokens.mojom-forward.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
+#include "services/network/trust_tokens/trust_token_key_filtering.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/trust_tokens/types.h"
@@ -81,6 +83,12 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
     mojom::TrustTokenKeyCommitmentResultPtr commitment_result) {
   if (!commitment_result) {
     std::move(done).Run(mojom::TrustTokenOperationStatus::kFailedPrecondition);
+    return;
+  }
+
+  if (!commitment_result->batch_size ||
+      !cryptographer_->Initialize(commitment_result->batch_size->value)) {
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
     return;
   }
 

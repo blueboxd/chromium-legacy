@@ -180,7 +180,7 @@ void SetFormFieldValueAction::OnSetFieldValue(int next,
         DCHECK(false);
         break;
       case PasswordValueType::STORED_PASSWORD:
-        delegate_->GetWebsiteLoginFetcher()->GetPasswordForLogin(
+        delegate_->GetWebsiteLoginManager()->GetPasswordForLogin(
             *delegate_->GetUserData()->selected_login_,
             base::BindOnce(&SetFormFieldValueAction::OnGetStoredPassword,
                            weak_ptr_factory_.GetWeakPtr(),

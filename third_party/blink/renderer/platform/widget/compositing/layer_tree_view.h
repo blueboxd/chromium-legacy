@@ -102,8 +102,6 @@ class PLATFORM_EXPORT LayerTreeView
       cc::ActiveFrameSequenceTrackers trackers) override;
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
-  void NotifyThroughputTrackerResults(
-      cc::CustomTrackerResults results) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;

@@ -168,10 +168,9 @@ class LayerTreeHostClient {
   // committed to the compositor, which is before the call to
   // RecordEndOfFrameMetrics.
   virtual std::unique_ptr<BeginMainFrameMetrics> GetBeginMainFrameMetrics() = 0;
-  virtual void NotifyThroughputTrackerResults(CustomTrackerResults results) = 0;
 
  protected:
-  virtual ~LayerTreeHostClient() = default;
+  virtual ~LayerTreeHostClient() {}
 };
 
 // LayerTreeHost->WebThreadScheduler callback interface. Instances of this class

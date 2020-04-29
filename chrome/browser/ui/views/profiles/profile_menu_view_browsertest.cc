@@ -43,6 +43,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/prefs/pref_service.h"
@@ -52,9 +53,15 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "google_apis/gaia/gaia_switches.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/button/label_button.h"
@@ -258,6 +265,168 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(ProfileMenuView::IsShowing());
 }
+
+// Test that sets up a primary account (without sync) and simulates a click on
+// the signout button.
+class ProfileMenuViewSignoutTest : public ProfileMenuViewTestBase,
+                                   public InProcessBrowserTest {
+ public:
+  ProfileMenuViewSignoutTest() = default;
+
+  CoreAccountId account_id() const { return account_id_; }
+
+  bool Signout() {
+    OpenProfileMenu(browser());
+    if (HasFatalFailure())
+      return false;
+    static_cast<ProfileMenuView*>(profile_menu_view())
+        ->OnSignoutButtonClicked();
+    return true;
+  }
+
+  void SetUpOnMainThread() override {
+    // Add an account (no sync).
+    signin::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(browser()->profile());
+    account_id_ =
+        signin::MakeAccountAvailable(identity_manager, "foo@example.com")
+            .account_id;
+    ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id_));
+  }
+
+ private:
+  CoreAccountId account_id_;
+};
+
+// Checks that signout opens a new logout tab.
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewSignoutTest, OpenLogoutTab) {
+  // Start from a page that is not the NTP.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://www.google.com"));
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  EXPECT_EQ(1, tab_strip->count());
+  EXPECT_EQ(0, tab_strip->active_index());
+  EXPECT_NE(GURL(chrome::kChromeUINewTabURL),
+            tab_strip->GetActiveWebContents()->GetURL());
+
+  // Signout creates a new tab.
+  ui_test_utils::TabAddedWaiter tab_waiter(browser());
+  ASSERT_TRUE(Signout());
+  tab_waiter.Wait();
+  EXPECT_EQ(2, tab_strip->count());
+  EXPECT_EQ(1, tab_strip->active_index());
+  content::WebContents* logout_page = tab_strip->GetActiveWebContents();
+  EXPECT_EQ(GaiaUrls::GetInstance()->service_logout_url(),
+            logout_page->GetURL());
+}
+
+// Checks that the NTP is navigated to the logout URL, instead of creating
+// another tab.
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewSignoutTest, SignoutFromNTP) {
+  // Start from the NTP.
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  EXPECT_EQ(1, tab_strip->count());
+  EXPECT_EQ(0, tab_strip->active_index());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+            tab_strip->GetActiveWebContents()->GetURL());
+
+  // Signout navigates the current tab.
+  ASSERT_TRUE(Signout());
+  EXPECT_EQ(1, tab_strip->count());
+  content::WebContents* logout_page = tab_strip->GetActiveWebContents();
+  EXPECT_EQ(GaiaUrls::GetInstance()->service_logout_url(),
+            logout_page->GetURL());
+}
+
+// Signout test that handles logout requests. The parameter indicates whether
+// an error page is generated for the logout request.
+class ProfileMenuViewSignoutTestWithNetwork
+    : public ProfileMenuViewSignoutTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ProfileMenuViewSignoutTestWithNetwork()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    https_server_.RegisterRequestHandler(base::BindRepeating(
+        &ProfileMenuViewSignoutTestWithNetwork::HandleSignoutURL,
+        has_network_error()));
+  }
+
+  // Simple wrapper around GetParam(), with a better name.
+  bool has_network_error() const { return GetParam(); }
+
+  // Handles logout requests, either with success or an error page.
+  static std::unique_ptr<net::test_server::HttpResponse> HandleSignoutURL(
+      bool has_network_error,
+      const net::test_server::HttpRequest& request) {
+    if (!net::test_server::ShouldHandle(
+            request, GaiaUrls::GetInstance()->service_logout_url().path())) {
+      return nullptr;
+    }
+
+    if (has_network_error) {
+      // Return invalid response, triggers an error page.
+      return std::make_unique<net::test_server::RawHttpResponse>("", "");
+    } else {
+      // Return a dummy successful response.
+      return std::make_unique<net::test_server::BasicHttpResponse>();
+    }
+  }
+
+  // Returns whether the web contents is displaying an error page.
+  static bool IsErrorPage(content::WebContents* web_contents) {
+    return web_contents->GetController()
+               .GetLastCommittedEntry()
+               ->GetPageType() == content::PAGE_TYPE_ERROR;
+  }
+
+  // InProcessBrowserTest:
+  void SetUp() override {
+    ASSERT_TRUE(https_server_.InitializeAndListen());
+    ProfileMenuViewSignoutTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ProfileMenuViewSignoutTest::SetUpCommandLine(command_line);
+    const GURL& base_url = https_server_.base_url();
+    command_line->AppendSwitchASCII(switches::kGaiaUrl, base_url.spec());
+  }
+
+  void SetUpOnMainThread() override {
+    https_server_.StartAcceptingConnections();
+    ProfileMenuViewSignoutTest::SetUpOnMainThread();
+  }
+
+ private:
+  net::EmbeddedTestServer https_server_;
+};
+
+// Tests that the local signout is performed (tokens are deleted) only if the
+// logout tab failed to load.
+IN_PROC_BROWSER_TEST_P(ProfileMenuViewSignoutTestWithNetwork, Signout) {
+  // The test starts from about://blank, which causes the logout to happen in
+  // the current tab.
+  ASSERT_TRUE(Signout());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  content::WebContents* logout_page = tab_strip->GetActiveWebContents();
+  EXPECT_EQ(GaiaUrls::GetInstance()->service_logout_url(),
+            logout_page->GetURL());
+
+  // Wait until navigation is finished.
+  content::TestNavigationObserver navigation_observer(logout_page);
+  navigation_observer.Wait();
+
+  EXPECT_EQ(IsErrorPage(logout_page), has_network_error());
+  // If there is a load error, the token is deleted locally, otherwise nothing
+  // happens because we rely on Gaia to perform the signout.
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser()->profile());
+  EXPECT_EQ(identity_manager->HasAccountWithRefreshToken(account_id()),
+            !has_network_error());
+}
+
+INSTANTIATE_TEST_SUITE_P(NetworkOnOrOff,
+                         ProfileMenuViewSignoutTestWithNetwork,
+                         ::testing::Bool());
 
 // This class is used to test the existence, the correct order and the call to
 // the correct action of the buttons in the profile menu. This is done by

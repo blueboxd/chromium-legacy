@@ -65,6 +65,9 @@ extern NSString* const
 // Returns an image generated from the content of this view controller.
 @property(nonatomic, readonly) UIImage* content;
 
+// The button for the primary action. Nil if not available.
+@property(nonatomic, readonly) UIButton* primaryActionButton;
+
 @end
 
 #endif  // IOS_CHROME_COMMON_UI_CONFIRMATION_ALERT_CONFIRMATION_ALERT_VIEW_CONTROLLER_H_

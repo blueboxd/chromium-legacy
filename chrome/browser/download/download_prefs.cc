@@ -206,12 +206,12 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
 
   // We store any file extension that should be opened automatically at
   // download completion in this pref.
-  std::string extensions_to_open =
+  std::string user_extensions_to_open =
       prefs->GetString(prefs::kDownloadExtensionsToOpen);
 
-  for (const auto& extension_string : base::SplitString(
-           extensions_to_open, ":",
-           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+  for (const auto& extension_string :
+       base::SplitString(user_extensions_to_open, ":", base::TRIM_WHITESPACE,
+                         base::SPLIT_WANT_ALL)) {
 #if defined(OS_POSIX)
     base::FilePath::StringType extension = extension_string;
 #elif defined(OS_WIN)
@@ -235,7 +235,7 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
     // permanently as a result.
     if (FileTypePolicies::GetInstance()->IsAllowedToOpenAutomatically(
             filename_with_extension)) {
-      auto_open_.insert(extension);
+      auto_open_by_user_.insert(extension);
     }
   }
 }
@@ -360,12 +360,12 @@ bool DownloadPrefs::IsDownloadPathManaged() const {
   return download_path_.IsManaged();
 }
 
-bool DownloadPrefs::IsAutoOpenUsed() const {
+bool DownloadPrefs::IsAutoOpenByUserUsed() const {
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   if (ShouldOpenPdfInSystemReader())
     return true;
 #endif
-  return !auto_open_.empty();
+  return !auto_open_by_user_.empty();
 }
 
 bool DownloadPrefs::IsAutoOpenEnabledBasedOnExtension(
@@ -382,10 +382,10 @@ bool DownloadPrefs::IsAutoOpenEnabledBasedOnExtension(
     return true;
 #endif
 
-  return auto_open_.find(extension) != auto_open_.end();
+  return auto_open_by_user_.find(extension) != auto_open_by_user_.end();
 }
 
-bool DownloadPrefs::EnableAutoOpenBasedOnExtension(
+bool DownloadPrefs::EnableAutoOpenByUserBasedOnExtension(
     const base::FilePath& file_name) {
   base::FilePath::StringType extension = file_name.Extension();
   if (!FileTypePolicies::GetInstance()->IsAllowedToOpenAutomatically(
@@ -396,19 +396,19 @@ bool DownloadPrefs::EnableAutoOpenBasedOnExtension(
   DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
   extension.erase(0, 1);
 
-  auto_open_.insert(extension);
+  auto_open_by_user_.insert(extension);
   SaveAutoOpenState();
   return true;
 }
 
-void DownloadPrefs::DisableAutoOpenBasedOnExtension(
+void DownloadPrefs::DisableAutoOpenByUserBasedOnExtension(
     const base::FilePath& file_name) {
   base::FilePath::StringType extension = file_name.Extension();
   if (extension.empty())
     return;
   DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
   extension.erase(0, 1);
-  auto_open_.erase(extension);
+  auto_open_by_user_.erase(extension);
   SaveAutoOpenState();
 }
 
@@ -432,11 +432,11 @@ bool DownloadPrefs::ShouldOpenPdfInSystemReader() const {
 }
 #endif
 
-void DownloadPrefs::ResetAutoOpen() {
+void DownloadPrefs::ResetAutoOpenByUser() {
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   SetShouldOpenPdfInSystemReader(false);
 #endif
-  auto_open_.clear();
+  auto_open_by_user_.clear();
   SaveAutoOpenState();
 }
 
@@ -446,12 +446,12 @@ void DownloadPrefs::SkipSanitizeDownloadTargetPathForTesting() {
 
 void DownloadPrefs::SaveAutoOpenState() {
   std::string extensions;
-  for (auto it = auto_open_.begin(); it != auto_open_.end(); ++it) {
+  for (auto it : auto_open_by_user_) {
 #if defined(OS_POSIX)
-    std::string this_extension = *it;
+    std::string this_extension = it;
 #elif defined(OS_WIN)
     // TODO(phajdan.jr): Why we're using Sys conversion here, but not in ctor?
-    std::string this_extension = base::SysWideToUTF8(*it);
+    std::string this_extension = base::SysWideToUTF8(it);
 #endif
     extensions += this_extension + ":";
   }

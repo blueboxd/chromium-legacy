@@ -43,10 +43,8 @@ TEST_F(MessageEventTest, AccountForStringMemory) {
       scope.GetIsolate()->AdjustAmountOfExternalAllocatedMemory(0);
   ASSERT_LE(initial + string_size, size_with_event);
 
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::CollectionType::kMajor, BlinkGC::kNoHeapPointersOnStack,
-      BlinkGC::kAtomicMarking, BlinkGC::kEagerSweeping,
-      BlinkGC::GCReason::kForcedGCForTesting);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
 
   int64_t size_after_gc =
       scope.GetIsolate()->AdjustAmountOfExternalAllocatedMemory(0);
@@ -91,10 +89,8 @@ TEST_F(MessageEventTest, AccountForArrayBufferMemory) {
       scope.GetIsolate()->AdjustAmountOfExternalAllocatedMemory(0);
   ASSERT_LE(initial + buffer_size, size_with_event);
 
-  ThreadState::Current()->CollectGarbage(
-      BlinkGC::CollectionType::kMajor, BlinkGC::kNoHeapPointersOnStack,
-      BlinkGC::kAtomicMarking, BlinkGC::kEagerSweeping,
-      BlinkGC::GCReason::kForcedGCForTesting);
+  ThreadState::Current()->CollectAllGarbageForTesting(
+      BlinkGC::kNoHeapPointersOnStack);
 
   int64_t size_after_gc =
       scope.GetIsolate()->AdjustAmountOfExternalAllocatedMemory(0);

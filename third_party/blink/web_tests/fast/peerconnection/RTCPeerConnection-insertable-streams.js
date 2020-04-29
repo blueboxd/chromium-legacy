@@ -14,10 +14,9 @@ function areArrayBuffersEqual(buffer1, buffer2)
 }
 
 function areFrameInfosEqual(frame1, frame2) {
-  return frame1.type === frame2.type &&
-          frame1.synchronizationSource === frame2.synchronizationSource &&
-          frame1.timestamp === frame2.timestamp &&
-          areArrayBuffersEqual(frame1.data, frame2.data);
+  return frame1.synchronizationSource === frame2.synchronizationSource &&
+         frame1.timestamp === frame2.timestamp &&
+         areArrayBuffersEqual(frame1.data, frame2.data);
 }
 
 async function doSignalingHandshake(pc1, pc2) {

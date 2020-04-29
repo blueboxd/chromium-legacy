@@ -1550,7 +1550,7 @@ TEST_F(IncrementalMarkingTest, ConservativeGCWhileCompactionScheduled) {
   ThreadState::Current()->EnableCompactionForNextGCForTesting();
   driver.Start();
   driver.FinishSteps();
-  ThreadState::Current()->CollectGarbage(
+  ThreadState::Current()->CollectGarbageForTesting(
       BlinkGC::CollectionType::kMajor, BlinkGC::kHeapPointersOnStack,
       BlinkGC::kAtomicMarking, BlinkGC::kConcurrentAndLazySweeping,
       BlinkGC::GCReason::kConservativeGC);

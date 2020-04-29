@@ -270,7 +270,7 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
       const DownloadTestCase& test_case);
 
   // Sets the AutoOpenBasedOnExtension user preference for |path|.
-  void EnableAutoOpenBasedOnExtension(const base::FilePath& path);
+  void EnableAutoOpenByUserBasedOnExtension(const base::FilePath& path);
 
   // Set the kDownloadDefaultDirectory managed preference to |path|.
   void SetManagedDownloadPath(const base::FilePath& path);
@@ -415,9 +415,9 @@ DownloadTargetDeterminerTest::CreateActiveDownloadItem(
   return item;
 }
 
-void DownloadTargetDeterminerTest::EnableAutoOpenBasedOnExtension(
+void DownloadTargetDeterminerTest::EnableAutoOpenByUserBasedOnExtension(
     const base::FilePath& path) {
-  EXPECT_TRUE(download_prefs_->EnableAutoOpenBasedOnExtension(path));
+  EXPECT_TRUE(download_prefs_->EnableAutoOpenByUserBasedOnExtension(path));
 }
 
 void DownloadTargetDeterminerTest::SetManagedDownloadPath(
@@ -1375,7 +1375,7 @@ TEST_F(DownloadTargetDeterminerTest, PromptAlways_AutoOpen) {
 
       EXPECT_CRDOWNLOAD};
   SetPromptForDownload(true);
-  EnableAutoOpenBasedOnExtension(
+  EnableAutoOpenByUserBasedOnExtension(
       base::FilePath(FILE_PATH_LITERAL("dummy.dummy")));
   RunTestCasesWithActiveItem(&kAutoOpen, 1);
 }

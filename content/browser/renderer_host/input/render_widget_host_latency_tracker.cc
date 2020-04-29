@@ -83,6 +83,7 @@ const char* GetTraceNameFromType(blink::WebInputEvent::Type type) {
 RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker(
     RenderWidgetHostDelegate* delegate)
     : has_seen_first_gesture_scroll_update_(false),
+      gesture_scroll_id_(-1),
       active_multi_finger_gesture_(false),
       touch_start_default_prevented_(false),
       render_widget_host_delegate_(delegate) {}
@@ -204,6 +205,8 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
 
   if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollBegin) {
     has_seen_first_gesture_scroll_update_ = false;
+    gesture_scroll_id_ = latency->trace_id();
+    latency->set_gesture_scroll_id(gesture_scroll_id_);
   } else if (event.GetType() ==
              blink::WebInputEvent::Type::kGestureScrollUpdate) {
     // Make a copy of the INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT with a
@@ -223,10 +226,14 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     }
 
     has_seen_first_gesture_scroll_update_ = true;
+    latency->set_gesture_scroll_id(gesture_scroll_id_);
     latency->set_scroll_update_delta(
         static_cast<const WebGestureEvent&>(event).data.scroll_update.delta_y);
     latency->set_predicted_scroll_update_delta(
         static_cast<const WebGestureEvent&>(event).data.scroll_update.delta_y);
+  } else if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollEnd) {
+    latency->set_gesture_scroll_id(gesture_scroll_id_);
+    gesture_scroll_id_ = -1;
   }
 }
 

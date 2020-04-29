@@ -56,14 +56,18 @@ enum class CertProvisioningWorkerState {
   kStartCsrResponseReceived = 2,
   kVaChallengeFinished = 3,
   kKeyRegistered = 4,
-  kSignCsrFinished = 5,
-  kFinishCsrResponseReceived = 6,
-  kDownloadCertResponseReceived = 7,
-  kSucceed = 8,
-  kFailed = 9,
+  kKeypairMarked = 5,
+  kSignCsrFinished = 6,
+  kFinishCsrResponseReceived = 7,
+  kDownloadCertResponseReceived = 8,
+  kSucceed = 9,
+  kFailed = 10,
   kMaxValue = kFailed,
 };
 
+// This class is a part of certificate provisioning feature.  It takes a
+// certificate profile, generates a key pair, communicates with DM Server to
+// create a CSR for it and request a certificate, and imports it.
 class CertProvisioningWorker {
  public:
   CertProvisioningWorker() = default;
@@ -117,6 +121,9 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   void RegisterKey();
   void OnRegisterKeyDone(const attestation::TpmChallengeKeyResult& result);
 
+  void MarkKey();
+  void OnMarkKeyDone(const std::string& error_message);
+
   void SignCsr();
   void OnSignCsrDone(const std::string& signature,
                      const std::string& error_message);
@@ -148,6 +155,8 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   void UpdateState(CertProvisioningWorkerState state);
   bool IsFinished() const;
 
+  void CleanUp();
+
   // Returns true if there are no errors and the flow can be continued.
   bool ProcessResponseErrors(
       policy::DeviceManagementStatus status,
@@ -163,6 +172,9 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   // This field should be updated only via |UpdateState| function. It will
   // trigger update of the serialized data.
   CertProvisioningWorkerState state_ = CertProvisioningWorkerState::kInitState;
+  // State that was before the current one. Useful for debugging and cleaning
+  // on failure.
+  CertProvisioningWorkerState prev_state_ = state_;
   bool is_waiting_ = false;
   // Currently it is used only for DM Server DM_STATUS_TEMPORARY_UNAVAILABLE
   // error. For all other errors the worker just gives up.

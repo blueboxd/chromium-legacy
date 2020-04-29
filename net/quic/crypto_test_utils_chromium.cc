@@ -31,6 +31,7 @@
 #include "net/test/test_data_directory.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/test_ticket_crypter.h"
 
 using std::string;
 
@@ -90,6 +91,7 @@ std::unique_ptr<quic::ProofSource> ProofSourceForTesting() {
   CHECK(source->Initialize(certs_dir.AppendASCII("quic-chain.pem"),
                            certs_dir.AppendASCII("quic-leaf-cert.key"),
                            certs_dir.AppendASCII("quic-leaf-cert.key.sct")));
+  source->SetTicketCrypter(std::make_unique<quic::test::TestTicketCrypter>());
   return std::move(source);
 }
 

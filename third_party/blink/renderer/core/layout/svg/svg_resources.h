@@ -253,9 +253,8 @@ class SVGElementResourceClient final
   void FilterPrimitiveChanged(SVGFilterPrimitiveStandardAttributes& primitive,
                               const QualifiedName& attribute) override;
 
-  void SetFilterData(FilterData*);
+  FilterData* UpdateFilterData();
   bool ClearFilterData();
-  FilterData* GetFilterData() const { return filter_data_; }
 
   void Trace(Visitor*) override;
 

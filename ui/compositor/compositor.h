@@ -18,7 +18,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "cc/metrics/frame_sequence_tracker.h"
 #include "cc/paint/element_id.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -344,8 +343,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       cc::ActiveFrameSequenceTrackers trackers) override {}
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
-  void NotifyThroughputTrackerResults(
-      cc::CustomTrackerResults results) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
@@ -399,11 +396,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
  private:
   friend class base::RefCounted<Compositor>;
-
-  // Called when throughput data for the tracker of |tracker_id| is ready.
-  void ReportThroughputForTracker(
-      int tracker_id,
-      cc::FrameSequenceMetrics::ThroughputData throughput);
 
   gfx::Size size_;
 

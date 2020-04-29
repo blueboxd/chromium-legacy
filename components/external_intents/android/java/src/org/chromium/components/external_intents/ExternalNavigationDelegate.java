@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,12 +89,6 @@ public interface ExternalNavigationDelegate {
     int handleIncognitoIntentTargetingSelf(Intent intent, String referrerUrl, String fallbackUrl);
 
     /**
-     * @param url The requested url.
-     * @return Whether we should block the navigation and request file access before proceeding.
-     */
-    boolean shouldRequestFileAccess(String url);
-
-    /**
      * Trigger a UI affordance that will ask the user to grant file access.  After the access
      * has been granted or denied, continue loading the specified file URL.
      *
@@ -152,6 +147,11 @@ public interface ExternalNavigationDelegate {
      */
     boolean maybeLaunchInstantApp(
             String url, String referrerUrl, boolean isIncomingRedirect, boolean isSerpReferrer);
+
+    /**
+     * @return The WindowAndroid instance associated with this delegate instance.
+     */
+    WindowAndroid getWindowAndroid();
 
     /**
      * @return The WebContents instance associated with this delegate instance.

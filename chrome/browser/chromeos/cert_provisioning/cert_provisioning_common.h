@@ -9,6 +9,7 @@
 
 #include "chromeos/dbus/constants/attestation_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "net/cert/x509_certificate.h"
 
 class PrefRegistrySimple;
 
@@ -43,18 +44,25 @@ std::string GetKeyName(CertProfileId profile_id);
 attestation::AttestationKeyType GetVaKeyType(CertScope scope);
 const char* GetPlatformKeysTokenId(CertScope scope);
 
-// The Verified Access APIs are used to generate keypairs. For user-specific
-// keypairs, it is possible to reuse the keypair that is used for Verified
+// The Verified Access APIs are used to generate key pairs. For user-specific
+// key pairs, it is possible to reuse the key pair that is used for Verified
 // Access challenge response generation and name it with a custom name. For
-// device-wide keypairs, the keypair used for Verified Access challenge response
-// generation must be stable, but an additional keypair can be embedded
-// (key_name_for_spkac). See
+// device-wide key pairs, the key pair used for Verified Access challenge
+// response generation must be stable, but an additional key pair can be
+// embedded (key_name_for_spkac). See
 // http://go/chromeos-va-registering-device-wide-keys-support for details. For
 // these reasons, the name of key that should be registered and will be used for
 // certificate provisioning is passed as key_name for user-specific keys and
 // key_name_for_spkac for device-wide keys.
 std::string GetVaKeyName(CertScope scope, CertProfileId profile_id);
 std::string GetVaKeyNameForSpkac(CertScope scope, CertProfileId profile_id);
+
+// Parses |data| using net::X509Certificate::FORMAT_AUTO as format specifier.
+// Expects exactly one certificate to be the result and returns it.  If parsing
+// fails or if more than one certificates were in |data|, returns an null ptr.
+scoped_refptr<net::X509Certificate> CreateSingleCertificateFromBytes(
+    const char* data,
+    size_t length);
 
 }  // namespace cert_provisioning
 }  // namespace chromeos

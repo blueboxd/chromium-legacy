@@ -1803,7 +1803,9 @@ unsigned Internals::touchEndOrCancelEventHandlerCount(
 
 unsigned Internals::pointerEventHandlerCount(Document* document) const {
   DCHECK(document);
-  return EventHandlerCount(*document, EventHandlerRegistry::kPointerEvent);
+  return EventHandlerCount(*document, EventHandlerRegistry::kPointerEvent) +
+         EventHandlerCount(*document,
+                           EventHandlerRegistry::kPointerRawUpdateEvent);
 }
 
 // Given a vector of rects, merge those that are adjacent, leaving empty rects

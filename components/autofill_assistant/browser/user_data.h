@@ -16,7 +16,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/user_action.h"
-#include "components/autofill_assistant/browser/website_login_fetcher.h"
+#include "components/autofill_assistant/browser/website_login_manager.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -128,7 +128,7 @@ class UserData {
   std::map<std::string, std::unique_ptr<autofill::AutofillProfile>>
       selected_addresses_;
 
-  base::Optional<WebsiteLoginFetcher::Login> selected_login_;
+  base::Optional<WebsiteLoginManager::Login> selected_login_;
 
   // Return true if address has been selected, otherwise return false.
   // Note that selected_address() might return nullptr when
@@ -197,8 +197,10 @@ struct CollectUserDataOptions {
   base::Optional<std::string> additional_model_identifier_to_check;
 
   base::OnceCallback<void(UserData*, const UserModel*)> confirm_callback;
-  base::OnceCallback<void(int)> additional_actions_callback;
-  base::OnceCallback<void(int)> terms_link_callback;
+  base::OnceCallback<void(int, UserData*, const UserModel*)>
+      additional_actions_callback;
+  base::OnceCallback<void(int, UserData*, const UserModel*)>
+      terms_link_callback;
 };
 
 }  // namespace autofill_assistant

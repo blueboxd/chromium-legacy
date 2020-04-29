@@ -18,7 +18,7 @@
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/device_context.h"
 #include "components/autofill_assistant/browser/service.h"
-#include "components/autofill_assistant/browser/website_login_fetcher.h"
+#include "components/autofill_assistant/browser/website_login_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -103,7 +103,7 @@ class ClientAndroid : public Client,
   autofill::PersonalDataManager* GetPersonalDataManager() const override;
   password_manager::PasswordManagerClient* GetPasswordManagerClient()
       const override;
-  WebsiteLoginFetcher* GetWebsiteLoginFetcher() const override;
+  WebsiteLoginManager* GetWebsiteLoginManager() const override;
   std::string GetLocale() const override;
   std::string GetCountryCode() const override;
   DeviceContext GetDeviceContext() const override;
@@ -147,7 +147,7 @@ class ClientAndroid : public Client,
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   std::unique_ptr<Controller> controller_;
-  mutable std::unique_ptr<WebsiteLoginFetcher> website_login_fetcher_;
+  mutable std::unique_ptr<WebsiteLoginManager> website_login_manager_;
 
   // True if Start() was called. This turns on the tracking of dropouts.
   bool started_ = false;

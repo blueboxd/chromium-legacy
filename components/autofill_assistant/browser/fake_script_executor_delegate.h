@@ -32,7 +32,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   WebController* GetWebController() override;
   TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
-  WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
+  WebsiteLoginManager* GetWebsiteLoginManager() override;
   content::WebContents* GetWebContents() override;
   std::string GetAccountEmailAddress() override;
   std::string GetLocale() override;

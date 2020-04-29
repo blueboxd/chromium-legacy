@@ -118,7 +118,8 @@ LatencyInfo::LatencyInfo(SourceEventType type)
       terminated_(false),
       source_event_type_(type),
       scroll_update_delta_(0),
-      predicted_scroll_update_delta_(0) {}
+      predicted_scroll_update_delta_(0),
+      gesture_scroll_id_(0) {}
 
 LatencyInfo::LatencyInfo(const LatencyInfo& other) = default;
 LatencyInfo::LatencyInfo(LatencyInfo&& other) = default;
@@ -133,7 +134,8 @@ LatencyInfo::LatencyInfo(int64_t trace_id, bool terminated)
       terminated_(terminated),
       source_event_type_(SourceEventType::UNKNOWN),
       scroll_update_delta_(0),
-      predicted_scroll_update_delta_(0) {}
+      predicted_scroll_update_delta_(0),
+      gesture_scroll_id_(0) {}
 
 LatencyInfo& LatencyInfo::operator=(const LatencyInfo& other) = default;
 
@@ -188,6 +190,7 @@ void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
   }
 
   coalesced_ = other.coalesced();
+  gesture_scroll_id_ = other.gesture_scroll_id();
   scroll_update_delta_ = other.scroll_update_delta();
   // TODO(tdresser): Ideally we'd copy |began_| here as well, but |began_|
   // isn't very intuitive, and we can actually begin multiple times across
@@ -212,6 +215,7 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
   }
 
   coalesced_ = other.coalesced();
+  gesture_scroll_id_ = other.gesture_scroll_id();
   scroll_update_delta_ = other.scroll_update_delta();
   // TODO(tdresser): Ideally we'd copy |began_| here as well, but |began_| isn't
   // very intuitive, and we can actually begin multiple times across copied
@@ -352,6 +356,9 @@ LatencyInfo::AsTraceableData() {
   }
   record_data->SetDouble("trace_id", static_cast<double>(trace_id_));
   record_data->SetBoolean("is_coalesced", coalesced_);
+  if (gesture_scroll_id_ > 0) {
+    record_data->SetDouble("gesture_scroll_id", gesture_scroll_id_);
+  }
   return LatencyInfoTracedValue::FromValue(std::move(record_data));
 }
 

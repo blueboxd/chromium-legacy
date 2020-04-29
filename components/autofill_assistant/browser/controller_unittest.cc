@@ -74,9 +74,11 @@ struct MockCollectUserDataOptions : public CollectUserDataOptions {
     base::MockOnceCallback<void(UserData*, const UserModel*)>
         mock_confirm_callback;
     confirm_callback = mock_confirm_callback.Get();
-    base::MockOnceCallback<void(int)> mock_actions_callback;
+    base::MockOnceCallback<void(int, UserData*, const UserModel*)>
+        mock_actions_callback;
     additional_actions_callback = mock_actions_callback.Get();
-    base::MockOnceCallback<void(int)> mock_terms_callback;
+    base::MockOnceCallback<void(int, UserData*, const UserModel*)>
+        mock_terms_callback;
     terms_link_callback = mock_terms_callback.Get();
   }
 };

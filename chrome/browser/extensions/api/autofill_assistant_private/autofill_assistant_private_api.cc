@@ -343,8 +343,8 @@ AutofillAssistantPrivateAPI::GetPasswordManagerClient() const {
   return nullptr;
 }
 
-autofill_assistant::WebsiteLoginFetcher*
-AutofillAssistantPrivateAPI::GetWebsiteLoginFetcher() const {
+autofill_assistant::WebsiteLoginManager*
+AutofillAssistantPrivateAPI::GetWebsiteLoginManager() const {
   return nullptr;
 }
 

@@ -183,8 +183,8 @@ autofill::PersonalDataManager* Controller::GetPersonalDataManager() {
   return client_->GetPersonalDataManager();
 }
 
-WebsiteLoginFetcher* Controller::GetWebsiteLoginFetcher() {
-  return client_->GetWebsiteLoginFetcher();
+WebsiteLoginManager* Controller::GetWebsiteLoginManager() {
+  return client_->GetWebsiteLoginManager();
 }
 
 content::WebContents* Controller::GetWebContents() {
@@ -1123,7 +1123,7 @@ void Controller::OnCollectUserDataAdditionalActionTriggered(int index) {
   auto callback =
       std::move(collect_user_data_options_->additional_actions_callback);
   SetCollectUserDataOptions(nullptr);
-  std::move(callback).Run(index);
+  std::move(callback).Run(index, user_data_.get(), &user_model_);
 }
 
 void Controller::OnTextLinkClicked(int link) {
@@ -1132,7 +1132,7 @@ void Controller::OnTextLinkClicked(int link) {
 
   auto callback = std::move(collect_user_data_options_->terms_link_callback);
   SetCollectUserDataOptions(nullptr);
-  std::move(callback).Run(link);
+  std::move(callback).Run(link, user_data_.get(), &user_model_);
 }
 
 void Controller::OnFormActionLinkClicked(int link) {

@@ -26,18 +26,21 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCOPED_SVG_PAINT_STATE_H_
 
 #include <memory>
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/svg_filter_painter.h"
 #include "third_party/blink/renderer/core/paint/svg_mask_painter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
 class FilterData;
+class GraphicsContext;
 class LayoutObject;
+class PaintController;
 class SVGResources;
 
 // Hooks up the correct paint property transform node.
@@ -74,6 +77,23 @@ class ScopedSVGTransformState {
 
  private:
   base::Optional<ScopedPaintChunkProperties> transform_property_scope_;
+};
+
+class SVGFilterRecordingContext {
+  USING_FAST_MALLOC(SVGFilterRecordingContext);
+
+ public:
+  explicit SVGFilterRecordingContext(const PaintInfo&);
+  ~SVGFilterRecordingContext();
+
+  const PaintInfo& GetPaintInfo() const { return paint_info_; }
+  sk_sp<PaintRecord> GetPaintRecord(const PaintInfo&);
+
+ private:
+  std::unique_ptr<PaintController> paint_controller_;
+  std::unique_ptr<GraphicsContext> context_;
+  PaintInfo paint_info_;
+  DISALLOW_COPY_AND_ASSIGN(SVGFilterRecordingContext);
 };
 
 class ScopedSVGPaintState {

@@ -40,7 +40,7 @@ class ClientStatus;
 struct ClientSettings;
 struct CollectUserDataOptions;
 class UserAction;
-class WebsiteLoginFetcher;
+class WebsiteLoginManager;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -288,7 +288,7 @@ class ActionDelegate {
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
 
   // Get current login fetcher.
-  virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() = 0;
+  virtual WebsiteLoginManager* GetWebsiteLoginManager() = 0;
 
   // Get associated web contents.
   virtual content::WebContents* GetWebContents() = 0;

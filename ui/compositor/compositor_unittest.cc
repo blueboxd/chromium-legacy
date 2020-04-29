@@ -12,7 +12,6 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "cc/metrics/frame_sequence_tracker.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -106,7 +105,7 @@ TEST_F(CompositorTestWithMessageLoop, ShouldUpdateDisplayProperties) {
   compositor()->SetRootLayer(root_layer.get());
   compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10),
                                 allocator.GetCurrentLocalSurfaceIdAllocation());
-  ASSERT_TRUE(compositor()->IsVisible());
+  DCHECK(compositor()->IsVisible());
 
   // Set a non-identity color matrix, color space, sdr white level, vsync
   // timebase and vsync interval, and expect it to be set on the context
@@ -231,45 +230,6 @@ TEST_F(CompositorTestWithMessageLoop, MoveThroughputTracker) {
   }
 }
 
-TEST_F(CompositorTestWithMessageLoop, ThroughputTracker) {
-  auto root_layer = std::make_unique<Layer>(ui::LAYER_SOLID_COLOR);
-  viz::ParentLocalSurfaceIdAllocator allocator;
-  allocator.GenerateId();
-  root_layer->SetBounds(gfx::Rect(10, 10));
-  compositor()->SetRootLayer(root_layer.get());
-  compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10),
-                                allocator.GetCurrentLocalSurfaceIdAllocation());
-  ASSERT_TRUE(compositor()->IsVisible());
-
-  ThroughputTracker tracker = compositor()->RequestNewThroughputTracker();
-
-  base::RunLoop run_loop;
-  tracker.Start(base::BindLambdaForTesting(
-      [&](cc::FrameSequenceMetrics::ThroughputData throughput) {
-        EXPECT_GT(throughput.frames_expected, 0u);
-        EXPECT_GT(throughput.frames_produced, 0u);
-        run_loop.Quit();
-      }));
-
-  // Generates a few frames after tracker starts to have some data collected.
-  for (int i = 0; i < 5; ++i) {
-    compositor()->ScheduleFullRedraw();
-    DrawWaiterForTest::WaitForCompositingEnded(compositor());
-  }
-
-  tracker.Stop();
-
-  // Generates a few frames after tracker stops. Note the number of frames
-  // must be at least two: one to trigger underlying cc::FrameSequenceTracker to
-  // be scheduled for termination and one to report data.
-  for (int i = 0; i < 5; ++i) {
-    compositor()->ScheduleFullRedraw();
-    DrawWaiterForTest::WaitForCompositingEnded(compositor());
-  }
-
-  run_loop.Run();
-}
-
 #if defined(OS_WIN)
 // TODO(crbug.com/608436): Flaky on windows trybots
 #define MAYBE_CreateAndReleaseOutputSurface \
@@ -285,7 +245,7 @@ TEST_F(CompositorTestWithMessageLoop, MAYBE_CreateAndReleaseOutputSurface) {
   compositor()->SetRootLayer(root_layer.get());
   compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10),
                                 allocator.GetCurrentLocalSurfaceIdAllocation());
-  ASSERT_TRUE(compositor()->IsVisible());
+  DCHECK(compositor()->IsVisible());
   compositor()->ScheduleDraw();
   DrawWaiterForTest::WaitForCompositingEnded(compositor());
   compositor()->SetVisible(false);

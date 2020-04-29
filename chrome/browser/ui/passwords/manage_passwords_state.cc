@@ -71,9 +71,7 @@ bool RemoveFormFromVector(const PasswordForm& form_to_delete,
 }  // namespace
 
 ManagePasswordsState::ManagePasswordsState()
-    : state_(password_manager::ui::INACTIVE_STATE),
-      client_(nullptr) {
-}
+    : state_(password_manager::ui::INACTIVE_STATE), client_(nullptr) {}
 
 ManagePasswordsState::~ManagePasswordsState() {}
 
@@ -166,6 +164,18 @@ void ManagePasswordsState::OnInactive() {
   SetState(password_manager::ui::INACTIVE_STATE);
 }
 
+void ManagePasswordsState::OnPasswordMovable(
+    std::unique_ptr<PasswordFormManagerForUI> form_to_move) {
+  ClearData();
+  form_manager_ = std::move(form_to_move);
+  local_credentials_forms_ =
+      DeepCopyNonPSLVector(form_manager_->GetBestMatches());
+  AppendDeepCopyVector(form_manager_->GetFederatedMatches(),
+                       &local_credentials_forms_);
+  origin_ = form_manager_->GetOrigin();
+  SetState(password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE);
+}
+
 void ManagePasswordsState::TransitionToState(
     password_manager::ui::State state) {
   DCHECK_NE(password_manager::ui::INACTIVE_STATE, state_);
@@ -245,9 +255,8 @@ void ManagePasswordsState::SetState(password_manager::ui::State state) {
   if (client_->GetLogManager()->IsLoggingActive()) {
     password_manager::BrowserSavePasswordProgressLogger logger(
         client_->GetLogManager());
-    logger.LogNumber(
-        autofill::SavePasswordProgressLogger::STRING_NEW_UI_STATE,
-        state);
+    logger.LogNumber(autofill::SavePasswordProgressLogger::STRING_NEW_UI_STATE,
+                     state);
   }
   state_ = state;
 }

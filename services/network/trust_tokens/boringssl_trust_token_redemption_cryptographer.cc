@@ -1,0 +1,160 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "services/network/trust_tokens/boringssl_trust_token_redemption_cryptographer.h"
+
+#include "base/base64.h"
+#include "base/callback_helpers.h"
+#include "net/http/structured_headers.h"
+#include "services/network/trust_tokens/scoped_boringssl_bytes.h"
+#include "services/network/trust_tokens/trust_token_client_data_canonicalization.h"
+#include "services/network/trust_tokens/trust_token_parameterization.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
+#include "third_party/boringssl/src/include/openssl/trust_token.h"
+
+namespace network {
+
+namespace {
+
+const char kSignedRedemptionRecordBodyKey[] = "body";
+const char kSignedRedemptionRecordSignatureKey[] = "signature";
+
+// The Trust Tokens design doc [1] defines a signed redemption record (SRR) as a
+// Structured Headers Draft 15 dictionary with two "byte sequence"-typed fields,
+// a body and a signature.  This method constructs such a dictionary, given the
+// body and signature's contents as bytestrings.
+//
+// Returns nullopt on internal serialization error in the Structured Headers
+// library.
+//
+// [1]
+// https://docs.google.com/document/d/1TNnya6B8pyomDK2F1R9CL3dY10OAmqWlnCxsWyOBDVQ/edit#heading=h.7mkzvhpqb8l5
+base::Optional<std::string> ConstructSignedRedemptionRecord(
+    base::span<const uint8_t> body,
+    base::span<const uint8_t> signature) {
+  net::structured_headers::Dictionary dictionary;
+
+  // Stunningly, this is the easiest way to add a byte array-typed value to a
+  // net::structured_headers::Dictionary.
+  auto make_value_for_dict = [](base::span<const uint8_t> value) {
+    return net::structured_headers::ParameterizedMember(
+        net::structured_headers::Item(
+            std::string(reinterpret_cast<const char*>(value.data()),
+                        value.size()),
+            net::structured_headers::Item::kByteSequenceType),
+        net::structured_headers::Parameters{});
+  };
+
+  dictionary[kSignedRedemptionRecordBodyKey] = make_value_for_dict(body);
+  dictionary[kSignedRedemptionRecordSignatureKey] =
+      make_value_for_dict(signature);
+
+  return net::structured_headers::SerializeDictionary(dictionary);
+}
+
+}  // namespace
+
+BoringsslTrustTokenRedemptionCryptographer::
+    BoringsslTrustTokenRedemptionCryptographer() = default;
+
+BoringsslTrustTokenRedemptionCryptographer::
+    ~BoringsslTrustTokenRedemptionCryptographer() = default;
+
+bool BoringsslTrustTokenRedemptionCryptographer::Initialize(
+    int issuer_configured_batch_size,
+    base::StringPiece signed_redemption_record_verification_key) {
+  if (!base::IsValueInRangeForNumericType<uint16_t>(
+          issuer_configured_batch_size))
+    return false;
+
+  ctx_ = bssl::UniquePtr<TRUST_TOKEN_CLIENT>(TRUST_TOKEN_CLIENT_new(
+      static_cast<uint16_t>(issuer_configured_batch_size)));
+  if (!ctx_)
+    return false;
+
+  bssl::UniquePtr<EVP_PKEY> srr_verification_pkey(EVP_PKEY_new_raw_public_key(
+      EVP_PKEY_ED25519,
+      /*unused=*/nullptr,  // Yes, this parameter is called "unused".
+      base::as_bytes(base::make_span(signed_redemption_record_verification_key))
+          .data(),
+      signed_redemption_record_verification_key.size()));
+  if (!srr_verification_pkey)
+    return false;
+
+  if (!TRUST_TOKEN_CLIENT_set_srr_key(ctx_.get(),
+                                      srr_verification_pkey.get())) {
+    return false;
+  }
+
+  return true;
+}
+
+base::Optional<std::string>
+BoringsslTrustTokenRedemptionCryptographer::BeginRedemption(
+    TrustToken token,
+    base::StringPiece verification_key_to_bind,
+    const url::Origin& top_level_origin) {
+  if (!ctx_)
+    return base::nullopt;
+
+  // It's unclear if BoringSSL expects the exact same value in the client data
+  // and as the |time| argument to TRUST_TOKEN_CLIENT_begin_redemption; play
+  // it safe by using a single timestamp.
+  base::Time redemption_timestamp = base::Time::Now();
+
+  base::Optional<std::vector<uint8_t>> maybe_client_data =
+      CanonicalizeTrustTokenClientDataForRedemption(
+          redemption_timestamp, top_level_origin, verification_key_to_bind);
+  if (!maybe_client_data)
+    return base::nullopt;
+
+  ScopedBoringsslBytes raw_redemption_request;
+
+  bssl::UniquePtr<TRUST_TOKEN> boringssl_token(
+      TRUST_TOKEN_new(base::as_bytes(base::make_span(token.body())).data(),
+                      token.body().size()));
+  if (!boringssl_token)
+    return base::nullopt;
+
+  if (!TRUST_TOKEN_CLIENT_begin_redemption(
+          ctx_.get(), raw_redemption_request.mutable_ptr(),
+          raw_redemption_request.mutable_len(), boringssl_token.get(),
+          maybe_client_data->data(), maybe_client_data->size(),
+          (redemption_timestamp - base::Time::UnixEpoch()).InSeconds())) {
+    return base::nullopt;
+  }
+
+  return base::Base64Encode(raw_redemption_request.as_span());
+}
+
+base::Optional<std::string>
+BoringsslTrustTokenRedemptionCryptographer::ConfirmRedemption(
+    base::StringPiece response_header) {
+  if (!ctx_)
+    return base::nullopt;
+
+  std::string decoded_response;
+  if (!base::Base64Decode(response_header, &decoded_response))
+    return base::nullopt;
+
+  // |srr_body| and |srr_signature| together provide the information in the
+  // signed redemption record (see ConstructSignedRedemptionRecord's function
+  // comment for more information).
+  ScopedBoringsslBytes srr_body;
+  ScopedBoringsslBytes srr_signature;
+  if (!TRUST_TOKEN_CLIENT_finish_redemption(
+          ctx_.get(), srr_body.mutable_ptr(), srr_body.mutable_len(),
+          srr_signature.mutable_ptr(), srr_signature.mutable_len(),
+          base::as_bytes(base::make_span(decoded_response)).data(),
+          decoded_response.size())) {
+    return base::nullopt;
+  }
+
+  return ConstructSignedRedemptionRecord(srr_body.as_span(),
+                                         srr_signature.as_span());
+}
+
+}  // namespace network

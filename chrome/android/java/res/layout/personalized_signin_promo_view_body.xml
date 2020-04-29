@@ -23,8 +23,6 @@
         android:id="@+id/signin_promo_signin_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:layout_marginStart="24dp"
         android:ellipsize="end"
         android:singleLine="true"
         android:text="@string/signin_promo_continue_as"
@@ -35,8 +33,6 @@
         style="@style/SigninButtonBorderlessRegular"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:layout_marginStart="24dp"
         android:ellipsize="end"
         android:singleLine="true"
         android:text="@string/signin_promo_choose_account"/>

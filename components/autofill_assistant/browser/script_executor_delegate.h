@@ -34,7 +34,7 @@ class Service;
 class WebController;
 struct ClientSettings;
 class TriggerContext;
-class WebsiteLoginFetcher;
+class WebsiteLoginManager;
 class EventHandler;
 class UserModel;
 
@@ -55,7 +55,7 @@ class ScriptExecutorDelegate {
   virtual WebController* GetWebController() = 0;
   virtual const TriggerContext* GetTriggerContext() = 0;
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
-  virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() = 0;
+  virtual WebsiteLoginManager* GetWebsiteLoginManager() = 0;
   virtual content::WebContents* GetWebContents() = 0;
   virtual std::string GetAccountEmailAddress() = 0;
   virtual std::string GetLocale() = 0;

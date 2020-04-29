@@ -1756,6 +1756,16 @@ void ThreadState::VerifyMarking(BlinkGC::MarkingType marking_type) {
     Heap().VerifyMarking();
 }
 
+void ThreadState::CollectGarbageForTesting(
+    BlinkGC::CollectionType collection_type,
+    BlinkGC::StackState stack_state,
+    BlinkGC::MarkingType marking_type,
+    BlinkGC::SweepingType sweeping_type,
+    BlinkGC::GCReason reason) {
+  CollectGarbage(collection_type, stack_state, marking_type, sweeping_type,
+                 reason);
+}
+
 void ThreadState::CollectAllGarbageForTesting(BlinkGC::StackState stack_state) {
   // We need to run multiple GCs to collect a chain of persistent handles.
   size_t previous_live_objects = 0;

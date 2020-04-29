@@ -167,7 +167,7 @@ QUIC_FLAG(bool,
           false)
 
 // If true, will negotiate the ACK delay time.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, true)
 
 // If true, QuicFramer::WriteClientVersionNegotiationProbePacket uses
 // length-prefixed connection IDs.
@@ -278,26 +278,12 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_avoid_overestimate_bandwidth_with_aggregation,
     true)
 
-// If true, emit more granular errors instead of
-// SpdyFramerError::SPDY_DECOMPRESS_FAILURE in Http2DecoderAdapter.
-// This flag is duplicated in spdy_flags_impl.h due to mixed usage of flags.
-// Please update the flag value in spdy when this flag is flipped.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_spdy_enable_granular_decompress_errors,
-          true)
-
 // If true, QUIC BBRv2 to take ack height into account when calculating
 // queuing_threshold in PROBE_UP.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bbr2_add_ack_height_to_queueing_threshold,
     true)
-
-// If true, trigger QUIC_BUG in two ShouldCreateIncomingStream() overrides when
-// called with locally initiated stream ID.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_create_incoming_stream_bug,
-          true)
 
 // If true, quic::BandwidthSampler will start in application limited phase.
 QUIC_FLAG(bool,
@@ -322,9 +308,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_blackhole_detector, true)
 
 // If true, use idle network detector to detect handshake timeout and idle
 // network timeout.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_idle_network_detector,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_idle_network_detector, true)
 
 // If true, when QUIC switches from BbrSender to Bbr2Sender, Bbr2Sender will
 // copy the bandwidth sampler states from BbrSender.
@@ -389,3 +373,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_stream_id_manager_handles_accounting,
           false)
+
+// If true, enables support for TLS resumption in QUIC.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_tls_resumption, false)
+
+// When true, QUIC's BBRv2 ignores inflight_lo in PROBE_BW.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, false)

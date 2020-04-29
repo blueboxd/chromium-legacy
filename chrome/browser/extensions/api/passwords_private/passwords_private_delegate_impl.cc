@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/common/extensions/api/passwords_private.h"
@@ -138,9 +137,6 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
               base::Unretained(this)))),
       password_access_authenticator_(
           base::BindRepeating(&PasswordsPrivateDelegateImpl::OsReauthCall,
-                              base::Unretained(this))),
-      account_storage_opt_in_reauthenticator_(
-          base::BindRepeating(&PasswordsPrivateDelegateImpl::InvokeGoogleReauth,
                               base::Unretained(this))),
       password_account_storage_settings_watcher_(
           std::make_unique<
@@ -314,18 +310,6 @@ bool PasswordsPrivateDelegateImpl::OsReauthCall(
 #endif
 }
 
-void PasswordsPrivateDelegateImpl::InvokeGoogleReauth(
-    content::WebContents* web_contents,
-    PasswordsPrivateDelegateImpl::GoogleReauthCallback callback) {
-  if (auto* client =
-          ChromePasswordManagerClient::FromWebContents(web_contents)) {
-    client->TriggerReauthForPrimaryAccount(std::move(callback));
-    return;
-  }
-  std::move(callback).Run(
-      password_manager::PasswordManagerClient::ReauthSucceeded(false));
-}
-
 Profile* PasswordsPrivateDelegateImpl::GetProfile() {
   return profile_;
 }
@@ -437,16 +421,19 @@ bool PasswordsPrivateDelegateImpl::IsOptedInForAccountStorage() {
 void PasswordsPrivateDelegateImpl::SetAccountStorageOptIn(
     bool opt_in,
     content::WebContents* web_contents) {
-  if (opt_in == IsOptedInForAccountStorage())
+  auto* client = ChromePasswordManagerClient::FromWebContents(web_contents);
+  if (!client)
     return;
+  if (opt_in ==
+      client->GetPasswordFeatureManager()->IsOptedInForAccountStorage()) {
+    return;
+  }
   if (!opt_in) {
-    password_manager::features_util::SetAccountStorageOptIn(
-        profile_->GetPrefs(),
-        ProfileSyncServiceFactory::GetForProfile(profile_), false);
+    client->GetPasswordFeatureManager()->SetAccountStorageOptIn(false);
     return;
   }
   // The opt in pref is automatically set upon successful reauth.
-  account_storage_opt_in_reauthenticator_.Run(web_contents, base::DoNothing());
+  client->TriggerReauthForPrimaryAccount(base::DoNothing());
 }
 
 std::vector<api::passwords_private::CompromisedCredential>

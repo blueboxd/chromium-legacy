@@ -592,7 +592,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void RecordStartOfFrameMetrics();
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time,
                                ActiveFrameSequenceTrackers trackers);
-  void NotifyThroughputTrackerResults(CustomTrackerResults results);
 
   LayerTreeHostClient* client() { return client_; }
   LayerTreeHostSchedulingClient* scheduling_client() {

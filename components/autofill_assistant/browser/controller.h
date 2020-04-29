@@ -105,7 +105,7 @@ class Controller : public ScriptExecutorDelegate,
   WebController* GetWebController() override;
   const TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
-  WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
+  WebsiteLoginManager* GetWebsiteLoginManager() override;
   content::WebContents* GetWebContents() override;
   std::string GetAccountEmailAddress() override;
   std::string GetLocale() override;

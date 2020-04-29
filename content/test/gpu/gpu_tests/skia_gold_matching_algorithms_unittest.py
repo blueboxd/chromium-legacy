@@ -6,19 +6,24 @@ import unittest
 
 from gpu_tests import skia_gold_matching_algorithms as algo
 
+
 class ExactMatchingAlgorithmTest(unittest.TestCase):
   def testGetCmdline(self):
     a = algo.ExactMatchingAlgorithm()
     self.assertEqual(a.GetCmdline(), [])
+
 
 class FuzzyMatchingAlgorithmTest(unittest.TestCase):
   def testGetCmdline(self):
     a = algo.FuzzyMatchingAlgorithm(1, 2)
     cmdline = a.GetCmdline()
     self.assertEqual(cmdline, [
-      '--add-test-optional-key', 'image_matching_algorithm:fuzzy',
-      '--add-test-optional-key', 'fuzzy_max_different_pixels:1',
-      '--add-test-optional-key', 'fuzzy_pixel_delta_threshold:2',
+        '--add-test-optional-key',
+        'image_matching_algorithm:fuzzy',
+        '--add-test-optional-key',
+        'fuzzy_max_different_pixels:1',
+        '--add-test-optional-key',
+        'fuzzy_pixel_delta_threshold:2',
     ])
 
   def testInvalidArgs(self):
@@ -27,15 +32,20 @@ class FuzzyMatchingAlgorithmTest(unittest.TestCase):
     with self.assertRaises(AssertionError):
       algo.FuzzyMatchingAlgorithm(0, -1)
 
+
 class SobelMatchingAlgorithmTest(unittest.TestCase):
   def testGetCmdline(self):
     a = algo.SobelMatchingAlgorithm(1, 2, 3)
     cmdline = a.GetCmdline()
     self.assertEqual(cmdline, [
-      '--add-test-optional-key', 'image_matching_algorithm:sobel',
-      '--add-test-optional-key', 'fuzzy_max_different_pixels:1',
-      '--add-test-optional-key', 'fuzzy_pixel_delta_threshold:2',
-      '--add-test-optional-key', 'sobel_edge_threshold:3',
+        '--add-test-optional-key',
+        'image_matching_algorithm:sobel',
+        '--add-test-optional-key',
+        'fuzzy_max_different_pixels:1',
+        '--add-test-optional-key',
+        'fuzzy_pixel_delta_threshold:2',
+        '--add-test-optional-key',
+        'sobel_edge_threshold:3',
     ])
 
   def testInvalidArgs(self):

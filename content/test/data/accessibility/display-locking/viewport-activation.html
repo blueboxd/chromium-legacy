@@ -6,16 +6,16 @@
   <div id="initialSpacer" style="height: 10000px;">
     initial spacer, will initially make everything below this far away from the viewport
   </div>
-  <div id="inViewport" style="subtree-visibility: auto">
+  <div id="inViewport" style="content-visibility: auto">
     This text will get viewport-activated because it's in the viewport, and will be in AX tree with layout.
   </div>
-  <div id="alsoInViewport" style="subtree-visibility: auto">
+  <div id="alsoInViewport" style="content-visibility: auto">
     This text is also in viewport.
   </div>
   <div style="height: 10000px;">
     spacer so that everything below will be offscreen (and won't get viewport-activated)
   </div>
-  <div id="wayBelowViewport" style="subtree-visibility: auto">
+  <div id="wayBelowViewport" style="content-visibility: auto">
     This text will not get viewport-activated, and will be in AX tree but without layout.
   </div>
   <div id="statusDiv"></div>

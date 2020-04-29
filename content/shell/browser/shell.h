@@ -117,7 +117,7 @@ class Shell : public WebContentsDelegate,
   // is destroyed.
   static void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure);
 
-  // Used by the BlinkTestController to stop the message loop before closing all
+  // Used by the WebTestControlHost to stop the message loop before closing all
   // windows, for specific tests. Has no effect if the loop is already quitting.
   static void QuitMainMessageLoopForTesting();
 

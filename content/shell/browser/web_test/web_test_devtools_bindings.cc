@@ -16,7 +16,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/shell.h"
-#include "content/shell/browser/web_test/blink_test_controller.h"
+#include "content/shell/browser/web_test/web_test_control_host.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "net/base/filename_util.h"
 
@@ -52,8 +52,8 @@ class WebTestDevToolsBindings::SecondaryObserver : public WebContentsObserver {
 
   // WebContentsObserver implementation.
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
-    if (BlinkTestController::Get())
-      BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
+    if (WebTestControlHost::Get())
+      WebTestControlHost::Get()->HandleNewRenderFrameHost(render_frame_host);
   }
 
  private:

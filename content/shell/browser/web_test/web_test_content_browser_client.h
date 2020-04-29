@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "content/public/common/client_hints.mojom.h"
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "content/shell/common/web_test/blink_test.mojom-forward.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom-forward.h"
 #include "content/shell/common/web_test/web_test.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -127,10 +126,10 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   void BindPermissionAutomation(
       mojo::PendingReceiver<blink::test::mojom::PermissionAutomation> receiver);
 
-  void BindBlinkTestController(
-      mojo::PendingAssociatedReceiver<mojom::BlinkTestClient> receiver);
+  void BindWebTestControlHost(
+      mojo::PendingAssociatedReceiver<mojom::WebTestControlHost> receiver);
 
-  static void BindWebTestController(
+  static void BindWebTestClient(
       int render_process_id,
       StoragePartition* partition,
       mojo::PendingAssociatedReceiver<mojom::WebTestClient> receiver);

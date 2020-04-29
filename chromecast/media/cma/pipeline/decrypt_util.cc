@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "chromecast/media/base/decrypt_context_impl.h"
 #include "chromecast/public/media/cast_decrypt_config.h"

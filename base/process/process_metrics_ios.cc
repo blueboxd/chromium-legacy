@@ -6,6 +6,7 @@
 
 #include <limits.h>
 #include <mach/task.h>
+#include <malloc/malloc.h>
 #include <stddef.h>
 
 #include "base/check_op.h"
@@ -96,6 +97,12 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
       saturated_cast<int>(PAGE_SIZE / 1024 * vm_info.purgeable_count);
 
   return true;
+}
+
+size_t ProcessMetrics::GetMallocUsage() {
+  malloc_statistics_t stats;
+  malloc_zone_statistics(nullptr, &stats);
+  return stats.size_in_use;
 }
 
 }  // namespace base

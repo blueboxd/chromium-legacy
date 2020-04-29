@@ -182,7 +182,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'c301c3707ebba04a160e7e3a76ecc49fb8736886',
+  'v8_revision': '947b3f9fb4ab70fac1cd6f85a6bf32fa19b00e8a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -190,15 +190,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '1f9e2a8feb5ae8e80340ab4654bbfbae4243270a',
+  'angle_revision': '1398080cdd77cd339de5256a05bfaceb64b75eeb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '71c49f8eab3db5f14939361dcb1cbbcd69431eff',
+  'swiftshader_revision': '941293d512fe2c3e6737554ea50802e3326c0196',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '88040c56ba075a1fc63585d7e47807d656b4130c',
+  'pdfium_revision': '488a283aa8a97aeb267c49482eaeea43bbcd9c97',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '71c19006068975798f28a4ee5c476d668133cc3d',
+  'devtools_frontend_revision': '71337f65d610ee1e3efe3aa79450ccf1d3b4087c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -524,7 +524,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '59631d0077f91f75eaf250e2ae35389972b4e666',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'fa0e96173d2ed4384192041dbd8d3614afc7f8e9',
       'condition': 'checkout_ios',
   },
 
@@ -871,7 +871,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd70aa16fd5af125fae7a397311b7ae1bee955c84',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd24ae26520d089e89c2ecd8d6154e36fb9aa42ab',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1007,7 +1007,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '6fdad5388130757e1efb58a14b8e7f9494625691',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '13cfcd5874f6c39c34ec57fa5295e7910ae90b8d',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'bda61723eb5de71c78eb448f1c353dfc2e6677f3',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1203,7 +1203,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'a5473711f3e20c6bd1c33d81b6c7b9a0618aa18f',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '9ef8412c42379ac23184e344d742b3cd3ef45778',
+    Var('chromium_git') + '/openscreen' + '@' + '3c39611e4d88341a71932dd98b9a861d5ce0345d',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1220,7 +1220,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9a90474af88f42c05a529bc1f4f3cbb403cb13a9',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '97a467a3b1f0ddb9e1ae27c35ebbac18620c5111',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1369,10 +1369,10 @@ deps = {
     Var('chromium_git') + '/external/smhasher.git' + '@' + 'e87738e57558e0ec472b2fc3a643b838e5b6e88f',
 
   'src/third_party/snappy/src':
-    Var('chromium_git') + '/external/github.com/google/snappy.git' + '@' + 'f5acee902c4d2110f671455460172cb6d3bf5b73',
+    Var('chromium_git') + '/external/github.com/google/snappy.git' + '@' + '251d935d5096da77c4fef26ea41b019430da5572',
 
   'src/third_party/sqlite/src':
-    Var('chromium_git') + '/chromium/deps/sqlite.git' + '@' + '15401f78a1078345251d13469ac56cc607f825db',
+    Var('chromium_git') + '/chromium/deps/sqlite.git' + '@' + '3478eafd05e32831efd63804661dd45c5eaf2465',
 
   'src/third_party/sqlite4java': {
       'packages': [
@@ -1410,7 +1410,7 @@ deps = {
   },
 
   'src/third_party/usrsctp/usrsctplib':
-    Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'bee946a606752a443bd70bca1cb296527fed706d',
+    Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'a8c51df76caae94254b1e59999405f739467490e',
 
   # Display server protocol for Linux.
   'src/third_party/wayland/src': {
@@ -1522,7 +1522,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@06cce0bd8dabb1db260d4f36577b8109315cded2',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@646ef5795c9fc70b01742d6cd450302e41856f57',
     'condition': 'checkout_src_internal',
   },
 
@@ -4369,7 +4369,7 @@ hooks = [
     'name': 'Fetch PGO profiles for win32',
     'pattern': '.',
     'condition': 'checkout_pgo_profiles and checkout_win',
-    'action': [ 'vpython3',
+    'action': [ 'vpython',
                 'src/tools/update_pgo_profiles.py',
                 '--target=win32',
                 'update',
@@ -4380,7 +4380,7 @@ hooks = [
     'name': 'Fetch PGO profiles for win64',
     'pattern': '.',
     'condition': 'checkout_pgo_profiles and checkout_win',
-    'action': [ 'vpython3',
+    'action': [ 'vpython',
                 'src/tools/update_pgo_profiles.py',
                 '--target=win64',
                 'update',
@@ -4391,7 +4391,7 @@ hooks = [
     'name': 'Fetch PGO profiles for mac',
     'pattern': '.',
     'condition': 'checkout_pgo_profiles and checkout_mac',
-    'action': [ 'vpython3',
+    'action': [ 'vpython',
                 'src/tools/update_pgo_profiles.py',
                 '--target=mac',
                 'update',

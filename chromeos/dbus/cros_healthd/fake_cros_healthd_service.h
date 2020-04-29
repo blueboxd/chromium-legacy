@@ -10,19 +10,22 @@
 #include "base/macros.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
+#include "chromeos/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace chromeos {
 namespace cros_healthd {
 
-// This class serves as a fake for all three of cros_healthd's mojo interfaces.
+// This class serves as a fake for all four of cros_healthd's mojo interfaces.
 // The factory methods bind to receivers held within FakeCrosHealtdService, and
 // all requests on each of the interfaces are fulfilled by
 // FakeCrosHealthdService.
 class FakeCrosHealthdService final
     : public mojom::CrosHealthdServiceFactory,
       public mojom::CrosHealthdDiagnosticsService,
+      public mojom::CrosHealthdEventService,
       public mojom::CrosHealthdProbeService {
  public:
   FakeCrosHealthdService();
@@ -32,6 +35,7 @@ class FakeCrosHealthdService final
   void GetProbeService(mojom::CrosHealthdProbeServiceRequest service) override;
   void GetDiagnosticsService(
       mojom::CrosHealthdDiagnosticsServiceRequest service) override;
+  void GetEventService(mojom::CrosHealthdEventServiceRequest service) override;
 
   // CrosHealthdDiagnosticsService overrides:
   void GetAvailableRoutines(GetAvailableRoutinesCallback callback) override;
@@ -78,6 +82,9 @@ class FakeCrosHealthdService final
       uint32_t maximum_discharge_percent_allowed,
       RunBatteryDischargeRoutineCallback callback) override;
 
+  // CrosHealthdEventService overrides:
+  void AddPowerObserver(mojom::CrosHealthdPowerObserverPtr observer) override;
+
   // CrosHealthdProbeService overrides:
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories,
@@ -101,6 +108,9 @@ class FakeCrosHealthdService final
   void SetProbeTelemetryInfoResponseForTesting(
       mojom::TelemetryInfoPtr& response_info);
 
+  // Calls the power event OnAcInserted for all registered power observers.
+  void EmitAcInsertedEventForTesting();
+
  private:
   // Used as the response to any GetAvailableRoutines IPCs received.
   std::vector<mojom::DiagnosticRoutineEnum> available_routines_;
@@ -112,10 +122,15 @@ class FakeCrosHealthdService final
   // Used as the response to any ProbeTelemetryInfo IPCs received.
   mojom::TelemetryInfoPtr telemetry_response_info_{mojom::TelemetryInfo::New()};
 
-  // Allows the remote end to call the probe and diagnostics service methods.
+  // Allows the remote end to call the probe, diagnostics and event service
+  // methods.
   mojo::ReceiverSet<mojom::CrosHealthdProbeService> probe_receiver_set_;
   mojo::ReceiverSet<mojom::CrosHealthdDiagnosticsService>
       diagnostics_receiver_set_;
+  mojo::ReceiverSet<mojom::CrosHealthdEventService> event_receiver_set_;
+
+  // Collection of registered power observers.
+  mojo::RemoteSet<mojom::CrosHealthdPowerObserver> power_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCrosHealthdService);
 };

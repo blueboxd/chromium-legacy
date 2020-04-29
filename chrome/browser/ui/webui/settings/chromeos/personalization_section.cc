@@ -1,0 +1,141 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/webui/settings/chromeos/personalization_section.h"
+
+#include "ash/public/cpp/ambient/ambient_prefs.h"
+#include "base/bind.h"
+#include "base/no_destructor.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
+#include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "components/prefs/pref_service.h"
+#include "content/public/browser/web_ui_data_source.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
+
+namespace chromeos {
+namespace settings {
+namespace {
+
+const std::vector<SearchConcept>& GetPersonalizationSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      // TODO(khorimoto): Add "Personalization" search concepts.
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetAmbientModeSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      // TODO(khorimoto): Add "Ambient mode" search concepts.
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetAmbientModeOnSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      // TODO(khorimoto): Add "Ambient mode on" search concepts.
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetAmbientModeOffSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      // TODO(khorimoto): Add "Ambient mode off" search concepts.
+  });
+  return *tags;
+}
+
+bool IsAmbientModeAllowed() {
+  return chromeos::features::IsAmbientModeEnabled();
+}
+
+}  // namespace
+
+PersonalizationSection::PersonalizationSection(Profile* profile,
+                                               Delegate* per_page_delegate,
+                                               PrefService* pref_service)
+    : OsSettingsSection(profile, per_page_delegate),
+      pref_service_(pref_service) {
+  // Personalization search tags are not added in guest mode.
+  if (features::IsGuestModeActive())
+    return;
+
+  delegate()->AddSearchTags(GetPersonalizationSearchConcepts());
+
+  if (IsAmbientModeAllowed()) {
+    delegate()->AddSearchTags(GetAmbientModeSearchConcepts());
+
+    pref_change_registrar_.Init(pref_service_);
+    pref_change_registrar_.Add(
+        ash::ambient::prefs::kAmbientModeEnabled,
+        base::BindRepeating(
+            &PersonalizationSection::OnAmbientModeEnabledStateChanged,
+            base::Unretained(this)));
+    OnAmbientModeEnabledStateChanged();
+  }
+}
+
+PersonalizationSection::~PersonalizationSection() = default;
+
+void PersonalizationSection::AddLoadTimeData(
+    content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"ambientModeTitle", IDS_OS_SETTINGS_AMBIENT_MODE_TITLE},
+      {"ambientModeEnabled", IDS_OS_SETTINGS_AMBIENT_MODE_ENABLED},
+      {"ambientModeDisabled", IDS_OS_SETTINGS_AMBIENT_MODE_DISABLED},
+      {"ambientModeOn", IDS_OS_SETTINGS_AMBIENT_MODE_ON},
+      {"ambientModeOff", IDS_OS_SETTINGS_AMBIENT_MODE_OFF},
+      {"ambientModeTopicSourceTitle",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_TITLE},
+      {"ambientModeTopicSourceGooglePhotos",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS},
+      {"ambientModeTopicSourceArtGallery",
+       IDS_OS_SETTINGS_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY},
+      {"changePictureTitle", IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE},
+      {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
+      {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
+      {"setWallpaper", IDS_OS_SETTINGS_SET_WALLPAPER},
+      {"takePhoto", IDS_SETTINGS_CHANGE_PICTURE_TAKE_PHOTO},
+      {"captureVideo", IDS_SETTINGS_CHANGE_PICTURE_CAPTURE_VIDEO},
+      {"discardPhoto", IDS_SETTINGS_CHANGE_PICTURE_DISCARD_PHOTO},
+      {"previewAltText", IDS_SETTINGS_CHANGE_PICTURE_PREVIEW_ALT},
+      {"switchModeToVideo", IDS_SETTINGS_CHANGE_PICTURE_SWITCH_MODE_TO_VIDEO},
+      {"profilePhoto", IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO},
+      {"changePicturePageDescription", IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TEXT},
+      {"switchModeToCamera", IDS_SETTINGS_CHANGE_PICTURE_SWITCH_MODE_TO_CAMERA},
+      {"chooseFile", IDS_SETTINGS_CHANGE_PICTURE_CHOOSE_FILE},
+      {"oldPhoto", IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO},
+      {"oldVideo", IDS_SETTINGS_CHANGE_PICTURE_OLD_VIDEO},
+      {"authorCreditText", IDS_SETTINGS_CHANGE_PICTURE_AUTHOR_CREDIT_TEXT},
+      {"photoCaptureAccessibleText",
+       IDS_SETTINGS_PHOTO_CAPTURE_ACCESSIBLE_TEXT},
+      {"photoDiscardAccessibleText",
+       IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT},
+      {"photoModeAccessibleText", IDS_SETTINGS_PHOTO_MODE_ACCESSIBLE_TEXT},
+      {"videoModeAccessibleText", IDS_SETTINGS_VIDEO_MODE_ACCESSIBLE_TEXT},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddBoolean(
+      "changePictureVideoModeEnabled",
+      base::FeatureList::IsEnabled(::features::kChangePictureVideoMode));
+  html_source->AddBoolean("isAmbientModeEnabled", IsAmbientModeAllowed());
+}
+
+void PersonalizationSection::OnAmbientModeEnabledStateChanged() {
+  if (pref_service_->GetBoolean(ash::ambient::prefs::kAmbientModeEnabled)) {
+    delegate()->AddSearchTags(GetAmbientModeOnSearchConcepts());
+    delegate()->RemoveSearchTags(GetAmbientModeOffSearchConcepts());
+  } else {
+    delegate()->RemoveSearchTags(GetAmbientModeOnSearchConcepts());
+    delegate()->AddSearchTags(GetAmbientModeOffSearchConcepts());
+  }
+}
+
+}  // namespace settings
+}  // namespace chromeos

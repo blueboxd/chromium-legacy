@@ -10,7 +10,9 @@
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -19,6 +21,23 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+namespace {
+
+class PhotoViewMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  PhotoViewMetricsReporter() = default;
+  PhotoViewMetricsReporter(const PhotoViewMetricsReporter&) = delete;
+  PhotoViewMetricsReporter& operator=(const PhotoViewMetricsReporter&) = delete;
+  ~PhotoViewMetricsReporter() override = default;
+
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Ash.AmbientMode.AnimationSmoothness.PhotoTransition", value);
+  }
+};
+
+}  // namespace
 
 // AmbientBackgroundImageView--------------------------------------------------
 // A custom ImageView for ambient mode to handle specific mouse/gesture events
@@ -60,7 +79,9 @@ class AmbientBackgroundImageView : public views::ImageView {
 };
 
 // PhotoView ------------------------------------------------------------------
-PhotoView::PhotoView(AmbientViewDelegate* delegate) : delegate_(delegate) {
+PhotoView::PhotoView(AmbientViewDelegate* delegate)
+    : delegate_(delegate),
+      metrics_reporter_(std::make_unique<PhotoViewMetricsReporter>()) {
   DCHECK(delegate_);
   Init();
 }
@@ -135,6 +156,7 @@ void PhotoView::StartSlideAnimation() {
     animation.SetTweenType(gfx::Tween::EASE_OUT);
     animation.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+    animation.SetAnimationMetricsReporter(metrics_reporter_.get());
     layer->SetTransform(gfx::Transform());
   }
 }

@@ -532,10 +532,6 @@ const char kUnfilteredBluetoothDevices[] = "unfiltered-bluetooth-devices";
 const char kWaitForInitialPolicyFetchForTest[] =
     "wait-for-initial-policy-fetch-for-test";
 
-// Enables wake on wifi packet feature, which wakes the device on the receipt
-// of network packets from whitelisted sources.
-const char kWakeOnWifiPacket[] = "wake-on-wifi-packet";
-
 // Prevents any CPU restrictions being set on the ARC container. Only meant to
 // be used by tests as some tests may time out if the ARC container is
 // throttled.

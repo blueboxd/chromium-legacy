@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/x11/x11_cursor_ozone.h"
 
-#include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/point.h"
@@ -12,40 +11,9 @@
 
 namespace ui {
 
-namespace {
-
-// Converts a SKBitmap to unpremul alpha.
-SkBitmap ConvertSkBitmapToUnpremul(const SkBitmap& bitmap) {
-  DCHECK_NE(bitmap.alphaType(), kUnpremul_SkAlphaType);
-
-  SkImageInfo image_info = SkImageInfo::MakeN32(bitmap.width(), bitmap.height(),
-                                                kUnpremul_SkAlphaType);
-  SkBitmap converted_bitmap;
-  converted_bitmap.allocPixels(image_info);
-  bitmap.readPixels(image_info, converted_bitmap.getPixels(),
-                    image_info.minRowBytes(), 0, 0);
-
-  return converted_bitmap;
-}
-
-// Creates an XCursorImage for cursor bitmap.
-XcursorImage* CreateXCursorImage(const SkBitmap& bitmap,
-                                 const gfx::Point& hotspot) {
-  // X11 expects bitmap with unpremul alpha. If bitmap is premul then convert,
-  // otherwise semi-transparent parts of cursor will look strange.
-  if (bitmap.alphaType() != kUnpremul_SkAlphaType) {
-    SkBitmap converted_bitmap = ConvertSkBitmapToUnpremul(bitmap);
-    return SkBitmapToXcursorImage(&converted_bitmap, hotspot);
-  } else {
-    return SkBitmapToXcursorImage(&bitmap, hotspot);
-  }
-}
-
-}  // namespace
-
 X11CursorOzone::X11CursorOzone(const SkBitmap& bitmap,
                                const gfx::Point& hotspot) {
-  XcursorImage* image = CreateXCursorImage(bitmap, hotspot);
+  XcursorImage* image = SkBitmapToXcursorImage(bitmap, hotspot);
   xcursor_ = XcursorImageLoadCursor(gfx::GetXDisplay(), image);
   XcursorImageDestroy(image);
 }
@@ -58,7 +26,7 @@ X11CursorOzone::X11CursorOzone(const std::vector<SkBitmap>& bitmaps,
   XcursorImages* images = XcursorImagesCreate(bitmaps.size());
   images->nimage = bitmaps.size();
   for (size_t frame = 0; frame < bitmaps.size(); ++frame) {
-    XcursorImage* x_image = CreateXCursorImage(bitmaps[frame], hotspot);
+    XcursorImage* x_image = SkBitmapToXcursorImage(bitmaps[frame], hotspot);
     x_image->delay = frame_delay_ms;
     images->images[frame] = x_image;
   }

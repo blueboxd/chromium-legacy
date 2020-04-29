@@ -147,7 +147,7 @@ public class PasswordEntryViewer
                 if (isPasswordSyncingUser()) {
                     ForegroundColorSpan colorSpan =
                             new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                                    getResources(), R.color.pref_accent_color));
+                                    getResources(), R.color.light_active_color));
                     SpannableString passwordLink =
                             SpanApplier.applySpans(getString(R.string.manage_passwords_text),
                                     new SpanApplier.SpanInfo("<link>", "</link>", colorSpan));

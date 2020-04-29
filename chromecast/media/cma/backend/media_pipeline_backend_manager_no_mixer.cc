@@ -4,7 +4,6 @@
 
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 
-#include "base/logging.h"
 
 namespace chromecast {
 namespace media {

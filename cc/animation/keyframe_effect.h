@@ -187,7 +187,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   bool scroll_offset_animation_was_interrupted_;
 
   bool is_ticking_;
-  base::TimeTicks last_tick_time_;
+  base::Optional<base::TimeTicks> last_tick_time_;
 
   bool needs_push_properties_;
 };

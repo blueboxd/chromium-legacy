@@ -11,8 +11,8 @@
 #include <utility>
 
 #include "ash/assistant/test/test_assistant_service.h"
-#include "ash/public/cpp/assistant/test_support/test_assistant_image_downloader.h"
 #include "ash/public/cpp/test/test_ambient_client.h"
+#include "ash/public/cpp/test/test_image_downloader.h"
 #include "ash/public/cpp/test/test_system_tray_client.h"
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/session/test_session_controller_client.h"

@@ -81,12 +81,12 @@ class VIEWS_EXAMPLES_EXPORT LayoutExampleBase : public ExampleBase,
  protected:
   View* layout_panel() { return layout_panel_; }
 
-  // Creates a Combobox with a label with |label_text| to the left. Adjust
-  // |vertical_pos| to |vertical_pos| + combo_box->height() + kSpacing.
-  Combobox* CreateCombobox(const base::string16& label_text,
-                           const char* const* items,
-                           int count,
-                           int* vertical_pos);
+  // Creates and adds a Combobox with a label with |label_text| to the left.
+  // Adjust |vertical_pos| to |vertical_pos| + combo_box->height() + kSpacing.
+  Combobox* CreateAndAddCombobox(const base::string16& label_text,
+                                 const char* const* items,
+                                 int count,
+                                 int* vertical_pos);
 
   // Creates just a Textfield at the current position of |horizontal_pos| and
   // |vertical_pos|. Update |horizontal_pos| to |horizontal_pos| +

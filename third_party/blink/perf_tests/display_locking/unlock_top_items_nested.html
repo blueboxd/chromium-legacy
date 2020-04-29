@@ -78,13 +78,13 @@ function construct(n) {
       currentContainer = document.createElement("div");
       currentContainer.classList = "container large";
       if (i > 0)
-        currentContainer.style = "subtree-visibility: hidden-matchable";
+        currentContainer.style = "content-visibility: hidden-matchable";
       document.body.appendChild(currentContainer);
     }
     const clone = specimen.cloneNode(true);
     clone.id = "id" + i;
     clone.classList = "container small";
-    clone.style = "subtree-visibility: hidden-matchable";
+    clone.style = "content-visibility: hidden-matchable";
     currentContainer.appendChild(clone);
   }
 }

@@ -263,7 +263,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
                                  ui::PageTransition transition,
                                  BrowserContext* browser_context,
                                  const std::string& method,
-                                 const std::string user_agent_override,
+                                 const std::string& user_agent_override,
                                  bool has_user_gesture,
                                  base::Optional<url::Origin> initiator_origin,
                                  blink::mojom::Referrer* referrer,
@@ -921,6 +921,7 @@ NavigationRequest::NavigationRequest(
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     RenderFrameHostImpl* rfh_restored_from_back_forward_cache)
     : frame_tree_node_(frame_tree_node),
+      is_for_commit_(is_for_commit),
       common_params_(std::move(common_params)),
       begin_params_(std::move(begin_params)),
       commit_params_(std::move(commit_params)),
@@ -950,8 +951,7 @@ NavigationRequest::NavigationRequest(
       frame_tree_node_->frame_tree_node_id(), "url",
       common_params_->url.possibly_invalid_spec());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("navigation", "Initializing", this);
-  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
-      frame_tree_node_->navigator()->GetController());
+  NavigationControllerImpl* controller = GetNavigationController();
 
   if (frame_entry) {
     frame_entry_item_sequence_number_ = frame_entry->item_sequence_number();
@@ -1053,17 +1053,8 @@ NavigationRequest::NavigationRequest(
     // go away, by creating a ref to it.
     if (entry == controller->GetPendingEntry())
       pending_entry_ref_ = controller->ReferencePendingEntry();
-  }
 
-  entry_overrides_ua_ = (entry && entry->GetIsOverridingUserAgent());
-  bool is_overriding_ua =
-      commit_params_->is_overriding_user_agent || entry_overrides_ua_;
-  std::string user_agent_override;
-  if (is_overriding_ua) {
-    user_agent_override = frame_tree_node_->navigator()
-                              ->GetDelegate()
-                              ->GetUserAgentOverride()
-                              .ua_string_override;
+    entry_overrides_ua_ = entry->GetIsOverridingUserAgent();
   }
 
   net::HttpRequestHeaders headers;
@@ -1081,7 +1072,7 @@ NavigationRequest::NavigationRequest(
           render_view_host->GetWebkitPreferences().javascript_enabled;
       AddNavigationRequestClientHintsHeaders(
           common_params_->url, &client_hints_headers, browser_context,
-          javascript_enabled, client_hints_delegate, is_overriding_ua,
+          javascript_enabled, client_hints_delegate, IsOverridingUserAgent(),
           frame_tree_node_);
       headers.MergeFrom(client_hints_headers);
     }
@@ -1090,7 +1081,7 @@ NavigationRequest::NavigationRequest(
     AddAdditionalRequestHeaders(
         &headers, common_params_->url, common_params_->navigation_type,
         common_params_->transition, controller->GetBrowserContext(),
-        common_params_->method, user_agent_override,
+        common_params_->method, GetUserAgentOverride(),
         common_params_->has_user_gesture, common_params_->initiator_origin,
         common_params_->referrer.get(), frame_tree_node);
 
@@ -1140,7 +1131,7 @@ NavigationRequest::~NavigationRequest() {
   if (loading_mem_tracker_)
     loading_mem_tracker_->Cancel();
   ResetExpectedProcess();
-  if (state_ >= WILL_START_NAVIGATION && state_ < READY_TO_COMMIT) {
+  if (state_ >= WILL_START_NAVIGATION && !HasCommitted()) {
     devtools_instrumentation::OnNavigationRequestFailed(
         *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
   }
@@ -1352,9 +1343,6 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
   if (!is_for_commit)
     redirect_chain_.push_back(common_params_->url);
 
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(begin_params_->headers);
-
   // Mirrors the logic in RenderFrameImpl::SendDidCommitProvisionalLoad.
   if (common_params_->transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT) {
     // If the page contained a client redirect (meta refresh,
@@ -1372,7 +1360,6 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
   state_ = WILL_START_REQUEST;
   navigation_handle_id_ = CreateUniqueHandleID();
 
-  request_headers_ = std::move(headers);
   modified_request_headers_.Clear();
   removed_request_headers_.clear();
 
@@ -1396,11 +1383,14 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
     EnterChildTraceEvent("Same document", this);
   }
 
+  {
 #if DCHECK_IS_ON()
-  DCHECK(is_safe_to_delete_);
-  base::AutoReset<bool> resetter(&is_safe_to_delete_, false);
+    DCHECK(is_safe_to_delete_);
+    base::AutoReset<bool> resetter(&is_safe_to_delete_, false);
 #endif
-  GetDelegate()->DidStartNavigation(this);
+    base::AutoReset<bool> resetter2(&ua_change_requires_reload_, false);
+    GetDelegate()->DidStartNavigation(this);
+  }
 
   // The previous call to DidStartNavigation could have cancelled this request
   // synchronously.
@@ -1523,6 +1513,20 @@ NavigationRequest::TakeCoepReporter() {
 
 ukm::SourceId NavigationRequest::GetPreviousPageUkmSourceId() {
   return previous_page_load_ukm_source_id_;
+}
+
+NavigationEntry* NavigationRequest::GetNavigationEntry() {
+  if (nav_entry_id_ == 0)
+    return nullptr;
+
+  NavigationControllerImpl* controller = GetNavigationController();
+  NavigationEntry* entry = controller->GetEntryWithUniqueID(nav_entry_id_);
+  if (entry)
+    return entry;
+  return (controller->GetPendingEntry() &&
+          controller->GetPendingEntry()->GetUniqueID() == nav_entry_id_)
+             ? controller->GetPendingEntry()
+             : nullptr;
 }
 
 void NavigationRequest::OnRequestRedirected(
@@ -1984,9 +1988,7 @@ void NavigationRequest::OnResponseStarted(
 
   // Select an appropriate renderer to commit the navigation.
   if (IsServedFromBackForwardCache()) {
-    NavigationControllerImpl* controller =
-        static_cast<NavigationControllerImpl*>(
-            frame_tree_node_->navigator()->GetController());
+    NavigationControllerImpl* controller = GetNavigationController();
     render_frame_host_ = controller->GetBackForwardCache()
                              .GetEntry(nav_entry_id_)
                              ->render_frame_host.get();
@@ -2575,9 +2577,11 @@ void NavigationRequest::OnRedirectChecksComplete(
     modified_headers.MergeFrom(client_hints_extra_headers);
   }
 
+  net::HttpRequestHeaders cors_exempt_headers;
+  std::swap(cors_exempt_headers, cors_exempt_request_headers_);
   loader_->FollowRedirect(
       std::move(removed_headers), std::move(modified_headers),
-      {} /* modified_cors_exempt_headers */, common_params_->previews_state);
+      std::move(cors_exempt_headers), common_params_->previews_state);
 }
 
 void NavigationRequest::OnFailureChecksComplete(
@@ -2751,10 +2755,7 @@ void NavigationRequest::CommitNavigation() {
   DCHECK(!IsRendererDebugURL(common_params_->url));
 
   if (IsServedFromBackForwardCache()) {
-    NavigationControllerImpl* controller =
-        static_cast<NavigationControllerImpl*>(
-            frame_tree_node_->navigator()->GetController());
-
+    NavigationControllerImpl* controller = GetNavigationController();
     std::unique_ptr<BackForwardCacheImpl::Entry> restored_bfcache_entry =
         controller->GetBackForwardCache().RestoreEntry(nav_entry_id_,
                                                        NavigationStart());
@@ -4007,7 +4008,11 @@ RenderFrameHostImpl* NavigationRequest::GetRenderFrameHost() {
 }
 
 const net::HttpRequestHeaders& NavigationRequest::GetRequestHeaders() {
-  return request_headers_;
+  if (!request_headers_) {
+    request_headers_.emplace();
+    request_headers_->AddHeadersFromString(begin_params_->headers);
+  }
+  return *request_headers_;
 }
 
 const base::Optional<net::SSLInfo>& NavigationRequest::GetSSLInfo() {
@@ -4127,6 +4132,46 @@ bool NavigationRequest::IsServedFromBackForwardCache() {
   return rfh_restored_from_back_forward_cache_ != nullptr;
 }
 
+void NavigationRequest::SetIsOverridingUserAgent(bool override_ua) {
+  // Only add specific headers when creating a NavigationRequest before the
+  // network request is made, not at commit time.
+  if (is_for_commit_)
+    return;
+
+  if (entry_overrides_ua_ == override_ua)
+    return;
+
+  // This function only applies when there is a NavigationEntry.
+  NavigationEntry* entry = GetNavigationEntry();
+  if (!entry)
+    return;
+
+  // This code assumes it is only called from DidStartNavigation().
+  DCHECK(!ua_change_requires_reload_);
+
+  entry_overrides_ua_ = override_ua;
+  entry->SetIsOverridingUserAgent(override_ua);
+
+  commit_params_->is_overriding_user_agent = entry_overrides_ua_;
+
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(begin_params_->headers);
+  auto user_agent_override = GetUserAgentOverride();
+  headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
+                    user_agent_override.empty()
+                        ? GetContentClient()->browser()->GetUserAgent()
+                        : user_agent_override);
+  // TODO(sky): add support for client hints.
+  begin_params_->headers = headers.ToString();
+  // |request_headers_| comes from |begin_params_|. Clear |request_headers_| now
+  // so that if |request_headers_| are needed, they will be updated.
+  request_headers_.reset();
+}
+
+bool NavigationRequest::GetIsOverridingUserAgent() {
+  return entry_overrides_ua_;
+}
+
 // static
 NavigationRequest* NavigationRequest::From(NavigationHandle* handle) {
   return static_cast<NavigationRequest*>(handle);
@@ -4180,8 +4225,7 @@ void NavigationRequest::RestartBackForwardCachedNavigationImpl() {
   CHECK(rfh);
   CHECK_EQ(rfh->frame_tree_node()->navigation_request(), this);
 
-  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
-      rfh->frame_tree_node()->navigator()->GetController());
+  NavigationControllerImpl* controller = GetNavigationController();
   int nav_index = controller->GetEntryIndexWithUniqueID(nav_entry_id());
 
   // If the NavigationEntry was deleted, do not do anything.
@@ -4224,6 +4268,19 @@ NavigationRequest::IsBlockedByCorp() {
 std::unique_ptr<PeakGpuMemoryTracker>
 NavigationRequest::TakePeakGpuMemoryTracker() {
   return std::move(loading_mem_tracker_);
+}
+
+std::string NavigationRequest::GetUserAgentOverride() {
+  return IsOverridingUserAgent() ? frame_tree_node_->navigator()
+                                       ->GetDelegate()
+                                       ->GetUserAgentOverride()
+                                       .ua_string_override
+                                 : std::string();
+}
+
+NavigationControllerImpl* NavigationRequest::GetNavigationController() {
+  return static_cast<NavigationControllerImpl*>(
+      frame_tree_node_->navigator()->GetController());
 }
 
 }  // namespace content

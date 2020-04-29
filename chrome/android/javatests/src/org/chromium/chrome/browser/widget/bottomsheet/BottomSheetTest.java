@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollUiThread;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
@@ -16,11 +18,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.test.util.UiRestriction;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 /** This class tests the functionality of the {@link BottomSheet}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -112,6 +119,53 @@ public class BottomSheetTest {
 
         assertEquals("Sheet should remain in half state.", SheetState.HALF,
                 simulateScrollTo(0.4f * getMaxSheetHeightInPx(), VELOCITY_WHEN_MOVING_DOWN));
+    }
+
+    @Test
+    @MediumTest
+    public void testTabObscuringState() throws ExecutionException, TimeoutException {
+        CallbackHelper obscuringStateChangedHelper = new CallbackHelper();
+        TabObscuringHandler handler = mBottomSheetTestRule.getActivity().getTabObscuringHandler();
+        handler.addObserver((isObscured) -> obscuringStateChangedHelper.notifyCalled());
+        mSheetContent.setHasCustomScrimLifecycle(false);
+
+        assertFalse("The tab should not yet be obscured.", handler.areAllTabsObscured());
+
+        int callCount = obscuringStateChangedHelper.getCallCount();
+        showContent(mSheetContent, SheetState.HALF);
+        obscuringStateChangedHelper.waitForCallback("The tab should be obscured.", callCount);
+        assertTrue("The tab should be obscured.", handler.areAllTabsObscured());
+
+        callCount = obscuringStateChangedHelper.getCallCount();
+        hideSheet();
+        obscuringStateChangedHelper.waitForCallback("The tab should not be obscured.", callCount);
+
+        assertFalse("The tab should not be obscured.", handler.areAllTabsObscured());
+    }
+
+    @Test
+    @MediumTest
+    public void testTabObscuringState_customScrim() throws ExecutionException {
+        CallbackHelper obscuringStateChangedHelper = new CallbackHelper();
+        TabObscuringHandler handler = mBottomSheetTestRule.getActivity().getTabObscuringHandler();
+        handler.addObserver((isObscured) -> obscuringStateChangedHelper.notifyCalled());
+        mSheetContent.setHasCustomScrimLifecycle(true);
+
+        assertFalse("The tab should not be obscured.", handler.areAllTabsObscured());
+
+        showContent(mSheetContent, SheetState.HALF);
+        assertFalse("The tab should still not be obscured.", handler.areAllTabsObscured());
+
+        hideSheet();
+
+        assertEquals("The obscuring handler should not have been called.", 0,
+                obscuringStateChangedHelper.getCallCount());
+    }
+
+    private void hideSheet() {
+        runOnUiThreadBlocking(
+                () -> mBottomSheetTestRule.getBottomSheetController().setSheetStateForTesting(
+                        SheetState.HIDDEN, false));
     }
 
     private float getMaxSheetHeightInPx() {

@@ -111,6 +111,10 @@ void BluetoothTestMac::InitWithDefaultAdapter() {
   auto adapter = BluetoothAdapterMac::CreateAdapter();
   adapter_mac_ = adapter.get();
   adapter_ = std::move(adapter);
+
+  base::RunLoop run_loop;
+  adapter_->Initialize(run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 void BluetoothTestMac::InitWithoutDefaultAdapter() {

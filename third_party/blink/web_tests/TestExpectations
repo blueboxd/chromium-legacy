@@ -330,6 +330,7 @@ crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-none-content-images.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-none.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orientation.html [ Failure ]
+crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orientation-none.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/svg-image-orientation-aspect-ratio.html [ Failure ]
 
 crbug.com/1042453 [ Win ] external/wpt/css/filter-effects/idlharness.any.html [ Timeout Pass ]

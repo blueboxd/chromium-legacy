@@ -10,7 +10,7 @@
 
 namespace remoting {
 
-class MockSignalingTracker final : public SignalingTracker {
+class MockSignalingTracker : public SignalingTracker {
  public:
   MockSignalingTracker();
   ~MockSignalingTracker() override;

@@ -1,7 +1,6 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """This script runs power measurements for browsers using Intel Power Gadget.
 
 This script only works on Windows/Mac with Intel CPU. Intel Power Gadget needs
@@ -71,11 +70,12 @@ CHROME_CANARY_PATH_WIN = r"Google\Chrome SxS\Application\chrome.exe"
 CHROMIUM_PATH_WIN = r"Chromium\Application\chrome.exe"
 
 CHROME_STABLE_PATH_MAC = (
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 CHROME_BETA_PATH_MAC = CHROME_STABLE_PATH_MAC
 CHROME_DEV_PATH_MAC = CHROME_STABLE_PATH_MAC
 CHROME_CANARY_PATH_MAC = (
-  "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary")
+    "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
+)
 
 SUPPORTED_BROWSERS = ['stable', 'beta', 'dev', 'canary', 'chromium', 'edge']
 
@@ -196,43 +196,69 @@ def MeasurePowerOnce(browser, logfile, duration, delay, resolution, url,
 
 def main(argv):
   parser = optparse.OptionParser()
-  parser.add_option("--browser",
-                    help=("select which browser to run. Options include: " +
-                          ", ".join(SUPPORTED_BROWSERS) +
-                          ", or a full path to a browser executable. " +
-                          "By default, stable is selected."))
-  parser.add_option("--duration", default=60, type="int",
-                    help="specify how many seconds Intel Power Gadget "
-                    "measures. By default, 60 seconds is selected.")
-  parser.add_option("--delay", default=10, type="int",
-                    help="specify how many seconds we skip in the data "
-                    "Intel Power Gadget collects. This time is for starting "
-                    "video play, switching to fullscreen mode, etc. "
-                    "By default, 10 seconds is selected.")
-  parser.add_option("--resolution", default=100, type="int",
-                    help="specify how often Intel Power Gadget samples "
-                    "data in milliseconds. By default, 100 ms is selected.")
-  parser.add_option("--logdir",
-                    help="specify where Intel Power Gadget stores its log."
-                    "By default, it is the current path.")
-  parser.add_option("--logname",
-                    help="specify the prefix for Intel Power Gadget log "
-                    "filename. By default, it is PowerLog.")
-  parser.add_option("-v", "--verbose", action="store_true", default=False,
-                    help="print out debug information.")
-  parser.add_option("--repeat", default=1, type="int",
-                    help="specify how many times to run the measurements.")
-  parser.add_option("--url",
-                    help="specify the webpage URL the browser launches with.")
-  parser.add_option("--extra-browser-args", dest="extra_browser_args",
-                    help="specify extra command line switches for the browser "
-                    "that are separated by spaces (quoted).")
-  parser.add_option("--extra-browser-args-filename",
-                    dest="extra_browser_args_filename", metavar="FILE",
-                    help="specify extra command line switches for the browser "
-                    "in a text file that are separated by whitespace.")
-  parser.add_option("--fullscreen", action="store_true", default=False,
-                    help="specify whether video should be made fullscreen.")
+  parser.add_option(
+      "--browser",
+      help=("select which browser to run. Options include: " +
+            ", ".join(SUPPORTED_BROWSERS) +
+            ", or a full path to a browser executable. " +
+            "By default, stable is selected."))
+  parser.add_option(
+      "--duration",
+      default=60,
+      type="int",
+      help="specify how many seconds Intel Power Gadget "
+      "measures. By default, 60 seconds is selected.")
+  parser.add_option(
+      "--delay",
+      default=10,
+      type="int",
+      help="specify how many seconds we skip in the data "
+      "Intel Power Gadget collects. This time is for starting "
+      "video play, switching to fullscreen mode, etc. "
+      "By default, 10 seconds is selected.")
+  parser.add_option(
+      "--resolution",
+      default=100,
+      type="int",
+      help="specify how often Intel Power Gadget samples "
+      "data in milliseconds. By default, 100 ms is selected.")
+  parser.add_option(
+      "--logdir",
+      help="specify where Intel Power Gadget stores its log."
+      "By default, it is the current path.")
+  parser.add_option(
+      "--logname",
+      help="specify the prefix for Intel Power Gadget log "
+      "filename. By default, it is PowerLog.")
+  parser.add_option(
+      "-v",
+      "--verbose",
+      action="store_true",
+      default=False,
+      help="print out debug information.")
+  parser.add_option(
+      "--repeat",
+      default=1,
+      type="int",
+      help="specify how many times to run the measurements.")
+  parser.add_option(
+      "--url", help="specify the webpage URL the browser launches with.")
+  parser.add_option(
+      "--extra-browser-args",
+      dest="extra_browser_args",
+      help="specify extra command line switches for the browser "
+      "that are separated by spaces (quoted).")
+  parser.add_option(
+      "--extra-browser-args-filename",
+      dest="extra_browser_args_filename",
+      metavar="FILE",
+      help="specify extra command line switches for the browser "
+      "in a text file that are separated by whitespace.")
+  parser.add_option(
+      "--fullscreen",
+      action="store_true",
+      default=False,
+      help="specify whether video should be made fullscreen.")
   (options, _) = parser.parse_args(args=argv)
   if options.verbose:
     logging.basicConfig(level=logging.DEBUG)
@@ -261,8 +287,8 @@ def main(argv):
         file.close()
 
   for run in range(1, options.repeat + 1):
-    logfile = ipg_utils.GenerateIPGLogFilename(
-        log_prefix, options.logdir, run, options.repeat, True)
+    logfile = ipg_utils.GenerateIPGLogFilename(log_prefix, options.logdir, run,
+                                               options.repeat, True)
     print "Iteration #%d out of %d" % (run, options.repeat)
     results = MeasurePowerOnce(browser, logfile, options.duration,
                                options.delay, options.resolution, options.url,
@@ -271,8 +297,8 @@ def main(argv):
     all_results.append(results)
 
   now = datetime.datetime.now()
-  results_filename = '%s_%s_results.csv' % (
-      log_prefix, now.strftime('%Y%m%d%H%M%S'))
+  results_filename = '%s_%s_results.csv' % (log_prefix,
+                                            now.strftime('%Y%m%d%H%M%S'))
   try:
     with open(results_filename, 'wb') as results_csv:
       labels = sorted(all_results[0].keys())

@@ -18,6 +18,7 @@
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -155,6 +156,26 @@ mojom::TelemetryInfoPtr MakeTelemetryInfo() {
       MakeFanResult() /* fan_result */
   );
 }
+
+class MockCrosHealthdPowerObserver : public mojom::CrosHealthdPowerObserver {
+ public:
+  MockCrosHealthdPowerObserver() : receiver_{this} {}
+  MockCrosHealthdPowerObserver(const MockCrosHealthdPowerObserver&) = delete;
+  MockCrosHealthdPowerObserver& operator=(const MockCrosHealthdPowerObserver&) =
+      delete;
+
+  MOCK_METHOD(void, OnAcInserted, (), (override));
+  MOCK_METHOD(void, OnAcRemoved, (), (override));
+  MOCK_METHOD(void, OnOsSuspend, (), (override));
+  MOCK_METHOD(void, OnOsResume, (), (override));
+
+  mojo::PendingRemote<mojom::CrosHealthdPowerObserver> pending_remote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+ private:
+  mojo::Receiver<mojom::CrosHealthdPowerObserver> receiver_;
+};
 
 class CrosHealthdServiceConnectionTest : public testing::Test {
  public:
@@ -419,6 +440,21 @@ TEST_F(CrosHealthdServiceConnectionTest, RunBatteryDischargeRoutine) {
         EXPECT_EQ(response, MakeRunRoutineResponse());
         run_loop.Quit();
       }));
+  run_loop.Run();
+}
+
+// Test that we can add a power observer.
+TEST_F(CrosHealthdServiceConnectionTest, AddPowerObserver) {
+  MockCrosHealthdPowerObserver observer;
+  ServiceConnection::GetInstance()->AddPowerObserver(observer.pending_remote());
+
+  // Send out an event to make sure the observer is connected.
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer, OnAcInserted()).WillOnce(Invoke([&]() {
+    run_loop.Quit();
+  }));
+  FakeCrosHealthdClient::Get()->EmitAcInsertedEventForTesting();
+
   run_loop.Run();
 }
 

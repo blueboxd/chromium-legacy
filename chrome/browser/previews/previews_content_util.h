@@ -21,8 +21,7 @@ namespace previews {
 // This bit mask is all the preview types that are fully decided
 // before commit.
 static const content::PreviewsState kPreCommitPreviews =
-    content::SERVER_LITE_PAGE_ON | content::OFFLINE_PAGE_ON |
-    content::LITE_PAGE_REDIRECT_ON;
+    content::SERVER_LITE_PAGE_ON | content::OFFLINE_PAGE_ON;
 
 // Returns whether |previews_state| has any enabled previews.
 bool HasEnabledPreviews(content::PreviewsState previews_state);

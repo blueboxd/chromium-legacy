@@ -184,7 +184,7 @@ class NavigationEntry : public base::SupportsUserData {
   virtual const GURL& GetOriginalRequestURL() = 0;
 
   // Store whether or not we're overriding the user agent.
-  virtual void SetIsOverridingUserAgent(bool override) = 0;
+  virtual void SetIsOverridingUserAgent(bool override_ua) = 0;
   virtual bool GetIsOverridingUserAgent() = 0;
 
   // The time at which the last known local navigation has

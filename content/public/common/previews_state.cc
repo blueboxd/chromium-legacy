@@ -28,8 +28,6 @@ STATIC_ASSERT_PREVIEWS_ENUM(RESOURCE_LOADING_HINTS_ON,
                             blink::WebURLRequest::kResourceLoadingHintsOn);
 STATIC_ASSERT_PREVIEWS_ENUM(OFFLINE_PAGE_ON,
                             blink::WebURLRequest::kOfflinePageOn);
-STATIC_ASSERT_PREVIEWS_ENUM(LITE_PAGE_REDIRECT_ON,
-                            blink::WebURLRequest::kLitePageRedirectOn);
 STATIC_ASSERT_PREVIEWS_ENUM(SUBRESOURCE_REDIRECT_ON,
                             blink::WebURLRequest::kSubresourceRedirectOn);
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_STATE_LAST,

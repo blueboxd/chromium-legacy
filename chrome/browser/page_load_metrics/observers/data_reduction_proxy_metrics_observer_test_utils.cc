@@ -95,15 +95,6 @@ void DataReductionProxyMetricsObserverTestBase::
   tester()->NavigateToUntrackedUrl();
 }
 
-void DataReductionProxyMetricsObserverTestBase::RunLitePageRedirectTest(
-    previews::PreviewsUserData::ServerLitePageInfo* preview_info,
-    net::EffectiveConnectionType ect) {
-  preview_info_ = preview_info;
-  ect_ = ect;
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  tester()->SimulateTimingUpdate(timing_);
-}
-
 // Verify that, if expected and actual are set, their values are equal.
 // Otherwise, verify that both are unset.
 void DataReductionProxyMetricsObserverTestBase::ExpectEqualOrUnset(

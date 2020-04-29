@@ -19,8 +19,7 @@ AmbientAshTestBase::~AmbientAshTestBase() = default;
 void AmbientAshTestBase::SetUp() {
   scoped_feature_list_.InitAndEnableFeature(
       chromeos::features::kAmbientModeFeature);
-  assistant_image_downloader_ =
-      std::make_unique<TestAssistantImageDownloader>();
+  image_downloader_ = std::make_unique<TestImageDownloader>();
   ambient_client_ = std::make_unique<TestAmbientClient>();
 
   AshTestBase::SetUp();
@@ -37,10 +36,10 @@ void AmbientAshTestBase::TearDown() {
   AshTestBase::TearDown();
 
   ambient_client_.reset();
-  assistant_image_downloader_.reset();
+  image_downloader_.reset();
 }
 
-AmbientController* AmbientAshTestBase::ambient_controller() {
+AmbientController* AmbientAshTestBase::ambient_controller() const {
   return Shell::Get()->ambient_controller();
 }
 
@@ -52,8 +51,21 @@ void AmbientAshTestBase::LockScreen() {
   GetSessionControllerClient()->LockScreen();
 }
 
+void AmbientAshTestBase::UnlockScreen() {
+  GetSessionControllerClient()->UnlockScreen();
+}
+
 void AmbientAshTestBase::Toggle() {
   ambient_controller()->Toggle();
+}
+
+void AmbientAshTestBase::IssueAccessToken(const std::string& token,
+                                          bool with_error) {
+  ambient_client_->IssueAccessToken(token, with_error);
+}
+
+bool AmbientAshTestBase::IsAccessTokenRequestPending() const {
+  return ambient_client_->IsAccessTokenRequestPending();
 }
 
 }  // namespace ash

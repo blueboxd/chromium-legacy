@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
@@ -75,6 +76,8 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     /** TasksSurface implementation. */
     @Override
     public void initialize() {
+        assert LibraryLoader.getInstance().isInitialized();
+
         if (mMostVisitedList != null) mMostVisitedList.initialize();
         mMediator.initialize();
     }

@@ -13,8 +13,11 @@
 #include "chrome/browser/ui/views/accessibility/caption_bubble.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 
 namespace captions {
@@ -52,6 +55,20 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
 
   views::Widget* GetCaptionWidget() {
     return controller_ ? controller_->caption_widget_ : nullptr;
+  }
+
+  void ClickCloseButton() {
+    CaptionBubble* bubble = GetBubble();
+    if (!bubble)
+      return;
+    views::test::WidgetDestroyedWaiter waiter(GetCaptionWidget());
+    bubble->close_button_->OnMousePressed(
+        ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0),
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+    bubble->close_button_->OnMouseReleased(ui::MouseEvent(
+        ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), gfx::Point(0, 0),
+        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+    waiter.Wait();
   }
 
   // There may be some rounding errors as we do floating point math with ints.
@@ -97,9 +114,11 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsCaptionInBubble) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, LaysOutCaptionLabel) {
-  // A short caption is bottom-aligned with the bubble.
+  // A short caption is bottom-aligned with the bubble. The bubble bounds
+  // are inset by 4 dip of margin, add another 2 dip of margin for the label's
+  // container bounds to get 6 dip (spec).
   GetController()->OnCaptionReceived("Cats rock");
-  EXPECT_EQ(GetLabel()->GetBoundsInScreen().bottom(),
+  EXPECT_EQ(GetLabel()->GetBoundsInScreen().bottom() + 2,
             GetBubble()->GetBoundsInScreen().bottom());
 
   // Ensure overflow by using a very long caption, should still be aligned
@@ -110,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, LaysOutCaptionLabel) {
       "life, which have received widespread media coverage. At age 14, Swift "
       "became the youngest artist signed by the Sony/ATV Music publishing "
       "house and, at age 15, she signed her first record deal.");
-  EXPECT_EQ(GetLabel()->GetBoundsInScreen().bottom(),
+  EXPECT_EQ(GetLabel()->GetBoundsInScreen().bottom() + 2,
             GetBubble()->GetBoundsInScreen().bottom());
 }
 
@@ -253,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, BubblePositioning) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
-  GetController()->OnCaptionReceived("Elephant's trunks average 6 feet long.");
+  GetController()->OnCaptionReceived("Elephants' trunks average 6 feet long.");
   EXPECT_TRUE(GetTitle()->GetVisible());
   EXPECT_TRUE(GetLabel()->GetVisible());
   EXPECT_FALSE(IsBubbleErrorMessageVisible());
@@ -274,5 +293,12 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
   EXPECT_TRUE(GetTitle()->GetVisible());
   EXPECT_TRUE(GetLabel()->GetVisible());
   EXPECT_FALSE(IsBubbleErrorMessageVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, CloseButtonCloses) {
+  GetController()->OnCaptionReceived("Elephants have 3-4 toenails per foot");
+  EXPECT_TRUE(GetCaptionWidget());
+  ClickCloseButton();
+  EXPECT_FALSE(GetCaptionWidget());
 }
 }  // namespace captions

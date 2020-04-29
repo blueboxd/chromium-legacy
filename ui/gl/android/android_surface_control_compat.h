@@ -122,6 +122,7 @@ class GL_EXPORT SurfaceControl {
     void SetOnCompleteCb(
         OnCompleteCb cb,
         scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+    void SetParent(const Surface& surface, const Surface* new_parent);
 
     void Apply();
 

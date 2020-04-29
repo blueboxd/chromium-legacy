@@ -56,7 +56,6 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemViewHolder;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -176,48 +175,38 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedOut() {
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName(null);
+        // The user is signed out by default.
         Assert.assertEquals(1, mAdapter.getFirstGroupForTests().size());
     }
 
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedIn() {
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName("test@gmail.com");
+        SigninTestUtil.addAndSignInTestAccount();
 
         setHasOtherFormsOfBrowsingData(false);
 
         Assert.assertEquals(1, mAdapter.getFirstGroupForTests().size());
-
-        signinController.setSignedInAccountName(null);
     }
 
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedInSynced() {
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName("test@gmail.com");
+        SigninTestUtil.addAndSignInTestAccount();
 
         setHasOtherFormsOfBrowsingData(false);
 
         Assert.assertEquals(1, mAdapter.getFirstGroupForTests().size());
-
-        signinController.setSignedInAccountName(null);
     }
 
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedInSyncedAndOtherForms() {
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName("test@gmail.com");
+        SigninTestUtil.addAndSignInTestAccount();
 
         setHasOtherFormsOfBrowsingData(true);
 
         Assert.assertEquals(2, mAdapter.getFirstGroupForTests().size());
-
-        signinController.setSignedInAccountName(null);
     }
 
     @Test
@@ -395,15 +384,13 @@ public class HistoryActivityTest {
         final MenuItem infoMenuItem = toolbar.getItemById(R.id.info_menu_id);
 
         // Not signed in
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName(null);
         Assert.assertFalse(infoMenuItem.isVisible());
         DateDividedAdapter.ItemGroup headerGroup = mAdapter.getFirstGroupForTests();
         Assert.assertTrue(mAdapter.hasListHeader());
         Assert.assertEquals(1, headerGroup.size());
 
         // Signed in but not synced and history has items. The info button should be hidden.
-        signinController.setSignedInAccountName("test@gmail.com");
+        SigninTestUtil.addAndSignInTestAccount();
         setHasOtherFormsOfBrowsingData(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> toolbar.onSignInStateChange());
         Assert.assertFalse(infoMenuItem.isVisible());
@@ -427,8 +414,6 @@ public class HistoryActivityTest {
         headerGroup = mAdapter.getFirstGroupForTests();
         Assert.assertTrue(mAdapter.hasListHeader());
         Assert.assertEquals(2, headerGroup.size());
-
-        signinController.setSignedInAccountName(null);
     }
 
     @Test
@@ -462,8 +447,7 @@ public class HistoryActivityTest {
 
         // Sign in and set has other forms of browsing data to true.
         int callCount = mTestObserver.onSelectionCallback.getCallCount();
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName("test@gmail.com");
+        SigninTestUtil.addAndSignInTestAccount();
         setHasOtherFormsOfBrowsingData(true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             toolbar.onSignInStateChange();
@@ -486,8 +470,6 @@ public class HistoryActivityTest {
         // The first group should be the history item group from SetUp()
         Assert.assertFalse(mAdapter.hasListHeader());
         Assert.assertEquals(3, firstGroup.size());
-
-        signinController.setSignedInAccountName(null);
     }
 
     @Test
@@ -496,8 +478,6 @@ public class HistoryActivityTest {
         Assert.assertTrue(mAdapter.hasListHeader());
 
         // Not sign in and set clear browsing data button to invisible
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName(null);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mAdapter.setClearBrowsingDataButtonVisibilityForTest(false);
             mAdapter.setPrivacyDisclaimer();

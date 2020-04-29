@@ -25,9 +25,11 @@ class ASH_EXPORT SwitchAccessMenuBubbleController
       const SwitchAccessMenuBubbleController&) = delete;
 
   void ShowBackButton(const gfx::Rect& anchor);
+  void HideBackButton();
+
   void ShowMenu(const gfx::Rect& anchor,
                 const std::vector<std::string>& actions_to_show);
-  void CloseAll();
+  void HideMenuBubble();
 
   // TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;

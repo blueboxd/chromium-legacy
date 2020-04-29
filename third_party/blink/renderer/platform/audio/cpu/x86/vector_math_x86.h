@@ -174,6 +174,42 @@ static ALWAYS_INLINE void Vadd(const float* source1p,
   }
 }
 
+static ALWAYS_INLINE void Vsub(const float* source1p,
+                               int source_stride1,
+                               const float* source2p,
+                               int source_stride2,
+                               float* dest_p,
+                               int dest_stride,
+                               uint32_t frames_to_process) {
+  if (source_stride1 == 1 && source_stride2 == 1 && dest_stride == 1) {
+    const FrameCounts frame_counts =
+        SplitFramesToProcess(source1p, frames_to_process);
+
+    scalar::Vsub(source1p, 1, source2p, 1, dest_p, 1,
+                 frame_counts.scalar_for_alignment);
+    size_t i = frame_counts.scalar_for_alignment;
+    if (frame_counts.sse_for_alignment > 0u) {
+      sse::Vsub(source1p + i, source2p + i, dest_p + i,
+                frame_counts.sse_for_alignment);
+      i += frame_counts.sse_for_alignment;
+    }
+    if (frame_counts.avx > 0u) {
+      avx::Vsub(source1p + i, source2p + i, dest_p + i, frame_counts.avx);
+      i += frame_counts.avx;
+    }
+    if (frame_counts.sse > 0u) {
+      sse::Vsub(source1p + i, source2p + i, dest_p + i, frame_counts.sse);
+      i += frame_counts.sse;
+    }
+    scalar::Vsub(source1p + i, 1, source2p + i, 1, dest_p + i, 1,
+                 frame_counts.scalar);
+    DCHECK_EQ(frames_to_process, i + frame_counts.scalar);
+  } else {
+    scalar::Vsub(source1p, source_stride1, source2p, source_stride2, dest_p,
+                 dest_stride, frames_to_process);
+  }
+}
+
 static ALWAYS_INLINE void Vclip(const float* source_p,
                                 int source_stride,
                                 const float* low_threshold_p,
@@ -341,6 +377,40 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
     DCHECK_EQ(frames_to_process, i + frame_counts.scalar);
   } else {
     scalar::Vsmul(source_p, source_stride, scale, dest_p, dest_stride,
+                  frames_to_process);
+  }
+}
+
+static ALWAYS_INLINE void Vsadd(const float* source_p,
+                                int source_stride,
+                                const float* addend,
+                                float* dest_p,
+                                int dest_stride,
+                                uint32_t frames_to_process) {
+  if (source_stride == 1 && dest_stride == 1) {
+    const FrameCounts frame_counts =
+        SplitFramesToProcess(source_p, frames_to_process);
+
+    scalar::Vsadd(source_p, 1, addend, dest_p, 1,
+                  frame_counts.scalar_for_alignment);
+    size_t i = frame_counts.scalar_for_alignment;
+    if (frame_counts.sse_for_alignment > 0u) {
+      sse::Vsadd(source_p + i, addend, dest_p + i,
+                 frame_counts.sse_for_alignment);
+      i += frame_counts.sse_for_alignment;
+    }
+    if (frame_counts.avx > 0u) {
+      avx::Vsadd(source_p + i, addend, dest_p + i, frame_counts.avx);
+      i += frame_counts.avx;
+    }
+    if (frame_counts.sse > 0u) {
+      sse::Vsadd(source_p + i, addend, dest_p + i, frame_counts.sse);
+      i += frame_counts.sse;
+    }
+    scalar::Vsadd(source_p + i, 1, addend, dest_p + i, 1, frame_counts.scalar);
+    DCHECK_EQ(frames_to_process, i + frame_counts.scalar);
+  } else {
+    scalar::Vsadd(source_p, source_stride, addend, dest_p, dest_stride,
                   frames_to_process);
   }
 }

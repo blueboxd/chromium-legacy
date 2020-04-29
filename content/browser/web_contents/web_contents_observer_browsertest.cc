@@ -214,4 +214,261 @@ IN_PROC_BROWSER_TEST_F(WebContentsObserverWithSWonUIBrowserTest,
   SetBrowserClientForTesting(old_client);
 }
 
+namespace {
+
+class CookieTracker : public WebContentsObserver {
+ public:
+  explicit CookieTracker(WebContentsImpl* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  struct CookieAccessDescription {
+    CookieAccessDetails::Type type;
+
+    GURL url;
+    GURL first_party_url;
+    std::string cookie_name;
+    std::string cookie_value;
+
+    friend std::ostream& operator<<(std::ostream& o,
+                                    const CookieAccessDescription& d) {
+      o << (d.type == CookieAccessDetails::Type::kRead ? "read" : "change");
+      o << " url=" << d.url;
+      o << " first_party_url=" << d.first_party_url;
+      o << " name=" << d.cookie_name;
+      o << " value=" << d.cookie_value;
+      return o;
+    }
+
+   private:
+    auto comparison_key() const {
+      return std::tie(type, url, first_party_url, cookie_name, cookie_value);
+    }
+
+   public:
+    bool operator==(const CookieAccessDescription& other) const {
+      return comparison_key() == other.comparison_key();
+    }
+  };
+
+  void OnCookiesAccessed(const CookieAccessDetails& details) override {
+    for (const auto& cookie : details.cookie_list) {
+      cookie_accesses_.push_back({details.type, details.url,
+                                  details.first_party_url, cookie.Name(),
+                                  cookie.Value()});
+    }
+
+    QuitIfReady();
+  }
+
+  void WaitForCookies(size_t count) {
+    waiting_for_cookies_count_ = count;
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    QuitIfReady();
+    run_loop.Run();
+  }
+
+  std::vector<CookieAccessDescription>& cookie_accesses() {
+    return cookie_accesses_;
+  }
+
+ private:
+  void QuitIfReady() {
+    if (quit_closure_.is_null())
+      return;
+    if (cookie_accesses_.size() < waiting_for_cookies_count_)
+      return;
+    std::move(quit_closure_).Run();
+  }
+
+  std::vector<CookieAccessDescription> cookie_accesses_;
+
+  size_t waiting_for_cookies_count_ = 0;
+  base::OnceClosure quit_closure_;
+};
+
+using CookieAccess = CookieTracker::CookieAccessDescription;
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(WebContentsObserverBrowserTest,
+                       CookieCallbacks_MainFrame) {
+  CookieTracker cookie_tracker(web_contents());
+
+  GURL first_party_url("http://a.com/");
+  GURL url1(
+      embedded_test_server()->GetURL("a.com", "/cookies/set_cookie.html"));
+  GURL url2(embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  // 1) Navigate to |url1|. This navigation should set a cookie, which we should
+  // be notified about.
+  EXPECT_TRUE(NavigateToURL(web_contents(), url1));
+  cookie_tracker.WaitForCookies(1);
+
+  EXPECT_THAT(
+      cookie_tracker.cookie_accesses(),
+      testing::ElementsAre(CookieAccess{CookieAccessDetails::Type::kChange,
+                                        url1, first_party_url, "foo", "bar"}));
+  cookie_tracker.cookie_accesses().clear();
+
+  // 2) Navigate to |url2| on the same site. Given that we have set a cookie
+  // before, this should sent a previously set cookie with the request and we
+  // should be notified about this.
+  EXPECT_TRUE(NavigateToURL(web_contents(), url2));
+  cookie_tracker.WaitForCookies(1);
+
+  EXPECT_THAT(
+      cookie_tracker.cookie_accesses(),
+      testing::ElementsAre(CookieAccess{CookieAccessDetails::Type::kRead, url2,
+                                        first_party_url, "foo", "bar"}));
+  cookie_tracker.cookie_accesses().clear();
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsObserverBrowserTest,
+                       CookieCallbacks_MainFrameRedirect) {
+  CookieTracker cookie_tracker(web_contents());
+
+  GURL first_party_url("http://a.com/");
+  GURL url1(embedded_test_server()->GetURL(
+      "a.com", "/cookies/redirect_and_set_cookie.html"));
+  GURL url1_after_redirect(
+      embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  // 1) Navigate to |url1|. The initial URL redirects and sets a cookie (we
+  // should be notified about this) and as the redirect points to the same site,
+  // cookie should be sent for the second request as well (we should be notified
+  // about this as well).
+  EXPECT_TRUE(NavigateToURL(web_contents(), url1, url1_after_redirect));
+
+  cookie_tracker.WaitForCookies(1);
+  EXPECT_THAT(
+      cookie_tracker.cookie_accesses(),
+      testing::UnorderedElementsAre(
+          CookieAccess{CookieAccessDetails::Type::kChange, url1,
+                       first_party_url, "foo", "bar"},
+          CookieAccess{CookieAccessDetails::Type::kRead, url1_after_redirect,
+                       first_party_url, "foo", "bar"}));
+  cookie_tracker.cookie_accesses().clear();
+
+  // 2) Navigate to another url on the same site and expect a notification about
+  // a read cookie.
+  EXPECT_TRUE(NavigateToURL(web_contents(), url2));
+
+  cookie_tracker.WaitForCookies(1);
+  EXPECT_THAT(
+      cookie_tracker.cookie_accesses(),
+      testing::ElementsAre(CookieAccess{CookieAccessDetails::Type::kRead, url2,
+                                        first_party_url, "foo", "bar"}));
+  cookie_tracker.cookie_accesses().clear();
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsObserverBrowserTest,
+                       CookieCallbacks_Subframe) {
+  CookieTracker cookie_tracker(web_contents());
+
+  GURL first_party_url("http://a.com/");
+  GURL url1(embedded_test_server()->GetURL(
+      "a.com", "/cookies/set_cookie_from_subframe.html"));
+  GURL url1_subframe(
+      embedded_test_server()->GetURL("a.com", "/cookies/set_cookie.html"));
+  GURL url2(embedded_test_server()->GetURL("a.com",
+                                           "/cookies/page_with_subframe.html"));
+  GURL url2_subframe(embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  // 1) Load a page with a subframe. The main resource of the the subframe
+  // triggers setting a cookie. We should get a cookie change for the
+  // subresource and no cookie read for the main resource.
+  EXPECT_TRUE(NavigateToURL(web_contents(), url1));
+
+  cookie_tracker.WaitForCookies(1);
+  // Navigations are: main frame (0), subframe (1).
+  EXPECT_THAT(cookie_tracker.cookie_accesses(),
+              testing::ElementsAre(
+                  CookieAccess{CookieAccessDetails::Type::kChange,
+                               url1_subframe, first_party_url, "foo", "bar"}));
+  cookie_tracker.cookie_accesses().clear();
+
+  EXPECT_TRUE(NavigateToURL(web_contents(), url2));
+
+  // 2) Load a page with a subframe. Both main frame and subframe should get a
+  // cookie read.
+  cookie_tracker.WaitForCookies(2);
+  // Navigations are: main frame (2), subframe (3).
+  EXPECT_THAT(cookie_tracker.cookie_accesses(),
+              testing::ElementsAre(
+                  CookieAccess{CookieAccessDetails::Type::kRead, url2,
+                               first_party_url, "foo", "bar"},
+                  CookieAccess{CookieAccessDetails::Type::kRead, url2_subframe,
+                               first_party_url, "foo", "bar"}));
+  cookie_tracker.cookie_accesses().clear();
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsObserverBrowserTest,
+                       CookieCallbacks_Subresource) {
+  CookieTracker cookie_tracker(web_contents());
+
+  GURL first_party_url("http://a.com/");
+  GURL url1(embedded_test_server()->GetURL(
+      "a.com", "/cookies/set_cookie_from_subresource.html"));
+  GURL url1_image(embedded_test_server()->GetURL(
+      "a.com", "/cookies/image_with_set_cookie.jpg"));
+  GURL url2(embedded_test_server()->GetURL(
+      "a.com", "/cookies/page_with_subresource.html"));
+  GURL url2_image(embedded_test_server()->GetURL(
+      "a.com", "/cookies/image_without_set_cookie.jpg"));
+
+  EXPECT_TRUE(NavigateToURL(web_contents(), url1));
+
+  // 1) Load a page with a subresource (image), which sets a cookie when
+  // fetched.
+  cookie_tracker.WaitForCookies(1);
+  EXPECT_THAT(cookie_tracker.cookie_accesses(),
+              testing::ElementsAre(
+                  CookieAccess{CookieAccessDetails::Type::kChange, url1_image,
+                               first_party_url, "foo", "bar"}));
+  cookie_tracker.cookie_accesses().clear();
+
+  // 2) Load a page with subresource. Both the page and the resource should get
+  // a cookie.
+  EXPECT_TRUE(NavigateToURL(web_contents(), url2));
+
+  cookie_tracker.WaitForCookies(2);
+  EXPECT_THAT(cookie_tracker.cookie_accesses(),
+              testing::ElementsAre(
+                  CookieAccess{CookieAccessDetails::Type::kRead, url2,
+                               first_party_url, "foo", "bar"},
+                  CookieAccess{CookieAccessDetails::Type::kRead, url2_image,
+                               first_party_url, "foo", "bar"}));
+  cookie_tracker.cookie_accesses().clear();
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsObserverBrowserTest,
+                       CookieCallbacks_DocumentCookie) {
+  CookieTracker cookie_tracker(web_contents());
+
+  GURL first_party_url("http://a.com/");
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  EXPECT_TRUE(NavigateToURL(web_contents(), url1));
+  EXPECT_TRUE(ExecJs(web_contents(), "document.cookie='foo=bar'"));
+
+  cookie_tracker.WaitForCookies(1);
+  EXPECT_THAT(
+      cookie_tracker.cookie_accesses(),
+      testing::ElementsAre(CookieAccess{CookieAccessDetails::Type::kChange,
+                                        url1, first_party_url, "foo", "bar"}));
+  cookie_tracker.cookie_accesses().clear();
+
+  EXPECT_EQ("foo=bar", EvalJs(web_contents(), "document.cookie"));
+
+  cookie_tracker.WaitForCookies(1);
+  EXPECT_THAT(
+      cookie_tracker.cookie_accesses(),
+      testing::ElementsAre(CookieAccess{CookieAccessDetails::Type::kRead, url1,
+                                        first_party_url, "foo", "bar"}));
+  cookie_tracker.cookie_accesses().clear();
+}
+
 }  // namespace content

@@ -13,8 +13,11 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/system/accessibility/dictation_button_tray.h"
 #include "ash/system/accessibility/floating_menu_button.h"
+#include "ash/system/accessibility/select_to_speak_tray.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -26,6 +29,22 @@ namespace {
 constexpr int kPanelPositionButtonPadding = 14;
 constexpr int kPanelPositionButtonSize = 36;
 constexpr int kSeparatorHeight = 16;
+
+// The view that hides itself if all of its children are not visible.
+class DynamicRowView : public views::View {
+ public:
+  DynamicRowView() = default;
+
+ protected:
+  // views::View:
+  void ChildVisibilityChanged(views::View* child) override {
+    bool any_visible = false;
+    for (auto* view : children()) {
+      any_visible |= view->GetVisible();
+    }
+    SetVisible(any_visible);
+  }
+};
 
 std::unique_ptr<views::Separator> CreateSeparator() {
   auto separator = std::make_unique<views::Separator>();
@@ -41,7 +60,7 @@ std::unique_ptr<views::Separator> CreateSeparator() {
 }
 
 std::unique_ptr<views::View> CreateButtonRowContainer(int padding) {
-  auto button_container = std::make_unique<views::View>();
+  auto button_container = std::make_unique<DynamicRowView>();
   button_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(0, padding, padding, padding), padding));
@@ -70,7 +89,18 @@ FloatingAccessibilityView::FloatingAccessibilityView(Delegate* delegate)
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0);
   SetLayoutManager(std::move(layout));
 
-  // TODO(crbug.com/1061068): Add buttons view that represents enabled features.
+  Shelf* shelf = RootWindowController::ForTargetRootWindow()->shelf();
+  std::unique_ptr<views::View> feature_buttons_container =
+      CreateButtonRowContainer(kPanelPositionButtonPadding);
+  dictation_button_ = feature_buttons_container->AddChildView(
+      std::make_unique<DictationButtonTray>(shelf));
+  select_to_speak_button_ = feature_buttons_container->AddChildView(
+      std::make_unique<SelectToSpeakTray>(shelf));
+  virtual_keyboard_button_ = feature_buttons_container->AddChildView(
+      std::make_unique<VirtualKeyboardTray>(shelf));
+
+  // It will be visible again as soon as any of the children becomes visible.
+  feature_buttons_container->SetVisible(false);
 
   std::unique_ptr<views::View> tray_button_container =
       CreateButtonRowContainer(kUnifiedTopShortcutSpacing);
@@ -88,6 +118,7 @@ FloatingAccessibilityView::FloatingAccessibilityView(Delegate* delegate)
           IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION, /*flip_for_rtl*/ false,
           kPanelPositionButtonSize, false));
 
+  AddChildView(std::move(feature_buttons_container));
   AddChildView(std::move(tray_button_container));
   AddChildView(CreateSeparator());
   AddChildView(std::move(position_button_container));
@@ -95,9 +126,22 @@ FloatingAccessibilityView::FloatingAccessibilityView(Delegate* delegate)
   // Set view IDs for testing.
   position_button_->SetId(static_cast<int>(ButtonId::kPosition));
   a11y_tray_button_->SetId(static_cast<int>(ButtonId::kSettingsList));
+  dictation_button_->SetID(static_cast<int>(ButtonId::kDictation));
+  select_to_speak_button_->SetID(static_cast<int>(ButtonId::kSelectToSpeak));
+  virtual_keyboard_button_->SetID(static_cast<int>(ButtonId::kVirtualKeyboard));
 }
 
 FloatingAccessibilityView::~FloatingAccessibilityView() {}
+
+void FloatingAccessibilityView::Initialize() {
+  for (auto* feature_view :
+       {dictation_button_, select_to_speak_button_, virtual_keyboard_button_}) {
+    feature_view->Initialize();
+    feature_view->CalculateTargetBounds();
+    feature_view->UpdateLayout();
+    feature_view->AddObserver(this);
+  }
+}
 
 void FloatingAccessibilityView::SetMenuPosition(FloatingMenuPosition position) {
   switch (position) {
@@ -162,6 +206,14 @@ void FloatingAccessibilityView::ButtonPressed(views::Button* sender,
 
 const char* FloatingAccessibilityView::GetClassName() const {
   return "AccessiblityFloatingView";
+}
+
+void FloatingAccessibilityView::OnViewVisibilityChanged(
+    views::View* observed_view,
+    views::View* starting_view) {
+  if (observed_view != starting_view)
+    return;
+  delegate_->OnLayoutChanged();
 }
 
 }  // namespace ash

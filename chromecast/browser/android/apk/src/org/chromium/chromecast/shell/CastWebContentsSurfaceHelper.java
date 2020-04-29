@@ -169,12 +169,6 @@ class CastWebContentsSurfaceHelper {
                 .map(params -> mMediaSessionGetter.get(params.webContents))
                 .subscribe(Observers.onEnter(MediaSessionImpl::requestSystemAudioFocus));
 
-        // Miscellaneous actions responding to WebContents lifecycle.
-        webContentsState.subscribe((WebContents webContents) -> {
-            // Notify CastWebContentsComponent when closed.
-            return () -> CastWebContentsComponent.onComponentClosed(mSessionId);
-        });
-
         // When onDestroy() is called after onNewStartParams(), log and reset StartParams states.
         uriState.andThen(Observable.not(mCreatedState))
                 .map(Both::getFirst)

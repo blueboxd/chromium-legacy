@@ -90,9 +90,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     /** The parent view of the ContentView and the InfoBarContainer. */
     private ContentView mContentView;
 
-    /** The view provided by {@link TabViewManager} to be shown on top of Content view. */
-    private View mCustomView;
-
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
     private final ObserverList<TabObserver> mObservers = new ObserverList<>();
 
@@ -337,14 +334,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         }
     }
 
-    /**
-     * Sets a custom {@link View} for this {@link Tab} that replaces Content view.
-     */
-    void setCustomView(@Nullable View view) {
-        mCustomView = view;
-        notifyContentChanged();
-    }
-
     @Override
     public ContentView getContentView() {
         return mContentView;
@@ -352,11 +341,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
     @Override
     public View getView() {
-        if (mCustomView != null) return mCustomView;
-
-        if (mNativePage != null) return mNativePage.getView();
-
-        return mContentView;
+        return mNativePage != null ? mNativePage.getView() : mContentView;
     }
 
     @Override
@@ -805,7 +790,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
         WebContentsAccessibility wcax = getWebContentsAccessibility(getWebContents());
         if (wcax != null) {
-            boolean isWebContentObscured = isObscured || mCustomView != null;
+            boolean isWebContentObscured = isObscured || SadTab.isShowing(this);
             wcax.setObscuredByAnotherView(isWebContentObscured);
         }
     }

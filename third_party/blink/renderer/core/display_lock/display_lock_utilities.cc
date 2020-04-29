@@ -36,7 +36,7 @@ bool UpdateStyleAndLayoutForRangeIfNeeded(const EphemeralRangeInFlatTree& range,
                                           DisplayLockActivationReason reason) {
   if (range.IsNull() || range.IsCollapsed())
     return false;
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
       range.GetDocument()
               .GetDisplayLockDocumentState()
               .LockedDisplayLockCount() ==
@@ -79,7 +79,7 @@ void PopulateAncestorContexts(Node* node,
 
 bool DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
     const EphemeralRangeInFlatTree& range) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
     return false;
   DCHECK(!range.IsNull());
   DCHECK(!range.IsCollapsed());
@@ -112,7 +112,7 @@ bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
     const EphemeralRangeInFlatTree& range) {
   if (range.IsNull() || range.IsCollapsed())
     return false;
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
       range.GetDocument()
               .GetDisplayLockDocumentState()
               .LockedDisplayLockCount() ==
@@ -144,7 +144,7 @@ DisplayLockUtilities::ActivatableLockedInclusiveAncestors(
     DisplayLockActivationReason reason) {
   HeapVector<Member<Element>> elements_to_activate;
   const_cast<Node*>(&node)->UpdateDistributionForFlatTreeTraversal();
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
       node.GetDocument()
               .GetDisplayLockDocumentState()
               .LockedDisplayLockCount() ==
@@ -176,7 +176,7 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
     const Node* node,
     bool include_self)
     : node_(node) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
     return;
 
   CreateParentFrameScopeIfNeeded(node);
@@ -220,7 +220,7 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
 }
 
 DisplayLockUtilities::ScopedChainForcedUpdate::~ScopedChainForcedUpdate() {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
     return;
   node_->GetDocument().GetDisplayLockDocumentState().EndNodeForcedScope(this);
 }
@@ -246,7 +246,7 @@ const Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
   auto* element = DynamicTo<Element>(node);
   if (!element)
     return NearestLockedExclusiveAncestor(node);
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
       !node.isConnected() ||
       node.GetDocument()
               .GetDisplayLockDocumentState()
@@ -268,7 +268,7 @@ Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(Node& node) {
 
 Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
     const Node& node) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
       !node.isConnected() ||
       node.GetDocument()
               .GetDisplayLockDocumentState()
@@ -293,7 +293,7 @@ Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
 
 Element* DisplayLockUtilities::HighestLockedInclusiveAncestor(
     const Node& node) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
       node.GetDocument()
               .GetDisplayLockDocumentState()
               .LockedDisplayLockCount() == 0 ||
@@ -316,7 +316,7 @@ Element* DisplayLockUtilities::HighestLockedInclusiveAncestor(
 
 Element* DisplayLockUtilities::HighestLockedExclusiveAncestor(
     const Node& node) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
       node.GetDocument()
               .GetDisplayLockDocumentState()
               .LockedDisplayLockCount() == 0 ||
@@ -354,7 +354,7 @@ Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
 bool DisplayLockUtilities::IsInUnlockedOrActivatableSubtree(
     const Node& node,
     DisplayLockActivationReason activation_reason) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled(
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled(
           node.GetExecutionContext()) ||
       node.GetDocument()
               .GetDisplayLockDocumentState()
@@ -377,7 +377,7 @@ bool DisplayLockUtilities::IsInUnlockedOrActivatableSubtree(
 
 bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
     const Node& source_node) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
     return false;
   const Node* node = &source_node;
 
@@ -409,7 +409,7 @@ bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
 }
 
 void DisplayLockUtilities::ElementLostFocus(Element* element) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
       (element && element->GetDocument()
                           .GetDisplayLockDocumentState()
                           .DisplayLockCount() == 0))
@@ -421,7 +421,7 @@ void DisplayLockUtilities::ElementLostFocus(Element* element) {
   }
 }
 void DisplayLockUtilities::ElementGainedFocus(Element* element) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
       (element && element->GetDocument()
                           .GetDisplayLockDocumentState()
                           .DisplayLockCount() == 0))
@@ -437,7 +437,7 @@ void DisplayLockUtilities::ElementGainedFocus(Element* element) {
 void DisplayLockUtilities::SelectionChanged(
     const EphemeralRangeInFlatTree& old_selection,
     const EphemeralRangeInFlatTree& new_selection) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
       (!old_selection.IsNull() && old_selection.GetDocument()
                                           .GetDisplayLockDocumentState()
                                           .DisplayLockCount() == 0) ||

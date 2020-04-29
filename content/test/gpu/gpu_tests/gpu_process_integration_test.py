@@ -10,8 +10,8 @@ import time
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 
-data_path = os.path.join(
-    path_util.GetChromiumSrcDir(), 'content', 'test', 'data')
+data_path = os.path.join(path_util.GetChromiumSrcDir(), 'content', 'test',
+                         'data')
 
 test_harness_script = r"""
   var domAutomationController = {};
@@ -37,6 +37,7 @@ test_harness_script = r"""
   };
 """
 
+
 class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def Name(cls):
@@ -54,16 +55,16 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _AddDefaultArgs(browser_args):
     # All tests receive the following options.
     return [
-      '--enable-gpu-benchmarking',
-      # TODO(kbr): figure out why the following option seems to be
-      # needed on Android for robustness.
-      # https://github.com/catapult-project/catapult/issues/3122
-      '--no-first-run',
-      # Disable:
-      #   Do you want the application "Chromium Helper.app" to accept incoming
-      #   network connections?
-      # dialogs on macOS. crbug.com/969559
-      '--disable-device-discovery-notifications',
+        '--enable-gpu-benchmarking',
+        # TODO(kbr): figure out why the following option seems to be
+        # needed on Android for robustness.
+        # https://github.com/catapult-project/catapult/issues/3122
+        '--no-first-run',
+        # Disable:
+        #   Do you want the application "Chromium Helper.app" to accept incoming
+        #   network connections?
+        # dialogs on macOS. crbug.com/969559
+        '--disable-device-discovery-notifications',
     ] + browser_args
 
   @classmethod
@@ -76,18 +77,22 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # Also note that since functional_video.html refers to files in
     # ../media/ , the serving dir must be the common parent directory.
     tests = (('GpuProcess_canvas2d', 'gpu/functional_canvas_demo.html'),
-             ('GpuProcess_css3d', 'gpu/functional_3d_css.html'),
-             ('GpuProcess_webgl', 'gpu/functional_webgl.html'),
-             ('GpuProcess_video', 'gpu/functional_video.html'),
-             ('GpuProcess_gpu_info_complete', 'gpu/functional_3d_css.html'),
-             ('GpuProcess_driver_bug_workarounds_in_gpu_process', 'chrome:gpu'),
-             ('GpuProcess_readback_webgl_gpu_process', 'chrome:gpu'),
-             ('GpuProcess_feature_status_under_swiftshader', 'chrome:gpu'),
-             ('GpuProcess_one_extra_workaround', 'chrome:gpu'),
-             ('GpuProcess_disable_gpu', 'gpu/functional_webgl.html'),
+             ('GpuProcess_css3d',
+              'gpu/functional_3d_css.html'), ('GpuProcess_webgl',
+                                              'gpu/functional_webgl.html'),
+             ('GpuProcess_video',
+              'gpu/functional_video.html'), ('GpuProcess_gpu_info_complete',
+                                             'gpu/functional_3d_css.html'),
+             ('GpuProcess_driver_bug_workarounds_in_gpu_process',
+              'chrome:gpu'), ('GpuProcess_readback_webgl_gpu_process',
+                              'chrome:gpu'),
+             ('GpuProcess_feature_status_under_swiftshader',
+              'chrome:gpu'), ('GpuProcess_one_extra_workaround',
+                              'chrome:gpu'), ('GpuProcess_disable_gpu',
+                                              'gpu/functional_webgl.html'),
              ('GpuProcess_disable_gpu_and_swiftshader',
-              'gpu/functional_webgl.html'),
-             ('GpuProcess_disable_swiftshader', 'gpu/functional_webgl.html'),
+              'gpu/functional_webgl.html'), ('GpuProcess_disable_swiftshader',
+                                             'gpu/functional_webgl.html'),
              ('GpuProcess_disabling_workarounds_works', 'chrome:gpu'),
              ('GpuProcess_mac_webgl_backgrounded_high_performance',
               'gpu/functional_blank.html'),
@@ -96,8 +101,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('GpuProcess_mac_webgl_low_power',
               'gpu/functional_webgl_low_power.html'),
              ('GpuProcess_mac_webgl_terminated_high_performance',
-              'gpu/functional_blank.html'),
-             ('GpuProcess_swiftshader_for_webgl', 'gpu/functional_webgl.html'),
+              'gpu/functional_blank.html'), ('GpuProcess_swiftshader_for_webgl',
+                                             'gpu/functional_webgl.html'),
              ('GpuProcess_webgl_disabled_extension',
               'gpu/functional_webgl_disabled_extension.html'))
 
@@ -118,11 +123,11 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # to become interactive or better, avoiding critical race
     # conditions.
     self.tab.action_runner.Navigate(
-      url, script_to_evaluate_on_commit=test_harness_script)
+        url, script_to_evaluate_on_commit=test_harness_script)
 
   def _WaitForTestCompletion(self, tab):
     tab.action_runner.WaitForJavaScriptCondition(
-      'window.domAutomationController._finished', timeout=10)
+        'window.domAutomationController._finished', timeout=10)
     if not tab.EvaluateJavaScript('window.domAutomationController._succeeded'):
       self.fail('Test reported that it failed')
 
@@ -138,7 +143,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _ValidateDriverBugWorkaroundsImpl(self, is_expected, workaround_name):
     tab = self.tab
     gpu_driver_bug_workarounds = tab.EvaluateJavaScript(
-      'chrome.gpuBenchmarking.getGpuDriverBugWorkarounds()')
+        'chrome.gpuBenchmarking.getGpuDriverBugWorkarounds()')
 
     is_present = workaround_name in gpu_driver_bug_workarounds
     failure = False
@@ -152,8 +157,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if failure:
       print 'Test failed. Printing page contents:'
       print tab.EvaluateJavaScript('document.body.innerHTML')
-      self.fail('%s %s workarounds: %s'
-                % (workaround_name, error_message, gpu_driver_bug_workarounds))
+      self.fail('%s %s workarounds: %s' % (workaround_name, error_message,
+                                           gpu_driver_bug_workarounds))
 
   def _ValidateDriverBugWorkarounds(self, expected_workaround,
                                     unexpected_workaround):
@@ -173,8 +178,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _SupportsSwiftShader(self):
     # Currently we enable SwiftShader on Windows, Linux and MacOS.
     return (sys.platform in ('cygwin', 'win32', 'darwin') or
-            (sys.platform.startswith('linux') and
-             not self._RunningOnAndroid()))
+            (sys.platform.startswith('linux') and not self._RunningOnAndroid()))
 
   @staticmethod
   def _Filterer(workaround):
@@ -196,12 +200,14 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('No GPU channel detected')
 
     browser_list = [
-      x for x in tab.EvaluateJavaScript('GetDriverBugWorkarounds()')
-      if self._Filterer(x)]
+        x for x in tab.EvaluateJavaScript('GetDriverBugWorkarounds()')
+        if self._Filterer(x)
+    ]
     gpu_list = [
-      x for x in tab.EvaluateJavaScript(
-        'chrome.gpuBenchmarking.getGpuDriverBugWorkarounds()')
-      if self._Filterer(x)]
+        x for x in tab.EvaluateJavaScript(
+            'chrome.gpuBenchmarking.getGpuDriverBugWorkarounds()')
+        if self._Filterer(x)
+    ]
 
     diff = set(browser_list).symmetric_difference(set(gpu_list))
     if len(diff) > 0:
@@ -255,22 +261,23 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('Browser must support GPU aux attributes')
     if not 'gl_renderer' in system_info.gpu.aux_attributes:
       self.fail('Browser must have gl_renderer in aux attribs')
-    if (sys.platform != 'darwin' and
-        len(system_info.gpu.aux_attributes['gl_renderer']) <= 0):
+    if (sys.platform != 'darwin'
+        and len(system_info.gpu.aux_attributes['gl_renderer']) <= 0):
       # On MacOSX we don't create a context to collect GL strings.1
       self.fail('Must have a non-empty gl_renderer string')
 
   def _GpuProcess_driver_bug_workarounds_in_gpu_process(self, test_path):
-    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
-      '--use_gpu_driver_workaround_for_testing']))
+    self.RestartBrowserIfNecessaryWithArgs(
+        self._AddDefaultArgs(['--use_gpu_driver_workaround_for_testing']))
     self._Navigate(test_path)
-    self._ValidateDriverBugWorkarounds(
-      'use_gpu_driver_workaround_for_testing', None)
+    self._ValidateDriverBugWorkarounds('use_gpu_driver_workaround_for_testing',
+                                       None)
 
   def _GpuProcess_readback_webgl_gpu_process(self, test_path):
     # Hit test group 1 with entry 152 from kSoftwareRenderingListEntries.
-    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
-      '--gpu-blacklist-test-group=1', '--disable-gpu-compositing']))
+    self.RestartBrowserIfNecessaryWithArgs(
+        self._AddDefaultArgs(
+            ['--gpu-blacklist-test-group=1', '--disable-gpu-compositing']))
     self._Navigate(test_path)
     feature_status_list = self.tab.EvaluateJavaScript(
         'browserBridge.gpuInfo.featureStatus.featureStatus')
@@ -289,8 +296,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if not self._SupportsSwiftShader():
       return
     # Hit test group 2 with entry 153 from kSoftwareRenderingListEntries.
-    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
-      '--gpu-blacklist-test-group=2']))
+    self.RestartBrowserIfNecessaryWithArgs(
+        self._AddDefaultArgs(['--gpu-blacklist-test-group=2']))
     self._Navigate(test_path)
     feature_status_list = self.tab.EvaluateJavaScript(
         'browserBridge.gpuInfo.featureStatus.featureStatus')
@@ -329,7 +336,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._Navigate(test_path)
     self._VerifyGpuProcessPresent()
     recorded_workarounds, recorded_disabled_gl_extensions = (
-      self._CompareAndCaptureDriverBugWorkarounds())
+        self._CompareAndCaptureDriverBugWorkarounds())
     # Relaunch the browser enabling test group 1 with entry 215, where
     # use_gpu_driver_workaround_for_testing is enabled.
     browser_args = ['--gpu-driver-bug-list-test-group=1']
@@ -341,23 +348,21 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._Navigate(test_path)
     self._VerifyGpuProcessPresent()
     new_workarounds, new_disabled_gl_extensions = (
-      self._CompareAndCaptureDriverBugWorkarounds())
+        self._CompareAndCaptureDriverBugWorkarounds())
     diff = set(recorded_workarounds).symmetric_difference(new_workarounds)
     tab = self.tab
     if len(diff) > 0:
       print 'Test failed. Printing page contents:'
       print tab.EvaluateJavaScript('document.body.innerHTML')
-      self.fail(
-        'GPU process and expected list of driver bug '
-        'workarounds are not equal: %s != %s, diff: %s' %
-        (recorded_workarounds, new_workarounds, list(diff)))
+      self.fail('GPU process and expected list of driver bug '
+                'workarounds are not equal: %s != %s, diff: %s' %
+                (recorded_workarounds, new_workarounds, list(diff)))
     if recorded_disabled_gl_extensions != new_disabled_gl_extensions:
       print 'Test failed. Printing page contents:'
       print tab.EvaluateJavaScript('document.body.innerHTML')
-      self.fail(
-        'The expected disabled gl extensions are '
-        'incorrect: %s != %s:' %
-        (recorded_disabled_gl_extensions, new_disabled_gl_extensions))
+      self.fail('The expected disabled gl extensions are '
+                'incorrect: %s != %s:' % (recorded_disabled_gl_extensions,
+                                          new_disabled_gl_extensions))
 
   def _GpuProcess_disable_gpu(self, test_path):
     # This test loads functional_webgl.html so that there is a
@@ -367,8 +372,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       # Chrome on Android doesn't support software fallback, skip it.
       # TODO(zmo): If this test runs on ChromeOS, we also need to skip it.
       return
-    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs(
-      ['--disable-gpu']))
+    self.RestartBrowserIfNecessaryWithArgs(
+        self._AddDefaultArgs(['--disable-gpu']))
     self._NavigateAndWait(test_path)
     # On Windows, Linux or MacOS, SwiftShader is enabled, so GPU process
     # will still launch with SwiftShader.
@@ -387,9 +392,9 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       # TODO(zmo): If this test runs on ChromeOS, we also need to skip it.
       return
 
-    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
-      '--disable-gpu',
-      '--disable-software-rasterizer']))
+    self.RestartBrowserIfNecessaryWithArgs(
+        self._AddDefaultArgs(['--disable-gpu',
+                              '--disable-software-rasterizer']))
     self._NavigateAndWait(test_path)
 
     # Windows will run the display compositor in the browser process if
@@ -405,8 +410,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def _GpuProcess_disable_swiftshader(self, test_path):
     # Disable SwiftShader, GPU process should be able to launch.
-    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs(
-      ['--disable-software-rasterizer']))
+    self.RestartBrowserIfNecessaryWithArgs(
+        self._AddDefaultArgs(['--disable-software-rasterizer']))
     self._NavigateAndWait(test_path)
     if not self.tab.EvaluateJavaScript(
         'chrome.gpuBenchmarking.hasGpuProcess()'):
@@ -414,12 +419,13 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def _GpuProcess_disabling_workarounds_works(self, test_path):
     # Hit exception from id 215 from kGpuDriverBugListEntries.
-    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
-      '--gpu-driver-bug-list-test-group=1',
-      '--use_gpu_driver_workaround_for_testing=0']))
+    self.RestartBrowserIfNecessaryWithArgs(
+        self._AddDefaultArgs([
+            '--gpu-driver-bug-list-test-group=1',
+            '--use_gpu_driver_workaround_for_testing=0'
+        ]))
     self._Navigate(test_path)
-    workarounds, _ = (
-      self._CompareAndCaptureDriverBugWorkarounds())
+    workarounds, _ = (self._CompareAndCaptureDriverBugWorkarounds())
     if 'use_gpu_driver_workaround_for_testing' in workarounds:
       self.fail('use_gpu_driver_workaround_for_testing erroneously present')
 
@@ -430,10 +436,10 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if not self._SupportsSwiftShader():
       return
     args_list = (
-      # Triggering test_group 2 where WebGL is blacklisted.
-      ['--gpu-blacklist-test-group=2'],
-      # Explicitly disable GPU access.
-      ['--disable-gpu'])
+        # Triggering test_group 2 where WebGL is blacklisted.
+        ['--gpu-blacklist-test-group=2'],
+        # Explicitly disable GPU access.
+        ['--disable-gpu'])
     for args in args_list:
       self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs(args))
       self._NavigateAndWait(test_path)
@@ -463,25 +469,25 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         self.fail("System Info doesn't have a device")
       # Validate extensions.
       ext_list = [
-        'ANGLE_instanced_arrays',
-        'EXT_blend_minmax',
-        'EXT_texture_filter_anisotropic',
-        'WEBKIT_EXT_texture_filter_anisotropic',
-        'OES_element_index_uint',
-        'OES_standard_derivatives',
-        'OES_texture_float',
-        'OES_texture_float_linear',
-        'OES_texture_half_float',
-        'OES_texture_half_float_linear',
-        'OES_vertex_array_object',
-        'WEBGL_compressed_texture_etc1',
-        'WEBGL_debug_renderer_info',
-        'WEBGL_debug_shaders',
-        'WEBGL_depth_texture',
-        'WEBKIT_WEBGL_depth_texture',
-        'WEBGL_draw_buffers',
-        'WEBGL_lose_context',
-        'WEBKIT_WEBGL_lose_context',
+          'ANGLE_instanced_arrays',
+          'EXT_blend_minmax',
+          'EXT_texture_filter_anisotropic',
+          'WEBKIT_EXT_texture_filter_anisotropic',
+          'OES_element_index_uint',
+          'OES_standard_derivatives',
+          'OES_texture_float',
+          'OES_texture_float_linear',
+          'OES_texture_half_float',
+          'OES_texture_half_float_linear',
+          'OES_vertex_array_object',
+          'WEBGL_compressed_texture_etc1',
+          'WEBGL_debug_renderer_info',
+          'WEBGL_debug_shaders',
+          'WEBGL_depth_texture',
+          'WEBKIT_WEBGL_depth_texture',
+          'WEBGL_draw_buffers',
+          'WEBGL_lose_context',
+          'WEBKIT_WEBGL_lose_context',
       ]
       tab = self.tab
       for ext in ext_list:
@@ -490,11 +496,11 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def _GpuProcess_webgl_disabled_extension(self, test_path):
     # Hit exception from id 257 from kGpuDriverBugListEntries.
-    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
-      '--gpu-driver-bug-list-test-group=2',
-    ]))
+    self.RestartBrowserIfNecessaryWithArgs(
+        self._AddDefaultArgs([
+            '--gpu-driver-bug-list-test-group=2',
+        ]))
     self._NavigateAndWait(test_path)
-
 
   def _GpuProcess_mac_webgl_low_power(self, test_path):
     # Ensures that low-power WebGL content stays on the low-power GPU.
@@ -512,8 +518,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     time.sleep(6)
     if not self._IsIntelGPUActive():
       self.fail(
-        'Low-power WebGL context incorrectly activated the high-performance '
-        'GPU')
+          'Low-power WebGL context incorrectly activated the high-performance '
+          'GPU')
 
   def _GpuProcess_mac_webgl_high_performance(self, test_path):
     # Ensures that high-performance WebGL content activates the high-performance
@@ -531,9 +537,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # Sleep for several seconds to ensure that any GPU switch is detected.
     time.sleep(6)
     if self._IsIntelGPUActive():
-      self.fail(
-        'High-performance WebGL context did not activate the high-performance '
-        'GPU')
+      self.fail('High-performance WebGL context did not activate the '
+                'high-performance GPU')
 
   def _GpuProcess_mac_webgl_backgrounded_high_performance(self, test_path):
     # Ensures that high-performance WebGL content in a background tab releases
@@ -553,15 +558,14 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     webgl_tab = self.browser.tabs.New()
     webgl_tab.Activate()
     webgl_url = self.UrlOfStaticFilePath(
-      'gpu/functional_webgl_high_performance.html')
+        'gpu/functional_webgl_high_performance.html')
     webgl_tab.action_runner.Navigate(
-      webgl_url, script_to_evaluate_on_commit=test_harness_script)
+        webgl_url, script_to_evaluate_on_commit=test_harness_script)
     self._WaitForTestCompletion(webgl_tab)
     # Verify that the high-performance GPU is active.
     if self._IsIntelGPUActive():
-      self.fail(
-        'High-performance WebGL context did not activate the high-performance '
-        'GPU')
+      self.fail('High-performance WebGL context did not activate the '
+                'high-performance GPU')
     # Now activate the original tab.
     blank_tab.Activate()
     # Sleep for >10 seconds in order to wait for the hold on the
@@ -569,8 +573,8 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     time.sleep(15)
     if not self._IsIntelGPUActive():
       self.fail(
-        'Backgrounded high-performance WebGL context did not release the hold '
-        'on the high-performance GPU')
+          'Backgrounded high-performance WebGL context did not release the '
+          'hold on the high-performance GPU')
 
   def _GpuProcess_mac_webgl_terminated_high_performance(self, test_path):
     # Ensures that high-performance WebGL content in a background tab releases
@@ -589,15 +593,14 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     webgl_tab = self.browser.tabs.New()
     webgl_tab.Activate()
     webgl_url = self.UrlOfStaticFilePath(
-      'gpu/functional_webgl_high_performance.html')
+        'gpu/functional_webgl_high_performance.html')
     webgl_tab.action_runner.Navigate(
-      webgl_url, script_to_evaluate_on_commit=test_harness_script)
+        webgl_url, script_to_evaluate_on_commit=test_harness_script)
     self._WaitForTestCompletion(webgl_tab)
     # Verify that the high-performance GPU is active.
     if self._IsIntelGPUActive():
-      self.fail(
-        'High-performance WebGL context did not activate the high-performance '
-        'GPU')
+      self.fail('High-performance WebGL context did not activate the '
+                'high-performance GPU')
     # Close the high-performance WebGL tab.
     webgl_tab.Close()
     # Sleep for >10 seconds in order to wait for the hold on the
@@ -605,15 +608,17 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     time.sleep(15)
     if not self._IsIntelGPUActive():
       self.fail(
-        'Backgrounded high-performance WebGL context did not release the hold '
-        'on the high-performance GPU')
+          'Backgrounded high-performance WebGL context did not release the '
+          'hold on the high-performance GPU')
 
   @classmethod
   def ExpectationsFiles(cls):
     return [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     'test_expectations',
-                     'gpu_process_expectations.txt')]
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
+            'gpu_process_expectations.txt')
+    ]
+
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

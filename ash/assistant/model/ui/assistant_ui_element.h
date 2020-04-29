@@ -17,7 +17,6 @@ namespace ash {
 enum class AssistantUiElementType {
   kCard,    // See AssistantCardElement.
   kText,    // See AssistantTextElement.
-  kTimers,  // See AssistantTimersElement.
 };
 
 // AssistantUiElement ----------------------------------------------------------

@@ -40,4 +40,8 @@ bool TextfieldTestApi::IsTextDirectionCheckedInContextMenu(
       textfield_->text_services_context_menu_.get(), direction);
 }
 
+bool TextfieldTestApi::ShouldShowCursor() const {
+  return textfield_->ShouldShowCursor();
+}
+
 }  // namespace views

@@ -7,22 +7,22 @@ import os
 
 from gpu_tests import path_util
 
-path_util.AddDirToPathIfNeeded(
-    path_util.GetChromiumSrcDir(), 'third_party', 'logilab')
+path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'third_party',
+                               'logilab')
 
-path_util.AddDirToPathIfNeeded(
-    path_util.GetChromiumSrcDir(), 'third_party', 'logilab', 'logilab')
+path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'third_party',
+                               'logilab', 'logilab')
 
-path_util.AddDirToPathIfNeeded(
-    path_util.GetChromiumSrcDir(), 'third_party', 'pylint')
+path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'third_party',
+                               'pylint')
 
 try:
   from pylint import lint
 except ImportError:
   lint = None
 
-
 _RC_FILE = os.path.join(path_util.GetGpuTestDir(), 'pylintrc')
+
 
 def LintCheckPassed(directory):
   args = [directory, '--rcfile=%s' % _RC_FILE]

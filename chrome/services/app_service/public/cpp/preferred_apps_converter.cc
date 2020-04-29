@@ -46,12 +46,16 @@ apps::mojom::ConditionValuePtr ParseValueToConditionValue(
     const base::Value& value) {
   auto* value_string = value.FindStringKey(apps::kValueKey);
   if (!value_string) {
+    DVLOG(0) << "Fail to parse condition value. Cannot find \""
+             << apps::kValueKey << "\" key with string value.";
     return nullptr;
   }
   auto condition_value = apps::mojom::ConditionValue::New();
   condition_value->value = *value_string;
   auto match_type = value.FindIntKey(apps::kMatchTypeKey);
   if (!match_type.has_value()) {
+    DVLOG(0) << "Fail to parse condition value. Cannot find \""
+             << apps::kMatchTypeKey << "\" key with int value.";
     return nullptr;
   }
   condition_value->match_type =
@@ -62,6 +66,8 @@ apps::mojom::ConditionValuePtr ParseValueToConditionValue(
 apps::mojom::ConditionPtr ParseValueToCondition(const base::Value& value) {
   auto condition_type = value.FindIntKey(apps::kConditionTypeKey);
   if (!condition_type.has_value()) {
+    DVLOG(0) << "Fail to parse condition. Cannot find \""
+             << apps::kConditionTypeKey << "\" key with int value.";
     return nullptr;
   }
   auto condition = apps::mojom::Condition::New();
@@ -70,11 +76,14 @@ apps::mojom::ConditionPtr ParseValueToCondition(const base::Value& value) {
 
   auto* condition_values = value.FindKey(apps::kConditionValuesKey);
   if (!condition_values || !condition_values->is_list()) {
+    DVLOG(0) << "Fail to parse condition. Cannot find \""
+             << apps::kConditionValuesKey << "\" key with list value.";
     return nullptr;
   }
   for (auto& condition_value : condition_values->GetList()) {
     auto parsed_condition_value = ParseValueToConditionValue(condition_value);
     if (!parsed_condition_value) {
+      DVLOG(0) << "Fail to parse condition. Cannot parse condition values";
       return nullptr;
     }
     condition->condition_values.push_back(std::move(parsed_condition_value));
@@ -85,12 +94,14 @@ apps::mojom::ConditionPtr ParseValueToCondition(const base::Value& value) {
 apps::mojom::IntentFilterPtr ParseValueToIntentFilter(
     const base::Value* value) {
   if (!value || !value->is_list()) {
+    DVLOG(0) << "Fail to parse intent filter. Cannot find the conditions list.";
     return nullptr;
   }
   auto intent_filter = apps::mojom::IntentFilter::New();
   for (auto& condition : value->GetList()) {
     auto parsed_condition = ParseValueToCondition(condition);
     if (!parsed_condition) {
+      DVLOG(0) << "Fail to parse intent filter. Cannot parse conditions.";
       return nullptr;
     }
     intent_filter->conditions.push_back(std::move(parsed_condition));
@@ -126,17 +137,21 @@ base::Value ConvertPreferredAppsToValue(
 PreferredAppsList::PreferredApps ParseValueToPreferredApps(
     const base::Value& preferred_apps_value) {
   if (!preferred_apps_value.is_list()) {
+    DVLOG(0) << "Fail to parse preferred apps. Cannot the preferred app list.";
     return PreferredAppsList::PreferredApps();
   }
   PreferredAppsList::PreferredApps preferred_apps;
   for (auto& entry : preferred_apps_value.GetList()) {
     auto* app_id = entry.FindStringKey(kAppIdKey);
     if (!app_id) {
+      DVLOG(0) << "Fail to parse condition value. Cannot find \""
+               << apps::kAppIdKey << "\" key with string value.";
       return PreferredAppsList::PreferredApps();
     }
     auto parsed_intent_filter =
         ParseValueToIntentFilter(entry.FindKey(kIntentFilterKey));
     if (!parsed_intent_filter) {
+      DVLOG(0) << "Fail to parse condition value. Cannot parse intent filter.";
       return PreferredAppsList::PreferredApps();
     }
     auto new_preferred_app = apps::mojom::PreferredApp::New(

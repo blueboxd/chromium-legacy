@@ -113,10 +113,11 @@ class WebURLRequest {
     kResourceLoadingHintsOn = 1 << 7,  // Request that resource loading hints be
                                        // used during pageload.
     kOfflinePageOn = 1 << 8,
-    kLitePageRedirectOn = 1 << 9,  // Allow the browser to redirect the resource
-                                   // to a Lite Page server.
-    kDeferAllScriptOn = 1 << 10,   // Request that script execution be deferred
-                                   // until parsing completes.
+    kLitePageRedirectOn_DEPRECATED =
+        1 << 9,  // Allow the browser to redirect the resource
+                 // to a Lite Page server. Deprecated and should not be used.
+    kDeferAllScriptOn = 1 << 10,  // Request that script execution be deferred
+                                  // until parsing completes.
     kSubresourceRedirectOn =
         1 << 11,  // Allow the subresources in the page to be redirected
                   // to serve better optimized resources.

@@ -12,6 +12,9 @@ namespace switches {
 // all work out.
 // -----------------------------------------------------------------------------
 
+// Disables enterprise policy support.
+const char kDisableEnterprisePolicy[] = "disable-enterprise-policy";
+
 // Disable showing available password credentials in the keyboard accessory
 // view when focused on form fields.
 const char kDisableIOSPasswordSuggestions[] =

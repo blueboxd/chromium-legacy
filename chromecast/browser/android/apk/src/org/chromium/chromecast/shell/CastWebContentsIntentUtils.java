@@ -96,10 +96,6 @@ public class CastWebContentsIntentUtils {
     /** Key of extra value of the intent to start a web content, value is session ID of cast app */
     static final String INTENT_EXTRA_SESSION_ID = "content_session_id";
 
-    /** Key of extra value of the intent to start a web content, value is object of WebContents */
-    static final String INTENT_EXTRA_WEB_CONTENTS =
-            "com.google.android.apps.castshell.intent.extra.WEB_CONTENTS";
-
     /** Key of extra value of the intent to start a web content, value is true if cast app supports
      *  touch input.
      */
@@ -325,10 +321,11 @@ public class CastWebContentsIntentUtils {
     public static Intent requestStartCastActivity(Context context, WebContents webContents,
             boolean enableTouch, boolean isRemoteControlMode, boolean turnOnScreen,
             String instanceId) {
+        WebContentsRegistry.addWebContents(instanceId, webContents);
         Intent intent =
                 new Intent(Intent.ACTION_VIEW, null, context, CastWebContentsActivity.class);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
-        intent.putExtra(INTENT_EXTRA_WEB_CONTENTS, webContents);
+        intent.putExtra(INTENT_EXTRA_SESSION_ID, instanceId);
         intent.putExtra(INTENT_EXTRA_TOUCH_INPUT_ENABLED, enableTouch);
         intent.putExtra(INTENT_EXTRA_TURN_ON_SCREEN, turnOnScreen);
         intent.putExtra(INTENT_EXTRA_REMOTE_CONTROL_MODE, isRemoteControlMode);
@@ -341,6 +338,7 @@ public class CastWebContentsIntentUtils {
     public static Intent requestStartCastFragment(WebContents webContents, String appId,
             @VisibilityPriority int visibilityPriority, boolean enableTouch, String instanceId,
             boolean isRemoteControlMode, boolean turnOnScreen) {
+        WebContentsRegistry.addWebContents(instanceId, webContents);
         Intent intent = new Intent();
         intent.setAction(CastIntents.ACTION_SHOW_WEB_CONTENT);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
@@ -349,7 +347,6 @@ public class CastWebContentsIntentUtils {
         intent.putExtra(INTENT_EXTRA_VISIBILITY_PRIORITY, visibilityPriority);
         intent.putExtra(INTENT_EXTRA_TOUCH_INPUT_ENABLED, enableTouch);
         intent.putExtra(INTENT_EXTRA_TURN_ON_SCREEN, turnOnScreen);
-        intent.putExtra(INTENT_EXTRA_WEB_CONTENTS, webContents);
         intent.putExtra(INTENT_EXTRA_REMOTE_CONTROL_MODE, isRemoteControlMode);
         return intent;
     }
@@ -357,14 +354,16 @@ public class CastWebContentsIntentUtils {
     // CastWebContentsComponent.Receiver -> CastWebContentsService
     public static Intent requestStartCastService(
             Context context, WebContents webContents, String instanceId) {
+        WebContentsRegistry.addWebContents(instanceId, webContents);
         Intent intent = new Intent(Intent.ACTION_VIEW, getInstanceUri(instanceId), context,
                 CastWebContentsService.class);
-        intent.putExtra(INTENT_EXTRA_WEB_CONTENTS, webContents);
+        intent.putExtra(INTENT_EXTRA_SESSION_ID, instanceId);
         return intent;
     }
 
     // CastWebContentsComponent.Delegate -> CastWebContentsSurfaceHelper
     public static Intent requestStopWebContents(String instanceId) {
+        WebContentsRegistry.removeWebContents(instanceId);
         Intent intent = new Intent(CastIntents.ACTION_STOP_WEB_CONTENT);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
         return intent;
@@ -392,7 +391,8 @@ public class CastWebContentsIntentUtils {
 
     // Used by ACTION_VIEW, ACTION_SHOW_WEB_CONTENT
     public static WebContents getWebContents(Bundle bundle) {
-        return (WebContents) bundle.getParcelable(INTENT_EXTRA_WEB_CONTENTS);
+        String sessionId = bundle.getString(INTENT_EXTRA_SESSION_ID);
+        return WebContentsRegistry.getWebContents(sessionId);
     }
 
     // Used by ACTION_VIEW, ACTION_SHOW_WEB_CONTENT

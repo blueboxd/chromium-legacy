@@ -17,19 +17,28 @@
     flex-wrap: wrap;
     height: calc(var(--row-count) * 128px);
     justify-content: center;
+    opacity: 0;
     overflow: hidden;
-    padding-top: 2px;
+    padding-top: 3px;
     transition: opacity 300ms ease-in-out;
     width: calc(var(--content-width) + 12px);
   }
 
-  #addShortCutIcon {
+  :host([visible_]) #container {
+    opacity: 1;
+  }
+
+  #addShortcutIcon {
     -webkit-mask-image: url(chrome://resources/images/add.svg);
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 100%;
-    background-color: var(--ntp-theme-text-color);
+    background-color: var(--google-grey-900);
     height: 24px;
     width: 24px;
+  }
+
+  :host([use-white-add-icon]) #addShortcutIcon {
+    background-color: white;
   }
 
   .tile,
@@ -54,8 +63,18 @@
     width: var(--tile-size);
   }
 
-  :host-context(html:not(.focus-outline-visible)) .tile,
-  :host-context(html:not(.focus-outline-visible)) #addShortcut {
+  #addShortcut {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  :host-context(.focus-outline-visible) #addShortcut:focus {
+    outline: auto;
+  }
+
+  :host-context(html:not(.focus-outline-visible)) .tile {
     outline: none;
   }
 
@@ -82,6 +101,7 @@
 
   .tile-title {
     color: var(--ntp-theme-text-color);
+    font-weight: 400;
     margin-top:  16px;
     overflow: hidden;
     text-align: center;
@@ -113,7 +133,7 @@
     position: absolute;
     right: 0;
     top: 0;
-    transition-property: opacity;
+    transition: opacity 100ms ease-in-out;
   }
 
   :host-context([dir=rtl]) cr-icon-button {
@@ -124,7 +144,7 @@
   :host(:not([reordering_])) .tile:hover cr-icon-button,
   .force-hover cr-icon-button {
     opacity: 1;
-    transition-delay: 500ms;
+    transition-delay: 400ms;
   }
 
   :host(:not([reordering_])) cr-icon-button:active,
@@ -134,14 +154,6 @@
     --cr-icon-button-fill-color: var(--icon-button-color-active);
     opacity: 1;
     transition-delay: 0s;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :host {
-      --icon-button-color: var(--google-grey-400);
-      --icon-button-color-active: var(--google-grey-200);
-      --tile-hover-color: rgba(255, 255, 255, .1);
-    }
   }
 </style>
 <div id="container"
@@ -168,13 +180,13 @@
       </a>
     </template>
   </dom-repeat>
-  <a id="addShortcut" tabindex="0" on-click="onAdd_" hidden$="[[!showAdd_]]"
-      title="$i18n{addLinkTitle}" on-keydown="onAddShortcutKeyDown_">
+  <cr-button id="addShortcut" tabindex="0" on-click="onAdd_"
+      hidden$="[[!showAdd_]]" on-keydown="onAddShortcutKeyDown_" noink>
     <div class="tile-icon">
-      <div id="addShortCutIcon" draggable="false"></div>
+      <div id="addShortcutIcon" draggable="false"></div>
     </div>
     <div class="tile-title">$i18n{addLinkTitle}</div>
-  </a>
+  </cr-button>
   <cr-dialog id="dialog" on-close="onDialogClose_">
     <div slot="title">[[dialogTitle_]]</div>
     <div slot="body">

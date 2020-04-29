@@ -11,6 +11,8 @@ This script has the following responsibilities:
    large (~1GB) and updated frequently (~4 times a day).
 """
 
+from __future__ import print_function
+
 import argparse
 import os
 import sys

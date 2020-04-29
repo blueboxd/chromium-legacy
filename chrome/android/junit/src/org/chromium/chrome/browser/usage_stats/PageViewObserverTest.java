@@ -26,7 +26,6 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Promise;
@@ -96,8 +95,6 @@ public final class PageViewObserverTest {
         doReturn(false).when(mTab).isIncognito();
         doReturn(null).when(mTab).getUrlString();
         doReturn(mChromeActivity).when(mTab).getActivity();
-        doReturn(Robolectric.buildActivity(Activity.class).get()).when(mTab).getContext();
-        doReturn(Robolectric.buildActivity(Activity.class).get()).when(mTab2).getContext();
         doReturn(true).when(mTab).isInitialized();
         doReturn(true).when(mTab2).isInitialized();
         doReturn(Arrays.asList(mTabModel)).when(mTabModelSelector).getModels();

@@ -11,6 +11,8 @@ import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
+import org.chromium.components.query_tiles.QueryTile;
+import org.chromium.components.query_tiles.TileProvider;
 
 import java.util.ArrayList;
 import java.util.List;

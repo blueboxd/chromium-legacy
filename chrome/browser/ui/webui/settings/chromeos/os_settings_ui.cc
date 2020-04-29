@@ -64,8 +64,8 @@
 #include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
@@ -217,8 +217,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("search/search.mojom-lite.js",
                                IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS);
 
-  OsSettingsLocalizedStringsProviderFactory::GetForProfile(profile)
-      ->AddOsLocalizedStrings(html_source);
+  OsSettingsManagerFactory::GetForProfile(profile)->AddLoadTimeData(
+      html_source);
 
   auto plural_string_handler = std::make_unique<PluralStringHandler>();
   plural_string_handler->AddLocalizedString("profileLabel",
@@ -242,6 +242,7 @@ OSSettingsUI::~OSSettingsUI() {
 
 void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   Profile* profile = Profile::FromWebUI(web_ui());
+  OsSettingsManagerFactory::GetForProfile(profile)->AddHandlers(web_ui());
 
   // TODO(jamescook): Sort out how account management is split between Chrome OS
   // and browser settings.

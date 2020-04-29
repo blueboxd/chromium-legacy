@@ -90,6 +90,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
       const base::Optional<url::Origin>& request_initiator_site_lock,
       const base::Optional<url::Origin>& request_initiator);
 
+  bool GetAllowAnyCorsExemptHeaderForBrowser() const;
+
   mojo::ReceiverSet<mojom::URLLoaderFactory> receivers_;
 
   // Used when constructed by NetworkContext.

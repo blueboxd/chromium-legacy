@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_syncer.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/sync/turn_sync_on_helper.h"
@@ -889,21 +888,6 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     system::InputDeviceSettings::Get()->UpdateTouchpadSettings(
         touchpad_settings);
     system::InputDeviceSettings::Get()->UpdateMouseSettings(mouse_settings);
-  }
-
-  if (user_is_primary_ && (reason != REASON_PREF_CHANGED ||
-                           pref_name == prefs::kWakeOnWifiDarkConnect)) {
-    int features = wake_on_wifi_darkconnect_.GetValue()
-                       ? WakeOnWifiManager::WAKE_ON_WIFI_DARKCONNECT
-                       : WakeOnWifiManager::WAKE_ON_WIFI_NONE;
-    // The flag enables wake on WiFi packet feature but doesn't update a
-    // preference.
-    if (base::CommandLine::ForCurrentProcess()->
-            HasSwitch(switches::kWakeOnWifiPacket)) {
-      features |= WakeOnWifiManager::WAKE_ON_WIFI_PACKET;
-    }
-    WakeOnWifiManager::Get()->OnPreferenceChanged(
-        static_cast<WakeOnWifiManager::WakeOnWifiFeature>(features));
   }
 
   if (pref_name == prefs::kUserTimezone &&

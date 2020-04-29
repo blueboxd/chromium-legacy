@@ -320,11 +320,6 @@ void CompositorImpl::SetRootWindow(gfx::NativeWindow root_window) {
     root_window_->SetForce60HzRefreshRate();
   root_window_->SetLayer(root_layer ? root_layer : cc::Layer::Create());
   root_window_->GetLayer()->SetBounds(size_);
-  if (!readback_layer_tree_) {
-    readback_layer_tree_ = cc::Layer::Create();
-    readback_layer_tree_->SetHideLayerAndSubtree(true);
-  }
-  root_window->GetLayer()->AddChild(readback_layer_tree_);
   root_window->AttachCompositor(this);
   if (!host_) {
     CreateLayerTreeHost();
@@ -460,19 +455,6 @@ void CompositorImpl::SetVisible(bool visible) {
 }
 
 void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
-  // Make a best effort to try to complete pending readbacks.
-  // TODO(crbug.com/637035): Consider doing this in a better way,
-  // ideally with the guarantee of readbacks completing.
-  if (display_private_ && HavePendingReadbacks()) {
-    // Note that while this is not a Sync IPC, the call to
-    // InvalidateFrameSinkId below will end up triggering a sync call to
-    // FrameSinkManager::DestroyCompositorFrameSink, as this is the root
-    // frame sink. Because |display_private_| is an associated remote to
-    // FrameSinkManager, this subsequent sync call will ensure ordered
-    // execution of this call.
-    display_private_->ForceImmediateDrawAndSwapIfPossible();
-  }
-
   GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
   display_private_.reset();
 }
@@ -687,10 +669,6 @@ CompositorImpl::GetBeginMainFrameMetrics() {
   return nullptr;
 }
 
-void CompositorImpl::AttachLayerForReadback(scoped_refptr<cc::Layer> layer) {
-  readback_layer_tree_->AddChild(layer);
-}
-
 void CompositorImpl::RequestCopyOfOutputOnRootLayer(
     std::unique_ptr<viz::CopyOutputRequest> request) {
   root_window_->GetLayer()->RequestCopyOfOutput(std::move(request));
@@ -752,10 +730,6 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
     host_->set_display_transform_hint(
         display::DisplayRotationToOverlayTransform(display.rotation()));
   }
-}
-
-bool CompositorImpl::HavePendingReadbacks() {
-  return !readback_layer_tree_->children().empty();
 }
 
 bool CompositorImpl::IsDrawingFirstVisibleFrame() const {

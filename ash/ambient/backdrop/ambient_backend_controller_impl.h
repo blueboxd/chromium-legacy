@@ -33,7 +33,6 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
 
  private:
   using BackdropClientConfig = chromeos::ambient::BackdropClientConfig;
-
   void RequestAccessToken(AmbientClient::GetAccessTokenCallback callback);
 
   void FetchScreenUpdateInfoInternal(OnScreenUpdateInfoFetchedCallback callback,

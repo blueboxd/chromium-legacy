@@ -33,6 +33,9 @@ extern const base::Feature kOptimizationTargetPrediction;
 // requested until the user navigates to the host again.
 size_t MaxHintsFetcherTopHostBlacklistSize();
 
+// Whether hints for top hosts should be batch updated.
+bool ShouldBatchUpdateHintsForTopHosts();
+
 // The maximum number of hosts allowed to be requested by the client to the
 // remote Optimzation Guide Service.
 size_t MaxHostsForOptimizationGuideServiceHintsFetch();

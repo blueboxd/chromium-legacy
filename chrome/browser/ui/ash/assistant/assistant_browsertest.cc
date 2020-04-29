@@ -218,63 +218,7 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnDownBrightness) {
   ExpectBrightnessDown();
 }
 
-// TODO(b:152077326): See if we can get TaskEnvironment to work in
-// AssistantBrowserTests so that we can use it instead of TestClock.
-class TestClock {
- public:
-  TestClock() {
-    DCHECK_EQ(nullptr, instance_);
-    instance_ = this;
-  }
-
-  TestClock(const TestClock&) = delete;
-  TestClock& operator=(const TestClock&) = delete;
-
-  ~TestClock() {
-    DCHECK_EQ(this, instance_);
-    instance_ = nullptr;
-  }
-
-  void Advance(base::TimeDelta delta) {
-    DCHECK_GE(delta, base::TimeDelta());
-    base::AutoLock lock(offset_lock_);
-    offset_ += delta;
-  }
-
- private:
-  static base::Time TimeNow() {
-    return base::subtle::TimeNowIgnoringOverride() +
-           TestClock::instance_->GetOffset();
-  }
-
-  static base::TimeTicks TimeTicksNow() {
-    return base::subtle::TimeTicksNowIgnoringOverride() +
-           TestClock::instance_->GetOffset();
-  }
-
-  static base::ThreadTicks ThreadTicksNow() {
-    return base::subtle::ThreadTicksNowIgnoringOverride() +
-           TestClock::instance_->GetOffset();
-  }
-
-  base::TimeDelta GetOffset() {
-    base::AutoLock lock(offset_lock_);
-    return offset_;
-  }
-
-  static TestClock* instance_;
-
-  base::subtle::ScopedTimeClockOverrides time_overrides_{
-      &TestClock::TimeNow, &TestClock::TimeTicksNow,
-      &TestClock::ThreadTicksNow};
-
-  base::Lock offset_lock_;
-  base::TimeDelta offset_ GUARDED_BY(offset_lock_);
-};
-
-// static
-TestClock* TestClock::instance_ = nullptr;
-
+// TODO(b/153485859): Move to assistant_timers_browsertest.cc.
 class AssistantTimersV2BrowserTest : public AssistantBrowserTest {
  public:
   AssistantTimersV2BrowserTest() {
@@ -286,56 +230,9 @@ class AssistantTimersV2BrowserTest : public AssistantBrowserTest {
       delete;
   ~AssistantTimersV2BrowserTest() override = default;
 
-  TestClock& clock() { return clock_; }
-
  private:
-  TestClock clock_;
   base::test::ScopedFeatureList feature_list_;
 };
-
-IN_PROC_BROWSER_TEST_F(AssistantTimersV2BrowserTest,
-                       ShouldDisplayTimersResponse) {
-  tester()->StartAssistantAndWaitForReady();
-
-  ShowAssistantUi();
-  EXPECT_TRUE(tester()->IsVisible());
-
-  tester()->SendTextQuery("Set a timer for 5 minutes");
-  tester()->ExpectAnyOfTheseTextResponses({
-      "Alright, 5 min. Starting… now.",
-      "OK, 5 min. And we're starting… now.",
-  });
-
-  tester()->SendTextQuery("Set a timer for 10 minutes");
-  tester()->ExpectAnyOfTheseTextResponses({
-      "2nd timer, for 10 min. And that's starting… now.",
-      "2nd timer, for 10 min. Starting… now.",
-  });
-
-  tester()->SendTextQuery("Show my timers");
-  std::vector<base::TimeDelta> timers =
-      tester()->ExpectAndReturnTimersResponse();
-  EXPECT_EQ(2u, timers.size());
-
-  // Five minute timer should be somewhere in the range of {0, 5} min.
-  base::TimeDelta& five_min_timer = timers.at(0);
-  EXPECT_WITHIN_RANGE(0, five_min_timer.InMinutes(), 5);
-
-  // Ten minute timer should be somewhere in the range of {5, 10} min.
-  base::TimeDelta& ten_min_timer = timers.at(1);
-  EXPECT_WITHIN_RANGE(5, ten_min_timer.InMinutes(), 10);
-
-  // Artificially advance the clock.
-  clock().Advance(five_min_timer);
-  base::RunLoop().RunUntilIdle();
-
-  // Update our expectation for where our timers should be.
-  ten_min_timer -= five_min_timer;
-  five_min_timer = base::TimeDelta();
-
-  // Assert that the UI has been updated to meet our expectations.
-  tester()->ExpectTimersResponse(timers);
-}
 
 IN_PROC_BROWSER_TEST_F(AssistantTimersV2BrowserTest,
                        ShouldDismissTimerNotificationsWhenDisablingAssistant) {

@@ -63,9 +63,6 @@ AssistantResponseContainerView::HandleUiElement(
     case AssistantUiElementType::kText:
       AddTextElementView(static_cast<const AssistantTextElement*>(ui_element));
       break;
-    case AssistantUiElementType::kTimers:
-      NOTIMPLEMENTED();
-      break;
   }
 
   // Return |nullptr| to prevent animations.

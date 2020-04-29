@@ -74,6 +74,8 @@ TEST_F('ChromeVoxPanelTest', 'ActivateMenu', function() {
   this.runWithLoadedTree(this.linksDoc, function(root) {
     const openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS);
     mockFeedback.call(openMenus.send.bind(openMenus))
+        .expectSpeech('Search the menus', 'Search')
+        .call(this.fireMockEvent('ArrowRight'))
         .expectSpeech(
             'Jump', 'Menu',
             'Go To Beginning Of Table Search+Alt+Shift+Left arrow',

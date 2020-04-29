@@ -100,10 +100,6 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
     lite_page_seen_ = true;
   }
   if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
-                            previews::PreviewsType::LITE_PAGE_REDIRECT) {
-    lite_page_redirect_seen_ = true;
-  }
-  if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
                             previews::PreviewsType::NOSCRIPT) {
     noscript_seen_ = true;
   }
@@ -122,9 +118,6 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   lite_page_eligibility_reason_ =
       previews_user_data->EligibilityReasonForPreview(
           previews::PreviewsType::LITE_PAGE);
-  lite_page_redirect_eligibility_reason_ =
-      previews_user_data->EligibilityReasonForPreview(
-          previews::PreviewsType::LITE_PAGE_REDIRECT);
   noscript_eligibility_reason_ =
       previews_user_data->EligibilityReasonForPreview(
           previews::PreviewsType::NOSCRIPT);
@@ -199,16 +192,13 @@ void PreviewsUKMObserver::RecordPreviewsTypes() {
   // Only record previews types when they are active.
   if (!lite_page_seen_ && !noscript_seen_ && !resource_loading_hints_seen_ &&
       !defer_all_script_seen_ && !offline_preview_seen_ &&
-      !origin_opt_out_occurred_ && !save_data_enabled_ &&
-      !lite_page_redirect_seen_) {
+      !origin_opt_out_occurred_ && !save_data_enabled_) {
     return;
   }
 
   ukm::builders::Previews builder(GetDelegate().GetSourceId());
   if (lite_page_seen_)
     builder.Setlite_page(1);
-  if (lite_page_redirect_seen_)
-    builder.Setlite_page_redirect(1);
   if (noscript_seen_)
     builder.Setnoscript(1);
   if (resource_loading_hints_seen_)
@@ -232,11 +222,6 @@ void PreviewsUKMObserver::RecordPreviewsTypes() {
           lite_page_eligibility_reason_)) {
     builder.Setproxy_lite_page_eligibility_reason(
         static_cast<int>(lite_page_eligibility_reason_.value()));
-  }
-  if (ShouldOptionalEligibilityReasonBeRecorded(
-          lite_page_redirect_eligibility_reason_)) {
-    builder.Setlite_page_redirect_eligibility_reason(
-        static_cast<int>(lite_page_redirect_eligibility_reason_.value()));
   }
   if (ShouldOptionalEligibilityReasonBeRecorded(noscript_eligibility_reason_)) {
     builder.Setnoscript_eligibility_reason(

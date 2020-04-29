@@ -555,38 +555,6 @@ TEST_F(AssistantManagerServiceImplTest,
   EXPECT_FALSE(action_module()->IsAmbientModeEnabledForTesting());
 }
 
-// OnTimersResponse() is only supported when features::kAssistantTimersV2 is
-// enabled. By default it is disabled, should we expect no subscribers to be
-// notified of OnTimersResponse() events.
-TEST_F(AssistantManagerServiceImplTest,
-       ShouldNotNotifyIteractionSubscribersOfTimersResponse) {
-  StrictMock<MockAssistantInteractionSubscriber> subscriber;
-  mojo::Receiver<mojom::AssistantInteractionSubscriber> receiver(&subscriber);
-  assistant_manager_service()->AddAssistantInteractionSubscriber(
-      receiver.BindNewPipeAndPassRemote());
-
-  EXPECT_CALL(subscriber, OnTimersResponse).Times(0);
-
-  assistant_manager_service()->OnShowTimers({});
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(AssistantManagerServiceImplTest,
-       ShouldNotifyInteractionSubscribersOfTimersResponseInV2) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kAssistantTimersV2);
-
-  StrictMock<MockAssistantInteractionSubscriber> subscriber;
-  mojo::Receiver<mojom::AssistantInteractionSubscriber> receiver(&subscriber);
-  assistant_manager_service()->AddAssistantInteractionSubscriber(
-      receiver.BindNewPipeAndPassRemote());
-
-  EXPECT_CALL(subscriber, OnTimersResponse(ElementsAre("1", "2"))).Times(1);
-
-  assistant_manager_service()->OnShowTimers({"1", "2"});
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(AssistantManagerServiceImplTest,
        ShouldNotifyAlarmTimerControllerOfOnlyRingingTimers) {
   Start();

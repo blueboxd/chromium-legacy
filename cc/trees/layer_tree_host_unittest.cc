@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/timing_function.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/layers/content_layer_client.h"
@@ -8782,6 +8783,52 @@ class LayerTreeHostTopControlsDeltaTriggersViewportUpdate
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTopControlsDeltaTriggersViewportUpdate);
+
+// Tests that custom sequence throughput tracking result is reported to
+// LayerTreeHostClient.
+constexpr MutatorHost::TrackedAnimationSequenceId kSequenceId = 1u;
+class LayerTreeHostCustomThrougputTrackerTest : public LayerTreeHostTest {
+ public:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    // FrameSequenceTracker sees the following sequence:
+    //   e(2,2)b(3)B(0,3)E(3)s(3)S(3)e(3,3)P(3)b(4)B(3,4)E(4)s(4)S(4)e(4,4)P(4)
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        animation_host()->StartThroughputTracking(kSequenceId);
+        PostSetNeedsCommitWithForcedRedrawToMainThread();
+        break;
+      case 3:
+        animation_host()->StopThroughputTracking(kSequenceId);
+        PostSetNeedsCommitWithForcedRedrawToMainThread();
+        break;
+      case 5:
+        EndTest();
+        break;
+      default:
+        PostSetNeedsCommitWithForcedRedrawToMainThread();
+        break;
+    }
+  }
+
+  void NotifyThroughputTrackerResults(CustomTrackerResults results) override {
+    ASSERT_TRUE(base::Contains(results, kSequenceId));
+    const auto& throughput = results[kSequenceId];
+    // Frame 3 and 4 are counted. See the sequence in DidCommit comment.
+    EXPECT_EQ(2u, throughput.frames_expected);
+    EXPECT_EQ(2u, throughput.frames_produced);
+    notified_ = true;
+  }
+
+  void AfterTest() override { ASSERT_TRUE(notified_); }
+
+ private:
+  bool notified_ = false;
+};
+
+// TODO(crbug.com/1021774): Revisit after hooking up threaded code path.
+SINGLE_THREAD_TEST_F(LayerTreeHostCustomThrougputTrackerTest);
 
 }  // namespace
 }  // namespace cc

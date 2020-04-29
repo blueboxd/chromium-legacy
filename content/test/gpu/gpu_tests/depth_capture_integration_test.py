@@ -8,8 +8,8 @@ import sys
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 
-data_path = os.path.join(
-    path_util.GetChromiumSrcDir(), 'content', 'test', 'data', 'media')
+data_path = os.path.join(path_util.GetChromiumSrcDir(), 'content', 'test',
+                         'data', 'media')
 
 wait_timeout = 60  # seconds
 
@@ -42,8 +42,8 @@ harness_script = r"""
   console.log("Harness injected.");
 """
 
-class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
+class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def Name(cls):
     return 'depth_capture'
@@ -64,7 +64,7 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     tab = self.tab
     tab.Navigate(url, script_to_evaluate_on_commit=harness_script)
     tab.action_runner.WaitForJavaScriptCondition(
-      'domAutomationController._finished', timeout=60)
+        'domAutomationController._finished', timeout=60)
     if not tab.EvaluateJavaScript('domAutomationController._succeeded'):
       self.fail('page indicated test failure:' +
                 tab.EvaluateJavaScript('domAutomationController._error_msg'))
@@ -73,21 +73,24 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def SetUpProcess(cls):
     super(DepthCaptureIntegrationTest, cls).SetUpProcess()
     cls.CustomizeBrowserArgs([
-      '--disable-domain-blocking-for-3d-apis',
-      '--enable-es3-apis',
-      '--use-fake-ui-for-media-stream',
-      '--use-fake-device-for-media-stream=device-count=2',
-      # Required for about:gpucrash handling from Telemetry.
-      '--enable-gpu-benchmarking'])
+        '--disable-domain-blocking-for-3d-apis',
+        '--enable-es3-apis',
+        '--use-fake-ui-for-media-stream',
+        '--use-fake-device-for-media-stream=device-count=2',
+        # Required for about:gpucrash handling from Telemetry.
+        '--enable-gpu-benchmarking'
+    ])
     cls.StartBrowser()
     cls.SetStaticServerDirs([data_path])
 
   @classmethod
   def ExpectationsFiles(cls):
     return [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     'test_expectations',
-                     'depth_capture_expectations.txt')]
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
+            'depth_capture_expectations.txt')
+    ]
+
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

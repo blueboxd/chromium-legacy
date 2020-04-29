@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/shell_javascript_dialog.h"
-#include "content/shell/browser/web_test/blink_test_controller.h"
+#include "content/shell/browser/web_test/web_test_control_host.h"
 #include "content/shell/common/shell_switches.h"
 
 namespace content {
@@ -20,7 +20,7 @@ namespace content {
 namespace {
 bool DumpJavascriptDialog() {
   base::Optional<bool> result =
-      BlinkTestController::Get()
+      WebTestControlHost::Get()
           ->accumulated_web_test_runtime_flags_changes()
           .FindBoolPath("dump_javascript_dialogs");
   if (!result.has_value())
@@ -30,7 +30,7 @@ bool DumpJavascriptDialog() {
 
 bool ShouldStayOnPageAfterHandlingBeforeUnload() {
   base::Optional<bool> result =
-      BlinkTestController::Get()
+      WebTestControlHost::Get()
           ->accumulated_web_test_runtime_flags_changes()
           .FindBoolPath("stay_on_page_after_handling_before_unload");
   if (!result.has_value())
@@ -69,7 +69,7 @@ void WebTestJavaScriptDialogManager::RunJavaScriptDialog(
              ", default text: ", base::UTF16ToUTF8(default_prompt_text), "\n"});
         break;
     }
-    BlinkTestController::Get()->printer()->AddMessageRaw(message);
+    WebTestControlHost::Get()->printer()->AddMessageRaw(message);
   }
   std::move(callback).Run(true, base::string16());
 }
@@ -80,8 +80,7 @@ void WebTestJavaScriptDialogManager::RunBeforeUnloadDialog(
     bool is_reload,
     DialogClosedCallback callback) {
   if (DumpJavascriptDialog())
-    BlinkTestController::Get()->printer()->AddMessageRaw(
-        "CONFIRM NAVIGATION\n");
+    WebTestControlHost::Get()->printer()->AddMessageRaw("CONFIRM NAVIGATION\n");
   std::move(callback).Run(!ShouldStayOnPageAfterHandlingBeforeUnload(),
                           base::string16());
 }

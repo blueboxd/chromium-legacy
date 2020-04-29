@@ -106,7 +106,6 @@ class AssistantInteractionControllerImpl
   void OnSuggestionsResponse(
       std::vector<AssistantSuggestionPtr> response) override;
   void OnTextResponse(const std::string& response) override;
-  void OnTimersResponse(const std::vector<std::string>& timer_ids) override;
   void OnOpenUrlResponse(const GURL& url, bool in_background) override;
   void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
                          OnOpenAppResponseCallback callback) override;

@@ -78,10 +78,6 @@ const char* OzonePlatform::GetPlatformName() {
   return GetOzonePlatformName();
 }
 
-IPC::MessageFilter* OzonePlatform::GetGpuMessageFilter() {
-  return nullptr;
-}
-
 PlatformClipboard* OzonePlatform::GetPlatformClipboard() {
   // Platforms that support system clipboard must override this method.
   return nullptr;

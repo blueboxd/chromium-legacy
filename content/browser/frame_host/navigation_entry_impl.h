@@ -130,7 +130,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   SSLStatus& GetSSL() override;
   void SetOriginalRequestURL(const GURL& original_url) override;
   const GURL& GetOriginalRequestURL() override;
-  void SetIsOverridingUserAgent(bool override) override;
+  void SetIsOverridingUserAgent(bool override_ua) override;
   bool GetIsOverridingUserAgent() override;
   void SetTimestamp(base::Time timestamp) override;
   base::Time GetTimestamp() override;

@@ -57,6 +57,10 @@ class EventWithCallback {
   base::TimeTicks last_coalesced_timestamp() const {
     return last_coalesced_timestamp_;
   }
+  void set_coalesced_scroll_and_pinch() { coalesced_scroll_and_pinch_ = true; }
+  bool coalesced_scroll_and_pinch() const {
+    return coalesced_scroll_and_pinch_;
+  }
   size_t coalesced_count() const { return original_events_.size(); }
   OriginalEventList& original_events() { return original_events_; }
   // |first_original_event()| is used as ID for tracing.
@@ -74,6 +78,7 @@ class EventWithCallback {
   WebScopedInputEvent event_;
   LatencyInfo latency_;
   OriginalEventList original_events_;
+  bool coalesced_scroll_and_pinch_ = false;
 
   base::TimeTicks creation_timestamp_;
   base::TimeTicks last_coalesced_timestamp_;

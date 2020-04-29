@@ -95,6 +95,7 @@ source_set("v4l2") {
     "//media/gpu:buildflags",
     "//media/gpu:common",
     "//media/gpu/chromeos:common",
+    "//media/parsers",
     "//third_party/libyuv",
     "//ui/gfx/geometry",
     "//ui/ozone",
@@ -116,7 +117,6 @@ source_set("v4l2") {
       "//components/chromeos_camera:jpeg_encode_accelerator",
       "//components/chromeos_camera:mjpeg_decode_accelerator",
       "//media/gpu:video_frame_mapper_common",
-      "//media/parsers",
     ]
   }
 }

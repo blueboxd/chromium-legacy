@@ -153,12 +153,12 @@ Panel = class {
      * @type {boolean}
      * @private
      */
-    Panel.menuSearchEnabled_ = false;
+    Panel.menuSearchEnabled_ = true;
 
     chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-chromevox-search-menus',
-        function(enabled) {
-          Panel.menuSearchEnabled_ = enabled;
+        'disable-experimental-accessibility-chromevox-search-menus',
+        (enabled) => {
+          Panel.menuSearchEnabled_ = !enabled;
         });
   }
 
@@ -321,6 +321,7 @@ Panel = class {
       Panel.clearMenus();
       Panel.pendingCallback_ = null;
 
+      // Build the top-level menus.
       const searchMenu = (Panel.menuSearchEnabled_) ?
           Panel.addSearchMenu('panel_search_menu') :
           null;

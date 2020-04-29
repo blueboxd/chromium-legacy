@@ -6,9 +6,10 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "chromecast/base/pref_names.h"
 #include "chromecast/metrics/cast_metrics_service_client.h"
 #include "components/metrics/metrics_service.h"

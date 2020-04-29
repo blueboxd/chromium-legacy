@@ -157,10 +157,14 @@ class CORE_EXPORT ComputedStyleUtils {
                                                 bool force_matrix3d);
   static CSSValue* ValueForTransformOperation(const TransformOperation&,
                                               float zoom);
+  // Serialize a transform list.
+  static CSSValue* ValueForTransformList(const TransformOperations&,
+                                         float zoom);
   static FloatRect ReferenceBoxForTransform(
       const LayoutObject&,
       UsePixelSnappedBox = kUsePixelSnappedBox);
-  static CSSValue* ComputedTransform(const LayoutObject*, const ComputedStyle&);
+  static CSSValue* ComputedTransformList(const ComputedStyle&);
+  static CSSValue* ResolvedTransform(const LayoutObject*, const ComputedStyle&);
   static CSSValue* CreateTransitionPropertyValue(
       const CSSTransitionData::TransitionProperty&);
   static CSSValue* ValueForTransitionProperty(const CSSTransitionData*);
@@ -226,6 +230,19 @@ class CORE_EXPORT ComputedStyleUtils {
   static CSSValue* ValueForGapLength(const GapLength&, const ComputedStyle&);
   static std::unique_ptr<CrossThreadStyleValue>
   CrossThreadStyleValueFromCSSStyleValue(CSSStyleValue* style_value);
+
+  // Returns the computed CSSValue of the given property from the style,
+  // which may different than the resolved value returned by
+  // CSSValueFromComputedStyle().
+  // see https://drafts.csswg.org/cssom/#resolved-values
+  //
+  // In most, but not all, cases, the resolved value involves layout-dependent
+  // calculations, and the computed value is used as a fallback when there is
+  // no layout object (display: none, etc). In those cases, this calls
+  // CSSValueFromComputedStyle(layout_object=nullptr), with the exceptions
+  // (transform and line-height currently) having their own logic here.
+  static const CSSValue* ComputedPropertyValue(const CSSProperty&,
+                                               const ComputedStyle&);
 };
 
 }  // namespace blink

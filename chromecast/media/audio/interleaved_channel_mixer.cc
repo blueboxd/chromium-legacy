@@ -4,7 +4,7 @@
 
 #include "chromecast/media/audio/interleaved_channel_mixer.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "media/base/channel_mixing_matrix.h"
 
 namespace chromecast {

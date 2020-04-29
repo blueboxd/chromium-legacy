@@ -55,7 +55,6 @@
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
-#include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/ukm/ukm.mojom-blink.h"
@@ -164,11 +163,9 @@
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/navigation_initiator_impl.h"
-#include "third_party/blink/renderer/core/frame/document_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
-#include "third_party/blink/renderer/core/frame/feature_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/history.h"
 #include "third_party/blink/renderer/core/frame/intervention.h"
@@ -177,8 +174,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
-#include "third_party/blink/renderer/core/frame/report.h"
-#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -2499,7 +2494,7 @@ static void AssertLayoutTreeUpdated(Node& root) {
   Node* node = &root;
   while (node) {
     if (auto* element = DynamicTo<Element>(node)) {
-      if (RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() &&
+      if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled() &&
           element->StyleRecalcBlockedByDisplayLock(
               DisplayLockLifecycleTarget::kChildren)) {
         node = FlatTreeTraversal::NextSkippingChildren(*node);
@@ -2790,9 +2785,9 @@ void Document::ApplyScrollRestorationLogic() {
   // This function in not re-entrant. However, the places that invoke this are
   // re-entrant. Specifically, UpdateStyleAndLayout() calls this, which in turn
   // can do a find-in-page for the scroll-to-text feature, which can cause
-  // UpdateStyleAndLayout to happen with subtree-visibility, which gets back here
-  // and recurses indefinitely. As a result, we ensure to early out from this
-  // function if are currently in process of restoring scroll.
+  // UpdateStyleAndLayout to happen with content-visibility, which gets back
+  // here and recurses indefinitely. As a result, we ensure to early out from
+  // this function if are currently in process of restoring scroll.
   if (applying_scroll_restoration_logic_)
     return;
   base::AutoReset<bool> applying_scroll_restoration_logic_scope(
@@ -2875,8 +2870,8 @@ void Document::MarkHasFindInPageRequest() {
   had_find_in_page_request_ = true;
 }
 
-void Document::MarkHasFindInPageSubtreeVisibilityActiveMatch() {
-  // Note that although find-in-page in subtree-visibility requests happen in
+void Document::MarkHasFindInPageContentVisibilityActiveMatch() {
+  // Note that although find-in-page in content-visibility requests happen in
   // non-main frames, we only record the main frame results (per UKM policy).
   // Additionally, we only record the event once.
   if (had_find_in_page_render_subtree_active_match_ || !IsInMainFrame())
@@ -8409,104 +8404,6 @@ LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
 
 WindowAgent& Document::GetWindowAgent() {
   return *static_cast<WindowAgent*>(GetAgent());
-}
-
-void Document::CountPotentialFeaturePolicyViolation(
-    mojom::blink::FeaturePolicyFeature feature) const {
-  wtf_size_t index = static_cast<wtf_size_t>(feature);
-  if (potentially_violated_features_.size() == 0) {
-    potentially_violated_features_.resize(
-        static_cast<wtf_size_t>(mojom::blink::FeaturePolicyFeature::kMaxValue) +
-        1);
-  } else if (potentially_violated_features_[index]) {
-    return;
-  }
-  potentially_violated_features_[index] = true;
-  UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.PotentialViolation",
-                            feature);
-}
-void Document::ReportFeaturePolicyViolation(
-    mojom::blink::FeaturePolicyFeature feature,
-    mojom::blink::PolicyDisposition disposition,
-    const String& message) const {
-  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this))
-    return;
-  LocalFrame* frame = GetFrame();
-  if (!frame)
-    return;
-
-  // Construct the feature policy violation report.
-  const String& feature_name = GetNameForFeature(feature);
-  const String& disp_str =
-      (disposition == mojom::blink::PolicyDisposition::kReport ? "report"
-                                                               : "enforce");
-
-  FeaturePolicyViolationReportBody* body =
-      MakeGarbageCollected<FeaturePolicyViolationReportBody>(feature_name,
-                                                             message, disp_str);
-
-  Report* report = MakeGarbageCollected<Report>(
-      ReportType::kFeaturePolicyViolation, Url().GetString(), body);
-
-  // Send the feature policy violation report to any ReportingObservers.
-  auto* reporting_context = ReportingContext::From(domWindow());
-  reporting_context->QueueReport(report);
-
-  // TODO(iclelland): Report something different in report-only mode
-  if (disposition == mojom::blink::PolicyDisposition::kEnforce) {
-    frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kViolation,
-        mojom::blink::ConsoleMessageLevel::kError, body->message()));
-  }
-}
-
-void Document::ReportDocumentPolicyViolation(
-    mojom::blink::DocumentPolicyFeature feature,
-    mojom::blink::PolicyDisposition disposition,
-    const String& message,
-    const String& source_file) const {
-  LocalFrame* frame = GetFrame();
-  if (!frame)
-    return;
-
-  // Construct the document policy violation report.
-  const String& feature_name =
-      GetDocumentPolicyFeatureInfoMap().at(feature).feature_name.c_str();
-  bool is_report_only = disposition == mojom::blink::PolicyDisposition::kReport;
-  const String& disp_str = is_report_only ? "report" : "enforce";
-  const DocumentPolicy* relevant_document_policy =
-      is_report_only ? GetSecurityContext().GetReportOnlyDocumentPolicy()
-                     : GetSecurityContext().GetDocumentPolicy();
-
-  DocumentPolicyViolationReportBody* body =
-      MakeGarbageCollected<DocumentPolicyViolationReportBody>(
-          feature_name, message, disp_str, source_file);
-
-  Report* report = MakeGarbageCollected<Report>(
-      ReportType::kDocumentPolicyViolation, Url().GetString(), body);
-
-  // Send the document policy violation report to any ReportingObservers.
-  auto* reporting_context = ReportingContext::From(domWindow());
-  const base::Optional<std::string> endpoint =
-      relevant_document_policy->GetFeatureEndpoint(feature);
-
-  if (is_report_only) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.ReportOnly",
-                              feature);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.Enforced",
-                              feature);
-  }
-
-  reporting_context->QueueReport(
-      report, endpoint ? Vector<String>{endpoint->c_str()} : Vector<String>{});
-
-  // TODO(iclelland): Report something different in report-only mode
-  if (!is_report_only) {
-    frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kViolation,
-        mojom::blink::ConsoleMessageLevel::kError, body->message()));
-  }
 }
 
 void Document::IncrementNumberOfCanvases() {

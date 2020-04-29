@@ -5,7 +5,6 @@
 #include "chromecast/base/init_command_line_shlib.h"
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "chromecast/chromecast_buildflags.h"
 
 namespace chromecast {

@@ -31,6 +31,7 @@
 
 #include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
@@ -71,15 +72,19 @@
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/frame/bar_prop.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/document_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/external.h"
+#include "third_party/blink/renderer/core/frame/feature_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/history.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/report.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/screen.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
@@ -370,14 +375,50 @@ scoped_refptr<base::SingleThreadTaskRunner> LocalDOMWindow::GetTaskRunner(
 
 void LocalDOMWindow::CountPotentialFeaturePolicyViolation(
     mojom::blink::FeaturePolicyFeature feature) const {
-  document()->CountPotentialFeaturePolicyViolation(feature);
+  wtf_size_t index = static_cast<wtf_size_t>(feature);
+  if (potentially_violated_features_.size() == 0) {
+    potentially_violated_features_.resize(
+        static_cast<wtf_size_t>(mojom::blink::FeaturePolicyFeature::kMaxValue) +
+        1);
+  } else if (potentially_violated_features_[index]) {
+    return;
+  }
+  potentially_violated_features_[index] = true;
+  UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.PotentialViolation",
+                            feature);
 }
 
 void LocalDOMWindow::ReportFeaturePolicyViolation(
     mojom::blink::FeaturePolicyFeature feature,
     mojom::blink::PolicyDisposition disposition,
     const String& message) const {
-  document()->ReportFeaturePolicyViolation(feature, disposition, message);
+  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this))
+    return;
+  if (!GetFrame())
+    return;
+
+  // Construct the feature policy violation report.
+  const String& feature_name = GetNameForFeature(feature);
+  const String& disp_str =
+      (disposition == mojom::blink::PolicyDisposition::kReport ? "report"
+                                                               : "enforce");
+
+  FeaturePolicyViolationReportBody* body =
+      MakeGarbageCollected<FeaturePolicyViolationReportBody>(feature_name,
+                                                             message, disp_str);
+
+  Report* report = MakeGarbageCollected<Report>(
+      ReportType::kFeaturePolicyViolation, Url().GetString(), body);
+
+  // Send the feature policy violation report to any ReportingObservers.
+  ReportingContext::From(this)->QueueReport(report);
+
+  // TODO(iclelland): Report something different in report-only mode
+  if (disposition == mojom::blink::PolicyDisposition::kEnforce) {
+    GetFrame()->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kViolation,
+        mojom::blink::ConsoleMessageLevel::kError, body->message()));
+  }
 }
 
 void LocalDOMWindow::ReportDocumentPolicyViolation(
@@ -385,8 +426,46 @@ void LocalDOMWindow::ReportDocumentPolicyViolation(
     mojom::blink::PolicyDisposition disposition,
     const String& message,
     const String& source_file) const {
-  document()->ReportDocumentPolicyViolation(feature, disposition, message,
-                                            source_file);
+  if (!GetFrame())
+    return;
+
+  // Construct the document policy violation report.
+  const String& feature_name =
+      GetDocumentPolicyFeatureInfoMap().at(feature).feature_name.c_str();
+  bool is_report_only = disposition == mojom::blink::PolicyDisposition::kReport;
+  const String& disp_str = is_report_only ? "report" : "enforce";
+  const DocumentPolicy* relevant_document_policy =
+      is_report_only ? GetSecurityContext().GetReportOnlyDocumentPolicy()
+                     : GetSecurityContext().GetDocumentPolicy();
+
+  DocumentPolicyViolationReportBody* body =
+      MakeGarbageCollected<DocumentPolicyViolationReportBody>(
+          feature_name, message, disp_str, source_file);
+
+  Report* report = MakeGarbageCollected<Report>(
+      ReportType::kDocumentPolicyViolation, Url().GetString(), body);
+
+  // Send the document policy violation report to any ReportingObservers.
+  const base::Optional<std::string> endpoint =
+      relevant_document_policy->GetFeatureEndpoint(feature);
+
+  if (is_report_only) {
+    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.ReportOnly",
+                              feature);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.Enforced",
+                              feature);
+  }
+
+  ReportingContext::From(this)->QueueReport(
+      report, endpoint ? Vector<String>{endpoint->c_str()} : Vector<String>{});
+
+  // TODO(iclelland): Report something different in report-only mode
+  if (!is_report_only) {
+    GetFrame()->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kViolation,
+        mojom::blink::ConsoleMessageLevel::kError, body->message()));
+  }
 }
 
 static void RunAddConsoleMessageTask(mojom::ConsoleMessageSource source,

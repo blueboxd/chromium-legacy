@@ -1203,9 +1203,9 @@ TEST_F(DocumentTest, FindInPageUkm) {
   EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(
       entries[0], "DidHaveRenderSubtreeMatch"));
 
-  GetDocument().MarkHasFindInPageSubtreeVisibilityActiveMatch();
+  GetDocument().MarkHasFindInPageContentVisibilityActiveMatch();
   EXPECT_EQ(recorder->entries_count(), 2u);
-  GetDocument().MarkHasFindInPageSubtreeVisibilityActiveMatch();
+  GetDocument().MarkHasFindInPageContentVisibilityActiveMatch();
   EXPECT_EQ(recorder->entries_count(), 2u);
   entries = recorder->GetEntriesByName("Blink.FindInPage");
   EXPECT_EQ(entries.size(), 2u);

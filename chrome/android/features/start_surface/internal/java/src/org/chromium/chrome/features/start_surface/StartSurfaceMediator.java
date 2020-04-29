@@ -92,11 +92,11 @@ class StartSurfaceMediator
     @Nullable
     private final PropertyModel mPropertyModel;
     @Nullable
-    private final ExploreSurfaceCoordinator.FeedSurfaceCreator mFeedSurfaceCreator;
-    @Nullable
     private final SecondaryTasksSurfaceInitializer mSecondaryTasksSurfaceInitializer;
     @SurfaceMode
     private final int mSurfaceMode;
+    @Nullable
+    private ExploreSurfaceCoordinator.FeedSurfaceCreator mFeedSurfaceCreator;
     @Nullable
     private TabSwitcher.Controller mSecondaryTasksSurfaceController;
     @Nullable
@@ -127,7 +127,6 @@ class StartSurfaceMediator
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             @Nullable PropertyModel propertyModel,
-            @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
             @SurfaceMode int surfaceMode, NightModeStateProvider nightModeStateProvider,
             ChromeFullscreenManager fullscreenManager, ActivityStateChecker activityStateChecker,
@@ -135,7 +134,6 @@ class StartSurfaceMediator
         mController = controller;
         mTabModelSelector = tabModelSelector;
         mPropertyModel = propertyModel;
-        mFeedSurfaceCreator = feedSurfaceCreator;
         mSecondaryTasksSurfaceInitializer = secondaryTasksSurfaceInitializer;
         mSurfaceMode = surfaceMode;
         mNightModeStateProvider = nightModeStateProvider;
@@ -255,8 +253,10 @@ class StartSurfaceMediator
         mOverviewModeState = OverviewModeState.NOT_SHOWN;
     }
 
-    public void initWithNative(@Nullable FakeboxDelegate fakeboxDelegate) {
+    void initWithNative(@Nullable FakeboxDelegate fakeboxDelegate,
+            @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator) {
         mFakeboxDelegate = fakeboxDelegate;
+        mFeedSurfaceCreator = feedSurfaceCreator;
         if (mPropertyModel != null) {
             assert mFakeboxDelegate != null;
 
@@ -267,6 +267,10 @@ class StartSurfaceMediator
 
             if (mController.overviewVisible()) {
                 mFakeboxDelegate.addUrlFocusChangeListener(mUrlFocusChangeListener);
+                if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE
+                        && mFeedSurfaceCreator != null) {
+                    setExploreSurfaceVisibility(!mIsIncognito);
+                }
             }
         }
     }
@@ -344,7 +348,7 @@ class StartSurfaceMediator
 
     private void setOverviewStateInternal() {
         if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE) {
-            setExploreSurfaceVisibility(!mIsIncognito);
+            setExploreSurfaceVisibility(!mIsIncognito && mFeedSurfaceCreator != null);
             setTabCarouselVisibility(
                     mTabModelSelector.getModel(false).getCount() > 0 && !mIsIncognito);
             setMVTilesVisibility(!mIsIncognito);
@@ -440,7 +444,8 @@ class StartSurfaceMediator
             // default.
             if (mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
                     && mPropertyModel.get(FEED_SURFACE_COORDINATOR) == null
-                    && !mActivityStateChecker.isFinishingOrDestroyed()) {
+                    && !mActivityStateChecker.isFinishingOrDestroyed()
+                    && mFeedSurfaceCreator != null) {
                 mPropertyModel.set(FEED_SURFACE_COORDINATOR,
                         mFeedSurfaceCreator.createFeedSurfaceCoordinator(
                                 mNightModeStateProvider.isInNightMode()));

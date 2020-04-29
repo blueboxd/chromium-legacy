@@ -63,10 +63,6 @@ class SanityCheckSubscriber : public DefaultAssistantInteractionSubscriber {
 
   void OnTextResponse(const std::string& response) override { CheckResponse(); }
 
-  void OnTimersResponse(const std::vector<std::string>& timer_ids) override {
-    CheckResponse();
-  }
-
   void OnOpenUrlResponse(const ::GURL& url, bool in_background) override {
     CheckResponse();
   }

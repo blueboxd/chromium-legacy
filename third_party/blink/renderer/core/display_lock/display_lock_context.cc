@@ -86,7 +86,7 @@ void RecordActivationReason(Document* document,
                             ordered_reason, number_of_reasons);
 
   if (document && reason == DisplayLockActivationReason::kFindInPage)
-    document->MarkHasFindInPageSubtreeVisibilityActiveMatch();
+    document->MarkHasFindInPageContentVisibilityActiveMatch();
 }
 }  // namespace
 
@@ -97,21 +97,21 @@ DisplayLockContext::DisplayLockContext(Element* element)
   DetermineIfSubtreeHasSelection();
 }
 
-void DisplayLockContext::SetRequestedState(ESubtreeVisibility state) {
+void DisplayLockContext::SetRequestedState(EContentVisibility state) {
   if (state_ == state)
     return;
   state_ = state;
   switch (state_) {
-    case ESubtreeVisibility::kVisible:
+    case EContentVisibility::kVisible:
       RequestUnlock();
       break;
-    case ESubtreeVisibility::kAuto:
+    case EContentVisibility::kAuto:
       RequestLock(static_cast<uint16_t>(DisplayLockActivationReason::kAny));
       break;
-    case ESubtreeVisibility::kHidden:
+    case EContentVisibility::kHidden:
       RequestLock(0u);
       break;
-    case ESubtreeVisibility::kHiddenMatchable:
+    case EContentVisibility::kHiddenMatchable:
       RequestLock(
           static_cast<uint16_t>(DisplayLockActivationReason::kAny) &
           ~static_cast<uint16_t>(DisplayLockActivationReason::kViewport));
@@ -125,7 +125,7 @@ void DisplayLockContext::SetRequestedState(ESubtreeVisibility state) {
   // set that to false, since the mode has switched to something else. If we're
   // switching _to_ 'auto' mode, this should already be false and will be a
   // no-op.
-  DCHECK(state_ != ESubtreeVisibility::kAuto ||
+  DCHECK(state_ != EContentVisibility::kAuto ||
          !needs_deferred_not_intersecting_signal_);
   needs_deferred_not_intersecting_signal_ = false;
   UpdateLifecycleNotificationRegistration();
@@ -141,11 +141,11 @@ void DisplayLockContext::SetRequestedState(ESubtreeVisibility state) {
 }
 
 void DisplayLockContext::AdjustElementStyle(ComputedStyle* style) const {
-  if (state_ == ESubtreeVisibility::kVisible)
+  if (state_ == EContentVisibility::kVisible)
     return;
   // If not visible, element gains style, layout, and paint containment. If
   // skipped, it also gains size containment.
-  // https://wicg.github.io/display-locking/#subtree-visibility
+  // https://wicg.github.io/display-locking/#content-visibility
   auto contain =
       style->Contain() | kContainsStyle | kContainsLayout | kContainsPaint;
   if (IsLocked())
@@ -213,7 +213,7 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
   // We require observation if we are in 'auto' mode and we're connected to a
   // view.
   bool should_observe =
-      state_ == ESubtreeVisibility::kAuto && ConnectedToView();
+      state_ == EContentVisibility::kAuto && ConnectedToView();
   if (is_observed_ == should_observe)
     return;
   is_observed_ = should_observe;
@@ -269,7 +269,7 @@ void DisplayLockContext::Lock() {
     return;
 
   // There are two ways we can get locked:
-  // 1. A new subtree-visibility property needs us to be locked.
+  // 1. A new content-visibility property needs us to be locked.
   // 2. We're in 'auto' mode and we are not intersecting the viewport.
   // In the first case, we are already in style processing, so we don't need to
   // invalidate style. However, in the second case we invalidate style so that
@@ -320,7 +320,7 @@ void DisplayLockContext::DidStyle(DisplayLockLifecycleTarget target) {
     if (ForceUnlockIfNeeded())
       return;
 
-    if (!IsLocked() && state_ != ESubtreeVisibility::kVisible) {
+    if (!IsLocked() && state_ != EContentVisibility::kVisible) {
       UpdateActivationObservationIfNeeded();
       NotifyRenderAffectingStateChanged();
     }
@@ -379,7 +379,7 @@ bool DisplayLockContext::IsActivatable(
 }
 
 void DisplayLockContext::FireActivationEvent(Element* activated_element) {
-  DCHECK(RuntimeEnabledFeatures::CSSSubtreeVisibilityActivationEventEnabled());
+  DCHECK(RuntimeEnabledFeatures::CSSContentVisibilityActivationEventEnabled());
   element_->DispatchEvent(
       *MakeGarbageCollected<RenderSubtreeActivationEvent>(*activated_element));
 }
@@ -394,7 +394,7 @@ void DisplayLockContext::CommitForActivationWithSignal(
   DCHECK(ShouldCommitForActivation(DisplayLockActivationReason::kAny));
 
   // TODO(vmpstr): Remove this when we have a beforematch event.
-  if (RuntimeEnabledFeatures::CSSSubtreeVisibilityActivationEventEnabled()) {
+  if (RuntimeEnabledFeatures::CSSContentVisibilityActivationEventEnabled()) {
     document_->EnqueueDisplayLockActivationTask(
         WTF::Bind(&DisplayLockContext::FireActivationEvent,
                   weak_factory_.GetWeakPtr(), WrapPersistent(activated_element)));
@@ -500,7 +500,7 @@ void DisplayLockContext::Unlock() {
   ScheduleAnimation();
 
   // There are a few ways we can get unlocked:
-  // 1. A new subtree-visibility property needs us to be ulocked.
+  // 1. A new content-visibility property needs us to be ulocked.
   // 2. We're in 'auto' mode and we are intersecting the viewport.
   // 3. We're activating in hidden-matchable or auto mode
   // In the first case, we are already in style processing, so we don't need to
@@ -977,9 +977,9 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
   };
 
   // Check that we're visible if and only if lock has not been requested.
-  DCHECK(state_ == ESubtreeVisibility::kVisible ||
+  DCHECK(state_ == EContentVisibility::kVisible ||
          state(RenderAffectingState::kLockRequested));
-  DCHECK(state_ != ESubtreeVisibility::kVisible ||
+  DCHECK(state_ != EContentVisibility::kVisible ||
          !state(RenderAffectingState::kLockRequested));
 
   // We should be locked if the lock has been requested (the above DCHECKs
@@ -991,7 +991,7 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
   //   selection.
   bool should_be_locked =
       state(RenderAffectingState::kLockRequested) &&
-      (state_ != ESubtreeVisibility::kAuto ||
+      (state_ != EContentVisibility::kAuto ||
        (!state(RenderAffectingState::kIntersectsViewport) &&
         !state(RenderAffectingState::kSubtreeHasFocus) &&
         !state(RenderAffectingState::kSubtreeHasSelection)));

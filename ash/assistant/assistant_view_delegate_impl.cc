@@ -66,7 +66,7 @@ void AssistantViewDelegateImpl::RemoveNotificationModelObserver(
 
 void AssistantViewDelegateImpl::DownloadImage(
     const GURL& url,
-    AssistantImageDownloader::DownloadCallback callback) {
+    ImageDownloader::DownloadCallback callback) {
   assistant_controller_->DownloadImage(url, std::move(callback));
 }
 

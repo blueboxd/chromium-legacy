@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/ash/assistant/assistant_context_util.h"
-#include "chrome/browser/ui/ash/assistant/assistant_image_downloader.h"
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 #include "chrome/browser/ui/ash/assistant/assistant_web_view_factory_impl.h"
 #include "chrome/browser/ui/ash/assistant/conversation_starters_client_impl.h"
@@ -78,7 +77,6 @@ void AssistantClientImpl::MaybeInit(Profile* profile) {
       IdentityManagerFactory::GetForProfile(profile), profile->GetPrefs());
   service_->Init();
 
-  assistant_image_downloader_ = std::make_unique<AssistantImageDownloader>();
   assistant_setup_ = std::make_unique<AssistantSetup>();
   assistant_web_view_factory_ =
       std::make_unique<AssistantWebViewFactoryImpl>(profile_);

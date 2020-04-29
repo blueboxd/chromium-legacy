@@ -55,14 +55,12 @@ public class MockRenderFrameHost implements RenderFrameHost {
     }
 
     @Override
-    public int performGetAssertionWebAuthSecurityChecks(
-            String relyingPartyId, Origin effectiveOrigin) {
+    public int performGetAssertionWebAuthSecurityChecks(String relyingPartyId) {
         return 0;
     }
 
     @Override
-    public int performMakeCredentialWebAuthSecurityChecks(
-            String relyingPartyId, Origin effectiveOrigin) {
+    public int performMakeCredentialWebAuthSecurityChecks(String relyingPartyId) {
         return 0;
     }
 }

@@ -21,7 +21,6 @@ source_set("alerts") {
     "//ios/chrome/browser/ui/overlays:coordinators",
     "//ios/chrome/browser/ui/overlays:util",
     "//ios/chrome/browser/ui/overlays/common/alerts",
-    "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs",
     "//ui/base",
   ]
 }

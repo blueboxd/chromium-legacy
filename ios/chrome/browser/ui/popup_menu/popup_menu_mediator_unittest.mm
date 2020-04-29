@@ -23,7 +23,7 @@
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
-#import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_overlay.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
@@ -58,6 +58,7 @@
 #endif
 
 using bookmarks::BookmarkModel;
+using java_script_dialog_overlays::JavaScriptDialogRequest;
 
 @interface FakePopupMenuConsumer : NSObject <PopupMenuConsumer>
 @property(nonatomic, strong)
@@ -382,13 +383,12 @@ TEST_F(PopupMenuMediatorTest, TestReadLaterDisabled) {
 
   // Present a JavaScript alert over the WebState and verify that the page is no
   // longer shareable.
-  JavaScriptDialogSource source(web_state_, kUrl, /*is_main_frame=*/true);
-  const std::string kMessage("message");
   OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
       web_state_, OverlayModality::kWebContentArea);
-  queue->AddRequest(
-      OverlayRequest::CreateWithConfig<JavaScriptAlertOverlayRequestConfig>(
-          source, kMessage));
+  queue->AddRequest(OverlayRequest::CreateWithConfig<JavaScriptDialogRequest>(
+      web::JAVASCRIPT_DIALOG_TYPE_ALERT, web_state_, kUrl,
+      /*is_main_frame=*/true, @"message",
+      /*default_text_field_value=*/nil));
   EXPECT_TRUE(HasItem(consumer, kToolsMenuReadLater, /*enabled=*/NO));
 
   // Cancel the request and verify that the "Read Later" button is enabled.

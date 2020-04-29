@@ -83,6 +83,8 @@ void FloatingAccessibilityController::Show(FloatingMenuPosition position) {
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
 
+  menu_view_->Initialize();
+
   SetMenuPosition(position);
 }
 
@@ -153,6 +155,12 @@ void FloatingAccessibilityController::OnDetailedMenuEnabled(bool enabled) {
         ->accessibility_controller()
         ->UpdateAutoclickMenuBoundsIfNeeded();
   }
+}
+
+void FloatingAccessibilityController::OnLayoutChanged() {
+  if (on_layout_change_)
+    on_layout_change_.Run();
+  SetMenuPosition(position_);
 }
 
 void FloatingAccessibilityController::OnDetailedMenuClosed() {

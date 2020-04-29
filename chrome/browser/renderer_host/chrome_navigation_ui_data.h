@@ -33,8 +33,7 @@ class ChromeNavigationUIData : public content::NavigationUIData {
 
   static std::unique_ptr<ChromeNavigationUIData> CreateForMainFrameNavigation(
       content::WebContents* web_contents,
-      WindowOpenDisposition disposition,
-      int64_t data_reduction_proxy_page_id);
+      WindowOpenDisposition disposition);
 
   // Creates a new ChromeNavigationUIData that is a deep copy of the original.
   // Any changes to the original after the clone is created will not be
@@ -65,9 +64,6 @@ class ChromeNavigationUIData : public content::NavigationUIData {
   const std::string& prerender_histogram_prefix() {
     return prerender_histogram_prefix_;
   }
-  uint64_t data_reduction_proxy_page_id() const {
-    return data_reduction_proxy_page_id_;
-  }
 
  private:
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -84,7 +80,6 @@ class ChromeNavigationUIData : public content::NavigationUIData {
   WindowOpenDisposition disposition_;
   prerender::PrerenderMode prerender_mode_ = prerender::NO_PRERENDER;
   std::string prerender_histogram_prefix_;
-  uint64_t data_reduction_proxy_page_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNavigationUIData);
 };

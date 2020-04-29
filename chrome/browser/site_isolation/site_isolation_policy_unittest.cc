@@ -17,6 +17,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/site_isolation/preloaded_isolated_origins.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/site_instance.h"
@@ -268,6 +269,12 @@ class SitePerProcessMemoryThresholdBrowserTest
     expected_embedder_origins_.push_back(
         url::Origin::Create(extension_urls::GetWebstoreLaunchURL()));
 #endif
+    // On Android official builds, we expect to isolate an additional set of
+    // built-in origins.
+    auto built_in_origins =
+        site_isolation::GetBrowserSpecificBuiltInIsolatedOrigins();
+    std::move(std::begin(built_in_origins), std::end(built_in_origins),
+              std::back_inserter(expected_embedder_origins_));
   }
 
  protected:

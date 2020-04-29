@@ -9,6 +9,7 @@
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 
 namespace gfx {
 class ImageSkia;

@@ -2274,6 +2274,7 @@ Output.ROLE_INFO_ = {
   row: {msgId: 'role_row', inherits: 'abstractContainer'},
   rowHeader: {msgId: 'role_rowheader', inherits: 'cell'},
   scrollBar: {msgId: 'role_scrollbar', inherits: 'abstractRange'},
+  section: {msgId: 'role_region', inherits: 'abstractContainer'},
   search: {msgId: 'role_search', inherits: 'abstractContainer'},
   separator: {msgId: 'role_separator', inherits: 'abstractContainer'},
   slider: {msgId: 'role_slider', inherits: 'abstractRange', earconId: 'SLIDER'},

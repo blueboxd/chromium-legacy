@@ -35,7 +35,6 @@ namespace {
 class MockCompositor : public WindowAndroidCompositor {
  public:
   ~MockCompositor() override {}
-  void AttachLayerForReadback(scoped_refptr<cc::Layer>) override {}
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest>) override {}
   void SetNeedsAnimate() override {}

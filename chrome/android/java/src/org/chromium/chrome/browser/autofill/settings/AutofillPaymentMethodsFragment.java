@@ -124,7 +124,7 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
             Drawable plusIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.plus);
             plusIcon.mutate();
             plusIcon.setColorFilter(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.pref_accent_color),
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.light_active_color),
                     PorterDuff.Mode.SRC_IN);
             add_card_pref.setIcon(plusIcon);
             add_card_pref.setTitle(R.string.autofill_create_credit_card);

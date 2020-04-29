@@ -67,14 +67,12 @@ TEST(LookalikeUrlUtilTest, IsEditDistanceAtMostOne) {
 }
 
 TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
-  const std::set<std::string> important_tlds = {"com", "org", "edu", "gov",
-                                                "co"};
+  const std::vector<DomainInfo> engaged_sites = {
+      GetDomainInfo(GURL("https://highengagement.com"))};
   const struct TargetEmbeddingHeuristicTestCase {
     const GURL url;
     bool should_trigger;
   } kTestCases[] = {
-
-      // We test everything with the correct TLD and another popular TLD.
 
       // Scheme should not affect the outcome.
       {GURL("http://google.com.com"), true},
@@ -97,9 +95,10 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
       // matches.
       {GURL("http://goog0le.com-login.com"), false},
 
-      // Unicode characters should be handled
-      {GURL("http://googlé.com-login.com"), true},
-      {GURL("http://sth-googlé.com-sth.com"), true},
+      // Unicode characters are currently not handled. As a result, target
+      // embedding sites that embed lookalikes of top domains aren't flagged.
+      {GURL("http://googlé.com-login.com"), false},
+      {GURL("http://sth-googlé.com-sth.com"), false},
 
       // The basic state
       {GURL("http://google.com.sth.com"), true},
@@ -120,38 +119,14 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
       // The target domain and its tld should be next to each other.
       {GURL("http://sth-google.l.com-sth.com"), false},
 
-      {GURL("http://google.edu.com"), true},
-      {GURL("https://google.edu.com"), true},
-      {GURL("http://this-is-a-very-long-url-but-it-should-not-affect-the-"
-            "outcome-of-this-target-embedding-test-google.edu-login.com"),
-       true},
-      {GURL(
-           "http://this-is-a-very-long-url-but-it-should-not-affect-google-the-"
-           "outcome-of-this-target-embedding-test.edu-login.com"),
-       false},
-      {GURL(
-           "http://google-this-is-a-very-long-url-but-it-should-not-affect-the-"
-           "outcome-of-this-target-embedding-test.edu-login.com"),
-       false},
-      {GURL("http://goog0le.edu-login.com"), false},
-      {GURL("http://googlé.edu-login.com"), true},
-      {GURL("http://sth-googlé.edu-sth.com"), true},
-      {GURL("http://google.edu.sth.com"), true},
-      {GURL("http://sth-google.edu-sth.com"), true},
-      {GURL("http://sth-google.edu.sth.com"), true},
-      {GURL("http://a.b.c.d.e.f.g.h.sth-google.edu.sth.com"), true},
-      {GURL("http://a.b.c.d.e.f.g.h.google.edu-sth.com"), true},
-      {GURL("http://1.2.3.4.5.6.google.edu-sth.com"), true},
-      {GURL("http://sth.google.edu.sth.com"), true},
-      {GURL("http://sth.google.edu-sth.com"), true},
-      {GURL("http://sth-google.l.edu-sth.com"), false},
-      {GURL("http://sth-google-l.edu-sth.com"), false},
-      {GURL("http://sth-google.l-edu-sth.com"), false},
-
+      // Target domain should match only with its actual TLD.
+      {GURL("http://google.edu.com"), false},
       // Target domain might be separated with a dash instead of dot.
       {GURL("http://sth.google-com-sth.com"), true},
+      // Target domain could be an engaged domain
+      {GURL("http://highengagement-com-login.com"), true},
 
-      // Ensure legitimate domains don't trigger.
+      // Ensure legitimate domains don't trigger the heuristic.
       {GURL("http://google.com"), false},
       {GURL("http://google.co.uk"), false},
       {GURL("http://google.randomreg-login.com"), false},
@@ -159,17 +134,17 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
   };
 
   for (const auto& kTestCase : kTestCases) {
-    GURL safe_url = GURL();
+    std::string safe_url;
     if (kTestCase.should_trigger) {
       EXPECT_TRUE(
-          IsTargetEmbeddingLookalike(kTestCase.url, important_tlds, &safe_url))
+          IsTargetEmbeddingLookalike(kTestCase.url, engaged_sites, &safe_url))
           << "Expected that \"" << kTestCase.url
           << " should trigger but it didn't.";
     } else {
       EXPECT_FALSE(
-          IsTargetEmbeddingLookalike(kTestCase.url, important_tlds, &safe_url))
+          IsTargetEmbeddingLookalike(kTestCase.url, engaged_sites, &safe_url))
           << "Expected that \"" << kTestCase.url
-          << " shouldn't trigger but it did. For URL: " << safe_url.spec();
+          << " shouldn't trigger but it did. For URL: " << safe_url;
     }
   }
 }

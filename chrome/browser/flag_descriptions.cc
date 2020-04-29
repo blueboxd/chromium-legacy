@@ -675,13 +675,6 @@ const char kEnableCSSOMViewScrollCoordinatesDescription[] =
     "Y coordinate will start from 0 to negative value. And for other directions"
     "(rightwards and downwards) the value will start from 0 to positive";
 
-const char kEnableLitePageServerPreviewsName[] = "Lite Page Server Previews";
-const char kEnableLitePageServerPreviewsDescription[] =
-    "Enable showing Lite Page Previews served from a Previews Server."
-    "This feature will cause Chrome to redirect eligible navigations "
-    "to a Google-owned domain that serves a pre-rendered version of the "
-    "original page. Also known as Lite Page Redirect Previews.";
-
 const char kEnablePreviewsCoinFlipName[] = "Enable Previews Coin Flip";
 const char kEnablePreviewsCoinFlipDescription[] =
     "Enable coin flip experimentation of Previews.";
@@ -1115,12 +1108,6 @@ const char kIgnoreGpuBlacklistDescription[] =
 const char kIgnorePreviewsBlacklistName[] = "Ignore Previews Blocklist";
 const char kIgnorePreviewsBlacklistDescription[] =
     "Ignore decisions made by the PreviewsBlockList";
-
-const char kIgnoreLitePageRedirectHintsBlacklistName[] =
-    "Ignore Lite Page Redirect Preview Optimization Hints Blacklist";
-const char kIgnoreLitePageRedirectHintsBlacklistDescription[] =
-    "Ignore blacklist decisions made by Optimization Hints for Lite Page "
-    "Redirect previews";
 
 const char kImprovedCookieControlsName[] =
     "Enable improved cookie controls UI in incognito mode";
@@ -3806,10 +3793,6 @@ const char kVirtualKeyboardName[] = "Virtual Keyboard";
 const char kVirtualKeyboardDescription[] =
     "Always show virtual keyboard regardless of having a physical keyboard "
     "present";
-
-const char kWakeOnPacketsName[] = "Wake On Packets";
-const char kWakeOnPacketsDescription[] =
-    "Enables waking the device based on the receipt of some network packets.";
 
 const char kZeroStateFilesName[] = "Enable Launcher Zero State Files";
 const char kZeroStateFilesDescription[] =

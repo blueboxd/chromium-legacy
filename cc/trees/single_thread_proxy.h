@@ -136,6 +136,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       ElementListType element_list_type) override;
   void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) override;
+  void NotifyThroughputTrackerResults(CustomTrackerResults results) override;
 
   void RequestNewLayerTreeFrameSink();
 

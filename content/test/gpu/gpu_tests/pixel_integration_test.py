@@ -80,25 +80,24 @@ class PixelIntegrationTest(
       pages += namespace.LowLatencySwapChainPages(cls.test_base_name)
       pages += namespace.HdrTestPages(cls.test_base_name)
     for p in pages:
-      yield(p.name,
-           skia_gold_integration_test_base.GPU_RELATIVE_PATH + p.url,
-           (p))
+      yield (p.name, skia_gold_integration_test_base.GPU_RELATIVE_PATH + p.url,
+             (p))
 
   def RunActualGpuTest(self, test_path, *args):
     page = args[0]
     # Some pixel tests require non-standard browser arguments. Need to
     # check before running each page that it can run in the current
     # browser instance.
-    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs(
-      page.browser_args))
+    self.RestartBrowserIfNecessaryWithArgs(
+        self._AddDefaultArgs(page.browser_args))
     url = self.UrlOfStaticFilePath(test_path)
     # This property actually comes off the class, not 'self'.
     tab = self.tab
     tab.Navigate(url, script_to_evaluate_on_commit=test_harness_script)
     tab.action_runner.WaitForJavaScriptCondition(
-      'domAutomationController._proceed', timeout=300)
+        'domAutomationController._proceed', timeout=300)
     do_page_action = tab.EvaluateJavaScript(
-      'domAutomationController._readyForActions')
+        'domAutomationController._readyForActions')
     try:
       if do_page_action:
         # The page action may itself signal test failure via self.fail().
@@ -110,7 +109,7 @@ class PixelIntegrationTest(
         logging.info('Logging messages from the test:\n' + test_messages)
       if do_page_action or page.restart_browser_after_test:
         self._RestartBrowser(
-          'Must restart after page actions or if required by test')
+            'Must restart after page actions or if required by test')
         if do_page_action and self._IsDualGPUMacLaptop():
           # Give the system a few seconds to reliably indicate that the
           # low-power GPU is active again, to avoid race conditions if the next
@@ -150,31 +149,29 @@ class PixelIntegrationTest(
       self.fail('Could not capture screenshot')
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
     if page.test_rect:
-      screenshot = image_util.Crop(
-          screenshot, int(page.test_rect[0] * dpr),
-          int(page.test_rect[1] * dpr), int(page.test_rect[2] * dpr),
-          int(page.test_rect[3] * dpr))
+      screenshot = image_util.Crop(screenshot, int(page.test_rect[0] * dpr),
+                                   int(page.test_rect[1] * dpr),
+                                   int(page.test_rect[2] * dpr),
+                                   int(page.test_rect[3] * dpr))
 
     build_id_args = self._GetBuildIdArgs()
 
     # Compare images against approved images/colors.
     if page.expected_colors:
       # Use expected colors instead of hash comparison for validation.
-      self._ValidateScreenshotSamplesWithSkiaGold(
-          tab, page, screenshot, dpr, build_id_args)
+      self._ValidateScreenshotSamplesWithSkiaGold(tab, page, screenshot, dpr,
+                                                  build_id_args)
       return
     image_name = self._UrlToImageName(page.name)
     self._UploadTestResultToSkiaGold(
-      image_name, screenshot,
-      tab, page,
-      build_id_args=build_id_args)
+        image_name, screenshot, tab, page, build_id_args=build_id_args)
 
   def _DoPageAction(self, tab, page):
     getattr(self, '_' + page.optional_action)(tab, page)
     # Now that we've done the page's specific action, wait for it to
     # report completion.
     tab.action_runner.WaitForJavaScriptCondition(
-      'domAutomationController._finished', timeout=300)
+        'domAutomationController._finished', timeout=300)
 
   def _TestHarnessMessages(self, tab):
     return tab.EvaluateJavaScript('domAutomationController._messages')
@@ -221,18 +218,19 @@ class PixelIntegrationTest(
                    'laptop')
       tab.EvaluateJavaScript('initialize(false)')
       tab.action_runner.WaitForJavaScriptCondition(
-        'domAutomationController._readyForActions', timeout=30)
+          'domAutomationController._readyForActions', timeout=30)
       tab.EvaluateJavaScript('runToCompletion()')
       return
     # Reset the ready state of the harness.
     tab.EvaluateJavaScript('domAutomationController._readyForActions = false')
     high_performance_tab = tab.browser.tabs.New()
-    high_performance_tab.Navigate(self.UrlOfStaticFilePath(
-      skia_gold_integration_test_base.GPU_RELATIVE_PATH +
-      'functional_webgl_high_performance.html'),
-      script_to_evaluate_on_commit=test_harness_script)
+    high_performance_tab.Navigate(
+        self.
+        UrlOfStaticFilePath(skia_gold_integration_test_base.GPU_RELATIVE_PATH +
+                            'functional_webgl_high_performance.html'),
+        script_to_evaluate_on_commit=test_harness_script)
     high_performance_tab.action_runner.WaitForJavaScriptCondition(
-      'domAutomationController._finished', timeout=30)
+        'domAutomationController._finished', timeout=30)
     # Wait a few seconds for the GPU switched notification to propagate
     # throughout the system.
     time.sleep(5)
@@ -241,7 +239,7 @@ class PixelIntegrationTest(
     tab.Activate()
     tab.EvaluateJavaScript('initialize(true)')
     tab.action_runner.WaitForJavaScriptCondition(
-      'domAutomationController._readyForActions', timeout=30)
+        'domAutomationController._readyForActions', timeout=30)
     # Close the high-performance tab.
     high_performance_tab.Close()
     # Wait for ~15 seconds for the system to switch back to the
@@ -278,9 +276,11 @@ class PixelIntegrationTest(
   @classmethod
   def ExpectationsFiles(cls):
     return [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     'test_expectations',
-                     'pixel_expectations.txt')]
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
+            'pixel_expectations.txt')
+    ]
+
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

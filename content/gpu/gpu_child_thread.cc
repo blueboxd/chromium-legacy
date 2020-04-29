@@ -41,10 +41,6 @@
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "media/base/android/media_drm_bridge_client.h"
 #include "media/mojo/clients/mojo_android_overlay.h"
@@ -55,13 +51,6 @@ namespace {
 
 ChildThreadImpl::Options GetOptions() {
   ChildThreadImpl::Options::Builder builder;
-
-#if defined(USE_OZONE)
-  IPC::MessageFilter* message_filter =
-      ui::OzonePlatform::GetInstance()->GetGpuMessageFilter();
-  if (message_filter)
-    builder.AddStartupFilter(message_filter);
-#endif
 
   builder.ConnectToBrowser(true);
   builder.ExposesInterfacesToBrowser();

@@ -46,19 +46,6 @@ AnimationWorkletMutationState ToAnimationWorkletMutationState(
   }
 }
 
-bool TickAnimationsIf(AnimationHost::AnimationsList animations,
-                      base::TimeTicks monotonic_time,
-                      bool (*predicate)(const Animation&)) {
-  bool did_tick = false;
-  for (auto& it : animations) {
-    if (predicate(*it)) {
-      it->Tick(monotonic_time);
-      did_tick = true;
-    }
-  }
-  return did_tick;
-}
-
 }  // namespace
 
 std::unique_ptr<AnimationHost> AnimationHost::CreateMainInstance() {
@@ -410,12 +397,17 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
 
   TRACE_EVENT_INSTANT0("cc", "NeedsTickAnimations", TRACE_EVENT_SCOPE_THREAD);
 
-  // Worklet animations are ticked at a later stage. See above comment for
-  // details.
-  bool animated = TickAnimationsIf(ticking_animations_, monotonic_time,
-                                   [](const Animation& animation) {
-                                     return !animation.IsWorkletAnimation();
-                                   });
+  bool animated = false;
+  for (auto& kv : id_to_timeline_map_) {
+    AnimationTimeline* timeline = kv.second.get();
+    if (timeline->IsScrollTimeline()) {
+      animated |= timeline->TickScrollLinkedAnimations(
+          ticking_animations_, scroll_tree, is_active_tree);
+    } else {
+      animated |= timeline->TickTimeLinkedAnimations(ticking_animations_,
+                                                     monotonic_time);
+    }
+  }
 
   // TODO(majidvp): At the moment we call this for both active and pending
   // trees similar to other animations. However our final goal is to only call
@@ -437,10 +429,11 @@ void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
 }
 
 void AnimationHost::TickWorkletAnimations() {
-  TickAnimationsIf(ticking_animations_, base::TimeTicks(),
-                   [](const Animation& animation) {
-                     return animation.IsWorkletAnimation();
-                   });
+  for (auto& animation : ticking_animations_) {
+    if (!animation->IsWorkletAnimation())
+      continue;
+    animation->Tick(base::TimeTicks());
+  }
 }
 
 std::unique_ptr<MutatorInputState> AnimationHost::CollectWorkletAnimationsState(

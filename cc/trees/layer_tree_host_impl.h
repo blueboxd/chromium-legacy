@@ -173,8 +173,10 @@ class LayerTreeHostImplClient {
   virtual void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) = 0;
 
+  virtual void NotifyThroughputTrackerResults(CustomTrackerResults results) = 0;
+
  protected:
-  virtual ~LayerTreeHostImplClient() {}
+  virtual ~LayerTreeHostImplClient() = default;
 };
 
 // LayerTreeHostImpl owns the LayerImpl trees as well as associated rendering

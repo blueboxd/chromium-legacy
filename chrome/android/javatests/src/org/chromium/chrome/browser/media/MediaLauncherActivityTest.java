@@ -8,7 +8,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
@@ -24,7 +23,6 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity0;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -122,14 +120,8 @@ public class MediaLauncherActivityTest {
 
     private void waitForCustomTabActivityToStart(Callable<Void> trigger, String expectedUrl)
             throws Exception {
-        CustomTabActivity cta;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            cta = ActivityUtils.waitForActivity(
-                    InstrumentationRegistry.getInstrumentation(), CustomTabActivity.class, trigger);
-        } else {
-            cta = ActivityUtils.waitForActivity(InstrumentationRegistry.getInstrumentation(),
-                    SeparateTaskCustomTabActivity0.class, trigger);
-        }
+        CustomTabActivity cta = ActivityUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), CustomTabActivity.class, trigger);
 
         CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, new Callable<String>() {
             @Override

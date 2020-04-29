@@ -143,13 +143,14 @@ class CONTENT_EXPORT CompositorImpl
       cc::ActiveFrameSequenceTrackers trackers) override {}
   std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
       override;
+  void NotifyThroughputTrackerResults(
+      cc::CustomTrackerResults results) override {}
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override;
 
   // WindowAndroidCompositor implementation.
-  void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) override;
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest> request) override;
   void SetNeedsAnimate() override;
@@ -181,8 +182,6 @@ class CONTENT_EXPORT CompositorImpl
       std::unique_ptr<viz::OutputSurface> display_output_surface,
       scoped_refptr<viz::ContextProvider> context_provider);
   void DidSwapBuffers(const gfx::Size& swap_size);
-
-  bool HavePendingReadbacks();
 
   void DetachRootWindow();
 
@@ -216,9 +215,6 @@ class CONTENT_EXPORT CompositorImpl
   // root_layer_ is the persistent internal root layer, while subroot_layer_
   // is the one attached by the compositor client.
   scoped_refptr<cc::Layer> subroot_layer_;
-
-  // Subtree for hidden layers with CopyOutputRequests on them.
-  scoped_refptr<cc::Layer> readback_layer_tree_;
 
   // Destruction order matters here:
   std::unique_ptr<cc::AnimationHost> animation_host_;

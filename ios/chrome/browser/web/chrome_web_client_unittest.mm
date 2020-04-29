@@ -15,9 +15,14 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/web/common/features.h"
@@ -33,6 +38,7 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -319,6 +325,43 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageWithSSLInfo) {
   }));
   NSString* error_string = base::SysUTF8ToNSString(
       net::ErrorToShortString(net::ERR_CERT_COMMON_NAME_INVALID));
+  EXPECT_TRUE([page containsString:error_string]);
+}
+
+// Tests PrepareErrorPage for a safe browsing error, which results in a
+// committed safe browsing interstitial.
+TEST_F(ChromeWebClientTest, PrepareErrorPageForSafeBrowsingError) {
+  // Store an unsafe resource in |web_state|'s container.
+  web::TestWebState web_state;
+  SafeBrowsingUnsafeResourceContainer::CreateForWebState(&web_state);
+  security_interstitials::UnsafeResource resource;
+  resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
+  resource.url = GURL("http://www.chromium.test");
+  resource.resource_type = safe_browsing::ResourceType::kMainFrame;
+  resource.web_state_getter = web_state.CreateDefaultGetter();
+  SafeBrowsingUnsafeResourceContainer::FromWebState(&web_state)
+      ->StoreUnsafeResource(resource);
+
+  NSError* error = [NSError errorWithDomain:kSafeBrowsingErrorDomain
+                                       code:kUnsafeResourceErrorCode
+                                   userInfo:nil];
+  __block bool callback_called = false;
+  __block NSString* page = nil;
+  base::OnceCallback<void(NSString*)> callback =
+      base::BindOnce(^(NSString* error_html) {
+        callback_called = true;
+        page = error_html;
+      });
+
+  ChromeWebClient web_client;
+  web_client.PrepareErrorPage(&web_state, GURL(kTestUrl), error,
+                              /*is_post=*/false,
+                              /*is_off_the_record=*/false,
+                              /*info=*/base::Optional<net::SSLInfo>(),
+                              /*navigation_id=*/0, std::move(callback));
+
+  EXPECT_TRUE(callback_called);
+  NSString* error_string = l10n_util::GetNSString(IDS_PHISHING_V4_HEADING);
   EXPECT_TRUE([page containsString:error_string]);
 }
 

@@ -162,6 +162,8 @@ component("ash") {
     "accessibility/touch_exploration_controller.h",
     "accessibility/touch_exploration_manager.cc",
     "accessibility/touch_exploration_manager.h",
+    "ambient/ambient_access_token_controller.cc",
+    "ambient/ambient_access_token_controller.h",
     "ambient/ambient_constants.h",
     "ambient/ambient_controller.cc",
     "ambient/ambient_controller.h",

@@ -12,6 +12,10 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 
+namespace base {
+class Time;
+}  // namespace base
+
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -24,7 +28,8 @@ class ASH_PUBLIC_EXPORT AmbientClient {
  public:
   using GetAccessTokenCallback =
       base::OnceCallback<void(const std::string& gaia_id,
-                              const std::string& access_token)>;
+                              const std::string& access_token,
+                              const base::Time& expiration_time)>;
 
   static AmbientClient* Get();
 

@@ -82,10 +82,10 @@ suite('NewTabPageAppTest', () => {
     // Assert.
     assertStyle(app.$.background, 'background-color', 'rgb(255, 0, 0)');
     assertStyle(
-        app.$.background, '--ntp-theme-shortcut-background-color',
+        app.$.content, '--ntp-theme-shortcut-background-color',
         'rgba(0, 255, 0, 255)');
     assertStyle(
-        app.$.background, '--ntp-theme-text-color', 'rgba(0, 0, 255, 255)');
+        app.$.content, '--ntp-theme-text-color', 'rgba(0, 0, 255, 255)');
     assertFalse(app.$.background.hasAttribute('has-background-image'));
     assertStyle(app.$.backgroundImage, 'display', 'none');
     assertStyle(app.$.backgroundGradient, 'display', 'none');
@@ -248,5 +248,14 @@ suite('NewTabPageAppTest', () => {
     assertEquals(
         'background_image?https://example.com/image.png',
         app.$.backgroundImage.path);
+  });
+
+  test('theme updates add shortcut color', async () => {
+    const theme = createTheme();
+    theme.shortcutUseWhiteAddIcon = true;
+    testProxy.callbackRouterRemote.setTheme(theme);
+    assertFalse(app.$.mostVisited.hasAttribute('use-white-add-icon'));
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+    assertTrue(app.$.mostVisited.hasAttribute('use-white-add-icon'));
   });
 });

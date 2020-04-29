@@ -15,6 +15,7 @@
 namespace ash {
 
 class FloatingMenuButton;
+class TrayBackgroundView;
 
 class FloatingAccessibilityBubbleView : public TrayBubbleView {
  public:
@@ -40,7 +41,8 @@ class FloatingAccessibilityBubbleView : public TrayBubbleView {
 // ----  | [Open settings list]
 // ----  | [Change menu location]
 class FloatingAccessibilityView : public views::View,
-                                  public views::ButtonListener {
+                                  public views::ButtonListener,
+                                  public views::ViewObserver {
  public:
   // Used for testing. Starts 1 because views IDs should not be 0.
   enum ButtonId {
@@ -54,6 +56,9 @@ class FloatingAccessibilityView : public views::View,
    public:
     // When the user click on the settings list button.
     virtual void OnDetailedMenuEnabled(bool enabled) {}
+    // When the layout of the view changes and we may need to reposition
+    // ourselves.
+    virtual void OnLayoutChanged() {}
     virtual ~Delegate() = default;
   };
 
@@ -62,6 +67,10 @@ class FloatingAccessibilityView : public views::View,
       delete;
   ~FloatingAccessibilityView() override;
   FloatingAccessibilityView(const FloatingAccessibilityView&) = delete;
+
+  // Initizlizes feature button views. Should be called after the view is
+  // connected to a widget.
+  void Initialize();
 
   void SetMenuPosition(FloatingMenuPosition position);
   void SetDetailedViewShown(bool shown);
@@ -72,6 +81,14 @@ class FloatingAccessibilityView : public views::View,
 
   // views::View:
   const char* GetClassName() const override;
+
+  // views::ViewObserver:
+  void OnViewVisibilityChanged(views::View* observed_view,
+                               views::View* starting_view) override;
+  // Feature buttons:
+  TrayBackgroundView* dictation_button_ = nullptr;
+  TrayBackgroundView* select_to_speak_button_ = nullptr;
+  TrayBackgroundView* virtual_keyboard_button_ = nullptr;
 
   // Button to list all available features.
   FloatingMenuButton* a11y_tray_button_ = nullptr;

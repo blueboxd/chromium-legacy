@@ -238,7 +238,6 @@ void UsbChooserContext::OnDeviceInfoRefreshed(
 #endif
 
 UsbChooserContext::~UsbChooserContext() {
-  LOG(INFO) << "USB chooser context being destroyed.";
   OnDeviceManagerConnectionError();
 }
 
@@ -603,7 +602,6 @@ void UsbChooserContext::OnDeviceRemoved(
 }
 
 void UsbChooserContext::OnDeviceManagerConnectionError() {
-  LOG(INFO) << "Got disconnected from USB device service.";
   device_manager_.reset();
   client_receiver_.reset();
   devices_.clear();

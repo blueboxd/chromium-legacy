@@ -416,6 +416,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   media_metrics_provider_->AcquirePlaybackEventsRecorder(
       playback_events_recorder_.BindNewPipeAndPassReceiver());
 
+  // MediaMetricsProvider may drop the request for PlaybackEventsRecorder if
+  // it's not interested in recording these events.
+  playback_events_recorder_.reset_on_disconnect();
+
 #if defined(OS_ANDROID)
   renderer_factory_selector_->SetRemotePlayStateChangeCB(
       BindToCurrentLoop(base::BindRepeating(

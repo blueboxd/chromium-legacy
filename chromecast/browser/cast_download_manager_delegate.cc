@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"

@@ -6,11 +6,9 @@ import os
 
 from gpu_tests import path_util
 
-conformance_relcomps = (
-  'third_party', 'webgl', 'src', 'sdk', 'tests')
+conformance_relcomps = ('third_party', 'webgl', 'src', 'sdk', 'tests')
 
-extensions_relcomps = (
-    'content', 'test', 'data', 'gpu')
+extensions_relcomps = ('content', 'test', 'data', 'gpu')
 
 conformance_relpath = os.path.join(*conformance_relcomps)
 conformance_path = os.path.join(path_util.GetChromiumSrcDir(),
@@ -21,6 +19,5 @@ extensions_relpath = os.path.join(*extensions_relcomps)
 # server dir is causing the base server directory to be moved up the
 # directory hierarchy.
 url_prefixes_to_trim = [
-  '/'.join(conformance_relcomps) + '/',
-  '/'.join(extensions_relcomps) + '/'
+    '/'.join(conformance_relcomps) + '/', '/'.join(extensions_relcomps) + '/'
 ]

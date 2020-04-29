@@ -2,7 +2,7 @@
 
 <!--
 This test creates a fieldset with 10,000 non-trivial items. It locks the
-container and adjusts its width continuously. If subtree-visibility is properly
+container and adjusts its width continuously. If content-visibility is properly
 optimized, then the width adjustments are very quick (< one frame). Otherwise,
 the layout recalculation leaks into the children element and the width
 adjustments are slow.
@@ -10,7 +10,7 @@ adjustments are slow.
 
 <style>
 #container {
-  subtree-visibility: hidden;
+  content-visibility: hidden;
 
   width: 500px;
   height: 500px;

@@ -8,7 +8,6 @@ package feedwire;
 
 option optimize_for = LITE_RUNTIME;
 
-import "components/feed/core/proto/v2/wire/content_id.proto";
 import "components/feed/core/proto/v2/wire/action_payload.proto";
 
 message ThereAndBackAgainData {

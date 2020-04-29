@@ -39,6 +39,7 @@
 #include "build/build_config.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/base/x/x11_menu_list.h"
 #include "ui/base/x/x11_util_internal.h"
@@ -276,6 +277,20 @@ class XCustomCursorCache {
   DISALLOW_COPY_AND_ASSIGN(XCustomCursorCache);
 };
 
+// Converts a SKBitmap to unpremul alpha.
+SkBitmap ConvertSkBitmapToUnpremul(const SkBitmap& bitmap) {
+  DCHECK_NE(bitmap.alphaType(), kUnpremul_SkAlphaType);
+
+  SkImageInfo image_info = SkImageInfo::MakeN32(bitmap.width(), bitmap.height(),
+                                                kUnpremul_SkAlphaType);
+  SkBitmap converted_bitmap;
+  converted_bitmap.allocPixels(image_info);
+  bitmap.readPixels(image_info, converted_bitmap.getPixels(),
+                    image_info.minRowBytes(), 0, 0);
+
+  return converted_bitmap;
+}
+
 }  // namespace
 
 bool IsXInput2Available() {
@@ -316,11 +331,18 @@ void UnrefCustomXCursor(::Cursor cursor) {
   XCustomCursorCache::GetInstance()->Unref(cursor);
 }
 
-XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
+XcursorImage* SkBitmapToXcursorImage(const SkBitmap& cursor_image,
                                      const gfx::Point& hotspot) {
   // TODO(crbug.com/596782): It is possible for cursor_image to be zeroed out
   // at this point, which leads to benign debug errors. Once this is fixed, we
-  // should  DCHECK_EQ(cursor_image->colorType(), kN32_SkColorType).
+  // should  DCHECK_EQ(cursor_image.colorType(), kN32_SkColorType).
+
+  // X11 expects bitmap with unpremul alpha. If bitmap is premul then convert,
+  // otherwise semi-transparent parts of cursor will look strange.
+  const SkBitmap converted = (cursor_image.alphaType() != kUnpremul_SkAlphaType)
+                                 ? ConvertSkBitmapToUnpremul(cursor_image)
+                                 : cursor_image;
+
   gfx::Point hotspot_point = hotspot;
   SkBitmap scaled;
 
@@ -328,31 +350,31 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
   // pixels. So rescale the image if necessary.
   static const float kMaxPixel = GetMaxCursorSize();
   bool needs_scale = false;
-  if (cursor_image->width() > kMaxPixel || cursor_image->height() > kMaxPixel) {
+  if (converted.width() > kMaxPixel || converted.height() > kMaxPixel) {
     float scale = 1.f;
-    if (cursor_image->width() > cursor_image->height())
-      scale = kMaxPixel / cursor_image->width();
+    if (converted.width() > converted.height())
+      scale = kMaxPixel / converted.width();
     else
-      scale = kMaxPixel / cursor_image->height();
+      scale = kMaxPixel / converted.height();
 
-    scaled = skia::ImageOperations::Resize(*cursor_image,
+    scaled = skia::ImageOperations::Resize(converted,
         skia::ImageOperations::RESIZE_BETTER,
-        static_cast<int>(cursor_image->width() * scale),
-        static_cast<int>(cursor_image->height() * scale));
+        static_cast<int>(converted.width() * scale),
+        static_cast<int>(converted.height() * scale));
     hotspot_point = gfx::ScaleToFlooredPoint(hotspot, scale);
     needs_scale = true;
   }
 
-  const SkBitmap* bitmap = needs_scale ? &scaled : cursor_image;
-  XcursorImage* image = XcursorImageCreate(bitmap->width(), bitmap->height());
-  image->xhot = std::min(bitmap->width() - 1, hotspot_point.x());
-  image->yhot = std::min(bitmap->height() - 1, hotspot_point.y());
+  const SkBitmap& bitmap = needs_scale ? scaled : converted;
+  XcursorImage* image = XcursorImageCreate(bitmap.width(), bitmap.height());
+  image->xhot = std::min(bitmap.width() - 1, hotspot_point.x());
+  image->yhot = std::min(bitmap.height() - 1, hotspot_point.y());
 
-  if (bitmap->width() && bitmap->height()) {
+  if (bitmap.width() && bitmap.height()) {
     // The |bitmap| contains ARGB image, so just copy it.
     memcpy(image->pixels,
-           bitmap->getPixels(),
-           bitmap->width() * bitmap->height() * 4);
+           bitmap.getPixels(),
+           bitmap.width() * bitmap.height() * 4);
   }
 
   return image;

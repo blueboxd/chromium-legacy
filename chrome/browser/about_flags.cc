@@ -2492,11 +2492,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLockScreenNotificationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kLockScreenNotifications)},
 #endif  // OS_CHROMEOS
-#if defined(OS_CHROMEOS)
-    {"wake-on-wifi-packet", flag_descriptions::kWakeOnPacketsName,
-     flag_descriptions::kWakeOnPacketsDescription, kOsCrOSOwnerOnly,
-     SINGLE_VALUE_TYPE(chromeos::switches::kWakeOnWifiPacket)},
-#endif  // OS_CHROMEOS
     {"reduced-referrer-granularity",
      flag_descriptions::kReducedReferrerGranularityName,
      flag_descriptions::kReducedReferrerGranularityDescription, kOsAll,
@@ -2569,12 +2564,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIgnorePreviewsBlacklistName,
      flag_descriptions::kIgnorePreviewsBlacklistDescription, kOsAll,
      SINGLE_VALUE_TYPE(previews::switches::kIgnorePreviewsBlacklist)},
-    {"ignore-litepage-redirect-optimization-blacklist",
-     flag_descriptions::kIgnoreLitePageRedirectHintsBlacklistName,
-     flag_descriptions::kIgnoreLitePageRedirectHintsBlacklistDescription,
-     kOsAll,
-     SINGLE_VALUE_TYPE(
-         previews::switches::kIgnoreLitePageRedirectOptimizationBlacklist)},
     {"enable-data-reduction-proxy-server-experiment",
      flag_descriptions::kEnableDataReductionProxyServerExperimentName,
      flag_descriptions::kEnableDataReductionProxyServerExperimentDescription,
@@ -2587,10 +2576,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
      flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(previews::features::kOfflinePreviews)},
-    {"enable-lite-page-server-previews",
-     flag_descriptions::kEnableLitePageServerPreviewsName,
-     flag_descriptions::kEnableLitePageServerPreviewsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(previews::features::kLitePageServerPreviews)},
 #endif  // OS_ANDROID
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
     {"enable-save-data", flag_descriptions::kEnableSaveDataName,
@@ -3001,13 +2986,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kKernelnextVMs)},
-    {"enable-experimental-accessibility-chromevox-search-menus",
+    {"disable-experimental-accessibility-chromevox-search-menus",
      flag_descriptions::kExperimentalAccessibilityChromeVoxSearchMenusName,
      flag_descriptions::
          kExperimentalAccessibilityChromeVoxSearchMenusDescription,
      kOsCrOS,
      SINGLE_VALUE_TYPE(
-         ::switches::kEnableExperimentalAccessibilityChromeVoxSearchMenus)},
+         ::switches::kDisableExperimentalAccessibilityChromeVoxSearchMenus)},
     {"enable-experimental-accessibility-chromevox-tutorial",
      flag_descriptions::kExperimentalAccessibilityChromeVoxTutorialName,
      flag_descriptions::kExperimentalAccessibilityChromeVoxTutorialDescription,

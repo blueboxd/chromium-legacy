@@ -6,8 +6,8 @@
 
 #include <string>
 
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/media/base/key_systems_common.h"

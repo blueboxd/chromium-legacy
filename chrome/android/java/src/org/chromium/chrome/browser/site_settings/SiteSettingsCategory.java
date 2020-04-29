@@ -358,7 +358,7 @@ public class SiteSettingsCategory {
         String unsupportedMessage = getMessageIfNotSupported(activity);
 
         Resources resources = activity.getResources();
-        int color = ApiCompatibilityUtils.getColor(resources, R.color.pref_accent_color);
+        int color = ApiCompatibilityUtils.getColor(resources, R.color.light_active_color);
         ForegroundColorSpan linkSpan = new ForegroundColorSpan(color);
 
         if (perAppIntent != null) {
@@ -400,7 +400,7 @@ public class SiteSettingsCategory {
                 activity.getResources(), R.drawable.exclamation_triangle);
         icon.mutate();
         int disabledColor =
-                ApiCompatibilityUtils.getColor(activity.getResources(), R.color.pref_accent_color);
+                ApiCompatibilityUtils.getColor(activity.getResources(), R.color.light_active_color);
         icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
         return icon;
     }

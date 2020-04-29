@@ -82,7 +82,7 @@ class TestUrlCheckerClient {
                          base::Unretained(this), nullptr);
       return;
     }
-    url_is_unsafe_ = showed_interstitial;
+    url_is_unsafe_ = !proceed;
     result_pending_ = false;
     url_checker_.reset();
   }

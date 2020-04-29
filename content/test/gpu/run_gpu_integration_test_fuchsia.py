@@ -2,7 +2,6 @@
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Wrapper for running gpu integration tests on Fuchsia devices."""
 
 import argparse
@@ -15,10 +14,12 @@ import tempfile
 import time
 from gpu_tests import path_util
 
-sys.path.insert(0, os.path.join(path_util.GetChromiumSrcDir(),
-    'build', 'fuchsia'))
-from common_args import AddCommonArgs, ConfigureLogging, GetDeploymentTargetForArgs
+sys.path.insert(0,
+                os.path.join(path_util.GetChromiumSrcDir(), 'build', 'fuchsia'))
+from common_args import (AddCommonArgs, ConfigureLogging,
+                         GetDeploymentTargetForArgs)
 from symbolizer import RunSymbolizer
+
 
 def main():
   parser = argparse.ArgumentParser()
@@ -39,10 +40,12 @@ def main():
     temp_log_file = True
 
   package_names = ['web_engine', 'web_engine_shell']
-  web_engine_dir = os.path.join(args.output_directory, 'gen',
-        'fuchsia', 'engine')
-  gpu_script = [os.path.join(path_util.GetChromiumSrcDir(), 'content',
-                'test', 'gpu', 'run_gpu_integration_test.py')]
+  web_engine_dir = os.path.join(args.output_directory, 'gen', 'fuchsia',
+                                'engine')
+  gpu_script = [
+      os.path.join(path_util.GetChromiumSrcDir(), 'content', 'test', 'gpu',
+                   'run_gpu_integration_test.py')
+  ]
 
   # Pass all other arguments to the gpu integration tests.
   gpu_script.extend(gpu_test_args)
@@ -62,9 +65,8 @@ def main():
           lambda package_name: os.path.join(
               web_engine_dir, package_name, 'ids.txt'),
           package_names)
-      symbolizer = RunSymbolizer(listener.stdout,
-                                 open(args.system_log_file,'w'),
-                                 build_ids_paths)
+      symbolizer = RunSymbolizer(listener.stdout, open(args.system_log_file,
+                                                       'w'), build_ids_paths)
 
       # Keep the Amber repository live while the test runs.
       with target.GetAmberRepo():
@@ -78,6 +80,7 @@ def main():
   finally:
     if temp_log_file:
       shutil.rmtree(os.path.dirname(args.system_log_file))
+
 
 if __name__ == '__main__':
   sys.exit(main())

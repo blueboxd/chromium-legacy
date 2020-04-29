@@ -331,12 +331,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeader) {
   EXPECT_EQ(header_value, response_2.http_request()->headers.at(header_name));
 }
 
-// TODO(sky): this is disabled until
-// https://chromium-review.googlesource.com/c/chromium/src/+/2129787 lands and
-// NavigationRequest is updated to use |cors_exempt_headers| for redirects.
-// See crbug.com/1065536.
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
-                       DISABLED_SetRequestHeaderInRedirect) {
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SetRequestHeaderInRedirect) {
   net::test_server::ControllableHttpResponse response_1(embedded_test_server(),
                                                         "", true);
   net::test_server::ControllableHttpResponse response_2(embedded_test_server(),
@@ -474,11 +469,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest2,
   EXPECT_EQ(header_value, last_header_value);
 }
 
-// TODO(sky): this is disabled until
-// https://chromium-review.googlesource.com/c/chromium/src/+/2129787 lands and
-// NavigationRequest is updated to use |cors_exempt_headers| for redirects.
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest2,
-                       DISABLED_SetXClientDataHeaderInRedirect) {
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest2, SetXClientDataHeaderInRedirect) {
   std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
   std::string last_header_value;
   bool should_redirect = true;

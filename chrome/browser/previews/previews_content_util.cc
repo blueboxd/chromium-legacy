@@ -18,8 +18,6 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -33,7 +31,6 @@
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
-#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -53,185 +50,12 @@ bool IsPrivateDomain(const GURL& url) {
   if (url.host().find(".") == base::StringPiece::npos)
     return true;
 
-  // Allow localhost check to be skipped if needed, like in testing.
-  if (net::IsLocalhost(url))
-    return !previews::params::LitePagePreviewsTriggerOnLocalhost();
-
   net::IPAddress ip_addr;
   if (url.HostIsIPAddress() && ip_addr.AssignFromIPLiteral(url.host()) &&
       !ip_addr.IsPubliclyRoutable()) {
     return true;
   }
   return false;
-}
-
-bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
-  // This should only occur in unit tests, this behavior is tested in browser
-  // tests.
-  if (!navigation_handle)
-    return true;
-
-  // This should only occur in unit tests; this behavior is tested in browser
-  // tests.
-  if (navigation_handle->GetWebContents() == nullptr)
-    return true;
-
-  const GURL& url = navigation_handle->GetURL();
-  content::WebContents* web_contents = navigation_handle->GetWebContents();
-  auto* previews_service = PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  PreviewsLitePageRedirectDecider* decider =
-      previews_service->previews_lite_page_redirect_decider();
-
-  std::vector<previews::LitePageRedirectIneligibleReason> ineligible_reasons;
-
-  if (!url.SchemeIs(url::kHttpsScheme)) {
-    ineligible_reasons.push_back(
-        previews::LitePageRedirectIneligibleReason::kNonHttpsScheme);
-  }
-
-  if (decider->IsServerUnavailable()) {
-    ineligible_reasons.push_back(
-        previews::LitePageRedirectIneligibleReason::kServerUnavailable);
-  }
-
-  content_settings::CookieSettings* cookie_settings =
-      CookieSettingsFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-          .get();
-  ContentSetting setting;
-  GURL previews_url = GetLitePageRedirectURLForURL(url);
-  cookie_settings->GetCookieSetting(previews_url, previews_url, nullptr,
-                                    &setting);
-  if (!content_settings::CookieSettingsBase::IsAllowed(setting)) {
-    ineligible_reasons.push_back(
-        previews::LitePageRedirectIneligibleReason::kCookiesBlocked);
-  }
-
-  if (!decider->has_drp_headers()) {
-    ineligible_reasons.push_back(
-        previews::LitePageRedirectIneligibleReason::kInvalidProxyHeaders);
-  }
-
-  if (previews::params::LitePageRedirectOnlyTriggerOnSuccessfulProbe()) {
-    if (!decider->IsServerProbeResultAvailable()) {
-      ineligible_reasons.push_back(
-          previews::LitePageRedirectIneligibleReason::kServiceProbeIncomplete);
-    } else if (!decider->IsServerReachableByProbe()) {
-      ineligible_reasons.push_back(
-          previews::LitePageRedirectIneligibleReason::kServiceProbeFailed);
-    }
-  }
-
-  if (!previews::params::LitePageRedirectTriggerOnAPITransition() &&
-      navigation_handle->GetPageTransition() & ui::PAGE_TRANSITION_FROM_API) {
-    ineligible_reasons.push_back(
-        previews::LitePageRedirectIneligibleReason::kAPIPageTransition);
-  }
-
-  if (previews::params::LitePageRedirectValidateForwardBackTransition() &&
-      navigation_handle->GetPageTransition() &
-          ui::PAGE_TRANSITION_FORWARD_BACK) {
-    // On forward/back navigations, enable LPR iff we showed an LPR for the
-    // prior navigation that we are returning to. For example, suppose the user
-    // navigates to A then B, without getting a preview for either navigation.
-    // If the user navigates back to A, we should load the original page as that
-    // is likely cached; loading a preview would be much slower as that requires
-    // contacting the litepages server.
-    if (!previews::IsLitePageRedirectPreviewURL(navigation_handle->GetURL())) {
-      ineligible_reasons.push_back(previews::LitePageRedirectIneligibleReason::
-                                       kForwardBackPageTransition);
-    }
-  }
-
-  // Record UMA.
-  for (previews::LitePageRedirectIneligibleReason reason : ineligible_reasons) {
-    previews::LogLitePageRedirectIneligibleReason(reason);
-  }
-  if (!ineligible_reasons.empty())
-    return false;
-
-  // Check dynamic blacklists.
-  std::vector<previews::LitePageRedirectBlacklistReason> blacklist_reasons;
-
-  if (IsPrivateDomain(url)) {
-    blacklist_reasons.push_back(
-        previews::LitePageRedirectBlacklistReason::kNavigationToPrivateDomain);
-  }
-
-  if (decider->HostBlacklistedFromBypass(url.host())) {
-    blacklist_reasons.push_back(
-        previews::LitePageRedirectBlacklistReason::kHostBypassBlacklisted);
-  }
-
-  // Record UMA
-  for (previews::LitePageRedirectBlacklistReason reason : blacklist_reasons) {
-    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.BlacklistReasons",
-                              reason);
-  }
-
-  if (!blacklist_reasons.empty())
-    return false;
-
-  // This should always be at the end, but before the control group check.
-  if (previews_service->previews_https_notification_infobar_decider()
-          ->NeedsToNotifyUser()) {
-    previews::LogLitePageRedirectIneligibleReason(
-        previews::LitePageRedirectIneligibleReason::kInfoBarNotSeen);
-    return false;
-  }
-
-  // This should always be last.
-  if (previews::params::IsInLitePageRedirectControl()) {
-    previews::PreviewsUserData::ServerLitePageInfo* info =
-        PreviewsLitePageRedirectURLLoaderInterceptor::
-            GetOrCreateServerLitePageInfo(navigation_handle, decider);
-    info->status = previews::ServerLitePageStatus::kControl;
-    return false;
-  }
-
-  return true;
-}
-
-std::unique_ptr<PreviewsUserData::ServerLitePageInfo>
-CreateServerLitePageInfoFromNavigationHandle(
-    content::NavigationHandle* navigation_handle) {
-  auto server_lite_page_info =
-      std::make_unique<PreviewsUserData::ServerLitePageInfo>();
-  // This is only for unit testing.
-  if (!navigation_handle->GetWebContents())
-    return nullptr;
-
-  const net::HttpRequestHeaders& headers =
-      navigation_handle->GetRequestHeaders();
-
-  const ChromeNavigationUIData* chrome_navigation_ui_data =
-      static_cast<const ChromeNavigationUIData*>(
-          navigation_handle->GetNavigationUIData());
-  server_lite_page_info->page_id =
-      chrome_navigation_ui_data->data_reduction_proxy_page_id();
-
-  base::Optional<std::string> session_key =
-      data_reduction_proxy::DataReductionProxyRequestOptions::
-          GetSessionKeyFromRequestHeaders(headers);
-  if (!session_key) {
-    // This is a less-authoritative source to get the session key from since
-    // there is a very small chance that the proxy config has been updated
-    // between sending the original request and now. However, since this is only
-    // for metrics purposes, it is better than not having any session key.
-    DataReductionProxyChromeSettings* drp_settings =
-        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-            navigation_handle->GetWebContents()->GetBrowserContext());
-    session_key = data_reduction_proxy::DataReductionProxyRequestOptions::
-        GetSessionKeyFromRequestHeaders(drp_settings->GetProxyRequestHeaders());
-  }
-  if (session_key)
-    server_lite_page_info->drp_session_key = session_key.value();
-  DCHECK_NE(server_lite_page_info->drp_session_key, "");
-
-  server_lite_page_info->status = ServerLitePageStatus::kSuccess;
-  server_lite_page_info->restart_count = 0;
-  return server_lite_page_info;
 }
 
 bool HasEnabledPreviews(content::PreviewsState previews_state) {
@@ -251,14 +75,6 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   const GURL& url = navigation_handle->GetURL();
   bool is_reload =
       navigation_handle->GetReloadType() != content::ReloadType::NONE;
-
-  // Either this is a navigation to the lite page via the redirect mechanism and
-  // only Lite Page redirect should be served, or this is a reload in which case
-  // the Lite Page mechanism should redirect to the original URL. Either way,
-  // set the allowed PreviewsState.
-  if (IsLitePageRedirectPreviewURL(url)) {
-    return content::LITE_PAGE_REDIRECT_ON;
-  }
 
   if (!previews::params::ArePreviewsAllowed()) {
     return previews_state;
@@ -321,15 +137,6 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   if (allow_commit_time_previews) {
     commit_time_previews_are_available =
         previews_decider->AreCommitTimePreviewsAvailable(navigation_handle);
-  }
-
-  if ((!commit_time_previews_are_available ||
-       params::LitePagePreviewsOverridePageHints()) &&
-      previews_decider->ShouldAllowPreviewAtNavigationStart(
-          previews_data, navigation_handle, is_reload,
-          previews::PreviewsType::LITE_PAGE_REDIRECT) &&
-      ShouldAllowRedirectPreview(navigation_handle)) {
-    previews_state |= content::LITE_PAGE_REDIRECT_ON;
   }
 
   return previews_state;
@@ -440,20 +247,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     }
     return content::PREVIEWS_OFF;
   }
-
-  // Check if a LITE_PAGE_REDIRECT preview was actually served.
-  if (previews_state & content::LITE_PAGE_REDIRECT_ON) {
-    if (IsLitePageRedirectPreviewURL(url)) {
-      if (navigation_handle) {
-        previews_data->set_server_lite_page_info(
-            CreateServerLitePageInfoFromNavigationHandle(navigation_handle));
-      }
-      LogCommittedPreview(previews_data, PreviewsType::LITE_PAGE_REDIRECT);
-      return content::LITE_PAGE_REDIRECT_ON;
-    }
-    previews_state &= ~content::LITE_PAGE_REDIRECT_ON;
-  }
-  DCHECK(!IsLitePageRedirectPreviewURL(url));
 
   // Check if the URL is eligible for defer all script preview. A URL
   // may not be eligible for the preview if it's likely to cause a
@@ -650,8 +443,6 @@ previews::PreviewsType GetMainFramePreviewsType(
   // The order is important here.
   if (previews_state & content::OFFLINE_PAGE_ON)
     return previews::PreviewsType::OFFLINE;
-  if (previews_state & content::LITE_PAGE_REDIRECT_ON)
-    return previews::PreviewsType::LITE_PAGE_REDIRECT;
   if (previews_state & content::SERVER_LITE_PAGE_ON)
     return previews::PreviewsType::LITE_PAGE;
   if (previews_state & content::DEFER_ALL_SCRIPT_ON)

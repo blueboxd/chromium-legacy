@@ -8,7 +8,7 @@
 #include <cmath>
 #include <cstring>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "media/base/vector_math.h"
 
 namespace {

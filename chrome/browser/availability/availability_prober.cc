@@ -61,12 +61,11 @@ const char kCacheEntryAgeHistogram[] = "Availability.Prober.CacheEntryAge";
 // consideration for removing the old value.
 std::string NameForClient(AvailabilityProber::ClientName name) {
   switch (name) {
-    case AvailabilityProber::ClientName::kLitepages:
-      return "Litepages";
-    case AvailabilityProber::ClientName::kLitepagesOriginCheck:
-      return "LitepagesOriginCheck";
     case AvailabilityProber::ClientName::kIsolatedPrerenderOriginCheck:
       return "IsolatedPrerenderOriginCheck";
+    default:
+      NOTREACHED();
+      return std::string();
   }
   NOTREACHED();
   return std::string();
@@ -313,7 +312,8 @@ AvailabilityProber::~AvailabilityProber() {
 
 // static
 void AvailabilityProber::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  for (int i = 0;
+  for (int i = static_cast<int>(
+           AvailabilityProber::ClientName::kIsolatedPrerenderOriginCheck);
        i <= static_cast<int>(AvailabilityProber::ClientName::kMaxValue); i++) {
     registry->RegisterDictionaryPref(PrefKeyForName(
         NameForClient(static_cast<AvailabilityProber::ClientName>(i))));
@@ -322,7 +322,8 @@ void AvailabilityProber::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 // static
 void AvailabilityProber::ClearData(PrefService* pref_service) {
-  for (int i = 0;
+  for (int i = static_cast<int>(
+           AvailabilityProber::ClientName::kIsolatedPrerenderOriginCheck);
        i <= static_cast<int>(AvailabilityProber::ClientName::kMaxValue); i++) {
     std::string key = PrefKeyForName(
         NameForClient(static_cast<AvailabilityProber::ClientName>(i)));

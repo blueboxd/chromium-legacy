@@ -114,9 +114,35 @@ void Animation::PushPropertiesTo(Animation* animation_impl) {
   keyframe_effect_->PushPropertiesTo(animation_impl->keyframe_effect_.get());
 }
 
-void Animation::Tick(base::TimeTicks monotonic_time) {
-  DCHECK(!monotonic_time.is_null());
-  keyframe_effect_->Tick(monotonic_time);
+void Animation::Tick(base::TimeTicks tick_time) {
+  DCHECK(!IsWorkletAnimation());
+  if (IsScrollLinkedAnimation()) {
+    // blink::Animation uses its start time to calculate local time for each of
+    // its keyframes. However, in cc the start time is stored at the Keyframe
+    // level so we have to delegate the tick time to a lower level to calculate
+    // the local time.
+    // With ScrollTimeline, the start time of the animation is calculated
+    // differently i.e. it is not the current time at the moment of start.
+    // To deal with this the scroll timeline pauses the animation at its desired
+    // time and then ticks it which side-steps the start time altogether. See
+    // crbug.com/1076012 for alternative design choices considered for future
+    // improvement.
+    TickWithLocalTime(tick_time - base::TimeTicks());
+  } else {
+    DCHECK(!tick_time.is_null());
+    keyframe_effect_->Tick(tick_time);
+  }
+}
+
+void Animation::TickWithLocalTime(base::TimeDelta local_time) {
+  // TODO(yigu): KeyframeEffect should support ticking KeyframeModel
+  // directly without using Pause(). https://crbug.com/1076012.
+  keyframe_effect_->Pause(local_time);
+  keyframe_effect_->Tick(base::TimeTicks());
+}
+
+bool Animation::IsScrollLinkedAnimation() const {
+  return animation_timeline_ && animation_timeline_->IsScrollTimeline();
 }
 
 void Animation::UpdateState(bool start_ready_animations,

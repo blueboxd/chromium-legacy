@@ -115,7 +115,7 @@ public class TabGridDialogTest {
     @Before
     public void setUp() {
         TabUiFeatureUtilities.setTabManagementModuleSupportedForTesting(true);
-        mActivityTestRule.startMainActivityFromLauncher();
+        mActivityTestRule.startMainActivityOnBlankPage();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
         CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()

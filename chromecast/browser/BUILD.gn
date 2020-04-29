@@ -491,6 +491,8 @@ cast_source_set("test_support") {
   sources = [
     "test/cast_browser_test.cc",
     "test/cast_browser_test.h",
+    "test/mock_cast_web_view.cc",
+    "test/mock_cast_web_view.h",
   ]
 
   public_deps = [
@@ -504,6 +506,7 @@ cast_source_set("test_support") {
     "//components/prefs:test_support",
     "//content/public/browser",
     "//content/public/common",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

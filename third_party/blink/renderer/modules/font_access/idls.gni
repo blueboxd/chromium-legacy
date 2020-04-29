@@ -5,6 +5,7 @@
 modules_idl_files = [
   "font_iterator.idl",
   "font_metadata.idl",
+  "font_table_map.idl",
   "font_manager.idl",
 ]
 

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chromecast/browser/extensions/api/tabs/tabs_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/api/automation.h"

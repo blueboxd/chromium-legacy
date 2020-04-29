@@ -339,7 +339,7 @@ ChromeLauncherController::~ChromeLauncherController() {
 
 void ChromeLauncherController::Init() {
   CreateBrowserShortcutLauncherItem();
-  if (chromeos::features::IsLacrosSideBySideEnabled())
+  if (chromeos::features::IsLacrosSupportEnabled())
     CreateLacrosBrowserShortcut();
   UpdateAppLaunchersFromSync();
 }

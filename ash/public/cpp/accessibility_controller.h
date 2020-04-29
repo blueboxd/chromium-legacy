@@ -70,6 +70,20 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
   virtual void SetSwitchAccessEventHandlerDelegate(
       SwitchAccessEventHandlerDelegate* delegate) = 0;
 
+  // Hides the Switch Access back button.
+  virtual void HideSwitchAccessBackButton() = 0;
+
+  // Hides the Switch Access menu.
+  virtual void HideSwitchAccessMenu() = 0;
+
+  // Show the Switch Access back button next to the specified rectangle.
+  virtual void ShowSwitchAccessBackButton(const gfx::Rect& bounds) = 0;
+
+  // Show the Switch Access menu with the specified actions.
+  virtual void ShowSwitchAccessMenu(
+      const gfx::Rect& bounds,
+      std::vector<std::string> actions_to_show) = 0;
+
   // Set whether dictation is active.
   virtual void SetDictationActive(bool is_active) = 0;
 

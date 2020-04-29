@@ -14529,6 +14529,7 @@
       'name': 'MinimumChromeVersionEnforced',
       'owners': ['snijhara@google.com'],
       'supported_on': ['chrome_os:84-'],
+      'future': True,
       'device_only': True,
       'type': 'dict',
       'schema': {

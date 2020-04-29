@@ -4440,7 +4440,7 @@ bool Element::IsFocusableStyleAfterUpdate() const {
   // Note that this isn't a part of `IsFocusableStyle()` because there are
   // callers of that function which cannot do a layout tree update (e.g.
   // accessibility).
-  if (RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+  if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
     GetDocument().UpdateStyleAndLayoutTreeForNode(this);
   return IsFocusableStyle();
 }
@@ -4470,7 +4470,7 @@ bool Element::IsAutofocusable() const {
 }
 
 bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled() ||
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
       GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount() ==
           GetDocument()
               .GetDisplayLockDocumentState()
@@ -4509,7 +4509,7 @@ bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
 
 bool Element::DisplayLockPreventsActivation(
     DisplayLockActivationReason reason) const {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
     return false;
 
   if (GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount() == 0)
@@ -4862,7 +4862,7 @@ Element::EnsureResizeObserverData() {
 }
 
 DisplayLockContext* Element::GetDisplayLockContext() const {
-  if (!RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
     return nullptr;
   return HasRareData() ? GetElementRareData()->GetDisplayLockContext()
                        : nullptr;

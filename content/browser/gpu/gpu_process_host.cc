@@ -611,10 +611,6 @@ void GpuProcessHost::TerminateGpuProcess(const std::string& message) {
   termination_origin_ = GpuTerminationOrigin::kOzoneWaylandProxy;
   process_->TerminateOnBadMessageReceived(message);
 }
-
-void GpuProcessHost::SendGpuProcessMessage(IPC::Message* message) {
-  Send(message);
-}
 #endif  // defined(USE_OZONE)
 
 // static

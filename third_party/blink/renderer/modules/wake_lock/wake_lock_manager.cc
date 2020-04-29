@@ -95,7 +95,6 @@ void WakeLockManager::ClearWakeLocks() {
 }
 
 void WakeLockManager::OnWakeLockConnectionError() {
-  LOG(INFO) << "Clearing wake locks on connection error.";
   wake_lock_.reset();
   ClearWakeLocks();
 }

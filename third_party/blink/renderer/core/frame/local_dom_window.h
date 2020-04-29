@@ -445,6 +445,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Member<InputMethodController> input_method_controller_;
   Member<SpellChecker> spell_checker_;
   Member<TextSuggestionController> text_suggestion_controller_;
+
+  // Tracks which features have already been potentially violated in this
+  // document. This helps to count them only once per page load.
+  // We don't use std::bitset to avoid to include feature_policy.mojom-blink.h.
+  mutable Vector<bool> potentially_violated_features_;
 };
 
 template <>

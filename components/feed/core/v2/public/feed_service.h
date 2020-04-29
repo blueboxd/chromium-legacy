@@ -38,6 +38,7 @@ class RefreshTaskScheduler;
 class MetricsReporter;
 class FeedNetwork;
 class FeedStore;
+class FeedStream;
 
 namespace internal {
 bool ShouldClearFeed(const history::DeletionInfo& deletion_info);
@@ -53,9 +54,9 @@ class FeedService : public KeyedService {
     virtual std::string GetLanguageTag() = 0;
   };
 
-  // Construct a FeedService given an already constructed FeedStreamApi.
+  // Construct a FeedService given an already constructed FeedStream.
   // Used for testing only.
-  explicit FeedService(std::unique_ptr<FeedStreamApi> stream);
+  explicit FeedService(std::unique_ptr<FeedStream> stream);
 
   // Construct a new FeedStreamApi along with FeedService.
   FeedService(
@@ -74,7 +75,9 @@ class FeedService : public KeyedService {
   FeedService(const FeedService&) = delete;
   FeedService& operator=(const FeedService&) = delete;
 
-  FeedStreamApi* GetStream() { return stream_.get(); }
+  FeedStreamApi* GetStream();
+
+  void ClearCachedData();
 
  private:
   class StreamDelegateImpl;
@@ -92,7 +95,7 @@ class FeedService : public KeyedService {
   std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler_;
   std::unique_ptr<HistoryObserverImpl> history_observer_;
 
-  std::unique_ptr<FeedStreamApi> stream_;
+  std::unique_ptr<FeedStream> stream_;
 };
 
 }  // namespace feed

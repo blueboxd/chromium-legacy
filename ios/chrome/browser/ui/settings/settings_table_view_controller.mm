@@ -65,7 +65,6 @@
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/voice_search_table_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
-#import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
@@ -218,8 +217,6 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   TableViewDetailIconItem* _autoFillProfileDetailItem;
   TableViewDetailIconItem* _autoFillCreditCardDetailItem;
 
-  // YES if the user used at least once the sign-in promo view buttons.
-  BOOL _signinStarted;
   // YES if view has been dismissed.
   BOOL _settingsHasBeenDismissed;
 }
@@ -228,10 +225,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>
         dispatcher;
 
-// The SigninInteractionCoordinator that presents Sign In UI for the
-// Settings page.
-@property(nonatomic, strong)
-    SigninInteractionCoordinator* signinInteractionCoordinator;
+// YES if the sign-in is in progress.
+@property(nonatomic, assign) BOOL isSigninInProgress;
 
 // Stops observing browser state services. This is required during the shutdown
 // phase to avoid observing services for a profile that is being killed.
@@ -241,7 +236,6 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
 @implementation SettingsTableViewController
 @synthesize dispatcher = _dispatcher;
-@synthesize signinInteractionCoordinator = _signinInteractionCoordinator;
 
 #pragma mark Initialization
 
@@ -1066,31 +1060,29 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 - (void)showSignInWithIdentity:(ChromeIdentity*)identity
                    promoAction:(signin_metrics::PromoAction)promoAction
                     completion:(ShowSigninCommandCompletionCallback)completion {
-  DCHECK(![self.signinInteractionCoordinator isActive]);
-  if (!self.signinInteractionCoordinator) {
-    self.signinInteractionCoordinator =
-        [[SigninInteractionCoordinator alloc] initWithBrowser:_browser];
-  }
-
-  __weak SettingsTableViewController* weakSelf = self;
-  [self.signinInteractionCoordinator
-            signInWithIdentity:identity
-                   accessPoint:signin_metrics::AccessPoint::
-                                   ACCESS_POINT_SETTINGS
-                   promoAction:promoAction
-      presentingViewController:self.navigationController
-                    completion:^(BOOL success) {
-                      if (completion)
-                        completion(success);
-                      [weakSelf didFinishSignin:success];
-                    }];
+  DCHECK(!self.isSigninInProgress);
+  self.isSigninInProgress = YES;
+  __weak __typeof(self) weakSelf = self;
+  ShowSigninCommand* command = [[ShowSigninCommand alloc]
+      initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
+               identity:identity
+            accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
+            promoAction:promoAction
+               callback:^(BOOL success) {
+                 if (completion)
+                   completion(success);
+                 [weakSelf didFinishSignin:success];
+               }];
+  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 - (void)didFinishSignin:(BOOL)signedIn {
   // The sign-in is done. The sign-in promo cell or account cell can be
   // reloaded.
-  if (!_settingsHasBeenDismissed)
-    [self reloadData];
+  DCHECK(self.isSigninInProgress);
+  self.isSigninInProgress = NO;
+  DCHECK(!_settingsHasBeenDismissed);
+  [self reloadData];
 }
 
 #pragma mark SettingsControllerProtocol
@@ -1110,7 +1102,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   _privacyCoordinator = nil;
 
   _settingsHasBeenDismissed = YES;
-  [self.signinInteractionCoordinator cancel];
+  DCHECK(!self.isSigninInProgress);
   [_signinPromoViewMediator signinPromoViewIsRemoved];
   _signinPromoViewMediator = nil;
   [self stopBrowserStateServiceObservers];
@@ -1244,7 +1236,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 - (void)configureSigninPromoWithConfigurator:
             (SigninPromoViewConfigurator*)configurator
                              identityChanged:(BOOL)identityChanged {
-  DCHECK(![self.signinInteractionCoordinator isActive]);
+  DCHECK(!self.isSigninInProgress);
   if (![self.tableViewModel hasItemForItemType:ItemTypeSigninPromo
                              sectionIdentifier:SectionIdentifierSignIn]) {
     return;
@@ -1301,12 +1293,12 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
 // Notifies this controller that the sign in state has changed.
 - (void)signinStateDidChange {
-  // While the sign-in interaction coordinator is presenting UI, the TableView
-  // should not be updated. Otherwise, it would lead to an UI glitch either
-  // while the sign in UI is appearing or disappearing. The TableView will be
-  // reloaded once the animation is finished.
+  // While the sign-in view is in progress, the TableView should not be
+  // updated. Otherwise, it would lead to an UI glitch either while the sign
+  // in UI is appearing or disappearing. The TableView will be reloaded once
+  // the animation is finished.
   // See: -[SettingsTableViewController didFinishSignin:].
-  if ([self.signinInteractionCoordinator isActive])
+  if (self.isSigninInProgress)
     return;
   // Sign in state changes are rare. Just reload the entire table when
   // this happens.

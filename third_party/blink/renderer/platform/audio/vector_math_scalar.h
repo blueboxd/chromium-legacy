@@ -324,6 +324,22 @@ static ALWAYS_INLINE void Vadd(const float* source1p,
   }
 }
 
+static ALWAYS_INLINE void Vsub(const float* source1p,
+                               int source_stride1,
+                               const float* source2p,
+                               int source_stride2,
+                               float* dest_p,
+                               int dest_stride,
+                               uint32_t frames_to_process) {
+  while (frames_to_process > 0u) {
+    *dest_p = *source1p - *source2p;
+    source1p += source_stride1;
+    source2p += source_stride2;
+    dest_p += dest_stride;
+    --frames_to_process;
+  }
+}
+
 static ALWAYS_INLINE void Vclip(const float* source_p,
                                 int source_stride,
                                 const float* low_threshold_p,
@@ -390,6 +406,21 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
   const float k = *scale;
   while (frames_to_process > 0u) {
     *dest_p = k * *source_p;
+    source_p += source_stride;
+    dest_p += dest_stride;
+    --frames_to_process;
+  }
+}
+
+static ALWAYS_INLINE void Vsadd(const float* source_p,
+                                int source_stride,
+                                const float* addend,
+                                float* dest_p,
+                                int dest_stride,
+                                uint32_t frames_to_process) {
+  const float k = *addend;
+  while (frames_to_process > 0u) {
+    *dest_p = *source_p + k;
     source_p += source_stride;
     dest_p += dest_stride;
     --frames_to_process;

@@ -279,6 +279,38 @@ responsible for computing different baseline types from font metrics.
 [dominant-baseline]: https://drafts.csswg.org/css-inline/#dominant-baseline-property
 [writing-mode]: https://drafts.csswg.org/css-writing-modes-3/#propdef-writing-mode
 
+### <a name="culled"></a>Culled Inline ###
+[Culled inline]: #culled
+
+For performance and memory consumption,
+Blink ignores some inline-boxes during inline layout
+because they don't impact layout nor they are needed for paint purposes.
+An example of this is
+```html
+<span style="border: 1px solid blue"><b>Text</b></span>
+```
+The `<b>` has the same size as the inner text-node
+so it can be ignored for layout purpose,
+while the `<span>` has borders, which impacts paint,
+so it produces a box fragment.
+This optimization is called "culled inline" in the code.
+
+LayoutNG uses similar criteria as legacy engine
+on whether to generate a fragment or not,
+but LayoutNG generates fragments in a little more cases than legacy
+in order to improve the accuracy of hit-testing and bounding rects.
+This is determined by `ShouldCreateBoxFragment()`,
+which is primarily computed during style recalc,
+but layout may also turn it on when the need is discovered during layout.
+
+One downside of this optimization is that we have extra work to do when
+querying post-layout information; e.g., hit-testing or asking for bounding rects.
+
+Another downside is making a culled inline box not to be culled requires re-layout
+even if the change does not affect layout; e.g., adding background.
+To mitigate multiple layouts by like hover highlighting,
+`ShouldCreateBoxFragment()` will not be reset once it's set.
+
 ### <a name="bidi"></a>Bidirectional Text ###
 [Bidirectional Text]: #bidi
 

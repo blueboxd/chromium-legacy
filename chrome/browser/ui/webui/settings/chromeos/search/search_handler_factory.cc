@@ -7,7 +7,7 @@
 #include "chrome/browser/chromeos/local_search_service/local_search_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -31,7 +31,7 @@ SearchHandlerFactory::SearchHandlerFactory()
           "SearchHandler",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(local_search_service::LocalSearchServiceFactory::GetInstance());
-  DependsOn(OsSettingsLocalizedStringsProviderFactory::GetInstance());
+  DependsOn(OsSettingsManagerFactory::GetInstance());
 }
 
 SearchHandlerFactory::~SearchHandlerFactory() = default;
@@ -40,7 +40,7 @@ KeyedService* SearchHandlerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   return new SearchHandler(
-      OsSettingsLocalizedStringsProviderFactory::GetForProfile(profile),
+      OsSettingsManagerFactory::GetForProfile(profile),
       local_search_service::LocalSearchServiceFactory::GetForProfile(
           Profile::FromBrowserContext(profile)));
 }

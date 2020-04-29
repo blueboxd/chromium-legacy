@@ -120,17 +120,21 @@ uint32_t UserInputMonitorLinuxCore::GetKeyPressCount() const {
 void UserInputMonitorLinuxCore::StartMonitor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  // TODO(jamiewalch): We should pass the display in.
-  if (!x_control_display_)
-    x_control_display_ = gfx::CloneXDisplay(gfx::GetXDisplay());
-
-  if (!x_record_display_)
-    x_record_display_ = gfx::CloneXDisplay(gfx::GetXDisplay());
-
   if (!x_control_display_ || !x_record_display_) {
-    LOG(ERROR) << "Couldn't open X display";
-    StopMonitor();
-    return;
+    // TODO(jamiewalch): We should pass the display in.
+    if (auto* x_display = gfx::GetXDisplay()) {
+      if (!x_control_display_)
+        x_control_display_ = gfx::CloneXDisplay(x_display);
+
+      if (!x_record_display_)
+        x_record_display_ = gfx::CloneXDisplay(x_display);
+    }
+
+    if (!x_control_display_ || !x_record_display_) {
+      LOG(ERROR) << "Couldn't open X display";
+      StopMonitor();
+      return;
+    }
   }
 
   int xr_opcode, xr_event, xr_error;

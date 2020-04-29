@@ -1431,7 +1431,7 @@
     ],
 
     'chromeos_amd64-generic_lacros_rel': [
-      'amd64-generic', 'amd64-lacros'
+      'amd64-generic', 'amd64-lacros', 'goma',
     ],
 
     'chromeos_amd64-generic_dbg': [

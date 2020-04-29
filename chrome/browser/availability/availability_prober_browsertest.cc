@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(AvailabilityProberBrowserTest, OK) {
   AvailabilityProber prober(
       &delegate, browser()->profile()->GetURLLoaderFactory(),
       browser()->profile()->GetPrefs(),
-      AvailabilityProber::ClientName::kLitepages, url,
+      AvailabilityProber::ClientName::kIsolatedPrerenderOriginCheck, url,
       AvailabilityProber::HttpMethod::kGet, headers, retry_policy,
       timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
       base::TimeDelta::FromDays(1));
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(AvailabilityProberBrowserTest, Timeout) {
   AvailabilityProber prober(
       &delegate, browser()->profile()->GetURLLoaderFactory(),
       browser()->profile()->GetPrefs(),
-      AvailabilityProber::ClientName::kLitepages, url,
+      AvailabilityProber::ClientName::kIsolatedPrerenderOriginCheck, url,
       AvailabilityProber::HttpMethod::kGet, headers, retry_policy,
       timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
       base::TimeDelta::FromDays(1));
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(AvailabilityProberBrowserTest, NetworkChange) {
   AvailabilityProber prober(
       &delegate, browser()->profile()->GetURLLoaderFactory(),
       browser()->profile()->GetPrefs(),
-      AvailabilityProber::ClientName::kLitepages, url,
+      AvailabilityProber::ClientName::kIsolatedPrerenderOriginCheck, url,
       AvailabilityProber::HttpMethod::kGet, headers, retry_policy,
       timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
       base::TimeDelta::FromDays(1));
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(AvailabilityProberBrowserTest, BadServer) {
   AvailabilityProber prober(
       &delegate, browser()->profile()->GetURLLoaderFactory(),
       browser()->profile()->GetPrefs(),
-      AvailabilityProber::ClientName::kLitepages, url,
+      AvailabilityProber::ClientName::kIsolatedPrerenderOriginCheck, url,
       AvailabilityProber::HttpMethod::kGet, headers, retry_policy,
       timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
       base::TimeDelta::FromDays(1));

@@ -91,7 +91,8 @@ void PortalContents::OnActivateResponse(
   bool should_destroy_contents = false;
   switch (result) {
     case mojom::blink::PortalActivateResult::kPredecessorWasAdopted:
-      GetDocument().GetPage()->SetInsidePortal(true);
+      if (!GetDocument().IsContextDestroyed())
+        GetDocument().GetPage()->SetInsidePortal(true);
       FALLTHROUGH;
     case mojom::blink::PortalActivateResult::kPredecessorWillUnload:
       activate_resolver_->Resolve();

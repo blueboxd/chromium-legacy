@@ -979,6 +979,11 @@ void LayerTreeHost::RecordEndOfFrameMetrics(
   client_->RecordEndOfFrameMetrics(frame_begin_time, trackers);
 }
 
+void LayerTreeHost::NotifyThroughputTrackerResults(
+    CustomTrackerResults results) {
+  client_->NotifyThroughputTrackerResults(std::move(results));
+}
+
 const base::WeakPtr<InputHandler>& LayerTreeHost::GetInputHandler() const {
   return input_handler_weak_ptr_;
 }

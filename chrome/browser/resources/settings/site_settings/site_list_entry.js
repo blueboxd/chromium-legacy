@@ -103,7 +103,7 @@ Polymer({
 
   /** @private */
   onShowIncognitoTooltip_: function() {
-    const tooltip = this.$.incognitoTooltip;
+    const tooltip = assert(this.$$('#incognitoTooltip'));
     // The tooltip text is used by an paper-tooltip contained inside the
     // cr-policy-pref-indicator. The text is currently held in a private
     // property. This text is needed here to send up to the common tooltip

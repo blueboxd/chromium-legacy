@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,15 +73,23 @@ chrome.accessibilityPrivate.SwitchAccessCommand = {
 /**
  * @enum {string}
  */
+chrome.accessibilityPrivate.SwitchAccessBubble = {
+  BACK_BUTTON: 'backButton',
+  MENU: 'menu',
+};
+
+/**
+ * @enum {string}
+ */
 chrome.accessibilityPrivate.SwitchAccessMenuAction = {
   DECREMENT: 'decrement',
   DICTATION: 'dictation',
   INCREMENT: 'increment',
   KEYBOARD: 'keyboard',
-  SCROLL_DOWN: 'scroll_down',
-  SCROLL_LEFT: 'scroll_left',
-  SCROLL_RIGHT: 'scroll_right',
-  SCROLL_UP: 'scroll_up',
+  SCROLL_DOWN: 'scrollDown',
+  SCROLL_LEFT: 'scrollLeft',
+  SCROLL_RIGHT: 'scrollRight',
+  SCROLL_UP: 'scrollUp',
   SELECT: 'select',
   SETTINGS: 'settings',
 };
@@ -225,6 +233,8 @@ chrome.accessibilityPrivate.darkenScreen = function(enabled) {};
 /**
  * Shows or hides the Switch Access menu. If shown, it is at the indicated
  * location.
+TODO(anastasi): Remove this function once the menu refactor is
+ * complete.
  * @param {boolean} show If true, show the menu. If false, hide the menu.
  * @param {!chrome.accessibilityPrivate.ScreenRect} element_bounds Position of
  *     an element, in global screen coordinates, to place the menu next to.
@@ -238,6 +248,19 @@ chrome.accessibilityPrivate.setSwitchAccessMenuState = function(show, element_bo
  * @param {boolean} shouldForward
  */
 chrome.accessibilityPrivate.forwardKeyEventsToSwitchAccess = function(shouldForward) {};
+
+/**
+ * Shows the Switch Access menu next to the specified rectangle and with the
+ * given actions
+ * @param {!chrome.accessibilityPrivate.SwitchAccessBubble} bubble Which bubble
+ *     to show/hide
+ * @param {boolean} show True if the bubble should be shown, false otherwise
+ * @param {!chrome.accessibilityPrivate.ScreenRect=} anchor A rectangle
+ *     indicating the bounds of the object the menu should be displayed next to.
+ * @param {!Array<!chrome.accessibilityPrivate.SwitchAccessMenuAction>=} actions
+ *     The actions to be shown in the menu.
+ */
+chrome.accessibilityPrivate.updateSwitchAccessBubble = function(bubble, show, anchor, actions) {};
 
 /**
  * Sets current ARC app to use native ARC support.

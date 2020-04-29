@@ -34,11 +34,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabViewManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.chrome.browser.usage_stats.SuspendedTab;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.display.DisplayAndroid;
 
@@ -279,7 +280,7 @@ public class TabContentManager {
 
         View viewToDraw = null;
         if (isNativeViewShowing) {
-            viewToDraw = tab.getView();
+            viewToDraw = tab.getContentView();
         } else if (!(nativePage instanceof FrozenNativePage)) {
             viewToDraw = nativePage.getView();
         }
@@ -643,7 +644,7 @@ public class TabContentManager {
     }
 
     private boolean isNativeViewShowing(Tab tab) {
-        return tab != null && TabViewManager.get(tab).getCurrentTabViewProvider() != null;
+        return tab != null && (SadTab.isShowing(tab) || SuspendedTab.isShowing(tab));
     }
 
     @NativeMethods

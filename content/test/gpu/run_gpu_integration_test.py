@@ -28,6 +28,7 @@ def PostprocessJSON(file_name, run_test_args):
     with open(file_name, 'w') as f:
       json.dump(test_result, f, indent=2)
 
+
 def FailIfScreenLockedOnMac():
   # Detect if the Mac lockscreen is present, which causes issues when running
   # tests.
@@ -38,12 +39,13 @@ def FailIfScreenLockedOnMac():
   if not current_session:
     # Using the logging module doesn't seem to be guaranteed to show up in
     # stdout, so use print instead.
-    print ('WARNING: Unable to obtain CGSessionCoppyCurrentDictionary via '
-           'Quartz - unable to determine whether Mac lockscreen is present or '
-           'not.')
+    print('WARNING: Unable to obtain CGSessionCoppyCurrentDictionary via '
+          'Quartz - unable to determine whether Mac lockscreen is present or '
+          'not.')
     return
   if current_session.get('CGSSessionScreenIsLocked'):
     raise RuntimeError('Mac lockscreen detected, aborting.')
+
 
 def FindTestCase(test_name):
   for start_dir in gpu_project_config.CONFIG.start_dirs:
@@ -54,22 +56,22 @@ def FindTestCase(test_name):
         SeriallyExecutedBrowserTestCase)
     for cl in modules_to_classes.values():
       if cl.Name() == test_name:
-          return cl
+        return cl
+
 
 def main():
   FailIfScreenLockedOnMac()
   rest_args = sys.argv[1:]
-  parser = argparse.ArgumentParser(description='Extra argument parser',
-                                   add_help=False)
+  parser = argparse.ArgumentParser(
+      description='Extra argument parser', add_help=False)
 
   parser.add_argument(
-    '--write-run-test-arguments',
-    action='store_true',
-    help=('Write the test script arguments to the results file.'))
+      '--write-run-test-arguments',
+      action='store_true',
+      help=('Write the test script arguments to the results file.'))
   option, rest_args_filtered = parser.parse_known_args(rest_args)
 
-  parser.add_argument(
-      'test', nargs='*', type=str, help=argparse.SUPPRESS)
+  parser.add_argument('test', nargs='*', type=str, help=argparse.SUPPRESS)
   option, _ = parser.parse_known_args(rest_args_filtered)
 
   if option.test:
@@ -78,19 +80,21 @@ def main():
     test_class = None
 
   if test_class:
-    rest_args_filtered.extend(
-        ['--test-name-prefix=%s.%s.' %
-         (test_class.__module__, test_class.__name__)])
+    rest_args_filtered.extend([
+        '--test-name-prefix=%s.%s.' % (test_class.__module__,
+                                       test_class.__name__)
+    ])
 
   if not any(arg.startswith('--retry-limit') for arg in rest_args_filtered):
     if '--retry-only-retry-on-failure-tests' not in rest_args_filtered:
       rest_args_filtered.append('--retry-only-retry-on-failure-tests')
     rest_args_filtered.append('--retry-limit=2')
-  rest_args_filtered.extend([
-      '--repository-absolute-path', path_util.GetChromiumSrcDir()])
+  rest_args_filtered.extend(
+      ['--repository-absolute-path',
+       path_util.GetChromiumSrcDir()])
 
-  retval = browser_test_runner.Run(
-      gpu_project_config.CONFIG, rest_args_filtered)
+  retval = browser_test_runner.Run(gpu_project_config.CONFIG,
+                                   rest_args_filtered)
 
   # We're not relying on argparse to print the help in the normal way, because
   # we need the help output from both the argument parser here and the argument
@@ -102,9 +106,10 @@ def main():
 
   # This duplicates an argument of browser_test_runner.
   parser.add_argument(
-    '--write-full-results-to', metavar='FILENAME',
-    action='store',
-    help=('If specified, writes the full results to that path.'))
+      '--write-full-results-to',
+      metavar='FILENAME',
+      action='store',
+      help=('If specified, writes the full results to that path.'))
 
   option, _ = parser.parse_known_args(rest_args)
 
@@ -112,6 +117,7 @@ def main():
   if option.write_run_test_arguments and option.write_full_results_to:
     PostprocessJSON(option.write_full_results_to, rest_args)
   return retval
+
 
 if __name__ == '__main__':
   sys.exit(main())

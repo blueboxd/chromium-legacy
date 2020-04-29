@@ -378,6 +378,11 @@ class CONTENT_EXPORT NavigationHandle {
   virtual void ForceEnableOriginTrials(
       const std::vector<std::string>& trials) = 0;
 
+  // Store whether or not we're overriding the user agent. This may only be
+  // called from DidStartNavigation().
+  virtual void SetIsOverridingUserAgent(bool override_ua) = 0;
+  virtual bool GetIsOverridingUserAgent() = 0;
+
   // Testing methods ----------------------------------------------------------
   //
   // The following methods should be used exclusively for writing unit tests.

@@ -110,7 +110,7 @@ class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
   std::unique_ptr<HistoryObserverImpl> history_observer_;
 };
 
-FeedService::FeedService(std::unique_ptr<FeedStreamApi> stream)
+FeedService::FeedService(std::unique_ptr<FeedStream> stream)
     : stream_(std::move(stream)) {}
 
 FeedService::FeedService(
@@ -148,10 +148,17 @@ FeedService::FeedService(
 
   // TODO(harringtond): Call FeedStream::OnSignedIn()
   // TODO(harringtond): Call FeedStream::OnSignedOut()
-  // TODO(harringtond): Call FeedStream::OnCacheDataCleared()
   // TODO(harringtond): Call FeedStream::OnEnterForeground()
 }
 
 FeedService::~FeedService() = default;
+
+FeedStreamApi* FeedService::GetStream() {
+  return stream_.get();
+}
+
+void FeedService::ClearCachedData() {
+  stream_->OnCacheDataCleared();
+}
 
 }  // namespace feed

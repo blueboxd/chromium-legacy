@@ -27,7 +27,6 @@ class Status;
 
 namespace remoting {
 
-class LogToServer;
 class OAuthTokenGetter;
 
 // HeartbeatSender periodically sends heartbeat to the directory service. See
@@ -75,8 +74,7 @@ class HeartbeatSender final : public SignalStrategy::Listener {
   HeartbeatSender(Delegate* delegate,
                   const std::string& host_id,
                   SignalStrategy* signal_strategy,
-                  OAuthTokenGetter* oauth_token_getter,
-                  LogToServer* log_to_server);
+                  OAuthTokenGetter* oauth_token_getter);
   ~HeartbeatSender() override;
 
   // Sets host offline reason for future heartbeat, and initiates sending a
@@ -133,7 +131,6 @@ class HeartbeatSender final : public SignalStrategy::Listener {
   std::string host_id_;
   SignalStrategy* const signal_strategy_;
   std::unique_ptr<HeartbeatClient> client_;
-  LogToServer* const log_to_server_;
   OAuthTokenGetter* const oauth_token_getter_;
 
   base::OneShotTimer heartbeat_timer_;

@@ -503,7 +503,6 @@ public class CustomTabsConnectionTest {
     @Test
     @SmallTest
     public void testGetSchedulerGroup() throws Exception {
-        Assume.assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP);
         // After M, /proc is mounted with hidepid=2, so even though the test still passes, it
         // is not useful in practice. See crbug.com/973368 for details.
         Assume.assumeTrue(Build.VERSION.SDK_INT < Build.VERSION_CODES.M);

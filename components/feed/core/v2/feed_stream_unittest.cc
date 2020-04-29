@@ -284,14 +284,13 @@ class TestWireResponseTranslator : public FeedStream::WireResponseTranslator {
   std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
       feedwire::Response response,
       StreamModelUpdateRequest::Source source,
-      base::TimeDelta response_time,
       base::Time current_time) override {
     if (injected_response_) {
       injected_response_->source = source;
       return std::move(injected_response_);
     }
     return FeedStream::WireResponseTranslator::TranslateWireResponse(
-        std::move(response), source, response_time, current_time);
+        std::move(response), source, current_time);
   }
   void InjectResponse(std::unique_ptr<StreamModelUpdateRequest> response) {
     injected_response_ = std::move(response);

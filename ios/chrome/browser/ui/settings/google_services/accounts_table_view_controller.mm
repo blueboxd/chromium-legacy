@@ -28,10 +28,10 @@
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
-#import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
@@ -52,6 +52,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using signin_metrics::AccessPoint;
+using signin_metrics::PromoAction;
 
 namespace {
 
@@ -105,11 +108,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSDictionary<NSString*, TableViewItem*>* _identityMap;
 }
 
-// The SigninInteractionCoordinator that presents Sign In UI for the Accounts
-// Settings page.
-@property(nonatomic, strong)
-    SigninInteractionCoordinator* signinInteractionCoordinator;
-
 // Stops observing browser state services. This is required during the shutdown
 // phase to avoid observing services for a browser state that is being killed.
 - (void)stopBrowserStateServiceObservers;
@@ -119,7 +117,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @implementation AccountsTableViewController
 
 @synthesize dispatcher = _dispatcher;
-@synthesize signinInteractionCoordinator = _signinInteractionCoordinator;
 
 - (instancetype)initWithBrowser:(Browser*)browser
       closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount {
@@ -163,7 +160,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)settingsWillBeDismissed {
-  [self.signinInteractionCoordinator cancel];
   [_alertCoordinator stop];
   [self stopBrowserStateServiceObservers];
 }
@@ -397,25 +393,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)showAddAccount {
   if ([_alertCoordinator isVisible])
     return;
-
-  if (!self.signinInteractionCoordinator) {
-    self.signinInteractionCoordinator =
-        [[SigninInteractionCoordinator alloc] initWithBrowser:_browser];
-  }
-
-  // |_authenticationOperationInProgress| is reset when the signin operation is
-  // completed.
   _authenticationOperationInProgress = YES;
-  __weak AccountsTableViewController* weakSelf = self;
-  [self.signinInteractionCoordinator
-      addAccountWithAccessPoint:signin_metrics::AccessPoint::
-                                    ACCESS_POINT_SETTINGS
-                    promoAction:signin_metrics::PromoAction::
-                                    PROMO_ACTION_NO_SIGNIN_PROMO
-       presentingViewController:self.navigationController
-                     completion:^(BOOL success) {
-                       [weakSelf handleDidAddAccount:success];
-                     }];
+
+  __weak __typeof(self) weakSelf = self;
+  ShowSigninCommand* command = [[ShowSigninCommand alloc]
+      initWithOperation:AUTHENTICATION_OPERATION_ADD_ACCOUNT
+               identity:nil
+            accessPoint:AccessPoint::ACCESS_POINT_SETTINGS
+            promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
+               callback:^(BOOL success) {
+                 [weakSelf handleDidAddAccount:success];
+               }];
+  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 - (void)handleDidAddAccount:(BOOL)success {
@@ -565,7 +554,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
   _isBeingDismissed = YES;
-  [self.signinInteractionCoordinator cancelAndDismiss];
   [_alertCoordinator stop];
   [self.navigationController popToViewController:self animated:NO];
   [base::mac::ObjCCastStrict<SettingsNavigationController>(

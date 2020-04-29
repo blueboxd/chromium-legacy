@@ -389,14 +389,6 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
       host->DisableKeepAliveRefCount();
     }
   }
-
-  // Clean up any isolated origins and other security state associated with this
-  // BrowserContext.  This should be safe now that all RenderProcessHosts are
-  // destroyed, since future navigations or security decisions shouldn't ever
-  // need to consult these isolated origins and other security state.
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  policy->RemoveStateForBrowserContext(*browser_context);
 }
 
 void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {
@@ -469,6 +461,12 @@ BrowserContext::~BrowserContext() {
     NOTREACHED();
     base::debug::DumpWithoutCrashing();
   }
+
+  // Clean up any isolated origins and other security state associated with this
+  // BrowserContext.
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->RemoveStateForBrowserContext(*this);
 
   if (GetUserData(kDownloadManagerKeyName))
     GetDownloadManager(this)->Shutdown();

@@ -15,7 +15,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -48,22 +47,16 @@ class PreviewsService : public KeyedService {
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const base::FilePath& profile_path);
 
-  // Allows the |previews_lite_page_redirect_decider_| to remove itself from
-  // observed classes.
+  // Allows members to remove themselves from observed classes.
   void Shutdown() override;
 
-  // Clears the history of the black lists in |previews_ui_service_| and
-  // |previews_lite_page_redirect_decider_| between |begin_time| and |end_time|.
+  // Clears the history of the black lists in |previews_ui_service_| and between
+  // |begin_time| and |end_time|.
   void ClearBlackList(base::Time begin_time, base::Time end_time);
 
   // The previews UI thread service.
   previews::PreviewsUIService* previews_ui_service() {
     return previews_ui_service_.get();
-  }
-
-  // The server lite page preview decider.
-  PreviewsLitePageRedirectDecider* previews_lite_page_redirect_decider() {
-    return previews_lite_page_redirect_decider_.get();
   }
 
   // The https notification infobar decider.
@@ -100,10 +93,6 @@ class PreviewsService : public KeyedService {
  private:
   // The previews UI thread service.
   std::unique_ptr<previews::PreviewsUIService> previews_ui_service_;
-
-  // The server lite page preview decider.
-  std::unique_ptr<PreviewsLitePageRedirectDecider>
-      previews_lite_page_redirect_decider_;
 
   // The decider for showing the HTTPS Notification InfoBar.
   std::unique_ptr<PreviewsHTTPSNotificationInfoBarDecider>

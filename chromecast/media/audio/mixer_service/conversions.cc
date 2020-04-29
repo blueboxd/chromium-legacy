@@ -4,7 +4,7 @@
 
 #include "chromecast/media/audio/mixer_service/conversions.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace chromecast {
 namespace media {

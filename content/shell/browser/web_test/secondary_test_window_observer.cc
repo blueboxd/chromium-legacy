@@ -5,23 +5,23 @@
 #include "content/shell/browser/web_test/secondary_test_window_observer.h"
 
 #include "content/public/browser/render_frame_host.h"
-#include "content/shell/browser/web_test/blink_test_controller.h"
+#include "content/shell/browser/web_test/web_test_control_host.h"
 
 namespace content {
 
 SecondaryTestWindowObserver::SecondaryTestWindowObserver(
     WebContents* web_contents)
     : WebContentsObserver(web_contents) {
-  BlinkTestController* blink_test_controller = BlinkTestController::Get();
-  if (!blink_test_controller)
+  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
+  if (!web_test_control_host)
     return;
-  DCHECK(!blink_test_controller->IsMainWindow(web_contents));
+  DCHECK(!web_test_control_host->IsMainWindow(web_contents));
 
   // Ensure that any preexisting frames (likely just the main frame) are handled
   // as well.
   for (RenderFrameHost* frame : web_contents->GetAllFrames()) {
     if (frame->IsRenderFrameLive())
-      blink_test_controller->HandleNewRenderFrameHost(frame);
+      web_test_control_host->HandleNewRenderFrameHost(frame);
   }
 }
 
@@ -29,12 +29,12 @@ SecondaryTestWindowObserver::~SecondaryTestWindowObserver() {}
 
 void SecondaryTestWindowObserver::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
-  BlinkTestController* blink_test_controller = BlinkTestController::Get();
-  if (!blink_test_controller)
+  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
+  if (!web_test_control_host)
     return;
-  DCHECK(!blink_test_controller->IsMainWindow(
+  DCHECK(!web_test_control_host->IsMainWindow(
       WebContents::FromRenderFrameHost(render_frame_host)));
-  blink_test_controller->HandleNewRenderFrameHost(render_frame_host);
+  web_test_control_host->HandleNewRenderFrameHost(render_frame_host);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SecondaryTestWindowObserver)

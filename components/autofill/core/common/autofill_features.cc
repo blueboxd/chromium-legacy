@@ -198,6 +198,11 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
     "AutofillUseImprovedLabelDisambiguation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to use the combined heuristic and the autocomplete section
+// implementation for section splitting or not. See https://crbug.com/1076175.
+const base::Feature kAutofillUseNewSectioningMethod{
+    "AutofillUseNewSectioningMethod", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to use the |ParseCityStateCountryZipCode| or not for
 // predicting the heuristic type.
 // |ParseCityStateCountryZipCode| is intended to prevent the misclassification

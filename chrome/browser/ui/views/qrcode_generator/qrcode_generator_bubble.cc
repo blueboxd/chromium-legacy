@@ -25,6 +25,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -301,14 +302,12 @@ void QRCodeGeneratorBubble::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   DCHECK_EQ(sender, download_button_);
   if (sender == download_button_) {
-    // This will be replaced by data from a QR encoder service.
-    // This placeholder is a 50x50 png, solid black, generated in devtools.
-    const GURL data_url = GURL(
-        "data:image/png;base64,"
-        "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAk0lEQVRoQ+3SwQnAMBDEwH"
-        "X/RSc9CATGKP9bsCZn27cHvtNDLlNM5DKQJZKIVKBfSwqLZxPB6aTDRKSweDYRnE46TEQK"
-        "i2cTwemkw0SksHg2EZxOOkxECotnE8HppMNEpLB4NhGcTjpMRAqLZxPB6aTDRKSweDYRnE"
-        "46TEQKi2cTwemkw0SksHg2EZxOOkxECotnf62iMgGLjn9UAAAAAElFTkSuQmCC");
+    const gfx::ImageSkia& image_ref = qr_code_image_->GetImage();
+    // Returns closest scaling to parameter (1.0).
+    // Should be exact since we generated the bitmap.
+    const gfx::ImageSkiaRep& image_rep = image_ref.GetRepresentation(1.0f);
+    const SkBitmap& bitmap = image_rep.GetBitmap();
+    const GURL data_url = GURL(webui::GetBitmapDataUrl(bitmap));
 
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
     content::DownloadManager* download_manager =

@@ -41,13 +41,13 @@ class CORE_EXPORT DisplayLockDocumentState final
   int LockedDisplayLockCount() const;
 
   // Bookkeeping: the count of all locked display locks which block all
-  // activation (i.e. subtree-visibility: hidden locks).
+  // activation (i.e. content-visibility: hidden locks).
   void IncrementDisplayLockBlockingAllActivation();
   void DecrementDisplayLockBlockingAllActivation();
   int DisplayLockBlockingAllActivationCount() const;
 
   // Register the given element for intersection observation. Used for detecting
-  // viewport intersections for subtree-visibility: auto locks.
+  // viewport intersections for content-visibility: auto locks.
   void RegisterDisplayLockActivationObservation(Element*);
   void UnregisterDisplayLockActivationObservation(Element*);
 

@@ -1529,6 +1529,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_SETWINDOWBOUNDS = 1466,
   AUTOTESTPRIVATE_STARTSMOOTHNESSTRACKING = 1467,
   AUTOTESTPRIVATE_STOPSMOOTHNESSTRACKING = 1468,
+  ACCESSIBILITY_PRIVATE_UPDATESWITCHACCESSBUBBLE = 1469,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

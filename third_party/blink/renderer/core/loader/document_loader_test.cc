@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -375,7 +376,7 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyEnforcedReportHistogramTest) {
   LoadURL("https://example.com");
   main_resource.Finish();
 
-  GetDocument().ReportDocumentPolicyViolation(
+  Window().ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature::kFontDisplay,
       mojom::blink::PolicyDisposition::kEnforce);
 
@@ -385,7 +386,7 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyEnforcedReportHistogramTest) {
                                      1 /* kFontDisplay */, 1);
 
   // Multiple reports should be recorded multiple times.
-  GetDocument().ReportDocumentPolicyViolation(
+  Window().ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature::kFontDisplay,
       mojom::blink::PolicyDisposition::kEnforce);
 
@@ -407,7 +408,7 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyReportOnlyReportHistogramTest) {
   LoadURL("https://example.com");
   main_resource.Finish();
 
-  GetDocument().ReportDocumentPolicyViolation(
+  Window().ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature::kFontDisplay,
       mojom::blink::PolicyDisposition::kReport);
 
@@ -417,7 +418,7 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyReportOnlyReportHistogramTest) {
       "Blink.UseCounter.DocumentPolicy.ReportOnly", 1 /* kFontDisplay */, 1);
 
   // Multiple reports should be recorded multiple times.
-  GetDocument().ReportDocumentPolicyViolation(
+  Window().ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature::kFontDisplay,
       mojom::blink::PolicyDisposition::kReport);
 

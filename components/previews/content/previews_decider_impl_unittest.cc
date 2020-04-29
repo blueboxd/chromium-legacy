@@ -96,8 +96,8 @@ bool IsPreviewFieldTrialEnabled(PreviewsType type) {
       return params::IsNoScriptPreviewsEnabled();
     case PreviewsType::RESOURCE_LOADING_HINTS:
       return params::IsResourceLoadingHintsEnabled();
-    case previews::PreviewsType::LITE_PAGE_REDIRECT:
-      return params::IsLitePageServerPreviewsEnabled();
+    case previews::PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
+      return false;
     case PreviewsType::DEFER_ALL_SCRIPT:
       return params::IsDeferAllScriptPreviewsEnabled();
     case PreviewsType::NONE:
@@ -185,11 +185,7 @@ class TestPreviewsOptimizationGuide
                        PreviewsType type) override {
     EXPECT_TRUE(type == PreviewsType::NOSCRIPT ||
                 type == PreviewsType::RESOURCE_LOADING_HINTS ||
-                type == PreviewsType::DEFER_ALL_SCRIPT ||
-                type == PreviewsType::LITE_PAGE_REDIRECT);
-
-    if (type == PreviewsType::LITE_PAGE_REDIRECT)
-      return !IsBlacklisted(navigation_handle, type);
+                type == PreviewsType::DEFER_ALL_SCRIPT);
 
     const GURL url = navigation_handle->GetURL();
     if (type == PreviewsType::NOSCRIPT) {
@@ -207,11 +203,6 @@ class TestPreviewsOptimizationGuide
   // blacklisted from |type|.
   bool IsBlacklisted(content::NavigationHandle* navigation_handle,
                      PreviewsType type) const {
-    EXPECT_TRUE(type == PreviewsType::LITE_PAGE_REDIRECT);
-    const GURL url = navigation_handle->GetURL();
-    if (type == PreviewsType::LITE_PAGE_REDIRECT) {
-      return url.host().compare("blacklisted.example.com") == 0;
-    }
     return false;
   }
 
@@ -426,7 +417,6 @@ class PreviewsDeciderImplTest
     blacklist::BlacklistData::AllowedTypesAndVersions allowed_types;
     allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
     allowed_types[static_cast<int>(PreviewsType::LITE_PAGE)] = 0;
-    allowed_types[static_cast<int>(PreviewsType::LITE_PAGE_REDIRECT)] = 0;
     allowed_types[static_cast<int>(PreviewsType::NOSCRIPT)] = 0;
     allowed_types[static_cast<int>(PreviewsType::RESOURCE_LOADING_HINTS)] = 0;
     allowed_types[static_cast<int>(PreviewsType::DEFER_ALL_SCRIPT)] = 0;
@@ -1048,105 +1038,6 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
         "Previews.EligibilityReason.NoScript",
         static_cast<int>(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE), 1);
   }
-}
-
-TEST_F(PreviewsDeciderImplTest,
-       LitePageRedirectAllowedWithoutOptimizationHints) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kLitePageServerPreviews}, {});
-  InitializeUIService(/*include_previews_opt_guide=*/false);
-
-  base::HistogramTester histogram_tester;
-  PreviewsUserData user_data(kDefaultPageId);
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://www.google.com"));
-  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
-      &user_data, &navigation_handle, false, PreviewsType::LITE_PAGE_REDIRECT));
-
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.LitePageRedirect",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
-}
-
-TEST_F(PreviewsDeciderImplTest, LitePageRedirectDisallowedByServerBlacklist) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kLitePageServerPreviews}, {});
-  InitializeUIService();
-
-  base::HistogramTester histogram_tester;
-
-  PreviewsUserData user_data(kDefaultPageId);
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://www.google.com"));
-  // First verify preview allowed for non-whitelisted url.
-  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
-      &user_data, &navigation_handle, false, PreviewsType::LITE_PAGE_REDIRECT));
-
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.LitePageRedirect",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
-
-  // Now verify no preview for blacklisted url.
-  content::MockNavigationHandle blacklisted_navigation_handle;
-  blacklisted_navigation_handle.set_url(
-      GURL("https://blacklisted.example.com"));
-  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
-      &user_data, &blacklisted_navigation_handle, false,
-      PreviewsType::LITE_PAGE_REDIRECT));
-
-  histogram_tester.ExpectBucketCount(
-      "Previews.EligibilityReason",
-      static_cast<int>(
-          PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
-      1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.EligibilityReason.LitePageRedirect",
-      static_cast<int>(
-          PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
-      1);
-}
-
-TEST_F(PreviewsDeciderImplTest,
-       LitePageRedirectAllowedByServerBlacklistWithFlag) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kLitePageServerPreviews}, {});
-  InitializeUIService();
-
-  base::test::ScopedCommandLine scoped_command_line;
-  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
-  command_line->AppendSwitch(
-      switches::kIgnoreLitePageRedirectOptimizationBlacklist);
-  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIgnoreLitePageRedirectOptimizationBlacklist));
-
-  base::HistogramTester histogram_tester;
-
-  PreviewsUserData user_data(kDefaultPageId);
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://www.google.com"));
-  // First verify preview allowed for non-whitelisted url.
-  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
-      &user_data, &navigation_handle, false, PreviewsType::LITE_PAGE_REDIRECT));
-
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.LitePageRedirect",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
-
-  content::MockNavigationHandle blacklisted_navigation_handle;
-  blacklisted_navigation_handle.set_url(
-      GURL("https://blacklisted.example.com"));
-  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
-      &user_data, &navigation_handle, false, PreviewsType::LITE_PAGE_REDIRECT));
-
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.LitePageRedirect",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 2);
 }
 
 TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsNotAllowedByDefault) {

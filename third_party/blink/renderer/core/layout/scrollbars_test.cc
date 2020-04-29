@@ -2604,6 +2604,48 @@ TEST_F(ScrollbarsTest, UseCounterPositiveWhenThumbIsScrolledWithTouch) {
       WebFeature::kHorizontalScrollbarThumbScrollingWithTouch));
 }
 
+TEST_F(ScrollbarsTest, UseCounterCustomScrollbarPercentSize) {
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      ::-webkit-scrollbar { width: 10px; height: 10%; }
+      ::-webkit-scrollbar-thumb { min-width: 10%; min-height: 10px; }
+    </style>
+    <div id="target" style="width: 100px; height: 100px; overflow: auto">
+      <div id="child" style="width: 50px; height: 50px"></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // No scrollbars initially.
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kCustomScrollbarPercentThickness));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kCustomScrollbarPartPercentLength));
+
+  // Show vertical scrollbar which uses fixed lengths for thickness
+  // (width: 10px) and thumb minimum length (min-height: 10px).
+  auto* child = GetDocument().getElementById("child");
+  child->setAttribute(html_names::kStyleAttr, "width: 50px; height: 200px");
+  Compositor().BeginFrame();
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kCustomScrollbarPercentThickness));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kCustomScrollbarPartPercentLength));
+
+  // Show horizontal scrollbar which uses percent lengths for thickness
+  // (height: 10%) and thumb minimum length (min-width: 10%).
+  child->setAttribute(html_names::kStyleAttr, "width: 200px; height: 50px");
+  Compositor().BeginFrame();
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kCustomScrollbarPercentThickness));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kCustomScrollbarPartPercentLength));
+}
+
 TEST_F(ScrollbarsTest, CheckScrollCornerIfThereIsNoScrollbar) {
   // This test is specifically checking the behavior when overlay scrollbars
   // are enabled.

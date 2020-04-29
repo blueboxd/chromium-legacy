@@ -65,7 +65,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
@@ -779,22 +778,6 @@ SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
 
   if (base::Contains(kAllowlistExtensionIds, extension.id())) {
     return ExtensionState::ALLOWED;
-  }
-
-  if (base::FeatureList::IsEnabled(
-          supervised_users::kSupervisedUserAllowlistExtensionInstall)) {
-    extensions::ExtensionManagement* management =
-        extensions::ExtensionManagementFactory::GetForBrowserContext(profile_);
-    if (management && management->BlacklistedByDefault()) {
-      // The emergency extensions release allows us to control allowed
-      // extensions with two policies: ExtensionInstallWhitelist and
-      // ExtensionInstallBlacklist. We want to make sure that the
-      // ExtensionInstallBlacklist is active before allowing all extensions
-      // here. Otherwise, supervised users would have access to all extensions,
-      // an undesirable outcome. If any extension installs go through at this
-      // point, we know it must have gone through the ExtensionInstallWhitelist.
-      return ExtensionState::ALLOWED;
-    }
   }
 
   // Feature flag for gating new behavior.

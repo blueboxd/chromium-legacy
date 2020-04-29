@@ -534,6 +534,9 @@ void OptimizationGuideHintsManager::MaybeScheduleTopHostsHintsFetch() {
       !IsUserPermittedToFetchFromRemoteOptimizationGuide(profile_))
     return;
 
+  if (!optimization_guide::features::ShouldBatchUpdateHintsForTopHosts())
+    return;
+
   if (optimization_guide::switches::ShouldOverrideFetchHintsTimer()) {
     SetLastHintsFetchAttemptTime(clock_->Now());
     FetchTopHostsHints();

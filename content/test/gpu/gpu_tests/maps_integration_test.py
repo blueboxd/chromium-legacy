@@ -14,13 +14,14 @@ from gpu_tests import skia_gold_integration_test_base
 
 from py_utils import cloud_storage
 
-_MAPS_PERF_TEST_PATH = os.path.join(
-  path_util.GetChromiumSrcDir(), 'tools', 'perf', 'page_sets', 'maps_perf_test')
+_MAPS_PERF_TEST_PATH = os.path.join(path_util.GetChromiumSrcDir(), 'tools',
+                                    'perf', 'page_sets', 'maps_perf_test')
 
-_DATA_PATH = os.path.join(path_util.GetChromiumSrcDir(),
-                         'content', 'test', 'gpu', 'gpu_tests')
+_DATA_PATH = os.path.join(path_util.GetChromiumSrcDir(), 'content', 'test',
+                          'gpu', 'gpu_tests')
 
 _TOLERANCE = 6
+
 
 class MapsIntegrationTest(
     skia_gold_integration_test_base.SkiaGoldIntegrationTestBase):
@@ -39,15 +40,15 @@ class MapsIntegrationTest(
   def SetUpProcess(cls):
     options = cls.GetParsedCommandLineOptions()
     color_profile_manager.ForceUntilExitSRGB(
-      options.dont_restore_color_profile_after_test)
+        options.dont_restore_color_profile_after_test)
     super(MapsIntegrationTest, cls).SetUpProcess()
     browser_args = [
-        '--force-color-profile=srgb',
-        '--ensure-forced-color-profile']
+        '--force-color-profile=srgb', '--ensure-forced-color-profile'
+    ]
     cls.CustomizeBrowserArgs(browser_args)
     cloud_storage.GetIfChanged(
-      os.path.join(_MAPS_PERF_TEST_PATH, 'load_dataset'),
-      cloud_storage.PUBLIC_BUCKET)
+        os.path.join(_MAPS_PERF_TEST_PATH, 'load_dataset'),
+        cloud_storage.PUBLIC_BUCKET)
     cls.SetStaticServerDirs([_MAPS_PERF_TEST_PATH])
     cls.StartBrowser()
 
@@ -67,9 +68,8 @@ class MapsIntegrationTest(
     # artifact of the failure to help with debugging. There are no accepted
     # positive baselines recorded in Skia Gold, so its diff will not be
     # sufficient to debugging the failure.
-    yield('Maps_maps',
-          'file://performance.html',
-          ('maps_pixel_expectations.json'))
+    yield ('Maps_maps', 'file://performance.html',
+           ('maps_pixel_expectations.json'))
 
   def _ReadPixelExpectations(self, expectations_file):
     expectations_path = os.path.join(_DATA_PATH, expectations_file)
@@ -110,9 +110,8 @@ class MapsIntegrationTest(
     # line.
     expected = self._ReadPixelExpectations(pixel_expectations_file)
     page = self._MapsExpectationToPixelExpectation(url, expected, _TOLERANCE)
-    self._ValidateScreenshotSamplesWithSkiaGold(
-        tab, page, screenshot, dpr, self._GetBuildIdArgs())
-
+    self._ValidateScreenshotSamplesWithSkiaGold(tab, page, screenshot, dpr,
+                                                self._GetBuildIdArgs())
 
   def _MapsExpectationToPixelExpectation(self, url, expected_colors, tolerance):
     page = pixel_test_pages.PixelTestPage(
@@ -128,8 +127,11 @@ class MapsIntegrationTest(
   @classmethod
   def ExpectationsFiles(cls):
     return [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     'test_expectations', 'maps_expectations.txt')]
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
+            'maps_expectations.txt')
+    ]
+
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

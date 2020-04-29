@@ -13,6 +13,7 @@
 #include "ash/system/accessibility/autoclick_menu_view.h"
 #include "ash/system/accessibility/tray_accessibility.h"
 #include "ash/test/ash_test_base.h"
+#include "base/barrier_closure.h"
 
 namespace ash {
 
@@ -97,6 +98,10 @@ class FloatingAccessibilityControllerTest : public AshTestBase {
     SetUpKioskSession();
     accessibility_controller()->floating_menu().SetEnabled(true);
     accessibility_controller()->ShowFloatingMenuIfEnabled();
+  }
+
+  void SetOnLayoutCallback(base::RepeatingClosure closure) {
+    controller()->on_layout_change_ = std::move(closure);
   }
 };
 
@@ -215,8 +220,7 @@ TEST_F(FloatingAccessibilityControllerTest, DetailedViewPosition) {
 
   const struct { bool is_RTL; } kTestCases[] = {{true}, {false}};
   for (auto& test : kTestCases) {
-    SCOPED_TRACE(
-        base::StringPrintf("Testing rtl=#[%d]", test.is_RTL));
+    SCOPED_TRACE(base::StringPrintf("Testing rtl=#[%d]", test.is_RTL));
     // These positions should be relative to the corners of the screen
     // whether we are in RTL or LTR.
     base::i18n::SetRTLForTesting(test.is_RTL);
@@ -315,6 +319,88 @@ TEST_F(FloatingAccessibilityControllerTest, CollisionWithAutoclicksMenu) {
       }
     }
   }
+}
+
+TEST_F(FloatingAccessibilityControllerTest, ActiveFeaturesButtons) {
+  SetUpVisibleMenu();
+
+  struct FeatureWithButton {
+    FloatingAccessibilityView::ButtonId button_id;
+    AccessibilityControllerImpl::FeatureType feature_type;
+  } kFeatureButtons[] = {{FloatingAccessibilityView::ButtonId::kDictation,
+                          AccessibilityControllerImpl::kDictation},
+                         {FloatingAccessibilityView::ButtonId::kSelectToSpeak,
+                          AccessibilityControllerImpl::kSelectToSpeak},
+                         {FloatingAccessibilityView::ButtonId::kVirtualKeyboard,
+                          AccessibilityControllerImpl::kVirtualKeyboard}};
+
+  accessibility_controller()->SetDictationAcceleratorDialogAccepted();
+
+  gfx::Rect original_bounds = GetMenuViewBounds();
+
+  for (FeatureWithButton feature : kFeatureButtons) {
+    SCOPED_TRACE(
+        base::StringPrintf("Testing single feature with button id=#[%d]",
+                           static_cast<int>(feature.button_id)));
+    views::View* feature_button = GetMenuButton(feature.button_id);
+    EXPECT_TRUE(feature_button);
+
+    // The button should not be visible when dication is not enabled.
+    EXPECT_FALSE(feature_button->GetVisible());
+
+    // Wait for relayout.
+    base::RunLoop loop_enable;
+    SetOnLayoutCallback(loop_enable.QuitClosure());
+    accessibility_controller()
+        ->GetFeature(feature.feature_type)
+        .SetEnabled(true);
+    loop_enable.Run();
+
+    EXPECT_TRUE(feature_button->GetVisible());
+    // Get the full root window bounds to test the position.
+    gfx::Rect window_bounds = Shell::GetPrimaryRootWindow()->bounds();
+    // The menu should change its size and fit on the screen.
+    EXPECT_TRUE(window_bounds.Contains(GetMenuViewBounds()));
+
+    // After disabling dictation, menu should have the same size as it had
+    // before.
+    base::RunLoop loop_disable;
+    SetOnLayoutCallback(loop_disable.QuitClosure());
+    accessibility_controller()
+        ->GetFeature(feature.feature_type)
+        .SetEnabled(false);
+    EXPECT_EQ(GetMenuViewBounds(), original_bounds);
+
+    SetOnLayoutCallback(base::RepeatingClosure());
+  }
+
+  {
+    base::RunLoop loop_enable;
+    SetOnLayoutCallback(base::BarrierClosure(base::size(kFeatureButtons),
+                                             loop_enable.QuitClosure()));
+    // Enable all features.
+    for (FeatureWithButton feature : kFeatureButtons)
+      accessibility_controller()
+          ->GetFeature(feature.feature_type)
+          .SetEnabled(true);
+    loop_enable.Run();
+  }
+  gfx::Rect window_bounds = Shell::GetPrimaryRootWindow()->bounds();
+  // The menu should change its size and fit on the screen.
+  EXPECT_TRUE(window_bounds.Contains(GetMenuViewBounds()));
+  {
+    base::RunLoop loop_disable;
+    SetOnLayoutCallback(base::BarrierClosure(base::size(kFeatureButtons),
+                                             loop_disable.QuitClosure()));
+    // Enable all features.
+    // Dicable all features.
+    for (FeatureWithButton feature : kFeatureButtons)
+      accessibility_controller()
+          ->GetFeature(feature.feature_type)
+          .SetEnabled(false);
+    loop_disable.Run();
+  }
+  EXPECT_EQ(GetMenuViewBounds(), original_bounds);
 }
 
 }  // namespace ash

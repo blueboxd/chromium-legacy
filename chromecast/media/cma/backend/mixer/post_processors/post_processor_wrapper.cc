@@ -4,7 +4,7 @@
 
 #include "chromecast/media/cma/backend/mixer/post_processors/post_processor_wrapper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "chromecast/public/media/audio_post_processor_shlib.h"
 
 namespace chromecast {

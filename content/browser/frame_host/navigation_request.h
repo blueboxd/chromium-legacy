@@ -274,6 +274,8 @@ class CONTENT_EXPORT NavigationRequest
       mojom::TransferrableURLLoaderPtr transferrable_loader) override;
   GlobalFrameRoutingId GetPreviousRenderFrameHostId() override;
   bool IsServedFromBackForwardCache() override;
+  void SetIsOverridingUserAgent(bool override_ua) override;
+  bool GetIsOverridingUserAgent() override;
 
   // Called on the UI thread by the Navigator to start the navigation.
   // The NavigationRequest can be deleted while BeginNavigation() is called.
@@ -563,6 +565,8 @@ class CONTENT_EXPORT NavigationRequest
     return require_coop_browsing_instance_swap_;
   }
 
+  bool ua_change_requires_reload() const { return ua_change_requires_reload_; }
+
   void set_require_coop_browsing_instance_swap() {
     require_coop_browsing_instance_swap_ = true;
   }
@@ -578,6 +582,9 @@ class CONTENT_EXPORT NavigationRequest
   // RenderFrameHost::FromID(GetPreviousRenderFrameHostId())
   //     ->GetPageUkmSourceId() for main-frame cross-document navigations.
   ukm::SourceId GetPreviousPageUkmSourceId();
+
+  // Returns the NavigationEntry associated with this, which may be null.
+  NavigationEntry* GetNavigationEntry();
 
   void OnServiceWorkerAccessed(const GURL& scope,
                                AllowServiceWorkerResult allowed);
@@ -904,7 +911,21 @@ class CONTENT_EXPORT NavigationRequest
 
   base::Optional<network::mojom::BlockedByResponseReason> IsBlockedByCorp();
 
+  bool IsOverridingUserAgent() const {
+    return commit_params_->is_overriding_user_agent || entry_overrides_ua_;
+  }
+
+  // Returns the user-agent override, or an empty string if one isn't set.
+  std::string GetUserAgentOverride();
+
+  // Convenience function to return the NavigationControllerImpl this
+  // NavigationRequest is in.
+  NavigationControllerImpl* GetNavigationController();
+
   FrameTreeNode* frame_tree_node_;
+
+  // Value of |is_for_commit| supplied to the constructor.
+  const bool is_for_commit_;
 
   // Invariant: At least one of |loader_| or |render_frame_host_| is null.
   RenderFrameHostImpl* render_frame_host_ = nullptr;
@@ -1151,8 +1172,9 @@ class CONTENT_EXPORT NavigationRequest
   std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
       render_process_blocked_state_changed_subscription_;
 
-  // The headers used for the request.
-  net::HttpRequestHeaders request_headers_;
+  // The headers used for the request. The value of this comes from
+  // |begin_params_->headers|. If not set, it needs to be calculated.
+  base::Optional<net::HttpRequestHeaders> request_headers_;
 
   // Used to update the request's headers. When modified during the navigation
   // start, the headers will be applied to the initial network request. When
@@ -1230,6 +1252,10 @@ class CONTENT_EXPORT NavigationRequest
 
   // UKM source associated with the page we are navigated away from.
   ukm::SourceId previous_page_load_ukm_source_id_ = ukm::kInvalidSourceId;
+
+  // If true, changes to the user-agent override require a reload. If false, a
+  // reload is not necessary.
+  bool ua_change_requires_reload_ = true;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

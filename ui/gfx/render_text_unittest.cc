@@ -431,9 +431,9 @@ class RenderTextTest : public testing::Test {
     return test::RenderTextTestApi::GetRendererFont(renderer());
   }
 
-  void DrawVisualText(Range selection = {}) {
+  void DrawVisualText(const std::vector<Range> selections = {}) {
     test_api()->EnsureLayout();
-    test_api()->DrawVisualText(renderer(), selection);
+    test_api()->DrawVisualText(renderer(), selections);
     renderer()->GetTextLogAndReset(&text_log_);
   }
 
@@ -630,6 +630,8 @@ class RenderTextTest : public testing::Test {
     EXPECT_EQ(runs.size(), text_log_.size());
     const size_t min_size = std::min(runs.size(), text_log_.size());
     for (size_t i = 0; i < min_size; ++i) {
+      SCOPED_TRACE(testing::Message()
+                   << "ExpectTextLog, run " << i << " of " << runs.size());
       EXPECT_EQ(runs[i].color, text_log_[i].color());
       EXPECT_EQ(runs[i].glyph_count, text_log_[i].glyphs().size());
     }
@@ -995,6 +997,29 @@ TEST_F(RenderTextTest, AppendTextKeepsStyles) {
       test_api()->font_size_overrides().EqualsForTesting(expected_font_size));
 }
 
+TEST_F(RenderTextTest, SetSelection) {
+  RenderText* render_text = GetRenderText();
+  render_text->set_selection_color(SK_ColorRED);
+  render_text->SetText(ASCIIToUTF16("abcdef"));
+  render_text->set_focused(true);
+
+  // Single selection
+  render_text->SetSelection(
+      {{{4, 100}}, LogicalCursorDirection::CURSOR_FORWARD});
+  Draw();
+  ExpectTextLog({{4}, {2, SK_ColorRED}});
+
+  // Multiple selections
+  render_text->SetSelection(
+      {{{0, 1}, {4, 100}}, LogicalCursorDirection::CURSOR_FORWARD});
+  Draw();
+  ExpectTextLog({{1, SK_ColorRED}, {3}, {2, SK_ColorRED}});
+
+  render_text->ClearSelection();
+  Draw();
+  ExpectTextLog({{6}});
+}
+
 TEST_F(RenderTextTest, SelectRangeColored) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(ASCIIToUTF16("abcdef"));
@@ -1037,6 +1062,28 @@ TEST_F(RenderTextTest, SelectRangeColoredGrapheme) {
   render_text->SelectRange(Range(2, 4));
   Draw();
   ExpectTextLog({{1, SK_ColorBLACK}, {2, SK_ColorRED}});
+}
+
+TEST_F(RenderTextTest, SelectRangeMultiple) {
+  RenderText* render_text = GetRenderText();
+  render_text->set_selection_color(SK_ColorRED);
+  render_text->SetText(ASCIIToUTF16("abcdef"));
+  render_text->set_focused(true);
+
+  // Multiple selections
+  render_text->SelectRange(Range(0, 1));
+  render_text->SelectRange(Range(4, 2), false);
+  Draw();
+  ExpectTextLog({{1, SK_ColorRED}, {1}, {2, SK_ColorRED}, {2}});
+
+  // Setting a primary selection should override secondary selections
+  render_text->SelectRange(Range(5, 6));
+  Draw();
+  ExpectTextLog({{5}, {1, SK_ColorRED}});
+
+  render_text->ClearSelection();
+  Draw();
+  ExpectTextLog({{6}});
 }
 
 TEST_F(RenderTextTest, SetCompositionRangeColored) {
@@ -7394,7 +7441,7 @@ TEST_F(RenderTextTest, DrawVisualText_WithSelection) {
   render_text->SetText(ASCIIToUTF16("TheRedElephantIsEatingMyPumpkin"));
   // Ensure selected text is drawn differently than unselected text.
   render_text->set_selection_color(SK_ColorRED);
-  DrawVisualText({3, 14});
+  DrawVisualText({{3, 14}});
   ExpectTextLog({{3, SK_ColorBLACK}, {11, SK_ColorRED}, {17, SK_ColorBLACK}});
 }
 
@@ -7403,7 +7450,7 @@ TEST_F(RenderTextTest, DrawVisualText_WithSelectionOnObcuredEmoji) {
   render_text->SetText(WideToUTF16(L"\U0001F628\U0001F628\U0001F628"));
   render_text->SetObscured(true);
   render_text->set_selection_color(SK_ColorRED);
-  DrawVisualText({4, 6});
+  DrawVisualText({{4, 6}});
   ExpectTextLog({{2, SK_ColorBLACK}, {1, SK_ColorRED}});
 }
 

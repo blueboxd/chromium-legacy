@@ -10,7 +10,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
-import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
@@ -62,7 +61,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.mojom.WindowOpenDisposition;
-import org.chromium.webapk.lib.client.WebApkNavigationClient;
 
 import javax.inject.Inject;
 
@@ -263,18 +261,8 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
             WebappInfo webappInfo = webappActivity.getWebappInfo();
             if (webappInfo.isForWebApk()) {
                 Intent activateIntent = null;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    activateIntent = new Intent(ACTION_ACTIVATE_WEBAPK);
-                    activateIntent.setPackage(
-                            ContextUtils.getApplicationContext().getPackageName());
-                } else {
-                    // For WebAPKs with new-style splash screen we cannot activate the WebAPK by
-                    // sending an intent because that would relaunch the WebAPK.
-                    assert !webappInfo.isSplashProvidedByWebApk();
-
-                    activateIntent = WebApkNavigationClient.createLaunchWebApkIntent(
-                            webappInfo.webApkPackageName(), startUrl, false /* forceNavigation */);
-                }
+                activateIntent = new Intent(ACTION_ACTIVATE_WEBAPK);
+                activateIntent.setPackage(ContextUtils.getApplicationContext().getPackageName());
                 IntentUtils.safeStartActivity(mActivity, activateIntent);
                 return;
             }

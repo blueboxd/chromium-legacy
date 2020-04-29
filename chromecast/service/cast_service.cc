@@ -4,7 +4,8 @@
 
 #include "chromecast/service/cast_service.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_checker.h"
 

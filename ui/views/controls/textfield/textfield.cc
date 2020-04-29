@@ -395,7 +395,12 @@ const base::string16& Textfield::GetText() const {
 }
 
 void Textfield::SetText(const base::string16& new_text) {
-  model_->SetText(new_text);
+  SetText(new_text, new_text.length());
+}
+
+void Textfield::SetText(const base::string16& new_text,
+                        size_t cursor_position) {
+  model_->SetText(new_text, cursor_position);
   OnCaretBoundsChanged();
   UpdateCursorViewPosition();
   UpdateCursorVisibility();
@@ -441,8 +446,8 @@ void Textfield::ClearSelection() {
   UpdateAfterChange(false, true);
 }
 
-bool Textfield::HasSelection() const {
-  return !GetSelectedRange().is_empty();
+bool Textfield::HasSelection(bool primary_only) const {
+  return model_->HasSelection(primary_only);
 }
 
 SkColor Textfield::GetTextColor() const {
@@ -558,8 +563,15 @@ const gfx::Range& Textfield::GetSelectedRange() const {
 }
 
 void Textfield::SetSelectedRange(const gfx::Range& range) {
-  model_->SelectRange(range);
-  UpdateAfterChange(false, true);
+  SetSelectedRange(range, true);
+}
+
+void Textfield::SetSelectedRange(const gfx::Range& range, bool primary) {
+  model_->SelectRange(range, primary);
+  if (primary)
+    UpdateAfterChange(false, true);
+  else
+    SchedulePaint();
   OnPropertyChanged(&model_ + kTextfieldSelectedRange, kPropertyEffectsPaint);
 }
 
@@ -995,7 +1007,7 @@ int Textfield::OnPerformDrop(const ui::DropTargetEvent& event) {
     // Adjust the drop destination if it is on or after the current selection.
     size_t pos = drop_destination_model.caret_pos();
     pos -= render_text->selection().Intersect(gfx::Range(0, pos)).length();
-    model_->DeleteSelectionAndInsertTextAt(new_text, pos);
+    model_->DeletePrimarySelectionAndInsertTextAt(new_text, pos);
   } else {
     model_->MoveCursorTo(drop_destination_model);
     // Drop always inserts text even if the textfield is not in insert mode.
@@ -1724,9 +1736,9 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
     case ui::TextEditCommand::REDO:
       return editable && model_->CanRedo();
     case ui::TextEditCommand::CUT:
-      return editable && readable && model_->HasSelection();
+      return editable && readable && HasSelection();
     case ui::TextEditCommand::COPY:
-      return readable && model_->HasSelection();
+      return readable && HasSelection();
     case ui::TextEditCommand::PASTE:
       ui::Clipboard::GetForCurrentThread()->ReadText(
           ui::ClipboardBuffer::kCopyPaste, &result);
@@ -1735,8 +1747,7 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
       return !GetText().empty() &&
              GetSelectedRange().length() != GetText().length();
     case ui::TextEditCommand::TRANSPOSE:
-      return editable && !model_->HasSelection() &&
-             !model_->HasCompositionText();
+      return editable && !HasSelection() && !model_->HasCompositionText();
     case ui::TextEditCommand::YANK:
       return editable;
     case ui::TextEditCommand::MOVE_DOWN:
@@ -2424,7 +2435,9 @@ void Textfield::OnEditFailed() {
 }
 
 bool Textfield::ShouldShowCursor() const {
-  return HasFocus() && !HasSelection() && GetEnabled() && !GetReadOnly() &&
+  // Show the cursor when the primary selected range is empty; secondary
+  // selections do not affect cursor visibility.
+  return HasFocus() && !HasSelection(true) && GetEnabled() && !GetReadOnly() &&
          !drop_cursor_visible_ && GetRenderText()->cursor_enabled();
 }
 

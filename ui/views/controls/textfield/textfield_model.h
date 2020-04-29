@@ -65,12 +65,17 @@ class VIEWS_EXPORT TextfieldModel {
   // Edit related methods.
 
   const base::string16& text() const { return render_text_->text(); }
-  // Sets the text. Returns true if the text has been modified.  The current
-  // composition text will be confirmed first.  Setting the same text will not
-  // add edit history because it's not user visible change nor user-initiated
-  // change. This allow a client code to set the same text multiple times
-  // without worrying about messing edit history.
-  bool SetText(const base::string16& new_text);
+  // Sets the text. Returns true if the text was modified. The current
+  // composition text will be confirmed first. Setting the same text, even with
+  // an updated |cursor_position|, will neither add edit history nor change the
+  // cursor because it's neither a user visible change nor user-initiated
+  // change. This allows clients to set the same text multiple times without
+  // messing up edit history. The resulting history edit will have
+  // |new_cursor_pos| set to |cursor_position|. This is important even if
+  // subsequent calls will override the cursor position because updating the
+  // cursor alone won't update the edit history. I.e. the cursor position after
+  // applying or redoing the edit will be determined by |cursor_position|.
+  bool SetText(const base::string16& new_text, size_t cursor_position);
 
   gfx::RenderText* render_text() { return render_text_.get(); }
 
@@ -138,13 +143,15 @@ class VIEWS_EXPORT TextfieldModel {
 
   // Selection related methods.
 
-  // Returns the selected text.
+  // Returns the primary selected text associated with the cursor. Does not
+  // return secondary selections.
   base::string16 GetSelectedText() const;
 
-  // The current composition text will be confirmed. The selection starts with
-  // the range's start position, and ends with the range's end position,
-  // therefore the cursor position becomes the end position.
-  void SelectRange(const gfx::Range& range);
+  // The current composition text will be confirmed. If |primary| is true, the
+  // selection starts with the range's start position and ends with the range's
+  // end position; therefore the cursor position becomes the end position. If
+  // |primary| is false, then the selection is not associated with the cursor.
+  void SelectRange(const gfx::Range& range, bool primary = true);
 
   // The current composition text will be confirmed.
   // render_text_'s selection model is set to |sel|.
@@ -200,16 +207,17 @@ class VIEWS_EXPORT TextfieldModel {
   bool Yank();
 
   // Tells if any text is selected, even if the selection is in composition
-  // text.
-  bool HasSelection() const;
+  // text. |primary_only| indicates whether secondary selections should also be
+  // considered.
+  bool HasSelection(bool primary_only = false) const;
 
   // Deletes the selected text. This method shouldn't be called with
   // composition text.
   void DeleteSelection();
 
   // Deletes the selected text (if any) and insert text at given position.
-  void DeleteSelectionAndInsertTextAt(const base::string16& new_text,
-                                      size_t position);
+  void DeletePrimarySelectionAndInsertTextAt(const base::string16& new_text,
+                                             size_t position);
 
   // Retrieves the text content in a given range.
   base::string16 GetTextFromRange(const gfx::Range& range) const;
@@ -256,23 +264,25 @@ class VIEWS_EXPORT TextfieldModel {
   FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_CutCopyPasteTest);
   FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_ReplaceTest);
 
-  // Insert the given |new_text|. |mergeable| indicates if this insert operation
-  // can be merged with previous edits in the history.
+  // Insert the given |new_text| at the cursor. |mergeable| indicates if this
+  // operation can be merged with previous edits in the history. Will delete any
+  // selected text.
   void InsertTextInternal(const base::string16& new_text, bool mergeable);
 
-  // Replace the current text with the given |new_text|. |mergeable| indicates
-  // if this replace operation can be merged with previous edits in the history.
+  // Replace the current selected text with the given |new_text|. |mergeable|
+  // indicates if this operation can be merged with previous edits in the
+  // history.
   void ReplaceTextInternal(const base::string16& new_text, bool mergeable);
 
   // Clears redo history.
   void ClearRedoHistory();
 
   // Executes and records edit operations.
-  void ExecuteAndRecordDelete(gfx::Range range, bool mergeable);
+  void ExecuteAndRecordDelete(std::vector<gfx::Range> ranges, bool mergeable);
   void ExecuteAndRecordReplaceSelection(internal::MergeType merge_type,
                                         const base::string16& new_text);
   void ExecuteAndRecordReplace(internal::MergeType merge_type,
-                               gfx::Range replacement_range,
+                               std::vector<gfx::Range> replacement_range,
                                size_t new_cursor_pos,
                                const base::string16& new_text,
                                size_t new_text_start);
@@ -282,15 +292,20 @@ class VIEWS_EXPORT TextfieldModel {
   void AddOrMergeEditHistory(std::unique_ptr<internal::Edit> edit);
 
   // Modify the text buffer in following way:
-  // 1) Delete the string from |delete_from| to |delete_to|.
-  // 2) Insert the |new_text| at the index |new_text_insert_at|.
-  //    Note that the index is after deletion.
-  // 3) Select |selection|.
-  void ModifyText(size_t delete_from,
-                  size_t delete_to,
-                  const base::string16& new_text,
-                  size_t new_text_insert_at,
-                  gfx::Range selection);
+  // 1) Delete the |deletions|.
+  // 2) Insert the |insertion_texts| at the |insertion_positions|.
+  // 3) Select |primary_selection| and |secondary_selections|.
+  // Deletions and insertions are applied in order and affect later edit
+  // indices. E.g., given 'xyz', inserting 'A' at 1 and 'B' at 2 will result in
+  // 'xAByz', not 'xAyBz'. On the other hand, inserting 'B' at 2 then 'A' at 1
+  // will result in 'xAyBz'. Thus, for applying or redoing edits, they should be
+  // ordered with increasing indices; while for undoing edits, they should be
+  // ordered decreasing.
+  void ModifyText(const std::vector<gfx::Range>& deletions,
+                  const std::vector<base::string16>& insertion_texts,
+                  const std::vector<size_t>& insertion_positions,
+                  const gfx::Range& primary_selection,
+                  const std::vector<gfx::Range>& secondary_selections);
 
   // Calls render_text->SetText() and delegate's callback.
   void SetRenderTextText(const base::string16& text);

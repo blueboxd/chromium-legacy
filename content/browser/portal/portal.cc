@@ -157,6 +157,18 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
       portal_contents_.ReleaseOwnership(), outer_node->current_frame_host(),
       false /* is_full_page */);
 
+  // If a cross-process navigation started while the predecessor was orphaned,
+  // we need to create a view for the speculative RFH as well.
+  if (RenderFrameHostImpl* speculative_rfh =
+          portal_contents_->GetPendingMainFrame()) {
+    if (RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+            speculative_rfh->GetView())) {
+      view->Destroy();
+    }
+    portal_contents_->CreateRenderWidgetHostViewForRenderManager(
+        speculative_rfh->render_view_host());
+  }
+
   FrameTreeNode* frame_tree_node =
       portal_contents_->GetMainFrame()->frame_tree_node();
   RenderFrameProxyHost* proxy_host =
@@ -366,9 +378,7 @@ void Portal::Activate(blink::TransferableMessage data,
                                 kRejectedDueToPredecessorNavigation);
     return;
   }
-  // TODO(1058455): This also cancels navigations requested immediately after
-  // the predecessor calls activate. We should only cancel existing navigations.
-  outer_root_node->StopLoading();
+  outer_root_node->navigator()->CancelNavigation(outer_root_node);
 
   DCHECK(!is_closing_) << "Portal should not be shutting down when contents "
                           "ownership is yielded";
@@ -399,6 +409,7 @@ void Portal::Activate(blink::TransferableMessage data,
 
   auto* outer_contents_main_frame_view = static_cast<RenderWidgetHostViewBase*>(
       outer_contents->GetMainFrame()->GetView());
+  DCHECK(!outer_contents->GetPendingMainFrame());
   auto* portal_contents_main_frame_view =
       static_cast<RenderWidgetHostViewBase*>(
           successor_contents_raw->GetMainFrame()->GetView());

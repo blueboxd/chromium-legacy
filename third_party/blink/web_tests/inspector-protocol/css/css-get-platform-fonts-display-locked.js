@@ -29,7 +29,7 @@
 `, 'Test css.getPlatformFontsForNode method with display locking.');
 
   await session.evaluateAsync(async () => {
-    await requestAnimationFrame(() => { document.getElementById("parent").style = "subtree-visibility: hidden"; });
+    await requestAnimationFrame(() => { document.getElementById("parent").style = "content-visibility: hidden"; });
   });
 
   var CSSHelper = await testRunner.loadScript('../resources/css-helper.js');

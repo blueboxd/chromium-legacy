@@ -153,6 +153,8 @@ class SmbServiceTest : public testing::Test {
  protected:
   SmbServiceTest()
       : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {
+    scoped_feature_list_.InitWithFeatures({}, {features::kSmbFs});
+
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     EXPECT_TRUE(profile_manager_->SetUp());
@@ -252,6 +254,7 @@ class SmbServiceTest : public testing::Test {
 
   content::BrowserTaskEnvironment
       task_environment_;  // Included so tests magically don't crash.
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfile* profile_ = nullptr;     // Not owned.
   std::string ad_user_email_;
   TestingProfile* ad_profile_ = nullptr;  // Not owned.

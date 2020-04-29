@@ -4,7 +4,7 @@
 
 #include "chromecast/media/audio/audio_io_thread.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
 

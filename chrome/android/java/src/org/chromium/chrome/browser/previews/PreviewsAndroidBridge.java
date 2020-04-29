@@ -40,21 +40,10 @@ public final class PreviewsAndroidBridge {
      */
     public String getOriginalHost(String visibleURL) {
         try {
-            return new URI(getOriginalURL(visibleURL)).getHost();
+            return new URI(visibleURL).getHost();
         } catch (URISyntaxException e) {
         }
         return "";
-    }
-
-    /**
-     * Returns the original URL of the given visible URL if the given URL is for a HTTPS Server
-     * Preview. Otherwise, the given visibleURL is returned.
-     */
-    public String getOriginalURL(String visibleURL) {
-        final String originalURL = PreviewsAndroidBridgeJni.get().getLitePageRedirectOriginalURL(
-                mNativePreviewsAndroidBridge, PreviewsAndroidBridge.this, visibleURL);
-        if (originalURL == null) return visibleURL;
-        return originalURL;
     }
 
     /**
@@ -90,8 +79,6 @@ public final class PreviewsAndroidBridge {
         long init(PreviewsAndroidBridge caller);
         boolean shouldShowPreviewUI(long nativePreviewsAndroidBridge, PreviewsAndroidBridge caller,
                 WebContents webContents);
-        String getLitePageRedirectOriginalURL(
-                long nativePreviewsAndroidBridge, PreviewsAndroidBridge caller, String visibleURL);
         String getStalePreviewTimestamp(long nativePreviewsAndroidBridge,
                 PreviewsAndroidBridge caller, WebContents webContents);
         void loadOriginal(long nativePreviewsAndroidBridge, PreviewsAndroidBridge caller,

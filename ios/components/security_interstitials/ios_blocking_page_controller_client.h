@@ -40,7 +40,10 @@ class IOSBlockingPageControllerClient
 
   const std::string& GetApplicationLocale() const override;
 
- private:
+ protected:
+  // The WebState passed on initialization.
+  web::WebState* web_state() const { return web_state_; }
+
   // security_interstitials::ControllerClient implementation.
   bool CanLaunchDateAndTimeSettings() override;
   void LaunchDateAndTimeSettings() override;
@@ -55,6 +58,7 @@ class IOSBlockingPageControllerClient
   PrefService* GetPrefService() override;
   const std::string GetExtendedReportingPrefName() const override;
 
+ private:
   // Closes the tab. Called in cases where a user clicks "Back to safety" and
   // it's not possible to go back.
   void Close();

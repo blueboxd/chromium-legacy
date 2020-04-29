@@ -22,6 +22,8 @@
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -103,19 +105,30 @@ void AssistantControllerImpl::StartSpeakerIdEnrollmentFlow() {
 
 void AssistantControllerImpl::DownloadImage(
     const GURL& url,
-    AssistantImageDownloader::DownloadCallback callback) {
-  const UserSession* user_session =
-      Shell::Get()->session_controller()->GetUserSession(0);
+    ImageDownloader::DownloadCallback callback) {
+  constexpr net::NetworkTrafficAnnotationTag kNetworkTrafficAnnotationTag =
+      net::DefineNetworkTrafficAnnotation("image_downloader", R"(
+            "semantics: {
+              sender: "Google Assistant"
+              description:
+                "The Google Assistant requires dynamic loading of images to "
+                "provide a media rich user experience. Images are downloaded "
+                "on an as needed basis."
+              trigger:
+                "Generally triggered in direct response to a user issued "
+                "query. A single query may necessitate the downloading of "
+                "multiple images."
+              destination: GOOGLE_OWNED_SERVICE
+            }
+            "policy": {
+              cookies_allowed: NO
+              setting:
+                "The Google Assistant can be enabled/disabled in Chrome "
+                "Settings and is subject to eligibility requirements."
+            })");
 
-  if (!user_session) {
-    LOG(WARNING) << "Unable to retrieve active user session.";
-    std::move(callback).Run(gfx::ImageSkia());
-    return;
-  }
-
-  AccountId account_id = user_session->user_info.account_id;
-  AssistantImageDownloader::GetInstance()->Download(account_id, url,
-                                                    std::move(callback));
+  ImageDownloader::Get()->Download(url, kNetworkTrafficAnnotationTag,
+                                   std::move(callback));
 }
 
 void AssistantControllerImpl::AddObserver(

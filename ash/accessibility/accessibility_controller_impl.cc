@@ -1114,6 +1114,25 @@ void AccessibilityControllerImpl::
   switch_access_event_handler_->set_ignore_virtual_key_events(should_ignore);
 }
 
+void AccessibilityControllerImpl::HideSwitchAccessBackButton() {
+  switch_access_bubble_controller_->HideBackButton();
+}
+
+void AccessibilityControllerImpl::HideSwitchAccessMenu() {
+  switch_access_bubble_controller_->HideMenuBubble();
+}
+
+void AccessibilityControllerImpl::ShowSwitchAccessBackButton(
+    const gfx::Rect& anchor) {
+  switch_access_bubble_controller_->ShowBackButton(anchor);
+}
+
+void AccessibilityControllerImpl::ShowSwitchAccessMenu(
+    const gfx::Rect& anchor,
+    std::vector<std::string> actions_to_show) {
+  switch_access_bubble_controller_->ShowMenu(anchor, actions_to_show);
+}
+
 void AccessibilityControllerImpl::
     DisablePolicyRecommendationRestorerForTesting() {
   Shell::Get()->policy_recommendation_restorer()->DisableForTesting();

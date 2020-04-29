@@ -31,8 +31,9 @@ class ScopedDeviceActions : DeviceActions {
   mojom::AppStatus GetAndroidAppStatus(
       const mojom::AndroidAppInfo& app_info) override;
   void LaunchAndroidIntent(const std::string& intent) override {}
-  void AddAppListEventSubscriber(
-      mojo::PendingRemote<mojom::AppListEventSubscriber> subscriber) override {}
+  void AddAppListEventSubscriber(AppListEventSubscriber* subscriber) override {}
+  void RemoveAppListEventSubscriber(
+      AppListEventSubscriber* subscriber) override {}
 
   // Set the brightness value that will be returned by
   // GetScreenBrightnessLevel();

@@ -125,6 +125,12 @@ generate_product_config_srcjar("chromecast_product_config") {
   java_package = "org.chromium.chromecast.shell"
 }
 
+android_library("resume_intents_java") {
+  java_src_dir = "//chromecast/browser/android/apk/src"
+  sources = [ "$java_src_dir/org/chromium/chromecast/shell/ResumeIntents.java" ]
+  deps = [ "//chromecast/base:base_java" ]
+}
+
 android_library("cast_shell_java") {
   java_src_dir = "//chromecast/browser/android/apk/src"
   sources = [
@@ -150,6 +156,7 @@ android_library("cast_shell_java") {
     "$java_src_dir/org/chromium/chromecast/shell/ElidedLogcatProvider.java",
     "$java_src_dir/org/chromium/chromecast/shell/ExternalServiceDeviceLogcatProvider.java",
     "$java_src_dir/org/chromium/chromecast/shell/LogcatElision.java",
+    "$java_src_dir/org/chromium/chromecast/shell/WebContentsRegistry.java",
   ]
 
   android_manifest_for_lint = cast_shell_android_manifest
@@ -170,6 +177,7 @@ android_library("cast_shell_java") {
     ":cast_shell_android_resources",
     ":cast_shell_manifest",
     ":reactive_android_java",
+    ":resume_intents_java",
     "//base:base_java",
     "//base:jni_java",
     "//chromecast/base:base_java",

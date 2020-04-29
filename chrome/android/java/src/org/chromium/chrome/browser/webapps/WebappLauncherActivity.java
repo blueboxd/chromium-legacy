@@ -9,7 +9,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -21,7 +20,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
@@ -265,43 +263,8 @@ public class WebappLauncherActivity extends Activity {
 
     /** Returns the class name of the {@link WebappActivity} subclass to launch. */
     private static String selectWebappActivitySubclass(@NonNull WebappInfo info) {
-        if (info.isSplashProvidedByWebApk()) {
-            return SameTaskWebApkActivity.class.getName();
-        }
-        String activityName = WebappActivity.class.getName();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            // Specifically assign the app to a particular WebappActivity instance.
-            int namespace = ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE;
-            int activityIndex = ActivityAssigner.instance(namespace).assign(info.id());
-            activityName += String.valueOf(activityIndex);
-        }
-        return activityName;
-    }
-
-    /**
-     * Finds instance of {@link webappActivitySubclass}. Finishes the activity if launching the
-     * webapp will:
-     * 1) Reuse the currently running activity (activity is singleTask)
-     * 2) The currently running activity is for a different webapp than the one being launched (The
-     *    {@link ActivityAssigner} has wrapped around.)
-     * @param webappActivitySubclass WebappActivity subclass to look for.
-     * @param launchWebappId The ID of the webapp being launched.
-     */
-    private static void finishIfReusingActivity(
-            String webappActivitySubclass, String launchWebappId) {
-        // {@link #selectWebappActivitySubclass()} does not select singleTask activities on L+.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) return;
-
-        for (Activity activity : ApplicationStatus.getRunningActivities()) {
-            if (!activity.getClass().getName().equals(webappActivitySubclass)) {
-                continue;
-            }
-            WebappActivity webappActivity = (WebappActivity) activity;
-            if (!TextUtils.equals(webappActivity.getWebappInfo().id(), launchWebappId)) {
-                activity.finish();
-            }
-            break;
-        }
+        return (info.isSplashProvidedByWebApk()) ? SameTaskWebApkActivity.class.getName()
+                                                 : WebappActivity.class.getName();
     }
 
     /** Returns intent to launch for the web app. */
@@ -310,16 +273,11 @@ public class WebappLauncherActivity extends Activity {
             Intent intent, @NonNull WebappInfo webappInfo, long createTimestamp) {
         String launchActivityClassName = selectWebappActivitySubclass(webappInfo);
 
-        // Finishes the old activity if it has been assigned to a different WebappActivity. See
-        // crbug.com/702998.
-        finishIfReusingActivity(launchActivityClassName, webappInfo.id());
-
         Intent launchIntent = new Intent();
         launchIntent.setClassName(ContextUtils.getApplicationContext(), launchActivityClassName);
         launchIntent.setAction(Intent.ACTION_VIEW);
 
-        // On L+, firing intents with the exact same data should relaunch a particular
-        // Activity.
+        // Firing intents with the exact same data should relaunch a particular Activity.
         launchIntent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + webappInfo.id()));
 
         IntentHandler.addTimestampToIntent(launchIntent, createTimestamp);

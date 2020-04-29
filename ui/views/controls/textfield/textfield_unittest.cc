@@ -1155,6 +1155,19 @@ TEST_F(TextfieldTest, MoveParagraphForwardBackwardAndModifySelection) {
 #endif
 }
 
+TEST_F(TextfieldTest, ModifySelectionWithMultipleSelections) {
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("0123456 89"));
+  textfield_->SetSelectedRange(gfx::Range(3, 5));
+  textfield_->SetSelectedRange(gfx::Range(8, 9), false);
+
+  test_api_->ExecuteTextEditCommand(
+      ui::TextEditCommand::MOVE_RIGHT_AND_MODIFY_SELECTION);
+  EXPECT_EQ(gfx::Range(3, 6), textfield_->GetSelectedRange());
+  EXPECT_EQ(6U, textfield_->GetCursorPosition());
+  EXPECT_EQ(0U, textfield_->GetSelectionModel().secondary_selections().size());
+}
+
 TEST_F(TextfieldTest, InsertionDeletionTest) {
   // Insert a test string in a textfield.
   InitTextfield();
@@ -1242,6 +1255,36 @@ TEST_F(TextfieldTest, DeletionWithSelection) {
     // Verify state is on|o three.
     EXPECT_STR_EQ("ono three", textfield_->GetText());
     EXPECT_EQ(gfx::Range(2), textfield_->GetSelectedRange());
+  }
+}
+
+// Test that deletion operations behave correctly with multiple selections.
+TEST_F(TextfieldTest, DeletionWithMultipleSelections) {
+  struct {
+    ui::KeyboardCode key;
+    bool shift;
+  } cases[] = {
+      {ui::VKEY_BACK, false},
+      {ui::VKEY_BACK, true},
+      {ui::VKEY_DELETE, false},
+      {ui::VKEY_DELETE, true},
+  };
+
+  InitTextfield();
+  // [Ctrl] ([Alt] on Mac) + [Delete]/[Backspace] should delete the active
+  // selection, regardless of [Shift].
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
+    textfield_->SetText(ASCIIToUTF16("one two three"));
+    // Select: o[ne] [two] th[re]e
+    textfield_->SetSelectedRange(gfx::Range(4, 7));
+    textfield_->SetSelectedRange(gfx::Range(10, 12), false);
+    textfield_->SetSelectedRange(gfx::Range(1, 3), false);
+    SendWordEvent(cases[i].key, cases[i].shift);
+    EXPECT_STR_EQ("o  the", textfield_->GetText());
+    EXPECT_EQ(gfx::Range(2), textfield_->GetSelectedRange());
+    EXPECT_EQ(0U,
+              textfield_->GetSelectionModel().secondary_selections().size());
   }
 }
 
@@ -1515,6 +1558,42 @@ TEST_F(TextfieldTest, CursorMovement) {
   SendKeyEvent(ui::VKEY_DELETE);
   EXPECT_STR_EQ("one two", textfield_->GetText());
   EXPECT_STR_EQ("one two", last_contents_);
+}
+
+TEST_F(TextfieldTest, CursorMovementWithMultipleSelections) {
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("012 456 890 234 678"));
+  //                                    [p]     [s]
+  textfield_->SetSelectedRange({4, 7});
+  textfield_->SetSelectedRange({12, 15}, false);
+
+  test_api_->ExecuteTextEditCommand(ui::TextEditCommand::MOVE_LEFT);
+  EXPECT_EQ(gfx::Range(4, 4), textfield_->GetSelectedRange());
+  EXPECT_EQ(0U, textfield_->GetSelectionModel().secondary_selections().size());
+
+  textfield_->SetSelectedRange({4, 7});
+  textfield_->SetSelectedRange({12, 15}, false);
+
+  test_api_->ExecuteTextEditCommand(ui::TextEditCommand::MOVE_RIGHT);
+  EXPECT_EQ(gfx::Range(7, 7), textfield_->GetSelectedRange());
+  EXPECT_EQ(0U, textfield_->GetSelectionModel().secondary_selections().size());
+}
+
+TEST_F(TextfieldTest, ShouldShowCursor) {
+  InitTextfield();
+  textfield_->SetText(ASCIIToUTF16("word1 word2"));
+
+  // should show cursor when there's no primary selection
+  textfield_->SetSelectedRange({4, 4});
+  EXPECT_TRUE(test_api_->ShouldShowCursor());
+  textfield_->SetSelectedRange({1, 3}, false);
+  EXPECT_TRUE(test_api_->ShouldShowCursor());
+
+  // should not show cursor when there's a primary selection
+  textfield_->SetSelectedRange({4, 7});
+  EXPECT_FALSE(test_api_->ShouldShowCursor());
+  textfield_->SetSelectedRange({1, 3}, false);
+  EXPECT_FALSE(test_api_->ShouldShowCursor());
 }
 
 TEST_F(TextfieldTest, FocusTraversalTest) {

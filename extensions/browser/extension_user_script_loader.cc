@@ -99,8 +99,7 @@ bool LoadScriptContent(const HostID& host_id,
                                            script_file->relative_path(),
                                            &resource_id)) {
       const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      DCHECK(!rb.IsGzipped(resource_id));
-      content = rb.GetRawDataResource(resource_id).as_string();
+      content = rb.LoadDataResourceString(resource_id);
     } else {
       LOG(WARNING) << "Failed to get file path to "
                    << script_file->relative_path().value() << " from "

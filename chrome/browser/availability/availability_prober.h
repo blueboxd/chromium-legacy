@@ -75,11 +75,8 @@ class AvailabilityProber
   //
   // Please add the header file of the client when new items are added.
   enum class ClientName {
-    // chrome/browser/previews/previews_lite_page_redirect_decider.h
-    kLitepages = 0,
-
-    // chrome/browser/previews/previews_lite_page_redirect_url_loader.h
-    kLitepagesOriginCheck = 1,
+    kLitepages_DEPRECATED = 0,
+    kLitepagesOriginCheck_DEPRECATED = 1,
 
     // chrome/browser/prerender/isolated/
     // isolated_prerender_url_loader_interceptor.h

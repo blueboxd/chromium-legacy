@@ -40,6 +40,7 @@
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
@@ -2191,6 +2192,51 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
       "window.domAutomationController.send(document.body.textContent);",
       &header_value));
   EXPECT_EQ(kUserAgentOverride, header_value);
+}
+
+// Changes the user-agent override and sets the entry to override the user-agent
+// in WebContentsObserver::DidStartNavigation().
+class UserAgentInjector : public WebContentsObserver {
+ public:
+  UserAgentInjector(WebContents* web_contents, const std::string& user_agent)
+      : WebContentsObserver(web_contents), user_agent_(user_agent) {}
+
+  // WebContentsObserver:
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    NavigationEntry* entry = web_contents()->GetController().GetVisibleEntry();
+    ASSERT_TRUE(entry);
+    web_contents()->SetUserAgentOverride(
+        blink::UserAgentOverride::UserAgentOnly(user_agent_), false);
+    navigation_handle->SetIsOverridingUserAgent(true);
+  }
+
+ private:
+  const std::string user_agent_;
+};
+
+// Verifies the user-agent string may be changed in DidStartNavigation().
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SetUserAgentOverrideFromDidStartNavigation) {
+  net::test_server::ControllableHttpResponse http_response(
+      embedded_test_server(), "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const std::string user_agent_override = "foo";
+  UserAgentInjector injector(shell()->web_contents(), user_agent_override);
+  shell()->web_contents()->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(
+          embedded_test_server()->GetURL("/test.html")));
+  http_response.WaitForRequest();
+  http_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "<html>");
+  http_response.Done();
+  EXPECT_EQ(user_agent_override, http_response.http_request()->headers.at(
+                                     net::HttpRequestHeaders::kUserAgent));
+  WaitForLoadStop(shell()->web_contents());
+  EXPECT_EQ(user_agent_override, EvalJs(shell()->web_contents(),
+                                        "navigator.userAgent.toLowerCase()"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.query_tiles;
 
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.query_tiles.TileProvider;
 
 /**
  * Basic factory that creates and returns an {@link TileProvider} that is attached

@@ -40,8 +40,9 @@ class DeviceActions : public ash::AndroidIntentHelper,
       const chromeos::assistant::mojom::AndroidAppInfo& app_info) override;
   void LaunchAndroidIntent(const std::string& intent) override;
   void AddAppListEventSubscriber(
-      mojo::PendingRemote<chromeos::assistant::mojom::AppListEventSubscriber>
-          subscriber) override;
+      chromeos::assistant::AppListEventSubscriber* subscriber) override;
+  void RemoveAppListEventSubscriber(
+      chromeos::assistant::AppListEventSubscriber* subscriber) override;
 
   // ash::AndroidIntentHelper overrides:
   base::Optional<std::string> GetAndroidAppLaunchIntent(
@@ -58,7 +59,7 @@ class DeviceActions : public ash::AndroidIntentHelper,
 
   ScopedObserver<ArcAppListPrefs, ArcAppListPrefs::Observer>
       scoped_prefs_observer_{this};
-  mojo::RemoteSet<chromeos::assistant::mojom::AppListEventSubscriber>
+  base::ObserverList<chromeos::assistant::AppListEventSubscriber>
       app_list_subscribers_;
   DISALLOW_COPY_AND_ASSIGN(DeviceActions);
 };

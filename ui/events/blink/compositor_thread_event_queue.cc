@@ -10,6 +10,25 @@
 
 namespace ui {
 
+namespace {
+// Sets |oldest_scroll_trace_id| or |oldest_pinch_trace_id| depending on the
+// type of |event|.
+void SetScrollOrPinchTraceId(EventWithCallback* event,
+                             int64_t* oldest_scroll_trace_id,
+                             int64_t* oldest_pinch_trace_id) {
+  if (ToWebGestureEvent(event->event()).GetType() ==
+      blink::WebInputEvent::Type::kGestureScrollUpdate) {
+    DCHECK(*oldest_scroll_trace_id == -1);
+    *oldest_scroll_trace_id = event->latency_info().trace_id();
+    return;
+  }
+  DCHECK(ToWebGestureEvent(event->event()).GetType() ==
+         blink::WebInputEvent::Type::kGesturePinchUpdate);
+  DCHECK(*oldest_pinch_trace_id == -1);
+  *oldest_pinch_trace_id = event->latency_info().trace_id();
+}
+}  // namespace
+
 CompositorThreadEventQueue::CompositorThreadEventQueue() {}
 
 CompositorThreadEventQueue::~CompositorThreadEventQueue() {}
@@ -38,12 +57,40 @@ void CompositorThreadEventQueue::Queue(
     return;
   }
 
-  // Extract the last event in queue.
+  // We have only scrolls or pinches at this point (all other events are
+  // filtered out by the if statements above). We want to coalesce this event
+  // into the previous event(s) and represent it as a scroll and then a pinch.
+  DCHECK(ToWebGestureEvent(new_event->event()).GetType() ==
+             blink::WebInputEvent::Type::kGestureScrollUpdate ||
+         ToWebGestureEvent(new_event->event()).GetType() ==
+             blink::WebInputEvent::Type::kGesturePinchUpdate);
+
+  // If there is only one event in the queue we will still emit two events
+  // (scroll and pinch) but the |new_event| will still be coalesced into the
+  // |last_event|, but there will be only one LatencyInfo that should be traced
+  // for two events. In this case we will output an empty LatencyInfo.
+  //
+  // However with two events one will be a GesturePinchUpdate and one will be a
+  // GestureScrollUpdate and we will use the two non-coalesced event's trace_ids
+  // to instrument the flow through the system.
+  int64_t oldest_scroll_trace_id = -1;
+  int64_t oldest_pinch_trace_id = -1;
+  LatencyInfo oldest_latency;
+
+  // Extract the last event in queue (again either a scroll or a pinch).
   std::unique_ptr<EventWithCallback> last_event = std::move(queue_.back());
   queue_.pop_back();
+
+  DCHECK(ToWebGestureEvent(last_event->event()).GetType() ==
+             blink::WebInputEvent::Type::kGestureScrollUpdate ||
+         ToWebGestureEvent(last_event->event()).GetType() ==
+             blink::WebInputEvent::Type::kGesturePinchUpdate);
   DCHECK_LE(last_event->latency_info().trace_id(),
             new_event->latency_info().trace_id());
-  LatencyInfo oldest_latency = last_event->latency_info();
+
+  SetScrollOrPinchTraceId(last_event.get(), &oldest_scroll_trace_id,
+                          &oldest_pinch_trace_id);
+  oldest_latency = last_event->latency_info();
   base::TimeTicks oldest_creation_timestamp = last_event->creation_timestamp();
   auto combined_original_events =
       std::make_unique<EventWithCallback::OriginalEventList>();
@@ -52,21 +99,58 @@ void CompositorThreadEventQueue::Queue(
   combined_original_events->splice(combined_original_events->end(),
                                    new_event->original_events());
 
-  // Extract the second last event in queue.
+  // Extract the second last event in queue IF it's a scroll or a pinch for the
+  // same target.
   std::unique_ptr<EventWithCallback> second_last_event = nullptr;
   if (!queue_.empty() &&
       IsCompatibleScrollorPinch(ToWebGestureEvent(new_event->event()),
                                 ToWebGestureEvent(queue_.back()->event()))) {
     second_last_event = std::move(queue_.back());
     queue_.pop_back();
+    // second_last_event's trace_id might not be less than last_event if we had
+    // both a scroll and a pinch previously in the queue and reordered them when
+    // coalescing with a new event to keep the invariant that a scroll happens
+    // before the pinch.
     DCHECK_LE(second_last_event->latency_info().trace_id(),
-              oldest_latency.trace_id());
+              new_event->latency_info().trace_id());
+    SetScrollOrPinchTraceId(second_last_event.get(), &oldest_scroll_trace_id,
+                            &oldest_pinch_trace_id);
     oldest_latency = second_last_event->latency_info();
     oldest_creation_timestamp = second_last_event->creation_timestamp();
     combined_original_events->splice(combined_original_events->begin(),
                                      second_last_event->original_events());
   }
 
+  // To ensure proper trace tracking we have to determine which event was the
+  // original non-coalesced event. If the event was artificially created (I.E it
+  // sprung into existence in CoalesceScrollAndPinch and isn't associated with a
+  // WebInputEvent that was in the queue) we will give it an empty LatencyInfo
+  // (so it won't have anything reported for it). This can be seen when a
+  // trace_id is equal to -1. We also move the original events into whichever
+  // one is the original non-coalesced event, defaulting to the pinch event if
+  // both are non-coalesced versions so it runs last.
+  LatencyInfo scroll_latency;
+  std::unique_ptr<EventWithCallback::OriginalEventList> scroll_original_events;
+  LatencyInfo pinch_latency;
+  std::unique_ptr<EventWithCallback::OriginalEventList> pinch_original_events;
+  DCHECK(oldest_pinch_trace_id == -1 || oldest_scroll_trace_id == -1);
+  if (oldest_scroll_trace_id != -1 && oldest_pinch_trace_id == -1) {
+    scroll_latency = oldest_latency;
+    scroll_latency.set_trace_id(oldest_scroll_trace_id);
+    scroll_original_events = std::move(combined_original_events);
+  } else {
+    // In both the valid pinch event trace id case and scroll and pinch both
+    // have invalid trace_ids case, we will assign original_events to the
+    // pinch_event.
+    pinch_latency = oldest_latency;
+    pinch_latency.set_trace_id(oldest_pinch_trace_id);
+    pinch_original_events = std::move(combined_original_events);
+  }
+
+  TRACE_EVENT2("input", "CoalesceScrollAndPinch", "coalescedTraceId",
+               new_event->latency_info().trace_id(), "traceId",
+               scroll_latency.trace_id() != -1 ? scroll_latency.trace_id()
+                                               : pinch_latency.trace_id());
   std::pair<blink::WebGestureEvent, blink::WebGestureEvent> coalesced_events =
       CoalesceScrollAndPinch(
           second_last_event ? &ToWebGestureEvent(second_last_event->event())
@@ -76,14 +160,17 @@ void CompositorThreadEventQueue::Queue(
 
   std::unique_ptr<EventWithCallback> scroll_event =
       std::make_unique<EventWithCallback>(
-          coalesced_events.first.Clone(), oldest_latency,
-          oldest_creation_timestamp, timestamp_now, nullptr);
+          coalesced_events.first.Clone(), scroll_latency,
+          oldest_creation_timestamp, timestamp_now,
+          std::move(scroll_original_events));
+  scroll_event->set_coalesced_scroll_and_pinch();
 
   std::unique_ptr<EventWithCallback> pinch_event =
       std::make_unique<EventWithCallback>(
-          coalesced_events.second.Clone(), oldest_latency,
+          coalesced_events.second.Clone(), pinch_latency,
           oldest_creation_timestamp, timestamp_now,
-          std::move(combined_original_events));
+          std::move(pinch_original_events));
+  pinch_event->set_coalesced_scroll_and_pinch();
 
   queue_.emplace_back(std::move(scroll_event));
   queue_.emplace_back(std::move(pinch_event));

@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "chromecast/media/audio/fake_external_audio_pipeline_support.h"

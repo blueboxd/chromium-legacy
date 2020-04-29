@@ -98,8 +98,8 @@ class CORE_EXPORT DisplayLockContext final
   explicit DisplayLockContext(Element*);
   ~DisplayLockContext() = default;
 
-  // Called by style to update the current state of subtree-visibility.
-  void SetRequestedState(ESubtreeVisibility state);
+  // Called by style to update the current state of content-visibility.
+  void SetRequestedState(EContentVisibility state);
   // Called by style to adjust the element's style based on the current state.
   void AdjustElementStyle(ComputedStyle* style) const;
 
@@ -324,7 +324,7 @@ class CORE_EXPORT DisplayLockContext final
 
   WeakMember<Element> element_;
   WeakMember<Document> document_;
-  ESubtreeVisibility state_ = ESubtreeVisibility::kVisible;
+  EContentVisibility state_ = EContentVisibility::kVisible;
 
   // See StyleEngine's |whitespace_reattach_set_|.
   // Set of elements that had at least one rendered children removed

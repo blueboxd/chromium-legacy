@@ -94,5 +94,6 @@ export function createTheme() {
     backgroundImageAttributionUrl: null,
     dailyRefreshCollectionId: '',
     searchBox: searchBox,
+    shortcutUseWhiteAddIcon: false,
   };
 }

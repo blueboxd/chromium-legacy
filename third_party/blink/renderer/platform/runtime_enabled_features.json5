@@ -408,6 +408,28 @@
       name: "CSSColorSchemeUARendering",
     },
     {
+      // The main content-visibility feature.
+      // https://wicg.github.io/display-locking/
+      name: "CSSContentVisibility",
+      status: "experimental",
+      implied_by: ["CSSContentVisibilityHiddenMatchable"]
+    },
+    {
+      // The content-visibility activation event which will be replaced by
+      // the beforematch event. When beforematch is available, this feaure
+      // will be removed.
+      name: "CSSContentVisibilityActivationEvent",
+      implied_by: ["CSSContentVisibility"]
+    },
+    {
+      // The content-visibility: hidden-matchable feature. This is a planned
+      // follow-up to the main CSSContentVisibility feature, thus it is gated
+      // by a different flag.
+      // https://wicg.github.io/display-locking/
+      name: "CSSContentVisibilityHiddenMatchable",
+      status: "experimental"
+    },
+    {
       name: "CSSFocusVisible",
       status: "experimental",
     },
@@ -433,7 +455,7 @@
       // Support for CSS contain-intrinsic-size property.
       // https://wicg.github.io/display-locking/contain-intrinsic-size.html
       name: "CSSIntrinsicSize",
-      implied_by: ["CSSSubtreeVisibility"],
+      implied_by: ["CSSContentVisibility"],
       status: "stable",
     },
     {
@@ -519,28 +541,6 @@
     {
       name: "CSSSnapSize",
       status: "experimental",
-    },
-    {
-      // The main subtree-visibility feature.
-      // https://wicg.github.io/display-locking/
-      name: "CSSSubtreeVisibility",
-      status: "experimental",
-      implied_by: ["CSSSubtreeVisibilityHiddenMatchable"]
-    },
-    {
-      // The subtree-visibility activation event which will be replaced by
-      // the beforematch event. When beforematch is available, this feaure
-      // will be removed.
-      name: "CSSSubtreeVisibilityActivationEvent",
-      implied_by: ["CSSSubtreeVisibility"]
-    },
-    {
-      // The subtree-visibility: hidden-matchable feature. This is a planned
-      // follow-up to the main CSSSubtreeVisibility feature, thus it is gated
-      // by a different flag.
-      // https://wicg.github.io/display-locking/
-      name: "CSSSubtreeVisibilityHiddenMatchable",
-      status: "experimental"
     },
     {
       name: "CSSSupportsSelector",

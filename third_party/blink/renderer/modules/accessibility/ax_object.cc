@@ -1466,9 +1466,9 @@ bool AXObject::CanSetFocusAttribute() const {
   if (inside_portal)
     return false;
 
-  // Display-locked nodes that have subtree-visibility: hidden are not exposed
+  // Display-locked nodes that have content-visibility: hidden are not exposed
   // to accessibility in any way, so they are not focusable. Note that for
-  // subtree-visibility: auto cases, `ShouldIgnoreNodeDueToDisplayLock()` would
+  // content-visibility: auto cases, `ShouldIgnoreNodeDueToDisplayLock()` would
   // return false, since we're not ignoring the element in that case.
   if (GetNode() &&
       DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
@@ -1807,13 +1807,13 @@ String AXObject::RecursiveTextAlternative(const AXObject& ax_obj,
 }
 
 base::Optional<bool> AXObject::HiddenByDisplayLocking(const Node& node) const {
-  // subtree-visibility: hidden subtrees are always hidden.
+  // content-visibility: hidden subtrees are always hidden.
   if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
           node, DisplayLockActivationReason::kAccessibility)) {
     return true;
   }
   // TODO(crbug.com/1072447):
-  // subtree-visibility: auto with dirty layout tree info are assumed to be
+  // content-visibility: auto with dirty layout tree info are assumed to be
   // visible. In order to get correct visibility value, the caller must
   // make sure to update style and layout tree for this node.
   if (node.GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(

@@ -94,10 +94,6 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
         mojo::PendingReceiver<service_manager::mojom::Service> receiver) = 0;
 #if defined(USE_OZONE)
     virtual void TerminateGpuProcess(const std::string& message) = 0;
-
-    // TODO(https://crbug.com/806092): Remove this when legacy IPC-based Ozone
-    // is removed.
-    virtual void SendGpuProcessMessage(IPC::Message* message) = 0;
 #endif
 
    protected:

@@ -12,7 +12,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
 import org.chromium.content_public.browser.RenderFrameHost;
-import org.chromium.url.Origin;
 
 /**
  * Android implementation of the Authenticator service defined in
@@ -47,15 +46,13 @@ public class Fido2ApiHandler {
     }
 
     protected void makeCredential(PublicKeyCredentialCreationOptions options,
-            RenderFrameHost frameHost, Origin origin, HandlerResponseCallback callback) {
-        new Fido2CredentialRequest().handleMakeCredentialRequest(
-                options, frameHost, origin, callback);
+            RenderFrameHost frameHost, HandlerResponseCallback callback) {
+        new Fido2CredentialRequest().handleMakeCredentialRequest(options, frameHost, callback);
     }
 
     protected void getAssertion(PublicKeyCredentialRequestOptions options,
-            RenderFrameHost frameHost, Origin origin, HandlerResponseCallback callback) {
-        new Fido2CredentialRequest().handleGetAssertionRequest(
-                options, frameHost, origin, callback);
+            RenderFrameHost frameHost, HandlerResponseCallback callback) {
+        new Fido2CredentialRequest().handleGetAssertionRequest(options, frameHost, callback);
     }
 
     protected void isUserVerifyingPlatformAuthenticatorAvailable(

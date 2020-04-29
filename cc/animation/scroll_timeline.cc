@@ -155,6 +155,38 @@ void ScrollTimeline::ActivateTimeline() {
   }
 }
 
+bool ScrollTimeline::TickScrollLinkedAnimations(
+    const std::vector<scoped_refptr<Animation>>& ticking_animations,
+    const ScrollTree& scroll_tree,
+    bool is_active_tree) {
+  base::Optional<base::TimeTicks> tick_time =
+      CurrentTime(scroll_tree, is_active_tree);
+  if (!tick_time)
+    return false;
+
+  bool animated = false;
+  // This potentially iterates over all ticking animations multiple
+  // times (# of ScrollTimeline * # of ticking_animations_).
+  // The alternative we have considered here was to maintain a
+  // ticking_animations_ list for each timeline but at the moment we
+  // have opted to avoid this complexity in favor of simpler but less
+  // efficient solution.
+  for (auto& animation : ticking_animations) {
+    if (animation->animation_timeline() != this)
+      continue;
+    // Worklet animations are ticked at a later stage.
+    if (animation->IsWorkletAnimation())
+      continue;
+
+    if (!animation->IsScrollLinkedAnimation())
+      continue;
+
+    animation->Tick(tick_time.value());
+    animated = true;
+  }
+  return animated;
+}
+
 void ScrollTimeline::UpdateScrollerIdAndScrollOffsets(
     base::Optional<ElementId> pending_id,
     base::Optional<double> start_scroll_offset,

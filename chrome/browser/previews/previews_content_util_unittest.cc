@@ -101,8 +101,8 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
         return params::IsNoScriptPreviewsEnabled();
       case previews::PreviewsType::RESOURCE_LOADING_HINTS:
         return params::IsResourceLoadingHintsEnabled();
-      case previews::PreviewsType::LITE_PAGE_REDIRECT:
-        return params::IsLitePageServerPreviewsEnabled();
+      case previews::PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
+        return false;
       case previews::PreviewsType::DEFER_ALL_SCRIPT:
         return params::IsDeferAllScriptPreviewsEnabled();
       case PreviewsType::LITE_PAGE:
@@ -269,38 +269,10 @@ TEST_F(PreviewsContentUtilTest,
 }
 
 TEST_F(PreviewsContentUtilTest,
-       DetermineAllowedClientPreviewsStateLitePageRedirect) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("Previews,LitePageServerPreviews",
-                                          std::string());
-
-  PreviewsUserData user_data(1);
-  bool is_reload = false;
-  bool previews_triggering_logic_already_ran = false;
-  bool is_data_saver_user = true;
-  // Verify preview is enabled on HTTPS.
-  EXPECT_TRUE(content::LITE_PAGE_REDIRECT_ON &
-              previews::CallDetermineAllowedClientPreviewsState(
-                  &user_data, GURL("https://www.google.com"), is_reload,
-                  previews_triggering_logic_already_ran, is_data_saver_user,
-                  enabled_previews_decider(), nullptr));
-  // Verify non-HTTP[S] URL has no previews enabled.
-  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
-            previews::CallDetermineAllowedClientPreviewsState(
-                &user_data, GURL("data://someblob"), is_reload,
-                previews_triggering_logic_already_ran, is_data_saver_user,
-                enabled_previews_decider(), nullptr));
-
-  // Other checks are performed in browser tests due to the nature of needing
-  // fully initialized browser state.
-}
-
-TEST_F(PreviewsContentUtilTest,
-       DetermineAllowedClientPreviewsStateLitePageRedirectAndPageHintPreviews) {
+       DetermineAllowedClientPreviewsStateAndPageHintPreviews) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "Previews,LitePageServerPreviews,ResourceLoadingHints,NoScriptPreviews",
-      std::string());
+      "Previews,ResourceLoadingHints,NoScriptPreviews", std::string());
 
   PreviewsUserData user_data(1);
   bool is_reload = false;
@@ -312,7 +284,6 @@ TEST_F(PreviewsContentUtilTest,
           &user_data, GURL("https://www.google.com"), is_reload,
           previews_triggering_logic_already_ran, is_data_saver_user,
           enabled_previews_decider(), nullptr);
-  EXPECT_TRUE(ps1 & content::LITE_PAGE_REDIRECT_ON);
   EXPECT_TRUE(ps1 & content::RESOURCE_LOADING_HINTS_ON);
   EXPECT_TRUE(ps1 & content::NOSCRIPT_ON);
 
@@ -322,28 +293,8 @@ TEST_F(PreviewsContentUtilTest,
           &user_data, GURL("https://www.hintcachedhost.com"), is_reload,
           previews_triggering_logic_already_ran, is_data_saver_user,
           enabled_previews_decider(), nullptr);
-  EXPECT_FALSE(ps2 & content::LITE_PAGE_REDIRECT_ON);
   EXPECT_TRUE(ps2 & content::RESOURCE_LOADING_HINTS_ON);
   EXPECT_TRUE(ps2 & content::NOSCRIPT_ON);
-
-  {
-    // Now set parameter to override page hints.
-    std::map<std::string, std::string> parameters;
-    parameters["override_pagehints"] = "true";
-    base::test::ScopedFeatureList nested_feature_list;
-    nested_feature_list.InitAndEnableFeatureWithParameters(
-        features::kLitePageServerPreviews, parameters);
-
-    // Verify Lite Page Redirect now enabled for host with page hints.
-    content::PreviewsState ps =
-        previews::CallDetermineAllowedClientPreviewsState(
-            &user_data, GURL("https://www.hintcachedhost.com"), is_reload,
-            previews_triggering_logic_already_ran, is_data_saver_user,
-            enabled_previews_decider(), nullptr);
-    EXPECT_TRUE(ps & content::LITE_PAGE_REDIRECT_ON);
-    EXPECT_TRUE(ps & content::RESOURCE_LOADING_HINTS_ON);
-    EXPECT_TRUE(ps & content::NOSCRIPT_ON);
-  }
 }
 
 TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
@@ -367,35 +318,6 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
   histogram_tester.ExpectTotalCount(
       "Previews.Triggered.EffectiveConnectionType2", 1);
 
-  content::PreviewsState lite_page_redirect_enabled =
-      content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
-      content::LITE_PAGE_REDIRECT_ON;
-
-  // LITE_PAGE_REDIRECT takes precedence over NoScript, and Resource Loading
-  // Hints, when the committed URL is for the lite page previews server.
-  EXPECT_EQ(
-      content::LITE_PAGE_REDIRECT_ON,
-      previews::DetermineCommittedClientPreviewsState(
-          &user_data, GURL("https://litepages.googlezip.net/?u=google.com"),
-          lite_page_redirect_enabled, enabled_previews_decider(), nullptr));
-  histogram_tester.ExpectUniqueSample(
-      "Previews.Triggered.EffectiveConnectionType2.LitePageRedirect",
-      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
-  histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 2);
-
-  // Verify LITE_PAGE_REDIRECT_ON not committed for non-lite-page-sever URL.
-  EXPECT_NE(
-      content::LITE_PAGE_REDIRECT_ON,
-      previews::DetermineCommittedClientPreviewsState(
-          &user_data, GURL("https://www.google.com"),
-          lite_page_redirect_enabled, enabled_previews_decider(), nullptr));
-  histogram_tester.ExpectUniqueSample(
-      "Previews.Triggered.EffectiveConnectionType2.ResourceLoadingHints",
-      static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
-  histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 3);
-
   // Try different navigation ECT value.
   user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
@@ -410,7 +332,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
       "Previews.Triggered.EffectiveConnectionType2.DeferAllScript",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
   histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 4);
+      "Previews.Triggered.EffectiveConnectionType2", 2);
 
   // RESOURCE_LOADING_HINTS has precedence over NoScript.
   EXPECT_EQ(content::RESOURCE_LOADING_HINTS_ON,
@@ -422,7 +344,7 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
       "Previews.Triggered.EffectiveConnectionType2.ResourceLoadingHints",
       static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G), 1);
   histogram_tester.ExpectTotalCount(
-      "Previews.Triggered.EffectiveConnectionType2", 5);
+      "Previews.Triggered.EffectiveConnectionType2", 3);
 
   // Only NoScript:
   EXPECT_EQ(content::NOSCRIPT_ON,
@@ -507,8 +429,6 @@ TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
   EXPECT_EQ(
       previews::PreviewsType::RESOURCE_LOADING_HINTS,
       previews::GetMainFramePreviewsType(content::RESOURCE_LOADING_HINTS_ON));
-  EXPECT_EQ(previews::PreviewsType::LITE_PAGE_REDIRECT,
-            previews::GetMainFramePreviewsType(content::LITE_PAGE_REDIRECT_ON));
   EXPECT_EQ(previews::PreviewsType::DEFER_ALL_SCRIPT,
             previews::GetMainFramePreviewsType(content::DEFER_ALL_SCRIPT_ON));
 
@@ -534,10 +454,6 @@ TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
             previews::GetMainFramePreviewsType(
                 content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
                 content::DEFER_ALL_SCRIPT_ON));
-  EXPECT_EQ(previews::PreviewsType::LITE_PAGE_REDIRECT,
-            previews::GetMainFramePreviewsType(
-                content::NOSCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
-                content::DEFER_ALL_SCRIPT_ON | content::LITE_PAGE_REDIRECT_ON));
 }
 
 class PreviewsContentSimulatedNavigationTest

@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/numerics/ranges.h"
 #include "chromecast/graphics/accessibility/accessibility_cursor_ring_layer.h"
 #include "chromecast/graphics/accessibility/accessibility_focus_ring_layer.h"

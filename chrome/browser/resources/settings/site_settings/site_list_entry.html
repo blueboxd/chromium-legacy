@@ -41,13 +41,14 @@
             on-focus="onShowTooltip_" focus-row-control focus-type="policy">
         </cr-policy-pref-indicator>
       </template>
-      <cr-tooltip-icon id="incognitoTooltip"
-        hidden="[[!model.incognito]]"
-        icon-aria-label="$i18n{incognitoSiteExceptionDesc}"
-        icon-class="settings20:incognito"
-        focus-row-control focus-type="incognito"
-        on-mouseenter="onShowIncognitoTooltip_"
-        on-focus="onShowIncognitoTooltip_"></cr-tooltip-icon>
+      <template is="dom-if" if="[[model.incognito]]">
+        <cr-tooltip-icon id="incognitoTooltip"
+            icon-aria-label="$i18n{incognitoSiteExceptionDesc}"
+            icon-class="settings20:incognito"
+            focus-row-control focus-type="incognito"
+            on-mouseenter="onShowIncognitoTooltip_"
+            on-focus="onShowIncognitoTooltip_"></cr-tooltip-icon>
+      </template>
       <cr-icon-button id="resetSite" class="icon-delete-gray"
           hidden="[[shouldHideResetButton_(model, readOnlyList)]]"
           on-click="onResetButtonTap_"

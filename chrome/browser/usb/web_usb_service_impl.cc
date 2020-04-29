@@ -92,9 +92,7 @@ WebUsbServiceImpl::WebUsbServiceImpl(
       &WebUsbServiceImpl::OnConnectionError, base::Unretained(this)));
 }
 
-WebUsbServiceImpl::~WebUsbServiceImpl() {
-  LOG(INFO) << "USB service is being destroyed.";
-}
+WebUsbServiceImpl::~WebUsbServiceImpl() = default;
 
 void WebUsbServiceImpl::BindReceiver(
     mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {

@@ -188,7 +188,7 @@ void CursorLoaderX11::LoadImageCursor(mojom::CursorType id,
   gfx::Point hotspot = hot;
 
   GetImageCursorBitmap(resource_id, scale(), rotation(), &hotspot, &bitmap);
-  XcursorImage* x_image = SkBitmapToXcursorImage(&bitmap, hotspot);
+  XcursorImage* x_image = SkBitmapToXcursorImage(bitmap, hotspot);
   image_cursors_[id] =
       std::make_unique<ImageCursor>(x_image, scale(), rotation());
 }
@@ -207,7 +207,7 @@ void CursorLoaderX11::LoadAnimatedCursor(mojom::CursorType id,
   x_images->nimage = bitmaps.size();
 
   for (unsigned int frame = 0; frame < bitmaps.size(); ++frame) {
-    XcursorImage* x_image = SkBitmapToXcursorImage(&bitmaps[frame], hotspot);
+    XcursorImage* x_image = SkBitmapToXcursorImage(bitmaps[frame], hotspot);
     x_image->delay = frame_delay_ms;
     x_images->images[frame] = x_image;
   }

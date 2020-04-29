@@ -18,7 +18,6 @@
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/ntp_snippets/features.h"
-#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -94,12 +93,6 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
                 navigation_handle->GetWebContents()->GetTitle())
           : base::nullopt);
 
-  // If this navigation attempted a Preview, remove those URLS from the redirect
-  // chain so that they are not seen by the user. See http://crbug.com/914404.
-  DCHECK(!add_page_args.redirects.empty());
-  base::EraseIf(add_page_args.redirects, [](const GURL& url) {
-    return previews::IsLitePageRedirectPreviewURL(url);
-  });
   if (ui::PageTransitionIsMainFrame(navigation_handle->GetPageTransition()) &&
       virtual_url != navigation_handle->GetURL()) {
     // Hack on the "virtual" URL so that it will appear in history. For some

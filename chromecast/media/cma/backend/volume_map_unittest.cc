@@ -6,8 +6,8 @@
 
 #include <string>
 
+#include "base/check.h"
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
 #include "testing/gtest/include/gtest/gtest.h"

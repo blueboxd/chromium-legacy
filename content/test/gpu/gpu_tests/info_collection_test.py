@@ -6,6 +6,7 @@ from gpu_tests import gpu_integration_test
 
 import sys
 
+
 class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def Name(cls):
@@ -14,21 +15,17 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def AddCommandlineArgs(cls, parser):
     super(InfoCollectionTest, cls).AddCommandlineArgs(parser)
-    parser.add_option('--expected-device-id',
-        help='The expected device id')
-    parser.add_option('--expected-vendor-id',
-        help='The expected vendor id')
+    parser.add_option('--expected-device-id', help='The expected device id')
+    parser.add_option('--expected-vendor-id', help='The expected vendor id')
 
   @classmethod
   def GenerateGpuTests(cls, options):
     yield ('InfoCollection_basic', '_',
-           ('_RunBasicTest',
-            options.expected_vendor_id,
+           ('_RunBasicTest', options.expected_vendor_id,
             options.expected_device_id))
     yield ('InfoCollection_direct_composition', '_',
            ('_RunDirectCompositionTest', '_', '_'))
-    yield ('InfoCollection_dx12_vulkan', '_',
-           ('_RunDX12VulkanTest', '_', '_'))
+    yield ('InfoCollection_dx12_vulkan', '_', ('_RunDX12VulkanTest', '_', '_'))
 
   @classmethod
   def SetUpProcess(cls):
@@ -51,8 +48,7 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
   ######################################
   # Helper functions for the tests below
 
-  def _RunBasicTest(self, gpu, expected_vendor_id_str,
-                    expected_device_id_str):
+  def _RunBasicTest(self, gpu, expected_vendor_id_str, expected_device_id_str):
     device = gpu.devices[0]
     if not device:
       self.fail("System Info doesn't have a gpu")
@@ -70,11 +66,11 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
     # Check expected and detected GPUs match
     if detected_vendor_id != expected_vendor_id:
       self.fail('Vendor ID mismatch, expected %s but got %s.' %
-          (expected_vendor_id, detected_vendor_id))
+                (expected_vendor_id, detected_vendor_id))
 
     if detected_device_id != expected_device_id:
       self.fail('Device ID mismatch, expected %s but got %s.' %
-          (expected_device_id, detected_device_id))
+                (expected_device_id, detected_device_id))
 
   def _RunDirectCompositionTest(self, gpu, unused_arg_0, unused_arg_1):
     os_name = self.browser.platform.GetOSName()
@@ -86,14 +82,15 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
       for field, expected in overlay_bot_config.iteritems():
         detected = aux_attributes.get(field, 'NONE')
         if expected != detected:
-          self.fail('%s mismatch, expected %s but got %s.' %
+          self.fail(
+              '%s mismatch, expected %s but got %s.' %
               (field, self._ValueToStr(expected), self._ValueToStr(detected)))
 
   def _RunDX12VulkanTest(self, unused_arg_0, unused_arg_1, unused_arg_2):
     os_name = self.browser.platform.GetOSName()
     if os_name and os_name.lower() == 'win':
-      self.RestartBrowserIfNecessaryWithArgs([
-        '--no-delay-for-dx12-vulkan-info-collection'])
+      self.RestartBrowserIfNecessaryWithArgs(
+          ['--no-delay-for-dx12-vulkan-info-collection'])
       # Need to re-request system info for DX12/Vulkan bits.
       system_info = self.browser.GetSystemInfo()
       if not system_info:
@@ -109,7 +106,8 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
       for field, expected in dx12_vulkan_bot_config.iteritems():
         detected = aux_attributes.get(field)
         if expected != detected:
-          self.fail('%s mismatch, expected %s but got %s.' %
+          self.fail(
+              '%s mismatch, expected %s but got %s.' %
               (field, self._ValueToStr(expected), self._ValueToStr(detected)))
 
   @staticmethod
@@ -121,6 +119,7 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
     if type(value) is bool:
       return 'supported' if value else 'unsupported'
     assert False
+
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

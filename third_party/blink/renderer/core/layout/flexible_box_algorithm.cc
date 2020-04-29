@@ -622,12 +622,11 @@ FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
         flex_item.HypotheticalMainAxisMarginBoxSize() + gap_between_items_;
     flex_item.line_number = flex_lines_.size();
   }
-  if (sum_hypothetical_main_size > 0) {
+  if (line_has_in_flow_item) {
     // We added a gap after every item but there shouldn't be one after the last
     // item, so subtract it here.
-    DCHECK_GE(sum_hypothetical_main_size, gap_between_items_);
+    // Note: the two sums here can be negative because of negative margins.
     sum_hypothetical_main_size -= gap_between_items_;
-    DCHECK_GE(sum_flex_base_size, gap_between_items_);
     sum_flex_base_size -= gap_between_items_;
   }
 

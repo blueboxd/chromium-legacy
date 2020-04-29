@@ -23,7 +23,6 @@ namespace feed {
 namespace {
 
 const char kResponsePbPath[] = "components/test/data/feed/response.binarypb";
-constexpr base::TimeDelta kResponseTime = base::TimeDelta::FromSeconds(42);
 const base::Time kCurrentTime =
     base::Time::UnixEpoch() + base::TimeDelta::FromDays(123);
 
@@ -56,8 +55,7 @@ TEST(StreamModelUpdateRequestTest, TranslateRealResponse) {
   feedwire::Response response = TestWireResponse();
 
   std::unique_ptr<StreamModelUpdateRequest> translated = TranslateWireResponse(
-      response, StreamModelUpdateRequest::Source::kNetworkUpdate, kResponseTime,
-      kCurrentTime);
+      response, StreamModelUpdateRequest::Source::kNetworkUpdate, kCurrentTime);
 
   ASSERT_TRUE(translated);
   std::stringstream ss;
@@ -432,8 +430,6 @@ stream_structure: {
   }
   type: 4
 }
-server_response_time: 1587056924
-response_time: 42 s
 max_structure_sequence_number: 0
 )";
   EXPECT_EQ(want, ss.str());

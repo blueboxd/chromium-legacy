@@ -200,7 +200,7 @@ void ApplyRenderParams(const FontRenderParams& params,
 }  // namespace internal
 
 // RenderText represents an abstract model of styled text and its corresponding
-// visual layout. Support is built in for a cursor, a selection, simple styling,
+// visual layout. Support is built in for a cursor, selections, simple styling,
 // complex scripts, and bi-directional text. Implementations provide mechanisms
 // for rendering and translation between logical and visual data.
 class GFX_EXPORT RenderText {
@@ -337,6 +337,10 @@ class GFX_EXPORT RenderText {
   const SelectionModel& selection_model() const { return selection_model_; }
   const Range& selection() const { return selection_model_.selection(); }
   size_t cursor_position() const { return selection_model_.caret_pos(); }
+  const std::vector<Range>& secondary_selections() const {
+    return selection_model_.secondary_selections();
+  }
+  const std::vector<Range> GetAllSelections() const;
 
   // Set the cursor to |position|, with the caret affinity trailing the previous
   // grapheme, or if there is no previous grapheme, leading the cursor position.
@@ -369,12 +373,14 @@ class GFX_EXPORT RenderText {
                          bool select,
                          const gfx::Point& drag_origin = gfx::Point());
 
-  // Set the selection_model_ based on |range|.
-  // If the |range| start or end is greater than text length, it is modified
-  // to be the text length.
-  // If the |range| start or end is not a cursorable position (not on grapheme
-  // boundary), it is a NO-OP and returns false. Otherwise, returns true.
-  bool SelectRange(const Range& range);
+  // Set the |selection_model_| based on |range|. If the |range| start or end is
+  // greater than text length, it is modified to be the text length. If the
+  // |range| start or end is not a cursorable position (not on grapheme
+  // boundary), it is a NO-OP and returns false. Otherwise, returns true. If
+  // |primary| is true, secondary selections are cleared; otherwise, the range
+  // will be added as a secondary selection not associated with the cursor. In
+  // the latter case, |range| should not overlap with existing selections.
+  bool SelectRange(const Range& range, bool primary = true);
 
   // Returns true if the local point is over selected text.
   bool IsPointInSelection(const Point& point);
@@ -426,7 +432,7 @@ class GFX_EXPORT RenderText {
   // Set or get the text directionality mode and get the text direction yielded.
   void SetDirectionalityMode(DirectionalityMode mode);
   DirectionalityMode directionality_mode() const {
-      return directionality_mode_;
+    return directionality_mode_;
   }
   base::i18n::TextDirection GetDisplayTextDirection();
 
@@ -626,7 +632,7 @@ class GFX_EXPORT RenderText {
     return font_size_overrides_;
   }
   const BreakList<Font::Weight>& weights() const { return weights_; }
-  const std::vector<BreakList<bool> >& styles() const { return styles_; }
+  const std::vector<BreakList<bool>>& styles() const { return styles_; }
   SkScalar strike_thickness_factor() const { return strike_thickness_factor_; }
 
   const BreakList<SkColor>& layout_colors() const { return layout_colors_; }
@@ -699,8 +705,11 @@ class GFX_EXPORT RenderText {
   SelectionModel LineSelectionModel(size_t line_index,
                                     gfx::VisualCursorDirection direction);
 
-  // Sets the selection model, |model| is assumed to be valid.
+  // Sets the selection model. |model| should be valid.
   void SetSelectionModel(const SelectionModel& model);
+  // Adds a secondary selection. |selection| should not overlap with existing
+  // selections.
+  void AddSecondarySelection(const Range selection);
 
   // Convert between indices into |text_| and indices into
   // GetDisplayText(), which differ when the text is obscured,
@@ -719,9 +728,9 @@ class GFX_EXPORT RenderText {
   // Ensure the text is laid out, lines are computed, and |lines_| is valid.
   virtual void EnsureLayout() = 0;
 
-  // Draw all text and make the given range appear selected.
+  // Draw all text and make the given ranges appear selected.
   virtual void DrawVisualText(internal::SkiaTextRenderer* renderer,
-                              const Range& selection) = 0;
+                              const std::vector<Range> selections) = 0;
 
   // Update the display text.
   void UpdateDisplayText(float text_width);
@@ -811,8 +820,8 @@ class GFX_EXPORT RenderText {
   // cursor is within the visible display area.
   void UpdateCachedBoundsAndOffset();
 
-  // Draws the specified range of text with a selected appearance.
-  void DrawSelection(Canvas* canvas, const Range& selection);
+  // Draws the specified ranges of text with a selected appearance.
+  void DrawSelections(Canvas* canvas, const std::vector<Range> selections);
 
   // Returns a grapheme iterator that contains the codepoint at |index|.
   internal::GraphemeIterator GetGraphemeIteratorAtIndex(
@@ -864,7 +873,7 @@ class GFX_EXPORT RenderText {
   // A list of fonts used to render |text_|.
   FontList font_list_;
 
-  // Logical selection range and visual cursor position.
+  // Logical selection ranges and visual cursor position.
   SelectionModel selection_model_;
 
   // The cached cursor bounds; get these bounds with GetUpdatedCursorBounds.
@@ -904,7 +913,7 @@ class GFX_EXPORT RenderText {
   BreakList<BaselineStyle> baselines_;
   BreakList<int> font_size_overrides_;
   BreakList<Font::Weight> weights_;
-  std::vector<BreakList<bool> > styles_;
+  std::vector<BreakList<bool>> styles_;
 
   mutable BreakList<SkColor> layout_colors_;
   mutable BreakList<BaselineStyle> layout_baselines_;

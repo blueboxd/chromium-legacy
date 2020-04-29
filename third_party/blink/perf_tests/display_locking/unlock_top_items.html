@@ -47,7 +47,7 @@ function construct(n) {
   for (let i = 0; i < n; ++i) {
     const clone = specimen.cloneNode(true);
     clone.id = "id" + i;
-    clone.style = "subtree-visibility: hidden-matchable";
+    clone.style = "content-visibility: hidden-matchable";
     document.body.appendChild(clone);
   }
 }

@@ -25,6 +25,7 @@ include_rules = [
   "+components/javascript_dialogs/android",
   "+components/page_info/android/java",
   "+components/policy",
+  "+components/query_tiles",
   "+components/security_interstitials/content/android",
   "+components/signin/core/browser/android",
   "+components/signin/public/android",

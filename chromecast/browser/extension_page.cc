@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "chromecast/browser/cast_content_window_aura.h"
 #include "chromecast/browser/cast_extension_host.h"
 #include "content/public/browser/render_view_host.h"

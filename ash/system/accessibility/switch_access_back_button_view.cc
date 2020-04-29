@@ -46,6 +46,7 @@ void SwitchAccessBackButtonView::ButtonPressed(views::Button* sender,
 
 void SwitchAccessBackButtonView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kButton;
   node_data->html_attributes.push_back(std::make_pair("id", kUniqueId));
 }
 

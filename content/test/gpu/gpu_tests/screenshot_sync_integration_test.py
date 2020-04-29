@@ -14,8 +14,9 @@ from gpu_tests import path_util
 from telemetry.util import image_util
 from telemetry.util import rgba_color
 
-data_path = os.path.join(
-    path_util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
+data_path = os.path.join(path_util.GetChromiumSrcDir(), 'content', 'test',
+                         'data', 'gpu')
+
 
 class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   """Tests that screenshots are properly synchronized with the frame on
@@ -45,18 +46,19 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def AddCommandlineArgs(cls, parser):
     super(ScreenshotSyncIntegrationTest, cls).AddCommandlineArgs(parser)
     parser.add_option(
-      '--dont-restore-color-profile-after-test',
-      dest='dont_restore_color_profile_after_test',
-      action='store_true', default=False,
-      help='(Mainly on Mac) don\'t restore the system\'s original color '
-      'profile after the test completes; leave the system using the sRGB color '
-      'profile. See http://crbug.com/784456.')
+        '--dont-restore-color-profile-after-test',
+        dest='dont_restore_color_profile_after_test',
+        action='store_true',
+        default=False,
+        help='(Mainly on Mac) don\'t restore the system\'s original color '
+        'profile after the test completes; leave the system using the sRGB '
+        'color profile. See http://crbug.com/784456.')
 
   @classmethod
   def SetUpProcess(cls):
     options = cls.GetParsedCommandLineOptions()
     color_profile_manager.ForceUntilExitSRGB(
-      options.dont_restore_color_profile_after_test)
+        options.dont_restore_color_profile_after_test)
     super(cls, ScreenshotSyncIntegrationTest).SetUpProcess()
     cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
     cls.StartBrowser()
@@ -67,25 +69,21 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # --test-type=gpu is used to suppress the "Google API Keys are
     # missing" infobar, which causes flakiness in tests.
     return [
-      '--force-color-profile=srgb',
-      '--ensure-forced-color-profile',
-      '--test-type=gpu'] + browser_args
+        '--force-color-profile=srgb', '--ensure-forced-color-profile',
+        '--test-type=gpu'
+    ] + browser_args
 
   @classmethod
   def GenerateGpuTests(cls, options):
     cls.SetParsedCommandLineOptions(options)
-    yield('ScreenshotSync_SWRasterWithCanvas',
-          'screenshot_sync_canvas.html',
-          ('--disable-gpu-rasterization'))
-    yield('ScreenshotSync_SWRasterWithDivs',
-          'screenshot_sync_divs.html',
-          ('--disable-gpu-rasterization'))
-    yield('ScreenshotSync_GPURasterWithCanvas',
-          'screenshot_sync_canvas.html',
-          ('--force-gpu-rasterization'))
-    yield('ScreenshotSync_GPURasterWithDivs',
-          'screenshot_sync_divs.html',
-          ('--force-gpu-rasterization'))
+    yield ('ScreenshotSync_SWRasterWithCanvas', 'screenshot_sync_canvas.html',
+           ('--disable-gpu-rasterization'))
+    yield ('ScreenshotSync_SWRasterWithDivs', 'screenshot_sync_divs.html',
+           ('--disable-gpu-rasterization'))
+    yield ('ScreenshotSync_GPURasterWithCanvas', 'screenshot_sync_canvas.html',
+           ('--force-gpu-rasterization'))
+    yield ('ScreenshotSync_GPURasterWithDivs', 'screenshot_sync_divs.html',
+           ('--force-gpu-rasterization'))
 
   def _Navigate(self, test_path):
     url = self.UrlOfStaticFilePath(test_path)
@@ -102,19 +100,20 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if not expectedRGB.IsEqual(pixel_value, tolerance):
       error_message = ('Color mismatch at (%d, %d): expected (%d, %d, %d), ' +
                        'got (%d, %d, %d)') % (
-                         x, y, expectedRGB.r, expectedRGB.g, expectedRGB.b,
-                         pixel_value.r, pixel_value.g, pixel_value.b)
+                           x, y, expectedRGB.r, expectedRGB.g, expectedRGB.b,
+                           pixel_value.r, pixel_value.g, pixel_value.b)
       self.fail(error_message)
 
   def _CheckScreenshot(self):
-    canvasRGB = rgba_color.RgbaColor(random.randint(0, 255),
-                                     random.randint(0, 255),
-                                     random.randint(0, 255),
-                                     255)
+    canvasRGB = rgba_color.RgbaColor(
+        random.randint(0, 255), random.randint(0, 255), random.randint(0, 255),
+        255)
     tab = self.tab
     tab.EvaluateJavaScript(
         "window.draw({{ red }}, {{ green }}, {{ blue }});",
-        red=canvasRGB.r, green=canvasRGB.g, blue=canvasRGB.b)
+        red=canvasRGB.r,
+        green=canvasRGB.g,
+        blue=canvasRGB.b)
     screenshot = tab.Screenshot(10)
     # Avoid checking along antialiased boundary due to limited Adreno 3xx
     # interpolation precision (crbug.com/847984). We inset by one CSS pixel
@@ -143,9 +142,11 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def ExpectationsFiles(cls):
     return [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     'test_expectations',
-                     'screenshot_sync_expectations.txt')]
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
+            'screenshot_sync_expectations.txt')
+    ]
+
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

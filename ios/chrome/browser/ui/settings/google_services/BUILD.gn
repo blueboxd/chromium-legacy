@@ -56,7 +56,6 @@ source_set("google_services") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication/cells",
-    "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/icons",
@@ -66,7 +65,6 @@ source_set("google_services") {
     "//ios/chrome/browser/ui/settings/sync",
     "//ios/chrome/browser/ui/settings/sync/utils",
     "//ios/chrome/browser/ui/settings/utils",
-    "//ios/chrome/browser/ui/signin_interaction",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/util",
@@ -75,10 +73,6 @@ source_set("google_services") {
     "//ios/public/provider/chrome/browser/images",
     "//ios/public/provider/chrome/browser/signin",
     "//ui/base",
-  ]
-  allow_circular_includes_from = [
-    "//ios/chrome/browser/ui/signin_interaction",
-    "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin",
   ]
 }
 

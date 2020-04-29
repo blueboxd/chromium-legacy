@@ -155,7 +155,10 @@ suite('NewTabPageMostVisitedTest', () => {
   test('pressing space when add shortcut has focus opens dialog', () => {
     mostVisited.$.addShortcut.focus();
     assertFalse(mostVisited.$.dialog.open);
-    keydown(mostVisited.$.addShortcut, ' ');
+    mostVisited.$.addShortcut.dispatchEvent(
+        new KeyboardEvent('keydown', {key: ' '}));
+    mostVisited.$.addShortcut.dispatchEvent(
+        new KeyboardEvent('keyup', {key: ' '}));
     assertTrue(mostVisited.$.dialog.open);
   });
 
@@ -163,7 +166,7 @@ suite('NewTabPageMostVisitedTest', () => {
     await addTiles(4);
     assertEquals(4, queryTiles().length);
     assertAddShortcutShown();
-    const tops = queryAll('a').map(({offsetTop}) => offsetTop);
+    const tops = queryAll('a, #addShortcut').map(({offsetTop}) => offsetTop);
     assertEquals(5, tops.length);
     tops.forEach(top => {
       assertEquals(tops[0], top);
@@ -174,7 +177,7 @@ suite('NewTabPageMostVisitedTest', () => {
     await addTiles(5);
     assertEquals(5, queryTiles().length);
     assertAddShortcutShown();
-    const tops = queryAll('a').map(({offsetTop}) => offsetTop);
+    const tops = queryAll('a, #addShortcut').map(({offsetTop}) => offsetTop);
     assertEquals(6, tops.length);
     const firstRowTop = tops[0];
     const secondRowTop = tops[3];
@@ -191,7 +194,7 @@ suite('NewTabPageMostVisitedTest', () => {
     await addTiles(9);
     assertEquals(9, queryTiles().length);
     assertAddShortcutShown();
-    const tops = queryAll('a').map(({offsetTop}) => offsetTop);
+    const tops = queryAll('a, #addShortcut').map(({offsetTop}) => offsetTop);
     assertEquals(10, tops.length);
     const firstRowTop = tops[0];
     const secondRowTop = tops[5];
@@ -702,8 +705,15 @@ suite('NewTabPageMostVisitedTest', () => {
     queryAll('.tile-icon').forEach(tile => {
       assertStyle(tile, 'background-color', 'rgb(255, 0, 0)');
     });
+  });
+
+  test('add shortcut white', () => {
     assertStyle(
-        mostVisited.$.addShortCutIcon, 'background-color', 'rgb(0, 0, 255)');
+        mostVisited.$.addShortcutIcon, 'background-color', 'rgb(32, 33, 36)');
+    mostVisited.toggleAttribute('use-white-add-icon', true);
+    assertStyle(
+        mostVisited.$.addShortcutIcon, 'background-color',
+        'rgb(255, 255, 255)');
   });
 
   test('rendering tiles logs event', async () => {

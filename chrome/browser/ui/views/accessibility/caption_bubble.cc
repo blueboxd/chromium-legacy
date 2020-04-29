@@ -18,8 +18,13 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -35,6 +40,7 @@ static constexpr int kMaxHeightDip = kLineHeightDip * 2;
 static constexpr int kCornerRadiusDip = 8;
 static constexpr int kHorizontalMarginsDip = 6;
 static constexpr int kVerticalMarginsDip = 8;
+static constexpr int kCloseButtonMargin = 4;
 static constexpr double kPreferredAnchorWidthPercentage = 0.8;
 static constexpr int kMaxWidthDip = 548;
 static constexpr int kButtonPaddingDip = 48;
@@ -173,14 +179,29 @@ void CaptionBubble::OnWidgetBoundsChanged(views::Widget* widget,
 }
 
 void CaptionBubble::Init() {
-  auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
+  int content_top_bottom_margin = kHorizontalMarginsDip - kCloseButtonMargin;
+  int content_sides_margin = kVerticalMarginsDip - kCloseButtonMargin;
+
+  views::View* content_container = new views::View();
+  views::FlexLayout* layout = content_container->SetLayoutManager(
+      std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kVertical);
   layout->SetMainAxisAlignment(views::LayoutAlignment::kEnd);
+  layout->SetInteriorMargin(
+      gfx::Insets(content_top_bottom_margin, content_sides_margin));
   layout->SetDefault(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
                                views::MaximumFlexSizeRule::kPreferred,
                                /*adjust_height_for_width*/ true));
+  content_container->SetPreferredSize(
+      gfx::Size(kMaxWidthDip, kMaxHeightDip + kVerticalMarginsDip));
+
+  views::BoxLayout* main_layout =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical, gfx::Insets(0), 0));
+  main_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kEnd);
 
   // TODO(crbug.com/1055150): Use system caption color scheme rather than
   // hard-coding the colors.
@@ -191,7 +212,7 @@ void CaptionBubble::Init() {
 
   auto label = std::make_unique<views::Label>();
   label->SetMultiLine(true);
-  label->SetMaximumWidth(kMaxWidthDip);
+  label->SetMaximumWidth(kMaxWidthDip - kVerticalMarginsDip);
   label->SetEnabledColor(SK_ColorWHITE);
   label->SetBackgroundColor(SK_ColorTRANSPARENT);
   label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -228,18 +249,37 @@ void CaptionBubble::Init() {
       vector_icons::kErrorOutlineIcon, kErrorImageSizeDip, SK_ColorWHITE));
   error_icon->SetVisible(false);
 
-  SetPreferredSize(gfx::Size(kMaxWidthDip, kMaxHeightDip));
-  set_margins(gfx::Insets(kHorizontalMarginsDip, kVerticalMarginsDip));
+  auto close_button = views::CreateVectorImageButton(this);
+  views::SetImageFromVectorIcon(close_button.get(),
+                                vector_icons::kCloseRoundedIcon, SK_ColorWHITE);
+  // TODO(crbug.com/1055150): Use a custom string explaining we dismiss from the
+  // current tab on close, but leave the feature enabled.
+  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
+  close_button->SizeToPreferredSize();
+  close_button->SetFocusForPlatform();
+  views::InstallCircleHighlightPathGenerator(close_button.get());
 
-  title_ = AddChildView(std::move(title));
-  label_ = AddChildView(std::move(label));
+  // TODO(crbug.com/1055150): On hover, show/hide the close button. At that
+  // time remove the height of close button size from SetPreferredSize.
+  SetPreferredSize(
+      gfx::Size(kMaxWidthDip, kMaxHeightDip + kCloseButtonMargin +
+                                  close_button->GetPreferredSize().height()));
+  set_margins(gfx::Insets(kCloseButtonMargin));
 
-  error_icon_ = AddChildView(std::move(error_icon));
-  error_message_ = AddChildView(std::move(error_message));
+  title_ = content_container->AddChildView(std::move(title));
+  label_ = content_container->AddChildView(std::move(label));
+
+  error_icon_ = content_container->AddChildView(std::move(error_icon));
+  error_message_ = content_container->AddChildView(std::move(error_message));
+
+  close_button_ = AddChildView(std::move(close_button));
+  AddChildView(content_container);
 }
 
 bool CaptionBubble::ShouldShowCloseButton() const {
-  return true;
+  // We draw our own close button so that we could show/hide it when the
+  // mouse moves, and so that in the future we can add an expand button.
+  return false;
 }
 
 views::NonClientFrameView* CaptionBubble::CreateNonClientFrameView(
@@ -251,6 +291,14 @@ views::NonClientFrameView* CaptionBubble::CreateNonClientFrameView(
   border->SetCornerRadius(kCornerRadiusDip);
   frame->SetBubbleBorder(std::move(border));
   return frame;
+}
+
+void CaptionBubble::ButtonPressed(views::Button* sender,
+                                  const ui::Event& event) {
+  if (sender == close_button_) {
+    GetWidget()->CloseWithReason(
+        views::Widget::ClosedReason::kCloseButtonClicked);
+  }
 }
 
 void CaptionBubble::SetText(const std::string& text) {

@@ -375,9 +375,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         // Initialize Layouts
         mStaticLayout.onFinishNativeInitialization();
-        if (getActiveLayout() != null) {
-            getActiveLayout().onFinishNativeInitialization();
-        }
 
         // Contextual Search scene overlay.
         mContextualSearchPanel = new ContextualSearchPanel(mContext, this, mOverlayPanelManager);

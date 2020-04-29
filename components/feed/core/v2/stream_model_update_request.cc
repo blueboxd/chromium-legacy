@@ -210,7 +210,6 @@ base::Optional<feedstore::DataOperation> TranslateDataOperation(
 std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
     feedwire::Response response,
     StreamModelUpdateRequest::Source source,
-    base::TimeDelta response_time,
     base::Time current_time) {
   if (response.response_version() != feedwire::Response::FEED_RESPONSE)
     return nullptr;
@@ -247,9 +246,6 @@ std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
         result->shared_states.front().content_id();
   }
   feedstore::SetLastAddedTime(current_time, &result->stream_data);
-  result->server_response_time =
-      feed_response->feed_response_metadata().response_time_ms();
-  result->response_time = response_time;
 
   return result;
 }

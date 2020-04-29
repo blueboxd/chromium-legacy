@@ -7,8 +7,10 @@ import sys
 
 
 def GetChromiumSrcDir():
-  return os.path.abspath(os.path.join(
-      os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir))
+  return os.path.abspath(
+      os.path.join(
+          os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
+          os.pardir))
 
 
 def GetGpuTestDir():
@@ -34,12 +36,11 @@ def SetupTelemetryPaths():
   if telemetry_path not in sys.path:
     sys.path.append(telemetry_path)
 
-  py_utils_path = os.path.join(
-      chromium_src_dir, 'third_party', 'catapult', 'common', 'py_utils')
+  py_utils_path = os.path.join(chromium_src_dir, 'third_party', 'catapult',
+                               'common', 'py_utils')
   if py_utils_path not in sys.path:
     sys.path.append(py_utils_path)
 
-  pylint_path = os.path.join(
-      chromium_src_dir, 'third_party', 'pylint')
+  pylint_path = os.path.join(chromium_src_dir, 'third_party', 'pylint')
   if pylint_path not in sys.path:
     sys.path.append(pylint_path)

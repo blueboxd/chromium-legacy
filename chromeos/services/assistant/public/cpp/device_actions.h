@@ -16,6 +16,15 @@
 namespace chromeos {
 namespace assistant {
 
+// Subscribes to App list events.
+class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AppListEventSubscriber
+    : public base::CheckedObserver {
+ public:
+  // Called when the android app list changed.
+  virtual void OnAndroidAppListRefreshed(
+      std::vector<mojom::AndroidAppInfoPtr> apps_info) = 0;
+};
+
 // Main interface for |chromeos::assistant::Service| to execute device related
 // actions.
 class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) DeviceActions {
@@ -64,7 +73,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) DeviceActions {
 
   // Register App list event subscriber.
   virtual void AddAppListEventSubscriber(
-      mojo::PendingRemote<mojom::AppListEventSubscriber> subscriber) = 0;
+      AppListEventSubscriber* subscriber) = 0;
+  virtual void RemoveAppListEventSubscriber(
+      AppListEventSubscriber* subscriber) = 0;
 };
 
 }  // namespace assistant

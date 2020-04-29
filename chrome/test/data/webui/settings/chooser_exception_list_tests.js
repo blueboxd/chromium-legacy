@@ -521,7 +521,9 @@ suite('ChooserExceptionList', function() {
               const siteListEntry =
                   chooserExceptionListEntry.$$('site-list-entry');
               assertTrue(!!siteListEntry);
-              assertTrue(siteListEntry.$.incognitoTooltip.hidden);
+              // Ensure that the incognito tooltip is hidden.
+              const incognitoTooltip = siteListEntry.$$('#incognitoTooltip');
+              assertFalse(!!incognitoTooltip);
 
               // Simulate an incognito session being created.
               browserProxy.resetResolver('getChooserExceptionList');
@@ -543,6 +545,8 @@ suite('ChooserExceptionList', function() {
                   chooserExceptionListEntry.root.querySelectorAll(
                       'site-list-entry');
               assertEquals(2, siteListEntries.length);
+              assertTrue(Array.from(siteListEntries)
+                             .some(entry => entry.model.incognito));
 
               const tooltip = testElement.$.tooltip;
               assertTrue(!!tooltip);
@@ -554,12 +558,12 @@ suite('ChooserExceptionList', function() {
               // This filtered array should be non-empty due to above test that
               // checks for incognito exception.
               Array.from(siteListEntries)
-                  .filter(entry => entry.incognito)
+                  .filter(entry => entry.model.incognito)
                   .forEach(entry => {
-                    const incognitoTooltip = entry.$.incognitoTooltip;
+                    const incognitoTooltip = entry.$$('#incognitoTooltip');
                     // Make sure it is not hidden if it is an incognito
                     // exception
-                    assertFalse(incognitoTooltip.hidden);
+                    assertTrue(!!incognitoTooltip);
                     // Trigger mouse enter and check tooltip text
                     incognitoTooltip.dispatchEvent(
                         new MouseEvent('mouseenter'));

@@ -62,8 +62,9 @@ using alert_overlays::AlertResponse;
   NSMutableArray<NSString*>* textFieldValues =
       [NSMutableArray<NSString*> array];
   for (size_t i = 0; i < config->text_field_configs().count; ++i) {
-    [textFieldValues addObject:[self.dataSource textFieldInputForMediator:self
-                                                           textFieldIndex:i]];
+    NSString* text_field_value = [self.dataSource textFieldInputForMediator:self
+                                                             textFieldIndex:i];
+    [textFieldValues addObject:text_field_value ?: @""];
   }
   return textFieldValues;
 }
@@ -87,6 +88,11 @@ using alert_overlays::AlertResponse;
                                                      self.textFieldValues);
   self.request->GetCallbackManager()->SetCompletionResponse(
       config->response_converter().Run(std::move(alertResponse)));
+  // The response converter should convert the AlertResponse into a feature-
+  // specific OverlayResponseInfo type.
+  OverlayResponse* convertedResponse =
+      self.request->GetCallbackManager()->GetCompletionResponse();
+  DCHECK(!convertedResponse || !convertedResponse->GetInfo<AlertResponse>());
 }
 
 // Returns the action block for the button at |index|.

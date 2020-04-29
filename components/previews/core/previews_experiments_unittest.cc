@@ -46,9 +46,6 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
             params::OfflinePreviewFreshnessDuration());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::GetECTThresholdForPreview(PreviewsType::OFFLINE));
-  EXPECT_EQ(
-      net::EFFECTIVE_CONNECTION_TYPE_2G,
-      params::GetECTThresholdForPreview(PreviewsType::LITE_PAGE_REDIRECT));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::GetECTThresholdForPreview(PreviewsType::NOSCRIPT));
   EXPECT_EQ(0, params::OfflinePreviewsVersion());
@@ -85,58 +82,11 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
             params::OfflinePreviewFreshnessDuration());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::GetECTThresholdForPreview(PreviewsType::OFFLINE));
-  EXPECT_EQ(
-      net::EFFECTIVE_CONNECTION_TYPE_4G,
-      params::GetECTThresholdForPreview(PreviewsType::LITE_PAGE_REDIRECT));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::GetECTThresholdForPreview(PreviewsType::NOSCRIPT));
   EXPECT_EQ(10, params::OfflinePreviewsVersion());
 
   variations::testing::ClearAllVariationParams();
-}
-
-// Verifies that the default params are correct, and that custom params can be
-// set, for both the previews blacklist and offline previews.
-TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline_LPR) {
-  // Verify that the default params are correct.
-  EXPECT_EQ(4u, params::MaxStoredHistoryLengthForPerHostBlackList());
-  EXPECT_EQ(10u, params::MaxStoredHistoryLengthForHostIndifferentBlackList());
-  EXPECT_EQ(100u, params::MaxInMemoryHostsInBlackList());
-  EXPECT_EQ(2, params::PerHostBlackListOptOutThreshold());
-  EXPECT_EQ(6, params::HostIndifferentBlackListOptOutThreshold());
-  EXPECT_EQ(base::TimeDelta::FromDays(30), params::PerHostBlackListDuration());
-  EXPECT_EQ(base::TimeDelta::FromDays(30),
-            params::HostIndifferentBlackListPerHostDuration());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(60 * 5),
-            params::SingleOptOutDuration());
-  EXPECT_EQ(base::TimeDelta::FromDays(7),
-            params::OfflinePreviewFreshnessDuration());
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::GetECTThresholdForPreview(PreviewsType::OFFLINE));
-  EXPECT_EQ(
-      net::EFFECTIVE_CONNECTION_TYPE_2G,
-      params::GetECTThresholdForPreview(PreviewsType::LITE_PAGE_REDIRECT));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::GetECTThresholdForPreview(PreviewsType::NOSCRIPT));
-  EXPECT_EQ(0, params::OfflinePreviewsVersion());
-
-  // Set some custom params. Somewhat random yet valid values.
-  std::map<std::string, std::string> custom_params = {
-      {"max_allowed_effective_connection_type", "3G"},
-      {"version", "10"},
-  };
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kLitePageServerPreviews, custom_params);
-
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::GetECTThresholdForPreview(PreviewsType::OFFLINE));
-  EXPECT_EQ(
-      net::EFFECTIVE_CONNECTION_TYPE_3G,
-      params::GetECTThresholdForPreview(PreviewsType::LITE_PAGE_REDIRECT));
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params::GetECTThresholdForPreview(PreviewsType::NOSCRIPT));
 }
 
 TEST(PreviewsExperimentsTest, TestDefaultShouldExcludeMediaSuffix) {
@@ -251,15 +201,13 @@ TEST(PreviewsExperimentsTest, TestPreviewsEligibleForUserConsistentStudy) {
   {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeatures(
-        {features::kLitePageServerPreviews, features::kDeferAllScriptPreviews,
-         features::kResourceLoadingHints, features::kNoScriptPreviews,
+        {features::kDeferAllScriptPreviews, features::kResourceLoadingHints,
+         features::kNoScriptPreviews,
          features::kEligibleForUserConsistentStudy},
-        {features::kLitePageServerPreviewsUserConsistentStudy,
-         features::kDeferAllScriptPreviewsUserConsistentStudy,
+        {features::kDeferAllScriptPreviewsUserConsistentStudy,
          features::kResourceLoadingHintsUserConsistentStudy,
          features::kNoScriptPreviewsUserConsistentStudy});
 
-    EXPECT_TRUE(params::IsLitePageServerPreviewsEnabled());
     EXPECT_TRUE(params::IsDeferAllScriptPreviewsEnabled());
     EXPECT_TRUE(params::IsResourceLoadingHintsEnabled());
     EXPECT_TRUE(params::IsNoScriptPreviewsEnabled());
@@ -271,14 +219,12 @@ TEST(PreviewsExperimentsTest, TestPreviewsEligibleForUserConsistentStudy) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeatures(
         {features::kEligibleForUserConsistentStudy,
-         features::kLitePageServerPreviewsUserConsistentStudy,
          features::kDeferAllScriptPreviewsUserConsistentStudy,
          features::kResourceLoadingHintsUserConsistentStudy,
          features::kNoScriptPreviewsUserConsistentStudy},
-        {features::kLitePageServerPreviews, features::kDeferAllScriptPreviews,
-         features::kResourceLoadingHints, features::kNoScriptPreviews});
+        {features::kDeferAllScriptPreviews, features::kResourceLoadingHints,
+         features::kNoScriptPreviews});
 
-    EXPECT_FALSE(params::IsLitePageServerPreviewsEnabled());
     EXPECT_FALSE(params::IsDeferAllScriptPreviewsEnabled());
     EXPECT_FALSE(params::IsResourceLoadingHintsEnabled());
     EXPECT_FALSE(params::IsNoScriptPreviewsEnabled());
@@ -290,28 +236,20 @@ TEST(PreviewsExperimentsTest, TestPreviewsEligibleForUserConsistentStudy) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeaturesAndParameters(
         {{features::kEligibleForUserConsistentStudy, {}},
-         {features::kLitePageServerPreviewsUserConsistentStudy,
-          {{"user_consistent_preview_enabled", "true"},
-           {"version", "111"},
-           {"previews_host", "https://userconsistentpreviewhost.org"}}},
          {features::kDeferAllScriptPreviewsUserConsistentStudy,
           {{"user_consistent_preview_enabled", "true"}, {"version", "333"}}},
          {features::kResourceLoadingHintsUserConsistentStudy,
           {{"user_consistent_preview_enabled", "true"}, {"version", "555"}}},
          {features::kNoScriptPreviewsUserConsistentStudy,
           {{"user_consistent_preview_enabled", "true"}, {"version", "777"}}}},
-        {features::kLitePageServerPreviews, features::kDeferAllScriptPreviews,
-         features::kResourceLoadingHints, features::kNoScriptPreviews});
+        {features::kDeferAllScriptPreviews, features::kResourceLoadingHints,
+         features::kNoScriptPreviews});
 
-    EXPECT_TRUE(params::IsLitePageServerPreviewsEnabled());
     EXPECT_TRUE(params::IsDeferAllScriptPreviewsEnabled());
     EXPECT_TRUE(params::IsResourceLoadingHintsEnabled());
     EXPECT_TRUE(params::IsNoScriptPreviewsEnabled());
 
     // Verify the UserConsistent feature version params.
-    EXPECT_EQ(111, params::LitePageServerPreviewsVersion());
-    EXPECT_EQ(GURL("https://userconsistentpreviewhost.org/"),
-              params::GetLitePagePreviewsDomainURL());
     EXPECT_EQ(333, params::DeferAllScriptPreviewsVersion());
     EXPECT_EQ(555, params::ResourceLoadingHintsVersion());
     EXPECT_EQ(777, params::NoScriptPreviewsVersion());
@@ -323,47 +261,19 @@ TEST(PreviewsExperimentsTest, TestPreviewsEligibleForUserConsistentStudy) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeaturesAndParameters(
         {{features::kEligibleForUserConsistentStudy, {}},
-         {features::kLitePageServerPreviewsUserConsistentStudy,
-          {{"user_consistent_preview_enabled", "false"},
-           {"version", "111"},
-           {"previews_host", "https://userconsistentpreviewhost.org"}}},
          {features::kDeferAllScriptPreviewsUserConsistentStudy,
           {{"user_consistent_preview_enabled", "false"}, {"version", "333"}}},
          {features::kResourceLoadingHintsUserConsistentStudy,
           {{"user_consistent_preview_enabled", "false"}, {"version", "555"}}},
          {features::kNoScriptPreviewsUserConsistentStudy,
           {{"user_consistent_preview_enabled", "false"}, {"version", "777"}}}},
-        {features::kLitePageServerPreviews, features::kDeferAllScriptPreviews,
-         features::kResourceLoadingHints, features::kNoScriptPreviews});
+        {features::kDeferAllScriptPreviews, features::kResourceLoadingHints,
+         features::kNoScriptPreviews});
 
-    EXPECT_FALSE(params::IsLitePageServerPreviewsEnabled());
     EXPECT_FALSE(params::IsDeferAllScriptPreviewsEnabled());
     EXPECT_FALSE(params::IsResourceLoadingHintsEnabled());
     EXPECT_FALSE(params::IsNoScriptPreviewsEnabled());
   }
-}
-
-TEST(PreviewsExperimentsTest, TestLitePageServerPreviewsCoinFlipExperiment) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeaturesAndParameters(
-      {{features::kLitePageServerPreviewsUserConsistentStudy,
-        {{"user_consistent_preview_enabled", "true"},
-         {"version", "111"},
-         {"previews_host", "https://userconsistpreviewhost.org"}}},
-       {features::kLitePageServerPreviews,
-        {{"version", "222"},
-         {"previews_host", "https://coinflippreviewhost.org"}}}},
-      {features::kEligibleForUserConsistentStudy,
-       features::kDeferAllScriptPreviews});
-
-  EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      kPreviewsFieldTrial, "LitePageServerPreviewsCoinFlipExperimentGroup"));
-
-  EXPECT_TRUE(params::IsLitePageServerPreviewsEnabled());
-  EXPECT_EQ(222, params::LitePageServerPreviewsVersion());
-  EXPECT_EQ(GURL("https://coinflippreviewhost.org/"),
-            params::GetLitePagePreviewsDomainURL());
-  EXPECT_FALSE(params::IsDeferAllScriptPreviewsEnabled());
 }
 
 TEST(PreviewsExperimentsTest, TestDeferAllScriptPreviewsCoinFlipExperiment) {
@@ -372,16 +282,13 @@ TEST(PreviewsExperimentsTest, TestDeferAllScriptPreviewsCoinFlipExperiment) {
       {{features::kDeferAllScriptPreviewsUserConsistentStudy,
         {{"user_consistent_preview_enabled", "true"}, {"version", "333"}}},
        {features::kDeferAllScriptPreviews, {{"version", "444"}}}},
-      {features::kEligibleForUserConsistentStudy,
-       features::kLitePageServerPreviews});
+      {features::kEligibleForUserConsistentStudy});
 
   EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(
       kPreviewsFieldTrial, "DeferAllScriptPreviewsCoinFlipExperimentGroup"));
 
   EXPECT_TRUE(params::IsDeferAllScriptPreviewsEnabled());
   EXPECT_EQ(444, params::DeferAllScriptPreviewsVersion());
-
-  EXPECT_FALSE(params::IsLitePageServerPreviewsEnabled());
 }
 
 TEST(PreviewsExperimentsTest, TestOverrideShouldShowPreviewCheck) {

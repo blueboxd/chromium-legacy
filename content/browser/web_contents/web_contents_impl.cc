@@ -1314,9 +1314,15 @@ void WebContentsImpl::SetUserAgentOverride(
 
   // Reload the page if a load is currently in progress to avoid having
   // different parts of the page loaded using different user agents.
+  // No need to reload if the current entry matches that of the
+  // NavigationRequest supplied to DidStartNavigation() as NavigationRequest
+  // handles it.
   NavigationEntry* entry = controller_.GetVisibleEntry();
-  if (IsLoading() && entry != nullptr && entry->GetIsOverridingUserAgent())
+  if (IsLoading() && entry != nullptr && entry->GetIsOverridingUserAgent() &&
+      (!frame_tree_.root()->navigation_request() ||
+       frame_tree_.root()->navigation_request()->ua_change_requires_reload())) {
     controller_.Reload(ReloadType::BYPASSING_CACHE, true);
+  }
 
   for (auto& observer : observers_)
     observer.UserAgentOverrideSet(ua_override);
@@ -5186,7 +5192,7 @@ void WebContentsImpl::OnPluginCrashed(RenderFrameHostImpl* source,
                                       const base::FilePath& plugin_path,
                                       base::ProcessId plugin_pid) {
   // TODO(nick): Eliminate the |plugin_pid| parameter, which can't be trusted,
-  // and is only used by BlinkTestController.
+  // and is only used by WebTestControlHost.
   for (auto& observer : observers_)
     observer.PluginCrashed(plugin_path, plugin_pid);
 }

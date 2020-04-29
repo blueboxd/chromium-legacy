@@ -236,12 +236,6 @@ const base::Feature kVirtualKeyboardFloatingDefault{
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// See kLacrosSupport below. This feature also enables a separate icon in the
-// shelf and app list representing the lacros-chrome browser, much like how
-// Windows supports a side-by-side installation of Chrome canary.
-const base::Feature kLacrosSideBySide{"LacrosSideBySide",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables "Linux and Chrome OS" support. Allows a Linux version of Chrome
 // ("lacros-chrome") to run as a Wayland client with this instance of Chrome
 // ("ash-chrome") acting as the Wayland server and window manager.
@@ -249,7 +243,7 @@ const base::Feature kLacrosSupport{"LacrosSupport",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // ChromeOS Media App. https://crbug.com/996088.
-const base::Feature kMediaApp{"MediaApp", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMediaApp{"MediaApp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable native typing for rule-based input methods.
 const base::Feature kNativeRuleBasedTyping{"NativeRuleBasedTyping",
@@ -424,10 +418,6 @@ bool IsImeDecoderWithSandboxEnabled() {
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
-}
-
-bool IsLacrosSideBySideEnabled() {
-  return base::FeatureList::IsEnabled(kLacrosSideBySide);
 }
 
 bool IsLacrosSupportEnabled() {

@@ -47,6 +47,13 @@ class BottomSheetManager extends EmptyBottomSheetObserver
     /** A delegate that provides the functionality of obscuring all tabs. */
     private TabObscuringHandler mTabObscuringHandler;
 
+    /**
+     * Used to track whether the active content has a custom scrim lifecycle. This is kept here
+     * because there are some instances where the active content is changed prior to the close event
+     * being called.
+     */
+    private boolean mContentHasCustomScrimLifecycle;
+
     public BottomSheetManager(BottomSheetController controller, Supplier<Tab> tabSupplier,
             Supplier<ChromeFullscreenManager> fullscreenManager,
             Supplier<ModalDialogManager> dialogManager,
@@ -76,7 +83,10 @@ class BottomSheetManager extends EmptyBottomSheetObserver
         BottomSheetContent content = mSheetController.getCurrentSheetContent();
         // Content with a custom scrim lifecycle should not obscure the tab. The feature
         // is responsible for adding itself to the list of obscuring views when applicable.
-        if (content != null && content.hasCustomScrimLifecycle()) return;
+        if (content != null && content.hasCustomScrimLifecycle()) {
+            mContentHasCustomScrimLifecycle = true;
+            return;
+        }
 
         mSheetController.setIsObscuringAllTabs(mTabObscuringHandler, true);
 
@@ -92,15 +102,22 @@ class BottomSheetManager extends EmptyBottomSheetObserver
 
     @Override
     public void onSheetClosed(int reason) {
-        // This can happen if the sheet has a custom lifecycle.
-        if (mAppModalToken == TokenHolder.INVALID_TOKEN
-                && mTabModalToken == TokenHolder.INVALID_TOKEN) {
+        BottomSheetContent content = mSheetController.getCurrentSheetContent();
+        // If the content has a custom scrim, it wasn't obscuring tabs.
+        if (mContentHasCustomScrimLifecycle) {
+            mContentHasCustomScrimLifecycle = false;
             return;
         }
 
         mSheetController.setIsObscuringAllTabs(mTabObscuringHandler, false);
 
-        if (mDialogManager.get() != null) {
+        // Tokens can be invalid if the sheet has a custom lifecycle.
+        if (mDialogManager.get() != null
+                && (mAppModalToken != TokenHolder.INVALID_TOKEN
+                        || mTabModalToken != TokenHolder.INVALID_TOKEN)) {
+            // If one modal dialog token is set, the other should be as well.
+            assert mAppModalToken != TokenHolder.INVALID_TOKEN
+                    && mTabModalToken != TokenHolder.INVALID_TOKEN;
             mDialogManager.get().resumeType(ModalDialogManager.ModalDialogType.APP, mAppModalToken);
             mDialogManager.get().resumeType(ModalDialogManager.ModalDialogType.TAB, mTabModalToken);
         }

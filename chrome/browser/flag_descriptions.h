@@ -401,9 +401,6 @@ extern const char kEnableImplicitRootScrollerDescription[];
 extern const char kEnableCSSOMViewScrollCoordinatesName[];
 extern const char kEnableCSSOMViewScrollCoordinatesDescription[];
 
-extern const char kEnableLitePageServerPreviewsName[];
-extern const char kEnableLitePageServerPreviewsDescription[];
-
 extern const char kEnableLayoutNGName[];
 extern const char kEnableLayoutNGDescription[];
 
@@ -655,9 +652,6 @@ extern const char kIgnoreGpuBlacklistDescription[];
 
 extern const char kIgnorePreviewsBlacklistName[];
 extern const char kIgnorePreviewsBlacklistDescription[];
-
-extern const char kIgnoreLitePageRedirectHintsBlacklistName[];
-extern const char kIgnoreLitePageRedirectHintsBlacklistDescription[];
 
 extern const char kImprovedCookieControlsName[];
 extern const char kImprovedCookieControlsDescription[];
@@ -2214,9 +2208,6 @@ extern const char kVirtualKeyboardFloatingResizableDescription[];
 
 extern const char kVirtualKeyboardName[];
 extern const char kVirtualKeyboardDescription[];
-
-extern const char kWakeOnPacketsName[];
-extern const char kWakeOnPacketsDescription[];
 
 extern const char kZeroCopyVideoCaptureName[];
 extern const char kZeroCopyVideoCaptureDescription[];

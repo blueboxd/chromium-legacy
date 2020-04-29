@@ -295,8 +295,6 @@ std::ostream& operator<<(std::ostream& os, const StreamModelUpdateRequest& v) {
   for (auto& stream_structure : v.stream_structures) {
     os << "stream_structure: " << stream_structure;
   }
-  os << "server_response_time: " << v.server_response_time << '\n';
-  os << "response_time: " << v.response_time << '\n';
   os << "max_structure_sequence_number: " << v.max_structure_sequence_number
      << '\n';
   return os;

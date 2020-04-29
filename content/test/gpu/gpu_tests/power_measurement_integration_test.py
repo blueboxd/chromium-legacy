@@ -432,10 +432,11 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'DirectCompositionUnderlays'
     ]
     browser_args = PowerMeasurementIntegrationTest._AddDefaultArgs(
-        [# All bots are connected with a power source, however, we want to to
-         # test with the code path that's enabled with battery power.
-         '--disable_vp_scaling=1',
-         '--disable-features=' + ','.join(disabled_features)])
+        [  # All bots are connected with a power source, however, we want to to
+            # test with the code path that's enabled with battery power.
+            '--disable_vp_scaling=1',
+            '--disable-features=' + ','.join(disabled_features)
+        ])
 
     results_sum = {}
     for iteration in range(repeat):
@@ -509,9 +510,11 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def ExpectationsFiles(cls):
     return [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     'test_expectations',
-                     'power_measurement_expectations.txt')]
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
+            'power_measurement_expectations.txt')
+    ]
+
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

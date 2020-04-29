@@ -7,9 +7,10 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "chromecast/common/cast_extensions_api_provider.h"
 #include "extensions/common/api/api_features.h"
 #include "extensions/common/api/behavior_features.h"

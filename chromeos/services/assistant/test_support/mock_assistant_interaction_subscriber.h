@@ -39,10 +39,6 @@ class MockAssistantInteractionSubscriber
               (std::vector<mojom::AssistantSuggestionPtr>),
               (override));
   MOCK_METHOD(void, OnTextResponse, (const std::string&), (override));
-  MOCK_METHOD(void,
-              OnTimersResponse,
-              (const std::vector<std::string>&),
-              (override));
   MOCK_METHOD(void, OnOpenUrlResponse, (const ::GURL&, bool), (override));
   MOCK_METHOD(void,
               OnOpenAppResponse,

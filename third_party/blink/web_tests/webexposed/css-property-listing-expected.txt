@@ -150,6 +150,7 @@ All changes to this list should go through Blink's feature review process: http:
     contain
     contain-intrinsic-size
     content
+    content-visibility
     counter-increment
     counter-reset
     cursor
@@ -327,7 +328,6 @@ All changes to this list should go through Blink's feature review process: http:
     stroke-miterlimit
     stroke-opacity
     stroke-width
-    subtree-visibility
     tab-size
     table-layout
     text-align

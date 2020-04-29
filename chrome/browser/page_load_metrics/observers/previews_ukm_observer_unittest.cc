@@ -161,10 +161,6 @@ class PreviewsUKMObserverTest
     if (tester()->test_ukm_recorder().EntryHasMetric(entry,
                                                      UkmEntry::klite_pageName))
       recorded_previews |= content::SERVER_LITE_PAGE_ON;
-    if (tester()->test_ukm_recorder().EntryHasMetric(
-            entry, UkmEntry::klite_page_redirectName)) {
-      recorded_previews |= content::LITE_PAGE_REDIRECT_ON;
-    }
     if (tester()->test_ukm_recorder().EntryHasMetric(entry,
                                                      UkmEntry::knoscriptName))
       recorded_previews |= content::NOSCRIPT_ON;
@@ -201,17 +197,6 @@ class PreviewsUKMObserverTest
     } else {
       EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
           entry, UkmEntry::kproxy_lite_page_eligibility_reasonName));
-    }
-
-    int want_lite_page_redirect_eligibility_reason =
-        static_cast<int>(eligibility_reasons[PreviewsType::LITE_PAGE_REDIRECT]);
-    if (want_lite_page_redirect_eligibility_reason) {
-      tester()->test_ukm_recorder().ExpectEntryMetric(
-          entry, UkmEntry::klite_page_redirect_eligibility_reasonName,
-          want_lite_page_redirect_eligibility_reason);
-    } else {
-      EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
-          entry, UkmEntry::klite_page_redirect_eligibility_reasonName));
     }
 
     int want_noscript_eligibility_reason =
@@ -333,37 +318,6 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOutChip) {
   tester()->NavigateToUntrackedUrl();
 
   ValidatePreviewsUKM(content::SERVER_LITE_PAGE_ON, 2 /* opt_out_value */,
-                      false /* origin_opt_out_expected */,
-                      false /* save_data_enabled_expected */,
-                      true /* previews_likely */, {} /* eligibility_reasons */);
-}
-
-TEST_F(PreviewsUKMObserverTest, LitePageRedirectSeen) {
-  RunTest(content::LITE_PAGE_REDIRECT_ON /* committed_state */,
-          content::LITE_PAGE_REDIRECT_ON |
-              content::OFFLINE_PAGE_ON /* allowed_state */,
-          false /* origin_opt_out */, false /* save_data_enabled */,
-          {} /* eligibility_reasons */);
-
-  tester()->NavigateToUntrackedUrl();
-
-  ValidatePreviewsUKM(content::LITE_PAGE_REDIRECT_ON, 0 /* opt_out_value */,
-                      false /* origin_opt_out_expected */,
-                      false /* save_data_enabled_expected */,
-                      true /* previews_likely */, {} /* eligibility_reasons */);
-}
-
-TEST_F(PreviewsUKMObserverTest, LitePageRedirectOptOutChip) {
-  RunTest(content::LITE_PAGE_REDIRECT_ON /* committed_state */,
-          content::LITE_PAGE_REDIRECT_ON /* allowed_state */,
-          false /* origin_opt_out */, false /* save_data_enabled */,
-          {} /* eligibility_reasons */);
-
-  tester()->metrics_web_contents_observer()->BroadcastEventToObservers(
-      PreviewsUITabHelper::OptOutEventKey());
-  tester()->NavigateToUntrackedUrl();
-
-  ValidatePreviewsUKM(content::LITE_PAGE_REDIRECT_ON, 2 /* opt_out_value */,
                       false /* origin_opt_out_expected */,
                       false /* save_data_enabled_expected */,
                       true /* previews_likely */, {} /* eligibility_reasons */);
@@ -568,25 +522,21 @@ TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_WithAllowed) {
             PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
            {PreviewsType::LITE_PAGE,
             PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
-           {PreviewsType::NOSCRIPT,
-            PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED},
            // ALLOWED is equal to zero and should not be recorded.
-           {PreviewsType::LITE_PAGE_REDIRECT,
+           {PreviewsType::NOSCRIPT,
             PreviewsEligibilityReason::ALLOWED}} /* eligibility_reasons */);
 
   tester()->NavigateToUntrackedUrl();
 
-  ValidatePreviewsUKM(
-      content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
-      false /* origin_opt_out_expected */,
-      true /* save_data_enabled_expected */, false /* previews_likely */,
-      {{PreviewsType::OFFLINE,
-        PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
-       {PreviewsType::LITE_PAGE,
-        PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
-       {PreviewsType::NOSCRIPT,
-        PreviewsEligibilityReason::
-            BLACKLIST_DATA_NOT_LOADED}} /* eligibility_reasons */);
+  ValidatePreviewsUKM(content::PREVIEWS_UNSPECIFIED, 0 /* opt_out_value */,
+                      false /* origin_opt_out_expected */,
+                      true /* save_data_enabled_expected */,
+                      false /* previews_likely */,
+                      {{PreviewsType::OFFLINE,
+                        PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+                       {PreviewsType::LITE_PAGE,
+                        PreviewsEligibilityReason::
+                            BLACKLIST_UNAVAILABLE}} /* eligibility_reasons */);
 }
 
 TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_NoneAllowed) {
@@ -599,8 +549,6 @@ TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_NoneAllowed) {
            {PreviewsType::LITE_PAGE,
             PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
            {PreviewsType::NOSCRIPT,
-            PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED},
-           {PreviewsType::LITE_PAGE_REDIRECT,
             PreviewsEligibilityReason::
                 BLACKLIST_DATA_NOT_LOADED}} /* eligibility_reasons */);
 
@@ -615,8 +563,6 @@ TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_NoneAllowed) {
        {PreviewsType::LITE_PAGE,
         PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
        {PreviewsType::NOSCRIPT,
-        PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED},
-       {PreviewsType::LITE_PAGE_REDIRECT,
         PreviewsEligibilityReason::
             BLACKLIST_DATA_NOT_LOADED}} /* eligibility_reasons */);
 }
@@ -666,19 +612,6 @@ TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
   // The top level metric is not recorded on a non-preview.
   histogram_tester.ExpectTotalCount("Previews.PageEndReason", 0);
 
-  // Lite Page Redirect:
-  RunTest(content::LITE_PAGE_REDIRECT_ON /* committed_state */,
-          content::PREVIEWS_UNSPECIFIED /* allowed_state */,
-          false /* origin_opt_out */, false /* save_data_enabled */,
-          {} /* eligibility_reasons */);
-  tester()->NavigateToUntrackedUrl();
-  histogram_tester.ExpectUniqueSample(
-      "Previews.PageEndReason.LitePageRedirect",
-      page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.PageEndReason",
-      page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
-
   // Defer All Script:
   RunTest(content::DEFER_ALL_SCRIPT_ON /* committed_state */,
           content::PREVIEWS_UNSPECIFIED /* allowed_state */,
@@ -690,7 +623,7 @@ TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
       page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
   histogram_tester.ExpectBucketCount(
       "Previews.PageEndReason",
-      page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 2);
+      page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
 }
 
 }  // namespace

@@ -148,18 +148,18 @@ class MockAudioCapturerSource : public media::AudioCapturerSource {
 
 BlinkTestRunner::BlinkTestRunner(WebViewTestProxy* web_view_test_proxy)
     : web_view_test_proxy_(web_view_test_proxy),
-      test_config_(mojom::ShellTestConfiguration::New()) {}
+      test_config_(mojom::WebTestRunTestConfiguration::New()) {}
 
 BlinkTestRunner::~BlinkTestRunner() = default;
 
 // WebTestDelegate  -----------------------------------------------------------
 
 void BlinkTestRunner::PrintMessageToStderr(const std::string& message) {
-  GetBlinkTestClientRemote()->PrintMessageToStderr(message);
+  GetWebTestControlHostRemote()->PrintMessageToStderr(message);
 }
 
 void BlinkTestRunner::PrintMessage(const std::string& message) {
-  GetBlinkTestClientRemote()->PrintMessage(message);
+  GetWebTestControlHostRemote()->PrintMessage(message);
 }
 
 WebString BlinkTestRunner::RegisterIsolatedFileSystem(
@@ -192,11 +192,11 @@ void BlinkTestRunner::ApplyPreferences() {
   WebPreferences prefs = web_view_test_proxy_->GetWebkitPreferences();
   ExportWebTestSpecificPreferences(prefs_, &prefs);
   web_view_test_proxy_->SetWebkitPreferences(prefs);
-  GetBlinkTestClientRemote()->OverridePreferences(prefs);
+  GetWebTestControlHostRemote()->OverridePreferences(prefs);
 }
 
 void BlinkTestRunner::SetPopupBlockingEnabled(bool block_popups) {
-  GetBlinkTestClientRemote()->SetPopupBlockingEnabled(block_popups);
+  GetWebTestControlHostRemote()->SetPopupBlockingEnabled(block_popups);
 }
 
 void BlinkTestRunner::EnableAutoResizeMode(const WebSize& min_size,
@@ -264,19 +264,20 @@ void BlinkTestRunner::SetBluetoothFakeAdapter(const std::string& adapter_name,
 }
 
 void BlinkTestRunner::SetBluetoothManualChooser(bool enable) {
-  GetBlinkTestClientRemote()->SetBluetoothManualChooser(enable);
+  GetWebTestControlHostRemote()->SetBluetoothManualChooser(enable);
 }
 
 void BlinkTestRunner::GetBluetoothManualChooserEvents(
     base::OnceCallback<void(const std::vector<std::string>&)> callback) {
   get_bluetooth_events_callbacks_.push_back(std::move(callback));
-  GetBlinkTestClientRemote()->GetBluetoothManualChooserEvents();
+  GetWebTestControlHostRemote()->GetBluetoothManualChooserEvents();
 }
 
 void BlinkTestRunner::SendBluetoothManualChooserEvent(
     const std::string& event,
     const std::string& argument) {
-  GetBlinkTestClientRemote()->SendBluetoothManualChooserEvent(event, argument);
+  GetWebTestControlHostRemote()->SendBluetoothManualChooserEvent(event,
+                                                                 argument);
 }
 
 void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
@@ -286,7 +287,7 @@ void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
 }
 
 void BlinkTestRunner::SetBlockThirdPartyCookies(bool block) {
-  GetBlinkTestClientRemote()->BlockThirdPartyCookies(block);
+  GetWebTestControlHostRemote()->BlockThirdPartyCookies(block);
 }
 
 void BlinkTestRunner::SetLocale(const std::string& locale) {
@@ -298,12 +299,12 @@ void BlinkTestRunner::SetLocale(const std::string& locale) {
 
 base::FilePath BlinkTestRunner::GetWritableDirectory() {
   base::FilePath result;
-  GetBlinkTestClientRemote()->GetWritableDirectory(&result);
+  GetWebTestControlHostRemote()->GetWritableDirectory(&result);
   return result;
 }
 
 void BlinkTestRunner::SetFilePathForMockFileDialog(const base::FilePath& path) {
-  GetBlinkTestClientRemote()->SetFilePathForMockFileDialog(path);
+  GetWebTestControlHostRemote()->SetFilePathForMockFileDialog(path);
 }
 
 void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
@@ -331,7 +332,7 @@ void BlinkTestRunner::TestFinished() {
   // If we're not in the main frame, then ask the browser to redirect the call
   // to the main frame instead.
   if (!is_main_window_ || !web_view_test_proxy_->GetMainRenderFrame()) {
-    GetBlinkTestClientRemote()->TestFinishedInSecondaryRenderer();
+    GetWebTestControlHostRemote()->TestFinishedInSecondaryRenderer();
     return;
   }
 
@@ -345,7 +346,7 @@ void BlinkTestRunner::TestFinished() {
 
   // Initialize a new dump results object which we will populate in the calls
   // below.
-  dump_result_ = mojom::BlinkTestDump::New();
+  dump_result_ = mojom::WebTestDump::New();
 
   bool browser_should_dump_back_forward_list =
       test_runner->ShouldDumpBackForwardList();
@@ -353,7 +354,7 @@ void BlinkTestRunner::TestFinished() {
   if (test_runner->ShouldDumpAsAudio()) {
     CaptureLocalAudioDump();
 
-    GetBlinkTestClientRemote()->InitiateCaptureDump(
+    GetWebTestControlHostRemote()->InitiateCaptureDump(
         browser_should_dump_back_forward_list,
         /*browser_should_capture_pixels=*/false);
     return;
@@ -366,7 +367,7 @@ void BlinkTestRunner::TestFinished() {
   CaptureLocalLayoutDump();
 
   if (!test_runner->ShouldGeneratePixelResults()) {
-    GetBlinkTestClientRemote()->InitiateCaptureDump(
+    GetWebTestControlHostRemote()->InitiateCaptureDump(
         browser_should_dump_back_forward_list,
         /*browser_should_capture_pixels=*/false);
     return;
@@ -386,7 +387,7 @@ void BlinkTestRunner::TestFinished() {
           web_frame->GetSelectionBoundsRectForTesting();
     }
   }
-  GetBlinkTestClientRemote()->InitiateCaptureDump(
+  GetWebTestControlHostRemote()->InitiateCaptureDump(
       browser_should_dump_back_forward_list,
       !test_runner->CanDumpPixelsFromRenderer());
 }
@@ -412,7 +413,7 @@ void BlinkTestRunner::CaptureLocalLayoutDump() {
     // TODO(vmpstr): Since CaptureDump is called from the browser, we can be
     // smart and move this logic directly to the browser.
     waiting_for_layout_dump_results_ = true;
-    GetBlinkTestClientRemote()->InitiateLayoutDump();
+    GetWebTestControlHostRemote()->InitiateLayoutDump();
   }
 }
 
@@ -473,7 +474,7 @@ void BlinkTestRunner::CaptureDumpComplete() {
 }
 
 void BlinkTestRunner::CloseRemainingWindows() {
-  GetBlinkTestClientRemote()->CloseRemainingWindows();
+  GetWebTestControlHostRemote()->CloseRemainingWindows();
 }
 
 void BlinkTestRunner::DeleteAllCookies() {
@@ -485,16 +486,16 @@ int BlinkTestRunner::NavigationEntryCount() {
 }
 
 void BlinkTestRunner::GoToOffset(int offset) {
-  GetBlinkTestClientRemote()->GoToOffset(offset);
+  GetWebTestControlHostRemote()->GoToOffset(offset);
 }
 
 void BlinkTestRunner::Reload() {
-  GetBlinkTestClientRemote()->Reload();
+  GetWebTestControlHostRemote()->Reload();
 }
 
 void BlinkTestRunner::LoadURLForFrame(const WebURL& url,
                                       const std::string& frame_name) {
-  GetBlinkTestClientRemote()->LoadURLForFrame(url, frame_name);
+  GetWebTestControlHostRemote()->LoadURLForFrame(url, frame_name);
 }
 
 bool BlinkTestRunner::AllowExternalPages() {
@@ -554,7 +555,7 @@ void BlinkTestRunner::ForceTextInputStateUpdate(WebLocalFrame* frame) {
 }
 
 void BlinkTestRunner::SetScreenOrientationChanged() {
-  GetBlinkTestClientRemote()->SetScreenOrientationChanged();
+  GetWebTestControlHostRemote()->SetScreenOrientationChanged();
 }
 
 void BlinkTestRunner::SetTrustTokenKeyCommitments(
@@ -571,7 +572,7 @@ void BlinkTestRunner::ClearTrustTokenState(base::OnceClosure callback) {
 // Public methods - -----------------------------------------------------------
 
 void BlinkTestRunner::CaptureDump(
-    mojom::BlinkTestControl::CaptureDumpCallback callback) {
+    mojom::WebTestRenderFrame::CaptureDumpCallback callback) {
   // TODO(vmpstr): This is only called on the main frame. One suggestion is to
   // split the interface on which this call lives so that it is only accessible
   // to the main frame (as opposed to all frames).
@@ -597,7 +598,7 @@ void BlinkTestRunner::DidCommitNavigationInMainFrame() {
     return;
 
   waiting_for_reset_navigation_to_about_blank_ = false;
-  GetBlinkTestClientRemote()->ResetRendererAfterWebTestDone();
+  GetWebTestControlHostRemote()->ResetRendererAfterWebTestDone();
 }
 
 // Private methods  -----------------------------------------------------------
@@ -611,20 +612,20 @@ BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
   return *bluetooth_fake_adapter_setter_;
 }
 
-mojo::AssociatedRemote<mojom::BlinkTestClient>&
-BlinkTestRunner::GetBlinkTestClientRemote() {
-  if (!blink_test_client_remote_) {
+mojo::AssociatedRemote<mojom::WebTestControlHost>&
+BlinkTestRunner::GetWebTestControlHostRemote() {
+  if (!web_test_control_host_remote_) {
     RenderThread::Get()->GetChannel()->GetRemoteAssociatedInterface(
-        &blink_test_client_remote_);
-    blink_test_client_remote_.set_disconnect_handler(
-        base::BindOnce(&BlinkTestRunner::HandleBlinkTestClientDisconnected,
+        &web_test_control_host_remote_);
+    web_test_control_host_remote_.set_disconnect_handler(
+        base::BindOnce(&BlinkTestRunner::HandleWebTestControlHostDisconnected,
                        base::Unretained(this)));
   }
-  return blink_test_client_remote_;
+  return web_test_control_host_remote_;
 }
 
-void BlinkTestRunner::HandleBlinkTestClientDisconnected() {
-  blink_test_client_remote_.reset();
+void BlinkTestRunner::HandleWebTestControlHostDisconnected() {
+  web_test_control_host_remote_.reset();
 }
 
 mojo::AssociatedRemote<mojom::WebTestClient>&
@@ -664,7 +665,7 @@ void BlinkTestRunner::OnSetupRendererProcessForNonTestWindow() {
 }
 
 void BlinkTestRunner::ApplyTestConfiguration(
-    mojom::ShellTestConfigurationPtr params) {
+    mojom::WebTestRunTestConfigurationPtr params) {
   TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
 
   test_config_ = params.Clone();
@@ -677,12 +678,12 @@ void BlinkTestRunner::ApplyTestConfiguration(
 }
 
 void BlinkTestRunner::OnReplicateTestConfiguration(
-    mojom::ShellTestConfigurationPtr params) {
+    mojom::WebTestRunTestConfigurationPtr params) {
   ApplyTestConfiguration(std::move(params));
 }
 
 void BlinkTestRunner::OnSetTestConfiguration(
-    mojom::ShellTestConfigurationPtr params) {
+    mojom::WebTestRunTestConfigurationPtr params) {
   DCHECK(web_view_test_proxy_->GetMainRenderFrame());
 
   gfx::Size window_size = params->initial_size;

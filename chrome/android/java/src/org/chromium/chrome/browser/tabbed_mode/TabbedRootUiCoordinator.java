@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorControllerV2;
+import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
@@ -59,6 +60,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     private StatusIndicatorCoordinator mStatusIndicatorCoordinator;
     private StatusIndicatorCoordinator.StatusIndicatorObserver mStatusIndicatorObserver;
     private OfflineIndicatorControllerV2 mOfflineIndicatorController;
+    private UrlFocusChangeListener mUrlFocusChangeListener;
     private @Nullable ToolbarButtonInProductHelpController mToolbarButtonInProductHelpController;
     private boolean mIntentWithEffect;
 
@@ -89,6 +91,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
 
         if (mOfflineIndicatorController != null) {
             mOfflineIndicatorController.destroy();
+        }
+
+        if (mToolbarManager != null) {
+            mToolbarManager.getFakeboxDelegate().removeUrlFocusChangeListener(
+                    mUrlFocusChangeListener);
         }
 
         if (mStatusIndicatorCoordinator != null) {
@@ -233,8 +240,28 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
             return;
         }
 
-        mOfflineIndicatorController =
-                new OfflineIndicatorControllerV2(mActivity, mStatusIndicatorCoordinator);
+        ObservableSupplierImpl<Boolean> isUrlBarFocusedSupplier = new ObservableSupplierImpl<>();
+        isUrlBarFocusedSupplier.set(mToolbarManager.getFakeboxDelegate().isUrlBarFocused());
+        mUrlFocusChangeListener = new UrlFocusChangeListener() {
+            @Override
+            public void onUrlFocusChange(boolean hasFocus) {
+                // Offline indicator should assume the UrlBar is focused if it's focusing.
+                if (hasFocus) {
+                    isUrlBarFocusedSupplier.set(true);
+                }
+            }
+
+            @Override
+            public void onUrlAnimationFinished(boolean hasFocus) {
+                // Wait for the animation to finish before notifying that UrlBar is unfocused.
+                if (!hasFocus) {
+                    isUrlBarFocusedSupplier.set(false);
+                }
+            }
+        };
+        mOfflineIndicatorController = new OfflineIndicatorControllerV2(
+                mActivity, mStatusIndicatorCoordinator, isUrlBarFocusedSupplier);
+        mToolbarManager.getFakeboxDelegate().addUrlFocusChangeListener(mUrlFocusChangeListener);
     }
 
     @VisibleForTesting

@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -62,8 +61,8 @@ bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
       return previews::params::IsOfflinePreviewsEnabled();
     case previews::PreviewsType::DEPRECATED_LOFI:
       return false;
-    case previews::PreviewsType::LITE_PAGE_REDIRECT:
-      return previews::params::IsLitePageServerPreviewsEnabled();
+    case previews::PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
+      return false;
     case previews::PreviewsType::LITE_PAGE:
       return false;
     case previews::PreviewsType::NOSCRIPT:
@@ -93,8 +92,6 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
       return previews::params::OfflinePreviewsVersion();
     case previews::PreviewsType::LITE_PAGE:
       return 0;
-    case previews::PreviewsType::LITE_PAGE_REDIRECT:
-      return previews::params::LitePageServerPreviewsVersion();
     case previews::PreviewsType::NOSCRIPT:
       return previews::params::NoScriptPreviewsVersion();
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:
@@ -106,6 +103,7 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
     case previews::PreviewsType::LAST:
     case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case previews::PreviewsType::DEPRECATED_LOFI:
+    case previews::PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
       break;
   }
   NOTREACHED();
@@ -157,9 +155,7 @@ PreviewsService::GetAllowedPreviews() {
 }
 
 PreviewsService::PreviewsService(content::BrowserContext* browser_context)
-    : previews_lite_page_redirect_decider_(
-          std::make_unique<PreviewsLitePageRedirectDecider>(browser_context)),
-      previews_https_notification_infobar_decider_(
+    : previews_https_notification_infobar_decider_(
           std::make_unique<PreviewsHTTPSNotificationInfoBarDecider>(
               browser_context)),
       previews_offline_helper_(
@@ -216,9 +212,6 @@ void PreviewsService::Initialize(
 }
 
 void PreviewsService::Shutdown() {
-  if (previews_lite_page_redirect_decider_)
-    previews_lite_page_redirect_decider_->Shutdown();
-
   if (previews_https_notification_infobar_decider_)
     previews_https_notification_infobar_decider_->Shutdown();
 
@@ -230,9 +223,6 @@ void PreviewsService::ClearBlackList(base::Time begin_time,
                                      base::Time end_time) {
   if (previews_ui_service_)
     previews_ui_service_->ClearBlackList(begin_time, end_time);
-
-  if (previews_lite_page_redirect_decider_)
-    previews_lite_page_redirect_decider_->ClearBlacklist();
 }
 
 void PreviewsService::ReportObservedRedirectWithDeferAllScriptPreview(

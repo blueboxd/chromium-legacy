@@ -7,6 +7,8 @@ import("//ios/features.gni")
 
 source_set("safe_browsing") {
   sources = [
+    "safe_browsing_blocking_page.h",
+    "safe_browsing_blocking_page.mm",
     "safe_browsing_error.h",
     "safe_browsing_error.mm",
     "safe_browsing_service.h",
@@ -23,6 +25,7 @@ source_set("safe_browsing") {
   ]
 
   deps = [
+    ":util",
     "//base",
     "//build:branding_buildflags",
     "//components/prefs",
@@ -33,8 +36,10 @@ source_set("safe_browsing") {
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:v4_local_database_manager",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
+    "//components/security_interstitials/core",
     "//components/security_interstitials/core:unsafe_resource",
     "//ios/chrome/browser",
+    "//ios/components/security_interstitials",
     "//ios/net",
     "//ios/web/public",
     "//ios/web/public/init",
@@ -43,6 +48,7 @@ source_set("safe_browsing") {
     "//services/network:network_service",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
+    "//ui/base",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -66,19 +72,39 @@ source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("util") {
+  sources = [
+    "unsafe_resource_util.h",
+    "unsafe_resource_util.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//components/safe_browsing/core/db:v4_protocol_manager_util",
+    "//components/security_interstitials/core",
+    "//components/security_interstitials/core:unsafe_resource",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "safe_browsing_blocking_page_unittest.mm",
     "safe_browsing_service_unittest.mm",
     "safe_browsing_unsafe_resource_container_unittest.mm",
     "safe_browsing_url_allow_list_unittest.mm",
+    "url_checker_delegate_impl_unittest.mm",
   ]
 
   deps = [
     ":safe_browsing",
+    "//base/test:test_support",
     "//components/prefs:test_support",
     "//components/safe_browsing/core/browser",
     "//components/safe_browsing/core/common",
+    "//components/safe_browsing/core/common:thread_utils",
     "//components/safe_browsing/core/db",
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:metadata_proto",
@@ -87,6 +113,7 @@ source_set("unit_tests") {
     "//components/safe_browsing/core/db:v4_get_hash_protocol_manager",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
     "//components/safe_browsing/core/db:v4_test_util",
+    "//components/security_interstitials/core:unsafe_resource",
     "//ios/web/public",
     "//ios/web/public/test",
     "//services/network/public/cpp",

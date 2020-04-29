@@ -4,7 +4,7 @@
 
 #include "chromecast/media/cma/backend/mixer/mock_post_processor_factory.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/values.h"
 
 namespace chromecast {

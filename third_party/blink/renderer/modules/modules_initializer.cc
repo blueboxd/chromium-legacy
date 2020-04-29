@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/exported/web_embedded_worker_impl.h"
 #include "third_party/blink/renderer/modules/filesystem/dragged_isolated_file_system_impl.h"
-#include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
 #include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
 #include "third_party/blink/renderer/modules/image_downloader/image_downloader_impl.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
@@ -189,7 +188,6 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   DCHECK(client);
   ProvidePushMessagingClientTo(
       frame, MakeGarbageCollected<PushMessagingClient>(frame));
-  ProvideLocalFileSystemTo(frame);
 
   ScreenOrientationControllerImpl::ProvideTo(frame);
   if (RuntimeEnabledFeatures::PresentationEnabled())
@@ -200,11 +198,6 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   InstalledAppController::ProvideTo(frame);
   ImageDownloaderImpl::ProvideTo(frame);
   MediaInspectorContextImpl::ProvideToLocalFrame(frame);
-}
-
-void ModulesInitializer::ProvideLocalFileSystemToWorker(
-    WorkerGlobalScope& worker_global_scope) const {
-  ::blink::ProvideLocalFileSystemToWorker(worker_global_scope);
 }
 
 MediaControls* ModulesInitializer::CreateMediaControls(

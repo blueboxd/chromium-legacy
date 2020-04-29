@@ -67,7 +67,7 @@ StorageHandler::StorageHandler(Profile* profile,
       source_name_(html_source->GetSource()),
       arc_observer_(this),
       special_volume_path_pattern_("[a-z]+://.*") {
-  // TODO(khorimoto): Set kAndroidEnabled within DeviceStringsProvider, and
+  // TODO(khorimoto): Set kAndroidEnabled within DeviceSection, and
   // updates this value accordingly (see OnArcPlayStoreEnabledChanged()).
   html_source->AddBoolean(kAndroidEnabled,
                           features::ShouldShowExternalStorageSettings(profile));

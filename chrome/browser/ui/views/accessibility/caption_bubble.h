@@ -8,9 +8,11 @@
 #include <string>
 
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 class Label;
+class ImageButton;
 class ImageView;
 }
 
@@ -22,7 +24,8 @@ namespace captions {
 //  A caption bubble that floats above the BrowserView and shows automatically-
 //  generated text captions for audio and media streams from the current tab.
 //
-class CaptionBubble : public views::BubbleDialogDelegateView {
+class CaptionBubble : public views::BubbleDialogDelegateView,
+                      public views::ButtonListener {
  public:
   explicit CaptionBubble(views::View* anchor,
                          base::OnceClosure destroyed_callback);
@@ -46,6 +49,9 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
 
+  // Views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
  private:
   friend class CaptionBubbleControllerViewsTest;
 
@@ -56,6 +62,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView {
   views::Label* title_;
   views::Label* error_message_;
   views::ImageView* error_icon_;
+  views::ImageButton* close_button_;
 
   bool has_error_ = false;
 

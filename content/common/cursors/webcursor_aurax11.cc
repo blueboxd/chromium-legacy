@@ -20,7 +20,7 @@ ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
   SkBitmap bitmap = GetCursorBitmap(cursor);
 
   XcursorImage* image =
-      ui::SkBitmapToXcursorImage(&bitmap, GetCursorHotspot(cursor));
+      ui::SkBitmapToXcursorImage(bitmap, GetCursorHotspot(cursor));
   platform_cursor_ = ui::CreateReffedCustomXCursor(image);
   return platform_cursor_;
 }

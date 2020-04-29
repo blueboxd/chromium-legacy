@@ -259,7 +259,6 @@ void USB::OnServiceConnectionError() {
   get_devices_requests_.clear();
 
   for (ScriptPromiseResolver* resolver : get_permission_requests_) {
-    LOG(INFO) << "Rejecting requestDevice() call on service connection error.";
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kNoDeviceSelected));
   }

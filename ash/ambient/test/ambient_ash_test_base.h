@@ -6,10 +6,11 @@
 #define ASH_AMBIENT_TEST_AMBIENT_ASH_TEST_BASE_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/ambient/ambient_controller.h"
-#include "ash/public/cpp/assistant/test_support/test_assistant_image_downloader.h"
 #include "ash/public/cpp/test/test_ambient_client.h"
+#include "ash/public/cpp/test/test_image_downloader.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 
@@ -25,18 +26,25 @@ class AmbientAshTestBase : public AshTestBase {
   void SetUp() override;
   void TearDown() override;
 
-  AmbientController* ambient_controller();
+  AmbientController* ambient_controller() const;
 
   AmbientPhotoController* photo_controller();
 
   void LockScreen();
+  void UnlockScreen();
 
   // Toggle ambient mode.
   void Toggle();
 
+  // Simulate to issue an |access_token|.
+  // If |with_error| is true, will return an empty access token.
+  void IssueAccessToken(const std::string& access_token, bool with_error);
+
+  bool IsAccessTokenRequestPending() const;
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<TestAssistantImageDownloader> assistant_image_downloader_;
+  std::unique_ptr<TestImageDownloader> image_downloader_;
   std::unique_ptr<TestAmbientClient> ambient_client_;
 };
 

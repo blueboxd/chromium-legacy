@@ -5,6 +5,7 @@
 #include "components/ukm/ukm_recorder_impl.h"
 
 #include "base/bind.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/metrics/ukm_source_id.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -59,6 +60,34 @@ TEST(UkmRecorderImplTest, IsSampledIn) {
   EXPECT_TRUE(impl.IsSampledIn(3, 2, 2));
   EXPECT_TRUE(impl.IsSampledIn(4, 1, 2));
   EXPECT_FALSE(impl.IsSampledIn(4, 2, 2));
+
+  // Load a configuration for more detailed testing.
+  std::map<std::string, std::string> params = {
+      {"y.a", "3"},
+      {"y.b", "y.a"},
+      {"y.c", "y.a"},
+  };
+  impl.LoadExperimentSamplingParams(params);
+  EXPECT_LT(impl.default_sampling_rate_, 0);
+
+  // Functions under test take hashes instead of strings.
+  uint64_t hash_ya = base::HashMetricName("y.a");
+  uint64_t hash_yb = base::HashMetricName("y.b");
+  uint64_t hash_yc = base::HashMetricName("y.c");
+
+  // Check that the parameters are active.
+  EXPECT_TRUE(impl.IsSampledIn(11, hash_ya));
+  EXPECT_TRUE(impl.IsSampledIn(22, hash_ya));
+  EXPECT_FALSE(impl.IsSampledIn(33, hash_ya));
+  EXPECT_FALSE(impl.IsSampledIn(44, hash_ya));
+  EXPECT_FALSE(impl.IsSampledIn(55, hash_ya));
+
+  // Check that sampled in/out is the same for all three.
+  for (int source = 0; source < 100; ++source) {
+    bool sampled_in = impl.IsSampledIn(source, hash_ya);
+    EXPECT_EQ(sampled_in, impl.IsSampledIn(source, hash_yb));
+    EXPECT_EQ(sampled_in, impl.IsSampledIn(source, hash_yc));
+  }
 }
 
 TEST(UkmRecorderImplTest, PurgeExtensionRecordings) {

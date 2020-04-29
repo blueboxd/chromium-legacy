@@ -829,11 +829,8 @@ class WebviewClientCertsLoginTest : public WebviewClientCertsLoginTestBase {
 // Test that client certificate authentication using certificates from the
 // system slot is enabled in the sign-in frame. The server does not request
 // certificates signed by a specific authority.
-// TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-// Flaky (timeout), especially (but not only) in debug builds or under
-// ASAN/LSAN. crbug.com/1022034
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       DISABLED_SigninFrameNoAuthorityGiven) {
+                       SigninFrameNoAuthorityGiven) {
   ASSERT_TRUE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -855,11 +852,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 
 // Test that client certificate autoselect selects the right certificate even
 // with multiple filters for the same pattern.
-// TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-// Flaky (timeout), especially (but not only) in debug builds or under
-// ASAN/LSAN. crbug.com/1022034
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       DISABLED_SigninFrameCertMultipleFiltersAutoSelected) {
+                       SigninFrameCertMultipleFiltersAutoSelected) {
   ASSERT_TRUE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -882,11 +876,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 
 // Test that if no client certificate is auto-selected using policy on the
 // sign-in frame, the client does not send up any client certificate.
-// TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-// Flaky (timeout), especially (but not only) in debug builds or under
-// ASAN/LSAN. crbug.com/1022034
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       DISABLED_SigninFrameCertNotAutoSelected) {
+                       SigninFrameCertNotAutoSelected) {
   ASSERT_TRUE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -903,11 +894,7 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // Test that client certificate authentication using certificates from the
 // system slot is enabled in the sign-in frame. The server requests
 // a certificate signed by a specific authority.
-// TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-// Flaky (timeout), especially (but not only) in debug builds or under
-// ASAN/LSAN. crbug.com/1022034
-IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       DISABLED_SigninFrameAuthorityGiven) {
+IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest, SigninFrameAuthorityGiven) {
   ASSERT_TRUE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -934,11 +921,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // system slot is enabled in the sign-in frame. The server requests
 // a certificate signed by a specific authority. The client doesn't have a
 // matching certificate.
-// TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-// Flaky (timeout), especially (but not only) in debug builds or under
-// ASAN/LSAN. crbug.com/1022034
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       DISABLED_SigninFrameAuthorityGivenNoMatchingCert) {
+                       SigninFrameAuthorityGivenNoMatchingCert) {
   ASSERT_TRUE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -963,9 +947,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // issued by an intermediate authority, and the intermediate authority is not
 // known on the device (it has not been made available through device ONC
 // policy).
-// TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       DISABLED_SigninFrameIntermediateAuthorityUnknown) {
+                       SigninFrameIntermediateAuthorityUnknown) {
   ASSERT_TRUE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -989,11 +972,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 // certificates signed by a root authority, the installed certificate has been
 // issued by an intermediate authority, and the intermediate authority is
 // known on the device (it has been made available through device ONC policy).
-// TODO(crbug.com/949511) The test is flaky (timeout) on MSAN.
-// Flaky (timeout), especially (but not only) in debug builds or under
-// ASAN/LSAN. crbug.com/1022034
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       DISABLED_SigninFrameIntermediateAuthorityKnown) {
+                       SigninFrameIntermediateAuthorityKnown) {
   ASSERT_TRUE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -1148,14 +1128,8 @@ bool IsTpmTokenReady() {
 // Test that the system slot becomes initialized and the client certificate
 // authentication works in the sign-in frame after the TPM gets reported as
 // ready.
-// Flaky (timeout), in ASAN/LSAN. crbug.com/1022034
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_SystemSlotInitialization DISABLED_SystemSlotInitialization
-#else
-#define MAYBE_SystemSlotInitialization SystemSlotInitialization
-#endif
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsTokenLoadingLoginTest,
-                       MAYBE_SystemSlotInitialization) {
+                       SystemSlotInitialization) {
   ASSERT_NO_FATAL_FAILURE(PrepareSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -1200,15 +1174,6 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
     auth_proxy_server_->set_redirect_connect_to_localhost(true);
     ASSERT_TRUE(auth_proxy_server_->Start());
 
-    // Prepare device policy which will be used for two purposes:
-    // - given to FakeSessionManagerClient, so the device appears to have
-    //   registered for policy.
-    // - the payload is given to |policy_test_server_|, so we can download fresh
-    //   policy.
-    device_policy_builder()->policy_data().set_public_key_version(1);
-    device_policy_builder()->Build();
-
-    UpdateServedPolicyFromDevicePolicyTestHelper();
     WebviewLoginTest::SetUp();
   }
 
@@ -1222,6 +1187,15 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
   void SetUpInProcessBrowserTestFixture() override {
     WebviewLoginTest::SetUpInProcessBrowserTestFixture();
 
+    // Prepare device policy which will be used for two purposes:
+    // - given to FakeSessionManagerClient, so the device appears to have
+    //   registered for policy.
+    // - the payload is given to |policy_test_server_|, so we can download fresh
+    //   policy.
+    device_policy_builder()->policy_data().set_public_key_version(1);
+    device_policy_builder()->Build();
+
+    UpdateServedPolicyFromDevicePolicyTestHelper();
     FakeSessionManagerClient::Get()->set_device_policy(
         device_policy_builder()->GetBlob());
 

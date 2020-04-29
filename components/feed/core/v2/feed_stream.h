@@ -66,7 +66,6 @@ class FeedStream : public FeedStreamApi,
     virtual std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
         feedwire::Response response,
         StreamModelUpdateRequest::Source source,
-        base::TimeDelta response_time,
         base::Time current_time);
   };
 

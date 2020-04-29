@@ -149,23 +149,19 @@ jboolean RenderFrameHostAndroid::IsProcessBlocked(
 jint RenderFrameHostAndroid::PerformGetAssertionWebAuthSecurityChecks(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>&,
-    const base::android::JavaParamRef<jstring>& relying_party_id,
-    const base::android::JavaParamRef<jobject>& effective_origin) const {
-  url::Origin origin = url::Origin::FromJavaObject(effective_origin);
+    const base::android::JavaParamRef<jstring>& relying_party_id) const {
   return static_cast<int32_t>(
       render_frame_host_->PerformGetAssertionWebAuthSecurityChecks(
-          ConvertJavaStringToUTF8(env, relying_party_id), origin));
+          ConvertJavaStringToUTF8(env, relying_party_id)));
 }
 
 jint RenderFrameHostAndroid::PerformMakeCredentialWebAuthSecurityChecks(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>&,
-    const base::android::JavaParamRef<jstring>& relying_party_id,
-    const base::android::JavaParamRef<jobject>& effective_origin) const {
-  url::Origin origin = url::Origin::FromJavaObject(effective_origin);
+    const base::android::JavaParamRef<jstring>& relying_party_id) const {
   return static_cast<int32_t>(
       render_frame_host_->PerformMakeCredentialWebAuthSecurityChecks(
-          ConvertJavaStringToUTF8(env, relying_party_id), origin));
+          ConvertJavaStringToUTF8(env, relying_party_id)));
 }
 
 }  // namespace content

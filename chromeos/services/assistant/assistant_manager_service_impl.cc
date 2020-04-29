@@ -154,8 +154,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       action_module_(std::make_unique<action::CrosActionModule>(
           this,
           assistant::features::IsAppSupportEnabled(),
-          assistant::features::IsRoutinesEnabled(),
-          assistant::features::IsTimersV2Enabled())),
+          assistant::features::IsRoutinesEnabled())),
       chromium_api_delegate_(std::move(pending_url_loader_factory)),
       assistant_settings_manager_(
           std::make_unique<AssistantSettingsManagerImpl>(context, this)),
@@ -741,18 +740,6 @@ void AssistantManagerServiceImpl::OnShowText(const std::string& text) {
     it->OnTextResponse(text);
 }
 
-void AssistantManagerServiceImpl::OnShowTimers(
-    const std::vector<std::string>& timer_ids) {
-  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnShowTimers, timer_ids);
-  if (!features::IsTimersV2Enabled())
-    return;
-
-  receive_inline_response_ = true;
-
-  for (auto& it : interaction_subscribers_)
-    it->OnTimersResponse(timer_ids);
-}
-
 void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url,
                                             bool is_background) {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnOpenUrl, url,
@@ -1106,8 +1093,7 @@ void AssistantManagerServiceImpl::PostInitAssistant() {
   assistant_settings_manager_->UpdateServerDeviceSettings();
 
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport)) {
-    device_actions()->AddAppListEventSubscriber(
-        app_list_subscriber_receiver_.BindNewPipeAndPassRemote());
+    scoped_app_list_event_subscriber.Add(device_actions());
   }
 }
 

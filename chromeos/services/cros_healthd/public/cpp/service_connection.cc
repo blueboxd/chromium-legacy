@@ -94,6 +94,8 @@ class ServiceConnectionImpl : public ServiceConnection {
       uint32_t maximum_discharge_percent_allowed,
       mojom::CrosHealthdDiagnosticsService::RunBatteryDischargeRoutineCallback
           callback) override;
+  void AddPowerObserver(mojo::PendingRemote<mojom::CrosHealthdPowerObserver>
+                            pending_observer) override;
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
@@ -111,6 +113,10 @@ class ServiceConnectionImpl : public ServiceConnection {
   // bound.
   void BindCrosHealthdDiagnosticsServiceIfNeeded();
 
+  // Uses |cros_healthd_service_factory_| to bind the event service remote to an
+  // implementation in the cros_healethd daemon, if it is not already bound.
+  void BindCrosHealthdEventServiceIfNeeded();
+
   // Uses |cros_healthd_service_factory_| to bind the probe service remote to an
   // implementation in the cros_healethd daemon, if it is not already bound.
   void BindCrosHealthdProbeServiceIfNeeded();
@@ -126,6 +132,7 @@ class ServiceConnectionImpl : public ServiceConnection {
   mojo::Remote<mojom::CrosHealthdProbeService> cros_healthd_probe_service_;
   mojo::Remote<mojom::CrosHealthdDiagnosticsService>
       cros_healthd_diagnostics_service_;
+  mojo::Remote<mojom::CrosHealthdEventService> cros_healthd_event_service_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -284,6 +291,14 @@ void ServiceConnectionImpl::RunBatteryDischargeRoutine(
       std::move(callback));
 }
 
+void ServiceConnectionImpl::AddPowerObserver(
+    mojo::PendingRemote<mojom::CrosHealthdPowerObserver> pending_observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdEventServiceIfNeeded();
+  mojom::CrosHealthdPowerObserverPtr ptr{std::move(pending_observer)};
+  cros_healthd_event_service_->AddPowerObserver(std::move(ptr));
+}
+
 void ServiceConnectionImpl::ProbeTelemetryInfo(
     const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
     mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback) {
@@ -325,6 +340,18 @@ void ServiceConnectionImpl::BindCrosHealthdDiagnosticsServiceIfNeeded() {
       &ServiceConnectionImpl::OnDisconnect, base::Unretained(this)));
 }
 
+void ServiceConnectionImpl::BindCrosHealthdEventServiceIfNeeded() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (cros_healthd_event_service_.is_bound())
+    return;
+
+  BindCrosHealthdServiceFactoryIfNeeded();
+  cros_healthd_service_factory_->GetEventService(
+      cros_healthd_event_service_.BindNewPipeAndPassReceiver());
+  cros_healthd_event_service_.set_disconnect_handler(base::BindOnce(
+      &ServiceConnectionImpl::OnDisconnect, base::Unretained(this)));
+}
+
 void ServiceConnectionImpl::BindCrosHealthdProbeServiceIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (cros_healthd_probe_service_.is_bound())
@@ -348,6 +375,7 @@ void ServiceConnectionImpl::OnDisconnect() {
   cros_healthd_service_factory_.reset();
   cros_healthd_probe_service_.reset();
   cros_healthd_diagnostics_service_.reset();
+  cros_healthd_event_service_.reset();
 }
 
 void ServiceConnectionImpl::OnBootstrapMojoConnectionResponse(

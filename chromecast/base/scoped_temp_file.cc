@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chromecast/base/scoped_temp_file.h"
+#include "base/check.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 
 namespace chromecast {
 

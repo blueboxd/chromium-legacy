@@ -4,7 +4,6 @@
 
 #include "chromecast/browser/general_audience_browsing_service.h"
 
-#include "base/logging.h"
 #include "chromecast/common/mojom/constants.mojom.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/safe_search_api/safe_search/safe_search_url_checker_client.h"

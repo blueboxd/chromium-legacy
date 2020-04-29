@@ -618,6 +618,10 @@ void RenderText::SetDisplayRect(const Rect& r) {
   }
 }
 
+const std::vector<Range> RenderText::GetAllSelections() const {
+  return selection_model_.GetAllSelections();
+}
+
 void RenderText::SetCursorPosition(size_t position) {
   size_t cursor = std::min(position, text().length());
   if (IsValidCursorIndex(cursor)) {
@@ -724,14 +728,16 @@ void RenderText::MoveCursor(BreakType break_type,
 
 bool RenderText::SetSelection(const SelectionModel& model) {
   // Enforce valid selection model components.
-  size_t text_length = text().length();
-  Range range(
-      std::min(model.selection().start(), static_cast<uint32_t>(text_length)),
-      std::min(model.caret_pos(), text_length));
-  // The current model only supports caret positions at valid cursor indices.
-  if (!IsValidCursorIndex(range.start()) || !IsValidCursorIndex(range.end()))
-    return false;
-  SelectionModel sel(range, model.caret_affinity());
+  uint32_t text_length = static_cast<uint32_t>(text().length());
+  std::vector<Range> ranges = model.GetAllSelections();
+  for (auto& range : ranges) {
+    range = {std::min(range.start(), text_length),
+             std::min(range.end(), text_length)};
+    // The current model only supports caret positions at valid cursor indices.
+    if (!IsValidCursorIndex(range.start()) || !IsValidCursorIndex(range.end()))
+      return false;
+  }
+  SelectionModel sel = SelectionModel(ranges, model.caret_affinity());
   bool changed = sel != selection_model_;
   SetSelectionModel(sel);
   return changed;
@@ -747,16 +753,21 @@ bool RenderText::MoveCursorToPoint(const gfx::Point& point,
   return SetSelection(model);
 }
 
-bool RenderText::SelectRange(const Range& range) {
+bool RenderText::SelectRange(const Range& range, bool primary) {
   uint32_t text_length = static_cast<uint32_t>(text().length());
   Range sel(std::min(range.start(), text_length),
             std::min(range.end(), text_length));
   // Allow selection bounds at valid indices amid multi-character graphemes.
   if (!IsValidLogicalIndex(sel.start()) || !IsValidLogicalIndex(sel.end()))
     return false;
-  LogicalCursorDirection affinity =
-      (sel.is_reversed() || sel.is_empty()) ? CURSOR_FORWARD : CURSOR_BACKWARD;
-  SetSelectionModel(SelectionModel(sel, affinity));
+  if (primary) {
+    LogicalCursorDirection affinity = (sel.is_reversed() || sel.is_empty())
+                                          ? CURSOR_FORWARD
+                                          : CURSOR_BACKWARD;
+    SetSelectionModel(SelectionModel(sel, affinity));
+  } else {
+    AddSecondarySelection(sel);
+  }
   return true;
 }
 
@@ -922,15 +933,15 @@ void RenderText::Draw(Canvas* canvas, bool select_all) {
   }
 
   if (!text().empty()) {
-    Range draw_selection;
+    std::vector<Range> draw_selections;
     if (select_all)
-      draw_selection = Range(0, text().length());
+      draw_selections = {Range(0, text().length())};
     else if (focused())
-      draw_selection = selection();
+      draw_selections = GetAllSelections();
 
-    DrawSelection(canvas, draw_selection);
+    DrawSelections(canvas, draw_selections);
     internal::SkiaTextRenderer renderer(canvas);
-    DrawVisualText(&renderer, draw_selection);
+    DrawVisualText(&renderer, draw_selections);
   }
 
   if (clip_to_display_rect())
@@ -1436,6 +1447,11 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
   selection_model_ = model;
   cached_bounds_and_offset_valid_ = false;
   has_directed_selection_ = kSelectionIsAlwaysDirected;
+}
+
+void RenderText::AddSecondarySelection(const Range selection) {
+  DCHECK_LE(selection.GetMax(), text().length());
+  selection_model_.AddSecondarySelection(selection);
 }
 
 size_t RenderText::TextIndexToDisplayIndex(size_t index) const {
@@ -2219,12 +2235,15 @@ internal::GraphemeIterator RenderText::GetGraphemeIteratorAtIndex(
   return iter;
 }
 
-void RenderText::DrawSelection(Canvas* canvas, const Range& selection) {
-  if (!selection.is_empty()) {
-    for (Rect s : GetSubstringBounds(selection)) {
-      if (symmetric_selection_visual_bounds() && !multiline())
-        s = ExpandToBeVerticallySymmetric(s, display_rect());
-      canvas->FillRect(s, selection_background_focused_color_);
+void RenderText::DrawSelections(Canvas* canvas,
+                                const std::vector<Range> selections) {
+  for (auto selection : selections) {
+    if (!selection.is_empty()) {
+      for (Rect s : GetSubstringBounds(selection)) {
+        if (symmetric_selection_visual_bounds() && !multiline())
+          s = ExpandToBeVerticallySymmetric(s, display_rect());
+        canvas->FillRect(s, selection_background_focused_color_);
+      }
     }
   }
 }

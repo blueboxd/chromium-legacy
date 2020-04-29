@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -82,11 +81,9 @@ public class WebappSplashScreenTest {
     @Test
     @SmallTest
     @Feature({"StatusBar", "Webapps"})
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testThemeColorWhenNotSpecified() {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         // Status bar color should be white on M+ to match CCTs and WebAPK shell.
         int expectedColor = Color.WHITE;

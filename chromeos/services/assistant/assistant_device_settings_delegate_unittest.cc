@@ -63,11 +63,12 @@ class ScopedDeviceActionsMock : public ScopedDeviceActions {
               GetAndroidAppStatus,
               (const chromeos::assistant::mojom::AndroidAppInfo& app_info));
   MOCK_METHOD(void, LaunchAndroidIntent, (const std::string& intent));
-  MOCK_METHOD(
-      void,
-      AddAppListEventSubscriber,
-      (mojo::PendingRemote<chromeos::assistant::mojom::AppListEventSubscriber>
-           subscriber));
+  MOCK_METHOD(void,
+              AddAppListEventSubscriber,
+              (chromeos::assistant::AppListEventSubscriber * subscriber));
+  MOCK_METHOD(void,
+              RemoveAppListEventSubscriber,
+              (chromeos::assistant::AppListEventSubscriber * subscriber));
 };
 
 class AssistantNotificationControllerMock

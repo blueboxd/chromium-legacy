@@ -32,7 +32,7 @@ import org.chromium.content_public.common.BrowserControlsState;
 /**
  * Custom {@link ChromeActivityTestRule} for tests using {@link WebappActivity}.
  */
-public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivity0> {
+public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivity> {
     public static final String WEBAPP_ID = "webapp_id";
     public static final String WEBAPP_NAME = "webapp name";
     public static final String WEBAPP_SHORT_NAME = "webapp short name";
@@ -73,7 +73,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
             + "AAAAAAAAAOA3AvAAAdln8YgAAAAASUVORK5CYII=";
 
     public WebappActivityTestRule() {
-        super(WebappActivity0.class);
+        super(WebappActivity.class);
     }
 
     /**
@@ -84,7 +84,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
      */
     public Intent createIntent() {
         Intent intent =
-                new Intent(InstrumentationRegistry.getTargetContext(), WebappActivity0.class);
+                new Intent(InstrumentationRegistry.getTargetContext(), WebappActivity.class);
         intent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + WEBAPP_ID));
         intent.putExtra(ShortcutHelper.EXTRA_ID, WEBAPP_ID);
         intent.putExtra(ShortcutHelper.EXTRA_URL, "about:blank");

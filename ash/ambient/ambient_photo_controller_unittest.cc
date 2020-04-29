@@ -5,9 +5,9 @@
 #include "ash/ambient/ambient_photo_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/ambient/ambient_controller.h"
-#include "ash/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/ambient/test/ambient_ash_test_base.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/shell.h"
@@ -40,7 +40,6 @@ TEST_F(AmbientPhotoControllerTest, ShouldGetScreenUpdateSuccessfully) {
             std::move(weather_inf_closure).Run();
             on_done.Run();
           }));
-
   run_loop.Run();
 }
 

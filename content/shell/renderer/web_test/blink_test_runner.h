@@ -18,7 +18,6 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/public/common/page_state.h"
-#include "content/shell/common/web_test/blink_test.mojom.h"
 #include "content/shell/common/web_test/web_test.mojom.h"
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/shell/test_runner/test_preferences.h"
@@ -212,10 +211,11 @@ class BlinkTestRunner {
   void ClearTrustTokenState(base::OnceClosure callback);
 
   // Message handlers forwarded by WebTestRenderFrameObserver.
-  void OnSetTestConfiguration(mojom::ShellTestConfigurationPtr params);
-  void OnReplicateTestConfiguration(mojom::ShellTestConfigurationPtr params);
+  void OnSetTestConfiguration(mojom::WebTestRunTestConfigurationPtr params);
+  void OnReplicateTestConfiguration(
+      mojom::WebTestRunTestConfigurationPtr params);
   void OnSetupRendererProcessForNonTestWindow();
-  void CaptureDump(mojom::BlinkTestControl::CaptureDumpCallback callback);
+  void CaptureDump(mojom::WebTestRenderFrame::CaptureDumpCallback callback);
   void DidCommitNavigationInMainFrame();
   void OnResetRendererAfterWebTest();
   void OnFinishTestInMainWindow();
@@ -225,7 +225,7 @@ class BlinkTestRunner {
 
  private:
   // Helper reused by OnSetTestConfiguration and OnReplicateTestConfiguration.
-  void ApplyTestConfiguration(mojom::ShellTestConfigurationPtr params);
+  void ApplyTestConfiguration(mojom::WebTestRunTestConfigurationPtr params);
 
   // After finishing the test, retrieves the audio, text, and pixel dumps from
   // the TestRunner library and sends them to the browser process.
@@ -239,9 +239,11 @@ class BlinkTestRunner {
   mojo::Remote<mojom::WebTestBluetoothFakeAdapterSetter>
       bluetooth_fake_adapter_setter_;
 
-  void HandleBlinkTestClientDisconnected();
-  mojo::AssociatedRemote<mojom::BlinkTestClient>& GetBlinkTestClientRemote();
-  mojo::AssociatedRemote<mojom::BlinkTestClient> blink_test_client_remote_;
+  void HandleWebTestControlHostDisconnected();
+  mojo::AssociatedRemote<mojom::WebTestControlHost>&
+  GetWebTestControlHostRemote();
+  mojo::AssociatedRemote<mojom::WebTestControlHost>
+      web_test_control_host_remote_;
 
   void HandleWebTestClientDisconnected();
   mojo::AssociatedRemote<mojom::WebTestClient>& GetWebTestClientRemote();
@@ -251,7 +253,7 @@ class BlinkTestRunner {
 
   TestPreferences prefs_;
 
-  mojom::ShellTestConfigurationPtr test_config_;
+  mojom::WebTestRunTestConfigurationPtr test_config_;
 
   base::circular_deque<
       base::OnceCallback<void(const std::vector<std::string>&)>>
@@ -262,8 +264,8 @@ class BlinkTestRunner {
 
   std::unique_ptr<AppBannerService> app_banner_service_;
 
-  mojom::BlinkTestControl::CaptureDumpCallback dump_callback_;
-  mojom::BlinkTestDumpPtr dump_result_;
+  mojom::WebTestRenderFrame::CaptureDumpCallback dump_callback_;
+  mojom::WebTestDumpPtr dump_result_;
   bool waiting_for_layout_dump_results_ = false;
   bool waiting_for_pixels_dump_result_ = false;
 

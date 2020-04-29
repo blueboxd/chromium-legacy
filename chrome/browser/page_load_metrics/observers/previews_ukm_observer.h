@@ -61,7 +61,6 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   PreviewsType committed_preview_;
 
   bool lite_page_seen_ = false;
-  bool lite_page_redirect_seen_ = false;
   bool noscript_seen_ = false;
   bool resource_loading_hints_seen_ = false;
   bool defer_all_script_seen_ = false;
@@ -72,8 +71,6 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   bool previews_likely_ = false;
   base::Optional<previews::PreviewsEligibilityReason>
       lite_page_eligibility_reason_;
-  base::Optional<previews::PreviewsEligibilityReason>
-      lite_page_redirect_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>
       noscript_eligibility_reason_;
   base::Optional<previews::PreviewsEligibilityReason>

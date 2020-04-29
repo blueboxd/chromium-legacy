@@ -45,6 +45,18 @@
         "description": "Commands that can be triggered by switch activation."
       },
       {
+        "id": "SwitchAccessBubble",
+        "type": "string",
+        "enum": [ "backButton", "menu" ],
+        "description": "Different Switch Access bubbles that can be shown or hidden."
+      },
+      {
+        "id": "SwitchAccessMenuAction",
+        "type": "string",
+        "enum": [ "decrement", "dictation", "increment", "keyboard", "scrollDown", "scrollLeft", "scrollRight", "scrollUp", "select", "settings" ],
+        "description": "Available actions to be shown in the Switch Access menu. Must be kept in sync with the strings in ash/system/accessibility/switch_access_menu_view.cc"
+      },
+      {
         "id": "SyntheticKeyboardEventType",
         "type": "string",
         "description": "The event to send",
@@ -263,7 +275,7 @@
       {
             "name": "setSwitchAccessMenuState",
             "type": "function",
-            "description": "Shows or hides the Switch Access menu. If shown, it is at the indicated location.",
+            "description": "Shows or hides the Switch Access menu. If shown, it is at the indicated location.\nTODO(anastasi): Remove this function once the menu refactor is complete.",
             "parameters": [
               {
                 "name": "show",
@@ -291,6 +303,37 @@
           {
             "name": "shouldForward",
             "type": "boolean"
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
+        "name": "updateSwitchAccessBubble",
+        "type": "function",
+        "description": "Shows the Switch Access menu next to the specified rectangle and with the given actions",
+        "parameters": [
+          {
+            "name": "bubble",
+            "$ref": "SwitchAccessBubble",
+            "description": "Which bubble to show/hide"
+          },
+          {
+            "name": "show",
+            "type": "boolean",
+            "description": "True if the bubble should be shown, false otherwise"
+          },
+          {
+            "name": "anchor",
+            "$ref": "ScreenRect",
+            "description": "A rectangle indicating the bounds of the object the menu should be displayed next to.",
+            "optional": true
+          },
+          {
+            "name": "actions",
+            "type": "array",
+            "items": { "$ref": "SwitchAccessMenuAction" },
+            "description": "The actions to be shown in the menu.",
+            "optional": true
           }
         ],
         "platforms": ["chromeos"]

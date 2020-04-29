@@ -41,7 +41,9 @@ void TestWebState::RemoveObserver(WebStateObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void TestWebState::CloseWebState() {}
+void TestWebState::CloseWebState() {
+  is_closed_ = true;
+}
 
 TestWebState::TestWebState()
     : browser_state_(nullptr),
@@ -52,6 +54,7 @@ TestWebState::TestWebState()
       is_evicted_(false),
       has_opener_(false),
       can_take_snapshot_(false),
+      is_closed_(false),
       trust_level_(kAbsolute),
       content_is_html_(true),
       web_view_proxy_(nil) {}
@@ -386,6 +389,10 @@ base::string16 TestWebState::GetLastExecutedJavascript() const {
 
 NSData* TestWebState::GetLastLoadedData() const {
   return last_loaded_data_;
+}
+
+bool TestWebState::IsClosed() const {
+  return is_closed_;
 }
 
 void TestWebState::SetCurrentURL(const GURL& url) {

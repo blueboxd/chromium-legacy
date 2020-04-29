@@ -12,8 +12,7 @@ const void* const kPreviewsUserDataKey = &kPreviewsUserDataKey;
 
 PreviewsUserData::PreviewsUserData(uint64_t page_id)
     : page_id_(page_id),
-      random_coin_flip_for_navigation_(base::RandInt(0, 1)),
-      server_lite_page_info_(nullptr) {}
+      random_coin_flip_for_navigation_(base::RandInt(0, 1)) {}
 
 PreviewsUserData::~PreviewsUserData() {}
 
@@ -33,12 +32,7 @@ PreviewsUserData::PreviewsUserData(const PreviewsUserData& other)
       committed_previews_state_without_holdback_(
           other.committed_previews_state_without_holdback_),
       coin_flip_holdback_result_(other.coin_flip_holdback_result_),
-      preview_eligibility_reasons_(other.preview_eligibility_reasons_) {
-  if (other.server_lite_page_info_) {
-    server_lite_page_info_ =
-        std::make_unique<ServerLitePageInfo>(*other.server_lite_page_info_);
-  }
-}
+      preview_eligibility_reasons_(other.preview_eligibility_reasons_) {}
 
 void PreviewsUserData::SetCommittedPreviewsType(
     previews::PreviewsType previews_type) {

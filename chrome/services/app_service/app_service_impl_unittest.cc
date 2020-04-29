@@ -262,8 +262,9 @@ TEST_F(AppServiceImplTest, PubSub) {
   }
 }
 
-// TODO(https://crbug.com/1074596) disabled due to flakiness
-TEST_F(AppServiceImplTest, DISABLED_PreferredApps) {
+// TODO(https://crbug.com/1074596) Test to see if the flakiness is fixed. If it
+// is not fixed, please update to the same bug.
+TEST_F(AppServiceImplTest, PreferredApps) {
   // Test Initialize.
   AppServiceImpl::RegisterProfilePrefs(pref_service_.registry());
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -318,6 +319,7 @@ TEST_F(AppServiceImplTest, DISABLED_PreferredApps) {
                        apps_util::CreateIntentFromUrl(another_filter_url),
                        /*from_publisher=*/true);
   impl.FlushMojoCallsForTesting();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kAppId2, sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(kAppId2, sub1.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(kAppId2,

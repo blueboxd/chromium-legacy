@@ -22,13 +22,13 @@ class LocalSearchService;
 namespace chromeos {
 namespace settings {
 
-class OsSettingsLocalizedStringsProvider;
+class OsSettingsManager;
 
 // Handles search queries for Chrome OS settings. Search() is expected to be
 // invoked by the settings UI as well as the the Launcher search UI. Search
 // results are obtained by matching the provided query against search tags
 // indexed in the LocalSearchService and cross-referencing results with
-// OsSettingsLocalizedStringsProvider.
+// OsSettingsManager.
 //
 // SearchHandler returns at most |kNumMaxResults| results; searches which do not
 // provide any matches result in an empty results array.
@@ -37,7 +37,7 @@ class SearchHandler : public mojom::SearchHandler, public KeyedService {
   // Maximum number of results returned by a Search() call.
   static const size_t kNumMaxResults;
 
-  SearchHandler(OsSettingsLocalizedStringsProvider* strings_provider,
+  SearchHandler(OsSettingsManager* strings_provider,
                 local_search_service::LocalSearchService* local_search_service);
   ~SearchHandler() override;
 
@@ -63,7 +63,7 @@ class SearchHandler : public mojom::SearchHandler, public KeyedService {
   mojom::SearchResultPtr ResultToSearchResult(
       const local_search_service::Result& result);
 
-  OsSettingsLocalizedStringsProvider* strings_provider_;
+  OsSettingsManager* strings_provider_;
   local_search_service::Index* index_;
 
   // Note: Expected to have multiple clients, so a ReceiverSet is used.

@@ -414,6 +414,7 @@ AccessibilityPrivateToggleDictationFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
+  // TODO(anastasi): Remove this function once menu refactor is complete.
   std::unique_ptr<accessibility_private::SetSwitchAccessMenuState::Params>
       params = accessibility_private::SetSwitchAccessMenuState::Params::Create(
           *args_);
@@ -473,6 +474,54 @@ AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction::Run() {
   ash::AccessibilityController::Get()->ForwardKeyEventsToSwitchAccess(
       params->should_forward);
 
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateUpdateSwitchAccessBubbleFunction::Run() {
+  std::unique_ptr<accessibility_private::UpdateSwitchAccessBubble::Params>
+      params = accessibility_private::UpdateSwitchAccessBubble::Params::Create(
+          *args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (!params->show) {
+    if (params->bubble ==
+        accessibility_private::SWITCH_ACCESS_BUBBLE_BACKBUTTON)
+      ash::AccessibilityController::Get()->HideSwitchAccessBackButton();
+    else if (params->bubble == accessibility_private::SWITCH_ACCESS_BUBBLE_MENU)
+      ash::AccessibilityController::Get()->HideSwitchAccessMenu();
+    return RespondNow(NoArguments());
+  }
+
+  if (!params->anchor)
+    return RespondNow(Error("An anchor rect is required to show a bubble."));
+
+  gfx::Rect anchor(params->anchor->left, params->anchor->top,
+                   params->anchor->width, params->anchor->height);
+
+  if (params->bubble ==
+      accessibility_private::SWITCH_ACCESS_BUBBLE_BACKBUTTON) {
+    ash::AccessibilityController::Get()->ShowSwitchAccessBackButton(anchor);
+    return RespondNow(NoArguments());
+  }
+
+  if (!params->actions)
+    return RespondNow(Error("The menu cannot be shown without actions."));
+
+  std::vector<std::string> actions_to_show;
+  for (accessibility_private::SwitchAccessMenuAction extension_action :
+       *(params->actions)) {
+    std::string action = accessibility_private::ToString(extension_action);
+    // Check that this action is not already in our actions list.
+    if (std::find(actions_to_show.begin(), actions_to_show.end(), action) !=
+        actions_to_show.end()) {
+      continue;
+    }
+    actions_to_show.push_back(action);
+  }
+
+  ash::AccessibilityController::Get()->ShowSwitchAccessMenu(anchor,
+                                                            actions_to_show);
   return RespondNow(NoArguments());
 }
 

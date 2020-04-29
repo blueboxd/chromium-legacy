@@ -15,6 +15,7 @@ namespace cc {
 
 class Animation;
 class AnimationHost;
+class ScrollTree;
 
 // An AnimationTimeline owns a group of Animations.
 //
@@ -45,6 +46,13 @@ class CC_ANIMATION_EXPORT AnimationTimeline
   std::vector<Animation*> GetAnimations() const;
   void ClearAnimations();
   bool HasAnimation() const { return !id_to_animation_map_.empty(); }
+  bool TickTimeLinkedAnimations(
+      const std::vector<scoped_refptr<Animation>>& ticking_animations,
+      base::TimeTicks monotonic_time);
+  virtual bool TickScrollLinkedAnimations(
+      const std::vector<scoped_refptr<Animation>>& ticking_animations,
+      const ScrollTree& scroll_tree,
+      bool is_active_tree);
 
   virtual void PushPropertiesTo(AnimationTimeline* timeline_impl);
   virtual void ActivateTimeline() {}

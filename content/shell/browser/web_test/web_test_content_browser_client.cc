@@ -30,7 +30,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/shell/browser/shell_browser_context.h"
-#include "content/shell/browser/web_test/blink_test_controller.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser_factory.h"
 #include "content/shell/browser/web_test/fake_bluetooth_delegate.h"
@@ -39,10 +38,10 @@
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_browser_main_parts.h"
 #include "content/shell/browser/web_test/web_test_client_impl.h"
+#include "content/shell/browser/web_test/web_test_control_host.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/browser/web_test/web_test_tts_controller_delegate.h"
 #include "content/shell/browser/web_test/web_test_tts_platform.h"
-#include "content/shell/common/web_test/blink_test.mojom.h"
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/test/data/mojo_web_test_helper_test.mojom.h"
@@ -243,10 +242,10 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
       ui_task_runner);
 
   associated_registry->AddInterface(
-      base::BindRepeating(&WebTestContentBrowserClient::BindBlinkTestController,
+      base::BindRepeating(&WebTestContentBrowserClient::BindWebTestControlHost,
                           base::Unretained(this)));
   associated_registry->AddInterface(base::BindRepeating(
-      &WebTestContentBrowserClient::BindWebTestController,
+      &WebTestContentBrowserClient::BindWebTestClient,
       render_process_host->GetID(),
       BrowserContext::GetDefaultStoragePartition(browser_context())));
 }
@@ -276,8 +275,8 @@ void WebTestContentBrowserClient::BindPermissionAutomation(
 void WebTestContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* render_view_host,
     WebPreferences* prefs) {
-  if (BlinkTestController::Get())
-    BlinkTestController::Get()->OverrideWebkitPrefs(prefs);
+  if (WebTestControlHost::Get())
+    WebTestControlHost::Get()->OverrideWebkitPrefs(prefs);
 }
 
 void WebTestContentBrowserClient::AppendExtraCommandLineSwitches(
@@ -497,14 +496,15 @@ void WebTestContentBrowserClient::CreateFakeBluetoothChooserFactory(
       FakeBluetoothChooserFactory::Create(std::move(receiver));
 }
 
-void WebTestContentBrowserClient::BindBlinkTestController(
-    mojo::PendingAssociatedReceiver<mojom::BlinkTestClient> receiver) {
-  if (BlinkTestController::Get())
-    BlinkTestController::Get()->AddBlinkTestClientReceiver(std::move(receiver));
+void WebTestContentBrowserClient::BindWebTestControlHost(
+    mojo::PendingAssociatedReceiver<mojom::WebTestControlHost> receiver) {
+  if (WebTestControlHost::Get())
+    WebTestControlHost::Get()->AddWebTestControlHostReceiver(
+        std::move(receiver));
 }
 
 // static
-void WebTestContentBrowserClient::BindWebTestController(
+void WebTestContentBrowserClient::BindWebTestClient(
     int render_process_id,
     StoragePartition* partition,
     mojo::PendingAssociatedReceiver<mojom::WebTestClient> receiver) {

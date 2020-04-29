@@ -11,6 +11,7 @@
 module chromeos.cros_healthd.mojom;
 
 import "chromeos/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom";
+import "chromeos/services/cros_healthd/public/mojom/cros_healthd_events.mojom";
 import "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom";
 
 // Factory interface which allows remote ends to request implementations of the
@@ -18,6 +19,8 @@ import "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom";
 interface CrosHealthdServiceFactory {
   // Returns a bound interface to the diagnostics service.
   GetDiagnosticsService(CrosHealthdDiagnosticsService& service);
+  // Returns a bound interface to the event service.
+  GetEventService(CrosHealthdEventService& service);
   // Returns a bound interface to the probe service.
   GetProbeService(CrosHealthdProbeService& service);
 };
@@ -264,6 +267,16 @@ interface CrosHealthdDiagnosticsService {
   RunBatteryDischargeRoutine(uint32 length_seconds,
                              uint32 maximum_discharge_percent_allowed)
       => (RunRoutineResponse response);
+};
+
+// Event interface exposed by the cros_healthd daemon.
+interface CrosHealthdEventService {
+  // Adds an observer to be notified on power events. The caller can remove the
+  // observer created by this call by closing their end of the message pipe.
+  //
+  // The request:
+  // * |observer| - power observer to be added to cros_healthd.
+  AddPowerObserver(CrosHealthdPowerObserver observer);
 };
 
 // Probe interface exposed by the cros_healthd daemon.

@@ -181,7 +181,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
 #if defined(USE_OZONE)
   void TerminateGpuProcess(const std::string& message) override;
-  void SendGpuProcessMessage(IPC::Message* message) override;
 #endif
 
   bool LaunchGpuProcess();

@@ -4,7 +4,7 @@
 
 #include "chromecast/browser/extensions/cast_extension_host_delegate.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "chromecast/browser/extensions/cast_extension_web_contents_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "extensions/browser/media_capture_util.h"

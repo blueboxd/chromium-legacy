@@ -393,6 +393,48 @@ void CompositorFrameReporter::ReportCompositorLatencyHistograms() const {
       latency_ukm_reporter_->ReportLatencyUkm(report_type, stage_history_,
                                               active_trackers_, viz_breakdown_);
     }
+    for (size_t fst_type = 0; fst_type < active_trackers_.size(); ++fst_type) {
+      if (!active_trackers_.test(fst_type)) {
+        continue;
+      }
+      switch (static_cast<FrameSequenceTrackerType>(fst_type)) {
+        case FrameSequenceTrackerType::kCompositorAnimation:
+          UMA_HISTOGRAM_ENUMERATION(
+              "CompositorLatency.Type.CompositorAnimation", report_type);
+          break;
+        case FrameSequenceTrackerType::kMainThreadAnimation:
+          UMA_HISTOGRAM_ENUMERATION(
+              "CompositorLatency.Type.MainThreadAnimation", report_type);
+          break;
+        case FrameSequenceTrackerType::kPinchZoom:
+          UMA_HISTOGRAM_ENUMERATION("CompositorLatency.Type.PinchZoom",
+                                    report_type);
+          break;
+        case FrameSequenceTrackerType::kRAF:
+          UMA_HISTOGRAM_ENUMERATION("CompositorLatency.Type.RAF", report_type);
+          break;
+        case FrameSequenceTrackerType::kTouchScroll:
+          UMA_HISTOGRAM_ENUMERATION("CompositorLatency.Type.TouchScroll",
+                                    report_type);
+          break;
+        case FrameSequenceTrackerType::kVideo:
+          UMA_HISTOGRAM_ENUMERATION("CompositorLatency.Type.Video",
+                                    report_type);
+          break;
+        case FrameSequenceTrackerType::kWheelScroll:
+          UMA_HISTOGRAM_ENUMERATION("CompositorLatency.Type.WheelScroll",
+                                    report_type);
+          break;
+        case FrameSequenceTrackerType::kScrollbarScroll:
+          UMA_HISTOGRAM_ENUMERATION("CompositorLatency.Type.ScrollbarScroll",
+                                    report_type);
+          break;
+        case FrameSequenceTrackerType::kUniversal:
+        case FrameSequenceTrackerType::kCustom:
+        case FrameSequenceTrackerType::kMaxType:
+          break;
+      }
+    }
   }
 }
 

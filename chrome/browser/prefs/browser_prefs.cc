@@ -56,7 +56,6 @@
 #include "chrome/browser/prefs/origin_trial_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/printing/print_preview_sticky_settings.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
@@ -531,6 +530,12 @@ const char kPrintingAllowedPageSizes[] = "printing.allowed_page_sizes";
 // Deprecated 4/2020
 const char kExcludedSchemes[] = "protocol_handler.excluded_schemes";
 
+// Deprecated 4/2020
+const char kPreviewsLPRHostBlacklist[] = "previews.litepage.host-blacklist";
+const char kPreviewsLPRProbeCache[] = "Availability.Prober.cache.Litepages";
+const char kPreviewsLPROriginProbeCache[] =
+    "Availability.Prober.cache.LitepagesOriginCheck";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -625,6 +630,9 @@ void RegisterProfilePrefsForMigration(
 #endif  // defined(OS_CHROMEOS)
 
   registry->RegisterDictionaryPref(kExcludedSchemes);
+  registry->RegisterDictionaryPref(kPreviewsLPRHostBlacklist);
+  registry->RegisterDictionaryPref(kPreviewsLPRProbeCache);
+  registry->RegisterDictionaryPref(kPreviewsLPROriginProbeCache);
 }
 
 }  // namespace
@@ -853,7 +861,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   PrefsTabHelper::RegisterProfilePrefs(registry, locale);
   PreviewsHTTPSNotificationInfoBarDecider::RegisterProfilePrefs(registry);
-  PreviewsLitePageRedirectDecider::RegisterProfilePrefs(registry);
   PreviewsOfflineHelper::RegisterProfilePrefs(registry);
   Profile::RegisterProfilePrefs(registry);
   ProfileImpl::RegisterProfilePrefs(registry);
@@ -1238,4 +1245,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 4/2020
   profile_prefs->ClearPref(kExcludedSchemes);
+
+  // Added 4/2020.
+  profile_prefs->ClearPref(kPreviewsLPRHostBlacklist);
+  profile_prefs->ClearPref(kPreviewsLPRProbeCache);
+  profile_prefs->ClearPref(kPreviewsLPROriginProbeCache);
 }

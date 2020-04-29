@@ -7,14 +7,13 @@
 #include <utility>
 
 #include "ash/ambient/ambient_controller.h"
-#include "ash/public/cpp/assistant/assistant_image_downloader.h"
-#include "ash/public/cpp/session/session_types.h"
-#include "ash/session/session_controller_impl.h"
+#include "ash/public/cpp/image_downloader.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/optional.h"
-#include "components/account_id/account_id.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/gfx/image/image_skia.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -24,17 +23,9 @@ using DownloadCallback = base::OnceCallback<void(const gfx::ImageSkia&)>;
 
 void DownloadImageFromUrl(const std::string& url, DownloadCallback callback) {
   DCHECK(!url.empty());
-  const UserSession* user_session =
-      Shell::Get()->session_controller()->GetUserSession(0);
-  if (!user_session) {
-    LOG(WARNING) << "Unable to retrieve active user session.";
-    std::move(callback).Run(gfx::ImageSkia());
-    return;
-  }
 
-  AccountId account_id = user_session->user_info.account_id;
-  ash::AssistantImageDownloader::GetInstance()->Download(account_id, GURL(url),
-                                                         std::move(callback));
+  ImageDownloader::Get()->Download(GURL(url), NO_TRAFFIC_ANNOTATION_YET,
+                                   base::BindOnce(std::move(callback)));
 }
 
 }  // namespace

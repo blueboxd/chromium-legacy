@@ -17,7 +17,6 @@
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -3622,4 +3621,39 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
   // optimization type.
   EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNoHintAvailable,
             optimization_type_decision);
+}
+
+class OptimizationGuideHintsManagerFetchingNoBatchUpdateTest
+    : public OptimizationGuideHintsManagerTest {
+ public:
+  OptimizationGuideHintsManagerFetchingNoBatchUpdateTest() {
+    scoped_list_.InitAndEnableFeatureWithParameters(
+        optimization_guide::features::kRemoteOptimizationGuideFetching,
+        {{"batch_update_hints_for_top_hosts", "false"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_list_;
+};
+
+TEST_F(OptimizationGuideHintsManagerFetchingNoBatchUpdateTest,
+       BatchUpdateHintsFetchNotScheduledIfNotAllowed) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
+  std::unique_ptr<FakeTopHostProvider> top_host_provider =
+      std::make_unique<FakeTopHostProvider>(
+          std::vector<std::string>({"example1.com", "example2.com"}));
+
+  // Force hints fetch scheduling.
+  CreateServiceAndHintsManager({optimization_guide::proto::DEFER_ALL_SCRIPT},
+                               top_host_provider.get());
+  hints_manager()->SetHintsFetcherFactoryForTesting(
+      BuildTestHintsFetcherFactory(
+          {HintsFetcherEndState::kFetchSuccessWithHostHints}));
+  InitializeWithDefaultConfig("1.0.0");
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  // Hints fetcher should not even be created.
+  EXPECT_FALSE(batch_update_hints_fetcher());
 }

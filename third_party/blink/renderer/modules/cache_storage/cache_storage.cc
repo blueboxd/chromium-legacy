@@ -63,6 +63,9 @@ namespace blink {
 namespace {
 
 bool IsCacheStorageAllowed(ScriptState* script_state) {
+  if (!script_state->ContextIsValid())
+    return false;
+
   ExecutionContext* context = ExecutionContext::From(script_state);
 
   WebContentSettingsClient* settings_client = nullptr;

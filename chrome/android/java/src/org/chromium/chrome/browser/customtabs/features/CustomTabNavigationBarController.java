@@ -28,10 +28,6 @@ public class CustomTabNavigationBarController {
      */
     public static void updateNavigationBarColor(Activity activity,
             BrowserServicesIntentDataProvider intentDataProvider) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return; // Window#setNavigationBar not available.
-        }
-
         Integer color = intentDataProvider.getNavigationBarColor();
         if (color == null) return;
 

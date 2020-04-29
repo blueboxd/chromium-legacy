@@ -4,8 +4,9 @@
 
 #include "chromecast/media/cma/backend/media_pipeline_backend_wrapper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "chromecast/media/cma/backend/audio_decoder_wrapper.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/media/cma/backend/video_decoder_wrapper.h"

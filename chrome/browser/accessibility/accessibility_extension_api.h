@@ -149,6 +149,15 @@ class AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction
       ACCESSIBILITY_PRIVATE_FORWARDKEYEVENTSTOSWITCHACCESS)
 };
 
+// API function that is called to show or hide one of the Switch Access bubbles.
+class AccessibilityPrivateUpdateSwitchAccessBubbleFunction
+    : public ExtensionFunction {
+  ~AccessibilityPrivateUpdateSwitchAccessBubbleFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.updateSwitchAccessBubble",
+                             ACCESSIBILITY_PRIVATE_UPDATESWITCHACCESSBUBBLE)
+};
+
 // API function that is called to get the device's battery status as a string.
 class AccessibilityPrivateGetBatteryDescriptionFunction
     : public ExtensionFunction {

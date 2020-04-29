@@ -1,0 +1,104 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
+if (is_android) {
+  java_group("java") {
+    deps = [ ":public_java" ]
+  }
+}
+
+group("query_tiles") {
+  public_deps = [
+    ":factory",
+    ":public",
+  ]
+
+  deps = [ "internal" ]
+}
+
+source_set("public") {
+  sources = [
+    "tile.cc",
+    "tile.h",
+    "tile_background_task.cc",
+    "tile_background_task.h",
+    "tile_service.h",
+  ]
+
+  deps = [
+    "//components/background_task_scheduler:public",
+    "//ui/gfx",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//url:url",
+  ]
+
+  if (is_android) {
+    sources += [
+      "android/tile_provider_bridge.cc",
+      "android/tile_provider_bridge.h",
+    ]
+
+    deps += [ ":jni_headers" ]
+  }
+}
+
+source_set("factory") {
+  sources = [
+    "tile_service_factory_helper.cc",
+    "tile_service_factory_helper.h",
+  ]
+
+  deps = [
+    ":public",
+    "internal:internal",
+    "//components/leveldb_proto",
+    "//components/query_tiles/proto",
+  ]
+}
+
+if (is_android) {
+  android_library("public_java") {
+    sources = [
+      "android/java/src/org/chromium/components/query_tiles/QueryTile.java",
+      "android/java/src/org/chromium/components/query_tiles/TileProvider.java",
+      "android/java/src/org/chromium/components/query_tiles/bridges/TileProviderBridge.java",
+    ]
+
+    deps = [
+      "//base:base_java",
+      "//base:jni_java",
+      "//components/browser_ui/widget/android:java",
+      "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
+      "//ui/android:ui_java",
+    ]
+
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  }
+
+  generate_jni("jni_headers") {
+    visibility = [ ":*" ]
+
+    sources = [ "android/java/src/org/chromium/components/query_tiles/bridges/TileProviderBridge.java" ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "tile_unittest.cc" ]
+  deps = [
+    ":public",
+    "test:test_lib",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}

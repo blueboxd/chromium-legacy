@@ -44,17 +44,17 @@ WebTestRenderThreadObserver::~WebTestRenderThreadObserver() {
 void WebTestRenderThreadObserver::RegisterMojoInterfaces(
     blink::AssociatedInterfaceRegistry* associated_interfaces) {
   associated_interfaces->AddInterface(base::BindRepeating(
-      &WebTestRenderThreadObserver::OnWebTestControlAssociatedRequest,
+      &WebTestRenderThreadObserver::OnWebTestRenderThreadAssociatedRequest,
       base::Unretained(this)));
 }
 
 void WebTestRenderThreadObserver::UnregisterMojoInterfaces(
     blink::AssociatedInterfaceRegistry* associated_interfaces) {
-  associated_interfaces->RemoveInterface(mojom::WebTestControl::Name_);
+  associated_interfaces->RemoveInterface(mojom::WebTestRenderThread::Name_);
 }
 
-void WebTestRenderThreadObserver::OnWebTestControlAssociatedRequest(
-    mojo::PendingAssociatedReceiver<mojom::WebTestControl> receiver) {
+void WebTestRenderThreadObserver::OnWebTestRenderThreadAssociatedRequest(
+    mojo::PendingAssociatedReceiver<mojom::WebTestRenderThread> receiver) {
   receiver_.reset();
   receiver_.Bind(std::move(receiver));
 }

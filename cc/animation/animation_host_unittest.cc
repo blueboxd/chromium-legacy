@@ -17,11 +17,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Return;
-using ::testing::_;
 
 namespace cc {
 namespace {
@@ -360,6 +360,85 @@ TEST_F(AnimationHostTest, LayerTreeMutatorUpdateReflectsScrollAnimations) {
   // frame.
   host_impl_->TickAnimations(base::TimeTicks(), property_trees.scroll_tree,
                              false);
+}
+
+TEST_F(AnimationHostTest, TickScrollLinkedAnimation) {
+  PropertyTrees property_trees;
+  property_trees.is_main_thread = false;
+  property_trees.is_active = true;
+  CreateScrollingNodeForElement(element_id_, &property_trees);
+
+  // Create scroll timeline that links scroll animation and scroll-linked
+  // animation together.
+  auto scroll_timeline = ScrollTimeline::Create(
+      element_id_, ScrollTimeline::ScrollDown, 0, 100, 1000);
+
+  int animation_id = 11;
+  // Create an animation that is bound to the scroll timeline.
+  scoped_refptr<Animation> animation = Animation::Create(animation_id);
+  host_impl_->AddAnimationTimeline(scroll_timeline);
+  scroll_timeline->AttachAnimation(animation);
+  animation->AddToTicking();
+  ASSERT_TRUE(animation->IsScrollLinkedAnimation());
+
+  animation->AttachElement(element_id_);
+
+  AddOpacityTransitionToAnimation(animation.get(), 1, .7f, .3f, true);
+  auto* keyframe_model = animation->GetKeyframeModel(TargetProperty::OPACITY);
+  EXPECT_EQ(keyframe_model->run_state(),
+            KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY);
+
+  auto& scroll_tree = property_trees.scroll_tree;
+  SetScrollOffset(&property_trees, element_id_, gfx::ScrollOffset(0, 20));
+  EXPECT_TRUE(host_impl_->TickAnimations(base::TimeTicks(),
+                                         property_trees.scroll_tree, false));
+
+  EXPECT_EQ(keyframe_model->run_state(), KeyframeModel::PAUSED);
+  double tick_time = (scroll_timeline->CurrentTime(scroll_tree, false).value() -
+                      base::TimeTicks())
+                         .InSecondsF();
+  EXPECT_EQ(tick_time, 0.2);
+
+  scroll_timeline->DetachAnimation(animation);
+  EXPECT_FALSE(host_impl_->TickAnimations(base::TimeTicks(),
+                                          property_trees.scroll_tree, false));
+}
+
+TEST_F(AnimationHostTest, ScrollTimelineOffsetUpdatedByScrollAnimation) {
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
+  client_impl_.RegisterElementId(element_id_, ElementListType::PENDING);
+  client_impl_.RegisterElementId(element_id_, ElementListType::ACTIVE);
+  host_impl_->AddAnimationTimeline(timeline_);
+
+  PropertyTrees property_trees;
+  property_trees.is_main_thread = false;
+  property_trees.is_active = true;
+  CreateScrollingNodeForElement(element_id_, &property_trees);
+
+  int animation_id = 11;
+  scoped_refptr<MockAnimation> mock_scroll_animation(
+      new MockAnimation(animation_id));
+  EXPECT_CALL(*mock_scroll_animation, Tick(_))
+      .WillOnce(InvokeWithoutArgs([&]() {
+        // Scroll to 20% of the max value.
+        SetScrollOffset(&property_trees, element_id_, gfx::ScrollOffset(0, 20));
+      }));
+
+  // Ensure scroll animation is ticking.
+  timeline_->AttachAnimation(mock_scroll_animation);
+  host_impl_->AddToTicking(mock_scroll_animation);
+
+  auto scroll_timeline = ScrollTimeline::Create(
+      element_id_, ScrollTimeline::ScrollDown, 0, 100, 1000);
+
+  host_impl_->TickAnimations(base::TimeTicks(), property_trees.scroll_tree,
+                             false);
+
+  double tick_time =
+      (scroll_timeline->CurrentTime(property_trees.scroll_tree, false).value() -
+       base::TimeTicks())
+          .InSecondsF();
+  EXPECT_EQ(tick_time, 0.2);
 }
 
 }  // namespace

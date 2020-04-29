@@ -407,7 +407,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Must outlive |signal_strategy_| and |ftl_signaling_connector_|.
   std::unique_ptr<OAuthTokenGetterImpl> oauth_token_getter_;
 
-  // Must outlive |heartbeat_sender_| and |host_status_logger_|.
+  // Must outlive |host_status_logger_|.
   std::unique_ptr<LogToServer> log_to_server_;
 
   // Signal strategies must outlive |ftl_signaling_connector_|.
@@ -1439,8 +1439,7 @@ void HostProcess::InitializeSignaling() {
       base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)));
   ftl_signaling_connector_->Start();
   heartbeat_sender_ = std::make_unique<HeartbeatSender>(
-      this, host_id_, ftl_signal_strategy.get(), oauth_token_getter_.get(),
-      log_to_server_.get());
+      this, host_id_, ftl_signal_strategy.get(), oauth_token_getter_.get());
   signal_strategy_ = std::move(ftl_signal_strategy);
 }
 

@@ -147,8 +147,8 @@ void ImageDownloaderImpl::ProvideTo(LocalFrame& frame) {
 
 ImageDownloaderImpl::ImageDownloaderImpl(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ExecutionContextLifecycleObserver(
-          frame.GetDocument()->GetExecutionContext()) {
+      ExecutionContextLifecycleObserver(frame.DomWindow()),
+      receiver_(this, frame.DomWindow()) {
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &ImageDownloaderImpl::CreateMojoService, WrapWeakPersistent(this)));
 }
@@ -157,7 +157,8 @@ ImageDownloaderImpl::~ImageDownloaderImpl() {}
 
 void ImageDownloaderImpl::CreateMojoService(
     mojo::PendingReceiver<mojom::blink::ImageDownloader> receiver) {
-  receiver_.Bind(std::move(receiver));
+  receiver_.Bind(std::move(receiver),
+                 GetSupplementable()->GetTaskRunner(TaskType::kNetworking));
   receiver_.set_disconnect_handler(
       WTF::Bind(&ImageDownloaderImpl::Dispose, WrapWeakPersistent(this)));
 }
@@ -253,6 +254,7 @@ void ImageDownloaderImpl::DidFetchImage(
 }
 
 void ImageDownloaderImpl::Trace(Visitor* visitor) {
+  visitor->Trace(receiver_);
   Supplement<LocalFrame>::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

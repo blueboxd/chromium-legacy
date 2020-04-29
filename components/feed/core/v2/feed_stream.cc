@@ -50,10 +50,9 @@ std::unique_ptr<StreamModelUpdateRequest>
 FeedStream::WireResponseTranslator::TranslateWireResponse(
     feedwire::Response response,
     StreamModelUpdateRequest::Source source,
-    base::TimeDelta response_time,
     base::Time current_time) {
   return ::feed::TranslateWireResponse(std::move(response), source,
-                                       response_time, current_time);
+                                       current_time);
 }
 
 FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,

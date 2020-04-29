@@ -5,10 +5,16 @@
 #ifndef ASH_AMBIENT_UI_PHOTO_VIEW_H_
 #define ASH_AMBIENT_UI_PHOTO_VIEW_H_
 
+#include <memory>
+
 #include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
+
+namespace ui {
+class AnimationMetricsReporter;
+}  // namespace ui
 
 namespace ash {
 
@@ -42,6 +48,8 @@ class ASH_EXPORT PhotoView : public views::View,
   // strong guarantee on the life cycle, especially given that the widget |this|
   // lived in is destroyed asynchronously.
   AmbientViewDelegate* delegate_ = nullptr;
+
+  std::unique_ptr<ui::AnimationMetricsReporter> metrics_reporter_;
 
   // Image containers used for animation. Owned by view hierarchy.
   AmbientBackgroundImageView* image_view_prev_ = nullptr;

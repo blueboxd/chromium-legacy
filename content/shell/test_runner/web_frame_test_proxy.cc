@@ -315,12 +315,12 @@ void WebFrameTestProxy::DumpFrameLayout(DumpFrameLayoutCallback callback) {
 }
 
 void WebFrameTestProxy::ReplicateTestConfiguration(
-    mojom::ShellTestConfigurationPtr config) {
+    mojom::WebTestRunTestConfigurationPtr config) {
   blink_test_runner()->OnReplicateTestConfiguration(std::move(config));
 }
 
 void WebFrameTestProxy::SetTestConfiguration(
-    mojom::ShellTestConfigurationPtr config) {
+    mojom::WebTestRunTestConfigurationPtr config) {
   blink_test_runner()->OnSetTestConfiguration(std::move(config));
 }
 
@@ -347,8 +347,8 @@ void WebFrameTestProxy::ReplyBluetoothManualChooserEvents(
 }
 
 void WebFrameTestProxy::BindReceiver(
-    mojo::PendingAssociatedReceiver<mojom::BlinkTestControl> receiver) {
-  blink_test_control_receiver_.Bind(
+    mojo::PendingAssociatedReceiver<mojom::WebTestRenderFrame> receiver) {
+  web_test_render_frame_receiver_.Bind(
       std::move(receiver),
       GetWebFrame()->GetTaskRunner(blink::TaskType::kInternalTest));
 }

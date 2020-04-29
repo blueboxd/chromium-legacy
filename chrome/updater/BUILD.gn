@@ -263,6 +263,7 @@ if (is_win || is_mac) {
 
       deps += [
         "//chrome/common/mac:launchd",
+        "//chrome/updater/mac:enterprise_tests",
         "//chrome/updater/mac:updater_bundle",
         "//chrome/updater/mac:updater_setup_tests",
         "//chrome/updater/mac:xpc_names",

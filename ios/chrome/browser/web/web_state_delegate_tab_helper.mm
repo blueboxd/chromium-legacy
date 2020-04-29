@@ -57,7 +57,6 @@ void WebStateDelegateTabHelper::OnAuthRequired(
 #pragma mark - WebStateObserver
 
 void WebStateDelegateTabHelper::WebStateDestroyed(web::WebState* web_state) {
-  java_script_dialog_presenter_.Close();
   web_state->RemoveObserver(this);
 }
 

@@ -163,3 +163,29 @@ source_set("updater_setup_tests") {
     "//testing/gtest",
   ]
 }
+
+source_set("enterprise") {
+  sources = [
+    "managed_preference_policy_manager_impl.h",
+    "managed_preference_policy_manager_impl.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/updater:base",
+  ]
+}
+
+source_set("enterprise_tests") {
+  testonly = true
+
+  sources = [ "managed_preference_policy_manager_impl_unittest.mm" ]
+
+  deps = [
+    ":enterprise",
+    "//base",
+    "//base/test:test_support",
+    "//chrome/updater:base",
+    "//testing/gtest",
+  ]
+}

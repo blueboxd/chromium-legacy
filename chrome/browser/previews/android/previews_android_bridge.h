@@ -23,11 +23,6 @@ class PreviewsAndroidBridge {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_web_contents);
 
-  base::android::ScopedJavaLocalRef<jstring> GetLitePageRedirectOriginalURL(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_visisble_url);
-
   base::android::ScopedJavaLocalRef<jstring> GetStalePreviewTimestamp(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

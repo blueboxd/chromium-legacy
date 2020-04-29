@@ -665,12 +665,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
       LoadExperimentSamplingInfo();
     }
 
-    auto found = event_sampling_rates_.find(entry->event_hash);
-    int sampling_rate = (found != event_sampling_rates_.end())
-                            ? found->second
-                            : default_sampling_rate_;
-    bool sampled_in =
-        IsSampledIn(entry->source_id, entry->event_hash, sampling_rate);
+    bool sampled_in = IsSampledIn(entry->source_id, entry->event_hash);
 
     if (!sampled_in) {
       RecordDroppedEntry(DroppedDataReason::SAMPLED_OUT);
@@ -707,28 +702,61 @@ void UkmRecorderImpl::LoadExperimentSamplingInfo() {
   // Check the parameters for sampling controls.
   std::map<std::string, std::string> params;
   if (base::GetFieldTrialParamsByFeature(kUkmSamplingRateFeature, &params)) {
-    for (const auto& kv : params) {
-      const std::string& key = kv.first;
-      if (key.length() == 0)
-        continue;
+    LoadExperimentSamplingParams(params);
+  }
+}
 
-      // Keys starting with an underscore are global configuration.
-      if (key.at(0) == '_') {
-        if (key == "_default_sampling") {
-          int sampling;
-          // We only load non-negative global sampling rates.
-          if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
-            default_sampling_rate_ = sampling;
-        }
-        continue;
+void UkmRecorderImpl::LoadExperimentSamplingParams(
+    const std::map<std::string, std::string>& params) {
+  for (const auto& kv : params) {
+    const std::string& key = kv.first;
+    if (key.length() == 0)
+      continue;
+
+    // Keys starting with an underscore are global configuration.
+    if (key.at(0) == '_') {
+      if (key == "_default_sampling") {
+        int sampling;
+        // We only load non-negative global sampling rates.
+        if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
+          default_sampling_rate_ = sampling;
       }
+      continue;
+    }
 
-      // Anything else is an event name.
-      int sampling;
-      if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
-        event_sampling_rates_[base::HashMetricName(key)] = sampling;
+    // Anything else is an event name.
+    int sampling;
+    auto hash = base::HashMetricName(key);
+    if (base::StringToInt(kv.second, &sampling)) {
+      // If the parameter is a number then that's the sampling rate.
+      if (sampling >= 0)
+        event_sampling_rates_[hash] = sampling;
+    } else {
+      // If the parameter is a string then it's the name of another metric
+      // to which it should be slaved. This allows different metrics to be
+      // sampled in or out together.
+      event_sampling_master_[hash] = base::HashMetricName(kv.second);
     }
   }
+}
+
+bool UkmRecorderImpl::IsSampledIn(int64_t source_id, uint64_t event_id) {
+  // Determine the sampling rate. It's one of:
+  // - the default
+  // - an explicit sampling rate
+  // - a group sampling rate
+  int sampling_rate = default_sampling_rate_;
+  uint64_t sampling_hash = event_id;
+  auto master_found = event_sampling_master_.find(sampling_hash);
+  if (master_found != event_sampling_master_.end()) {
+    sampling_hash = master_found->second;
+  }
+  auto rate_found = event_sampling_rates_.find(sampling_hash);
+  if (rate_found != event_sampling_rates_.end()) {
+    sampling_rate = rate_found->second;
+  }
+
+  return IsSampledIn(source_id, sampling_hash, sampling_rate);
 }
 
 bool UkmRecorderImpl::IsSampledIn(int64_t source_id,

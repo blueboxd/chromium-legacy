@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.PaymentHandlerActivity;
-import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
@@ -46,14 +45,12 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.UUID;
 
 /**
  * Dispatches incoming intents to the appropriate activity based on the current configuration and
@@ -310,30 +307,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             // Android will try to find and reuse an existing CCT activity in the background. Use
             // this flag to always start a new one instead.
             newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-
-            // Provide the general feeling of supporting multi tasks in Android version that did not
-            // fully support them. Reuse the least recently used SeparateTaskCustomTabActivity
-            // instance.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                String uuid = UUID.randomUUID().toString();
-                int activityIndex = ActivityAssigner
-                                            .instance(ActivityAssigner.ActivityAssignerNamespace
-                                                              .SEPARATE_TASK_CCT_NAMESPACE)
-                                            .assign(uuid);
-                String className = SeparateTaskCustomTabActivity.class.getName() + activityIndex;
-                newIntent.setClassName(context, className);
-
-                String url = IntentHandler.getUrlFromIntent(newIntent);
-                assert url != null;
-                newIntent.setData(new Uri.Builder()
-                                          .scheme(UrlConstants.CUSTOM_TAB_SCHEME)
-                                          .authority(uuid)
-                                          .query(url)
-                                          .build());
-            } else {
-                // Force a new document to ensure the proper task/stack creation.
-                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-            }
+            // Force a new document to ensure the proper task/stack creation.
+            newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         }
 
         // If the previous caller was not Chrome, but added EXTRA_IS_OPENED_BY_CHROME

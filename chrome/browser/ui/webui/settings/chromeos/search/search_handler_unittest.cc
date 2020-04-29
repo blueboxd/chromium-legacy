@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom-test-utils.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -30,7 +30,7 @@ class SearchHandlerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
 
-    provider_ = std::make_unique<OsSettingsLocalizedStringsProvider>(
+    provider_ = std::make_unique<OsSettingsManager>(
         profile_manager_.CreateTestingProfile("TestingProfile"),
         &local_search_service_, /*multidevice_setup_client=*/nullptr,
         /*sync_service=*/nullptr, /*supervised_user_service=*/nullptr,
@@ -52,7 +52,7 @@ class SearchHandlerTest : public testing::Test {
   chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
   mojo::Remote<mojom::SearchHandler> handler_remote_;
   local_search_service::LocalSearchService local_search_service_;
-  std::unique_ptr<OsSettingsLocalizedStringsProvider> provider_;
+  std::unique_ptr<OsSettingsManager> provider_;
   std::unique_ptr<SearchHandler> handler_;
 };
 

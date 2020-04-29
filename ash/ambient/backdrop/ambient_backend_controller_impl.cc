@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/ambient/ambient_controller.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/session/session_controller_impl.h"
@@ -175,17 +176,15 @@ AmbientBackendControllerImpl::~AmbientBackendControllerImpl() = default;
 
 void AmbientBackendControllerImpl::FetchScreenUpdateInfo(
     OnScreenUpdateInfoFetchedCallback callback) {
-  // TODO(b/148463064): Access token will be requested and cached before
-  // entering lock screen.
   // Consolidate the functions of FetchScreenUpdateInfoInternal,
   // StartToGetSettings, and StartToUpdateSettings after this is done.
-  AmbientClient::Get()->RequestAccessToken(base::BindOnce(
+  Shell::Get()->ambient_controller()->RequestAccessToken(base::BindOnce(
       &AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal,
       weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void AmbientBackendControllerImpl::GetSettings(GetSettingsCallback callback) {
-  AmbientClient::Get()->RequestAccessToken(
+  Shell::Get()->ambient_controller()->RequestAccessToken(
       base::BindOnce(&AmbientBackendControllerImpl::StartToGetSettings,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -193,7 +192,7 @@ void AmbientBackendControllerImpl::GetSettings(GetSettingsCallback callback) {
 void AmbientBackendControllerImpl::UpdateSettings(
     AmbientModeTopicSource topic_source,
     UpdateSettingsCallback callback) {
-  AmbientClient::Get()->RequestAccessToken(base::BindOnce(
+  Shell::Get()->ambient_controller()->RequestAccessToken(base::BindOnce(
       &AmbientBackendControllerImpl::StartToUpdateSettings,
       weak_factory_.GetWeakPtr(), topic_source, std::move(callback)));
 }

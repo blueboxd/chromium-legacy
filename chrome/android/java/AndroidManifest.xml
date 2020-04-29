@@ -446,41 +446,6 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
-        <!-- SeparateTaskCustomTabActivity is a wrapper of CustomTabActivity. It provides the
-             general feeling of supporting multi tasks, even for versions that did not fully support
-             it.
-             TODO(arthursonzogni, tedchoc): Enabled this only on Android < 21 after M74.
-        -->
-        <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity"
-            android:theme="@style/Theme.Chromium.Activity"
-            android:exported="false"
-            android:taskAffinity=""
-            android:persistableMode="persistNever"
-            android:autoRemoveFromRecents="false"
-            {{ self.chrome_activity_common() }}
-            {{ self.supports_video_persistence() }}
-        >
-            {{ self.supports_vr() }}
-            {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        {% if min_sdk_version|int < 21 %}
-          {% for i in range(10) %}
-            <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity{{ i }}"
-                android:theme="@style/Theme.Chromium.Activity"
-                android:icon="@mipmap/app_single_page_icon"
-                android:exported="false"
-                android:launchMode="singleTask"
-                android:persistableMode="persistNever"
-                android:taskAffinity=""
-                {{ self.chrome_activity_common() }}
-                {{ self.supports_video_persistence() }}
-            >
-                {{ self.supports_vr() }}
-                {{ self.extra_web_rendering_activity_definitions() }}
-            </activity>
-          {% endfor %}
-        {% endif %}
-
         <!-- ChromeTabbedActivity related -->
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
             android:theme="@style/Theme.Chromium.TabbedMode"
@@ -710,27 +675,6 @@ by a child template that "extends" this file.
             android:label="@string/webapp_activity_title"
             {{ self.supports_video_persistence() }} >
         </activity-alias>
-        {% for i in range(10) %}
-        <activity android:name="org.chromium.chrome.browser.webapps.WebappActivity{{ i }}"
-            android:theme="@style/Theme.Chromium.Webapp"
-            android:icon="@mipmap/app_shortcut_icon"
-            android:label="@string/webapp_activity_title"
-            android:launchMode="singleTask"
-            android:exported="false"
-            android:persistableMode="persistNever"
-            android:taskAffinity="{{ manifest_package }}.webapps.WebappActivity{{ i }}"
-            {{ self.supports_video_persistence() }}
-            {{ self.chrome_activity_common() }}
-        >
-           {{ self.supports_vr() }}
-           {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        <activity-alias android:name="com.google.android.apps.chrome.webapps.WebappActivity{{ i }}"
-            android:targetActivity="org.chromium.chrome.browser.webapps.WebappActivity{{ i }}"
-            android:icon="@mipmap/app_shortcut_icon"
-            android:label="@string/webapp_activity_title">
-        </activity-alias>
-        {% endfor %}
         <!-- Activities for WebAPKs. -->
         <activity android:name="org.chromium.chrome.browser.webapps.SameTaskWebApkActivity"
             android:theme="@style/Theme.Chromium.Webapp.Translucent"

@@ -623,8 +623,8 @@ const GURL& NavigationEntryImpl::GetOriginalRequestURL() {
   return original_request_url_;
 }
 
-void NavigationEntryImpl::SetIsOverridingUserAgent(bool override) {
-  is_overriding_user_agent_ = override;
+void NavigationEntryImpl::SetIsOverridingUserAgent(bool override_ua) {
+  is_overriding_user_agent_ = override_ua;
 }
 
 bool NavigationEntryImpl::GetIsOverridingUserAgent() {

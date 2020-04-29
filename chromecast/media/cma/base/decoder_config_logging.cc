@@ -4,7 +4,7 @@
 
 #include "chromecast/media/cma/base/decoder_config_logging.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 std::ostream& operator<<(std::ostream& stream,
                          ::chromecast::media::AudioCodec codec) {

@@ -114,7 +114,7 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
             Drawable plusIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.plus);
             plusIcon.mutate();
             plusIcon.setColorFilter(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.pref_accent_color),
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.light_active_color),
                     PorterDuff.Mode.SRC_IN);
             pref.setIcon(plusIcon);
             pref.setTitle(R.string.autofill_create_profile);

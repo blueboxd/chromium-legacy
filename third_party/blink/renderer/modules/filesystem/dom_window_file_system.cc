@@ -84,7 +84,7 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
       AsyncCallbackHelper::SuccessCallback<DOMFileSystem>(success_callback);
 
   LocalFileSystem::From(window)->RequestFileSystem(
-      &window, file_system_type, size,
+      file_system_type, size,
       std::make_unique<FileSystemCallbacks>(std::move(success_callback_wrapper),
                                             std::move(error_callback_wrapper),
                                             &window, file_system_type),
@@ -123,7 +123,7 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(
       AsyncCallbackHelper::SuccessCallback<Entry>(success_callback);
 
   LocalFileSystem::From(window)->ResolveURL(
-      &window, completed_url,
+      completed_url,
       std::make_unique<ResolveURICallbacks>(std::move(success_callback_wrapper),
                                             std::move(error_callback_wrapper),
                                             &window),

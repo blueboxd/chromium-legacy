@@ -36,10 +36,10 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
-#include "content/shell/browser/web_test/blink_test_controller.h"
 #include "content/shell/browser/web_test/fake_bluetooth_scanning_prompt.h"
 #include "content/shell/browser/web_test/secondary_test_window_observer.h"
 #include "content/shell/browser/web_test/web_test_bluetooth_chooser_factory.h"
+#include "content/shell/browser/web_test/web_test_control_host.h"
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_javascript_dialog_manager.h"
 #include "content/shell/common/shell_switches.h"
@@ -427,7 +427,7 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
     case WindowOpenDisposition::OFF_THE_RECORD:
     // TODO(lukasza): Investigate if some web tests might need support for
     // SAVE_TO_DISK disposition.  This would probably require that
-    // BlinkTestController always sets up and cleans up a temporary directory
+    // WebTestControlHost always sets up and cleans up a temporary directory
     // as the default downloads destinations for the duration of a test.
     case WindowOpenDisposition::SAVE_TO_DISK:
     // Ignoring requests with disposition == IGNORE_ACTION...
@@ -528,9 +528,9 @@ JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
 std::unique_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
-  BlinkTestController* blink_test_controller = BlinkTestController::Get();
-  if (blink_test_controller && switches::IsRunWebTestsSwitchPresent())
-    return blink_test_controller->RunBluetoothChooser(frame, event_handler);
+  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
+  if (web_test_control_host && switches::IsRunWebTestsSwitchPresent())
+    return web_test_control_host->RunBluetoothChooser(frame, event_handler);
   return nullptr;
 }
 
@@ -557,9 +557,9 @@ void Shell::RendererUnresponsive(
     WebContents* source,
     RenderWidgetHost* render_widget_host,
     base::RepeatingClosure hang_monitor_restarter) {
-  BlinkTestController* blink_test_controller = BlinkTestController::Get();
-  if (blink_test_controller && switches::IsRunWebTestsSwitchPresent())
-    blink_test_controller->RendererUnresponsive();
+  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
+  if (web_test_control_host && switches::IsRunWebTestsSwitchPresent())
+    web_test_control_host->RendererUnresponsive();
 }
 
 void Shell::ActivateContents(WebContents* contents) {
@@ -589,10 +589,10 @@ bool Shell::ShouldAllowRunningInsecureContent(WebContents* web_contents,
                                               const url::Origin& origin,
                                               const GURL& resource_url) {
   bool allowed_by_test = false;
-  BlinkTestController* blink_test_controller = BlinkTestController::Get();
-  if (blink_test_controller && switches::IsRunWebTestsSwitchPresent()) {
+  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
+  if (web_test_control_host && switches::IsRunWebTestsSwitchPresent()) {
     const base::DictionaryValue& test_flags =
-        blink_test_controller->accumulated_web_test_runtime_flags_changes();
+        web_test_control_host->accumulated_web_test_runtime_flags_changes();
     test_flags.GetBoolean("running_insecure_content_allowed", &allowed_by_test);
   }
 

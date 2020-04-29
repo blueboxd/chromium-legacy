@@ -572,21 +572,21 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   }
 }
 
-static void AdjustStateForSubtreeVisibility(ComputedStyle& style,
+static void AdjustStateForContentVisibility(ComputedStyle& style,
                                             Element* element) {
   if (!element)
     return;
   auto* context = element->GetDisplayLockContext();
   // The common case for most elements is that we don't have a context and have
-  // the default (visible) subtree-visibility value.
+  // the default (visible) content-visibility value.
   if (LIKELY(!context &&
-             style.SubtreeVisibility() == ESubtreeVisibility::kVisible)) {
+             style.ContentVisibility() == EContentVisibility::kVisible)) {
     return;
   }
 
   if (!context)
     context = &element->EnsureDisplayLockContext();
-  context->SetRequestedState(style.SubtreeVisibility());
+  context->SetRequestedState(style.ContentVisibility());
   context->AdjustElementStyle(&style);
 }
 
@@ -648,8 +648,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForFirstLetter(style);
   }
 
-  if (RuntimeEnabledFeatures::CSSSubtreeVisibilityEnabled())
-    AdjustStateForSubtreeVisibility(style, element);
+  if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled())
+    AdjustStateForContentVisibility(style, element);
 
   // Make sure our z-index value is only applied if the object is positioned.
   if (style.GetPosition() == EPosition::kStatic &&

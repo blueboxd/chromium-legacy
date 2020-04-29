@@ -12,10 +12,6 @@
 #include "ui/android/ui_android_export.h"
 #include "ui/compositor/compositor_lock.h"
 
-namespace cc {
-class Layer;
-}
-
 namespace ui {
 
 class ResourceManager;
@@ -25,7 +21,6 @@ class UI_ANDROID_EXPORT WindowAndroidCompositor {
  public:
   virtual ~WindowAndroidCompositor() {}
 
-  virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) = 0;
   virtual void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest> request) = 0;
   virtual void SetNeedsAnimate() = 0;

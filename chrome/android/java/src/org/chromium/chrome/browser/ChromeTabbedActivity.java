@@ -684,11 +684,6 @@ public class ChromeTabbedActivity
                 }
             }
 
-            if (mStartSurface != null) {
-                assert LibraryLoader.getInstance().isInitialized();
-                mStartSurface.initWithNative();
-            }
-
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
 
             // TODO(yusufo): get rid of findViewById(R.id.url_bar).

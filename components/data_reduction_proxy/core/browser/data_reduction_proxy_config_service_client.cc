@@ -91,7 +91,6 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
     true,             // always_use_initial_delay
 };
 
-
 bool AllowInsecurePrefetchProxy() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       "allow-insecure-prefetch-proxy-for-testing");
@@ -194,8 +193,7 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
   DCHECK(request_options);
   DCHECK(service);
   DCHECK(config_service_url_.is_valid());
-  DCHECK(previews::params::IsLitePageServerPreviewsEnabled() ||
-         params::ForceEnableClientConfigServiceForAllDataSaverUsers());
+  DCHECK(params::ForceEnableClientConfigServiceForAllDataSaverUsers());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -377,8 +375,7 @@ void DataReductionProxyConfigServiceClient::OnURLLoadComplete(
 
 void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(previews::params::IsLitePageServerPreviewsEnabled() ||
-         params::ForceEnableClientConfigServiceForAllDataSaverUsers());
+  DCHECK(params::ForceEnableClientConfigServiceForAllDataSaverUsers());
 
   CreateClientConfigRequest request;
   std::string serialized_request;
@@ -537,7 +534,6 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
 
   service_->SetIgnoreLongTermBlackListRules(
       config.ignore_long_term_black_list_rules());
-
 
   request_options_->SetSecureSession(config.session_key());
   remote_config_applied_ = true;

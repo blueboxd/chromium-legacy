@@ -1902,6 +1902,21 @@ CSSValue* ComputedStyleUtils::ValueForTransformOperation(
   }
 }
 
+CSSValue* ComputedStyleUtils::ValueForTransformList(
+    const TransformOperations& transform_list,
+    float zoom) {
+  if (!transform_list.Operations().size())
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
+
+  CSSValueList* components = CSSValueList::CreateSpaceSeparated();
+  for (const auto& operation : transform_list.Operations()) {
+    CSSValue* op_value = ValueForTransformOperation(*operation, zoom);
+    if (op_value)
+      components->Append(*op_value);
+  }
+  return components;
+}
+
 FloatRect ComputedStyleUtils::ReferenceBoxForTransform(
     const LayoutObject& layout_object,
     UsePixelSnappedBox pixel_snap_box) {
@@ -1916,7 +1931,12 @@ FloatRect ComputedStyleUtils::ReferenceBoxForTransform(
   return FloatRect();
 }
 
-CSSValue* ComputedStyleUtils::ComputedTransform(
+CSSValue* ComputedStyleUtils::ComputedTransformList(
+    const ComputedStyle& style) {
+  return ValueForTransformList(style.Transform(), style.EffectiveZoom());
+}
+
+CSSValue* ComputedStyleUtils::ResolvedTransform(
     const LayoutObject* layout_object,
     const ComputedStyle& style) {
   if (!layout_object || !style.HasTransform())
@@ -2700,6 +2720,28 @@ ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
       // Make an isolated copy to ensure that it is safe to pass cross thread.
       return std::make_unique<CrossThreadUnsupportedValue>(
           style_value->toString().IsolatedCopy());
+  }
+}
+
+const CSSValue* ComputedStyleUtils::ComputedPropertyValue(
+    const CSSProperty& property,
+    const ComputedStyle& style) {
+  switch (property.PropertyID()) {
+    // Computed value is usually relative so that multiple fonts in child
+    // elements work properly, but resolved value is always a pixel length.
+    case CSSPropertyID::kLineHeight:
+      return ComputedStyleUtils::ComputedValueForLineHeight(style);
+
+    // Returns a transform list instead of converting to a (resolved) matrix.
+    case CSSPropertyID::kTransform:
+      return ComputedStyleUtils::ComputedTransformList(style);
+
+    // For all other properties, the resolved value is either always the same
+    // as the computed value (most properties), or the same as the computed
+    // value when there is no layout box ('width' and friends).
+    default:
+      return property.CSSValueFromComputedStyle(
+          style, /*layout_object=*/nullptr, false);
   }
 }
 

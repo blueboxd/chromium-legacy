@@ -49,16 +49,6 @@ struct StreamModelUpdateRequest {
 
   std::vector<feedstore::StreamStructure> stream_structures;
 
-  // If this data originates from the network, this is the server-reported time
-  // at which the request was fulfilled.
-  // TODO(harringtond): Use this or remove it.
-  int64_t server_response_time = 0;
-
-  // If this data originates from the network, this is the time taken by the
-  // server to produce the response.
-  // TODO(harringtond): Use this or remove it.
-  base::TimeDelta response_time;
-
   int32_t max_structure_sequence_number = 0;
 };
 
@@ -68,7 +58,6 @@ base::Optional<feedstore::DataOperation> TranslateDataOperation(
 std::unique_ptr<StreamModelUpdateRequest> TranslateWireResponse(
     feedwire::Response response,
     StreamModelUpdateRequest::Source source,
-    base::TimeDelta response_time,
     base::Time current_time);
 
 }  // namespace feed

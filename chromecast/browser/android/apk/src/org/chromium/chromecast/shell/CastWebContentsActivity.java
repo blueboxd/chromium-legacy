@@ -156,17 +156,6 @@ public class CastWebContentsActivity extends Activity {
                     audioManager.releaseStreamMuteIfNecessary(AudioManager.STREAM_MUSIC);
                 }));
 
-        final Observable<CastAudioFocusRequest> audioFocusRequestState = mCreatedState.map(x
-                -> new CastAudioFocusRequest.Builder()
-                           .setFocusGain(AudioManager.AUDIOFOCUS_GAIN)
-                           .build());
-
-        mAudioManagerState.subscribe((CastAudioManager audioManager) -> {
-            return audioManager.requestAudioFocusWhen(audioFocusRequestState)
-                    .filter(state -> state == CastAudioManager.AudioFocusLoss.NORMAL)
-                    .subscribe(Observers.onEnter(x -> mIsFinishingState.set("Lost audio focus.")));
-        });
-
         // Handle each new Intent.
         Controller<CastWebContentsSurfaceHelper.StartParams> startParamsState = new Controller<>();
         mGotIntentState.and(Observable.not(mIsFinishingState))
@@ -245,6 +234,7 @@ public class CastWebContentsActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (DEBUG) Log.d(TAG, "onDestroy");
+
         mCreatedState.reset();
         super.onDestroy();
     }

@@ -9,8 +9,6 @@ import android.content.Context;
 import android.os.Build;
 
 import org.chromium.base.PackageUtils;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.blink.mojom.Authenticator;
 import org.chromium.blink.mojom.AuthenticatorStatus;
 import org.chromium.blink.mojom.GetAssertionAuthenticatorResponse;
@@ -23,18 +21,12 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.url.Origin;
 
-import java.nio.ByteBuffer;
 import java.util.LinkedList;
-import java.util.Optional;
 import java.util.Queue;
 
 /**
- * Android implementation of the authenticator.mojom interface. This also acts as the bridge for
- * InternalAuthenticator declared in
- * //chrome/browser/autofill/android/internal_authenticator_android.h, which is meant for requests
- * that originate in the browser process.
+ * Android implementation of the authenticator.mojom interface.
  */
 public class AuthenticatorImpl extends HandlerResponseCallback implements Authenticator {
     private final RenderFrameHost mRenderFrameHost;
@@ -44,13 +36,6 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
 
     /** Ensures only one request is processed at a time. */
     private boolean mIsOperationPending;
-
-    /**
-     * The origin of the request. This may be overridden by an internal request from the browser
-     * process.
-     */
-    private Origin mOrigin;
-    private Optional<Long> mNativeInternalAuthenticatorAndroid = Optional.empty();
 
     private org.chromium.mojo.bindings.Callbacks
             .Callback2<Integer, MakeCredentialAuthenticatorResponse> mMakeCredentialCallback;
@@ -71,30 +56,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
     public AuthenticatorImpl(RenderFrameHost renderFrameHost) {
         assert renderFrameHost != null;
         mRenderFrameHost = renderFrameHost;
-        mOrigin = mRenderFrameHost.getLastCommittedOrigin();
         mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
-    }
-
-    private AuthenticatorImpl(
-            long nativeInternalAuthenticatorAndroid, RenderFrameHost renderFrameHost) {
-        this(renderFrameHost);
-        mNativeInternalAuthenticatorAndroid = Optional.of(nativeInternalAuthenticatorAndroid);
-    }
-
-    @CalledByNative
-    public static AuthenticatorImpl create(
-            long nativeInternalAuthenticatorAndroid, RenderFrameHost renderFrameHost) {
-        return new AuthenticatorImpl(nativeInternalAuthenticatorAndroid, renderFrameHost);
-    }
-
-    /**
-     * Called by InternalAuthenticator, which facilitates WebAuthn for processes that originate from
-     * the browser process. Since the request is from the browser process, the Relying Party ID may
-     * not correspond with the origin of the renderer.
-     */
-    @CalledByNative
-    public void setEffectiveOrigin(Origin origin) {
-        mOrigin = origin;
     }
 
     @Override
@@ -114,22 +76,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
         }
 
         mIsOperationPending = true;
-        Fido2ApiHandler.getInstance().makeCredential(options, mRenderFrameHost, mOrigin, this);
-    }
-
-    /**
-     * Called by InternalAuthenticator, which facilitates WebAuthn for processes that originate from
-     * the browser process. The origin may be overridden through |setEffectiveOrigin()|. The
-     * response will be passed through |invokeMakeCredentialResponse()|.
-     */
-    @CalledByNative
-    public void makeCredentialBridge(ByteBuffer optionsByteBuffer) {
-        assert mNativeInternalAuthenticatorAndroid.isPresent();
-        makeCredential(PublicKeyCredentialCreationOptions.deserialize(optionsByteBuffer),
-                (status, response)
-                        -> AuthenticatorImplJni.get().invokeMakeCredentialResponse(
-                                mNativeInternalAuthenticatorAndroid.get(), status.intValue(),
-                                response.serialize()));
+        Fido2ApiHandler.getInstance().makeCredential(options, mRenderFrameHost, this);
     }
 
     @Override
@@ -149,22 +96,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
         }
 
         mIsOperationPending = true;
-        Fido2ApiHandler.getInstance().getAssertion(options, mRenderFrameHost, mOrigin, this);
-    }
-
-    /**
-     * Called by InternalAuthenticator, which facilitates WebAuthn for processes that originate from
-     * the browser process. The origin may be overridden through |setEffectiveOrigin()|. The
-     * response will be passed through |invokeGetAssertionResponse()|.
-     */
-    @CalledByNative
-    public void getAssertionBridge(ByteBuffer optionsByteBuffer) {
-        assert mNativeInternalAuthenticatorAndroid.isPresent();
-        getAssertion(PublicKeyCredentialRequestOptions.deserialize(optionsByteBuffer),
-                (status, response)
-                        -> AuthenticatorImplJni.get().invokeGetAssertionResponse(
-                                mNativeInternalAuthenticatorAndroid.get(), status.intValue(),
-                                response.serialize()));
+        Fido2ApiHandler.getInstance().getAssertion(options, mRenderFrameHost, this);
     }
 
     @Override
@@ -194,23 +126,6 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
                 mRenderFrameHost, this);
     }
 
-    /**
-     * Called by InternalAuthenticator, which facilitates WebAuthn for processes that originate from
-     * the browser process. The origin may be overridden through |setEffectiveOrigin()|. The
-     * response will be passed through
-     * |invokeIsUserVerifyingPlatformAuthenticatorAvailableResponse()|.
-     */
-    @CalledByNative
-    public void isUserVerifyingPlatformAuthenticatorAvailableBridge() {
-        assert mNativeInternalAuthenticatorAndroid.isPresent();
-        isUserVerifyingPlatformAuthenticatorAvailable(
-                (isUVPAA)
-                        -> AuthenticatorImplJni.get()
-                                   .invokeIsUserVerifyingPlatformAuthenticatorAvailableResponse(
-                                           mNativeInternalAuthenticatorAndroid.get(), isUVPAA));
-    }
-
-    @CalledByNative
     @Override
     public void cancel() {
         // Not implemented, ignored because request sent to gmscore fido cannot be cancelled.
@@ -257,21 +172,10 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
         mIsOperationPending = false;
         mMakeCredentialCallback = null;
         mGetAssertionCallback = null;
-        mNativeInternalAuthenticatorAndroid = Optional.empty();
     }
 
     @Override
     public void onConnectionError(MojoException e) {
         close();
-    }
-
-    @NativeMethods
-    interface Natives {
-        void invokeMakeCredentialResponse(
-                long nativeInternalAuthenticatorAndroid, int status, ByteBuffer byteBuffer);
-        void invokeGetAssertionResponse(
-                long nativeInternalAuthenticatorAndroid, int status, ByteBuffer byteBuffer);
-        void invokeIsUserVerifyingPlatformAuthenticatorAvailableResponse(
-                long nativeInternalAuthenticatorAndroid, boolean isUVPAA);
     }
 }

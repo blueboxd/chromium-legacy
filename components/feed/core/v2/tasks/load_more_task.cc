@@ -61,7 +61,6 @@ void LoadMoreTask::QueryRequestComplete(
       stream_->GetWireResponseTranslator()->TranslateWireResponse(
           *result.response_body,
           StreamModelUpdateRequest::Source::kNetworkLoadMore,
-          stream_->GetTickClock()->NowTicks() - fetch_start_time_,
           stream_->GetClock()->Now());
   if (!update_request)
     return Done(LoadStreamStatus::kProtoTranslationFailed);

@@ -73,6 +73,11 @@ class CC_ANIMATION_EXPORT ScrollTimeline : public AnimationTimeline {
   void PushPropertiesTo(AnimationTimeline* impl_timeline) override;
   void ActivateTimeline() override;
 
+  bool TickScrollLinkedAnimations(
+      const std::vector<scoped_refptr<Animation>>& ticking_animations,
+      const ScrollTree& scroll_tree,
+      bool is_active_tree) override;
+
   base::Optional<ElementId> GetActiveIdForTest() const { return active_id_; }
   base::Optional<ElementId> GetPendingIdForTest() const { return pending_id_; }
   ScrollDirection GetDirectionForTest() const { return direction_; }

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service_factory.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider_factory.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -25,11 +25,11 @@
 namespace chromeos {
 namespace settings {
 
-class OsSettingsLocalizedStringsProviderTest : public testing::Test {
+class OsSettingsManagerTest : public testing::Test {
  protected:
-  OsSettingsLocalizedStringsProviderTest()
+  OsSettingsManagerTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
-  ~OsSettingsLocalizedStringsProviderTest() override = default;
+  ~OsSettingsManagerTest() override = default;
 
   // testing::Test:
   void SetUp() override {
@@ -37,8 +37,7 @@ class OsSettingsLocalizedStringsProviderTest : public testing::Test {
     TestingProfile* profile =
         profile_manager_.CreateTestingProfile("TestingProfile");
 
-    provider_ =
-        OsSettingsLocalizedStringsProviderFactory::GetForProfile(profile);
+    manager_ = OsSettingsManagerFactory::GetForProfile(profile);
 
     index_ =
         local_search_service::LocalSearchServiceFactory::GetForProfile(profile)
@@ -53,18 +52,18 @@ class OsSettingsLocalizedStringsProviderTest : public testing::Test {
   TestingProfileManager profile_manager_;
   chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
   local_search_service::Index* index_;
-  OsSettingsLocalizedStringsProvider* provider_;
+  OsSettingsManager* manager_;
 };
 
 // To prevent this from becoming a change-detector test, this test simply
 // verifies that when the provider starts up, it adds *some* strings without
 // checking the exact number. It also checks one specific canonical tag.
-TEST_F(OsSettingsLocalizedStringsProviderTest, WifiTags) {
+TEST_F(OsSettingsManagerTest, WifiTags) {
   uint64_t initial_num_items = index_->GetSize();
   EXPECT_GT(initial_num_items, 0u);
 
   const SearchConcept* network_settings_concept =
-      provider_->GetCanonicalTagMetadata(IDS_SETTINGS_TAG_NETWORK_SETTINGS);
+      manager_->GetCanonicalTagMetadata(IDS_SETTINGS_TAG_NETWORK_SETTINGS);
   ASSERT_TRUE(network_settings_concept);
   EXPECT_EQ(chrome::kNetworksSubPage,
             network_settings_concept->url_path_with_parameters);
@@ -73,7 +72,7 @@ TEST_F(OsSettingsLocalizedStringsProviderTest, WifiTags) {
   // Ethernet is not present by default, so no Ethernet concepts have yet been
   // added.
   const SearchConcept* ethernet_settings_concept =
-      provider_->GetCanonicalTagMetadata(IDS_SETTINGS_TAG_ETHERNET_SETTINGS);
+      manager_->GetCanonicalTagMetadata(IDS_SETTINGS_TAG_ETHERNET_SETTINGS);
   ASSERT_FALSE(ethernet_settings_concept);
 
   // Add Ethernet and let asynchronous handlers run. This should cause Ethernet
@@ -86,7 +85,7 @@ TEST_F(OsSettingsLocalizedStringsProviderTest, WifiTags) {
   EXPECT_GT(num_items_after_adding_ethernet, initial_num_items);
 
   ethernet_settings_concept =
-      provider_->GetCanonicalTagMetadata(IDS_SETTINGS_TAG_ETHERNET_SETTINGS);
+      manager_->GetCanonicalTagMetadata(IDS_SETTINGS_TAG_ETHERNET_SETTINGS);
   ASSERT_TRUE(ethernet_settings_concept);
   EXPECT_EQ(chrome::kEthernetSettingsSubPage,
             ethernet_settings_concept->url_path_with_parameters);

@@ -14,6 +14,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
@@ -1231,17 +1232,45 @@ public class StartSurfaceMediatorUnitTest {
         assertEquals("Wrong top bar height.", 50, mPropertyModel.get(TOP_BAR_HEIGHT));
     }
 
+    @Test
+    public void exploreSurfaceInitializedAfterNativeInSinglePane() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator =
+                createStartSurfaceMediatorWithoutInit(SurfaceMode.SINGLE_PANE, false);
+        verify(mMainTabGridController)
+                .addOverviewModeObserver(mOverviewModeObserverCaptor.capture());
+
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
+        mediator.showOverview(false);
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_HOMEPAGE));
+        assertThat(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE), equalTo(false));
+        verify(mMainTabGridController).showOverview(eq(false));
+
+        when(mMainTabGridController.overviewVisible()).thenReturn(true);
+        mediator.initWithNative(mFakeBoxDelegate, mFeedSurfaceCreator);
+        assertThat(mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE), equalTo(true));
+    }
+
     private StartSurfaceMediator createStartSurfaceMediator(
+            @SurfaceMode int mode, boolean excludeMVTiles) {
+        StartSurfaceMediator mediator = createStartSurfaceMediatorWithoutInit(mode, excludeMVTiles);
+        mediator.initWithNative(mFakeBoxDelegate,
+                (mode == SurfaceMode.SINGLE_PANE || mode == SurfaceMode.TWO_PANES)
+                        ? mFeedSurfaceCreator
+                        : null);
+        return mediator;
+    }
+
+    private StartSurfaceMediator createStartSurfaceMediatorWithoutInit(
             @SurfaceMode int mode, boolean excludeMVTiles) {
         StartSurfaceMediator mediator = new StartSurfaceMediator(mMainTabGridController,
                 mTabModelSelector, mode == SurfaceMode.NO_START_SURFACE ? null : mPropertyModel,
-                (mode == SurfaceMode.SINGLE_PANE || mode == SurfaceMode.TWO_PANES)
-                        ? mFeedSurfaceCreator
-                        : null,
                 mode == SurfaceMode.SINGLE_PANE ? mSecondaryTasksSurfaceInitializer : null, mode,
                 mNightModeStateProvider, mChromeFullscreenManager, mActivityStateChecker,
                 excludeMVTiles);
-        mediator.initWithNative(mFakeBoxDelegate);
         return mediator;
     }
 }

@@ -115,8 +115,13 @@ base::string16 PersonalInfoSuggester::GetSuggestion(
   if (proposed_action_type_ == AssistiveType::kGenericAction)
     return base::EmptyString16();
 
-  if (proposed_action_type_ == AssistiveType::kPersonalEmail)
-    return base::UTF8ToUTF16(profile_->GetProfileUserName());
+  if (proposed_action_type_ == AssistiveType::kPersonalEmail) {
+    return profile_ ? base::UTF8ToUTF16(profile_->GetProfileUserName())
+                    : base::EmptyString16();
+  }
+
+  if (!personal_data_manager_)
+    return base::EmptyString16();
 
   auto autofill_profiles = personal_data_manager_->GetProfilesToSuggest();
   if (autofill_profiles.empty())

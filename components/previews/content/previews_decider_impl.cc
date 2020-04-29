@@ -51,7 +51,6 @@ bool ShouldCheckOptimizationHints(PreviewsType type) {
     // These types may have server optimization hints.
     case PreviewsType::NOSCRIPT:
     case PreviewsType::RESOURCE_LOADING_HINTS:
-    case PreviewsType::LITE_PAGE_REDIRECT:
     case PreviewsType::DEFER_ALL_SCRIPT:
       return true;
     // These types do not have server optimization hints.
@@ -62,6 +61,7 @@ bool ShouldCheckOptimizationHints(PreviewsType type) {
     case PreviewsType::UNSPECIFIED:
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case PreviewsType::DEPRECATED_LOFI:
+    case PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
     case PreviewsType::LAST:
       break;
   }
@@ -76,7 +76,6 @@ bool IsCommitTimePreview(PreviewsType type) {
     case PreviewsType::RESOURCE_LOADING_HINTS:
     case PreviewsType::DEFER_ALL_SCRIPT:
       return true;
-    case PreviewsType::LITE_PAGE_REDIRECT:
     case PreviewsType::OFFLINE:
     case PreviewsType::LITE_PAGE:
       return false;
@@ -84,6 +83,7 @@ bool IsCommitTimePreview(PreviewsType type) {
     case PreviewsType::UNSPECIFIED:
     case PreviewsType::DEPRECATED_AMP_REDIRECTION:
     case PreviewsType::DEPRECATED_LOFI:
+    case PreviewsType::DEPRECATED_LITE_PAGE_REDIRECT:
     case PreviewsType::LAST:
       break;
   }
@@ -416,33 +416,9 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(type == PreviewsType::LITE_PAGE_REDIRECT ||
-         type == PreviewsType::NOSCRIPT ||
+  DCHECK(type == PreviewsType::NOSCRIPT ||
          type == PreviewsType::RESOURCE_LOADING_HINTS ||
          type == PreviewsType::DEFER_ALL_SCRIPT);
-  // For LitePageRedirect, ensure it is not blacklisted for this request, and
-  // hints have been fully loaded.
-  //
-  // We allow all other Optimization Hint previews in the hopes that the missing
-  // state will load in before commit.
-  if (type == PreviewsType::LITE_PAGE_REDIRECT) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
-      return PreviewsEligibilityReason::ALLOWED;
-    }
-
-    if (!previews_opt_guide_)
-      return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
-    passed_reasons->push_back(
-        PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
-
-    if (!previews_opt_guide_->CanApplyPreview(previews_data, navigation_handle,
-                                              type)) {
-      return PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE;
-    }
-    passed_reasons->push_back(
-        PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE);
-  }
 
   return PreviewsEligibilityReason::ALLOWED;
 }

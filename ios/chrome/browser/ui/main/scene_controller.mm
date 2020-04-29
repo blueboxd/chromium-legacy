@@ -747,6 +747,13 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                                    presentingViewController:baseViewController
                                                  completion:command.callback];
       break;
+    case AUTHENTICATION_OPERATION_ADD_ACCOUNT:
+      [self.signinInteractionCoordinator
+          addAccountWithAccessPoint:command.accessPoint
+                        promoAction:command.promoAction
+           presentingViewController:baseViewController
+                         completion:command.callback];
+      break;
   }
 }
 

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -85,8 +84,7 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
     @Override
     public void onFinishNativeInitialization() {
         WebappExtras webappExtras = mIntentDataProvider.getWebappExtras();
-        boolean canUpdate = (webappExtras != null
-                || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && usesSeparateTask()));
+        boolean canUpdate = (webappExtras != null || usesSeparateTask());
         if (!canUpdate) return;
 
         mDefaultThemeColor = ApiCompatibilityUtils.getColor(

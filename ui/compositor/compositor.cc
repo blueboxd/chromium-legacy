@@ -27,6 +27,7 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
+#include "cc/metrics/frame_sequence_tracker.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/features.h"
@@ -603,6 +604,10 @@ void Compositor::IssueExternalBeginFrame(
       args, force, std::move(callback));
 }
 
+ThroughputTracker Compositor::RequestNewThroughputTracker() {
+  return ThroughputTracker(next_throughput_tracker_id_++, this);
+}
+
 void Compositor::DidUpdateLayers() {
   // Dump property trees and layers if run with:
   //   --vmodule=*ui/compositor*=3
@@ -663,6 +668,12 @@ void Compositor::DidCommit(base::TimeTicks) {
 std::unique_ptr<cc::BeginMainFrameMetrics>
 Compositor::GetBeginMainFrameMetrics() {
   return nullptr;
+}
+
+void Compositor::NotifyThroughputTrackerResults(
+    cc::CustomTrackerResults results) {
+  for (auto& pair : results)
+    ReportThroughputForTracker(pair.first, std::move(pair.second));
 }
 
 void Compositor::DidReceiveCompositorFrameAck() {
@@ -746,8 +757,15 @@ void Compositor::RequestPresentationTimeForNextFrame(
   host_->RequestPresentationTimeForNextFrame(std::move(callback));
 }
 
-ThroughputTracker Compositor::RequestNewThroughputTracker() {
-  return ThroughputTracker(next_throughput_tracker_id_++, this);
+void Compositor::ReportThroughputForTracker(
+    int tracker_id,
+    cc::FrameSequenceMetrics::ThroughputData throughput) {
+  auto it = throughput_tracker_map_.find(tracker_id);
+  if (it == throughput_tracker_map_.end())
+    return;
+
+  std::move(it->second).Run(std::move(throughput));
+  throughput_tracker_map_.erase(it);
 }
 
 }  // namespace ui

@@ -23,10 +23,10 @@
 #include "ash/assistant/assistant_view_delegate_impl.h"
 #include "ash/assistant/assistant_web_ui_controller.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
-#include "ash/public/cpp/assistant/assistant_image_downloader.h"
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
+#include "ash/public/cpp/image_downloader.h"
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -66,7 +66,7 @@ class ASH_EXPORT AssistantControllerImpl
   // supplied |callback| will be run with the downloaded image. If the download
   // attempt is unsuccessful, a NULL image is returned.
   void DownloadImage(const GURL& url,
-                     AssistantImageDownloader::DownloadCallback callback);
+                     ImageDownloader::DownloadCallback callback);
 
   // AssistantController:
   void AddObserver(AssistantControllerObserver* observer) override;

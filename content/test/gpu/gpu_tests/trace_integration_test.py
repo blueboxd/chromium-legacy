@@ -14,10 +14,10 @@ from telemetry.timeline import tracing_config
 
 gpu_relative_path = "content/test/data/gpu/"
 
-data_paths = [os.path.join(
-                  path_util.GetChromiumSrcDir(), gpu_relative_path),
-              os.path.join(
-                  path_util.GetChromiumSrcDir(), 'media', 'test', 'data')]
+data_paths = [
+    os.path.join(path_util.GetChromiumSrcDir(), gpu_relative_path),
+    os.path.join(path_util.GetChromiumSrcDir(), 'media', 'test', 'data')
+]
 
 webgl_test_harness_script = r"""
   var domAutomationController = {};
@@ -102,47 +102,52 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # should perhaps be enabled in the future.
     namespace = pixel_test_pages.PixelTestPages
     for p in namespace.DefaultPages('TraceTest'):
-      yield (p.name, gpu_relative_path + p.url,
-             {'browser_args': [],
-              'category': cls._DisabledByDefaultTraceCategory('gpu.service'),
-              'test_harness_script': webgl_test_harness_script,
-              'finish_js_condition': 'domAutomationController._finished',
-              'success_eval_func': 'CheckGLCategory'})
+      yield (p.name, gpu_relative_path + p.url, {
+          'browser_args': [],
+          'category': cls._DisabledByDefaultTraceCategory('gpu.service'),
+          'test_harness_script': webgl_test_harness_script,
+          'finish_js_condition': 'domAutomationController._finished',
+          'success_eval_func': 'CheckGLCategory'
+      })
     for p in namespace.DefaultPages('DeviceTraceTest'):
-      yield (p.name, gpu_relative_path + p.url,
-             {'browser_args': [],
-              'category': cls._DisabledByDefaultTraceCategory('gpu.device'),
-              'test_harness_script': webgl_test_harness_script,
-              'finish_js_condition': 'domAutomationController._finished',
-              'success_eval_func': 'CheckGLCategory'})
+      yield (p.name, gpu_relative_path + p.url, {
+          'browser_args': [],
+          'category': cls._DisabledByDefaultTraceCategory('gpu.device'),
+          'test_harness_script': webgl_test_harness_script,
+          'finish_js_condition': 'domAutomationController._finished',
+          'success_eval_func': 'CheckGLCategory'
+      })
     for p in namespace.DirectCompositionPages('VideoPathTraceTest'):
-      yield (p.name, gpu_relative_path + p.url,
-             {'browser_args': p.browser_args,
-              'category': cls._DisabledByDefaultTraceCategory('gpu.service'),
-              'test_harness_script': basic_test_harness_script,
-              'finish_js_condition': 'domAutomationController._finished',
-              'success_eval_func': 'CheckVideoPath',
-              'other_args': p.other_args})
+      yield (p.name, gpu_relative_path + p.url, {
+          'browser_args': p.browser_args,
+          'category': cls._DisabledByDefaultTraceCategory('gpu.service'),
+          'test_harness_script': basic_test_harness_script,
+          'finish_js_condition': 'domAutomationController._finished',
+          'success_eval_func': 'CheckVideoPath',
+          'other_args': p.other_args
+      })
     for p in namespace.LowLatencySwapChainPages('SwapChainTraceTest'):
-      yield (p.name, gpu_relative_path + p.url,
-             {'browser_args': p.browser_args,
-              'category': 'gpu',
-              'test_harness_script': basic_test_harness_script,
-              'finish_js_condition': 'domAutomationController._finished',
-              'success_eval_func': 'CheckSwapChainPath',
-              'other_args': p.other_args})
+      yield (p.name, gpu_relative_path + p.url, {
+          'browser_args': p.browser_args,
+          'category': 'gpu',
+          'test_harness_script': basic_test_harness_script,
+          'finish_js_condition': 'domAutomationController._finished',
+          'success_eval_func': 'CheckSwapChainPath',
+          'other_args': p.other_args
+      })
     for p in namespace.DirectCompositionPages('OverlayModeTraceTest'):
       if p.other_args and p.other_args.get('video_is_rotated', False):
         # For all drivers we tested, when a video is rotated, frames won't
         # be promoted to hardware overlays.
         continue
-      yield (p.name, gpu_relative_path + p.url,
-             {'browser_args': p.browser_args,
-              'category': cls._DisabledByDefaultTraceCategory('gpu.service'),
-              'test_harness_script': basic_test_harness_script,
-              'finish_js_condition': 'domAutomationController._finished',
-              'success_eval_func': 'CheckOverlayMode',
-              'other_args': p.other_args})
+      yield (p.name, gpu_relative_path + p.url, {
+          'browser_args': p.browser_args,
+          'category': cls._DisabledByDefaultTraceCategory('gpu.service'),
+          'test_harness_script': basic_test_harness_script,
+          'finish_js_condition': 'domAutomationController._finished',
+          'success_eval_func': 'CheckOverlayMode',
+          'other_args': p.other_args
+      })
 
   def RunActualGpuTest(self, test_path, *args):
     test_params = args[0]
@@ -199,11 +204,12 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _AddDefaultArgs(browser_args):
     # All tests receive the following options.
     return [
-      '--enable-logging',
-      '--enable-experimental-web-platform-features',
-      # All bots are connected with a power source, however, we want to to test
-      # with the code path that's enabled with battery power.
-      '--disable_vp_scaling=1'] + browser_args
+        '--enable-logging',
+        '--enable-experimental-web-platform-features',
+        # All bots are connected with a power source, however, we want to to
+        # test with the code path that's enabled with battery power.
+        '--disable_vp_scaling=1'
+    ] + browser_args
 
   def _GetOverlayBotConfigHelper(self):
     system_info = self.browser.GetSystemInfo()
@@ -213,8 +219,8 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if not gpu:
       raise Exception("System Info doesn't have a gpu")
     os_version_name = self.browser.platform.GetOSVersionName()
-    return self.GetOverlayBotConfig(
-        os_version_name, gpu.vendor_id, gpu.device_id)
+    return self.GetOverlayBotConfig(os_version_name, gpu.vendor_id,
+                                    gpu.device_id)
 
   @staticmethod
   def _SwapChainPresentationModeToStr(presentation_mode):
@@ -251,8 +257,8 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _EvaluateSuccess_CheckGLCategory(self, category, event_iterator,
                                        other_args):
     for event in event_iterator:
-      if (event.category == category and
-          event.args.get('gl_category', None) == 'gpu_toplevel'):
+      if (event.category == category
+          and event.args.get('gl_category', None) == 'gpu_toplevel'):
         break
     else:
       self.fail('Trace markers for GPU category %s were not found' % category)
@@ -309,7 +315,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                   _SWAP_CHAIN_PRESENT_EVENT_NAME)
       if expected_pixel_format != detected_pixel_format:
         self.fail('SwapChain pixel format mismatch, expected %s got %s' %
-            (expected_pixel_format, detected_pixel_format))
+                  (expected_pixel_format, detected_pixel_format))
       detected_zero_copy = event.args.get('ZeroCopy', None)
       if detected_zero_copy is None:
         self.fail('ZeroCopy is missing from event %s' %
@@ -321,8 +327,8 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     else:
       if expect_no_overlay:
         return
-      self.fail('Events with name %s were not found' %
-                _SWAP_CHAIN_PRESENT_EVENT_NAME)
+      self.fail(
+          'Events with name %s were not found' % _SWAP_CHAIN_PRESENT_EVENT_NAME)
 
   def _EvaluateSuccess_CheckOverlayMode(self, category, event_iterator,
                                         other_args):
@@ -362,23 +368,23 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     valid_entry_found = False
     for index in range(len(presentation_mode_history)):
       mode = presentation_mode_history[index]
-      if (mode == _SWAP_CHAIN_PRESENTATION_MODE_NONE or
-          mode == _SWAP_CHAIN_GET_FRAME_STATISTICS_MEDIA_FAILED):
+      if (mode == _SWAP_CHAIN_PRESENTATION_MODE_NONE
+          or mode == _SWAP_CHAIN_GET_FRAME_STATISTICS_MEDIA_FAILED):
         # Be more tolerant to avoid test flakiness
         continue
       if mode != expected_presentation_mode:
         if index >= len(presentation_mode_history) // 2:
           # Be more tolerant for the first half frames in non-overlay mode.
           self.fail('SwapChain presentation mode mismatch, expected %s got %s' %
-              (TraceIntegrationTest._SwapChainPresentationModeToStr(
-                   expected_presentation_mode),
-               TraceIntegrationTest._SwapChainPresentationModeListToStr(
-                   presentation_mode_history)))
+                    (TraceIntegrationTest._SwapChainPresentationModeToStr(
+                        expected_presentation_mode),
+                     TraceIntegrationTest._SwapChainPresentationModeListToStr(
+                         presentation_mode_history)))
       valid_entry_found = True
     if not valid_entry_found:
-      self.fail('No valid frame statistics being collected: %s' %
-          TraceIntegrationTest._SwapChainPresentationModeListToStr(
-              presentation_mode_history))
+      self.fail(
+          'No valid frame statistics being collected: %s' % TraceIntegrationTest
+          ._SwapChainPresentationModeListToStr(presentation_mode_history))
 
   def _EvaluateSuccess_CheckSwapChainPath(self, category, event_iterator,
                                           other_args):
@@ -401,15 +407,16 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       if presentation_mode == 'swap chain':
         break
     else:
-      self.fail('Events with name %s were not found' %
-                _SWAP_CHAIN_PRESENT_EVENT_NAME)
+      self.fail(
+          'Events with name %s were not found' % _SWAP_CHAIN_PRESENT_EVENT_NAME)
 
   @classmethod
   def ExpectationsFiles(cls):
     return [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     'test_expectations',
-                     'trace_test_expectations.txt')]
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
+            'trace_test_expectations.txt')
+    ]
 
 
 def load_tests(loader, tests, pattern):

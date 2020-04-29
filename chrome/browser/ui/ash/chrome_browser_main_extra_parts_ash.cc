@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
-#include "chrome/browser/ui/ash/lacros_chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/media_client_impl.h"
@@ -130,10 +129,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   accessibility_controller_client_ =
       std::make_unique<AccessibilityControllerClient>();
 
-  chrome_new_window_client_ =
-      chromeos::features::IsLacrosSupportEnabled()
-          ? std::make_unique<LacrosChromeNewWindowClient>()
-          : std::make_unique<ChromeNewWindowClient>();
+  chrome_new_window_client_ = std::make_unique<ChromeNewWindowClient>();
 
   ime_controller_client_ = std::make_unique<ImeControllerClient>(
       chromeos::input_method::InputMethodManager::Get());

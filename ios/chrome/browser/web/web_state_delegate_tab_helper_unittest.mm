@@ -7,7 +7,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
-#import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_overlay.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/ui/java_script_dialog_presenter.h"
 #include "ios/web/public/ui/java_script_dialog_type.h"
@@ -18,6 +18,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using java_script_dialog_overlays::JavaScriptDialogRequest;
 
 // Test fixture for WebStateDelegateTabHelper.
 class WebStateDelegateTabHelperTest : public PlatformTest {
@@ -88,5 +90,5 @@ TEST_F(WebStateDelegateTabHelperTest, GetJavaScriptDialogPresenter) {
   ASSERT_TRUE(queue);
   OverlayRequest* request = queue->front_request();
   EXPECT_TRUE(request);
-  EXPECT_TRUE(request->GetConfig<JavaScriptAlertOverlayRequestConfig>());
+  EXPECT_TRUE(request->GetConfig<JavaScriptDialogRequest>());
 }

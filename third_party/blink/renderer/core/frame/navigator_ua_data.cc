@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/navigator_ua_data.h"
 
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_ua_data_values.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -66,6 +67,8 @@ ScriptPromise NavigatorUAData::getHighEntropyValues(
     Vector<String>& hints) const {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
+  auto* executionContext =
+      ExecutionContext::From(script_state);  // GetExecutionContext();
   UADataValues* values = MakeGarbageCollected<UADataValues>();
   for (const String& hint : hints) {
     if (hint == "platform") {
@@ -80,7 +83,15 @@ ScriptPromise NavigatorUAData::getHighEntropyValues(
       values->setUaFullVersion(ua_full_version_);
     }
   }
-  resolver->Resolve(values);
+
+  DCHECK(executionContext);
+  executionContext->GetTaskRunner(TaskType::kPermission)
+      ->PostTask(
+          FROM_HERE,
+          WTF::Bind([](ScriptPromiseResolver* resolver,
+                       UADataValues* values) { resolver->Resolve(values); },
+                    WrapPersistent(resolver), WrapPersistent(values)));
+
   return promise;
 }
 

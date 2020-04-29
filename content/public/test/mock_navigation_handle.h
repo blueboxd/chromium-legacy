@@ -122,6 +122,8 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(GetNavigationEntryOffset, int());
   MOCK_METHOD1(ForceEnableOriginTrials,
                void(const std::vector<std::string>& trials));
+  MOCK_METHOD1(SetIsOverridingUserAgent, void(bool));
+  MOCK_METHOD0(GetIsOverridingUserAgent, bool());
 
   void set_url(const GURL& url) { url_ = url; }
   void set_starting_site_instance(SiteInstance* site_instance) {

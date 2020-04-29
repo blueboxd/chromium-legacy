@@ -54,17 +54,6 @@ const base::Feature kResourceLoadingHintsUserConsistentStudy{
     "ResourceLoadingHintsUserConsistentStudy",
     kResourceLoadingHintsDefaultFeatureState};
 
-// Support for enabling client redirects to a server-rendered lite page preview
-// which includes a base feature and a UserConsistent-specific experiment
-// feature.
-const base::FeatureState kLitePageServerPreviewsDefaultFeatureState =
-    base::FEATURE_DISABLED_BY_DEFAULT;
-const base::Feature kLitePageServerPreviews{
-    "LitePageServerPreviews", kLitePageServerPreviewsDefaultFeatureState};
-const base::Feature kLitePageServerPreviewsUserConsistentStudy{
-    "LitePageServerPreviewsUserConsistentStudy",
-    kLitePageServerPreviewsDefaultFeatureState};
-
 // Provides slow page triggering parameters.
 const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

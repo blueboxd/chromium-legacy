@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
@@ -86,8 +85,6 @@ public final class WebApkActivityTest {
     @LargeTest
     @Test
     public void testActivateWebApkLPlus() throws Exception {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
-
         // Launch WebAPK.
         WebappActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
                 getTestServerUrl("manifest_test_page.html"), getTestServerUrl("/")));

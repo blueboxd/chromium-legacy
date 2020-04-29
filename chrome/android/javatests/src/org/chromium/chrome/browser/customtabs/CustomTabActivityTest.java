@@ -71,10 +71,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -895,7 +893,7 @@ public class CustomTabActivityTest {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             assertEquals(expectedColor,
                     mCustomTabActivityTestRule.getActivity().getWindow().getStatusBarColor());
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        } else {
             assertEquals(ColorUtils.getDarkenedColorForStatusBar(expectedColor),
                     mCustomTabActivityTestRule.getActivity().getWindow().getStatusBarColor());
         }
@@ -1300,7 +1298,6 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // Details in https://crbug.com/709681.
     public void testPageLoadMetricsAreSent() throws Exception {
         checkPageLoadMetrics(true);
     }
@@ -1603,7 +1600,6 @@ public class CustomTabActivityTest {
     @SmallTest
     @RetryOnFailure
     @DisabledTest(message = "https://crbug.com/692025")
-    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // Details in https://crbug.com/709681.
     public void testPostMessageReceivedFromPageWithLateRequest() throws Exception {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
         final CallbackHelper onPostMessageHelper = new CallbackHelper();
@@ -2292,24 +2288,7 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(sdk_is_greater_than = 20)
-    public void testLaunchCustomTabWithColorSchemeDark_Kitkat() {
-        Intent intent = createMinimalCustomTabIntent();
-        addColorSchemeToIntent(intent, CustomTabsIntent.COLOR_SCHEME_DARK);
-
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
-
-        final CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
-
-        Assert.assertNotNull(cctActivity.getNightModeStateProvider());
-        Assert.assertFalse("Night mode should be disabled on K with dark color scheme set.",
-                cctActivity.getNightModeStateProvider().isInNightMode());
-    }
-
-    @Test
-    @SmallTest
-    @DisableIf.Build(sdk_is_less_than = 21)
-    public void testLaunchCustomTabWithColorSchemeDark_PostKitkat() {
+    public void testLaunchCustomTabWithColorSchemeDark() {
         Intent intent = createMinimalCustomTabIntent();
         addColorSchemeToIntent(intent, CustomTabsIntent.COLOR_SCHEME_DARK);
 

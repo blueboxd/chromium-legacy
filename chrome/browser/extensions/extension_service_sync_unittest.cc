@@ -63,8 +63,6 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "chrome/browser/extensions/extension_management_test_util.h"
-#include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
@@ -73,7 +71,6 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/common/pref_names.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #endif
 
 using extensions::AppSorting;
@@ -1786,19 +1783,11 @@ class ExtensionServiceTestSupervised
   }
 
  protected:
-  typedef extensions::ExtensionManagementPrefUpdater<
-      sync_preferences::TestingPrefServiceSyncable>
-      ManagementPrefUpdater;
-
   // These enum values represent various feature flags for enabling
   // supervised users to install extensions.
   enum class SupervisedUserExtensionInstallFeatureMode {
     // Turn off all feature flags.
     kNone,
-    // Refers to the extensions lite feature that enables supervised users to
-    // install from the ExtensionInstallWhitelist policy as a temporary measure
-    // in response to the COVID-19 crisis.
-    kLite,
     // Refers to the full extensions feature where each install has be approved
     // through the parent permissions dialog.
     kFull
@@ -1814,20 +1803,10 @@ class ExtensionServiceTestSupervised
       case SupervisedUserExtensionInstallFeatureMode::kNone:
         disabled_features.push_back(
             supervised_users::kSupervisedUserInitiatedExtensionInstall);
-        disabled_features.push_back(
-            supervised_users::kSupervisedUserAllowlistExtensionInstall);
-        break;
-      case SupervisedUserExtensionInstallFeatureMode::kLite:
-        disabled_features.push_back(
-            supervised_users::kSupervisedUserInitiatedExtensionInstall);
-        enabled_features.push_back(
-            supervised_users::kSupervisedUserAllowlistExtensionInstall);
         break;
       case SupervisedUserExtensionInstallFeatureMode::kFull:
         enabled_features.push_back(
             supervised_users::kSupervisedUserInitiatedExtensionInstall);
-        disabled_features.push_back(
-            supervised_users::kSupervisedUserAllowlistExtensionInstall);
         break;
     }
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
@@ -2717,7 +2696,7 @@ TEST_F(ExtensionServiceTestSupervised,
 
 // Tests that extension installation is blocked for child accounts without any
 // features.
-TEST_F(ExtensionServiceTestSupervised, ExtensionsLiteInstallBlocked) {
+TEST_F(ExtensionServiceTestSupervised, InstallBlocked) {
   InitSupervisedUserExtensionInstallFeatures(
       SupervisedUserExtensionInstallFeatureMode::kNone);
   InitServices(/*profile_is_supervised=*/true);
@@ -2726,100 +2705,6 @@ TEST_F(ExtensionServiceTestSupervised, ExtensionsLiteInstallBlocked) {
   const Extension* extension = InstallCRX(path, INSTALL_FAILED);
   // The extension should not have been installed.
   EXPECT_FALSE(extension);
-}
-
-// Tests that extension installation is still blocked if no
-// ExtensionInstallWhitelist or ExtensionInstallBlacklist policies present.
-TEST_F(ExtensionServiceTestSupervised,
-       ExtensionsLiteInstallWithoutPolicyStillBlocked) {
-  InitSupervisedUserExtensionInstallFeatures(
-      SupervisedUserExtensionInstallFeatureMode::kLite);
-  InitServices(/*profile_is_supervised=*/true);
-
-  base::FilePath path = data_dir().AppendASCII("good.crx");
-  const Extension* extension = InstallCRX(path, INSTALL_FAILED);
-  // The extension should not have been installed.
-  EXPECT_FALSE(extension);
-}
-
-// Tests that extension installation is blocked for supervised users, if the
-// extension id is not on the ExtensionInstallWhitelist.
-TEST_F(ExtensionServiceTestSupervised, ExtensionsLiteInstallBlacklisted) {
-  InitSupervisedUserExtensionInstallFeatures(
-      SupervisedUserExtensionInstallFeatureMode::kLite);
-  InitServices(/*profile_is_supervised=*/true);
-
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount("SupervisedUsers.ExtensionsAllowlist", 0);
-
-  {
-    ManagementPrefUpdater pref_updater(testing_pref_service());
-    pref_updater.SetBlacklistedByDefault(true);
-  }
-
-  base::FilePath path = data_dir().AppendASCII("good.crx");
-  const Extension* extension = InstallCRX(path, INSTALL_FAILED);
-  // The extension should not have been installed.
-  EXPECT_FALSE(extension);
-
-  // We should have one allowlist miss.
-  histogram_tester.ExpectUniqueSample(
-      "SupervisedUsers.ExtensionsAllowlist",
-      extensions::StandardManagementPolicyProvider::UmaExtensionStateAllowlist::
-          kAllowlistMiss,
-      1);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.ExtensionsAllowlist", 1);
-}
-
-// Tests that extension installation is not blocked for supervised users, if the
-// extension id is allowlisted by policy.
-TEST_F(ExtensionServiceTestSupervised, ExtensionsLiteInstallAllowlisted) {
-  InitSupervisedUserExtensionInstallFeatures(
-      SupervisedUserExtensionInstallFeatureMode::kLite);
-  InitServices(/*profile_is_supervised=*/true);
-
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount("SupervisedUsers.ExtensionsAllowlist", 0);
-
-  {
-    ManagementPrefUpdater pref_updater(testing_pref_service());
-    pref_updater.SetBlacklistedByDefault(true);
-    pref_updater.SetIndividualExtensionInstallationAllowed(good_crx, true);
-  }
-
-  base::FilePath path = data_dir().AppendASCII("good.crx");
-  const Extension* extension = InstallCRX(path, INSTALL_NEW);
-  ASSERT_TRUE(extension);
-  std::string id = extension->id();
-  EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
-
-  // We should have two allowlist hits, because UserMayLoad() gets called
-  // multiple times.
-  histogram_tester.ExpectBucketCount(
-      "SupervisedUsers.ExtensionsAllowlist",
-      extensions::StandardManagementPolicyProvider::UmaExtensionStateAllowlist::
-          kAllowlistHit,
-      2);
-  histogram_tester.ExpectTotalCount("SupervisedUsers.ExtensionsAllowlist", 2);
-}
-
-// Tests that theme installation is not blocked for supervised users, even if
-// the id is not on the allowlist.
-TEST_F(ExtensionServiceTestSupervised, ExtensionsLiteThemesAllowed) {
-  InitSupervisedUserExtensionInstallFeatures(
-      SupervisedUserExtensionInstallFeatureMode::kLite);
-  InitServices(/*profile_is_supervised=*/true);
-
-  {
-    ManagementPrefUpdater pref_updater(testing_pref_service());
-    pref_updater.SetBlacklistedByDefault(true);
-  }
-
-  base::FilePath path = data_dir().AppendASCII("theme.crx");
-  const Extension* theme = InstallCRX(path, INSTALL_NEW);
-  ASSERT_TRUE(theme);
-  std::string id = theme->id();
-  EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
 }
 
 // Tests that regular users are not affecting supervised user UMA metrics.

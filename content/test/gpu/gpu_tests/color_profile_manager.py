@@ -6,6 +6,8 @@ import atexit
 import sys
 
 has_forced_srgb = False
+
+
 # Force all displays to use an sRGB color profile. By default, restore
 # them at exit.
 def ForceUntilExitSRGB(skip_restoring_color_profile=False):
@@ -32,4 +34,5 @@ def ForceUntilExitSRGB(skip_restoring_color_profile=False):
     for display_id in display_profile_url_map:
       color_profile_manager_mac.SetDisplayCustomProfile(
           display_id, display_profile_url_map[display_id])
+
   atexit.register(Restore)

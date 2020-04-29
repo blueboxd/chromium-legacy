@@ -32,9 +32,8 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
       AssistantNotificationModelObserver* observer) override;
   void RemoveNotificationModelObserver(
       AssistantNotificationModelObserver* observer) override;
-  void DownloadImage(
-      const GURL& url,
-      AssistantImageDownloader::DownloadCallback callback) override;
+  void DownloadImage(const GURL& url,
+                     ImageDownloader::DownloadCallback callback) override;
   ::wm::CursorManager* GetCursorManager() override;
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
   aura::Window* GetRootWindowForNewWindows() override;

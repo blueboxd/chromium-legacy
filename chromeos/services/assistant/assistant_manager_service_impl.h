@@ -13,6 +13,7 @@
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chromeos/assistant/internal/action/cros_action_module.h"
@@ -100,7 +101,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       public assistant_client::DeviceStateListener,
       public assistant_client::MediaManager::Listener,
       public media_session::mojom::MediaControllerObserver,
-      public mojom::AppListEventSubscriber {
+      public AppListEventSubscriber {
  public:
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
@@ -169,7 +170,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void OnShowSuggestions(
       const std::vector<action::Suggestion>& suggestions) override;
   void OnShowText(const std::string& text) override;
-  void OnShowTimers(const std::vector<std::string>& timer_ids) override;
   void OnOpenUrl(const std::string& url, bool in_background) override;
   void OnShowNotification(const action::Notification& notification) override;
   void OnOpenAndroidApp(const action::AndroidAppInfo& app_info,
@@ -208,7 +208,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   // assistant_client::DeviceStateListener overrides:
   void OnStartFinished() override;
 
-  // mojom::AppListEventSubscriber overrides:
+  // AppListEventSubscriber overrides:
   void OnAndroidAppListRefreshed(
       std::vector<mojom::AndroidAppInfoPtr> apps_info) override;
 
@@ -380,9 +380,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   // Configuration passed to libassistant.
   std::string libassistant_config_;
 
-  mojo::Receiver<mojom::AppListEventSubscriber> app_list_subscriber_receiver_{
-      this};
-
+  ScopedObserver<DeviceActions,
+                 AppListEventSubscriber,
+                 &DeviceActions::AddAppListEventSubscriber,
+                 &DeviceActions::RemoveAppListEventSubscriber>
+      scoped_app_list_event_subscriber{this};
   base::ObserverList<CommunicationErrorObserver> error_observers_;
   base::ObserverList<StateObserver> state_observers_;
 

@@ -52,8 +52,6 @@ ConvertPreviewsTypeToOptimizationType(PreviewsType previews_type) {
       return optimization_guide::proto::TYPE_UNSPECIFIED;
     case PreviewsType::RESOURCE_LOADING_HINTS:
       return optimization_guide::proto::RESOURCE_LOADING;
-    case PreviewsType::LITE_PAGE_REDIRECT:
-      return optimization_guide::proto::LITE_PAGE_REDIRECT;
     case PreviewsType::DEFER_ALL_SCRIPT:
       return optimization_guide::proto::DEFER_ALL_SCRIPT;
     default:
@@ -72,8 +70,6 @@ GetOptimizationTypesToRegister() {
     optimization_types.insert(optimization_guide::proto::NOSCRIPT);
   if (params::IsResourceLoadingHintsEnabled())
     optimization_types.insert(optimization_guide::proto::RESOURCE_LOADING);
-  if (params::IsLitePageServerPreviewsEnabled())
-    optimization_types.insert(optimization_guide::proto::LITE_PAGE_REDIRECT);
   if (params::IsDeferAllScriptPreviewsEnabled())
     optimization_types.insert(optimization_guide::proto::DEFER_ALL_SCRIPT);
 
@@ -133,12 +129,6 @@ bool PreviewsOptimizationGuide::CanApplyPreview(
     PreviewsUserData* previews_data,
     content::NavigationHandle* navigation_handle,
     PreviewsType type) {
-  // See if we need to bypass the lite page redirect blacklist.
-  if (type == PreviewsType::LITE_PAGE_REDIRECT &&
-      params::LitePageRedirectPreviewIgnoresOptimizationGuideFilter()) {
-    return true;
-  }
-
   base::Optional<optimization_guide::proto::OptimizationType>
       optimization_type = ConvertPreviewsTypeToOptimizationType(type);
   if (!optimization_type.has_value())

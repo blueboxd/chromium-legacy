@@ -91,7 +91,9 @@ bool ShouldCreateDevToolsForHost(RenderFrameHost* rfh) {
 }
 
 bool ShouldCreateDevToolsForNode(FrameTreeNode* ftn) {
-  return !ftn->parent() || ftn->current_frame_host()->IsCrossProcessSubframe();
+  return !ftn->parent() ||
+         (ftn->current_frame_host() &&
+          ftn->current_frame_host()->IsCrossProcessSubframe());
 }
 
 FrameTreeNode* GetFrameTreeNodeAncestor(FrameTreeNode* frame_tree_node) {

@@ -1,7 +1,6 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """This script implements a few IntelPowerGadget related helper functions.
 
 This script only works on Windows/Mac with Intel CPU. Intel Power Gadget needs
@@ -26,6 +25,7 @@ import os
 import subprocess
 import sys
 
+
 def LocateIPG():
   if sys.platform == 'win32':
     ipg_dir = os.getenv('IPG_Dir')
@@ -40,8 +40,11 @@ def LocateIPG():
   raise Exception("Only supported on Windows/Mac")
 
 
-def GenerateIPGLogFilename(log_prefix='PowerLog', log_dir=None, current_run=1,
-                           total_runs=1, timestamp=False):
+def GenerateIPGLogFilename(log_prefix='PowerLog',
+                           log_dir=None,
+                           current_run=1,
+                           total_runs=1,
+                           timestamp=False):
   # If all args take default value, it is the IPG's default log path.
   log_dir = log_dir or os.getcwd()
   log_dir = os.path.abspath(log_dir)
@@ -60,7 +63,7 @@ def RunIPG(duration_in_s=60, resolution_in_ms=100, logfile=None):
   if not logfile:
     # It is not necessary but allows to print out the log path for debugging.
     logfile = GenerateIPGLogFilename()
-  command = command + (' -file %s' %logfile)
+  command = command + (' -file %s' % logfile)
   logging.debug("Running: " + command)
   output = subprocess.check_output(command, shell=True)
   logging.debug("Running: DONE")
@@ -111,8 +114,10 @@ def AnalyzeIPGLogFile(logfile=None, skip_in_sec=0):
   return results
 
 
-def ProcessResultsFromMultipleIPGRuns(logfiles, skip_in_seconds=0,
-                                      outliers=0, output_json=None):
+def ProcessResultsFromMultipleIPGRuns(logfiles,
+                                      skip_in_seconds=0,
+                                      outliers=0,
+                                      output_json=None):
   assert len(logfiles) > 1
   output = {}
   summary = {}
@@ -145,11 +150,11 @@ def ProcessResultsFromMultipleIPGRuns(logfiles, skip_in_seconds=0,
       n = len(data)
     logging.debug('%s: valid samples = %d', key, n)
     mean = sum(data) / float(n)
-    ss = sum((x - mean) ** 2 for x in data)
-    stdev = (ss / float(n)) ** 0.5
+    ss = sum((x - mean)**2 for x in data)
+    stdev = (ss / float(n))**0.5
     summary[key] = {
-      'mean': mean,
-      'stdev': stdev,
+        'mean': mean,
+        'stdev': stdev,
     }
   output['summary'] = summary
 

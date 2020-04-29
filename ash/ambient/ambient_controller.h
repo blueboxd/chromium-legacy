@@ -5,6 +5,9 @@
 #ifndef ASH_AMBIENT_AMBIENT_CONTROLLER_H_
 #define ASH_AMBIENT_AMBIENT_CONTROLLER_H_
 
+#include <memory>
+
+#include "ash/ambient/ambient_access_token_controller.h"
 #include "ash/ambient/ambient_photo_controller.h"
 #include "ash/ambient/ambient_view_delegate_impl.h"
 #include "ash/ambient/model/ambient_backend_model.h"
@@ -55,6 +58,9 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
   // Toggle between show and destroy the ambient mode screen.
   // Should be removed once we delete the shortcut entry point.
   void Toggle();
+
+  void RequestAccessToken(
+      AmbientAccessTokenController::AccessTokenCallback callback);
 
   AmbientBackendModel* ambient_backend_model() {
     return &ambient_backend_model_;
@@ -108,6 +114,7 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
   AmbientContainerView* container_view_ = nullptr;   // Owned by view hierarchy.
   AmbientBackendModel ambient_backend_model_;
   AmbientModeState ambient_state_;
+  AmbientAccessTokenController access_token_controller_;
   std::unique_ptr<AmbientBackendController> ambient_backend_controller_;
   AmbientPhotoController ambient_photo_controller_;
   base::OneShotTimer refresh_timer_;

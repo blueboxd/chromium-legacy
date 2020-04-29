@@ -61,7 +61,6 @@ class WebMediaPlayerClient;
 class WebMediaPlayerSource;
 class WebRemotePlaybackClient;
 class WebViewClient;
-class WorkerGlobalScope;
 
 class CORE_EXPORT CoreInitializer {
   USING_FAST_MALLOC(CoreInitializer);
@@ -88,7 +87,6 @@ class CORE_EXPORT CoreInitializer {
   virtual void InitLocalFrame(LocalFrame&) const = 0;
   // Supplements installed on a frame using ChromeClient
   virtual void InstallSupplements(LocalFrame&) const = 0;
-  virtual void ProvideLocalFileSystemToWorker(WorkerGlobalScope&) const = 0;
   virtual MediaControls* CreateMediaControls(HTMLMediaElement&,
                                              ShadowRoot&) const = 0;
   virtual PictureInPictureController* CreatePictureInPictureController(

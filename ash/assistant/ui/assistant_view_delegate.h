@@ -8,8 +8,8 @@
 #include <map>
 #include <string>
 
-#include "ash/public/cpp/assistant/assistant_image_downloader.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/image_downloader.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -93,9 +93,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Downloads the image found at the specified |url|. On completion, the
   // supplied |callback| will be run with the downloaded image. If the download
   // attempt is unsuccessful, a NULL image is returned.
-  virtual void DownloadImage(
-      const GURL& url,
-      AssistantImageDownloader::DownloadCallback callback) = 0;
+  virtual void DownloadImage(const GURL& url,
+                             ImageDownloader::DownloadCallback callback) = 0;
 
   // Returns the cursor_manager.
   virtual ::wm::CursorManager* GetCursorManager() = 0;

@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/ash/ambient/ambient_client_impl.h"
 
+#include <string>
+#include <utility>
+
+#include "base/callback.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -96,5 +100,14 @@ void AmbientClientImpl::GetAccessToken(
     signin::AccessTokenInfo access_token_info) {
   // It's safe to delete AccessTokenFetcher from inside its own callback.
   access_token_fetcher_.reset();
-  std::move(callback).Run(gaia_id, access_token_info.token);
+
+  if (error.state() == GoogleServiceAuthError::NONE) {
+    std::move(callback).Run(gaia_id, access_token_info.token,
+                            access_token_info.expiration_time);
+  } else {
+    LOG(ERROR) << "Failed to retrieve token, error: " << error.ToString();
+    std::move(callback).Run(/*gaia_id=*/std::string(),
+                            /*access_token=*/std::string(),
+                            /*expiration_time=*/base::Time::Now());
+  }
 }

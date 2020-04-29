@@ -102,7 +102,6 @@ void LoadStreamTask::LoadFromStoreComplete(
     return;
   }
 
-  fetch_start_time_ = stream_->GetTickClock()->NowTicks();
   stream_->GetNetwork()->SendQueryRequest(
       CreateFeedQueryRefreshRequest(GetRequestReason(load_type_),
                                     stream_->GetChromeInfo(),
@@ -125,7 +124,6 @@ void LoadStreamTask::QueryRequestComplete(
       stream_->GetWireResponseTranslator()->TranslateWireResponse(
           *result.response_body,
           StreamModelUpdateRequest::Source::kNetworkUpdate,
-          stream_->GetTickClock()->NowTicks() - fetch_start_time_,
           stream_->GetClock()->Now());
   if (!update_request) {
     Done(LoadStreamStatus::kProtoTranslationFailed);

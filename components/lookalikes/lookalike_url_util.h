@@ -130,15 +130,12 @@ void RecordUMAFromMatchType(LookalikeUrlMatchType match_type);
 // At the moment we consider the following cases as Target Embedding:
 // example-google.com-site.com, example.google.com-site.com,
 // example-google-com-site.com, example.google.com.site.com,
-// example-googlé.com-site.com where the embedded target is google.com. In
-// addition to these examples, this function also detects domains embedded with
-// alternate TLDs, if the TLD is included in |important_tlds| (e.g. google.edu
-// instead of google.com in the example URLs above.). To reduce false positives,
-// we exclude cases where the eTLD of the possibly-unsafe domain contains more
-// than just the TLD of the embedded domain. For instance, we exclude
-// foo-google.co.uk.
+// example-googlé.com-site.com where the embedded target is google.com. We
+// detect embeddings of top 500 domains and engaged domains. However, to reduce
+// false positives, we do not protect domains that are shorter than 7 characters
+// long (e.g. com.ru).
 bool IsTargetEmbeddingLookalike(const GURL& url,
-                                const std::set<std::string>& important_tlds,
-                                GURL* safe_url);
+                                const std::vector<DomainInfo>& engaged_sites,
+                                std::string* safe_url);
 
 #endif  // COMPONENTS_LOOKALIKES_LOOKALIKE_URL_UTIL_H_

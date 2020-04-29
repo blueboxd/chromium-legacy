@@ -18,22 +18,6 @@
 
 namespace blink {
 
-namespace {
-
-const CSSValue* ComputedTransform(const ComputedStyle& style) {
-  if (style.Transform().Operations().size() == 0)
-    return CSSIdentifierValue::Create(CSSValueID::kNone);
-
-  CSSValueList* components = CSSValueList::CreateSpaceSeparated();
-  for (const auto& operation : style.Transform().Operations()) {
-    components->Append(*ComputedStyleUtils::ValueForTransformOperation(
-        *operation, style.EffectiveZoom()));
-  }
-  return components;
-}
-
-}  // namespace
-
 unsigned int ComputedStylePropertyMap::size() const {
   const ComputedStyle* style = UpdateStyle();
   if (!style)
@@ -103,18 +87,8 @@ const CSSValue* ComputedStylePropertyMap::GetProperty(
   if (!style)
     return nullptr;
 
-  // Special cases for properties where CSSProperty::CSSValueFromComputedStyle
-  // doesn't return the correct computed value
-  switch (property_id) {
-    case CSSPropertyID::kTransform:
-      return ComputedTransform(*style);
-    case CSSPropertyID::kLineHeight:
-      return ComputedStyleUtils::ComputedValueForLineHeight(*style);
-    default:
-      return CSSProperty::Get(property_id)
-          .CSSValueFromComputedStyle(*style, nullptr /* layout_object */,
-                                     false /* allow_visited_style */);
-  }
+  return ComputedStyleUtils::ComputedPropertyValue(
+      CSSProperty::Get(property_id), *style);
 }
 
 const CSSValue* ComputedStylePropertyMap::GetCustomProperty(

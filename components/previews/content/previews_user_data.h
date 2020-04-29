@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/common/previews_state.h"
 
 namespace previews {
@@ -25,24 +24,6 @@ namespace previews {
 class PreviewsUserData {
  public:
   explicit PreviewsUserData(uint64_t page_id);
-
-  struct ServerLitePageInfo {
-    std::unique_ptr<ServerLitePageInfo> Clone() {
-      return std::make_unique<ServerLitePageInfo>(*this);
-    }
-
-    // The page id used for this preview.
-    uint64_t page_id = 0;
-
-    // The DRP session key used for this preview.
-    std::string drp_session_key = std::string();
-
-    // The current state of the preview.
-    ServerLitePageStatus status = ServerLitePageStatus::kUnknown;
-
-    // The number of navigation restarts seen by this info instance.
-    size_t restart_count = 0;
-  };
 
   ~PreviewsUserData();
 
@@ -169,14 +150,6 @@ class PreviewsUserData {
     coin_flip_holdback_result_ = coin_flip_holdback_result;
   }
 
-  // Metadata for an attempted or committed Lite Page Redirect preview.
-  ServerLitePageInfo* server_lite_page_info() {
-    return server_lite_page_info_.get();
-  }
-  void set_server_lite_page_info(std::unique_ptr<ServerLitePageInfo> info) {
-    server_lite_page_info_ = std::move(info);
-  }
-
  private:
   // A session unique ID related to this navigation.
   const uint64_t page_id_;
@@ -224,10 +197,6 @@ class PreviewsUserData {
   // The state of a random coin flip holdback, if any.
   CoinFlipHoldbackResult coin_flip_holdback_result_ =
       CoinFlipHoldbackResult::kNotSet;
-
-  // Metadata for an attempted or committed Lite Page Redirect preview. See
-  // struct comments for more detail.
-  std::unique_ptr<ServerLitePageInfo> server_lite_page_info_;
 
   // A mapping from PreviewType to the last known reason why that preview type
   // was or was not triggered for this navigation. Used only for metrics.

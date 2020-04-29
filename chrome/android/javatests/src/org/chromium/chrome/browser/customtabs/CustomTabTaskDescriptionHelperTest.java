@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.customtabs;
 
 import static org.junit.Assert.assertEquals;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -219,7 +218,6 @@ public class CustomTabTaskDescriptionHelperTest {
     /**
      * Fetches the task description color from the ActivityManager.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static int fetchTaskDescriptionColor(Activity activity) throws Exception {
         ActivityManager.TaskDescription taskDescription =
                 (ActivityManager.TaskDescription) fetchTaskDescription(activity);
@@ -229,14 +227,12 @@ public class CustomTabTaskDescriptionHelperTest {
     /**
      * Fetches the task description label from the ActivityManager.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static String fetchTaskDescriptionLabel(Activity activity) throws Exception {
         ActivityManager.TaskDescription taskDescription =
                 (ActivityManager.TaskDescription) fetchTaskDescription(activity);
         return (taskDescription == null) ? null : taskDescription.getLabel();
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static Object fetchTaskDescription(Activity activity) throws Exception {
         return TestThreadUtils.runOnUiThreadBlocking(() -> {
             try {

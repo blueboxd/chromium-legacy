@@ -311,6 +311,20 @@ class FormStructure {
   mojom::SubmissionIndicatorEvent get_submission_event_for_testing() const {
     return submission_event_;
   }
+
+  // Identify sections for the |fields_| for testing purposes.
+  void identify_sections_for_testing() {
+    ParseFieldTypesFromAutocompleteAttributes();
+    IdentifySections(has_author_specified_sections_);
+  }
+
+  // Set the Overall field type for |fields_[field_index]| to |type| for testing
+  // purposes.
+  void set_overall_field_type_for_testing(size_t field_index,
+                                          ServerFieldType type) {
+    if (field_index < fields_.size() && type > 0 && type < MAX_VALID_FIELD_TYPE)
+      fields_[field_index]->set_heuristic_type(type);
+  }
 #endif
 
   void set_password_symbol_vote(int noisified_symbol) {
@@ -493,10 +507,12 @@ class FormStructure {
   bool IsMalformed() const;
 
   // Classifies each field in |fields_| into a logical section.
-  // Sections are identified by the heuristic that a logical section should not
-  // include multiple fields of the same autofill type (with some exceptions, as
-  // described in the implementation). Credit card fields also, have a single
-  // separate section from address fields.
+  // Sections are identified by the heuristic (or by the heuristic and the
+  // autocomplete section attribute, if defined when feature flag
+  // kAutofillUseNewSectioningMethod is enabled) that a logical section should
+  // not include multiple fields of the same autofill type (with some
+  // exceptions, as described in the implementation). Credit card fields also,
+  // have a single separate section from address fields.
   // If |has_author_specified_sections| is true, only the second pass --
   // distinguishing credit card sections from non-credit card ones -- is made.
   void IdentifySections(bool has_author_specified_sections);

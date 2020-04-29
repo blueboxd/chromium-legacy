@@ -108,6 +108,8 @@ struct Theme {
   skia.mojom.SkColor background_color;
   skia.mojom.SkColor shortcut_background_color;
   skia.mojom.SkColor shortcut_text_color;
+  // True if |shortcut_background_color| is dark.
+  bool shortcut_use_white_add_icon;
   // True if the theme is dark (e.g. NTP background color is dark).
   bool is_dark;
   // Color of Google logo. If not set show the logo multi-colored.

@@ -9,6 +9,7 @@
 
 namespace switches {
 
+extern const char kDisableEnterprisePolicy[];
 extern const char kDisableIOSPasswordSuggestions[];
 extern const char kDisableThirdPartyKeyboardWorkaround[];
 

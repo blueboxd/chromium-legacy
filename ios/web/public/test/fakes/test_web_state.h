@@ -127,6 +127,7 @@ class TestWebState : public WebState {
       base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback);
   base::string16 GetLastExecutedJavascript() const;
   NSData* GetLastLoadedData() const;
+  bool IsClosed() const;
 
   // Notifier for tests.
   void OnPageLoaded(PageLoadCompletionStatus load_completion_status);
@@ -148,6 +149,7 @@ class TestWebState : public WebState {
   bool is_evicted_;
   bool has_opener_;
   bool can_take_snapshot_;
+  bool is_closed_;
   GURL url_;
   base::string16 title_;
   base::string16 last_executed_javascript_;

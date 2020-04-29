@@ -25,9 +25,9 @@
   <template>
     <style include="cr-page-host-style settings-shared">
       :host {
-        @apply --layout-fit;
         display: flex;
         flex-direction: column;
+        height: 100%;
         --settings-menu-width: 250px;
         /* Centered cards has a max-width of var(--cr-centered-card-max-width)
          * and a width of a certain percentage. Therefore, to make room for the
@@ -38,7 +38,6 @@
       }
 
       os-toolbar {
-        @apply --layout-center;
         /* TODO(hsuregan): update for dark mode when needed. */
         min-height: 56px;
         /* Needs to be higher than #cr-container-show-top's z-index so that the

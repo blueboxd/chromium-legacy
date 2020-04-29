@@ -439,16 +439,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         return true;
     }
 
-    /**
-     * Returns a unique identifier for this WebappActivity.
-     * Note: do not call this function when you need {@link WebappInfo#id()}. Subclasses like
-     * WebappManagedActivity and WebApkManagedActivity overwrite this function and return the
-     * index of the activity.
-     */
-    protected String getActivityId() {
-        return mWebappInfo.id();
-    }
-
     @VisibleForTesting
     SplashController getSplashControllerForTests() {
         return mSplashController;

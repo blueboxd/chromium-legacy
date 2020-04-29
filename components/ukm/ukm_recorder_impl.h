@@ -90,9 +90,12 @@ class UkmRecorderImpl : public UkmRecorder {
   }
 
  protected:
-  // Calculates sampled in/out for a specific source/event based on a given
-  // |sampling_rate|. This function is guaranteed to always return the same
-  // result over the life of this object for the same input parameters.
+  // Calculates sampled in/out for a specific source/event based on internal
+  // configuration. This function is guaranteed to always return the same
+  // result over the life of this object for the same config & input parameters.
+  bool IsSampledIn(int64_t source_id, uint64_t event_id);
+
+  // Like above but uses a passed |sampling_rate| instead of internal config.
   bool IsSampledIn(int64_t source_id, uint64_t event_id, int sampling_rate);
 
   // Cache the list of whitelisted entries from the field trial parameter.
@@ -167,8 +170,13 @@ class UkmRecorderImpl : public UkmRecorder {
 
   void RecordSource(std::unique_ptr<UkmSource> source);
 
-  // Load sampling configurations from field-trial information.
+  // Loads sampling configurations from field-trial information.
   void LoadExperimentSamplingInfo();
+
+  // Loads sampling configuration from the key/value "params" of a field-trial.
+  // This is separated from the above to ease testing.
+  void LoadExperimentSamplingParams(
+      const std::map<std::string, std::string>& params);
 
   // Whether recording new data is currently allowed.
   bool recording_enabled_ = false;
@@ -199,6 +207,10 @@ class UkmRecorderImpl : public UkmRecorder {
   // Sampling configurations, loaded from a field-trial.
   int default_sampling_rate_ = -1;  // -1 == not yet loaded
   base::flat_map<uint64_t, int> event_sampling_rates_;
+
+  // If an event's sampling is "slaved" to another, the hashes of the slave
+  // and the master are recorded here.
+  base::flat_map<uint64_t, uint64_t> event_sampling_master_;
 
   // Contains data from various recordings which periodically get serialized
   // and cleared by StoreRecordingsInReport() and may be Purged().

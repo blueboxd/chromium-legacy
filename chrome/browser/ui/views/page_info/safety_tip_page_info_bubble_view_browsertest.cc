@@ -676,12 +676,34 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 }
 
 // Tests that Safety Tips trigger (or not) on lookalike domains with embedded
-// targets when enabled, and not otherwise.
+// top domain when enabled, and not otherwise.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnTargetEmbedding) {
   // This domain has google.com embedded.
-  const GURL kNavigatedUrl = GetURL("test-googlé.gov-site.com");
+  const GURL kNavigatedUrl = GetURL("test-google.com-site.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ReputationWebContentsObserver* rep_observer =
+      ReputationWebContentsObserver::FromWebContents(contents);
+  base::RunLoop loop;
+  rep_observer->RegisterReputationCheckCallbackForTesting(loop.QuitClosure());
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  loop.Run();
+  EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithAllFeatures);
+}
+
+// Tests that Safety Tips trigger (or not) on lookalike domains with embedded
+// engaged domain when enabled, and not otherwise.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       TriggersOnHighEngagementTargetEmbedding) {
+  // This domain has foo.com embedded.
+  const GURL kNavigatedUrl = GetURL("test-foo.com-site.com");
+  const GURL kEngagedDomain = GetURL("foo.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetEngagementScore(browser(), kEngagedDomain, kHighEngagement);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();

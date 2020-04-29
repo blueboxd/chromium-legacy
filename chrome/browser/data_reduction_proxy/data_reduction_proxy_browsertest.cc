@@ -197,8 +197,7 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     config_ = config;
     // Config is not fetched if the lite page
     // redirect previews are not enabled. So, return early.
-    if (!previews::params::IsLitePageServerPreviewsEnabled() &&
-        !params::ForceEnableClientConfigServiceForAllDataSaverUsers()) {
+    if (!params::ForceEnableClientConfigServiceForAllDataSaverUsers()) {
       return;
     }
   }
@@ -227,8 +226,7 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
   }
 
   void WaitForConfig() {
-    if (!previews::params::IsLitePageServerPreviewsEnabled() &&
-        !params::ForceEnableClientConfigServiceForAllDataSaverUsers()) {
+    if (!params::ForceEnableClientConfigServiceForAllDataSaverUsers()) {
       return;
     }
 
@@ -249,9 +247,7 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
       const net::test_server::HttpRequest& request) {
     // Config should be fetched only when lite page
     // redirect previews are enabled.
-    EXPECT_TRUE(
-        previews::params::IsLitePageServerPreviewsEnabled() ||
-        params::ForceEnableClientConfigServiceForAllDataSaverUsers());
+    EXPECT_TRUE(params::ForceEnableClientConfigServiceForAllDataSaverUsers());
 
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_content(config_.SerializeAsString());
@@ -714,33 +710,26 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
 }
 
 // Test that enabling the holdback disables the proxy and that the client config
-// is fetched when lite page redirect preview is enabled.
+// is fetched when it is force enabled.
 class DataReductionProxyWithHoldbackBrowsertest
-    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
+    : public ::testing::WithParamInterface<bool>,
       public DataReductionProxyBrowsertest {
  public:
   DataReductionProxyWithHoldbackBrowsertest()
-      : lite_page_redirect_previews_enabled_(std::get<0>(GetParam())),
-        enable_config_service_fetches_(std::get<1>(GetParam())) {}
+      : enable_config_service_fetches_(GetParam()) {}
 
   void SetUp() override {
     fetch_client_config_feature_list_.InitWithFeatureState(
         data_reduction_proxy::features::kFetchClientConfig,
         enable_config_service_fetches_);
 
-    previews_lite_page_redirect_feature_list_.InitWithFeatureState(
-        previews::features::kLitePageServerPreviews,
-        lite_page_redirect_previews_enabled_);
-
     InProcessBrowserTest::SetUp();
   }
 
-  const bool lite_page_redirect_previews_enabled_;
   const bool enable_config_service_fetches_;
 
  private:
   base::test::ScopedFeatureList fetch_client_config_feature_list_;
-  base::test::ScopedFeatureList previews_lite_page_redirect_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
@@ -767,13 +756,10 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
   EXPECT_NE(GetBody(), kPrimaryProxyResponse);
 }
 
-// First parameter is true if lite page redirect preview is enabled.
-// Second parameter is true if data reduction proxy config should always be
-// fetched.
+// Parameter is true if data reduction proxy config should always be fetched.
 INSTANTIATE_TEST_SUITE_P(All,
                          DataReductionProxyWithHoldbackBrowsertest,
-                         ::testing::Combine(::testing::Bool(),
-                                            ::testing::Bool()));
+                         ::testing::Bool());
 
 class DataReductionProxyExpBrowsertest : public DataReductionProxyBrowsertest {
  public:

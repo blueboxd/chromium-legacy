@@ -24,12 +24,13 @@ from telemetry.util import rgba_color
 
 GPU_RELATIVE_PATH = "content/test/data/gpu/"
 GPU_DATA_DIR = os.path.join(path_util.GetChromiumSrcDir(), GPU_RELATIVE_PATH)
-TEST_DATA_DIRS = [GPU_DATA_DIR,
-                  os.path.join(
-                      path_util.GetChromiumSrcDir(), 'media/test/data')]
+TEST_DATA_DIRS = [
+    GPU_DATA_DIR,
+    os.path.join(path_util.GetChromiumSrcDir(), 'media/test/data'),
+]
 
-goldctl_bin = os.path.join(
-    path_util.GetChromiumSrcDir(), 'tools', 'skia_goldctl')
+goldctl_bin = os.path.join(path_util.GetChromiumSrcDir(), 'tools',
+                           'skia_goldctl')
 if sys.platform == 'win32':
   goldctl_bin = os.path.join(goldctl_bin, 'win', 'goldctl') + '.exe'
 elif sys.platform == 'darwin':
@@ -91,7 +92,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   def SetUpProcess(cls):
     options = cls.GetParsedCommandLineOptions()
     color_profile_manager.ForceUntilExitSRGB(
-      options.dont_restore_color_profile_after_test)
+        options.dont_restore_color_profile_after_test)
     super(SkiaGoldIntegrationTestBase, cls).SetUpProcess()
     cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
     cls.StartBrowser()
@@ -127,60 +128,64 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   def AddCommandlineArgs(cls, parser):
     super(SkiaGoldIntegrationTestBase, cls).AddCommandlineArgs(parser)
     parser.add_option(
-      '--git-revision',
-      help='Chrome revision being tested.',
-      default=None)
+        '--git-revision', help='Chrome revision being tested.', default=None)
     parser.add_option(
-      '--test-machine-name',
-      help='Name of the test machine. Specifying this argument causes this '
-      'script to upload failure images and diffs to cloud storage directly, '
-      'instead of relying on the archive_gpu_pixel_test_results.py script.',
-      default='')
+        '--test-machine-name',
+        help='Name of the test machine. Specifying this argument causes this '
+        'script to upload failure images and diffs to cloud storage directly, '
+        'instead of relying on the archive_gpu_pixel_test_results.py script.',
+        default='')
     parser.add_option(
-      '--dont-restore-color-profile-after-test',
-      dest='dont_restore_color_profile_after_test',
-      action='store_true', default=False,
-      help='(Mainly on Mac) don\'t restore the system\'s original color '
-      'profile after the test completes; leave the system using the sRGB color '
-      'profile. See http://crbug.com/784456.')
+        '--dont-restore-color-profile-after-test',
+        dest='dont_restore_color_profile_after_test',
+        action='store_true',
+        default=False,
+        help='(Mainly on Mac) don\'t restore the system\'s original color '
+        'profile after the test completes; leave the system using the sRGB '
+        'color profile. See http://crbug.com/784456.')
     parser.add_option(
-      '--gerrit-issue',
-      help='For Skia Gold integration. Gerrit issue ID.',
-      default='')
+        '--gerrit-issue',
+        help='For Skia Gold integration. Gerrit issue ID.',
+        default='')
     parser.add_option(
-      '--gerrit-patchset',
-      help='For Skia Gold integration. Gerrit patch set number.',
-      default='')
+        '--gerrit-patchset',
+        help='For Skia Gold integration. Gerrit patch set number.',
+        default='')
     parser.add_option(
-      '--buildbucket-id',
-      help='For Skia Gold integration. Buildbucket build ID.',
-      default='')
+        '--buildbucket-id',
+        help='For Skia Gold integration. Buildbucket build ID.',
+        default='')
     parser.add_option(
-      '--no-skia-gold-failure',
-      action='store_true', default=False,
-      help='For Skia Gold integration. Always report that the test passed even '
-           'if the Skia Gold image comparison reported a failure, but '
-           'otherwise perform the same steps as usual.')
+        '--no-skia-gold-failure',
+        action='store_true',
+        default=False,
+        help='For Skia Gold integration. Always report that the test passed '
+        'even if the Skia Gold image comparison reported a failure, but '
+        'otherwise perform the same steps as usual.')
     parser.add_option(
-      '--local-run', default=None, type=int,
-      help='Specifies to run the test harness in local run mode or not. When '
-           'run in local mode, uploading to Gold is disabled and links to '
-           'help with local debugging are output. Running in local mode also '
-           'implies --no-luci-auth. If left unset, the test harness will '
-           'attempt to detect whether it is running on a workstation or not '
-           'and set this option accordingly.')
+        '--local-run',
+        default=None,
+        type=int,
+        help='Specifies to run the test harness in local run mode or not. When '
+        'run in local mode, uploading to Gold is disabled and links to '
+        'help with local debugging are output. Running in local mode also '
+        'implies --no-luci-auth. If left unset, the test harness will '
+        'attempt to detect whether it is running on a workstation or not '
+        'and set this option accordingly.')
     parser.add_option(
-      '--no-luci-auth',
-      action='store_true', default=False,
-      help='Don\'t use the service account provided by LUCI for authentication '
-           'for Skia Gold, instead relying on gsutil to be pre-authenticated. '
-           'Meant for testing locally instead of on the bots.')
+        '--no-luci-auth',
+        action='store_true',
+        default=False,
+        help='Don\'t use the service account provided by LUCI for '
+        'authentication for Skia Gold, instead relying on gsutil to be '
+        'pre-authenticated. Meant for testing locally instead of on the bots.')
     parser.add_option(
-      '--bypass-skia-gold-functionality',
-      action='store_true', default=False,
-      help='Bypass all interaction with Skia Gold, effectively disabling the '
-           'image comparison portion of any tests that use Gold. Only meant to '
-           'be used in case a Gold outage occurs and cannot be fixed quickly.')
+        '--bypass-skia-gold-functionality',
+        action='store_true',
+        default=False,
+        help='Bypass all interaction with Skia Gold, effectively disabling the '
+        'image comparison portion of any tests that use Gold. Only meant to '
+        'be used in case a Gold outage occurs and cannot be fixed quickly.')
 
   @classmethod
   def ResetGpuInfo(cls):
@@ -221,11 +226,10 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     # TODO(senorblanco): This should probably be checking
     # for the presence of the extensions in system_info.gpu_aux_attributes
     # in order to check for MSAA, rather than sniffing the blacklist.
-    params.msaa = not (
-        ('disable_chromium_framebuffer_multisample' in
-          system_info.gpu.driver_bug_workarounds) or
-        ('disable_multisample_render_to_texture' in
-          system_info.gpu.driver_bug_workarounds))
+    params.msaa = not (('disable_chromium_framebuffer_multisample' in
+                        system_info.gpu.driver_bug_workarounds) or
+                       ('disable_multisample_render_to_texture' in system_info.
+                        gpu.driver_bug_workarounds))
     params.model_name = system_info.model_name
 
   @classmethod
@@ -246,10 +250,12 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                           cls.GetParsedCommandLineOptions().test_machine_name)
     base_bucket = '%s/gold_failures' % (cls._error_image_cloud_storage_bucket)
     image_name_with_revision_and_machine = '%s_%s_%s.png' % (
-      image_name, machine_name, cls._GetBuildRevision())
+        image_name, machine_name, cls._GetBuildRevision())
     cls._UploadBitmapToCloudStorage(
-      base_bucket, image_name_with_revision_and_machine, screenshot,
-      public=True)
+        base_bucket,
+        image_name_with_revision_and_machine,
+        screenshot,
+        public=True)
 
   def _CompareScreenshotSamples(self, tab, screenshot, expected_colors,
                                 tolerance, device_pixel_ratio,
@@ -263,21 +269,21 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
           # Require exact matches to avoid confusion, because some
           # machine models and names might be subsets of others
           # (e.g. Nexus 5 vs Nexus 5X).
-          if ('device_type' in override and
-              (tab.browser.platform.GetDeviceTypeName() ==
-               override['device_type'])):
-            logging.warning(
-              'Overriding device_pixel_ratio ' + str(device_pixel_ratio) +
-              ' with scale factor ' + str(override['scale_factor']) +
-              ' for device type ' + override['device_type'])
+          if ('device_type' in override
+              and (tab.browser.platform.GetDeviceTypeName() ==
+                   override['device_type'])):
+            logging.warning('Overriding device_pixel_ratio ' +
+                            str(device_pixel_ratio) + ' with scale factor ' +
+                            str(override['scale_factor']) +
+                            ' for device type ' + override['device_type'])
             device_pixel_ratio = override['scale_factor']
             break
-          if (test_machine_name and 'machine_name' in override and
-              override["machine_name"] == test_machine_name):
-            logging.warning(
-              'Overriding device_pixel_ratio ' + str(device_pixel_ratio) +
-              ' with scale factor ' + str(override['scale_factor']) +
-              ' for machine name ' + test_machine_name)
+          if (test_machine_name and 'machine_name' in override
+              and override["machine_name"] == test_machine_name):
+            logging.warning('Overriding device_pixel_ratio ' +
+                            str(device_pixel_ratio) + ' with scale factor ' +
+                            str(override['scale_factor']) +
+                            ' for machine name ' + test_machine_name)
             device_pixel_ratio = override['scale_factor']
             break
         # Only support one "scale_factor_overrides" in the expectation format.
@@ -293,29 +299,23 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       y1 = int((location[1] + size[1]) * device_pixel_ratio)
       for x in range(x0, x1):
         for y in range(y0, y1):
-          if (x < 0 or y < 0 or x >= image_util.Width(screenshot) or
-              y >= image_util.Height(screenshot)):
-            self.fail(
-                ('Expected pixel location [%d, %d] is out of range on ' +
-                 '[%d, %d] image') %
-                (x, y, image_util.Width(screenshot),
-                 image_util.Height(screenshot)))
+          if (x < 0 or y < 0 or x >= image_util.Width(screenshot)
+              or y >= image_util.Height(screenshot)):
+            self.fail(('Expected pixel location [%d, %d] is out of range on ' +
+                       '[%d, %d] image') % (x, y, image_util.Width(screenshot),
+                                            image_util.Height(screenshot)))
 
           actual_color = image_util.GetPixelColor(screenshot, x, y)
           expected_color = rgba_color.RgbaColor(
-              expectation["color"][0],
-              expectation["color"][1],
+              expectation["color"][0], expectation["color"][1],
               expectation["color"][2],
               expectation["color"][3] if len(expectation["color"]) > 3 else 255)
           if not actual_color.IsEqual(expected_color, tolerance):
             self.fail('Expected pixel at ' + str(location) +
-                ' (actual pixel (' + str(x) + ', ' + str(y) + ')) ' +
-                ' to be ' +
-                str(expectation["color"]) + " but got [" +
-                str(actual_color.r) + ", " +
-                str(actual_color.g) + ", " +
-                str(actual_color.b) + ", " +
-                str(actual_color.a) + "]")
+                      ' (actual pixel (' + str(x) + ', ' + str(y) + ')) ' +
+                      ' to be ' + str(expectation["color"]) + " but got [" +
+                      str(actual_color.r) + ", " + str(actual_color.g) + ", " +
+                      str(actual_color.b) + ", " + str(actual_color.a) + "]")
 
   def ToHex(self, num):
     return hex(int(num))
@@ -336,23 +336,20 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     # Get all the information that goldctl requires.
     parsed_options = self.GetParsedCommandLineOptions()
     build_id_args = [
-      '--commit',
-      self._GetBuildRevision(),
+        '--commit',
+        self._GetBuildRevision(),
     ]
     # If --gerrit-issue is passed, then we assume we're running on a trybot.
     if parsed_options.gerrit_issue:
+      # yapf: disable
       build_id_args += [
-        '--issue',
-        parsed_options.gerrit_issue,
-        '--patchset',
-        parsed_options.gerrit_patchset,
-        '--jobid',
-        parsed_options.buildbucket_id,
-        '--crs',
-        'gerrit',
-        '--cis',
-        'buildbucket',
+          '--issue', parsed_options.gerrit_issue,
+          '--patchset', parsed_options.gerrit_patchset,
+          '--jobid', parsed_options.buildbucket_id,
+          '--crs', 'gerrit',
+          '--cis', 'buildbucket',
       ]
+      # yapf: enable
     return build_id_args
 
   def GetGoldJsonKeys(self, tab, page):
@@ -360,17 +357,21 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     img_params = self.GetImageParameters(tab, page)
     # All values need to be strings, otherwise goldctl fails.
     gpu_keys = {
-      'vendor_id': self.ToHexOrNone(img_params.vendor_id),
-      'device_id': self.ToHexOrNone(img_params.device_id),
-      'vendor_string': self.ToNonEmptyStrOrNone(img_params.vendor_string),
-      'device_string': self.ToNonEmptyStrOrNone(img_params.device_string),
-      'msaa': str(img_params.msaa),
-      'model_name': self.ToNonEmptyStrOrNone(img_params.model_name),
+        'vendor_id': self.ToHexOrNone(img_params.vendor_id),
+        'device_id': self.ToHexOrNone(img_params.device_id),
+        'vendor_string': self.ToNonEmptyStrOrNone(img_params.vendor_string),
+        'device_string': self.ToNonEmptyStrOrNone(img_params.device_string),
+        'msaa': str(img_params.msaa),
+        'model_name': self.ToNonEmptyStrOrNone(img_params.model_name),
     }
     return gpu_keys
 
-  def _UploadTestResultToSkiaGold(self, image_name, screenshot,
-                                  tab, page, build_id_args=None):
+  def _UploadTestResultToSkiaGold(self,
+                                  image_name,
+                                  screenshot,
+                                  tab,
+                                  page,
+                                  build_id_args=None):
     """Compares the given image using Skia Gold and uploads the result.
 
     No uploading is done if the test is being run in local run mode. Compares
@@ -415,23 +416,27 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
 
     # Run goldctl for a result.
     try:
-      subprocess.check_output([goldctl_bin, 'auth',
-                               '--work-dir', self._skia_gold_temp_dir]
-                               + extra_auth_args,
-            stderr=subprocess.STDOUT)
+      subprocess.check_output(
+          [goldctl_bin, 'auth', '--work-dir', self._skia_gold_temp_dir] +
+          extra_auth_args,
+          stderr=subprocess.STDOUT)
       algorithm_args = page.matching_algorithm.GetCmdline()
       if algorithm_args:
-        logging.info(
-            'Using non-exact matching algorithm %s for %s',
-            page.matching_algorithm.Name(), image_name)
-      cmd = ([goldctl_bin, 'imgtest', 'add', '--passfail',
-              '--test-name', image_name,
-              '--instance', SKIA_GOLD_INSTANCE,
-              '--keys-file', json_temp_file,
-              '--png-file', png_temp_file,
-              '--work-dir', self._skia_gold_temp_dir,
-              '--failure-file', failure_file] +
-              build_id_args + extra_imgtest_args + algorithm_args)
+        logging.info('Using non-exact matching algorithm %s for %s',
+                     page.matching_algorithm.Name(), image_name)
+      # yapf: disable
+      cmd = ([
+          goldctl_bin,
+          'imgtest', 'add',
+          '--passfail',
+          '--test-name', image_name,
+          '--instance', SKIA_GOLD_INSTANCE,
+          '--keys-file', json_temp_file,
+          '--png-file', png_temp_file,
+          '--work-dir', self._skia_gold_temp_dir,
+          '--failure-file', failure_file
+      ] + build_id_args + extra_imgtest_args + algorithm_args)
+      # yapf: enable
       subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except CalledProcessError as e:
       # We don't want to bother printing out triage links for local runs.
@@ -449,8 +454,8 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       # clicking on multiple links on potentially multiple bots.
       elif parsed_options.gerrit_issue:
         cl_images = ('https://%s-gold.skia.org/search?'
-                     'issue=%s&new_clstore=true' % (
-                       SKIA_GOLD_INSTANCE, parsed_options.gerrit_issue))
+                     'issue=%s&new_clstore=true' %
+                     (SKIA_GOLD_INSTANCE, parsed_options.gerrit_issue))
         self.artifacts.CreateLink('triage_link_for_entire_cl', cl_images)
       else:
         try:
@@ -463,14 +468,18 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       if self._IsLocalRun():
         # Intentionally not cleaned up so the user can look at its contents.
         diff_dir = tempfile.mkdtemp()
-        cmd = [goldctl_bin, 'diff',
-               '--corpus', SKIA_GOLD_CORPUS,
-               '--instance', SKIA_GOLD_INSTANCE,
-               '--input', png_temp_file,
-               '--test', image_name,
-               '--work-dir', self._skia_gold_temp_dir,
-               '--out-dir', diff_dir,
-               ]
+        # yapf: disable
+        cmd = [
+            goldctl_bin,
+            'diff',
+            '--corpus', SKIA_GOLD_CORPUS,
+            '--instance', SKIA_GOLD_INSTANCE,
+            '--input', png_temp_file,
+            '--test', image_name,
+            '--work-dir', self._skia_gold_temp_dir,
+            '--out-dir', diff_dir,
+        ]
+        # yapf: enable
         try:
           subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         except CalledProcessError as e:
@@ -481,14 +490,13 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         for f in os.listdir(diff_dir):
           filepath = os.path.join(diff_dir, f)
           if f.startswith("input-"):
-            logging.error("Image produced by %s: file://%s",
-                          image_name, filepath)
+            logging.error("Image produced by %s: file://%s", image_name,
+                          filepath)
           elif f.startswith("closest-"):
-            logging.error("Closest image for %s: file://%s",
-                          image_name, filepath)
+            logging.error("Closest image for %s: file://%s", image_name,
+                          filepath)
           elif f == "diff.png":
-            logging.error("Diff image for %s: file://%s",
-                          image_name, filepath)
+            logging.error("Diff image for %s: file://%s", image_name, filepath)
 
       if self._ShouldReportGoldFailure(page):
         raise Exception('goldctl command failed, see above for details')
@@ -510,14 +518,13 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     # Don't surface if the test was recently added and we're still within its
     # grace period. However, fail if we're on a trybot so that as many images
     # can be triaged as possible before a new test is committed.
-    if (page.grace_period_end and date.today() <= page.grace_period_end and
-        not parsed_options.gerrit_issue):
+    if (page.grace_period_end and date.today() <= page.grace_period_end
+        and not parsed_options.gerrit_issue):
       return False
     return True
 
   def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
-                                             device_pixel_ratio,
-                                             build_id_args):
+                                             device_pixel_ratio, build_id_args):
     """Samples the given screenshot and verifies pixel color values.
 
     In case any of the samples do not match the expected color, it raises
@@ -532,9 +539,9 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     """
     try:
       self._CompareScreenshotSamples(
-        tab, screenshot, page.expected_colors, page.tolerance,
-        device_pixel_ratio,
-        self.GetParsedCommandLineOptions().test_machine_name)
+          tab, screenshot, page.expected_colors, page.tolerance,
+          device_pixel_ratio,
+          self.GetParsedCommandLineOptions().test_machine_name)
     except Exception as comparison_exception:
       # An exception raised from self.fail() indicates a failure.
       image_name = self._UrlToImageName(page.name)
@@ -542,9 +549,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       # related to Gold.
       try:
         self._UploadTestResultToSkiaGold(
-          image_name, screenshot,
-          tab, page,
-          build_id_args=build_id_args)
+            image_name, screenshot, tab, page, build_id_args=build_id_args)
       except Exception as gold_exception:
         logging.error(str(gold_exception))
       # TODO(https://crbug.com/1043129): Switch this to just "raise" once these
@@ -570,7 +575,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     cls._local_run = 'SWARMING_SERVER' not in os.environ
     if cls._local_run:
       logging.warning(
-              'Automatically determined that test is running on a workstation')
+          'Automatically determined that test is running on a workstation')
     else:
       logging.warning('Automatically determined that test is running on a bot')
     return cls._local_run
@@ -592,7 +597,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
             shell=IsWin(),
             cwd=path_util.GetChromiumSrcDir()).strip()
         logging.warning('Automatically determined git revision to be %s',
-            cls._git_revision)
+                        cls._git_revision)
       except subprocess.CalledProcessError:
         raise Exception('--git-revision not passed, and unable to '
                         'determine revision using git')
@@ -606,6 +611,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   def RunActualGpuTest(self, options):
     raise NotImplementedError(
         'RunActualGpuTest must be overridden in a subclass')
+
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

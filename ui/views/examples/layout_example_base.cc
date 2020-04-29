@@ -139,25 +139,28 @@ LayoutExampleBase::LayoutExampleBase(const char* title) : ExampleBase(title) {}
 
 LayoutExampleBase::~LayoutExampleBase() = default;
 
-Combobox* LayoutExampleBase::CreateCombobox(const base::string16& label_text,
-                                            const char* const* items,
-                                            int count,
-                                            int* vertical_pos) {
-  Label* label = new Label(label_text);
+Combobox* LayoutExampleBase::CreateAndAddCombobox(
+    const base::string16& label_text,
+    const char* const* items,
+    int count,
+    int* vertical_pos) {
+  auto label = std::make_unique<Label>(label_text);
   label->SetPosition(gfx::Point(kLayoutExampleLeftPadding, *vertical_pos));
   label->SizeToPreferredSize();
-  Combobox* combo_box =
-      new Combobox(std::make_unique<ExampleComboboxModel>(items, count));
+
+  auto combo_box = std::make_unique<Combobox>(
+      std::make_unique<ExampleComboboxModel>(items, count));
   combo_box->SetPosition(
       gfx::Point(label->x() + label->width() + kLayoutExampleVerticalSpacing,
                  *vertical_pos));
   combo_box->SizeToPreferredSize();
   combo_box->set_listener(this);
   label->SetSize(gfx::Size(label->width(), combo_box->height()));
-  control_panel_->AddChildView(label);
-  control_panel_->AddChildView(combo_box);
-  *vertical_pos += combo_box->height() + kLayoutExampleVerticalSpacing;
-  return combo_box;
+  control_panel_->AddChildView(std::move(label));
+
+  auto* combo_box_ptr = control_panel_->AddChildView(std::move(combo_box));
+  *vertical_pos += combo_box_ptr->height() + kLayoutExampleVerticalSpacing;
+  return combo_box_ptr;
 }
 
 Textfield* LayoutExampleBase::CreateRawTextfield(int vertical_pos,

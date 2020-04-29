@@ -96,8 +96,6 @@
 #include "chrome/browser/prerender/prerender_message_filter.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/previews/previews_content_util.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -3375,12 +3373,6 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   // chrome: & friends.
   handler->AddHandlerPair(&ChromeContentBrowserClient::HandleWebUI,
                           &ChromeContentBrowserClient::HandleWebUIReverse);
-
-  // Handler to rewrite Preview's Server Lite Page, to show the original URL to
-  // the user.
-  handler->AddHandlerPair(
-      &previews::HandlePreviewsLitePageRedirectURLRewrite,
-      &previews::HandlePreviewsLitePageRedirectURLRewriteReverse);
 }
 
 base::FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
@@ -4548,21 +4540,6 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
           navigation_ui_data, frame_tree_node_id));
 #endif
 
-  ChromeNavigationUIData* chrome_navigation_ui_data =
-      static_cast<ChromeNavigationUIData*>(navigation_ui_data);
-
-  // TODO(ryansturm): Once this is on the UI thread, stop passing
-  // |network_loader_factory| and have interceptors create one themselves.
-  // https://crbug.com/931786
-  if (previews::params::IsLitePageServerPreviewsEnabled()) {
-    interceptors.push_back(
-        std::make_unique<
-            previews::PreviewsLitePageRedirectURLLoaderInterceptor>(
-            network_loader_factory,
-            chrome_navigation_ui_data->data_reduction_proxy_page_id(),
-            frame_tree_node_id));
-  }
-
   if (base::FeatureList::IsEnabled(features::kIsolatePrerenders)) {
     interceptors.push_back(
         std::make_unique<IsolatedPrerenderURLLoaderInterceptor>(
@@ -4709,10 +4686,8 @@ bool ChromeContentBrowserClient::ShouldForceDownloadResource(
 void ChromeContentBrowserClient::CreateWebUsbService(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<blink::mojom::WebUsbService> receiver) {
-  if (!base::FeatureList::IsEnabled(features::kWebUsb)) {
-    LOG(INFO) << "WebUSB feature flag is disabled.";
+  if (!base::FeatureList::IsEnabled(features::kWebUsb))
     return;
-  }
 
   CHECK(render_frame_host);
   FrameUsbServices::CreateFrameUsbServices(render_frame_host,
@@ -5041,13 +5016,10 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
   // Certain PreviewsStates are used within URLLoaders (Offline, server
   // previews) and cannot re-evaluate PreviewsState once previews triggering
   // logic has already been run, so they should not change. Assume that
-  // previews triggering logic has run when PreviewsUserData already exists and
-  // a Lite Page Redirect preview is not being attempted, since it may also
-  // create a previews_data before this point.
+  // previews triggering logic has run when PreviewsUserData already exists.
   bool previews_triggering_logic_already_ran = false;
   if (previews_data) {
-    previews_triggering_logic_already_ran =
-        !previews_data->server_lite_page_info();
+    previews_triggering_logic_already_ran = true;
   } else {
     previews_data = ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
         navigation_handle, previews_decider_impl->GeneratePageId());

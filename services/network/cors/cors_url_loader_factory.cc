@@ -195,7 +195,8 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
         std::move(client), traffic_annotation, inner_url_loader_factory,
         origin_access_list_, factory_bound_origin_access_list_.get(),
         context_->cors_preflight_controller(),
-        context_->cors_exempt_header_list());
+        context_->cors_exempt_header_list(),
+        GetAllowAnyCorsExemptHeaderForBrowser());
     auto* raw_loader = loader.get();
     OnLoaderCreated(std::move(loader));
     raw_loader->Start();
@@ -341,9 +342,7 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
       break;
   }
 
-  if (context_ &&
-      (process_id_ != mojom::kBrowserProcessId ||
-       !context_->allow_any_cors_exempt_header_for_browser()) &&
+  if (context_ && !GetAllowAnyCorsExemptHeaderForBrowser() &&
       !IsValidCorsExemptHeaders(*context_->cors_exempt_header_list(),
                                 request.cors_exempt_headers)) {
     return false;
@@ -416,6 +415,11 @@ CorsURLLoaderFactory::VerifyRequestInitiatorLockWithPluginCheck(
   }
 
   return result;
+}
+
+bool CorsURLLoaderFactory::GetAllowAnyCorsExemptHeaderForBrowser() const {
+  return context_ && process_id_ == mojom::kBrowserProcessId &&
+         context_->allow_any_cors_exempt_header_for_browser();
 }
 
 }  // namespace cors

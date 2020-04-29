@@ -16,7 +16,7 @@
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
-#include "content/shell/browser/web_test/blink_test_controller.h"
+#include "content/shell/browser/web_test/web_test_control_host.h"
 #include "net/base/filename_util.h"
 
 #if defined(OS_WIN)
@@ -34,11 +34,11 @@ WebTestDownloadManagerDelegate::~WebTestDownloadManagerDelegate() {}
 bool WebTestDownloadManagerDelegate::ShouldOpenDownload(
     download::DownloadItem* item,
     DownloadOpenDelayedCallback callback) {
-  if (BlinkTestController::Get() &&
-      BlinkTestController::Get()->IsMainWindow(
+  if (WebTestControlHost::Get() &&
+      WebTestControlHost::Get()->IsMainWindow(
           DownloadItemUtils::GetWebContents(item)) &&
       item->GetMimeType() == "text/html") {
-    BlinkTestController::Get()->OpenURL(
+    WebTestControlHost::Get()->OpenURL(
         net::FilePathToFileURL(item->GetFullPath()));
   }
   return true;
@@ -52,7 +52,7 @@ void WebTestDownloadManagerDelegate::CheckDownloadAllowed(
     bool from_download_cross_origin_redirect,
     bool content_initiated,
     content::CheckDownloadAllowedCallback check_download_allowed_cb) {
-  auto* test_controller = BlinkTestController::Get();
+  auto* test_controller = WebTestControlHost::Get();
   base::Optional<bool> should_wait_until_external_url_load =
       test_controller->accumulated_web_test_runtime_flags_changes()
           .FindBoolPath("wait_until_external_url_load");
@@ -70,7 +70,7 @@ void WebTestDownloadManagerDelegate::CheckDownloadAllowed(
   }
 
   test_controller->printer()->AddMessageRaw("Download started\n");
-  static_cast<mojom::BlinkTestClient*>(test_controller)
+  static_cast<mojom::WebTestControlHost*>(test_controller)
       ->TestFinishedInSecondaryRenderer();
   std::move(check_download_allowed_cb).Run(false);
 }

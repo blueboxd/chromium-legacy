@@ -46,19 +46,21 @@ if sys.platform.startswith('darwin'):
   objc.parseBridgeSupport(color_sync_bridge_string, globals(),
                           color_sync_framework)
 
+
 # Set |display_id| to use the color profile specified in |profile_url|. If
 # |profile_url| is None, then use the factor default.
 def SetDisplayCustomProfile(device_id, profile_url):
   if profile_url == None:
     profile_url = Foundation.kCFNull
   profile_info = {
-    kColorSyncDeviceDefaultProfileID : profile_url,
-    kColorSyncProfileUserScope : Foundation.kCFPreferencesCurrentUser
+      kColorSyncDeviceDefaultProfileID: profile_url,
+      kColorSyncProfileUserScope: Foundation.kCFPreferencesCurrentUser
   }
-  result = ColorSyncDeviceSetCustomProfiles(
-              kColorSyncDisplayDeviceClass, device_id, profile_info)
+  result = ColorSyncDeviceSetCustomProfiles(kColorSyncDisplayDeviceClass,
+                                            device_id, profile_info)
   if result != True:
     raise
+
 
 # Returns the URL for the system's sRGB color profile.
 def GetSRGBProfileURL():
@@ -66,6 +68,7 @@ def GetSRGBProfileURL():
   srgb_profile_url = Foundation.CFURLCreateFromFileSystemRepresentation(
       None, srgb_profile_path, len(srgb_profile_path), False)
   return srgb_profile_url
+
 
 # Return a map from display ID to custom color profiles set on the display or
 # None if no custom color profile is set.

@@ -44,9 +44,9 @@ const char kEnableExperimentalAccessibilityChromeVoxAnnotations[] =
 const char kDisableExperimentalAccessibilityChromeVoxLanguageSwitching[] =
     "disable-experimental-accessibility-chromevox-language-switching";
 
-// Enables search bar to search the ChromeVox menus.
-const char kEnableExperimentalAccessibilityChromeVoxSearchMenus[] =
-    "enable-experimental-accessibility-chromevox-search-menus";
+// Disables ChromeVox search menus feature.
+const char kDisableExperimentalAccessibilityChromeVoxSearchMenus[] =
+    "disable-experimental-accessibility-chromevox-search-menus";
 
 // Enables interactive tutorial for ChromeVox.
 const char kEnableExperimentalAccessibilityChromeVoxTutorial[] =

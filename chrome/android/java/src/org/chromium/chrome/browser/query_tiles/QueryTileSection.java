@@ -18,6 +18,8 @@ import org.chromium.components.browser_ui.widget.image_tiles.ImageTile;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinator;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinatorFactory;
 import org.chromium.components.browser_ui.widget.image_tiles.TileConfig;
+import org.chromium.components.query_tiles.QueryTile;
+import org.chromium.components.query_tiles.TileProvider;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 

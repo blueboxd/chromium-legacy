@@ -332,16 +332,9 @@ IN_PROC_BROWSER_TEST_F(PortalNavigationThrottleBrowserTest,
                      "});"));
 
   TestNavigationObserver navigation_observer(predecessor_contents);
-  // TODO(1058455): Due to a race, navigating immediately after calling
-  // |portal.activate()| always gets canceled. This test would correctly fail
-  // regardless due to an initial request to /notreached, however these next
-  // assertions about whether the navigation was cancelled would trivially pass.
-  // We use a setTimeout for now to make these assertions meaningful.
   EXPECT_TRUE(ExecJs(predecessor_contents,
                      JsReplace("document.querySelector('portal').activate();"
-                               "setTimeout(() => {"
-                               "  location.href = $1;"
-                               "});",
+                               "location.href = $1;",
                                orphan_navigation_url)));
   navigation_observer.Wait();
   EXPECT_FALSE(navigation_observer.last_navigation_succeeded());

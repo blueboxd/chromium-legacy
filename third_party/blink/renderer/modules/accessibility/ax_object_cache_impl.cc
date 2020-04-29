@@ -546,7 +546,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
     return nullptr;
 
   // Prefer creating AXNodeObjects over AXLayoutObjects in locked subtrees
-  // (e.g. subtree-visibility: auto), even if a LayoutObject is available,
+  // (e.g. content-visibility: auto), even if a LayoutObject is available,
   // because the LayoutObject is not guaranteed to be up-to-date (it might come
   // from a previous layout update), or even it is up-to-date, it may not remain
   // up-to-date. Blink doesn't update style/layout for nodes in locked

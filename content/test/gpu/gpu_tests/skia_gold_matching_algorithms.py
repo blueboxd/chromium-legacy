@@ -1,7 +1,6 @@
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Classes related to the possible matching algorithms for Skia Gold."""
 
 
@@ -28,6 +27,7 @@ class Parameters(object):
 class SkiaGoldMatchingAlgorithm(object):
   ALGORITHM_KEY = 'image_matching_algorithm'
   """Abstract base class for all algorithms."""
+
   def GetCmdline(self):
     """Gets command line parameters for the algorithm.
 
@@ -37,8 +37,8 @@ class SkiaGoldMatchingAlgorithm(object):
       commandline, which will cause goldctl to use the specified algorithm
       instead of the default.
     """
-    return _GenerateOptionalKey(
-        SkiaGoldMatchingAlgorithm.ALGORITHM_KEY, self.Name())
+    return _GenerateOptionalKey(SkiaGoldMatchingAlgorithm.ALGORITHM_KEY,
+                                self.Name())
 
   def Name(self):
     """Returns a string representation of the algorithm."""
@@ -47,6 +47,7 @@ class SkiaGoldMatchingAlgorithm(object):
 
 class ExactMatchingAlgorithm(SkiaGoldMatchingAlgorithm):
   """Class for the default exact matching algorithm in Gold."""
+
   def GetCmdline(self):
     return []
 
@@ -56,6 +57,7 @@ class ExactMatchingAlgorithm(SkiaGoldMatchingAlgorithm):
 
 class FuzzyMatchingAlgorithm(SkiaGoldMatchingAlgorithm):
   """Class for the fuzzy matching algorithm in Gold."""
+
   def __init__(self, max_different_pixels, pixel_delta_threshold):
     super(FuzzyMatchingAlgorithm, self).__init__()
     assert int(max_different_pixels) >= 0
@@ -65,10 +67,12 @@ class FuzzyMatchingAlgorithm(SkiaGoldMatchingAlgorithm):
 
   def GetCmdline(self):
     retval = super(FuzzyMatchingAlgorithm, self).GetCmdline()
-    retval.extend(_GenerateOptionalKey(
-        Parameters.MAX_DIFFERENT_PIXELS, self._max_different_pixels))
-    retval.extend(_GenerateOptionalKey(
-        Parameters.PIXEL_DELTA_THRESHOLD, self._pixel_delta_threshold))
+    retval.extend(
+        _GenerateOptionalKey(Parameters.MAX_DIFFERENT_PIXELS,
+                             self._max_different_pixels))
+    retval.extend(
+        _GenerateOptionalKey(Parameters.PIXEL_DELTA_THRESHOLD,
+                             self._pixel_delta_threshold))
     return retval
 
   def Name(self):
@@ -80,10 +84,11 @@ class SobelMatchingAlgorithm(FuzzyMatchingAlgorithm):
 
   Technically a superset of the fuzzy matching algorithm.
   """
-  def __init__(
-      self, max_different_pixels, pixel_delta_threshold, edge_threshold):
-    super(SobelMatchingAlgorithm, self).__init__(
-        max_different_pixels, pixel_delta_threshold)
+
+  def __init__(self, max_different_pixels, pixel_delta_threshold,
+               edge_threshold):
+    super(SobelMatchingAlgorithm, self).__init__(max_different_pixels,
+                                                 pixel_delta_threshold)
     assert int(edge_threshold) >= 0
     assert int(edge_threshold) <= 255
     if edge_threshold == 255:
@@ -94,8 +99,8 @@ class SobelMatchingAlgorithm(FuzzyMatchingAlgorithm):
 
   def GetCmdline(self):
     retval = super(SobelMatchingAlgorithm, self).GetCmdline()
-    retval.extend(_GenerateOptionalKey(
-        Parameters.EDGE_THRESHOLD, self._edge_threshold))
+    retval.extend(
+        _GenerateOptionalKey(Parameters.EDGE_THRESHOLD, self._edge_threshold))
     return retval
 
   def Name(self):
@@ -103,7 +108,4 @@ class SobelMatchingAlgorithm(FuzzyMatchingAlgorithm):
 
 
 def _GenerateOptionalKey(key, value):
-  return [
-      '--add-test-optional-key',
-      '%s:%s' % (key, value)
-  ]
+  return ['--add-test-optional-key', '%s:%s' % (key, value)]

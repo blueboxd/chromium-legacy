@@ -98,11 +98,11 @@ std::vector<AndroidAppInfoPtr> GetAppsInfo() {
 }
 
 void NotifyAndroidAppListRefreshed(
-    mojo::RemoteSet<chromeos::assistant::mojom::AppListEventSubscriber>&
+    base::ObserverList<chromeos::assistant::AppListEventSubscriber>*
         subscribers) {
   std::vector<AndroidAppInfoPtr> android_apps_info = GetAppsInfo();
-  for (const auto& subscriber : subscribers)
-    subscriber->OnAndroidAppListRefreshed(mojo::Clone(android_apps_info));
+  for (auto& subscriber : *subscribers)
+    subscriber.OnAndroidAppListRefreshed(mojo::Clone(android_apps_info));
 }
 
 }  // namespace
@@ -213,21 +213,22 @@ void DeviceActions::LaunchAndroidIntent(const std::string& intent) {
 }
 
 void DeviceActions::AddAppListEventSubscriber(
-    mojo::PendingRemote<chromeos::assistant::mojom::AppListEventSubscriber>
-        subscriber) {
-  mojo::Remote<chromeos::assistant::mojom::AppListEventSubscriber>
-      subscriber_remote(std::move(subscriber));
+    chromeos::assistant::AppListEventSubscriber* subscriber) {
   auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
   if (prefs && prefs->package_list_initial_refreshed()) {
     std::vector<AndroidAppInfoPtr> android_apps_info = GetAppsInfo();
-    subscriber_remote->OnAndroidAppListRefreshed(
-        mojo::Clone(android_apps_info));
+    subscriber->OnAndroidAppListRefreshed(mojo::Clone(android_apps_info));
   }
 
-  app_list_subscribers_.Add(std::move(subscriber_remote));
+  app_list_subscribers_.AddObserver(subscriber);
 
   if (prefs && !scoped_prefs_observer_.IsObserving(prefs))
     scoped_prefs_observer_.Add(prefs);
+}
+
+void DeviceActions::RemoveAppListEventSubscriber(
+    chromeos::assistant::AppListEventSubscriber* subscriber) {
+  app_list_subscribers_.RemoveObserver(subscriber);
 }
 
 base::Optional<std::string> DeviceActions::GetAndroidAppLaunchIntent(
@@ -241,14 +242,14 @@ base::Optional<std::string> DeviceActions::GetAndroidAppLaunchIntent(
 }
 
 void DeviceActions::OnPackageListInitialRefreshed() {
-  NotifyAndroidAppListRefreshed(app_list_subscribers_);
+  NotifyAndroidAppListRefreshed(&app_list_subscribers_);
 }
 
 void DeviceActions::OnAppRegistered(const std::string& app_id,
                                     const ArcAppListPrefs::AppInfo& app_info) {
-  NotifyAndroidAppListRefreshed(app_list_subscribers_);
+  NotifyAndroidAppListRefreshed(&app_list_subscribers_);
 }
 
 void DeviceActions::OnAppRemoved(const std::string& id) {
-  NotifyAndroidAppListRefreshed(app_list_subscribers_);
+  NotifyAndroidAppListRefreshed(&app_list_subscribers_);
 }

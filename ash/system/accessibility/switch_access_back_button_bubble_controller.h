@@ -24,7 +24,7 @@ class ASH_EXPORT SwitchAccessBackButtonBubbleController
       const SwitchAccessBackButtonBubbleController&) = delete;
 
   void ShowBackButton(const gfx::Rect& anchor);
-  void CloseBubble();
+  void Hide();
 
   // TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;

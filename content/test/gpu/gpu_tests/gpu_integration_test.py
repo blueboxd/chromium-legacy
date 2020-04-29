@@ -24,6 +24,7 @@ _SUPPORTED_WIN_INTEL_GPUS = [0x5912, 0x3e92]
 _SUPPORTED_WIN_INTEL_GPUS_WITH_YUY2_OVERLAYS = [0x5912, 0x3e92]
 _SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS = [0x5912, 0x3e92]
 
+
 class GpuIntegrationTest(
     serially_executed_browser_test_case.SeriallyExecutedBrowserTestCase):
 
@@ -59,10 +60,11 @@ class GpuIntegrationTest(
     Subclasses overriding this method must invoke the superclass's
     version!"""
     parser.add_option(
-      '--disable-log-uploads',
-      dest='disable_log_uploads',
-      action='store_true', default=False,
-      help='Disables uploads of logs to cloud storage')
+        '--disable-log-uploads',
+        dest='disable_log_uploads',
+        action='store_true',
+        default=False,
+        help='Disables uploads of logs to cloud storage')
 
   @classmethod
   def CustomizeBrowserArgs(cls, browser_args):
@@ -121,7 +123,7 @@ class GpuIntegrationTest(
     # to push the fetch of the first tab into the lower retry loop
     # without breaking Telemetry's unit tests, and that hook is used
     # to implement the gpu_integration_test_unittests.
-    for x in range(1, _START_BROWSER_RETRIES+1):  # Index from 1 instead of 0.
+    for x in range(1, _START_BROWSER_RETRIES + 1):  # Index from 1 instead of 0.
       try:
         super(GpuIntegrationTest, cls).StartBrowser()
         cls.tab = cls.browser.tabs[0]
@@ -133,10 +135,10 @@ class GpuIntegrationTest(
         # to try and capture more about the browser failure and raise
         if x == _START_BROWSER_RETRIES:
           url = screenshot.TryCaptureScreenShotAndUploadToCloudStorage(
-            cls.platform)
+              cls.platform)
           if url is not None:
             logging.info("GpuIntegrationTest screenshot of browser failure " +
-              "located at " + url)
+                         "located at " + url)
           else:
             logging.warning("GpuIntegrationTest unable to take screenshot.")
         # Stop the browser to make sure it's in an
@@ -149,7 +151,7 @@ class GpuIntegrationTest(
 
   @classmethod
   def _RestartBrowser(cls, reason):
-    logging.warning('Restarting browser due to '+ reason)
+    logging.warning('Restarting browser due to ' + reason)
     # The Browser may be None at this point if all attempts to start it failed.
     # This can occur if there is a consistent startup crash. For example caused
     # by a bad combination of command-line arguments. So reset to the original
@@ -215,8 +217,7 @@ class GpuIntegrationTest(
       actual_and_expected_crashes_match = self._ClearExpectedCrashes(
           expected_crashes)
       if ResultType.Failure in expected_results:
-        logging.warning(
-          '%s was expected to fail, but passed.\n', test_name)
+        logging.warning('%s was expected to fail, but passed.\n', test_name)
       else:
         if not actual_and_expected_crashes_match:
           raise RuntimeError('Actual and expected crashes did not match')
@@ -241,11 +242,11 @@ class GpuIntegrationTest(
       self.fail('Target machine must have a GPU')
     if len(gpu.devices) != 2:
       return False
-    if (self._IsIntel(gpu.devices[0].vendor_id) and not
-        self._IsIntel(gpu.devices[1].vendor_id)):
+    if (self._IsIntel(gpu.devices[0].vendor_id)
+        and not self._IsIntel(gpu.devices[1].vendor_id)):
       return True
-    if (not self._IsIntel(gpu.devices[0].vendor_id) and
-        self._IsIntel(gpu.devices[1].vendor_id)):
+    if (not self._IsIntel(gpu.devices[0].vendor_id)
+        and self._IsIntel(gpu.devices[1].vendor_id)):
       return True
     return False
 
@@ -341,10 +342,10 @@ class GpuIntegrationTest(
     os_version = os_version.lower()
 
     config = {
-      'direct_composition': False,
-      'supports_overlays': False,
-      'yuy2_overlay_support': 'NONE',
-      'nv12_overlay_support': 'NONE',
+        'direct_composition': False,
+        'supports_overlays': False,
+        'yuy2_overlay_support': 'NONE',
+        'nv12_overlay_support': 'NONE',
     }
     assert os_version in _SUPPORTED_WIN_VERSIONS
     assert gpu_vendor_id in _SUPPORTED_WIN_GPU_VENDORS
@@ -385,8 +386,8 @@ class GpuIntegrationTest(
     assert os_version in _SUPPORTED_WIN_VERSIONS
 
     config = {
-      'supports_dx12': True,
-      'supports_vulkan': True,
+        'supports_dx12': True,
+        'supports_vulkan': True,
     }
 
     if os_version == 'win7':
@@ -446,8 +447,8 @@ class GpuIntegrationTest(
     # If additional options have been set via '--extra-browser-args' check for
     # those which map to expectation tags. The '_browser_backend' attribute may
     # not exist in unit tests.
-    if (hasattr(browser, '_browser_backend') and
-        browser._browser_backend.browser_options.extra_browser_args):
+    if (hasattr(browser, '_browser_backend')
+        and browser._browser_backend.browser_options.extra_browser_args):
       skia_renderer = gpu_helper.GetSkiaRenderer(\
           browser._browser_backend.browser_options.extra_browser_args)
       tags.extend([skia_renderer])

@@ -121,6 +121,7 @@ jumbo_static_library("safe_browsing") {
       "//components/safe_browsing/core/db:metadata_proto",
       "//components/safe_browsing/core/triggers",
       "//components/safe_browsing/core/triggers:trigger_throttler",
+      "//services/preferences/public/mojom:mojom",
     ]
     if (safe_browsing_mode == 1) {
       # "Safe Browsing Full" files in addition to the "basic" ones to use for

@@ -3,13 +3,16 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -1158,30 +1161,92 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RemovePortalWhenUnloading) {
   EXPECT_TRUE(ExecJs(main_frame, "div.remove();"));
 }
 
+class PortalOrphanedNavigationBrowserTest
+    : public PortalBrowserTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  PortalOrphanedNavigationBrowserTest()
+      : cross_site_(std::get<0>(GetParam())),
+        commit_after_adoption_(std::get<1>(GetParam())) {}
+
+  // Provides meaningful param names instead of /0, /1, ...
+  static std::string DescribeParams(
+      const testing::TestParamInfo<ParamType>& info) {
+    bool cross_site;
+    bool commit_after_adoption;
+    std::tie(cross_site, commit_after_adoption) = info.param;
+    return base::StringPrintf("%sSite_Commit%sAdoption",
+                              cross_site ? "Cross" : "Same",
+                              commit_after_adoption ? "After" : "Before");
+  }
+
+ protected:
+  bool cross_site() const { return cross_site_; }
+  bool commit_after_adoption() const { return commit_after_adoption_; }
+
+ private:
+  // Whether the predecessor navigates cross site while orphaned.
+  const bool cross_site_;
+  // Whether the predecessor's navigation commits before or after adoption.
+  const bool commit_after_adoption_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         PortalOrphanedNavigationBrowserTest,
+                         testing::Combine(testing::Bool(), testing::Bool()),
+                         PortalOrphanedNavigationBrowserTest::DescribeParams);
+
 // Tests that a portal can navigate while orphaned.
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, OrphanedNavigation) {
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+IN_PROC_BROWSER_TEST_P(PortalOrphanedNavigationBrowserTest,
+                       OrphanedNavigation) {
+  GURL main_url(embedded_test_server()->GetURL("portal.test", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
-  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
-  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  GURL portal_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Portal* portal = CreatePortalToUrl(web_contents_impl, portal_url);
 
-  // Block the activate callback so that the predecessor portal stays orphaned.
-  EXPECT_TRUE(ExecJs(portal_contents->GetMainFrame(),
-                     "window.onportalactivate = e => { while(true) {} };"));
+  GURL predecessor_nav_url(embedded_test_server()->GetURL(
+      cross_site() ? "b.com" : "portal.test", "/title2.html"));
+
+  if (commit_after_adoption()) {
+    // Block the activate callback so that there is ample time to start the
+    // navigation while orphaned.
+    // TODO(mcnee): Ideally, we would have a test interceptor to precisely
+    // control when to proceed with adoption.
+    const int adoption_delay = TestTimeouts::tiny_timeout().InMilliseconds();
+    EXPECT_TRUE(
+        ExecJs(portal->GetPortalContents()->GetMainFrame(),
+               JsReplace("window.onportalactivate = e => {"
+                         "  let end = performance.now() + $1;"
+                         "  while (performance.now() < end);"
+                         "  document.body.appendChild(e.adoptPredecessor());"
+                         "};",
+                         adoption_delay)));
+  } else {
+    // Block the activate callback so that the predecessor portal stays
+    // orphaned.
+    EXPECT_TRUE(ExecJs(portal->GetPortalContents()->GetMainFrame(),
+                       "window.onportalactivate = e => { while(true) {} };"));
+  }
 
   // Activate the portal and navigate the predecessor.
   PortalActivatedObserver activated_observer(portal);
-  TestNavigationObserver main_frame_navigation_observer(web_contents_impl);
-  ExecuteScriptAsync(main_frame,
-                     "document.querySelector('portal').activate();"
-                     "window.location.reload()");
+  TestNavigationManager navigation_manager(web_contents_impl,
+                                           predecessor_nav_url);
+  ExecuteScriptAsync(web_contents_impl->GetMainFrame(),
+                     JsReplace("document.querySelector('portal').activate();"
+                               "window.location.href = $1;",
+                               predecessor_nav_url));
   activated_observer.WaitForActivate();
-  main_frame_navigation_observer.Wait();
+  if (commit_after_adoption()) {
+    ASSERT_TRUE(navigation_manager.WaitForRequestStart());
+    EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWasAdopted,
+              activated_observer.WaitForActivateResult());
+  }
+  navigation_manager.WaitForNavigationFinished();
+  EXPECT_TRUE(navigation_manager.was_successful());
 }
 
 // Tests that the browser doesn't crash if the renderer tries to create the

@@ -54,12 +54,6 @@ class DataReductionProxyMetricsObserverTestBase
                bool opt_out_expected,
                bool black_listed);
 
-  // Navigates and commits to |kDefaultTestUrl| and mocks a single timing
-  // update with the given lite page redirect previews state.
-  void RunLitePageRedirectTest(
-      previews::PreviewsUserData::ServerLitePageInfo* preview_info,
-      net::EffectiveConnectionType ect);
-
   // The same as |RunTest| but also navigates to an untracked URL afterwards.
   void RunTestAndNavigateToUntrackedUrl(bool data_reduction_proxy_used,
                                         bool is_using_lite_page,
@@ -79,9 +73,6 @@ class DataReductionProxyMetricsObserverTestBase
   bool cached_data_reduction_proxy_used() const {
     return cached_data_reduction_proxy_used_;
   }
-  previews::PreviewsUserData::ServerLitePageInfo* preview_info() const {
-    return preview_info_;
-  }
   net::EffectiveConnectionType ect() const { return ect_; }
   bool data_reduction_proxy_used() const { return data_reduction_proxy_used_; }
   bool is_using_lite_page() const { return is_using_lite_page_; }
@@ -97,7 +88,6 @@ class DataReductionProxyMetricsObserverTestBase
   uint64_t page_id_ = 0;
 
  private:
-  previews::PreviewsUserData::ServerLitePageInfo* preview_info_;
   net::EffectiveConnectionType ect_;
   bool data_reduction_proxy_used_;
   bool is_using_lite_page_;

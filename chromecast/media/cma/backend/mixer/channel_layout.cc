@@ -4,7 +4,7 @@
 
 #include "chromecast/media/cma/backend/mixer/channel_layout.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace chromecast {
 namespace media {

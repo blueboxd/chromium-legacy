@@ -68,6 +68,12 @@ message HeartbeatRequest {
 
   // Operating system version the host is running on.
   optional string host_os_version = 9;
+
+  // CPU type of the host machine (e.g. x86 or ARM).
+  optional string host_cpu_type = 10;
+
+  // Indicates whether this request is the first heartbeat from a host instance.
+  optional bool is_initial_heartbeat = 11;
 }
 
 // Sent in response to a HeartbeatRequest.

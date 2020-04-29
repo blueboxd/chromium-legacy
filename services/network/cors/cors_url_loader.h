@@ -53,7 +53,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       const OriginAccessList* origin_access_list,
       const OriginAccessList* factory_bound_origin_access_list,
       PreflightController* preflight_controller,
-      const base::flat_set<std::string>* allowed_exempt_headers);
+      const base::flat_set<std::string>* allowed_exempt_headers,
+      bool allow_any_cors_exempt_header);
 
   ~CorsURLLoader() override;
 
@@ -188,6 +189,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   // Flag to specify if the CORS-enabled scheme check should be applied.
   const bool skip_cors_enabled_scheme_check_;
+
+  const bool allow_any_cors_exempt_header_;
 
   // Used to run asynchronous class instance bound callbacks safely.
   base::WeakPtrFactory<CorsURLLoader> weak_factory_{this};

@@ -67,10 +67,10 @@ COMPONENT_EXPORT(UI_BASE_X) void RefCustomXCursor(::Cursor cursor);
 // Decreases the refcount of the custom cursor, and destroys it if it reaches 0.
 COMPONENT_EXPORT(UI_BASE_X) void UnrefCustomXCursor(::Cursor cursor);
 
-// Creates a XcursorImage and copies the SkBitmap |bitmap| on it. |bitmap|
-// should be non-null. Caller owns the returned object.
+// Creates a XcursorImage and copies the SkBitmap |bitmap| on it. Caller owns
+// the returned object.
 COMPONENT_EXPORT(UI_BASE_X)
-XcursorImage* SkBitmapToXcursorImage(const SkBitmap* bitmap,
+XcursorImage* SkBitmapToXcursorImage(const SkBitmap& bitmap,
                                      const gfx::Point& hotspot);
 
 // Coalesce all pending motion events (touch or mouse) that are at the top of

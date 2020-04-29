@@ -14,16 +14,17 @@
 
 namespace blink {
 
-class DisplayLockUtilitiesTest : public RenderingTest,
-                                 private ScopedCSSSubtreeVisibilityHiddenMatchableForTest {
+class DisplayLockUtilitiesTest
+    : public RenderingTest,
+      private ScopedCSSContentVisibilityHiddenMatchableForTest {
  public:
   DisplayLockUtilitiesTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
-        ScopedCSSSubtreeVisibilityHiddenMatchableForTest(true) {}
+        ScopedCSSContentVisibilityHiddenMatchableForTest(true) {}
 
   void LockElement(Element& element, bool activatable) {
     StringBuilder value;
-    value.Append("subtree-visibility: hidden");
+    value.Append("content-visibility: hidden");
     if (activatable)
       value.Append("-matchable");
     element.setAttribute(html_names::kStyleAttr, value.ToAtomicString());

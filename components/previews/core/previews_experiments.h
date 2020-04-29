@@ -45,7 +45,7 @@ enum class PreviewsType {
   RESOURCE_LOADING_HINTS = 7,
 
   // Allows the browser to redirect navigations to a Lite Page server.
-  LITE_PAGE_REDIRECT = 8,
+  DEPRECATED_LITE_PAGE_REDIRECT = 8,
 
   // Preview that defers script execution until after parsing completes.
   DEFER_ALL_SCRIPT = 9,
@@ -108,74 +108,6 @@ base::TimeDelta SingleOptOutDuration();
 // shown as a preview.
 base::TimeDelta OfflinePreviewFreshnessDuration();
 
-// The amount of time that a Server Lite Page Preview navigation can take before
-// it is killed and the original page is loaded.
-base::TimeDelta LitePagePreviewsNavigationTimeoutDuration();
-
-// The host for Lite Page server previews.
-GURL GetLitePagePreviewsDomainURL();
-
-// The duration of a single bypass for Lite Page Server Previews.
-base::TimeDelta LitePagePreviewsSingleBypassDuration();
-
-// Whether or not to trigger a preview for a navigation to localhost. Provided
-// as an experiment for automated and manual testing.
-bool LitePagePreviewsTriggerOnLocalhost();
-
-// Whether to request a Lite Page Server Preview even if there are optimization
-// page hints for the host.
-bool LitePagePreviewsOverridePageHints();
-
-// Whether we should preconnect to the lite page redirect server or the origin.
-bool LitePageRedirectPreviewShouldPreconnect();
-
-// Whether we should preresolve the lite page redirect server or the origin.
-bool LitePageRedirectPreviewShouldPresolve();
-
-// Whether the Optimization Guide logic should be ignored for lite page redirect
-// previews.
-bool LitePageRedirectPreviewIgnoresOptimizationGuideFilter();
-
-// Whether to only trigger a lite page preview if there has been a successful
-// probe to the server. This is returns true, lite page redirect previews should
-// only been attempted when a probe to the previews server has completed
-// successfully.
-bool LitePageRedirectOnlyTriggerOnSuccessfulProbe();
-
-// Whether the preview should trigger on API page transitions.
-bool LitePageRedirectTriggerOnAPITransition();
-
-// Whether the preview should trigger on forward/back page transitions.
-bool LitePageRedirectValidateForwardBackTransition();
-
-// The URL to probe on the lite pages server.
-GURL LitePageRedirectProbeURL();
-
-// The duration in between preresolving or preconnecting the lite page redirect
-// server or the origin.
-base::TimeDelta LitePageRedirectPreviewPreresolvePreconnectInterval();
-
-// The ect threshold at which, or below, we should preresolve or preconnect for
-// lite page redirect previews.
-net::EffectiveConnectionType
-LitePageRedirectPreviewPreresolvePreconnectECTThreshold();
-
-// The duration in between probes to the lite page redirect server.
-base::TimeDelta LitePageRedirectPreviewProbeInterval();
-
-// Whether the origin should be successfully probed before showing a preview.
-bool LitePageRedirectShouldProbeOrigin();
-
-// The timeout for the origin probe on lite page redirect previews.
-base::TimeDelta LitePageRedirectPreviewOriginProbeTimeout();
-
-// The maximum number of seconds to loadshed the Previews server for.
-int PreviewServerLoadshedMaxSeconds();
-
-// Returns true if we should only report metrics and not trigger when the Lite
-// Page Redirect preview is enabled.
-bool IsInLitePageRedirectControl();
-
 // The default EffectiveConnectionType threshold where preview |type| will be
 // triggered.
 net::EffectiveConnectionType GetECTThresholdForPreview(
@@ -194,12 +126,10 @@ bool ArePreviewsAllowed();
 bool IsOfflinePreviewsEnabled();
 bool IsNoScriptPreviewsEnabled();
 bool IsResourceLoadingHintsEnabled();
-bool IsLitePageServerPreviewsEnabled();
 bool IsDeferAllScriptPreviewsEnabled();
 
 // The blacklist version for each preview type.
 int OfflinePreviewsVersion();
-int LitePageServerPreviewsVersion();
 int NoScriptPreviewsVersion();
 int ResourceLoadingHintsVersion();
 int DeferAllScriptPreviewsVersion();

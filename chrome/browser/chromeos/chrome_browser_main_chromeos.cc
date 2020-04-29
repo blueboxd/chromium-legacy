@@ -89,7 +89,6 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/net/network_pref_state_observer.h"
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
-#include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/network_change_manager_client.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -130,6 +129,7 @@
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/ash/assistant/assistant_client_impl.h"
 #include "chrome/browser/ui/ash/assistant/assistant_state_client.h"
+#include "chrome/browser/ui/ash/image_downloader_impl.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
 #include "chrome/common/channel_info.h"
@@ -572,7 +572,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
           ->GetSharedURLLoaderFactory(),
       g_browser_process->local_state());
 
-  wake_on_wifi_manager_.reset(new WakeOnWifiManager());
   fast_transition_observer_.reset(
       new FastTransitionObserver(g_browser_process->local_state()));
   network_throttling_observer_.reset(
@@ -679,6 +678,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Initialize magnification manager before ash tray is created. And this
   // must be placed after UserManager initialization.
   MagnificationManager::Initialize();
+
+  // Has to be initialized before |assistant_client_|;
+  image_downloader_ = std::make_unique<ImageDownloaderImpl>();
 
   // Requires UserManager.
   assistant_state_client_ = std::make_unique<AssistantStateClient>();
@@ -1054,7 +1056,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   network_health_.reset();
   power_metrics_reporter_.reset();
   renderer_freezer_.reset();
-  wake_on_wifi_manager_.reset();
   fast_transition_observer_.reset();
   network_throttling_observer_.reset();
   if (pre_profile_init_called_)

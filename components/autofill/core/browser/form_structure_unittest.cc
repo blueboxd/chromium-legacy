@@ -7140,4 +7140,470 @@ TEST_F(FormStructureTest, CreateForPasswordManagerUpload) {
       "" /*login_form_signature*/, true /*observed_submission*/, &upload));
 }
 
+// Tests if a new logical form is started with the second appearance of a field
+// of type |NAME|.
+TEST_F(FormStructureTest, NoAutocompleteSectionNames) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+  form_structure.set_overall_field_type_for_testing(2, PHONE_HOME_NUMBER);
+  form_structure.set_overall_field_type_for_testing(3, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(4, ADDRESS_HOME_COUNTRY);
+  form_structure.set_overall_field_type_for_testing(5, PHONE_HOME_NUMBER);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(6U, form_structure.field_count());
+
+  EXPECT_EQ("fullName_1-default", form_structure.field(0)->section);
+  EXPECT_EQ("fullName_1-default", form_structure.field(1)->section);
+  EXPECT_EQ("fullName_1-default", form_structure.field(2)->section);
+  EXPECT_EQ("fullName_2-default", form_structure.field(3)->section);
+  EXPECT_EQ("fullName_2-default", form_structure.field(4)->section);
+  EXPECT_EQ("fullName_2-default", form_structure.field(5)->section);
+}
+
+// Tests that the immediate recurrence of the |PHONE_HOME_NUMBER| type does not
+// lead to a section split.
+TEST_F(FormStructureTest, NoSplitByRecurringPhoneFieldType) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Mobile Number");
+  field.name = ASCIIToUTF16("mobileNumber");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue billing name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  field.autocomplete_attribute = "section-blue billing tel";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Mobile Number");
+  field.name = ASCIIToUTF16("mobileNumber");
+  field.autocomplete_attribute = "section-blue billing tel";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, PHONE_HOME_NUMBER);
+  form_structure.set_overall_field_type_for_testing(2, PHONE_HOME_NUMBER);
+  form_structure.set_overall_field_type_for_testing(3, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(4, PHONE_BILLING_NUMBER);
+  form_structure.set_overall_field_type_for_testing(5, PHONE_BILLING_NUMBER);
+  form_structure.set_overall_field_type_for_testing(6, ADDRESS_HOME_COUNTRY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(7U, form_structure.field_count());
+
+  EXPECT_EQ("blue-billing-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(1)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(3)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(4)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(5)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(6)->section);
+}
+
+// Tests if a new logical form is started with the second appearance of a field
+// of type |ADDRESS_HOME_COUNTRY|.
+TEST_F(FormStructureTest, SplitByRecurringFieldType) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue shipping name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "section-blue shipping country";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue shipping name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+  form_structure.set_overall_field_type_for_testing(2, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(3, ADDRESS_HOME_COUNTRY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(4U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(2)->section);
+  EXPECT_EQ("country_2-default", form_structure.field(3)->section);
+}
+
+// Tests if a new logical form is started with the second appearance of a field
+// of type |NAME_FULL| and another with the second appearance of a field of
+// type |ADDRESS_HOME_COUNTRY|.
+TEST_F(FormStructureTest, SplitByNewAutocompleteSectionNameAndRecurringType) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue shipping name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "section-blue billing country";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+  form_structure.set_overall_field_type_for_testing(2, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(3, ADDRESS_HOME_COUNTRY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(4U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(1)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
+  EXPECT_EQ("country_2-default", form_structure.field(3)->section);
+}
+
+// Tests if a new logical form is started with the second appearance of a field
+// of type |NAME_FULL|.
+TEST_F(FormStructureTest, SplitByNewAutocompleteSectionName) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue shipping name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue billing name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_CITY);
+  form_structure.set_overall_field_type_for_testing(2, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(3, ADDRESS_HOME_CITY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(4U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(3)->section);
+}
+
+// Tests if a new logical form is started with the second appearance of a field
+// of type |NAME_FULL|.
+TEST_F(
+    FormStructureTest,
+    FromEmptyAutocompleteSectionToDefinedOneWithSplitByNewAutocompleteSectionName) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "section-blue shipping country";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-blue billing name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+  form_structure.set_overall_field_type_for_testing(2, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(3, ADDRESS_HOME_CITY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(4U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(2)->section);
+  EXPECT_EQ("blue-billing-default", form_structure.field(3)->section);
+}
+
+// Tests if all the fields in the form belong to the same section when the
+// second field has the autcomplete-section attribute set.
+TEST_F(FormStructureTest, FromEmptyAutocompleteSectionToDefinedOne) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "section-blue shipping country";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(2U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+}
+
+// Tests if all the fields in the form belong to the same section when one of
+// the field is ignored.
+TEST_F(FormStructureTest,
+       FromEmptyAutocompleteSectionToDefinedOneWithIgnoredField) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  field.is_focusable = false;  // hidden
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("FullName");
+  field.name = ASCIIToUTF16("fullName");
+  field.is_focusable = true;  // visible
+  field.autocomplete_attribute = "shipping name";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, PHONE_HOME_NUMBER);
+  form_structure.set_overall_field_type_for_testing(2, NAME_FULL);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(3U, form_structure.field_count());
+
+  EXPECT_EQ("-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("-shipping-default", form_structure.field(1)->section);
+  EXPECT_EQ("-shipping-default", form_structure.field(2)->section);
+}
+
+// Tests if the autocomplete section name other than 'shipping' and 'billing'
+// are ignored.
+TEST_F(FormStructureTest, IgnoreAribtraryAutocompleteSectionName) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(features::kAutofillUseNewSectioningMethod);
+
+  FormData form;
+  form.url = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.autocomplete_attribute = "section-red ship name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.autocomplete_attribute = "section-blue shipping country";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+
+  form_structure.set_overall_field_type_for_testing(0, NAME_FULL);
+  form_structure.set_overall_field_type_for_testing(1, ADDRESS_HOME_COUNTRY);
+
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  form_structure.identify_sections_for_testing();
+
+  // Assert the correct number of fields.
+  ASSERT_EQ(2U, form_structure.field_count());
+
+  EXPECT_EQ("blue-shipping-default", form_structure.field(0)->section);
+  EXPECT_EQ("blue-shipping-default", form_structure.field(1)->section);
+}
+
 }  // namespace autofill

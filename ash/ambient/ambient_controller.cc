@@ -5,6 +5,7 @@
 #include "ash/ambient/ambient_controller.h"
 
 #include <string>
+#include <utility>
 
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/fake_ambient_backend_controller_impl.h"
@@ -19,6 +20,7 @@
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "base/bind_helpers.h"
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -111,6 +113,27 @@ void AmbientController::OnLockStateChanged(bool locked) {
   if (locked) {
     // Show ambient mode when entering lock screen.
     DCHECK(!container_view_);
+
+    // We have 3 options to manage the token for lock screen. Here use option 1.
+    // 1. Request only one time after entering lock screen. We will use it once
+    //    to request all the image links and no more requests.
+    // 2. Request one time before entering lock screen. This will introduce
+    //    extra latency.
+    // 3. Request and refresh the token in the background (even the ambient mode
+    //    is not started) with extra buffer time to use. When entering
+    //    lock screen, it will be most likely to have the token already and
+    //    enough time to use. More specifically,
+    //    3a. We will leave enough buffer time (e.g. 10 mins before expire) to
+    //        start to refresh the token.
+    //    3b. When lock screen is triggered, most likely we will have >10 mins
+    //        of token which can be used on lock screen.
+    //    3c. There is a corner case that we may not have the token fetched when
+    //        locking screen, we probably can use PrepareForLock(callback) when
+    //        locking screen. We can add the refresh token into it. If the token
+    //        has already been fetched, then there is not additional time to
+    //        wait.
+    RequestAccessToken(base::DoNothing());
+
     Show();
   } else {
     // Destroy ambient mode after user re-login.
@@ -161,6 +184,11 @@ void AmbientController::StartFadeOutAnimation() {
   // layer of the widget, otherwise it will reveal the color of the lockscreen
   // wallpaper beneath.
   container_view_->FadeOutPhotoView();
+}
+
+void AmbientController::RequestAccessToken(
+    AmbientAccessTokenController::AccessTokenCallback callback) {
+  access_token_controller_.RequestAccessToken(std::move(callback));
 }
 
 void AmbientController::CreateContainerView() {

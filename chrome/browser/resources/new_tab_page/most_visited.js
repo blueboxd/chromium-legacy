@@ -76,6 +76,16 @@ class MostVisitedElement extends PolymerElement {
 
   static get properties() {
     return {
+      /**
+       * When the tile icon background is dark, the add icon color is white for
+       * contrast. This can be used to determine the color of the tile hover as
+       * well.
+       */
+      useWhiteAddIcon: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
+
       /** @private */
       columnCount_: {
         type: Number,
@@ -151,7 +161,10 @@ class MostVisitedElement extends PolymerElement {
       toastContent_: String,
 
       /** @private */
-      visible_: Boolean,
+      visible_: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
     };
   }
 
@@ -486,10 +499,6 @@ class MostVisitedElement extends PolymerElement {
   onAddShortcutKeyDown_(e) {
     if (e.altKey || e.shiftKey || e.metaKey || e.ctrlKey) {
       return;
-    }
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      this.onAdd_();
     }
 
     if (!this.tiles_ || this.tiles_.length === 0) {

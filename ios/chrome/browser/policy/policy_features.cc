@@ -22,6 +22,16 @@ const base::Feature kURLBlocklistIOS{"URLBlocklistIOS",
 namespace {
 
 // Returns true if the current command line contains the
+// |kDisableEnterprisePolicy| switch.
+bool IsDisableEnterprisePolicySwitchPresent() {
+  // This feature is controlled via the command line because policy must be
+  // initialized before about:flags or field trials. Using a command line flag
+  // is the only way to control this feature at runtime.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kDisableEnterprisePolicy);
+}
+
+// Returns true if the current command line contains the
 // |kEnableEnterprisePolicy| switch.
 bool IsEnableEnterprisePolicySwitchPresent() {
   // This feature is controlled via the command line because policy must be
@@ -38,13 +48,17 @@ bool IsEditBookmarksIOSEnabled() {
 }
 
 bool IsEnterprisePolicyEnabled() {
+  if (IsDisableEnterprisePolicySwitchPresent()) {
+    return false;
+  }
+
   // Policy is enabled by default for non-stable channels.
   return GetChannel() != version_info::Channel::STABLE ||
          IsEnableEnterprisePolicySwitchPresent();
 }
 
 bool ShouldInstallEnterprisePolicyHandlers() {
-  return IsEnableEnterprisePolicySwitchPresent();
+  return IsEnterprisePolicyEnabled();
 }
 
 bool ShouldInstallManagedBookmarksPolicyHandler() {

@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/bits.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace chromecast {
 namespace media {

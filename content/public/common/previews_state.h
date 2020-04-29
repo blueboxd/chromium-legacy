@@ -13,6 +13,8 @@ typedef int PreviewsState;
 // the resource. Previews are optimizations that change the format and
 // content of web pages to improve data savings and / or performance. This enum
 // determines which Previews types to request.
+// Deprecated values should be commented out and not reused since this bitmask
+// is persisted on disk.
 enum PreviewsTypes {
   PREVIEWS_UNSPECIFIED = 0,  // Let the browser process decide whether or
                              // not to request Preview types.
@@ -37,10 +39,11 @@ enum PreviewsTypes {
       1 << 7,  // Request that resource loading hints be used during pageload.
   OFFLINE_PAGE_ON =
       1 << 8,  // Request that an offline page be used if one is stored.
-  LITE_PAGE_REDIRECT_ON = 1 << 9,  // Allow the browser to redirect the resource
-                                   // to a Lite Page server.
-  DEFER_ALL_SCRIPT_ON = 1 << 10,   // Request that script execution be deferred
-                                   // until parsing completes.
+  // DEPRECATED: LITE_PAGE_REDIRECT_ON = 1 << 9,  // Allow the browser to
+  // redirect the resource to a Lite Page server. Support for this functionality
+  // has been removed.
+  DEFER_ALL_SCRIPT_ON = 1 << 10,  // Request that script execution be deferred
+                                  // until parsing completes.
   SUBRESOURCE_REDIRECT_ON =
       1 << 11,  // Allow the subresources in the page to be redirected to
                 // serve better optimized resources. Set on subresources.
@@ -53,9 +56,9 @@ enum PreviewsTypes {
 // deprecated
 
 // Combination of all currently supported previews.
-const PreviewsState ALL_SUPPORTED_PREVIEWS =
-    SERVER_LITE_PAGE_ON | NOSCRIPT_ON | RESOURCE_LOADING_HINTS_ON |
-    OFFLINE_PAGE_ON | LITE_PAGE_REDIRECT_ON;
+const PreviewsState ALL_SUPPORTED_PREVIEWS = SERVER_LITE_PAGE_ON | NOSCRIPT_ON |
+                                             RESOURCE_LOADING_HINTS_ON |
+                                             OFFLINE_PAGE_ON;
 
 }  // namespace content
 

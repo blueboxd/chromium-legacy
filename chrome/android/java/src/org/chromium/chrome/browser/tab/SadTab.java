@@ -12,8 +12,9 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
@@ -34,7 +35,7 @@ import org.chromium.ui.widget.ChromeBulletSpan;
  * Represent the sad tab displayed in place of a crashed renderer. Instantiated on the first
  * |show()| request from a Tab, and destroyed together with it.
  */
-public class SadTab extends EmptyTabObserver implements UserData, TabViewProvider {
+public class SadTab extends EmptyTabObserver implements UserData {
     private static final Class<SadTab> USER_DATA_KEY = SadTab.class;
 
     private final TabImpl mTab;
@@ -112,7 +113,10 @@ public class SadTab extends EmptyTabObserver implements UserData, TabViewProvide
                 suggestionAction, buttonAction, showSendFeedbackView, mTab.isIncognito());
         mSadTabSuccessiveRefreshCounter++;
 
-        TabViewManager.get(mTab).addTabViewProvider(this);
+        // Show the sad tab inside ContentView.
+        mTab.getContentView().addView(mView,
+                new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        mTab.notifyContentChanged();
     }
 
     /**
@@ -120,7 +124,10 @@ public class SadTab extends EmptyTabObserver implements UserData, TabViewProvide
      */
     @VisibleForTesting
     public void removeIfPresent() {
-        TabViewManager.get(mTab).removeTabViewProvider(this);
+        if (isShowing()) {
+            mTab.getContentView().removeView(mView);
+            mTab.notifyContentChanged();
+        }
         mView = null;
     }
 
@@ -128,7 +135,7 @@ public class SadTab extends EmptyTabObserver implements UserData, TabViewProvide
      * @return Whether or not the sad tab is showing.
      */
     public boolean isShowing() {
-        return mView != null && TabViewManager.get(mTab).getCurrentTabViewProvider() == this;
+        return mView != null && mView.getParent() == mTab.getContentView();
     }
 
     // TabObserver
@@ -174,8 +181,6 @@ public class SadTab extends EmptyTabObserver implements UserData, TabViewProvide
         LayoutInflater inflater =
                 (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View sadTabView = inflater.inflate(R.layout.sad_tab, null);
-        sadTabView.setLayoutParams(
-                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
         TextView titleText = (TextView) sadTabView.findViewById(R.id.sad_tab_title);
         int titleTextId =
@@ -293,15 +298,5 @@ public class SadTab extends EmptyTabObserver implements UserData, TabViewProvide
     @VisibleForTesting
     public static void initForTesting(Tab tab, SadTab sadTab) {
         tab.getUserDataHost().setUserData(USER_DATA_KEY, sadTab);
-    }
-
-    @Override
-    public int getTabViewProviderType() {
-        return Type.SAD_TAB;
-    }
-
-    @Override
-    public View getView() {
-        return mView;
     }
 }

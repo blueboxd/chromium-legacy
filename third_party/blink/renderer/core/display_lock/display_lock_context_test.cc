@@ -89,10 +89,12 @@ class DisplayLockEmptyEventListener final : public NativeEventListener {
 };
 }  // namespace
 
-class DisplayLockContextTest : public testing::Test,
-                               private ScopedCSSSubtreeVisibilityHiddenMatchableForTest {
+class DisplayLockContextTest
+    : public testing::Test,
+      private ScopedCSSContentVisibilityHiddenMatchableForTest {
  public:
-  DisplayLockContextTest() : ScopedCSSSubtreeVisibilityHiddenMatchableForTest(true) {}
+  DisplayLockContextTest()
+      : ScopedCSSContentVisibilityHiddenMatchableForTest(true) {}
 
   void SetUp() override {
     web_view_helper_.Initialize();
@@ -130,7 +132,7 @@ class DisplayLockContextTest : public testing::Test,
 
   void LockElement(Element& element, bool activatable) {
     StringBuilder value;
-    value.Append("subtree-visibility: hidden");
+    value.Append("content-visibility: hidden");
     if (activatable)
       value.Append("-matchable");
     element.setAttribute(html_names::kStyleAttr, value.ToAtomicString());
@@ -144,7 +146,7 @@ class DisplayLockContextTest : public testing::Test,
   }
 
   void UnlockImmediate(DisplayLockContext* context) {
-    context->SetRequestedState(ESubtreeVisibility::kVisible);
+    context->SetRequestedState(EContentVisibility::kVisible);
   }
 
   bool GraphicsLayerNeedsCollection(DisplayLockContext* context) const {
@@ -207,9 +209,8 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
       GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount(), 1);
 
   // If the element is dirty, style recalc would handle it in the next recalc.
-  element->setAttribute(
-      html_names::kStyleAttr,
-      "subtree-visibility: hidden; color: red;");
+  element->setAttribute(html_names::kStyleAttr,
+                        "content-visibility: hidden; color: red;");
   EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
   EXPECT_TRUE(element->NeedsStyleRecalc());
   EXPECT_FALSE(element->ChildNeedsStyleRecalc());
@@ -239,9 +240,8 @@ TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
   EXPECT_FALSE(child->NeedsStyleRecalc());
 
   // Lock the child.
-  child->setAttribute(
-      html_names::kStyleAttr,
-      "subtree-visibility: hidden; color: blue;");
+  child->setAttribute(html_names::kStyleAttr,
+                      "content-visibility: hidden; color: blue;");
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(GetDocument().body()->ChildNeedsStyleRecalc());
@@ -754,7 +754,7 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChangeCSS) {
       background: blue;
     }
     .locked {
-      subtree-visibility: hidden;
+      content-visibility: hidden;
     }
     </style>
     <body><div class=locked id="container"><b>t</b>esting<div id=inner></div></div></body>
@@ -971,7 +971,7 @@ TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
 
   SetHtmlInnerHTML(R"HTML(
     <body>
-    <div id="nonviewport" style="subtree-visibility: hidden-matchable">
+    <div id="nonviewport" style="content-visibility: hidden-matchable">
     </div>
     </body>
   )HTML");
@@ -1292,9 +1292,8 @@ TEST_F(DisplayLockContextTest, ElementInTemplate) {
   ASSERT_TRUE(document_child->GetDisplayLockContext());
   EXPECT_TRUE(document_child->GetDisplayLockContext()->IsLocked());
 
-  document_child->setAttribute(
-      html_names::kStyleAttr,
-      "subtree-visibility: hidden; color: red;");
+  document_child->setAttribute(html_names::kStyleAttr,
+                               "content-visibility: hidden; color: red;");
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(document_child->NeedsStyleRecalc());
@@ -1746,12 +1745,13 @@ TEST_F(DisplayLockContextTest, DescendantNeedsPaintPropertyUpdateBlocked) {
   EXPECT_FALSE(handler_object->DescendantNeedsPaintPropertyUpdate());
 }
 
-class DisplayLockContextRenderingTest : public RenderingTest,
-                                        private ScopedCSSSubtreeVisibilityHiddenMatchableForTest {
+class DisplayLockContextRenderingTest
+    : public RenderingTest,
+      private ScopedCSSContentVisibilityHiddenMatchableForTest {
  public:
   DisplayLockContextRenderingTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
-        ScopedCSSSubtreeVisibilityHiddenMatchableForTest(true) {}
+        ScopedCSSContentVisibilityHiddenMatchableForTest(true) {}
 
   bool IsObservingLifecycle(DisplayLockContext* context) const {
     return context->is_registered_for_lifecycle_notifications_;
@@ -1761,7 +1761,7 @@ class DisplayLockContextRenderingTest : public RenderingTest,
     return context->needs_compositing_dependent_flag_update_;
   }
   void LockImmediate(DisplayLockContext* context) {
-    context->SetRequestedState(ESubtreeVisibility::kHidden);
+    context->SetRequestedState(EContentVisibility::kHidden);
   }
   void RunStartOfLifecycleTasks() {
     auto start_of_lifecycle_tasks =
@@ -1794,7 +1794,7 @@ TEST_F(DisplayLockContextRenderingTest,
        VisualOverflowCalculateOnChildPaintLayer) {
   SetHtmlInnerHTML(R"HTML(
     <style>
-      .hidden { subtree-visibility: hidden }
+      .hidden { content-visibility: hidden }
       .paint_layer { contain: paint }
       .composited { will-change: transform }
     </style>
@@ -1911,7 +1911,7 @@ TEST_F(DisplayLockContextRenderingTest, ObjectsNeedingLayoutConsidersLocks) {
   EXPECT_EQ(total_count, 10u);
 
   GetDocument().getElementById("e")->setAttribute(html_names::kStyleAttr,
-                                                  "subtree-visibility: auto");
+                                                  "content-visibility: auto");
   UpdateAllLifecyclePhasesForTest();
 
   // Note that the dirty_all call propagate the dirty bit from the unlocked
@@ -1927,7 +1927,7 @@ TEST_F(DisplayLockContextRenderingTest, ObjectsNeedingLayoutConsidersLocks) {
   EXPECT_EQ(total_count, 8u);
 
   GetDocument().getElementById("a")->setAttribute(html_names::kStyleAttr,
-                                                  "subtree-visibility: auto");
+                                                  "content-visibility: auto");
   UpdateAllLifecyclePhasesForTest();
 
   // Note that this dirty_all call is now not propagating the dirty bits at all,
@@ -1946,8 +1946,8 @@ TEST_F(DisplayLockContextRenderingTest,
        NestedLockDoesNotInvalidateOnHideOrShow) {
   SetHtmlInnerHTML(R"HTML(
     <style>
-      .auto { subtree-visibility: auto; }
-      .hidden { subtree-visibility: hidden; }
+      .auto { content-visibility: auto; }
+      .hidden { content-visibility: hidden; }
       .item { height: 10px; }
       /* this is important to not invalidate layout when we hide the element! */
       #outer { contain: style layout; }
@@ -2083,8 +2083,8 @@ TEST_F(DisplayLockContextRenderingTest,
 TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   SetHtmlInnerHTML(R"HTML(
     <style>
-      .auto { subtree-visibility: auto; }
-      .hidden { subtree-visibility: hidden; }
+      .auto { content-visibility: auto; }
+      .hidden { content-visibility: hidden; }
       .item { height: 10px; }
       /* this is important to not invalidate layout when we hide the element! */
       #outer { contain: style layout; }
@@ -2234,7 +2234,7 @@ TEST_F(DisplayLockContextRenderingTest,
        LockedCanvasWithFallbackHasFocusableStyle) {
   SetHtmlInnerHTML(R"HTML(
     <style>
-      .auto { subtree-visibility: auto; }
+      .auto { content-visibility: auto; }
       .spacer { height: 3000px; }
     </style>
     <div class=spacer></div>
@@ -2252,7 +2252,7 @@ TEST_F(DisplayLockContextRenderingTest,
 TEST_F(DisplayLockContextRenderingTest, ForcedUnlockBookkeeping) {
   SetHtmlInnerHTML(R"HTML(
     <style>
-      .hidden { subtree-visibility: hidden; }
+      .hidden { content-visibility: hidden; }
       .inline { display: inline; }
     </style>
     <div id=target class=hidden></div>
@@ -2276,12 +2276,12 @@ TEST_F(DisplayLockContextRenderingTest, ForcedUnlockBookkeeping) {
 
 class DisplayLockContextLegacyRenderingTest
     : public RenderingTest,
-      private ScopedCSSSubtreeVisibilityHiddenMatchableForTest,
+      private ScopedCSSContentVisibilityHiddenMatchableForTest,
       private ScopedLayoutNGForTest {
  public:
   DisplayLockContextLegacyRenderingTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
-        ScopedCSSSubtreeVisibilityHiddenMatchableForTest(true),
+        ScopedCSSContentVisibilityHiddenMatchableForTest(true),
         ScopedLayoutNGForTest(false) {}
 };
 
@@ -2290,7 +2290,7 @@ TEST_F(DisplayLockContextLegacyRenderingTest,
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   SetHtmlInnerHTML(R"HTML(
     <style>
-      .hidden { subtree-visibility: hidden; }
+      .hidden { content-visibility: hidden; }
       #grandparent { height: 100px; }
       #parent { height: auto; }
       #item { height: 10%; }

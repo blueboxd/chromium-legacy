@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import androidx.annotation.VisibleForTesting;
@@ -43,8 +42,6 @@ public class PlayerManager {
         mDelegate = new PlayerCompositorDelegateImpl(nativePaintPreviewServiceProvider, url,
                 directoryKey, this::onCompositorReady, linkClickHandler);
         mHostView = new FrameLayout(mContext);
-        mHostView.setLayoutParams(
-                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mHostView.setBackgroundColor(backgroundColor);
         mViewReadyCallback = viewReadyCallback;
     }

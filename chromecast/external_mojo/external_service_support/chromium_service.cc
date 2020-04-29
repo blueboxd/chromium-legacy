@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/token.h"
 #include "chromecast/external_mojo/external_service_support/external_connector.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

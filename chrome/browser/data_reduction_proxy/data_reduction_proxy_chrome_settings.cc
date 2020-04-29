@@ -281,12 +281,6 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
   if (!headers || headers->IsRedirect(nullptr))
     return data;
 
-  const ChromeNavigationUIData* chrome_navigation_ui_data =
-      static_cast<const ChromeNavigationUIData*>(handle->GetNavigationUIData());
-  if (chrome_navigation_ui_data) {
-    data->set_page_id(
-        chrome_navigation_ui_data->data_reduction_proxy_page_id());
-  }
   const auto session_key =
       data_reduction_proxy::DataReductionProxyRequestOptions::
           GetSessionKeyFromRequestHeaders(GetProxyRequestHeaders());

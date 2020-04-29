@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
-#import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_overlay.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
 #import "ios/chrome/browser/ui/location_bar/test/fake_location_bar_consumer.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
@@ -27,6 +27,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using java_script_dialog_overlays::JavaScriptDialogRequest;
 
 // Test fixture for LocationBarMediator.
 class LocationBarMediatorTest : public PlatformTest {
@@ -78,13 +80,12 @@ TEST_F(LocationBarMediatorTest, DisableShareForOverlays) {
 
   // Present a JavaScript alert over the WebState and verify that the page is no
   // longer shareable.
-  JavaScriptDialogSource source(web_state, kUrl, /* is_main_frame= */ true);
-  const std::string kMessage("message");
   OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
       web_state, OverlayModality::kWebContentArea);
-  queue->AddRequest(
-      OverlayRequest::CreateWithConfig<JavaScriptAlertOverlayRequestConfig>(
-          source, kMessage));
+  queue->AddRequest(OverlayRequest::CreateWithConfig<JavaScriptDialogRequest>(
+      web::JAVASCRIPT_DIALOG_TYPE_ALERT, web_state, kUrl,
+      /*is_main_frame=*/true, @"message",
+      /*default_text_field_value=*/nil));
   EXPECT_FALSE(consumer_.locationShareable);
 
   // Cancel the request and verify that the location is shareable again.

@@ -22748,6 +22748,7 @@ Called by update_extension_histograms.py.-->
   <int value="1466" label="AUTOTESTPRIVATE_SETWINDOWBOUNDS"/>
   <int value="1467" label="AUTOTESTPRIVATE_STARTSMOOTHNESSTRACKING"/>
   <int value="1468" label="AUTOTESTPRIVATE_STOPSMOOTHNESSTRACKING"/>
+  <int value="1469" label="ACCESSIBILITY_PRIVATE_UPDATESWITCHACCESSBUBBLE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -27100,6 +27101,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3252" label="CSSKeywordRevert"/>
   <int value="3253" label="OverlayPopupAd"/>
   <int value="3254" label="EventTimingFirstInputExplicitlyRequested"/>
+  <int value="3255" label="CustomScrollbarPercentThickness"/>
+  <int value="3256" label="CustomScrollbarPartPercentLength"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -32826,6 +32829,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Interact outside of shelf to hide hotseat"/>
 </enum>
 
+<enum name="HotspotSupport">
+  <int value="0" label="Unsupported"/>
+  <int value="1" label="Invalid version"/>
+  <int value="2" label="Version 1"/>
+  <int value="3" label="Version 2"/>
+  <int value="4" label="Version 3"/>
+</enum>
+
 <enum name="HotwordAvailability">
   <int value="0" label="Unavailable -- reason may be unknown"/>
   <int value="1" label="Available"/>
@@ -38276,6 +38287,8 @@ from previous Chrome versions.
   <int value="-1648216169" label="NewOmniboxAnswerTypes:disabled"/>
   <int value="-1646016597" label="IsolatePrerenders:disabled"/>
   <int value="-1645071473" label="ChromeColors:disabled"/>
+  <int value="-1644721118"
+      label="disable-experimental-accessibility-chromevox-search-menus"/>
   <int value="-1641832607" label="DragToPinTabs:enabled"/>
   <int value="-1638815914" label="enable-experimental-productivity-features"/>
   <int value="-1634878515" label="ChromeHomeModernLayout:enabled"/>
@@ -39532,8 +39545,6 @@ from previous Chrome versions.
   <int value="-208587977" label="OmniboxMaterialDesignWeatherIcons:enabled"/>
   <int value="-208435024" label="EnableUsernameCorrection:enabled"/>
   <int value="-206393363" label="enable-scroll-prediction"/>
-  <int value="-205068159"
-      label="enable-experimental-accessibility-chromevox-search-menus"/>
   <int value="-204355195" label="secondary-ui-md"/>
   <int value="-203968600" label="SyncSupportSecondaryAccount:disabled"/>
   <int value="-202007318" label="AndroidAIAFetching:enabled"/>
@@ -42959,6 +42970,7 @@ Called by update_use_counter_css.py.-->
   <int value="659" label="math-superscript-shift-style"/>
   <int value="660" label="ruby-position"/>
   <int value="661" label="text-underline-offset"/>
+  <int value="662" label="content-visibility"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -64158,6 +64170,9 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="SupervisedUserExtensionAllowlist">
+  <obsolete>
+    Removed in April 2020 (M84).
+  </obsolete>
   <summary>
     Tracks the state of a supervised user trying to install an extension during
     the COVID-19 crisis.

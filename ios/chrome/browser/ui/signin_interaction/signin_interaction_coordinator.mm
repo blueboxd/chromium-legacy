@@ -197,7 +197,13 @@
 
 - (void)abortAndDismissSettingsViewAnimated:(BOOL)animated
                                  completion:(ProceduralBlock)completion {
-  DCHECK(!self.controller);
+  if (self.controller) {
+    [self.controller cancel];
+    if (completion) {
+      completion();
+    }
+    return;
+  }
   SigninCoordinatorInterruptAction action =
       animated ? SigninCoordinatorInterruptActionDismissWithAnimation
                : SigninCoordinatorInterruptActionDismissWithoutAnimation;
@@ -346,6 +352,7 @@
   DCHECK(!self.controller);
   DCHECK(!self.topViewController);
   DCHECK(!self.alertCoordinator);
+  self.presentingViewController = nil;
   if (self.signinCompletion) {
     self.signinCompletion(success);
     self.signinCompletion = nil;

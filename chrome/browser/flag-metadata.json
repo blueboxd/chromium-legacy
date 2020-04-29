@@ -841,6 +841,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "disable-experimental-accessibility-chromevox-search-menus",
+    "owners": ["akihiroota"],
+    "expiry_milestone": 86
+  },
+  {
     "name": "disable-explicit-dma-fences",
     "owners": [ "chromeos-gfx@google.com" ],
     // This flag is used for QA & debugging on ChromeOS, which has no way to
@@ -1442,11 +1447,6 @@
     "name": "enable-experimental-accessibility-chromevox-annotations",
     "owners": ["akihiroota"],
     "expiry_milestone": 86
-  },
-  {
-    "name": "enable-experimental-accessibility-chromevox-search-menus",
-    "owners": ["akihiroota"],
-    "expiry_milestone": 83
   },
   {
     "name": "enable-experimental-accessibility-chromevox-tutorial",
@@ -2372,7 +2372,7 @@
   {
     "name": "exo-pointer-lock",
     "owners": [ "hollingum@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 88
   },
   {
     "name": "expensive-background-timer-throttling",
@@ -4191,11 +4191,6 @@
     "name": "username-first-flow",
     "owners": [ "dvadym" ],
     "expiry_milestone": 84
-  },
-  {
-    "name": "wake-on-wifi-packet",
-    "owners": [ "abhishekbh", "chirantan" ],
-    "expiry_milestone": 76
   },
   {
     "name": "wallet-service-use-sandbox",

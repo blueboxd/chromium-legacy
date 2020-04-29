@@ -7,8 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/logging.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/message_port.h"
 

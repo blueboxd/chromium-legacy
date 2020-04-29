@@ -72,6 +72,15 @@ size_t MaxHintsFetcherTopHostBlacklistSize() {
          MaxHostsForOptimizationGuideServiceHintsFetch();
 }
 
+bool ShouldBatchUpdateHintsForTopHosts() {
+  if (base::FeatureList::IsEnabled(kRemoteOptimizationGuideFetching)) {
+    return GetFieldTrialParamByFeatureAsBool(kRemoteOptimizationGuideFetching,
+                                             "batch_update_hints_for_top_hosts",
+                                             true);
+  }
+  return false;
+}
+
 size_t MaxHostsForOptimizationGuideServiceHintsFetch() {
   return GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching,

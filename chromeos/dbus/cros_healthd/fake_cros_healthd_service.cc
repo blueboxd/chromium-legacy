@@ -22,6 +22,11 @@ void FakeCrosHealthdService::GetDiagnosticsService(
   diagnostics_receiver_set_.Add(this, std::move(service));
 }
 
+void FakeCrosHealthdService::GetEventService(
+    mojom::CrosHealthdEventServiceRequest service) {
+  event_receiver_set_.Add(this, std::move(service));
+}
+
 void FakeCrosHealthdService::GetAvailableRoutines(
     GetAvailableRoutinesCallback callback) {
   std::move(callback).Run(available_routines_);
@@ -122,6 +127,11 @@ void FakeCrosHealthdService::RunBatteryDischargeRoutine(
   std::move(callback).Run(run_routine_response_.Clone());
 }
 
+void FakeCrosHealthdService::AddPowerObserver(
+    mojom::CrosHealthdPowerObserverPtr observer) {
+  power_observers_.Add(observer.PassInterface());
+}
+
 void FakeCrosHealthdService::ProbeTelemetryInfo(
     const std::vector<mojom::ProbeCategoryEnum>& categories,
     ProbeTelemetryInfoCallback callback) {
@@ -146,6 +156,11 @@ void FakeCrosHealthdService::SetGetRoutineUpdateResponseForTesting(
 void FakeCrosHealthdService::SetProbeTelemetryInfoResponseForTesting(
     mojom::TelemetryInfoPtr& response_info) {
   telemetry_response_info_.Swap(&response_info);
+}
+
+void FakeCrosHealthdService::EmitAcInsertedEventForTesting() {
+  for (auto& observer : power_observers_)
+    observer->OnAcInserted();
 }
 
 }  // namespace cros_healthd

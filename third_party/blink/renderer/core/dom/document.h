@@ -314,19 +314,6 @@ class CORE_EXPORT Document : public ContainerNode,
   network::mojom::ReferrerPolicy GetReferrerPolicy() const;
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
   FrameOrWorkerScheduler* GetScheduler();
-  void CountPotentialFeaturePolicyViolation(
-      mojom::blink::FeaturePolicyFeature) const;
-  void ReportFeaturePolicyViolation(
-      mojom::blink::FeaturePolicyFeature,
-      mojom::blink::PolicyDisposition,
-      const String& message = g_empty_string) const;
-  void ReportDocumentPolicyViolation(
-      mojom::blink::DocumentPolicyFeature,
-      mojom::blink::PolicyDisposition disposition,
-      const String& message = g_empty_string,
-      // If source_file is set to empty string,
-      // current JS file would be used as source_file instead.
-      const String& source_file = g_empty_string) const;
 
   // FeaturePolicyParserDelegate override
   // TODO(crbug.com/1029822) FeaturePolicyParserDelegate overrides, these
@@ -1696,7 +1683,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void ApplyScrollRestorationLogic();
 
   void MarkHasFindInPageRequest();
-  void MarkHasFindInPageSubtreeVisibilityActiveMatch();
+  void MarkHasFindInPageContentVisibilityActiveMatch();
 
   void ScheduleFormSubmission(HTMLFormElement* form_element);
   void CancelFormSubmissions();
@@ -2205,11 +2192,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<NavigationInitiatorImpl> navigation_initiator_;
   Member<LazyLoadImageObserver> lazy_load_image_observer_;
-
-  // Tracks which features have already been potentially violated in this
-  // document. This helps to count them only once per page load.
-  // We don't use std::bitset to avoid to include feature_policy.mojom-blink.h.
-  mutable Vector<bool> potentially_violated_features_;
 
   // Pending feature policy headers to send to browser after DidCommitNavigation
   // IPC.

@@ -10,6 +10,8 @@
 
 #include "base/optional.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
+#include "chromeos/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
 namespace cros_healthd {
@@ -148,6 +150,13 @@ class ServiceConnection {
       uint32_t maximum_discharge_percent_allowed,
       mojom::CrosHealthdDiagnosticsService::RunBatteryDischargeRoutineCallback
           callback) = 0;
+
+  // Subscribes to cros_healthd's power-related events. See
+  // src/chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void AddPowerObserver(
+      mojo::PendingRemote<mojom::CrosHealthdPowerObserver>
+          pending_observer) = 0;
 
   // Gather pieces of information about the platform. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for

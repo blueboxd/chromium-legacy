@@ -105,6 +105,8 @@ class LayoutCustomScrollbarPart final : public LayoutBlock {
 
   bool AllowsOverflowClip() const override { return false; }
 
+  void RecordPercentLengthStats() const;
+
   UntracedMember<ScrollableArea> scrollable_area_;
   UntracedMember<CustomScrollbar> scrollbar_;
   ScrollbarPart part_;

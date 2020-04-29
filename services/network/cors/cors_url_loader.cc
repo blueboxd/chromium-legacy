@@ -101,7 +101,8 @@ CorsURLLoader::CorsURLLoader(
     const OriginAccessList* origin_access_list,
     const OriginAccessList* factory_bound_origin_access_list,
     PreflightController* preflight_controller,
-    const base::flat_set<std::string>* allowed_exempt_headers)
+    const base::flat_set<std::string>* allowed_exempt_headers,
+    bool allow_any_cors_exempt_header)
     : receiver_(this, std::move(loader_receiver)),
       process_id_(process_id),
       routing_id_(routing_id),
@@ -116,7 +117,8 @@ CorsURLLoader::CorsURLLoader(
       factory_bound_origin_access_list_(factory_bound_origin_access_list),
       preflight_controller_(preflight_controller),
       allowed_exempt_headers_(allowed_exempt_headers),
-      skip_cors_enabled_scheme_check_(skip_cors_enabled_scheme_check) {
+      skip_cors_enabled_scheme_check_(skip_cors_enabled_scheme_check),
+      allow_any_cors_exempt_header_(allow_any_cors_exempt_header) {
   if (ignore_isolated_world_origin)
     request_.isolated_world_origin = base::nullopt;
 
@@ -195,7 +197,8 @@ void CorsURLLoader::FollowRedirect(
   }
   request_.headers.MergeFrom(modified_headers);
 
-  if (!CorsURLLoaderFactory::IsValidCorsExemptHeaders(
+  if (!allow_any_cors_exempt_header_ &&
+      !CorsURLLoaderFactory::IsValidCorsExemptHeaders(
           *allowed_exempt_headers_, modified_cors_exempt_headers)) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
     return;

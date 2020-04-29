@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 // Returned by the async iterator FontIterator as the entry value.
-// https://inexorabletash.github.io/font-enumeration/
+// https://wicg.github.io/local-font-access/
 [
-    NoInterfaceObject,
+    SecureContext,
     RuntimeEnabled=FontAccess
 ] interface FontMetadata {
-  readonly attribute DOMString postscriptName;
-  readonly attribute DOMString fullName;
-  readonly attribute DOMString family;
+  readonly attribute USVString postscriptName;
+  readonly attribute USVString fullName;
+  readonly attribute USVString family;
+  [CallWith=ScriptState] Promise<FontTableMap> getTables(optional sequence<ByteString> tables);
 };

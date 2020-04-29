@@ -71,7 +71,8 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
     // empty original event list. In that case, we can't use the original events
     // to update the prediction. We don't want to use the aggregated event to
     // update because of the event time stamp, so skip the prediction for now.
-    if (original_events.empty())
+    if (original_events.empty() ||
+        event_with_callback->coalesced_scroll_and_pinch())
       return event_with_callback;
 
     for (auto& coalesced_event : original_events)

@@ -11,6 +11,8 @@ import android.os.Handler;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
 
@@ -24,24 +26,26 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
     private Context mContext;
     private StatusIndicatorCoordinator mStatusIndicator;
     private ConnectivityDetector mConnectivityDetector;
+    private ObservableSupplier<Boolean> mIsUrlBarFocusedSupplier;
+    private Callback<Boolean> mOnUrlBarFocusChanged;
+    private Runnable mShowRunnable;
+    private Runnable mHideRunnable;
+    private Runnable mOnUrlBarUnfocusedRunnable;
 
     /**
      * Constructs the offline indicator.
      * @param context The {@link Context}.
      * @param statusIndicator The {@link StatusIndicatorCoordinator} instance this controller will
      *                        control based on the connectivity.
+     * @param isUrlBarFocusedSupplier The {@link ObservableSupplier} that will supply the UrlBar's
+     *                                focus state and notify a listener when it changes.
      */
-    public OfflineIndicatorControllerV2(
-            Context context, StatusIndicatorCoordinator statusIndicator) {
+    public OfflineIndicatorControllerV2(Context context, StatusIndicatorCoordinator statusIndicator,
+            ObservableSupplier<Boolean> isUrlBarFocusedSupplier) {
         mContext = context;
         mStatusIndicator = statusIndicator;
-        mConnectivityDetector = new ConnectivityDetector(this);
-    }
 
-    @Override
-    public void onConnectionStateChanged(int connectionState) {
-        final boolean offline = connectionState != ConnectivityDetector.ConnectionState.VALIDATED;
-        if (offline) {
+        mShowRunnable = () -> {
             final int backgroundColor = ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.offline_indicator_offline_color);
             final int textColor = ApiCompatibilityUtils.getColor(
@@ -52,7 +56,9 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
                     mContext.getResources(), R.color.default_icon_color_light);
             mStatusIndicator.show(mContext.getString(R.string.offline_indicator_v2_offline_text),
                     statusIcon, backgroundColor, textColor, iconTint);
-        } else {
+        };
+
+        mHideRunnable = () -> {
             final int backgroundColor = ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.offline_indicator_back_online_color);
             final int textColor = ApiCompatibilityUtils.getColor(
@@ -69,6 +75,30 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
             mStatusIndicator.updateContent(
                     mContext.getString(R.string.offline_indicator_v2_back_online_text), statusIcon,
                     backgroundColor, textColor, iconTint, hide);
+        };
+
+        mIsUrlBarFocusedSupplier = isUrlBarFocusedSupplier;
+        // TODO(crbug.com/1075793): Move the UrlBar focus related code to the widget or glue code.
+        mOnUrlBarFocusChanged = (hasFocus) -> {
+            if (!hasFocus && mOnUrlBarUnfocusedRunnable != null) {
+                mOnUrlBarUnfocusedRunnable.run();
+                mOnUrlBarUnfocusedRunnable = null;
+            }
+        };
+        mIsUrlBarFocusedSupplier.addObserver(mOnUrlBarFocusChanged);
+
+        mConnectivityDetector = new ConnectivityDetector(this);
+    }
+
+    @Override
+    public void onConnectionStateChanged(int connectionState) {
+        final boolean offline = connectionState != ConnectivityDetector.ConnectionState.VALIDATED;
+
+        if (mIsUrlBarFocusedSupplier.get()) {
+            mOnUrlBarUnfocusedRunnable = offline ? mShowRunnable : mHideRunnable;
+        } else {
+            (offline ? mShowRunnable : mHideRunnable).run();
+            assert mOnUrlBarUnfocusedRunnable == null;
         }
     }
 
@@ -77,5 +107,12 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
             mConnectivityDetector.destroy();
             mConnectivityDetector = null;
         }
+
+        if (mIsUrlBarFocusedSupplier != null) {
+            mIsUrlBarFocusedSupplier.removeObserver(mOnUrlBarFocusChanged);
+            mIsUrlBarFocusedSupplier = null;
+        }
+
+        mOnUrlBarFocusChanged = null;
     }
 }

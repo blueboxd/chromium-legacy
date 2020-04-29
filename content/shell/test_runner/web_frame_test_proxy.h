@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/shell/common/web_test/blink_test.mojom.h"
+#include "content/shell/common/web_test/web_test.mojom.h"
 #include "content/shell/test_runner/web_frame_test_client.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -30,7 +30,7 @@ class WebWidgetTestProxy;
 // RenderFrameImpl to inject test-only behaviour by overriding methods in the
 // base class.
 class WebFrameTestProxy : public RenderFrameImpl,
-                          public mojom::BlinkTestControl {
+                          public mojom::WebTestRenderFrame {
  public:
   explicit WebFrameTestProxy(RenderFrameImpl::CreateParams params);
   ~WebFrameTestProxy() override;
@@ -74,13 +74,14 @@ class WebFrameTestProxy : public RenderFrameImpl,
   void DidClearWindowObject() override;
 
  private:
-  // mojom::BlinkTestControl implementation.
+  // mojom::WebTestRenderFrame implementation.
   void CaptureDump(CaptureDumpCallback callback) override;
   void CompositeWithRaster(CompositeWithRasterCallback callback) override;
   void DumpFrameLayout(DumpFrameLayoutCallback callback) override;
-  void SetTestConfiguration(mojom::ShellTestConfigurationPtr config) override;
+  void SetTestConfiguration(
+      mojom::WebTestRunTestConfigurationPtr config) override;
   void ReplicateTestConfiguration(
-      mojom::ShellTestConfigurationPtr config) override;
+      mojom::WebTestRunTestConfigurationPtr config) override;
   void SetupRendererProcessForNonTestWindow() override;
   void ResetRendererAfterWebTest() override;
   void FinishTestInMainWindow() override;
@@ -89,15 +90,15 @@ class WebFrameTestProxy : public RenderFrameImpl,
       const std::vector<std::string>& events) override;
 
   void BindReceiver(
-      mojo::PendingAssociatedReceiver<mojom::BlinkTestControl> receiver);
+      mojo::PendingAssociatedReceiver<mojom::WebTestRenderFrame> receiver);
 
   BlinkTestRunner* blink_test_runner();
 
   WebViewTestProxy* const web_view_test_proxy_;
   WebFrameTestClient test_client_;
 
-  mojo::AssociatedReceiver<mojom::BlinkTestControl>
-      blink_test_control_receiver_{this};
+  mojo::AssociatedReceiver<mojom::WebTestRenderFrame>
+      web_test_render_frame_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxy);
 };

@@ -40,6 +40,12 @@ void Vadd(const float* source1p,
           float* dest_p,
           uint32_t frames_to_process);
 
+// dest[k] = source1[k] - source2[k]
+void Vsub(const float* source1p,
+          const float* source2p,
+          float* dest_p,
+          uint32_t frames_to_process);
+
 // dest[k] = clip(source[k], low_threshold, high_threshold)
 //         = max(low_threshold, min(high_threshold, source[k]))
 void Vclip(const float* source_p,
@@ -67,6 +73,17 @@ void Vsma(const float* source_p,
 // dest[k] = scale * source[k]
 void Vsmul(const float* source_p,
            const float* scale,
+           float* dest_p,
+           uint32_t frames_to_process);
+
+// dest[k] = addend + source[k]
+void Vsadd(const float* source_p,
+           const float* addend,
+           float* dest_p,
+           uint32_t frames_to_process);
+
+void Vsadd(const float* source_p,
+           float addend,
            float* dest_p,
            uint32_t frames_to_process);
 

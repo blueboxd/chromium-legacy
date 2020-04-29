@@ -64,22 +64,20 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
   scoped_refptr<Image> image = image_resource->GetImage(image_viewport_size);
   FloatRect dest_rect = layout_svg_image_.ObjectBoundingBox();
 
-  FloatRect src_rect;
   auto* image_element = To<SVGImageElement>(layout_svg_image_.GetElement());
-  if (!image->HasDefaultOrientation()) {
+  RespectImageOrientationEnum respect_orientation =
+      LayoutObject::ShouldRespectImageOrientation(&layout_svg_image_);
+  FloatRect src_rect(FloatPoint(), image->SizeAsFloat(respect_orientation));
+  if (respect_orientation && !image->HasDefaultOrientation()) {
     // We need the oriented source rect for adjusting the aspect ratio
-    FloatRect oriented_src_rect(FloatPoint(),
-                                image->SizeAsFloat(kRespectImageOrientation));
-    FloatSize unadjusted_size(oriented_src_rect.Size());
+    FloatSize unadjusted_size(src_rect.Size());
     image_element->preserveAspectRatio()->CurrentValue()->TransformRect(
-        dest_rect, oriented_src_rect);
+        dest_rect, src_rect);
 
     // Map the oriented_src_rect back into the src_rect space
-    src_rect = image->CorrectSrcRectForImageOrientation(unadjusted_size,
-                                                        oriented_src_rect);
+    src_rect =
+        image->CorrectSrcRectForImageOrientation(unadjusted_size, src_rect);
   } else {
-    src_rect = FloatRect(FloatPoint(),
-                         image->SizeAsFloat(kDoNotRespectImageOrientation));
     image_element->preserveAspectRatio()->CurrentValue()->TransformRect(
         dest_rect, src_rect);
   }
@@ -91,7 +89,8 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
       image_element->GetDecodingModeForPainting(image->paint_image_id());
   paint_info.context.DrawImage(
       image.get(), decode_mode, dest_rect, &src_rect,
-      layout_svg_image_.StyleRef().HasFilterInducingProperty());
+      layout_svg_image_.StyleRef().HasFilterInducingProperty(),
+      SkBlendMode::kSrcOver, respect_orientation);
   if (image_resource->CachedImage() &&
       image_resource->CachedImage()->IsLoaded()) {
     LocalDOMWindow* window = layout_svg_image_.GetDocument().domWindow();

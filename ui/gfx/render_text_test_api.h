@@ -33,7 +33,8 @@ class RenderTextTestApi {
     return render_text_->GetRunList();
   }
 
-  void DrawVisualText(internal::SkiaTextRenderer* renderer, Range selection) {
+  void DrawVisualText(internal::SkiaTextRenderer* renderer,
+                      const std::vector<Range> selection) {
     render_text_->DrawVisualText(renderer, selection);
   }
 

@@ -51,7 +51,6 @@
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
-#include "chrome/browser/previews/previews_lite_page_redirect_predictor.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/previews/resource_loading_hints/resource_loading_hints_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -293,7 +292,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     predictors::LoadingPredictorTabHelper::CreateForWebContents(web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
   prerender::PrerenderTabHelper::CreateForWebContents(web_contents);
-  PreviewsLitePageRedirectPredictor::CreateForWebContents(web_contents);
   PreviewsUITabHelper::CreateForWebContents(web_contents);
   RecentlyAudibleHelper::CreateForWebContents(web_contents);
   // TODO(siggi): Remove this once the Resource Coordinator refactoring is done.

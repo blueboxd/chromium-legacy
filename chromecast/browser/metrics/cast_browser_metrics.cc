@@ -5,8 +5,8 @@
 #include "chromecast/browser/metrics/cast_browser_metrics.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/path_utils.h"

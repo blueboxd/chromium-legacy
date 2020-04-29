@@ -54,6 +54,8 @@ class TextfieldTestApi {
   bool IsTextDirectionCheckedInContextMenu(
       base::i18n::TextDirection direction) const;
 
+  bool ShouldShowCursor() const;
+
  private:
   Textfield* textfield_;
 

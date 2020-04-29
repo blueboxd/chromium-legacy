@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 import json
 import logging
 import mock
@@ -18,6 +17,7 @@ from telemetry.testing import browser_test_context
 import gpu_project_config
 
 from gpu_tests import gpu_integration_test
+
 
 class _BaseSampleIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   _test_state = {}
@@ -47,7 +47,8 @@ class _BaseSampleIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def AddCommandlineArgs(cls, parser):
     super(_BaseSampleIntegrationTest, cls).AddCommandlineArgs(parser)
-    parser.add_option('--test-state-json-path',
+    parser.add_option(
+        '--test-state-json-path',
         help=('Where to dump the test state json (this is used by '
               'gpu_integration_test_unittest)'))
 
@@ -61,10 +62,7 @@ class _BaseSampleIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
 
 class SimpleTest(_BaseSampleIntegrationTest):
-  _test_state = {
-    'num_flaky_runs_to_fail': 2,
-    'num_browser_starts': 0
-  }
+  _test_state = {'num_flaky_runs_to_fail': 2, 'num_browser_starts': 0}
 
   @classmethod
   def Name(cls):
@@ -97,16 +95,15 @@ class SimpleTest(_BaseSampleIntegrationTest):
   @classmethod
   def ExpectationsFiles(cls):
     return [
-      os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                   ('test_expectations/'
-                    'simple_integration_unittest_expectations.txt'))]
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            ('test_expectations/'
+             'simple_integration_unittest_expectations.txt'))
+    ]
 
 
 class BrowserStartFailureTest(_BaseSampleIntegrationTest):
-  _test_state = {
-    'num_browser_crashes': 0,
-    'num_browser_starts': 0
-  }
+  _test_state = {'num_browser_crashes': 0, 'num_browser_starts': 0}
 
   @classmethod
   def SetUpProcess(cls):
@@ -117,8 +114,8 @@ class BrowserStartFailureTest(_BaseSampleIntegrationTest):
     cls._fake_browser_options.output_formats = ['none']
     cls._fake_browser_options.suppress_gtest_report = True
     cls._fake_browser_options.output_dir = None
-    cls._fake_browser_options .upload_bucket = 'public'
-    cls._fake_browser_options .upload_results = False
+    cls._fake_browser_options.upload_bucket = 'public'
+    cls._fake_browser_options.upload_results = False
     cls._finder_options = cls._fake_browser_options
     cls.platform = None
     cls.browser = None
@@ -150,21 +147,21 @@ class BrowserStartFailureTest(_BaseSampleIntegrationTest):
 
 class BrowserCrashAfterStartTest(_BaseSampleIntegrationTest):
   _test_state = {
-    'num_browser_crashes': 0,
-    'num_browser_starts': 0,
+      'num_browser_crashes': 0,
+      'num_browser_starts': 0,
   }
 
   @classmethod
   def SetUpProcess(cls):
     cls._fake_browser_options = fakes.CreateBrowserFinderOptions(
-      execute_after_browser_creation=cls.CrashAfterStart)
+        execute_after_browser_creation=cls.CrashAfterStart)
     cls._fake_browser_options.browser_options.platform = \
         fakes.FakeLinuxPlatform()
     cls._fake_browser_options.output_formats = ['none']
     cls._fake_browser_options.suppress_gtest_report = True
     cls._fake_browser_options.output_dir = None
-    cls._fake_browser_options .upload_bucket = 'public'
-    cls._fake_browser_options .upload_results = False
+    cls._fake_browser_options.upload_bucket = 'public'
+    cls._fake_browser_options.upload_results = False
     cls._finder_options = cls._fake_browser_options
     cls.platform = None
     cls.browser = None
@@ -198,6 +195,7 @@ class BrowserCrashAfterStartTest(_BaseSampleIntegrationTest):
     # and then succeeds on the third time so we are just testing that this
     # is successful based on the parameters.
     pass
+
 
 class RunTestsWithExpectationsFiles(_BaseSampleIntegrationTest):
   _flaky_test_run = 0
@@ -236,13 +234,16 @@ class RunTestsWithExpectationsFiles(_BaseSampleIntegrationTest):
   @classmethod
   def ExpectationsFiles(cls):
     return [
-      os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                   ('test_expectations/'
-                    'run_tests_with_expectations_files_expectations.txt'))]
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            ('test_expectations/'
+             'run_tests_with_expectations_files_expectations.txt'))
+    ]
+
 
 class TestRetryLimit(_BaseSampleIntegrationTest):
   _test_state = {
-    'num_test_runs': 0,
+      'num_test_runs': 0,
   }
 
   @classmethod
@@ -263,7 +264,7 @@ class TestRetryLimit(_BaseSampleIntegrationTest):
 
 class TestRepeat(_BaseSampleIntegrationTest):
   _test_state = {
-    'num_test_runs': 0,
+      'num_test_runs': 0,
   }
 
   @classmethod
@@ -281,10 +282,7 @@ class TestRepeat(_BaseSampleIntegrationTest):
 
 
 class TestAlsoRunDisabledTests(_BaseSampleIntegrationTest):
-  _test_state = {
-    'num_flaky_test_runs': 0,
-    'num_test_runs': 0
-  }
+  _test_state = {'num_flaky_test_runs': 0, 'num_test_runs': 0}
 
   @classmethod
   def Name(cls):
@@ -292,10 +290,8 @@ class TestAlsoRunDisabledTests(_BaseSampleIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
-    tests = [
-      ('skip', 'skip.html', ()),
-      ('expected_failure', 'fail.html', ()),
-      ('flaky', 'flaky.html', ())]
+    tests = [('skip', 'skip.html', ()), ('expected_failure', 'fail.html', ()),
+             ('flaky', 'flaky.html', ())]
     for test in tests:
       yield test
 
@@ -307,9 +303,11 @@ class TestAlsoRunDisabledTests(_BaseSampleIntegrationTest):
   @classmethod
   def ExpectationsFiles(cls):
     return [
-      os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                   ('test_expectations/'
-                    'tests_also_run_disabled_tests_expectations.txt'))]
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            ('test_expectations/'
+             'tests_also_run_disabled_tests_expectations.txt'))
+    ]
 
 
 def load_tests(loader, tests, pattern):

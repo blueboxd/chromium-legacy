@@ -903,9 +903,12 @@ bool AXNodeData::IsClickable() const {
 }
 
 bool AXNodeData::IsIgnored() const {
-  if (HasState(ax::mojom::State::kIgnored) || role == ax::mojom::Role::kIgnored)
-    return true;
-  return false;
+  return HasState(ax::mojom::State::kIgnored) ||
+         role == ax::mojom::Role::kIgnored;
+}
+
+bool AXNodeData::IsInvisibleOrIgnored() const {
+  return IsIgnored() || HasState(ax::mojom::State::kInvisible);
 }
 
 bool AXNodeData::IsInvocable() const {
@@ -931,6 +934,14 @@ bool AXNodeData::IsMenuButton() const {
   return false;
 }
 
+bool AXNodeData::IsTextField() const {
+  return IsPlainTextField() || IsRichTextField();
+}
+
+bool AXNodeData::IsPasswordField() const {
+  return IsTextField() && HasState(ax::mojom::State::kProtected);
+}
+
 bool AXNodeData::IsPlainTextField() const {
   // We need to check both the role and editable state, because some ARIA text
   // fields may in fact not be editable, whilst some editable fields might not
@@ -940,6 +951,11 @@ bool AXNodeData::IsPlainTextField() const {
           role == ax::mojom::Role::kTextFieldWithComboBox ||
           role == ax::mojom::Role::kSearchBox ||
           GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot));
+}
+
+bool AXNodeData::IsRichTextField() const {
+  return GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot) &&
+         HasState(ax::mojom::State::kRichlyEditable);
 }
 
 bool AXNodeData::IsReadOnlyOrDisabled() const {

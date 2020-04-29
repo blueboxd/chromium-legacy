@@ -54,6 +54,9 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
   // ProbeTelemetryInfo IPCs received.
   void SetProbeTelemetryInfoResponseForTesting(mojom::TelemetryInfoPtr& info);
 
+  // Calls the power event OnAcInserted on all registered power observers.
+  void EmitAcInsertedEventForTesting();
+
  private:
   FakeCrosHealthdService fake_service_;
   mojo::Receiver<mojom::CrosHealthdServiceFactory> receiver_{&fake_service_};

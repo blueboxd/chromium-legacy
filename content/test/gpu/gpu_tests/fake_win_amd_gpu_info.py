@@ -20,6 +20,7 @@
 #
 # and put the output into this file.
 
+# yapf: disable
 FAKE_GPU_INFO = {
     'feature_status':
         {
@@ -119,3 +120,4 @@ FAKE_GPU_INFO = {
             'scalarize_vec_and_mat_constructor_args',
         ]
 }
+# yapf: enable

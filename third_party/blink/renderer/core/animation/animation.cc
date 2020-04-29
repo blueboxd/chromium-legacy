@@ -1688,8 +1688,8 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
   // reason to composite it. Additionally, mutating the timeline playback rate
   // is a debug feature available via devtools; we don't support this on the
   // compositor currently and there is no reason to do so.
-  auto* document_timeline = DynamicTo<DocumentTimeline>(*timeline_);
-  if (!document_timeline || document_timeline->PlaybackRate() != 1)
+  if (timeline_->IsDocumentTimeline() &&
+      To<DocumentTimeline>(*timeline_).PlaybackRate() != 1)
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
   // An Animation without an effect cannot produce a visual, so there is no
@@ -1713,7 +1713,6 @@ void Animation::StartAnimationOnCompositor(
     const PaintArtifactCompositor* paint_artifact_compositor) {
   DCHECK_EQ(CheckCanStartAnimationOnCompositor(paint_artifact_compositor),
             CompositorAnimations::kNoFailure);
-  DCHECK(IsA<DocumentTimeline>(*timeline_));
 
   bool reversed = EffectivePlaybackRate() < 0;
 
@@ -1726,7 +1725,7 @@ void Animation::StartAnimationOnCompositor(
   // the playback rate preserve current time even if the start time is set.
   // Asynchronous updates have an associated pending play or pending pause
   // task associated with them.
-  if (start_time_ && !PendingInternal()) {
+  if (start_time_ && !PendingInternal() && timeline_->IsDocumentTimeline()) {
     start_time = To<DocumentTimeline>(*timeline_)
                      .ZeroTime()
                      .since_origin()

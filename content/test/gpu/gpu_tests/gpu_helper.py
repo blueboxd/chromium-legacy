@@ -16,7 +16,6 @@ EXPECTATIONS_DRIVER_TAGS = frozenset([
     'mesa_lt_19.1.2',
 ])
 
-
 # Driver tag format: VENDOR_OPERATION_VERSION
 DRIVER_TAG_MATCHER = re.compile(
     r'^([a-z\d]+)_(eq|ne|ge|gt|le|lt)_([a-z\d\.]+)$')
@@ -54,7 +53,7 @@ def GetGpuVendorString(gpu_info, index):
     if primary_gpu:
       vendor_string = primary_gpu.vendor_string
       angle_vendor_string = _ParseANGLEGpuVendorString(
-        primary_gpu.device_string)
+          primary_gpu.device_string)
       vendor_id = primary_gpu.vendor_id
       if vendor_id == 0x10DE:
         return 'nvidia'
@@ -73,11 +72,9 @@ def GetGpuDeviceId(gpu_info, index):
   if gpu_info:
     primary_gpu = gpu_info.devices[index]
     if primary_gpu:
-      return (
-          primary_gpu.device_id
-          or _GetANGLEGpuDeviceId(
-              primary_gpu.device_string)
-          or primary_gpu.device_string)
+      return (primary_gpu.device_id
+              or _GetANGLEGpuDeviceId(primary_gpu.device_string)
+              or primary_gpu.device_string)
   return 0
 
 
@@ -201,8 +198,11 @@ def MatchDriverTag(tag):
   return DRIVER_TAG_MATCHER.match(tag.lower())
 
 
-def EvaluateVersionComparison(version, operation, ref_version,
-                              os_name=None, driver_vendor=None):
+def EvaluateVersionComparison(version,
+                              operation,
+                              ref_version,
+                              os_name=None,
+                              driver_vendor=None):
   def parse_version(ver):
     if ver.isdigit():
       return int(ver), ''

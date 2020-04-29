@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/content_settings/core/browser/content_settings_constraints.h"
 #include "components/content_settings/core/common/content_settings.h"
 
 class GURL;
@@ -46,7 +47,9 @@ class OriginIdentifierValueMap {
 
   struct ValueEntry {
     base::Time last_modified;
+    base::Time expiration;
     base::Value value;
+    SessionModel session_model;
     ValueEntry();
     ~ValueEntry();
   };
@@ -107,13 +110,16 @@ class OriginIdentifierValueMap {
 
   // Sets the |value| for the given |primary_pattern|, |secondary_pattern|,
   // |content_type|, |resource_identifier| tuple. The caller can also store a
-  // |last_modified| date for each value.
+  // |last_modified| date for each value. The |constraints| will be used to
+  // constrain the setting to a valid time-range and lifetime model if
+  // specified.
   void SetValue(const ContentSettingsPattern& primary_pattern,
                 const ContentSettingsPattern& secondary_pattern,
                 ContentSettingsType content_type,
                 const ResourceIdentifier& resource_identifier,
                 base::Time last_modified,
-                base::Value value);
+                base::Value value,
+                const ContentSettingConstraints& constraints);
 
   // Deletes the map entry for the given |primary_pattern|,
   // |secondary_pattern|, |content_type|, |resource_identifier| tuple.

@@ -219,8 +219,8 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   chrome_test_util::OpenNewTab();
 }
 
-+ (void)simulateExternalAppURLOpening {
-  chrome_test_util::SimulateExternalAppURLOpening();
++ (NSURL*)simulateExternalAppURLOpening {
+  return chrome_test_util::SimulateExternalAppURLOpening();
 }
 
 + (void)simulateAddAccountFromWeb {

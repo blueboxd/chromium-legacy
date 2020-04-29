@@ -1541,8 +1541,7 @@
     },
     {
       name: "ScreenWakeLock",
-      origin_trial_feature_name: "WakeLock",
-      status: "experimental",
+      status: "stable",
     },
     // WebSpeech API with both speech recognition and synthesis functionality
     // is not fully enabled on all platforms.

@@ -8,10 +8,8 @@
 #include <memory>
 
 #include "base/component_export.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11.h"
-#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
@@ -42,7 +40,8 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WorkspaceHandler
   // ui::XEventDispatcher
   bool DispatchXEvent(XEvent* event) override;
 
-  void OnWorkspaceResponse(x11::XProto::GetPropertyResponse response);
+  // Makes a round trip to the X server to get the current workspace.
+  bool UpdateWorkspace();
 
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
@@ -56,8 +55,6 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WorkspaceHandler
   std::string workspace_;
 
   Delegate* const delegate_;
-
-  base::WeakPtrFactory<X11WorkspaceHandler> weak_factory_{this};
 };
 
 }  // namespace ui

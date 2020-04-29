@@ -406,7 +406,11 @@ executable("zlib_bench") {
 
 if (build_with_chromium) {
   test("zlib_unittests") {
+    testonly = true
+
     sources = [
+      "contrib/tests/infcover.cc",
+      "contrib/tests/infcover.h",
       "contrib/tests/utils_unittest.cc",
       "google/compression_utils_portable.cc",
       "google/compression_utils_portable.h",

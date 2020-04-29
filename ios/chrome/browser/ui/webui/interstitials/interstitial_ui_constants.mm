@@ -10,6 +10,7 @@
 
 const char kChromeInterstitialSslPath[] = "/ssl";
 const char kChromeInterstitialCaptivePortalPath[] = "/captiveportal";
+const char kChromeInterstitialSafeBrowsingPath[] = "/safebrowsing";
 
 const char kChromeInterstitialSslUrlQueryKey[] = "url";
 const char kChromeInterstitialSslOverridableQueryKey[] = "overridable";
@@ -18,3 +19,14 @@ const char kChromeInterstitialSslStrictEnforcementQueryKey[] =
 const char kChromeInterstitialSslTypeQueryKey[] = "type";
 const char kChromeInterstitialSslTypeHpkpFailureQueryValue[] = "hpkp_failure";
 const char kChromeInterstitialSslTypeCtFailureQueryValue[] = "ct_failure";
+
+const char kChromeInterstitialSafeBrowsingUrlQueryKey[] = "url";
+const char kChromeInterstitialSafeBrowsingTypeQueryKey[] = "type";
+const char kChromeInterstitialSafeBrowsingTypeMalwareValue[] = "malware";
+const char kChromeInterstitialSafeBrowsingTypePhishingValue[] = "phishing";
+const char kChromeInterstitialSafeBrowsingTypeUnwantedValue[] = "unwanted";
+const char kChromeInterstitialSafeBrowsingTypeClientsideMalwareValue[] =
+    "clientside_malware";
+const char kChromeInterstitialSafeBrowsingTypeClientsidePhishingValue[] =
+    "clientside_phishing";
+const char kChromeInterstitialSafeBrowsingTypeBillingValue[] = "billing";

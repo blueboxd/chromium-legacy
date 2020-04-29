@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_SMB_CLIENT_SMB_SHARE_INFO_H_
 
 #include <string>
+#include <vector>
 
 #include "chrome/browser/chromeos/smb_client/smb_url.h"
 
@@ -21,7 +22,8 @@ class SmbShareInfo {
                const std::string& display_name,
                const std::string& username,
                const std::string& workgroup,
-               bool use_kerberos);
+               bool use_kerberos,
+               const std::vector<uint8_t>& password_salt = {});
   ~SmbShareInfo();
 
   // Allow copies.
@@ -36,6 +38,7 @@ class SmbShareInfo {
   const std::string& username() const { return username_; }
   const std::string& workgroup() const { return workgroup_; }
   bool use_kerberos() const { return use_kerberos_; }
+  const std::vector<uint8_t>& password_salt() const { return password_salt_; }
 
  private:
   SmbUrl share_url_;
@@ -43,6 +46,7 @@ class SmbShareInfo {
   std::string username_;
   std::string workgroup_;
   bool use_kerberos_ = false;
+  std::vector<uint8_t> password_salt_;
 };
 
 }  // namespace smb_client

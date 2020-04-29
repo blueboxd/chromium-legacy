@@ -29,6 +29,7 @@ source_set("policy") {
     "//components/safe_browsing/core/common:safe_browsing_policy_handler",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/search_engines",
+    "//components/translate/core/browser:translate_pref_names",
     "//ios/chrome/browser",
     "//ios/chrome/browser:pref_names",
     "//ios/chrome/browser/browser_state",

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -135,6 +136,11 @@ std::string platform() {
 
 // Tests the platform when the page is inside an iframe.
 - (void)testIFrameNavigation {
+  // TODO(crbug.com/1076233): Test is failing when running on iOS 13.4.
+  if (base::ios::IsRunningOnOrLater(13, 4, 0)) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 13.4 and later.");
+  }
+
   [ChromeEarlGrey loadURL:self.testServer->GetURL(kIFramePage)];
   [ChromeEarlGrey tapWebStateElementInIFrameWithID:kLinkPageLinkID];
 

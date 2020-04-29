@@ -76,11 +76,12 @@ void OpenNewTab() {
   }
 }
 
-void SimulateExternalAppURLOpening() {
+NSURL* SimulateExternalAppURLOpening() {
   NSURL* url = [NSURL URLWithString:@"http://www.example.com"];
   UIApplication* application = UIApplication.sharedApplication;
   id<UIApplicationDelegate> applicationDelegate = application.delegate;
   [applicationDelegate application:application openURL:url options:@{}];
+  return url;
 }
 
 void SimulateAddAccountFromWeb() {

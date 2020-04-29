@@ -30,12 +30,10 @@ import dagger.Lazy;
 /**
  * Shows the Trusted Web Activity disclosure when appropriate and notifies of its acceptance.
  *
- * Lifecycle: There should be a 1-1 relationship between this class and instances of Trusted
- * Web Activities.
  * Thread safety: All methods on this class should be called on the UI thread.
  */
 @ActivityScope
-public class TrustedWebActivityDisclosureView implements
+public class DisclosureInfobar implements
         PropertyObservable.PropertyObserver<PropertyKey>, StartStopWithNativeObserver {
     private static final String TAG = "RunningInChrome";
     private final Resources mResources;
@@ -61,7 +59,7 @@ public class TrustedWebActivityDisclosureView implements
             };
 
     @Inject
-    TrustedWebActivityDisclosureView(Resources resources,
+    DisclosureInfobar(Resources resources,
             Lazy<SnackbarManager> snackbarManager, TrustedWebActivityModel model,
             ActivityLifecycleDispatcher lifecycleDispatcher) {
         mResources = resources;
@@ -108,7 +106,7 @@ public class TrustedWebActivityDisclosureView implements
 
     /**
      * Creates the Infobar/Snackbar to show. The override of this method in
-     * {@link NewDisclosureSnackbar} may return {@code null}, if the infobar is already shown.
+     * {@link DisclosureSnackbar} may return {@code null}, if the infobar is already shown.
      */
     @Nullable
     protected Snackbar makeRunningInChromeInfobar(SnackbarManager.SnackbarController controller) {

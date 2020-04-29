@@ -116,6 +116,11 @@ class TestPasswordStore : public PasswordStore {
   std::vector<InteractionsStats> GetAllSiteStatsImpl() override;
   bool AddCompromisedCredentialsImpl(
       const CompromisedCredentials& compromised_credentials) override;
+  bool RemoveCompromisedCredentialsByCompromiseTypeImpl(
+      const std::string& signon_realm,
+      const base::string16& username,
+      const CompromiseType& compromise_type,
+      RemoveCompromisedCredentialsReason reason) override;
   bool RemoveCompromisedCredentialsImpl(
       const std::string& signon_realm,
       const base::string16& username,

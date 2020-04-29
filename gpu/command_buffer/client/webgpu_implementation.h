@@ -32,7 +32,8 @@ class WebGPUCommandSerializer final : public dawn_wire::CommandSerializer {
   WebGPUCommandSerializer(
       DawnDeviceClientID device_client_id,
       WebGPUCmdHelper* helper,
-      DawnClientMemoryTransferService* memory_transfer_service);
+      DawnClientMemoryTransferService* memory_transfer_service,
+      std::unique_ptr<TransferBuffer> c2s_transfer_buffer);
   ~WebGPUCommandSerializer() override;
 
   // Send WGPUDeviceProperties to the server side
@@ -178,6 +179,7 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
       DawnDeviceClientID device_client_id) const;
   void FlushAllCommandSerializers();
   void ClearAllCommandSerializers();
+  bool AddNewCommandSerializer(DawnDeviceClientID device_client_id);
   base::flat_map<DawnDeviceClientID, std::unique_ptr<WebGPUCommandSerializer>>
       command_serializers_;
 #endif

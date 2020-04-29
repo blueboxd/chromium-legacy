@@ -101,6 +101,9 @@ MessageCenterController::MessageCenterController() {
 }
 
 MessageCenterController::~MessageCenterController() {
+  for (auto& observer : observers_)
+    observer.OnArcNotificationInitializerDestroyed(this);
+
   // These members all depend on the MessageCenter instance, so must be
   // destroyed first.
   all_popup_blocker_.reset();
@@ -127,6 +130,17 @@ void MessageCenterController::SetArcNotificationsInstance(
         message_center::MessageCenter::Get());
   }
   arc_notification_manager_->SetInstance(std::move(arc_notification_instance));
+
+  for (auto& observer : observers_)
+    observer.OnSetArcNotificationsInstance(arc_notification_manager_.get());
+}
+
+void MessageCenterController::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MessageCenterController::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void MessageCenterController::OnActiveUserPrefServiceChanged(

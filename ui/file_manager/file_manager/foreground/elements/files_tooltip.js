@@ -168,9 +168,14 @@ const FilesTooltip = Polymer({
     const rect = target.getBoundingClientRect();
 
     let top = rect.top + rect.height;
+    if (util.isFilesNg()) {
+      top += 8;
+    }
+
     if (top + this.offsetHeight > document.body.offsetHeight) {
       top = rect.top - this.offsetHeight;
     }
+
     this.style.top = `${Math.round(top)}px`;
 
     let left = rect.left + rect.width / 2 - this.offsetWidth / 2;

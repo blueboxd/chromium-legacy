@@ -99,6 +99,15 @@ class ShortcutHelper {
                                 const GURL& start_url,
                                 const GURL& manifest_url);
 
+  // Returns true if there is a WebAPK installed under |origin|, and false
+  // otherwise.
+  static bool DoesOriginContainAnyInstalledWebApk(const GURL& origin);
+
+  // Returns true if there is a TWA installed under |origin|, and false
+  // otherwise.
+  static bool DoesOriginContainAnyInstalledTrustedWebActivity(
+      const GURL& origin);
+
   // Sets a flag to force an update for the WebAPK corresponding to |id| on next
   // launch.
   static void SetForceWebApkUpdate(const std::string& id);

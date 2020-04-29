@@ -22,19 +22,17 @@ namespace webgpu {
 WebGPUCommandSerializer::WebGPUCommandSerializer(
     DawnDeviceClientID device_client_id,
     WebGPUCmdHelper* helper,
-    DawnClientMemoryTransferService* memory_transfer_service)
+    DawnClientMemoryTransferService* memory_transfer_service,
+    std::unique_ptr<TransferBuffer> c2s_transfer_buffer)
     : device_client_id_(device_client_id),
       helper_(helper),
       memory_transfer_service_(memory_transfer_service),
-      c2s_transfer_buffer_(std::make_unique<TransferBuffer>(helper_)),
+      c2s_transfer_buffer_(std::move(c2s_transfer_buffer)),
       c2s_buffer_(helper_, c2s_transfer_buffer_.get()) {
-  const SharedMemoryLimits& limits = SharedMemoryLimits::ForWebGPUContext();
-  c2s_transfer_buffer_->Initialize(
-      limits.start_transfer_buffer_size, ImplementationBase::kStartingOffset,
-      limits.min_transfer_buffer_size, limits.max_transfer_buffer_size,
-      ImplementationBase::kAlignment);
   DCHECK(helper_);
+  DCHECK(c2s_transfer_buffer_ && c2s_transfer_buffer_->HaveBuffer());
 
+  const SharedMemoryLimits& limits = SharedMemoryLimits::ForWebGPUContext();
   c2s_buffer_default_size_ = limits.start_transfer_buffer_size;
   DCHECK_GT(c2s_buffer_default_size_, 0u);
 
@@ -536,6 +534,24 @@ void WebGPUImplementation::FlushAllCommandSerializers() {
 void WebGPUImplementation::ClearAllCommandSerializers() {
   command_serializers_.clear();
 }
+
+bool WebGPUImplementation::AddNewCommandSerializer(
+    DawnDeviceClientID device_client_id) {
+  std::unique_ptr<TransferBuffer> c2s_transfer_buffer =
+      std::make_unique<TransferBuffer>(helper_);
+  const SharedMemoryLimits& limits = SharedMemoryLimits::ForWebGPUContext();
+  if (!c2s_transfer_buffer->Initialize(
+          limits.start_transfer_buffer_size,
+          ImplementationBase::kStartingOffset, limits.min_transfer_buffer_size,
+          limits.max_transfer_buffer_size, ImplementationBase::kAlignment)) {
+    return false;
+  }
+  command_serializers_[device_client_id] =
+      std::make_unique<WebGPUCommandSerializer>(device_client_id, helper_,
+                                                memory_transfer_service_.get(),
+                                                std::move(c2s_transfer_buffer));
+  return true;
+}
 #endif
 
 void WebGPUImplementation::FlushCommands() {
@@ -621,9 +637,9 @@ bool WebGPUImplementation::RequestDeviceAsync(
 
   DCHECK(command_serializers_.find(device_client_id) ==
          command_serializers_.end());
-  command_serializers_[device_client_id] =
-      std::make_unique<WebGPUCommandSerializer>(device_client_id, helper_,
-                                                memory_transfer_service_.get());
+  if (!AddNewCommandSerializer(device_client_id)) {
+    return false;
+  }
   request_device_callback_map_[device_client_id] =
       std::move(request_device_callback);
 

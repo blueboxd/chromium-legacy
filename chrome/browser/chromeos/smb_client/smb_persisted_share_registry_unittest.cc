@@ -39,10 +39,13 @@ TEST_F(SmbPersistedShareRegistryTest, Empty) {
 }
 
 TEST_F(SmbPersistedShareRegistryTest, SaveGet) {
+  // Use a local const vector because SmbShareInfo() takes the salt as a
+  // vector<>.
+  const std::vector<uint8_t> kSalt = {1, 2, 9, 0, 'a', 'b', 0, 255};
   {
     SmbPersistedShareRegistry registry(&profile_);
     SmbShareInfo info1(SmbUrl(kShareUrl), kDisplayName, kUsername, kWorkgroup,
-                       false /* use_kerberos */);
+                       false /* use_kerberos */, kSalt);
     registry.Save(info1);
 
     SmbShareInfo info2(SmbUrl(kShareUrl2), kDisplayName, kUsername2, kWorkgroup,
@@ -60,6 +63,7 @@ TEST_F(SmbPersistedShareRegistryTest, SaveGet) {
     EXPECT_EQ(info->username(), kUsername);
     EXPECT_EQ(info->workgroup(), kWorkgroup);
     EXPECT_FALSE(info->use_kerberos());
+    EXPECT_EQ(info->password_salt(), kSalt);
 
     base::Optional<SmbShareInfo> info2 = registry.Get(SmbUrl(kShareUrl2));
     ASSERT_TRUE(info2);
@@ -68,6 +72,7 @@ TEST_F(SmbPersistedShareRegistryTest, SaveGet) {
     EXPECT_EQ(info2->username(), kUsername2);
     EXPECT_EQ(info2->workgroup(), kWorkgroup);
     EXPECT_TRUE(info2->use_kerberos());
+    EXPECT_TRUE(info2->password_salt().empty());
 
     std::vector<SmbShareInfo> all_info = registry.GetAll();
     EXPECT_EQ(all_info.size(), 2u);

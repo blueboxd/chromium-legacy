@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "components/content_settings/core/browser/content_settings_constraints.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -77,6 +78,12 @@ bool IsMorePermissive(ContentSetting a, ContentSetting b);
 
 // Returns whether the provided origin can be force allowed permissions.
 bool OriginCanBeForceAllowed(const url::Origin& origin);
+
+// Returns whether or not the supplied constraint should be persistently stored.
+bool IsConstraintPersistent(const ContentSettingConstraints& constraints);
+
+// Returns the expiration time for a supplied |duration|.
+base::Time GetConstraintExpiration(const base::TimeDelta duration);
 
 }  // namespace content_settings
 

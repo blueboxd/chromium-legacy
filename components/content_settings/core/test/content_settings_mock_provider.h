@@ -27,11 +27,13 @@ class MockProvider : public ObservableProvider {
       const ResourceIdentifier& resource_identifier,
       bool incognito) const override;
 
-  bool SetWebsiteSetting(const ContentSettingsPattern& requesting_url_pattern,
-                         const ContentSettingsPattern& embedding_url_pattern,
-                         ContentSettingsType content_type,
-                         const ResourceIdentifier& resource_identifier,
-                         std::unique_ptr<base::Value>&& value) override;
+  bool SetWebsiteSetting(
+      const ContentSettingsPattern& requesting_url_pattern,
+      const ContentSettingsPattern& embedding_url_pattern,
+      ContentSettingsType content_type,
+      const ResourceIdentifier& resource_identifier,
+      std::unique_ptr<base::Value>&& value,
+      const ContentSettingConstraints& constraint = {}) override;
 
   void ClearAllContentSettingsRules(ContentSettingsType content_type) override {
   }

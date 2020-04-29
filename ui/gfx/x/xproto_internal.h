@@ -9,7 +9,6 @@
 #error "This file should only be included by generated xprotos"
 #endif
 
-#include <X11/Xlib-xcb.h>
 #include <xcb/xcb.h>
 #include <xcb/xcbext.h>
 
@@ -69,7 +68,7 @@ inline void Align(ReadBuffer* buf, size_t align) {
 }
 
 template <typename Reply>
-Future<Reply> SendRequest(XDisplay* display, WriteBuffer* buf) {
+Future<Reply> SendRequest(xcb_connection_t* conn, WriteBuffer* buf) {
   // Clang crashes when the value of |is_void| is inlined below,
   // so keep this variable outside of |xpr|.
   constexpr bool is_void = std::is_void<Reply>::value;
@@ -97,11 +96,10 @@ Future<Reply> SendRequest(XDisplay* display, WriteBuffer* buf) {
   io[2].iov_len = buf->size();
   auto flags = XCB_REQUEST_CHECKED | XCB_REQUEST_RAW;
 
-  xcb_connection_t* conn = XGetXCBConnection(display);
   auto sequence = xcb_send_request(conn, flags, &io[2], &xpr);
   if (xcb_connection_has_error(conn))
     return {nullptr, base::nullopt};
-  return {display, sequence};
+  return {conn, sequence};
 }
 
 // Helper function for xcbproto popcount.  Given an integral type, returns the

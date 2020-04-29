@@ -606,8 +606,9 @@ class UnitTest(unittest.TestCase):
                               ('goma_dir = "c:\\\\goma"\n'
                                'is_debug = true\n'
                                'use_goma = true\n'))
-    self.assertIn('c:\\fake_src\\buildtools\\win\\gn.exe gen //out/Debug '
-                  '--check\n', mbw.out)
+    self.assertIn(
+        'c:\\fake_src\\buildtools\\win\\gn.exe gen //out/Debug '
+        '--check', mbw.out)
 
     mbw = self.fake_mbw()
     self.check(['gen', '-m', 'fake_master', '-b', 'fake_args_bot',

@@ -385,6 +385,20 @@ void PasswordStore::RemoveCompromisedCredentials(
       std::move(callback)));
 }
 
+void PasswordStore::RemoveCompromisedCredentialsByCompromiseType(
+    const std::string& signon_realm,
+    const base::string16& username,
+    const CompromiseType& compromise_type,
+    RemoveCompromisedCredentialsReason reason) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  auto callback = base::BindOnce(
+      &PasswordStore::RemoveCompromisedCredentialsByCompromiseTypeImpl, this,
+      signon_realm, username, compromise_type, reason);
+  ScheduleTask(base::BindOnce(
+      &PasswordStore::InvokeAndNotifyAboutCompromisedPasswordsChange, this,
+      std::move(callback)));
+}
+
 void PasswordStore::GetAllCompromisedCredentials(
     CompromisedCredentialsConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());

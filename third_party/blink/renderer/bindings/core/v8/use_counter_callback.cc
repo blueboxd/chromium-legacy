@@ -267,6 +267,64 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kBreakIteratorTypeLine:
       blink_feature = WebFeature::kBreakIteratorTypeLine;
       break;
+    case v8::Isolate::kInvalidatedArrayBufferDetachingProtector:
+      blink_feature = WebFeature::kV8InvalidatedArrayBufferDetachingProtector;
+      break;
+    case v8::Isolate::kInvalidatedArrayConstructorProtector:
+      blink_feature = WebFeature::kV8InvalidatedArrayConstructorProtector;
+      break;
+    case v8::Isolate::kInvalidatedArrayIteratorLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedArrayIteratorLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedArraySpeciesLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedArraySpeciesLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedIsConcatSpreadableLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedIsConcatSpreadableLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedMapIteratorLookupChainProtector:
+      blink_feature = WebFeature::kV8InvalidatedMapIteratorLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedNoElementsProtector:
+      blink_feature = WebFeature::kV8InvalidatedNoElementsProtector;
+      break;
+    case v8::Isolate::kInvalidatedPromiseHookProtector:
+      blink_feature = WebFeature::kV8InvalidatedPromiseHookProtector;
+      break;
+    case v8::Isolate::kInvalidatedPromiseResolveLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedPromiseResolveLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedPromiseSpeciesLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedPromiseSpeciesLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedPromiseThenLookupChainProtector:
+      blink_feature = WebFeature::kV8InvalidatedPromiseThenLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedRegExpSpeciesLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedRegExpSpeciesLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedSetIteratorLookupChainProtector:
+      blink_feature = WebFeature::kV8InvalidatedSetIteratorLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedStringIteratorLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedStringIteratorLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedStringLengthOverflowLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedStringLengthOverflowLookupChainProtector;
+      break;
+    case v8::Isolate::kInvalidatedTypedArraySpeciesLookupChainProtector:
+      blink_feature =
+          WebFeature::kV8InvalidatedTypedArraySpeciesLookupChainProtector;
+      break;
+
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.

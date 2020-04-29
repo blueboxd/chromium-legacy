@@ -360,6 +360,17 @@
     ]
   },
 
+  "TranslateEnabled": {
+    "os": [ "ios" ],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"TranslateEnabled": false},
+        "prefs": { "translate.enabled": {} }
+      }
+    ]
+  },
+
   "URLBlacklist": {
     "os": [ "ios" ],
     "policy_pref_mapping_test": [

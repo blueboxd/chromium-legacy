@@ -2591,6 +2591,22 @@ enum WebFeature {
   kEventTimingFirstInputExplicitlyRequested = 3254,
   kCustomScrollbarPercentThickness = 3255,
   kCustomScrollbarPartPercentLength = 3256,
+  kV8InvalidatedArrayBufferDetachingProtector = 3257,
+  kV8InvalidatedArrayConstructorProtector = 3258,
+  kV8InvalidatedArrayIteratorLookupChainProtector = 3259,
+  kV8InvalidatedArraySpeciesLookupChainProtector = 3260,
+  kV8InvalidatedIsConcatSpreadableLookupChainProtector = 3261,
+  kV8InvalidatedMapIteratorLookupChainProtector = 3262,
+  kV8InvalidatedNoElementsProtector = 3263,
+  kV8InvalidatedPromiseHookProtector = 3264,
+  kV8InvalidatedPromiseResolveLookupChainProtector = 3265,
+  kV8InvalidatedPromiseSpeciesLookupChainProtector = 3266,
+  kV8InvalidatedPromiseThenLookupChainProtector = 3267,
+  kV8InvalidatedRegExpSpeciesLookupChainProtector = 3268,
+  kV8InvalidatedSetIteratorLookupChainProtector = 3269,
+  kV8InvalidatedStringIteratorLookupChainProtector = 3270,
+  kV8InvalidatedStringLengthOverflowLookupChainProtector = 3271,
+  kV8InvalidatedTypedArraySpeciesLookupChainProtector = 3272,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

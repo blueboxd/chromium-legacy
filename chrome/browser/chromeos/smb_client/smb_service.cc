@@ -41,6 +41,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "crypto/random.h"
 #include "net/base/network_interfaces.h"
 #include "url/url_util.h"
 
@@ -60,6 +61,12 @@ const int32_t kInvalidMountId = -3;
 // Maximum number of smbfs shares to be mounted at the same time, only enforced
 // on user-initiated mount requests.
 const size_t kMaxSmbFsShares = 16;
+// Length of salt used to obfuscate stored password in smbfs.
+const size_t kSaltLength = 16;
+static_assert(kSaltLength >=
+                  smbfs::mojom::CredentialStorageOptions::kMinSaltLength,
+              "Minimum salt length is "
+              "smbfs::mojom::CredentialStorageOptions::kMinSaltLength");
 
 net::NetworkInterfaceList GetInterfaces() {
   net::NetworkInterfaceList list;
@@ -357,8 +364,16 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
     provider_options.file_system_id =
         CreateFileSystemIdForUser(share_path, full_username);
   }
+  std::vector<uint8_t> salt;
+  if (save_credentials && !password.empty()) {
+    // Only generate a salt if threre's a password and we've been asked to save
+    // credentials. If there is no password, there's nothing for smbfs to store
+    // and the salt is unused.
+    salt.resize(kSaltLength);
+    crypto::RandBytes(salt);
+  }
   SmbShareInfo info(parsed_url, options.display_name, username, workgroup,
-                    use_kerberos);
+                    use_kerberos, salt);
   MountInternal(provider_options, info, password, save_credentials,
                 false /* skip_connect */,
                 base::BindOnce(&SmbService::MountInternalDone,
@@ -412,6 +427,11 @@ void SmbService::MountInternal(
     smbfs_options.password = password;
     smbfs_options.allow_ntlm = IsNTLMAuthenticationEnabled();
     smbfs_options.skip_connect = skip_connect;
+    if (save_credentials && !info.password_salt().empty()) {
+      smbfs_options.save_restore_password = true;
+      smbfs_options.account_hash = user->username_hash();
+      smbfs_options.password_salt = info.password_salt();
+    }
     if (info.use_kerberos()) {
       if (user->IsActiveDirectoryUser()) {
         smbfs_options.kerberos_options =
@@ -684,7 +704,7 @@ void SmbService::OnRemountResponse(const std::string& file_system_id,
 void SmbService::MountSavedSmbfsShare(const SmbShareInfo& info) {
   MountInternal(
       {} /* fsp::MountOptions, ignored by smbfs */, info, "" /* password */,
-      false /* save_credentials */, true /* skip_connect */,
+      true /* save_credentials */, true /* skip_connect */,
       base::BindOnce(
           [](SmbMountResult result, const base::FilePath& mount_path) {
             LOG_IF(ERROR, result != SmbMountResult::kSuccess)

@@ -8,6 +8,24 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # picking up a dependency on skia.
 mojom("mojom") {
   sources = [ "range.mojom" ]
+
+  shared_cpp_typemap = {
+    types = [
+      {
+        mojom = "gfx.mojom.Range"
+        cpp = "::gfx::Range"
+      },
+      {
+        mojom = "gfx.mojom.RangeF"
+        cpp = "::gfx::RangeF"
+      },
+    ]
+
+    traits_headers = [ "range_mojom_traits.h" ]
+    traits_public_deps = [ ":mojom_traits" ]
+  }
+  cpp_typemaps = [ shared_cpp_typemap ]
+  blink_cpp_typemaps = [ shared_cpp_typemap ]
 }
 
 mojom("test_interfaces") {
@@ -27,6 +45,14 @@ source_set("unit_test") {
     "//base/test:test_support",
     "//mojo/public/cpp/bindings",
     "//testing/gtest",
+    "//ui/gfx/range",
+  ]
+}
+
+source_set("mojom_traits") {
+  sources = [ "range_mojom_traits.h" ]
+  public_deps = [
+    ":mojom_shared",
     "//ui/gfx/range",
   ]
 }

@@ -114,7 +114,7 @@ void ContentSettingsStore::SetExtensionContentSetting(
     } else {
       // Do not set a timestamp for extension settings.
       map->SetValue(primary_pattern, secondary_pattern, type, identifier,
-                    base::Time(), base::Value(setting));
+                    base::Time(), base::Value(setting), {});
     }
   }
 

@@ -166,7 +166,7 @@ public class InstantStartTest {
      * Create all the files so that tab models can be restored
      * @param tabIds all the Tab IDs in the normal tab model.
      */
-    private static void createTabStateFile(int[] tabIds) throws IOException {
+    static void createTabStateFile(int[] tabIds) throws IOException {
         TabModelMetadata normalInfo = new TabModelMetadata(0);
         for (int tabId : tabIds) {
             normalInfo.ids.add(tabId);

@@ -9,7 +9,9 @@
 #include <string>
 #include <unordered_map>
 
+#include "ash/public/cpp/arc_notification_manager_base.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list_types.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/mojom/notifications.mojom.h"
 #include "components/arc/session/connection_holder.h"
@@ -24,7 +26,8 @@ class ArcNotificationManagerDelegate;
 
 class ArcNotificationManager
     : public arc::ConnectionObserver<arc::mojom::NotificationsInstance>,
-      public arc::mojom::NotificationsHost {
+      public arc::mojom::NotificationsHost,
+      public ArcNotificationManagerBase {
  public:
   // Sets the factory function to create ARC notification views. Exposed for
   // testing.
@@ -76,6 +79,10 @@ class ArcNotificationManager
   void CancelPress(const std::string& key);
   void SetNotificationConfiguration();
 
+  // ArcNotificationManagerBase implementation:
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+
  private:
   // Helper class to own MojoChannel and ConnectionHolder.
   class InstanceOwner;
@@ -101,6 +108,8 @@ class ArcNotificationManager
   std::string previously_focused_notification_key_;
 
   std::unique_ptr<InstanceOwner> instance_owner_;
+
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<ArcNotificationManager> weak_ptr_factory_{this};
 

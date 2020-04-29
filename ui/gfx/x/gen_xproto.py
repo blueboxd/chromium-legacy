@@ -22,15 +22,13 @@
 # #include "base/component_export.h"
 # #include "ui/gfx/x/xproto_types.h"
 #
-# typedef struct _XDisplay XDisplay;
+# typedef struct xcb_connection_t xcb_connection_t;
 #
 # namespace x11 {
 #
 # class COMPONENT_EXPORT(X11) XProto {
 #  public:
-#   explicit XProto(XDisplay* display);
-#
-#   XDisplay* display() { return display_; }
+#   explicit XProto(xcb_connection_t* conn);
 #
 #   struct RGB {
 #     uint16_t red{};
@@ -48,12 +46,10 @@
 #     std::vector<RGB> colors{};
 #   };
 #
-#   using QueryColorsResponse = Response<QueryColorsReply>;
-#
 #   Future<QueryColorsReply> QueryColors(const QueryColorsRequest& request);
 #
 #  private:
-#   XDisplay* display_;
+#   xcb_connection_t* const conn_;
 # };
 #
 # }  // namespace x11
@@ -70,7 +66,7 @@
 #
 # namespace x11 {
 #
-# XProto::XProto(XDisplay* display) : display_(display) {}
+# XProto::XProto(xcb_connection_t* conn) : conn_(conn) {}
 #
 # Future<XProto::QueryColorsReply>
 # XProto::QueryColors(
@@ -101,7 +97,7 @@
 #     Write(&pixels_elem, &buf);
 #   }
 #
-#   return x11::SendRequest<XProto::QueryColorsReply>(display_, &buf);
+#   return x11::SendRequest<XProto::QueryColorsReply>(conn_, &buf);
 # }
 #
 # template<> COMPONENT_EXPORT(X11)
@@ -155,7 +151,6 @@
 #
 #   }
 #
-#   Align(&buf, 4);
 #   DCHECK_EQ(buf.offset < 32 ? 0 : buf.offset - 32, 4 * length);
 #
 #   return reply;
@@ -469,11 +464,8 @@ class GenXproto:
                 # xcb uses void* in some places, but we prefer to use
                 # std::vector<T> when possible.  Use T=uint8_t instead of
                 # T=void for containers.
-                type_name = 'std::vector<uint8_t>'
-            elif type_name == 'char':
-                type_name = 'std::string'
-            else:
-                type_name = 'std::vector<%s>' % type_name
+                type_name = 'uint8_t'
+            type_name = 'std::vector<%s>' % type_name
         self.write('%s %s{};' % (type_name, name))
 
     def copy_list(self, field):
@@ -593,10 +585,6 @@ class GenXproto:
         else:
             reply_name = 'void'
 
-        self.write(
-            'using %sResponse = Response<%s>;' % (method_name, reply_name))
-        self.write()
-
         self.write('Future<%s> %s(' % (reply_name, method_name))
         self.write('    const %s& request);' % request_name)
         self.write()
@@ -619,7 +607,7 @@ class GenXproto:
             self.is_read = False
             self.copy_container(request, 'request')
             self.write(
-                'return x11::SendRequest<%s>(display_, &buf);' % reply_name)
+                'return x11::SendRequest<%s>(conn_, &buf);' % reply_name)
         self.write()
 
         if reply:
@@ -633,7 +621,6 @@ class GenXproto:
                 self.write()
                 self.is_read = True
                 self.copy_container(reply, '(*reply)')
-                self.write('Align(&buf, 4);')
                 offset = 'buf.offset < 32 ? 0 : buf.offset - 32'
                 self.write('DCHECK_EQ(%s, 4 * length);' % offset)
                 self.write()
@@ -672,7 +659,7 @@ class GenXproto:
         for direct_import in self.module.direct_imports:
             self.write('#include "%s.h"' % direct_import[-1])
         self.write()
-        self.write('typedef struct _XDisplay XDisplay;')
+        self.write('typedef struct xcb_connection_t xcb_connection_t;')
         self.write()
         self.write('namespace x11 {')
         self.write()
@@ -682,14 +669,12 @@ class GenXproto:
         with Indent(self, 'class COMPONENT_EXPORT(X11) %s {' % name, '};'):
             self.namespace = ['x11', self.class_name]
             self.write('public:')
-            self.write('explicit %s(XDisplay* display);' % name)
-            self.write()
-            self.write('XDisplay* display() { return display_; }')
+            self.write('explicit %s(xcb_connection_t* conn);' % name)
             self.write()
             for (name, item) in self.module.all:
                 self.declare_type(item, name)
             self.write('private:')
-            self.write('XDisplay* const display_;')
+            self.write('xcb_connection_t* const conn_;')
 
         self.write()
         self.write('}  // namespace x11')
@@ -710,7 +695,7 @@ class GenXproto:
         self.write()
         name = self.class_name
         self.write(
-            '%s::%s(XDisplay* display) : display_(display) {}' % (name, name))
+            '%s::%s(xcb_connection_t* conn) : conn_(conn) {}' % (name, name))
         self.write()
         for (name, item) in self.module.all:
             if isinstance(item, self.xcbgen.xtypes.Request):

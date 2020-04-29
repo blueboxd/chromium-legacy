@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
-#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/user_manager.h"
@@ -252,8 +252,9 @@ bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
     keyboard_client->HideKeyboard(ash::HideReason::kUser);
 
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
-  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        chrome::kOsLanguagesDetailsSubPage);
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile(),
+      chrome::kOsLanguagesDetailsSubPage);
   return true;
 }
 

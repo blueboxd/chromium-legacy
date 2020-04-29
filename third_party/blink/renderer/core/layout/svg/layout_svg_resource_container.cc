@@ -97,7 +97,7 @@ bool LayoutSVGResourceContainer::FindCycle(
 
 bool LayoutSVGResourceContainer::FindCycleInResources(
     SVGResourcesCycleSolver& solver,
-    const LayoutObject& layout_object) const {
+    const LayoutObject& layout_object) {
   SVGResources* resources =
       SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
   if (!resources)
@@ -116,26 +116,33 @@ bool LayoutSVGResourceContainer::FindCycleInResources(
 
 bool LayoutSVGResourceContainer::FindCycleFromSelf(
     SVGResourcesCycleSolver& solver) const {
-  if (FindCycleInResources(solver, *this))
-    return true;
-  return FindCycleInDescendants(solver);
+  return FindCycleInSubtree(solver, *this);
 }
 
 bool LayoutSVGResourceContainer::FindCycleInDescendants(
-    SVGResourcesCycleSolver& solver) const {
-  LayoutObject* node = FirstChild();
+    SVGResourcesCycleSolver& solver,
+    const LayoutObject& root) {
+  LayoutObject* node = root.SlowFirstChild();
   while (node) {
     // Skip subtrees which are themselves resources. (They will be
     // processed - if needed - when they are actually referenced.)
     if (node->IsSVGResourceContainer()) {
-      node = node->NextInPreOrderAfterChildren(this);
+      node = node->NextInPreOrderAfterChildren(&root);
       continue;
     }
     if (FindCycleInResources(solver, *node))
       return true;
-    node = node->NextInPreOrder(this);
+    node = node->NextInPreOrder(&root);
   }
   return false;
+}
+
+bool LayoutSVGResourceContainer::FindCycleInSubtree(
+    SVGResourcesCycleSolver& solver,
+    const LayoutObject& root) {
+  if (FindCycleInResources(solver, root))
+    return true;
+  return FindCycleInDescendants(solver, root);
 }
 
 void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(

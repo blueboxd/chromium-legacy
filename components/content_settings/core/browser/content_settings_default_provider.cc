@@ -77,7 +77,8 @@ class DefaultRuleIterator : public RuleIterator {
     DCHECK(HasNext());
     is_done_ = true;
     return Rule(ContentSettingsPattern::Wildcard(),
-                ContentSettingsPattern::Wildcard(), std::move(value_));
+                ContentSettingsPattern::Wildcard(), std::move(value_),
+                base::Time(), SessionModel::Durable);
   }
 
  private:
@@ -213,7 +214,8 @@ bool DefaultProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    std::unique_ptr<base::Value>&& in_value) {
+    std::unique_ptr<base::Value>&& in_value,
+    const ContentSettingConstraints& /*constraints*/) {
   DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
 

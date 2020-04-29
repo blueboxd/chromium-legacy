@@ -607,6 +607,8 @@ jumbo_static_library("browser") {
     "installable/installable_params.h",
     "installable/installable_task_queue.cc",
     "installable/installable_task_queue.h",
+    "installable/installable_utils.cc",
+    "installable/installable_utils.h",
     "internal_auth.cc",
     "internal_auth.h",
     "interstitials/enterprise_util.cc",

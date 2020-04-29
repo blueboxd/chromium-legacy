@@ -135,7 +135,8 @@ class ChannelsRuleIterator : public content_settings::RuleIterator {
         ContentSettingsPattern::FromURLNoWildcard(
             GURL(channels_[index_].origin)),
         ContentSettingsPattern::Wildcard(),
-        base::Value(ChannelStatusToContentSetting(channels_[index_].status)));
+        base::Value(ChannelStatusToContentSetting(channels_[index_].status)),
+        base::Time(), content_settings::SessionModel::Durable);
     index_++;
     return rule;
   }
@@ -229,7 +230,7 @@ void NotificationChannelsProviderAndroid::MigrateToChannelsIfNecessary(
     pref_provider->SetWebsiteSetting(
         rule.primary_pattern, rule.secondary_pattern,
         ContentSettingsType::NOTIFICATIONS,
-        content_settings::ResourceIdentifier(), nullptr);
+        content_settings::ResourceIdentifier(), nullptr, {});
   }
 
   prefs->SetBoolean(prefs::kMigratedToSiteNotificationChannels, true);
@@ -305,7 +306,8 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const content_settings::ResourceIdentifier& resource_identifier,
-    std::unique_ptr<base::Value>&& value) {
+    std::unique_ptr<base::Value>&& value,
+    const content_settings::ContentSettingConstraints& /*constraints*/) {
   if (content_type != ContentSettingsType::NOTIFICATIONS ||
       !platform_supports_channels_) {
     return false;

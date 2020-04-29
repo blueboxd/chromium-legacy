@@ -19,6 +19,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
+#include "components/content_settings/core/browser/content_settings_constraints.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/user_modifiable_provider.h"
@@ -146,12 +147,15 @@ class HostContentSettingsMap : public content_settings::Observer,
 
   // For a given content type, returns all patterns with a non-default setting,
   // mapped to their actual settings, in the precedence order of the rules.
-  // |settings| must be a non-NULL outparam.
+  // |settings| must be a non-NULL outparam. |session_model| can be
+  // specified to limit the type of setting results returned.
   //
   // This may be called on any thread.
   void GetSettingsForOneType(ContentSettingsType content_type,
                              const std::string& resource_identifier,
-                             ContentSettingsForOneType* settings) const;
+                             ContentSettingsForOneType* settings,
+                             base::Optional<content_settings::SessionModel>
+                                 session_model = base::nullopt) const;
 
   // Sets the default setting for a particular content type. This method must
   // not be invoked on an incognito map.
@@ -161,10 +165,11 @@ class HostContentSettingsMap : public content_settings::Observer,
                                 ContentSetting setting);
 
   // Sets the content |setting| for the given patterns, |content_type| and
-  // |resource_identifier|. Setting the value to CONTENT_SETTING_DEFAULT causes
-  // the default setting for that type to be used when loading pages matching
-  // this pattern. Unless adding a custom-scoped setting, most developers will
-  // want to use SetContentSettingDefaultScope() instead.
+  // |resource_identifier| applying any provided |constraints|. Setting the
+  // value to CONTENT_SETTING_DEFAULT causes the default setting for that type
+  // to be used when loading pages matching this pattern. Unless adding a
+  // custom-scoped setting, most developers will want to use
+  // SetContentSettingDefaultScope() instead.
   //
   // NOTICE: This is just a convenience method for content types that use
   // |CONTENT_SETTING| as their data type. For content types that use other
@@ -176,12 +181,13 @@ class HostContentSettingsMap : public content_settings::Observer,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const std::string& resource_identifier,
-      ContentSetting setting);
+      ContentSetting setting,
+      const content_settings::ContentSettingConstraints& constraints = {});
 
   // Sets the content |setting| for the default scope of the url that is
-  // appropriate for the given |content_type| and |resource_identifier|.
-  // Setting the value to CONTENT_SETTING_DEFAULT causes the default setting
-  // for that type to be used.
+  // appropriate for the given |content_type| and |resource_identifier| applying
+  // any provided |constraints|. Setting the value to CONTENT_SETTING_DEFAULT
+  // causes the default setting for that type to be used.
   //
   // NOTICE: This is just a convenience method for content types that use
   // |CONTENT_SETTING| as their data type. For content types that use other
@@ -193,36 +199,43 @@ class HostContentSettingsMap : public content_settings::Observer,
   // scope patterns for the given |content_type|. Developers will generally want
   // to use this function instead of SetContentSettingCustomScope() unless they
   // need to specify custom scoping.
-  void SetContentSettingDefaultScope(const GURL& primary_url,
-                                     const GURL& secondary_url,
-                                     ContentSettingsType content_type,
-                                     const std::string& resource_identifier,
-                                     ContentSetting setting);
+  void SetContentSettingDefaultScope(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier,
+      ContentSetting setting,
+      const content_settings::ContentSettingConstraints& constraints = {});
 
   // Sets the |value| for the default scope of the url that is appropriate for
-  // the given |content_type| and |resource_identifier|. Setting the value to
-  // null removes the default pattern pair for this content type.
+  // the given |content_type| and |resource_identifier| applying any provided
+  // |constraints|. Setting the value to null removes the default pattern pair
+  // for this content type.
   //
   // Internally this will call SetWebsiteSettingCustomScope() with the default
   // scope patterns for the given |content_type|. Developers will generally want
   // to use this function instead of SetWebsiteSettingCustomScope() unless they
   // need to specify custom scoping.
-  void SetWebsiteSettingDefaultScope(const GURL& requesting_url,
-                                     const GURL& top_level_url,
-                                     ContentSettingsType content_type,
-                                     const std::string& resource_identifier,
-                                     std::unique_ptr<base::Value> value);
+  void SetWebsiteSettingDefaultScope(
+      const GURL& requesting_url,
+      const GURL& top_level_url,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier,
+      std::unique_ptr<base::Value> value,
+      const content_settings::ContentSettingConstraints& constraints = {});
 
   // Sets a rule to apply the |value| for all sites matching |pattern|,
-  // |content_type| and |resource_identifier|. Setting the value to null removes
-  // the given pattern pair. Unless adding a custom-scoped setting, most
-  // developers will want to use SetWebsiteSettingDefaultScope() instead.
+  // |content_type| and |resource_identifier| applying any provided
+  // |constraints|. Setting the value to null removes the given pattern pair.
+  // Unless adding a custom-scoped setting, most developers will want to use
+  // SetWebsiteSettingDefaultScope() instead.
   void SetWebsiteSettingCustomScope(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const std::string& resource_identifier,
-      std::unique_ptr<base::Value> value);
+      std::unique_ptr<base::Value> value,
+      const content_settings::ContentSettingConstraints& constraints = {});
 
   // Check if a call to SetNarrowestContentSetting would succeed or if it would
   // fail because of an invalid pattern.
@@ -348,7 +361,8 @@ class HostContentSettingsMap : public content_settings::Observer,
       ContentSettingsType content_type,
       const std::string& resource_identifier,
       ContentSettingsForOneType* settings,
-      bool incognito) const;
+      bool incognito,
+      base::Optional<content_settings::SessionModel> session_model) const;
 
   // Call UsedContentSettingsProviders() whenever you access
   // content_settings_providers_ (apart from initialization and

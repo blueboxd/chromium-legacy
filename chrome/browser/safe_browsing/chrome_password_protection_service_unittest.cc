@@ -604,10 +604,27 @@ TEST_F(ChromePasswordProtectionServiceTest,
   service_->ConfigService(/*is_incognito=*/false,
                           /*is_extended_reporting=*/true);
   std::vector<password_manager::MatchingReusedCredential> credentials = {
-      {"http://example.com"}, {"http://2.example.com"}};
+      {"http://example.test"}, {"http://2.example.com"}};
 
   EXPECT_CALL(*password_store_, AddCompromisedCredentialsImpl(_)).Times(2);
   service_->PersistPhishedSavedPasswordCredential(credentials);
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyRemovePhishedSavedPasswordCredential) {
+  service_->ConfigService(/*is_incognito=*/false,
+                          /*is_extended_reporting=*/true);
+  std::vector<password_manager::MatchingReusedCredential> credentials = {
+      {"http://example.test", base::ASCIIToUTF16("username1")},
+      {"http://2.example.test", base::ASCIIToUTF16("username2")}};
+
+  EXPECT_CALL(*password_store_,
+              RemoveCompromisedCredentialsImpl(
+                  _, _,
+                  password_manager::RemoveCompromisedCredentialsReason::
+                      kMarkSiteAsLegitimate))
+      .Times(2);
+  service_->RemovePhishedSavedPasswordCredential(credentials);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyCanSendSamplePing) {

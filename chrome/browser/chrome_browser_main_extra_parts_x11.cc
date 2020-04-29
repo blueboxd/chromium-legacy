@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
-#include "ui/gfx/x/xproto_util.h"
 
 using content::BrowserThread;
 
@@ -30,7 +29,7 @@ const int kWaitForUIThreadSeconds = 10;
 int BrowserX11ErrorHandler(Display* d, XErrorEvent* error) {
   if (!g_in_x11_io_error_handler) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&x11::LogErrorEventDescription, *error));
+        FROM_HERE, base::BindOnce(&ui::LogErrorEventDescription, d, *error));
   }
   return 0;
 }

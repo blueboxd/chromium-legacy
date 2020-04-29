@@ -40,6 +40,7 @@ using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
+NSString* const kWaitForPageToStartLoadingError = @"Page did not start to load";
 NSString* const kWaitForPageToFinishLoadingError =
     @"Page did not finish loading";
 NSString* const kTypedURLError =
@@ -269,7 +270,18 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 - (void)simulateExternalAppURLOpening {
-  [ChromeEarlGreyAppInterface simulateExternalAppURLOpening];
+  NSURL* openedNSURL =
+      [ChromeEarlGreyAppInterface simulateExternalAppURLOpening];
+  // Wait until the navigation is finished.
+  GURL openedGURL = net::GURLWithNSURL(openedNSURL);
+  GREYCondition* finishedLoading = [GREYCondition
+      conditionWithName:kWaitForPageToStartLoadingError
+                  block:^{
+                    return openedGURL == [ChromeEarlGrey webStateVisibleURL];
+                  }];
+  bool pageLoaded = [finishedLoading waitWithTimeout:kWaitForPageLoadTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(pageLoaded, kWaitForPageToStartLoadingError);
+  // Wait until the page is loaded.
   [self waitForPageToFinishLoading];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }

@@ -79,6 +79,11 @@ class PasswordStoreDefault : public PasswordStore {
       const std::string& signon_realm,
       const base::string16& username,
       RemoveCompromisedCredentialsReason reason) override;
+  bool RemoveCompromisedCredentialsByCompromiseTypeImpl(
+      const std::string& signon_realm,
+      const base::string16& username,
+      const CompromiseType& compromise_type,
+      RemoveCompromisedCredentialsReason reason) override;
   std::vector<CompromisedCredentials> GetAllCompromisedCredentialsImpl()
       override;
   bool RemoveCompromisedCredentialsByUrlAndTimeImpl(

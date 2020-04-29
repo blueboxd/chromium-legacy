@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.background_sync.BackgroundSyncPwaDetector;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -117,10 +117,10 @@ public class TrustedWebActivityPermissionsTest {
     public void detectTwa() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mPermissionManager.updatePermission(mOrigin, mPackage, NOTIFICATIONS, true));
-        assertTrue(BackgroundSyncPwaDetector.isTwaInstalled(mOrigin.toString()));
+        assertTrue(ShortcutHelper.doesOriginContainAnyInstalledTwa(mOrigin.toString()));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { mPermissionManager.unregister(mOrigin); });
-        assertFalse(BackgroundSyncPwaDetector.isTwaInstalled(mOrigin.toString()));
+        assertFalse(ShortcutHelper.doesOriginContainAnyInstalledTwa(mOrigin.toString()));
     }
 
     @Test

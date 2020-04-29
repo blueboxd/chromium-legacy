@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/pref_names.h"
@@ -159,23 +160,32 @@ void HatsDialog::Show(bool is_google_account, const std::string& site_context) {
   std::string site_id = GetSiteID(is_google_account);
   std::string html_data = LoadLocalHtmlAsString(site_id, site_context);
 
-  // Self deleting.
-  auto* hats_dialog = new HatsDialog(html_data);
-
   // Supervised users don't have off the record profiles.
   Profile* active_profile = ProfileManager::GetActiveUserProfile();
-  Profile* profile_to_show = active_profile->IsChild()
-                                 ? active_profile
-                                 : active_profile->GetOffTheRecordProfile();
+  Profile* profile_to_show =
+      active_profile->IsChild()
+          ? active_profile
+          : active_profile->GetOffTheRecordProfile(
+                Profile::OTRProfileID::CreateUnique("ChromeOS::HatsDialog"));
+
+  // Self deleting.
+  // Users of non-primary OTR profiles should destroy it when it's not needed
+  // any more.
+  auto* hats_dialog = new HatsDialog(
+      html_data,
+      /* otr_profile= */ active_profile->IsChild() ? nullptr : profile_to_show);
   chrome::ShowWebDialog(nullptr, profile_to_show, hats_dialog);
 }
 
-HatsDialog::HatsDialog(const std::string& html_data) : html_data_(html_data) {
+HatsDialog::HatsDialog(const std::string& html_data, Profile* otr_profile)
+    : html_data_(html_data), otr_profile_(otr_profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 HatsDialog::~HatsDialog() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (otr_profile_)
+    ProfileDestroyer::DestroyProfileWhenAppropriate(otr_profile_);
 }
 
 ui::ModalType HatsDialog::GetDialogModalType() const {

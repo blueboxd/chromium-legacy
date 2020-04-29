@@ -108,6 +108,7 @@
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/printing/browser/features.h"
+#include "components/query_tiles/switches.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_interstitials/core/features.h"
@@ -1820,6 +1821,19 @@ const FeatureEntry::Choice kWebOtpBackendChoices[] = {
     {flag_descriptions::kWebOtpBackendUserConsent, switches::kWebOtpBackend,
      switches::kWebOtpBackendUserConsent},
 };
+const FeatureEntry::Choice kQueryTilesCountryChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kQueryTilesCountryCodeUS,
+     upboarding::switches::kQueryTilesCountryCode, "US"},
+    {flag_descriptions::kQueryTilesCountryCodeIndia,
+     upboarding::switches::kQueryTilesCountryCode, "IN"},
+    {flag_descriptions::kQueryTilesCountryCodeBrazil,
+     upboarding::switches::kQueryTilesCountryCode, "BR"},
+    {flag_descriptions::kQueryTilesCountryCodeNigeria,
+     upboarding::switches::kQueryTilesCountryCode, "NG"},
+    {flag_descriptions::kQueryTilesCountryCodeIndonesia,
+     upboarding::switches::kQueryTilesCountryCode, "ID"},
+};
 #endif  // defined(OS_ANDROID)
 
 // The choices for --enable-experimental-cookie-features. This really should
@@ -2772,6 +2786,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"query-tiles", flag_descriptions::kQueryTilesName,
      flag_descriptions::kQueryTilesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kQueryTiles)},
+    {"query-tiles-country-code", flag_descriptions::kQueryTilesCountryCode,
+     flag_descriptions::kQueryTilesCountryCodeDescription, kOsAndroid,
+     MULTI_VALUE_TYPE(kQueryTilesCountryChoices)},
     {"android-picture-in-picture-api",
      flag_descriptions::kAndroidPictureInPictureAPIName,
      flag_descriptions::kAndroidPictureInPictureAPIDescription, kOsAndroid,

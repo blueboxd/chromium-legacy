@@ -6,9 +6,42 @@
 #define BASE_MEMORY_CHECKED_PTR_H_
 
 #include <cstddef>  // for std::nullptr_t
+#include <cstdint>  // for uintptr_t
 #include <utility>  // for std::swap
 
 namespace base {
+
+namespace internal {
+// These classes/structures are part of the CheckedPtr implementation.
+// DO NOT USE THESE CLASSES DIRECTLY YOURSELF.
+
+struct CheckedPtrNoOpImpl {
+  // Wraps a pointer, and returns its uintptr_t representation.
+  static inline uintptr_t WrapRawPtr(const void* const_ptr) {
+    return reinterpret_cast<uintptr_t>(const_ptr);
+  }
+
+  // Returns equivalent of |WrapRawPtr(nullptr)|. Separated out to make it a
+  // constexpr.
+  static constexpr uintptr_t GetWrappedNullPtr() {
+    // This relies on nullptr and 0 being equal in the eyes of reinterpret_cast,
+    // which apparently isn't true in all environments.
+    return 0;
+  }
+
+  // Unwraps the pointer's uintptr_t representation, while asserting that memory
+  // hasn't been freed.
+  static inline void* SafelyUnwrapPtr(uintptr_t wrapped_ptr) {
+    return reinterpret_cast<void*>(wrapped_ptr);
+  }
+
+  // Advance the wrapped pointer by |delta| bytes.
+  static uintptr_t Advance(uintptr_t wrapped_ptr, size_t delta) {
+    return wrapped_ptr + delta;
+  }
+};
+
+}  // namespace internal
 
 // DO NOT USE! EXPERIMENTAL ONLY! This is helpful for local testing!
 //
@@ -26,14 +59,17 @@ namespace base {
 //    adding support for cases encountered so far).
 template <typename T>
 class CheckedPtr {
+  using Impl = internal::CheckedPtrNoOpImpl;
+
  public:
   constexpr CheckedPtr() noexcept = default;
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
-  constexpr CheckedPtr(std::nullptr_t) noexcept : ptr_(nullptr) {}
+  constexpr CheckedPtr(std::nullptr_t) noexcept
+      : wrapped_ptr_(Impl::GetWrappedNullPtr()) {}
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
-  CheckedPtr(T* p) noexcept : ptr_(p) {}
+  CheckedPtr(T* p) noexcept : wrapped_ptr_(Impl::WrapRawPtr(p)) {}
 
   // In addition to nullptr_t constructor above, CheckedPtr needs to have these
   // as |=default| or |constexpr| to avoid hitting -Wglobal-constructors in
@@ -46,7 +82,7 @@ class CheckedPtr {
   CheckedPtr& operator=(CheckedPtr&&) noexcept = default;
 
   CheckedPtr& operator=(T* p) noexcept {
-    ptr_ = p;
+    wrapped_ptr_ = Impl::WrapRawPtr(p);
     return *this;
   }
 
@@ -54,9 +90,13 @@ class CheckedPtr {
 
   // Avoid using. The goal of CheckedPtr is to be as close to raw pointer as
   // possible, so use it only if absolutely necessary (e.g. for const_cast).
-  T* get() const { return ptr_; }
+  T* get() const {
+    return static_cast<T*>(Impl::SafelyUnwrapPtr(wrapped_ptr_));
+  }
 
-  explicit operator bool() const { return ptr_ != nullptr; }
+  explicit operator bool() const {
+    return wrapped_ptr_ != Impl::GetWrappedNullPtr();
+  }
 
   T* operator->() const { return get(); }
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
@@ -70,14 +110,18 @@ class CheckedPtr {
   // of |*ptr| dereferences. Better to go this way, to avoid |void&| problem.
 
   CheckedPtr& operator++() {
-    ++ptr_;
+    wrapped_ptr_ = Impl::Advance(wrapped_ptr_, sizeof(T));
     return *this;
   }
 
-  void swap(CheckedPtr& other) noexcept { std::swap(ptr_, other.ptr_); }
+  void swap(CheckedPtr& other) noexcept {
+    std::swap(wrapped_ptr_, other.wrapped_ptr_);
+  }
 
  private:
-  T* ptr_ = nullptr;
+  // Store the pointer as |uintptr_t|, because depending on implementation, its
+  // unused bits may be re-purposed to store extra information.
+  uintptr_t wrapped_ptr_ = Impl::GetWrappedNullPtr();
 };
 
 template <typename T>

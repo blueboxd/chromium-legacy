@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
+class Profile;
+
 namespace chromeos {
 
 // Happiness tracking survey dialog. Sometimes appears after login to ask the
@@ -25,7 +27,7 @@ class HatsDialog : public ui::WebDialogDelegate {
   static void Show(bool is_google_account, const std::string& site_context);
 
   // Use CreateAndShow() above.
-  explicit HatsDialog(const std::string& html_data);
+  explicit HatsDialog(const std::string& html_data, Profile* otr_profile);
   ~HatsDialog() override;
 
   // ui::WebDialogDelegate implementation.
@@ -46,6 +48,7 @@ class HatsDialog : public ui::WebDialogDelegate {
                          const content::ContextMenuParams& params) override;
 
   const std::string html_data_;
+  Profile* otr_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsDialog);
 };

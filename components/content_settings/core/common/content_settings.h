@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -46,17 +47,20 @@ struct ContentSettingPatternSource {
                               const ContentSettingsPattern& secondary_patttern,
                               base::Value setting_value,
                               const std::string& source,
-                              bool incognito);
+                              bool incognito,
+                              base::Time expiration = base::Time());
   ContentSettingPatternSource(const ContentSettingPatternSource& other);
   ContentSettingPatternSource();
   ContentSettingPatternSource& operator=(
       const ContentSettingPatternSource& other);
   ~ContentSettingPatternSource();
   ContentSetting GetContentSetting() const;
+  bool IsExpired() const;
 
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
   base::Value setting_value;
+  base::Time expiration;
   std::string source;
   bool incognito;
 };

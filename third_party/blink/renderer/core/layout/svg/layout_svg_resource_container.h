@@ -81,10 +81,13 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   // Used from RemoveAllClientsFromCache methods.
   void MarkAllClientsForInvalidation(InvalidationModeMask);
 
-  bool FindCycleFromSelf(SVGResourcesCycleSolver&) const;
-  bool FindCycleInDescendants(SVGResourcesCycleSolver&) const;
-  bool FindCycleInResources(SVGResourcesCycleSolver&,
-                            const LayoutObject&) const;
+  virtual bool FindCycleFromSelf(SVGResourcesCycleSolver&) const;
+  static bool FindCycleInDescendants(SVGResourcesCycleSolver&,
+                                     const LayoutObject& root);
+  static bool FindCycleInResources(SVGResourcesCycleSolver&,
+                                   const LayoutObject& object);
+  static bool FindCycleInSubtree(SVGResourcesCycleSolver&,
+                                 const LayoutObject& root);
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;

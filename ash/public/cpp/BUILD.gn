@@ -48,6 +48,8 @@ component("cpp") {
     "app_types.h",
     "arc_app_id_provider.cc",
     "arc_app_id_provider.h",
+    "arc_notification_manager_base.cc",
+    "arc_notification_manager_base.h",
     "arc_notifications_host_initializer.cc",
     "arc_notifications_host_initializer.h",
     "ash_constants.h",

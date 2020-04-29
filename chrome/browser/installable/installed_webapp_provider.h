@@ -34,7 +34,9 @@ class InstalledWebappProvider : public content_settings::ObservableProvider {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const content_settings::ResourceIdentifier& resource_identifier,
-      std::unique_ptr<base::Value>&& value) override;
+      std::unique_ptr<base::Value>&& value,
+      const content_settings::ContentSettingConstraints& constraints = {})
+      override;
 
   void ClearAllContentSettingsRules(ContentSettingsType content_type) override;
   void ShutdownOnUIThread() override;

@@ -150,6 +150,13 @@ void SVGFEImageElement::ImageNotifyFinished(ImageResourceContent*) {
     MarkForLayoutAndParentResourceInvalidation(*layout_object);
 }
 
+const SVGElement* SVGFEImageElement::TargetElement() const {
+  if (cached_image_)
+    return nullptr;
+  return DynamicTo<SVGElement>(
+      TargetElementFromIRIString(HrefString(), GetTreeScope()));
+}
+
 FilterEffect* SVGFEImageElement::Build(SVGFilterBuilder*, Filter* filter) {
   if (cached_image_) {
     // Don't use the broken image icon on image loading errors.
@@ -158,9 +165,7 @@ FilterEffect* SVGFEImageElement::Build(SVGFilterBuilder*, Filter* filter) {
     return MakeGarbageCollected<FEImage>(
         filter, image, preserve_aspect_ratio_->CurrentValue());
   }
-  const SVGElement* target = DynamicTo<SVGElement>(
-      TargetElementFromIRIString(HrefString(), GetTreeScope()));
-  return MakeGarbageCollected<FEImage>(filter, target,
+  return MakeGarbageCollected<FEImage>(filter, TargetElement(),
                                        preserve_aspect_ratio_->CurrentValue());
 }
 

@@ -14,5 +14,4 @@ typemaps = [
   "//ui/gfx/mojom/selection_bound.typemap",
   "//ui/gfx/mojom/swap_result.typemap",
   "//ui/gfx/mojom/swap_timings.typemap",
-  "//ui/gfx/range/mojom/range.typemap",
 ]

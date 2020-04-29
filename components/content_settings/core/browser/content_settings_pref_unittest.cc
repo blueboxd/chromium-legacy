@@ -37,6 +37,7 @@ constexpr char kTestPatternNonCanonicalBeta[] = "https://bet%61.com,*";
 
 constexpr char kTestContentSettingPrefName[] = "content_settings.test";
 
+constexpr char kexpirationKey[] = "expiration";
 constexpr char kLastModifiedKey[] = "last_modified";
 constexpr char kSettingKey[] = "setting";
 constexpr char kTagKey[] = "tag";
@@ -93,13 +94,16 @@ void LegacyPersistedPluginTests(
 //       "tag": "...",
 //     }
 //   }
-base::Value CreateDummyContentSettingValue(base::StringPiece tag) {
+base::Value CreateDummyContentSettingValue(base::StringPiece tag,
+                                           bool expired) {
   base::Value setting(base::Value::Type::DICTIONARY);
   setting.SetKey(kTagKey, base::Value(tag));
 
   base::Value pref_value(base::Value::Type::DICTIONARY);
   pref_value.SetKey(kLastModifiedKey, base::Value("13189876543210000"));
   pref_value.SetKey(kSettingKey, std::move(setting));
+  pref_value.SetKey(kexpirationKey, expired ? base::Value("13189876543210001")
+                                            : base::Value("0"));
   return pref_value;
 }
 
@@ -155,8 +159,8 @@ TEST(ContentSettingsPref, CanonicalizationWhileReadingFromPrefs) {
 
   auto original_pref_value = std::make_unique<base::DictionaryValue>();
   for (const auto* pattern : kTestOriginalPatterns) {
-    original_pref_value->SetKey(pattern,
-                                CreateDummyContentSettingValue(pattern));
+    original_pref_value->SetKey(
+        pattern, CreateDummyContentSettingValue(pattern, /*expired=*/false));
   }
 
   TestingPrefServiceSimple prefs;
@@ -276,5 +280,70 @@ TEST(ContentSettingsPref, LegacyPersistedPluginSetting) {
                              CONTENT_SETTING_ALLOW);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+// If we are reading from prefs and we have any persistend settings that have
+// expired we should remove these to prevent unbounded growth and bloat.
+TEST(ContentSettingsPref, ExpirationWhileReadingFromPrefs) {
+  // Upon construction, ContentSettingPref reads all content setting exception
+  // data stored in Preferences for a given content setting. This process also
+  // has the side effect that it clears out expired settings.
+
+  // We should only have our un-expired setting left over.
+  using CanonicalPatternToTag = std::pair<std::string, std::string>;
+  const std::vector<CanonicalPatternToTag> kExpectedPatternsToTags = {
+      {kTestPatternCanonicalBeta, kTestPatternCanonicalBeta},
+  };
+
+  // Create two pre-existing entries, one that is expired and one that never
+  // expires.
+  auto original_pref_value = std::make_unique<base::DictionaryValue>();
+  original_pref_value->SetKey(
+      kTestPatternCanonicalAlpha,
+      CreateDummyContentSettingValue(kTestPatternCanonicalAlpha,
+                                     /*expired=*/true));
+  original_pref_value->SetKey(
+      kTestPatternCanonicalBeta,
+      CreateDummyContentSettingValue(kTestPatternCanonicalBeta,
+                                     /*expired=*/false));
+
+  TestingPrefServiceSimple prefs;
+  prefs.registry()->RegisterDictionaryPref(kTestContentSettingPrefName);
+  prefs.SetUserPref(kTestContentSettingPrefName,
+                    std::move(original_pref_value));
+
+  PrefChangeRegistrar registrar;
+  registrar.Init(&prefs);
+  ContentSettingsPref content_settings_pref(
+      ContentSettingsType::MEDIA_ENGAGEMENT, &prefs, &registrar,
+      kTestContentSettingPrefName, false, base::DoNothing());
+
+  // Verify that the |value_map| contains the expected content setting patterns
+  // and setting.
+  std::vector<CanonicalPatternToTag> patterns_to_tags_in_memory;
+  auto rule_iterator = content_settings_pref.GetRuleIterator(
+      std::string() /* resource_identifier */, false /* is_incognito */);
+  while (rule_iterator->HasNext()) {
+    auto rule = rule_iterator->Next();
+    patterns_to_tags_in_memory.emplace_back(
+        CreatePatternString(rule.primary_pattern, rule.secondary_pattern),
+        GetTagFromDummyContentSetting(rule.value));
+  }
+
+  EXPECT_THAT(patterns_to_tags_in_memory,
+              testing::UnorderedElementsAreArray(kExpectedPatternsToTags));
+
+  // Verify that Preferences do, as well.
+  std::vector<CanonicalPatternToTag> patterns_to_tags_in_prefs;
+  const auto* canonical_pref_value =
+      prefs.GetUserPref(kTestContentSettingPrefName);
+  ASSERT_TRUE(canonical_pref_value->is_dict());
+  for (const auto& key_value : canonical_pref_value->DictItems()) {
+    patterns_to_tags_in_prefs.emplace_back(
+        key_value.first, GetTagFromDummyContentSettingValue(key_value.second));
+  }
+
+  EXPECT_THAT(patterns_to_tags_in_prefs,
+              testing::UnorderedElementsAreArray(kExpectedPatternsToTags));
+}
 
 }  // namespace content_settings

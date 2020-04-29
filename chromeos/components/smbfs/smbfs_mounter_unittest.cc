@@ -45,6 +45,7 @@ constexpr char kUsername[] = "username";
 constexpr char kWorkgroup[] = "example.com";
 constexpr char kPassword[] = "myverysecurepassword";
 constexpr char kKerberosIdentity[] = "my-kerberos-identity";
+constexpr char kAccountHash[] = "00112233445566778899aabb";
 
 chromeos::disks::DiskMountManager::MountPointInfo MakeMountPointInfo(
     const std::string& source_path,
@@ -295,6 +296,7 @@ TEST_F(SmbFsMounterTest, MountOptions) {
         EXPECT_TRUE(options->allow_ntlm);
         EXPECT_FALSE(options->skip_connect);
         EXPECT_EQ(options->resolved_host, net::IPAddress(1, 2, 3, 4));
+        EXPECT_FALSE(options->credential_storage_options);
 
         delegate_remote = std::move(delegate);
         std::move(callback).Run(mojom::MountError::kOk,
@@ -350,6 +352,58 @@ TEST_F(SmbFsMounterTest, MountOptions_SkipConnect) {
 
   SmbFsMounter::MountOptions mount_options;
   mount_options.skip_connect = true;
+  std::unique_ptr<SmbFsMounter> mounter = std::make_unique<TestSmbFsMounter>(
+      kSharePath, mount_options, &mock_delegate_, base::FilePath(kMountPath),
+      chromeos::MOUNT_ERROR_NONE,
+      mojo::Remote<mojom::SmbFsBootstrap>(
+          bootstrap_receiver.BindNewPipeAndPassRemote()));
+  mounter->Mount(callback);
+
+  run_loop.Run();
+}
+
+TEST_F(SmbFsMounterTest, MountOptions_SavePassword) {
+  // Salt must be at least 16 bytes.
+  const std::vector<uint8_t> kSalt = {0, 1, 2,  3,  4,  5,  6,  7,
+                                      8, 9, 10, 11, 12, 13, 14, 15};
+
+  base::RunLoop run_loop;
+  auto callback =
+      base::BindLambdaForTesting([&run_loop](mojom::MountError mount_error,
+                                             std::unique_ptr<SmbFsHost> host) {
+        EXPECT_EQ(mount_error, mojom::MountError::kOk);
+        ASSERT_TRUE(host);
+        EXPECT_EQ(host->mount_path(), base::FilePath(kMountPath));
+        run_loop.Quit();
+      });
+
+  // Dummy Mojo bindings to satisfy lifetimes.
+  mojo::PendingRemote<mojom::SmbFsDelegate> delegate_remote;
+  TestSmbFsImpl mock_smbfs;
+  mojo::Receiver<mojom::SmbFs> smbfs_receiver(&mock_smbfs);
+
+  TestSmbFsBootstrapImpl mock_bootstrap;
+  mojo::Receiver<mojom::SmbFsBootstrap> bootstrap_receiver(&mock_bootstrap);
+  EXPECT_CALL(mock_bootstrap, MountShare(_, _, _))
+      .WillOnce([&delegate_remote, &smbfs_receiver, kSalt](
+                    mojom::MountOptionsPtr options,
+                    mojo::PendingRemote<mojom::SmbFsDelegate> delegate,
+                    mojom::SmbFsBootstrap::MountShareCallback callback) {
+        EXPECT_EQ(options->share_path, kSharePath);
+        ASSERT_TRUE(options->credential_storage_options);
+        EXPECT_EQ(options->credential_storage_options->account_hash,
+                  kAccountHash);
+        EXPECT_EQ(options->credential_storage_options->salt, kSalt);
+
+        delegate_remote = std::move(delegate);
+        std::move(callback).Run(mojom::MountError::kOk,
+                                smbfs_receiver.BindNewPipeAndPassRemote());
+      });
+
+  SmbFsMounter::MountOptions mount_options;
+  mount_options.save_restore_password = true;
+  mount_options.account_hash = kAccountHash;
+  mount_options.password_salt = kSalt;
   std::unique_ptr<SmbFsMounter> mounter = std::make_unique<TestSmbFsMounter>(
       kSharePath, mount_options, &mock_delegate_, base::FilePath(kMountPath),
       chromeos::MOUNT_ERROR_NONE,

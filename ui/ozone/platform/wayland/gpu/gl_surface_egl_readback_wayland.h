@@ -17,7 +17,7 @@ class WaylandBufferManagerGpu;
 
 // GLSurface implementation that copies pixels from readback to shared memory
 // and let Wayland compositor to present them.
-class GLSurfaceEglReadbackWayland : public gl::PbufferGLSurfaceEGL,
+class GLSurfaceEglReadbackWayland : public GLSurfaceEglReadback,
                                     public WaylandSurfaceGpu {
  public:
   GLSurfaceEglReadbackWayland(gfx::AcceleratedWidget widget,

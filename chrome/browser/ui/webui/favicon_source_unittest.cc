@@ -53,20 +53,18 @@ class MockHistoryUiFaviconRequestHandler
   MockHistoryUiFaviconRequestHandler() = default;
   ~MockHistoryUiFaviconRequestHandler() override = default;
 
-  MOCK_METHOD5(
+  MOCK_METHOD4(
       GetRawFaviconForPageURL,
       void(const GURL& page_url,
            int desired_size_in_pixel,
            favicon_base::FaviconRawBitmapCallback callback,
-           favicon::HistoryUiFaviconRequestOrigin request_origin_for_uma,
-           const GURL& icon_url_for_uma));
+           favicon::HistoryUiFaviconRequestOrigin request_origin_for_uma));
 
-  MOCK_METHOD4(
+  MOCK_METHOD3(
       GetFaviconImageForPageURL,
       void(const GURL& page_url,
            favicon_base::FaviconImageCallback callback,
-           favicon::HistoryUiFaviconRequestOrigin request_origin_for_uma,
-           const GURL& icon_url_for_uma));
+           favicon::HistoryUiFaviconRequestOrigin request_origin_for_uma));
 };
 
 class TestFaviconSource : public FaviconSource {
@@ -127,9 +125,9 @@ class FaviconSourceTestBase : public testing::Test {
           return kDummyTaskId;
         });
     ON_CALL(*mock_history_ui_favicon_request_handler_,
-            GetRawFaviconForPageURL(_, _, _, _, _))
+            GetRawFaviconForPageURL(_, _, _, _))
         .WillByDefault([](auto, auto,
-                          favicon_base::FaviconRawBitmapCallback callback, auto,
+                          favicon_base::FaviconRawBitmapCallback callback,
                           auto) {
           std::move(callback).Run(favicon_base::FaviconRawBitmapResult());
         });
@@ -287,9 +285,8 @@ TEST_F(
   content::WebContentsTester::For(test_web_contents_.get())
       ->SetLastCommittedURL(GURL(chrome::kChromeUIHistoryURL));
 
-  EXPECT_CALL(
-      *mock_history_ui_favicon_request_handler_,
-      GetRawFaviconForPageURL(GURL("https://www.google.com"), _, _, _, _))
+  EXPECT_CALL(*mock_history_ui_favicon_request_handler_,
+              GetRawFaviconForPageURL(GURL("https://www.google.com"), _, _, _))
       .Times(1);
 
   source()->StartDataRequest(

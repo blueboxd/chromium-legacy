@@ -9,11 +9,15 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "components/grit/dev_ui_components_resources.h"
+#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
+#include "components/security_interstitials/core/unsafe_resource.h"
 #include "crypto/rsa_private_key.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/chrome/browser/ssl/ios_captive_portal_blocking_page.h"
 #include "ios/chrome/browser/ssl/ios_ssl_blocking_page.h"
 #import "ios/chrome/browser/ui/webui/interstitials/interstitial_ui_constants.h"
@@ -21,6 +25,7 @@
 #include "ios/components/security_interstitials/ios_blocking_page_controller_client.h"
 #import "ios/components/security_interstitials/ios_blocking_page_metrics_helper.h"
 #import "ios/web/public/security/web_interstitial_delegate.h"
+#include "ios/web/public/web_state.h"
 #include "ios/web/public/webui/url_data_source_ios.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/public/webui/web_ui_ios_data_source.h"
@@ -141,4 +146,50 @@ CreateCaptivePortalBlockingPageDelegate(web::WebState* web_state) {
               security_interstitials::IOSBlockingPageMetricsHelper>(
               web_state, request_url, reporting_info),
           GetApplicationContext()->GetApplicationLocale()));
+}
+
+std::unique_ptr<web::WebInterstitialDelegate>
+CreateSafeBrowsingBlockingPageDelegate(web::WebState* web_state,
+                                       const GURL& url) {
+  safe_browsing::SBThreatType threat_type =
+      safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+  GURL request_url("http://example.com");
+  GURL main_frame_url(request_url);
+
+  std::string url_param;
+  if (net::GetValueForKeyInQuery(
+          url, kChromeInterstitialSafeBrowsingUrlQueryKey, &url_param)) {
+    GURL query_url_param(url_param);
+    if (query_url_param.is_valid())
+      request_url = query_url_param;
+  }
+
+  std::string type_param;
+  if (net::GetValueForKeyInQuery(
+          url, kChromeInterstitialSafeBrowsingTypeQueryKey, &type_param)) {
+    if (type_param == kChromeInterstitialSafeBrowsingTypeMalwareValue) {
+      threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+    } else if (type_param == kChromeInterstitialSafeBrowsingTypePhishingValue) {
+      threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
+    } else if (type_param == kChromeInterstitialSafeBrowsingTypeUnwantedValue) {
+      threat_type = safe_browsing::SB_THREAT_TYPE_URL_UNWANTED;
+    } else if (type_param ==
+               kChromeInterstitialSafeBrowsingTypeClientsideMalwareValue) {
+      threat_type = safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
+    } else if (type_param ==
+               kChromeInterstitialSafeBrowsingTypeClientsidePhishingValue) {
+      threat_type = safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
+    } else if (type_param == kChromeInterstitialSafeBrowsingTypeBillingValue) {
+      threat_type = safe_browsing::SB_THREAT_TYPE_BILLING;
+    }
+  }
+
+  security_interstitials::UnsafeResource resource;
+  resource.url = request_url;
+  resource.is_subresource = request_url != main_frame_url;
+  resource.is_subframe = false;
+  resource.threat_type = threat_type;
+  resource.web_state_getter = web_state->CreateDefaultGetter();
+
+  return SafeBrowsingBlockingPage::Create(resource);
 }

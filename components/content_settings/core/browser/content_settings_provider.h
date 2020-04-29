@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/values.h"
+#include "components/content_settings/core/browser/content_settings_constraints.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/common/content_settings.h"
 
@@ -50,7 +51,8 @@ class ProviderInterface {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      std::unique_ptr<base::Value>&& value) = 0;
+      std::unique_ptr<base::Value>&& value,
+      const ContentSettingConstraints& constraints) = 0;
 
   // Resets all content settings for the given |content_type| and empty resource
   // identifier to CONTENT_SETTING_DEFAULT.

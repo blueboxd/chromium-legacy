@@ -22,16 +22,16 @@ import dagger.Lazy;
 
 /**
  * Implements the new "Running in Chrome" Snackbar behavior, taking over from
- * {@link TrustedWebActivityDisclosureView}.
+ * {@link DisclosureInfobar}.
  *
- * As opposed to {@link TrustedWebActivityDisclosureView} the Snackbar shown by this class is
+ * As opposed to {@link DisclosureInfobar} the Snackbar shown by this class is
  * transient (lasting 7 seconds) and only is shown at first launch (not on subsequent navigation
  * back to the verified origin).
  *
  * Thread safety: All methods should be called on the UI thread.
  */
 @ActivityScope
-public class NewDisclosureSnackbar extends TrustedWebActivityDisclosureView {
+public class DisclosureSnackbar extends DisclosureInfobar {
     // TODO(crbug.com/1068106): Once this feature is enabled by default, remove
     // TrustedWebActivityDisclosureView and simplify this class.
 
@@ -43,7 +43,7 @@ public class NewDisclosureSnackbar extends TrustedWebActivityDisclosureView {
     private boolean mShown;
 
     @Inject
-    NewDisclosureSnackbar(Resources resources,
+    DisclosureSnackbar(Resources resources,
             Lazy<SnackbarManager> snackbarManager,
             TrustedWebActivityModel model,
             ActivityLifecycleDispatcher lifecycleDispatcher) {

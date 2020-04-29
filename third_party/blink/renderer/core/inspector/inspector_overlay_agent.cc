@@ -862,9 +862,19 @@ float InspectorOverlayAgent::WindowToViewportScale() const {
                                                                     1.0f);
 }
 
-void InspectorOverlayAgent::EnsureOverlayPageCreated() {
-  if (overlay_page_)
+void InspectorOverlayAgent::LoadFrameForTool() {
+  if (frame_resource_name_ == inspect_tool_->GetDataResourceId())
     return;
+
+  frame_resource_name_ = inspect_tool_->GetDataResourceId();
+
+  if (overlay_page_) {
+    overlay_page_->WillBeDestroyed();
+    overlay_page_.Clear();
+    overlay_chrome_client_.Clear();
+    overlay_host_->ClearDelegate();
+    overlay_host_.Clear();
+  }
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
 
@@ -898,22 +908,6 @@ void InspectorOverlayAgent::EnsureOverlayPageCreated() {
   overlay_settings.SetScriptEnabled(true);
   overlay_settings.SetPluginsEnabled(false);
   overlay_settings.SetLoadsImagesAutomatically(true);
-
-  DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
-                      (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  auto* frame = MakeGarbageCollected<LocalFrame>(
-      dummy_local_frame_client, *overlay_page_, nullptr, nullptr, nullptr);
-  frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
-  frame->Init();
-  frame->View()->SetCanHaveScrollbars(false);
-  frame->View()->SetBaseBackgroundColor(Color::kTransparent);
-}
-
-void InspectorOverlayAgent::LoadFrameForTool() {
-  if (frame_resource_name_ == inspect_tool_->GetDataResourceId())
-    return;
-
-  frame_resource_name_ = inspect_tool_->GetDataResourceId();
 
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
@@ -1171,7 +1165,6 @@ void InspectorOverlayAgent::SetInspectTool(InspectTool* inspect_tool) {
     inspect_tool_->Dispose();
   inspect_tool_ = inspect_tool;
   if (inspect_tool_) {
-    EnsureOverlayPageCreated();
     LoadFrameForTool();
     if (!frame_overlay_) {
       frame_overlay_ = std::make_unique<FrameOverlay>(

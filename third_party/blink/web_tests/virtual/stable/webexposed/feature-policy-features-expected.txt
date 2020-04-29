@@ -14,6 +14,7 @@ microphone
 midi
 payment
 picture-in-picture
+screen-wake-lock
 sync-xhr
 usb
 xr-spatial-tracking

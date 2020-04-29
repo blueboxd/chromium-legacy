@@ -9,6 +9,8 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_context_base.h"
 
+extern const int kDefaultImplicitGrantLimit;
+
 class StorageAccessGrantPermissionContext
     : public permissions::PermissionContextBase {
  public:
@@ -23,6 +25,8 @@ class StorageAccessGrantPermissionContext
                            PermissionDecidedWhenFeatureEnabled);
   FRIEND_TEST_ALL_PREFIXES(StorageAccessGrantPermissionContextTest,
                            PermissionDeniedWithoutUserGesture);
+  FRIEND_TEST_ALL_PREFIXES(StorageAccessGrantPermissionContextTest,
+                           ImplicitGrantLimitPerRequestingOrigin);
   friend class StorageAccessGrantPermissionContextTest;
 
   StorageAccessGrantPermissionContext(

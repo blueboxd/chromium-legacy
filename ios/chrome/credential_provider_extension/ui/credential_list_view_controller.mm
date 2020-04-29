@@ -42,7 +42,7 @@ const CGFloat kHeaderHeight = 70;
   [super viewDidLoad];
   self.title =
       NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_CREDENTIAL_LIST_TITLE",
-                        @"AutofFill Chrome Password");
+                        @"AutoFill Chrome Password");
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
   self.navigationItem.rightBarButtonItem = [self navigationCancelButton];

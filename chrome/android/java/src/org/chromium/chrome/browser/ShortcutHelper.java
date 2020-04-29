@@ -57,6 +57,7 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.io.ByteArrayOutputStream;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * This class contains functions related to adding shortcuts to the Android Home
@@ -576,6 +577,27 @@ public class ShortcutHelper {
     @CalledByNative
     private static String queryFirstWebApkPackage(String url) {
         return WebApkValidator.queryFirstWebApkPackage(ContextUtils.getApplicationContext(), url);
+    }
+
+    /**
+     * Returns true if there is a WebAPK installed that sits within {@link origin}, and false
+     * otherwise.
+     */
+    @CalledByNative
+    @VisibleForTesting
+    public static boolean doesOriginContainAnyInstalledWebApk(String origin) {
+        return WebappRegistry.getInstance().hasAtLeastOneWebApkForOrigin(
+                origin.toLowerCase(Locale.getDefault()));
+    }
+    /**
+     * Returns true if there is a TWA installed that sits within {@link origin}, and false
+     * otherwise.
+     */
+    @CalledByNative
+    @VisibleForTesting
+    public static boolean doesOriginContainAnyInstalledTwa(String origin) {
+        return WebappRegistry.getInstance().getTrustedWebActivityPermissionStore().isTwaInstalled(
+                origin.toLowerCase(Locale.getDefault()));
     }
 
     /**

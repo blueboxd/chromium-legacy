@@ -8,16 +8,13 @@
 #include <stdint.h>
 
 #include <memory>
-#include <queue>
 #include <random>
 
 #include "base/auto_reset.h"
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/events/events_export.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/gfx/x/request_queue.h"
 #include "ui/gfx/x/x11_types.h"
 
 using Time = unsigned long;
@@ -123,8 +120,7 @@ class EVENTS_EXPORT ScopedXEventDispatcher {
 // Receives X11 events from X11EventWatcher and sends them to registered
 // {Platform,X}EventDispatchers. Handles receiving, pre-process, translation
 // and post-processing of XEvents.
-class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
-                                     x11::RequestQueue {
+class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
  public:
   explicit X11EventSource(XDisplay* display);
   ~X11EventSource() override;
@@ -198,16 +194,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
  private:
   friend class ScopedXEventDispatcher;
 
-  struct Request {
-    Request(bool is_void, unsigned int sequence, ResponseCallback callback);
-    Request(Request&& other);
-    ~Request();
-
-    const bool is_void;
-    const unsigned int sequence;
-    ResponseCallback callback;
-  };
-
   // Tells XEventDispatchers, which can also have PlatformEventDispatchers, that
   // a translated event is going to be sent next, then dispatches the event and
   // notifies XEventDispatchers the event has been sent out and, most probably,
@@ -220,11 +206,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   // PlatformEventSource:
   void StopCurrentEventStream() override;
   void OnDispatcherListChanged() override;
-
-  // x11::RequestQueue
-  void AddRequest(bool is_void,
-                  unsigned int sequence,
-                  ResponseCallback callback) override;
 
   void RestoreOverridenXEventDispatcher();
 
@@ -261,8 +242,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
 
   XEventDispatcher* overridden_dispatcher_ = nullptr;
   bool overridden_dispatcher_restored_ = false;
-
-  std::queue<Request> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(X11EventSource);
 };

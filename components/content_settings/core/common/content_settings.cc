@@ -131,10 +131,12 @@ ContentSettingPatternSource::ContentSettingPatternSource(
     const ContentSettingsPattern& secondary_pattern,
     base::Value setting_value,
     const std::string& source,
-    bool incognito)
+    bool incognito,
+    base::Time expiration)
     : primary_pattern(primary_pattern),
       secondary_pattern(secondary_pattern),
       setting_value(std::move(setting_value)),
+      expiration(expiration),
       source(source),
       incognito(incognito) {}
 
@@ -150,6 +152,7 @@ ContentSettingPatternSource& ContentSettingPatternSource::operator=(
   primary_pattern = other.primary_pattern;
   secondary_pattern = other.secondary_pattern;
   setting_value = other.setting_value.Clone();
+  expiration = other.expiration;
   source = other.source;
   incognito = other.incognito;
   return *this;
@@ -159,6 +162,10 @@ ContentSettingPatternSource::~ContentSettingPatternSource() {}
 
 ContentSetting ContentSettingPatternSource::GetContentSetting() const {
   return content_settings::ValueToContentSetting(&setting_value);
+}
+
+bool ContentSettingPatternSource::IsExpired() const {
+  return !expiration.is_null() && expiration < base::Time::Now();
 }
 
 // static

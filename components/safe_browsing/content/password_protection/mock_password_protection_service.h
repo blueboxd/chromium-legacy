@@ -54,6 +54,9 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD1(
       PersistPhishedSavedPasswordCredential,
       void(const std::vector<password_manager::MatchingReusedCredential>&));
+  MOCK_METHOD1(
+      RemovePhishedSavedPasswordCredential,
+      void(const std::vector<password_manager::MatchingReusedCredential>&));
   MOCK_METHOD3(IsPingingEnabled,
                bool(LoginReputationClientRequest::TriggerType,
                     ReusedPasswordAccountType,

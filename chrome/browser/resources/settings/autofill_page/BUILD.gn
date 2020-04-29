@@ -97,6 +97,7 @@ js_library("credit_card_list_entry") {
 
 js_library("password_check") {
   deps = [
+    ":blocking_request_manager",
     ":password_check_behavior",
     ":password_manager_proxy",
     "..:plural_string_proxy.m",
@@ -133,6 +134,7 @@ js_library("password_check_edit_disclaimer_dialog") {
 
 js_library("password_check_list_item") {
   deps = [
+    ":blocking_request_manager",
     ":password_manager_proxy",
     "..:open_window_proxy.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -160,6 +162,7 @@ js_library("password_remove_confirmation_dialog") {
 
 js_library("password_list_item") {
   deps = [
+    ":blocking_request_manager",
     ":show_password_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:load_time_data.m",

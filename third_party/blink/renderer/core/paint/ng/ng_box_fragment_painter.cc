@@ -2205,12 +2205,6 @@ bool NGBoxFragmentPainter::HitTestItemsChildren(
         hit_test.action == kHitTestForeground) {
       // Hit test culled inline boxes between |fragment| and its parent
       // fragment.
-      if (container.IsColumnBox()) {
-        // TODO(crbug.com/829028): Currently skipping culled inline hit-testing
-        // if we're contained by a fragmentainer, as NGInlineCursor doesn't work
-        // correctly with those.
-        continue;
-      }
       const PhysicalOffset child_offset =
           hit_test.inline_root_offset + item->OffsetInContainerBlock();
       if (HitTestCulledInlineAncestors(*hit_test.result, container, children,

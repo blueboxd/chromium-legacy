@@ -17,10 +17,10 @@ typedef unsigned long VisualID;
 typedef struct _XcursorImage XcursorImage;
 typedef union _XEvent XEvent;
 typedef struct _XImage XImage;
-typedef struct _XGC* GC;
+typedef struct _XGC *GC;
 typedef struct _XDisplay XDisplay;
 typedef struct _XRegion XRegion;
-typedef struct __GLXFBConfigRec* GLXFBConfig;
+typedef struct __GLXFBConfigRec *GLXFBConfig;
 typedef XID GLXWindow;
 typedef XID GLXDrawable;
 
@@ -38,7 +38,9 @@ struct XObjectDeleter {
 template <class T, class D = XObjectDeleter<void, int, XFree>>
 using XScopedPtr = std::unique_ptr<T, D>;
 
-// Get the XDisplay singleton.  Prefer x11::Connection::Get() instead.
+// TODO(oshima|evan): This assume there is one display and doesn't work
+// under multiple displays/monitor environment. Remove this and change the
+// chrome codebase to get the display from window.
 GFX_EXPORT XDisplay* GetXDisplay();
 
 // Given a connection to an X server, opens a new parallel connection to the

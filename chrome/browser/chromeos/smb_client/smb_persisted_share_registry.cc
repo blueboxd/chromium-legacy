@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/check.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +23,7 @@ constexpr char kDisplayNameKey[] = "display_name";
 constexpr char kUsernameKey[] = "username";
 constexpr char kWorkgroupKey[] = "workgroup";
 constexpr char kUseKerberosKey[] = "use_kerberos";
+constexpr char kPasswordSaltKey[] = "password_salt";
 
 base::Value ShareToDict(const SmbShareInfo& share) {
   base::Value dict(base::Value::Type::DICTIONARY);
@@ -34,6 +36,12 @@ base::Value ShareToDict(const SmbShareInfo& share) {
   if (!share.workgroup().empty()) {
     dict.SetStringKey(kWorkgroupKey, share.workgroup());
   }
+  if (!share.password_salt().empty()) {
+    // Blob base::Values can't be stored in prefs, so store as a base64 encoded
+    // string.
+    dict.SetStringKey(kPasswordSaltKey,
+                      base::Base64Encode(share.password_salt()));
+  }
   return dict;
 }
 
@@ -43,6 +51,21 @@ std::string GetStringValue(const base::Value& dict, const std::string& key) {
     return {};
   }
   return *value;
+}
+
+std::vector<uint8_t> GetEncodedBinaryValue(const base::Value& dict,
+                                           const std::string& key) {
+  const std::string* encoded_value = dict.FindStringKey(key);
+  if (!encoded_value) {
+    return {};
+  }
+  std::string decoded_value;
+  if (!base::Base64Decode(*encoded_value, &decoded_value)) {
+    LOG(ERROR) << "Unable to decode base64-encoded binary pref from key: "
+               << key;
+    return {};
+  }
+  return {decoded_value.begin(), decoded_value.end()};
 }
 
 base::Optional<SmbShareInfo> DictToShare(const base::Value& dict) {
@@ -56,7 +79,8 @@ base::Optional<SmbShareInfo> DictToShare(const base::Value& dict) {
   SmbShareInfo info(url, GetStringValue(dict, kDisplayNameKey),
                     GetStringValue(dict, kUsernameKey),
                     GetStringValue(dict, kWorkgroupKey),
-                    dict.FindBoolKey(kUseKerberosKey).value_or(false));
+                    dict.FindBoolKey(kUseKerberosKey).value_or(false),
+                    GetEncodedBinaryValue(dict, kPasswordSaltKey));
   return base::make_optional(std::move(info));
 }
 

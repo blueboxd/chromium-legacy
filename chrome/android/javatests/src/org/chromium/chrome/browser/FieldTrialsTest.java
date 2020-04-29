@@ -137,4 +137,21 @@ public final class FieldTrialsTest {
         Assert.assertTrue(ChromeFeatureList.isEnabled(sFeature1));
         Assert.assertTrue(CachedFeatureFlags.isEnabled(sFeature1));
     }
+
+    @Test
+    @SmallTest
+    // clang-format off
+    @CommandLineFlags.Add({"enable-features=" + sFeature1 + "<Study",
+            "force-fieldtrials=Study/Group"})
+    public void testRuntimeParams() {
+        // clang-format on
+        StringCachedFieldTrialParameter parameter =
+                new StringCachedFieldTrialParameter(sFeature1, "a1", "default");
+        parameter.setForTesting("b1");
+        Assert.assertEquals("b1", parameter.getValue());
+
+        // Make sure ensureCommandLineIsUpToDate() doesn't erase the value.
+        Features.ensureCommandLineIsUpToDate();
+        Assert.assertEquals("b1", parameter.getValue());
+    }
 }

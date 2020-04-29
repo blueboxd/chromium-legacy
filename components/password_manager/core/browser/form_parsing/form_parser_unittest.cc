@@ -2507,6 +2507,26 @@ TEST(FormParserTest, SingleUsernamePrediction) {
   });
 }
 
+// Invalid form URLs should cause the parser to fail.
+TEST(FormParserTest, InvalidURL) {
+  FormParsingTestCase form_desc = {
+      .fields =
+          {
+              {.form_control_type = "text"},
+              {.form_control_type = "password"},
+          },
+  };
+  FormPredictions no_predictions;
+  ParseResultIds dummy;
+  FormData form_data =
+      GetFormDataAndExpectation(form_desc, &no_predictions, &dummy, &dummy);
+  // URL comes from https://crbug.com/1075515.
+  form_data.url = GURL("FilEsysteM:htTp:E=/.");
+  FormDataParser parser;
+  EXPECT_FALSE(parser.Parse(form_data, FormDataParser::Mode::kFilling));
+  EXPECT_FALSE(parser.Parse(form_data, FormDataParser::Mode::kSaving));
+}
+
 }  // namespace
 
 }  // namespace password_manager

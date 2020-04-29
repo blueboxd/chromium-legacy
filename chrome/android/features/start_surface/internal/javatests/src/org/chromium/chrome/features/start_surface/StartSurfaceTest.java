@@ -19,10 +19,12 @@ import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS;
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 
 import android.support.test.InstrumentationRegistry;
@@ -45,10 +47,10 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -56,10 +58,12 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -74,8 +78,9 @@ Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group
 public class StartSurfaceTest {
     @ParameterAnnotations.ClassParameter
     private static List<ParameterSet> sClassParams =
-            Arrays.asList(new ParameterSet().value(false).name("NoInstant"),
-                    new ParameterSet().value(true).name("Instant"));
+            Arrays.asList(new ParameterSet().value(false, false).name("NoInstant_NoReturn"),
+                    new ParameterSet().value(true, false).name("Instant_NoReturn"),
+                    new ParameterSet().value(false, true).name("NoInstant_Return"));
 
     private static final String BASE_PARAMS =
             "force-fieldtrial-params=Study.Group:start_surface_variation";
@@ -86,22 +91,40 @@ public class StartSurfaceTest {
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
+    private final boolean mImmediateReturn;
     private String mUrl;
 
-    public StartSurfaceTest(boolean useInstantStart) {
+    public StartSurfaceTest(boolean useInstantStart, boolean immediateReturn) {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.INSTANT_START, useInstantStart);
+
+        mImmediateReturn = immediateReturn;
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
-        // TODO(crbug.com/1051226): Test start activity with startMainActivityFromLauncher, so no
-        // tab will be created, then the single start surface should be shown if it is enabled.
-        mActivityTestRule.startMainActivityOnBlankPage();
-
         mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
+        if (mImmediateReturn) {
+            TAB_SWITCHER_ON_RETURN_MS.setForTesting(0);
+            assertEquals(0, ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS.getValue());
+            assertTrue(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
+
+            // Need to start main activity from launcher for immediate return to be effective.
+            // However, need at least one tab for carousel to show, which starting main activity
+            // from launcher doesn't provide.
+            // Creating tabs and restart the activity would do the trick, but we cannot do that for
+            // Instant start because we cannot unload native library.
+            // Create fake TabState files to emulate having one tab in previous session.
+            InstantStartTest.createTabStateFile(new int[] {0});
+            mActivityTestRule.startMainActivityFromLauncher();
+        } else {
+            // Cannot use startMainActivityFromLauncher().
+            // Otherwise tab switcher could be shown immediately if single-pane is enabled.
+            mActivityTestRule.startMainActivityOnBlankPage();
+            onView(withId(R.id.home_button)).check(matches(isDisplayed()));
+        }
     }
 
     @Test
@@ -109,11 +132,10 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/tasksonly"})
     public void testShow_TasksOnly() {
-        onView(withId(R.id.home_button)).check(matches(isDisplayed()));
-
-        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
-
-        onView(withId(R.id.primary_tasks_surface_view)).check(matches(isDisplayed()));
+        if (!mImmediateReturn) {
+            TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        }
+        onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container))
                 .check(matches(isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body))
@@ -132,12 +154,11 @@ public class StartSurfaceTest {
             "/hide_switch_when_no_incognito_tabs/true"})
     public void testShow_OmniboxOnly() {
         // clang-format on
-        onView(withId(R.id.home_button)).check(matches(isDisplayed()));
-
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        TabUiTestHelper.enterTabSwitcher(cta);
-
-        onView(withId(R.id.primary_tasks_surface_view)).check(matches(isDisplayed()));
+        if (!mImmediateReturn) {
+            TabUiTestHelper.enterTabSwitcher(cta);
+        }
+        onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container))
                 .check(matches(withEffectiveVisibility(GONE)));
         onView(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body))
@@ -169,12 +190,11 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/twopanes"})
     public void testShow_TwoPanes() {
-        onView(withId(R.id.home_button)).check(matches(isDisplayed()));
-
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        TabUiTestHelper.enterTabSwitcher(cta);
-
-        onView(withId(R.id.primary_tasks_surface_view)).check(matches(isDisplayed()));
+        if (!mImmediateReturn) {
+            TabUiTestHelper.enterTabSwitcher(cta);
+        }
+        onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
         onView(withId(R.id.ss_bottom_bar)).check(matches(isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container))
                 .check(matches(isDisplayed()));
@@ -197,8 +217,13 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
     public void testShow_SingleAsHomepage() {
-        onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
-        assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        if (!mImmediateReturn) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        }
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> mActivityTestRule.getActivity().getLayoutManager() != null
+                        && mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
         onView(withId(R.id.primary_tasks_surface_view)).check(matches(isDisplayed()));
         onView(withId(R.id.search_box_text)).check(matches(isDisplayed()));
@@ -246,8 +271,13 @@ public class StartSurfaceTest {
         "/exclude_mv_tiles/true/hide_switch_when_no_incognito_tabs/true"})
     public void testShow_SingleAsHomepage_NoMVTiles() {
         // clang-format on
-        onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
-        assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        if (!mImmediateReturn) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        }
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> mActivityTestRule.getActivity().getLayoutManager() != null
+                        && mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
         onView(withId(R.id.primary_tasks_surface_view)).check(matches(isDisplayed()));
         onView(withId(R.id.search_box_text)).check(matches(isDisplayed()));
@@ -298,8 +328,13 @@ public class StartSurfaceTest {
         "/hide_switch_when_no_incognito_tabs/true/show_last_active_tab_only/true"})
     public void testShow_SingleAsHomepage_SingleTabNoMVTiles() {
         // clang-format on
-        onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
-        assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        if (!mImmediateReturn) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        }
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> mActivityTestRule.getActivity().getLayoutManager() != null
+                        && mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
         onView(withId(R.id.primary_tasks_surface_view)).check(matches(isDisplayed()));
         onView(withId(R.id.search_box_text)).check(matches(isDisplayed()));
@@ -346,11 +381,18 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
     public void testShow_SingleAsTabSwitcher() {
-        onView(withId(R.id.home_button)).check(matches(isDisplayed()));
-
+        if (mImmediateReturn) {
+            CriteriaHelper.pollUiThread(
+                    ()
+                            -> mActivityTestRule.getActivity().getLayoutManager() != null
+                            && mActivityTestRule.getActivity()
+                                       .getLayoutManager()
+                                       .overviewVisible());
+            // Single surface is shown as homepage. Exit in order to get into tab switcher later.
+            pressBack();
+        }
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
-
-        onView(withId(R.id.secondary_tasks_surface_view)).check(matches(isDisplayed()));
+        onViewWaiting(allOf(withId(R.id.secondary_tasks_surface_view), isDisplayed()));
 
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
@@ -365,8 +407,13 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
     public void testSearchInSingleSurface() {
-        onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
-        assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        if (!mImmediateReturn) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        }
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> mActivityTestRule.getActivity().getLayoutManager() != null
+                        && mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         assertThat(
                 mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
                 equalTo(1));
@@ -386,8 +433,13 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
     public void testSearchInIncognitoSingleSurface() {
-        onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
-        assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        if (!mImmediateReturn) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        }
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> mActivityTestRule.getActivity().getLayoutManager() != null
+                        && mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
         onView(withId(R.id.incognito_switch)).perform(click());
         assertTrue(mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
@@ -407,16 +459,14 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/single"})
     public void testTapMVTilesInSingleSurface() {
-        // TODO(crbug.com/1025296): Set cached flag before starting the activity and mimic clicking
-        // the 'home' button to show the single start surface home page.
-        TestThreadUtils.runOnUiThreadBlocking(
+        if (!mImmediateReturn) {
+            onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        }
+        CriteriaHelper.pollUiThread(
                 ()
-                        -> mActivityTestRule.getActivity()
-                                   .getStartSurface()
-                                   .getController()
-                                   .setOverviewState(OverviewModeState.SHOWING_HOMEPAGE));
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
+                        -> mActivityTestRule.getActivity().getLayoutManager() != null
+                        && mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+
         assertThat(
                 mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
                 equalTo(1));

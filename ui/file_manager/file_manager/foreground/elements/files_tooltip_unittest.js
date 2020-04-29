@@ -51,6 +51,26 @@ const bodyContent = `
 
 `;
 
+function setUpPage() {
+  /** @const {boolean} Assume files-ng in unittest. */
+  const enableFilesNg = true;
+
+  // Mock LoadTimeData strings for files-ng case. These tests check CSS top and left
+  // position values, which are different in files-ng vs not-files-ng.
+  window.loadTimeData.data = {
+    FILES_NG_ENABLED: enableFilesNg,
+  };
+
+  window.loadTimeData.getString = id => {
+    return window.loadTimeData.data_[id] || id;
+  };
+
+  /** @return {boolean} */
+  window.isFilesNg = () => {
+    return enableFilesNg;
+  };
+}
+
 function setUp() {
   document.body.innerHTML += bodyContent;
   chocolateButton = document.querySelector('#chocolate');
@@ -79,9 +99,15 @@ function testFocus(callback) {
           .then(() => {
             const label = tooltip.shadowRoot.querySelector('#label');
             assertEquals('Chocolate!', label.textContent.trim());
-            assertTrue(!!tooltip.getAttribute('visible'));
+            assertTrue(tooltip.hasAttribute('visible'));
+
             assertEquals('4px', tooltip.style.left);
-            assertEquals('70px', tooltip.style.top);
+
+            if (window.isFilesNg()) {
+              assertEquals('78px', tooltip.style.top);
+            } else {
+              assertEquals('70px', tooltip.style.top);
+            }
 
             cherriesButton.focus();
             return waitForMutation(tooltip);
@@ -89,11 +115,17 @@ function testFocus(callback) {
           .then(() => {
             const label = tooltip.shadowRoot.querySelector('#label');
             assertEquals('Cherries!', label.textContent.trim());
-            assertTrue(!!tooltip.getAttribute('visible'));
+            assertTrue(tooltip.hasAttribute('visible'));
+
             const expectedLeft =
                 document.body.offsetWidth - tooltip.offsetWidth + 'px';
             assertEquals(expectedLeft, tooltip.style.left);
-            assertEquals('70px', tooltip.style.top);
+
+            if (window.isFilesNg()) {
+              assertEquals('78px', tooltip.style.top);
+            } else {
+              assertEquals('70px', tooltip.style.top);
+            }
 
             otherButton.focus();
             return waitForMutation(tooltip);
@@ -112,10 +144,15 @@ function testHover(callback) {
           .then(() => {
             const label = tooltip.shadowRoot.querySelector('#label');
             assertEquals('Chocolate!', label.textContent.trim());
-            assertTrue(!!tooltip.getAttribute('visible'));
+            assertTrue(tooltip.hasAttribute('visible'));
             assertEquals(tooltip.getAttribute('aria-hidden'), 'false');
+
             assertEquals('4px', tooltip.style.left);
-            assertEquals('70px', tooltip.style.top);
+            if (window.isFilesNg()) {
+              assertEquals('78px', tooltip.style.top);
+            } else {
+              assertEquals('70px', tooltip.style.top);
+            }
 
             chocolateButton.dispatchEvent(new MouseEvent('mouseout'));
             cherriesButton.dispatchEvent(new MouseEvent('mouseover'));
@@ -124,11 +161,17 @@ function testHover(callback) {
           .then(() => {
             const label = tooltip.shadowRoot.querySelector('#label');
             assertEquals('Cherries!', label.textContent.trim());
-            assertTrue(!!tooltip.getAttribute('visible'));
+            assertTrue(tooltip.hasAttribute('visible'));
+
             const expectedLeft =
                 document.body.offsetWidth - tooltip.offsetWidth + 'px';
             assertEquals(expectedLeft, tooltip.style.left);
-            assertEquals('70px', tooltip.style.top);
+
+            if (window.isFilesNg()) {
+              assertEquals('78px', tooltip.style.top);
+            } else {
+              assertEquals('70px', tooltip.style.top);
+            }
 
             cherriesButton.dispatchEvent(new MouseEvent('mouseout'));
             return waitForMutation(tooltip);
@@ -147,8 +190,7 @@ function testClickHides(callback) {
           .then(() => {
             const label = tooltip.shadowRoot.querySelector('#label');
             assertEquals('Chocolate!', label.textContent.trim());
-            assertTrue(!!tooltip.getAttribute('visible'));
-
+            assertTrue(tooltip.hasAttribute('visible'));
             // Hiding here is synchronous. Dispatch the event asynchronously,
             // so the mutation observer is started before hiding.
             setTimeout(() => {
@@ -157,7 +199,7 @@ function testClickHides(callback) {
             return waitForMutation(tooltip);
           })
           .then(() => {
-            assertFalse(!!tooltip.getAttribute('visible'));
+            assertFalse(tooltip.hasAttribute('visible'));
             assertEquals(tooltip.getAttribute('aria-hidden'), 'true');
           }),
       callback);

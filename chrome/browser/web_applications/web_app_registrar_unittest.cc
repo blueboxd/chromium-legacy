@@ -378,6 +378,8 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   std::vector<AppId> in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_EQ(0u, in_scope.size());
+  EXPECT_FALSE(registrar().DoesScopeContainAnyApp(origin_scope));
+  EXPECT_FALSE(registrar().DoesScopeContainAnyApp(app3_scope));
 
   auto app1 = CreateWebApp(app1_scope.spec());
   app1->SetScope(app1_scope);
@@ -385,9 +387,12 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(origin_scope));
+  EXPECT_FALSE(registrar().DoesScopeContainAnyApp(app3_scope));
 
   in_scope = registrar().FindAppsInScope(app1_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(app1_scope));
 
   auto app2 = CreateWebApp(app2_scope.spec());
   app2->SetScope(app2_scope);
@@ -395,12 +400,16 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id, app2_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(origin_scope));
+  EXPECT_FALSE(registrar().DoesScopeContainAnyApp(app3_scope));
 
   in_scope = registrar().FindAppsInScope(app1_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id, app2_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(app1_scope));
 
   in_scope = registrar().FindAppsInScope(app2_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app2_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(app2_scope));
 
   auto app3 = CreateWebApp(app3_scope.spec());
   app3->SetScope(app3_scope);
@@ -408,9 +417,11 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id, app2_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(origin_scope));
 
   in_scope = registrar().FindAppsInScope(app3_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app3_id));
+  EXPECT_TRUE(registrar().DoesScopeContainAnyApp(app3_scope));
 }
 
 TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {

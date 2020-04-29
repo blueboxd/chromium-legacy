@@ -42,7 +42,6 @@ android_library("java") {
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/policy/android:policy_java",
-    "//components/signin/core/browser/android:java",
     "//components/signin/public/android:java",
     "//components/url_formatter/android:url_formatter_java",
     "//content/public/android:content_java",

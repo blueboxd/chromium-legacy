@@ -3509,6 +3509,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "query-tiles-country-code",
+    "owners": [ "shaktisahu", "qinmin"],
+    "expiry_milestone": 88
+  },
+  {
     "name": "quiet-notification-prompts",
     "owners": [ "engedy", "mkwst", "andypaicu", "hkamila" ],
     "expiry_milestone": 83

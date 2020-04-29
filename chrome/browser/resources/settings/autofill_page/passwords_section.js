@@ -526,11 +526,19 @@ Polymer({
    * @private
    */
   onMenuCopyPasswordButtonTap_() {
-    // Copy to clipboard occurs inside C++ and we don't expect getting result
-    // back to javascript.
-    this.passwordManager_.requestPlaintextPassword(
-        this.activePassword.item.entry.id,
-        chrome.passwordsPrivate.PlaintextReason.COPY);
+    // Copy to clipboard occurs inside C++ and we don't expect getting
+    // result back to javascript.
+    this.passwordManager_
+        .requestPlaintextPassword(
+            this.activePassword.item.entry.id,
+            chrome.passwordsPrivate.PlaintextReason.COPY)
+        .catch(error => {
+          // <if expr="chromeos">
+          // If no password was found, refresh auth token and retry.
+          this.tokenRequestManager_.request(
+              this.onMenuCopyPasswordButtonTap_.bind(this));
+          // </if>});
+        });
     (this.$.menu).close();
   },
 

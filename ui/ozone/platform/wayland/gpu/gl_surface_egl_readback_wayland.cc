@@ -29,9 +29,7 @@ GLSurfaceEglReadbackWayland::PixelBuffer::~PixelBuffer() = default;
 GLSurfaceEglReadbackWayland::GLSurfaceEglReadbackWayland(
     gfx::AcceleratedWidget widget,
     WaylandBufferManagerGpu* buffer_manager)
-    : PbufferGLSurfaceEGL(gfx::Size(1, 1)),
-      widget_(widget),
-      buffer_manager_(buffer_manager) {
+    : widget_(widget), buffer_manager_(buffer_manager) {
   buffer_manager_->RegisterSurface(widget_, this);
 }
 
@@ -115,13 +113,11 @@ void GLSurfaceEglReadbackWayland::SwapBuffersAsync(
   auto* next_buffer = in_flight_pixel_buffers_.back().get();
   available_buffers_.erase(available_buffers_.begin());
 
-  const gfx::Size size = GetSize();
   CHECK(next_buffer->shm_mapping_.memory());
-  glReadPixels(0, 0, size.width(), size.height(), GL_BGRA, GL_UNSIGNED_BYTE,
-               next_buffer->shm_mapping_.memory());
+  ReadPixels(next_buffer->shm_mapping_.memory());
 
   buffer_manager_->CommitBuffer(widget_, next_buffer->buffer_id_,
-                                {{0, 0}, size});
+                                {{0, 0}, GetSize()});
 }
 
 gfx::SurfaceOrigin GLSurfaceEglReadbackWayland::GetOrigin() const {

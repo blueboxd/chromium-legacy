@@ -196,7 +196,12 @@ public class CachedFeatureFlags {
     @VisibleForTesting
     public static void setFeaturesForTesting(Map<String, Boolean> features) {
         assert features != null;
-        sOverridesTestFeatures = new HashMap<>();
+
+        // Do not overwrite if there are already existing overridden features in
+        // sOverridesTestFeatures.
+        if (sOverridesTestFeatures == null) {
+            sOverridesTestFeatures = new HashMap<>();
+        }
 
         for (Map.Entry<String, Boolean> entry : features.entrySet()) {
             String key = entry.getKey();

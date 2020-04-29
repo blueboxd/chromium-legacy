@@ -32,7 +32,11 @@ import {Router} from '../router.m.js';
 
 import {PasswordCheckBehavior} from './password_check_behavior.js';
 import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
-
+// <if expr="chromeos">
+import '../controls/password_prompt_dialog.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {BlockingRequestManager} from './blocking_request_manager.js';
+// </if>
 
 const CheckState = chrome.passwordsPrivate.PasswordCheckState;
 
@@ -120,14 +124,25 @@ Polymer({
       type: Object,
       value: new Set(),
     },
+
+    // <if expr="chromeos">
+    /** @private */
+    showPasswordPromptDialog_: Boolean,
+
+    /** @private {BlockingRequestManager} */
+    tokenRequestManager_: Object,
+    // </if>
   },
 
   /**
-   * The element to return focus to, when the currently active dialog is
-   * closed.
-   * @private {?HTMLElement}
+   * A stack of the elements that triggered dialog to open and should therefore
+   * receive focus when that dialog is closed. The bottom of the stack is the
+   * element that triggered the earliest open dialog and top of the stack is the
+   * element that triggered the most recent (i.e. active) dialog. If no dialog
+   * is open, the stack is empty.
+   * @private {?Array<!HTMLElement>}
    */
-  activeDialogAnchor_: null,
+  activeDialogAnchorStack_: null,
 
   /**
    * The password_check_list_item that the user is interacting with now.
@@ -137,6 +152,18 @@ Polymer({
 
   /** @override */
   attached() {
+    // <if expr="chromeos">
+    // If the user's account supports the password check, an auth token will be
+    // required in order for them to view or export passwords. Otherwise there
+    // is no additional security so |tokenRequestManager_| will immediately
+    // resolve requests.
+    this.tokenRequestManager_ =
+        loadTimeData.getBoolean('userCannotManuallyEnterPassword') ?
+        new BlockingRequestManager() :
+        new BlockingRequestManager(this.openPasswordPromptDialog_.bind(this));
+
+    // </if>
+    this.activeDialogAnchorStack_ = [];
     // Set the manager. These can be overridden by tests.
     const syncBrowserProxy = SyncBrowserProxyImpl.getInstance();
 
@@ -210,7 +237,7 @@ Polymer({
   onMoreActionsClick_(event) {
     const target = event.detail.moreActionsButton;
     this.$.moreActionsMenu.showAt(target);
-    this.activeDialogAnchor_ = target;
+    this.activeDialogAnchorStack_.push(target);
     this.activeListItem_ = event.target;
     this.activePassword_ = this.activeListItem_.item;
   },
@@ -221,7 +248,7 @@ Polymer({
                                     this.activeListItem_.showPassword();
     this.$.moreActionsMenu.close();
     this.activePassword_ = null;
-    this.activeDialogAnchor_ = null;
+    this.activeDialogAnchorStack_.pop();
   },
 
   /** @private */
@@ -233,14 +260,20 @@ Polymer({
         .then(
             compromisedCredential => {
               this.activePassword_ = compromisedCredential;
-              this.$.moreActionsMenu.close();
               this.showPasswordEditDialog_ = true;
             },
             error => {
+              // <if expr="chromeos">
+              // If no password was found, refresh auth token and retry.
+              this.tokenRequestManager_.request(
+                  this.onEditPasswordClick_.bind(this));
+              // </if>
+              // <if expr="not chromeos">
               this.activePassword_ = null;
-              this.$.moreActionsMenu.close();
               this.onPasswordEditDialogClosed_();
+              // </if>
             });
+    this.$.moreActionsMenu.close();
   },
 
   /** @private */
@@ -252,15 +285,13 @@ Polymer({
   /** @private */
   onPasswordRemoveDialogClosed_() {
     this.showPasswordRemoveDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchor_));
-    this.activeDialogAnchor_ = null;
+    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
   },
 
   /** @private */
   onPasswordEditDialogClosed_() {
     this.showPasswordEditDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchor_));
-    this.activeDialogAnchor_ = null;
+    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
   },
 
   /**
@@ -270,7 +301,7 @@ Polymer({
   onAlreadyChangedClick_(event) {
     const target = event.detail;
     // Setting required properties for Password Check Edit dialog
-    this.activeDialogAnchor_ = target;
+    this.activeDialogAnchorStack_.push(target);
     this.activeListItem_ = event.target;
     this.activePassword_ = event.target.item;
 
@@ -280,7 +311,7 @@ Polymer({
   /** @private */
   onEditDisclaimerClosed_() {
     this.showPasswordEditDisclaimer_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchor_));
+    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
   },
 
   /**
@@ -590,4 +621,32 @@ Polymer({
   clickedChangePassword_(item) {
     return this.clickedChangePasswordIds_.has(item.id);
   },
+
+  // <if expr="chromeos">
+  /**
+   * Copied from passwords_section.js.
+   * TODO(crbug.com/1074228): Extract to a separate behavior
+   *
+   * @param {!CustomEvent<!chrome.quickUnlockPrivate.TokenInfo>} e - Contains
+   *     newly created auth token. Note that its precise value is not relevant
+   *     here, only the facts that it's created.
+   * @private
+   */
+  onTokenObtained_(e) {
+    assert(e.detail);
+    this.tokenRequestManager_.resolve();
+  },
+
+  /** @private */
+  onPasswordPromptClosed_() {
+    this.showPasswordPromptDialog_ = false;
+    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
+  },
+
+  /** @private */
+  openPasswordPromptDialog_() {
+    this.activeDialogAnchorStack_.push(/** @type {!HTMLElement} */ (getDeepActiveElement()));
+    this.showPasswordPromptDialog_ = true;
+  },
+  // </if>
 });

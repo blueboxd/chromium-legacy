@@ -12,6 +12,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#include "net/base/url_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/url_util.h"
@@ -66,6 +67,86 @@
   [ChromeEarlGrey loadURL:captivePortalInterstitialURL];
 
   [ChromeEarlGrey waitForWebStateContainingText:"Connect to Wi-Fi"];
+}
+
+// Tests that chrome://interstitials/safe_browsing?type=malware loads correctly.
+- (void)testLoadSafeBrowsingMalwareInterstitialUI {
+  GURL safeBrowsingURL = GURL(kChromeUIIntersitialsURL)
+                             .Resolve(kChromeInterstitialSafeBrowsingPath);
+  safeBrowsingURL = net::AppendQueryParameter(
+      safeBrowsingURL, kChromeInterstitialSafeBrowsingTypeQueryKey,
+      kChromeInterstitialSafeBrowsingTypeMalwareValue);
+  [ChromeEarlGrey loadURL:safeBrowsingURL];
+
+  [ChromeEarlGrey
+      waitForWebStateContainingText:"The site ahead contains malware"];
+}
+
+// Tests that chrome://interstitials/safe_browsing?type=phishing loads
+// correctly.
+- (void)testLoadSafeBrowsingPhishingInterstitialUI {
+  GURL safeBrowsingURL = GURL(kChromeUIIntersitialsURL)
+                             .Resolve(kChromeInterstitialSafeBrowsingPath);
+  safeBrowsingURL = net::AppendQueryParameter(
+      safeBrowsingURL, kChromeInterstitialSafeBrowsingTypeQueryKey,
+      kChromeInterstitialSafeBrowsingTypePhishingValue);
+  [ChromeEarlGrey loadURL:safeBrowsingURL];
+
+  [ChromeEarlGrey waitForWebStateContainingText:"Deceptive site ahead"];
+}
+
+// Tests that chrome://interstitials/safe_browsing?type=unwanted loads
+// correctly.
+- (void)testLoadSafeBrowsingUnwantedInterstitialUI {
+  GURL safeBrowsingURL = GURL(kChromeUIIntersitialsURL)
+                             .Resolve(kChromeInterstitialSafeBrowsingPath);
+  safeBrowsingURL = net::AppendQueryParameter(
+      safeBrowsingURL, kChromeInterstitialSafeBrowsingTypeQueryKey,
+      kChromeInterstitialSafeBrowsingTypeUnwantedValue);
+  [ChromeEarlGrey loadURL:safeBrowsingURL];
+
+  [ChromeEarlGrey
+      waitForWebStateContainingText:"The site ahead contains harmful programs"];
+}
+
+// Tests that chrome://interstitials/safe_browsing?type=clientside_malware loads
+// correctly.
+- (void)testLoadSafeBrowsingClientsideMalwareInterstitialUI {
+  GURL safeBrowsingURL = GURL(kChromeUIIntersitialsURL)
+                             .Resolve(kChromeInterstitialSafeBrowsingPath);
+  safeBrowsingURL = net::AppendQueryParameter(
+      safeBrowsingURL, kChromeInterstitialSafeBrowsingTypeQueryKey,
+      kChromeInterstitialSafeBrowsingTypeClientsideMalwareValue);
+  [ChromeEarlGrey loadURL:safeBrowsingURL];
+
+  [ChromeEarlGrey
+      waitForWebStateContainingText:"The site ahead contains malware"];
+}
+
+// Tests that chrome://interstitials/safe_browsing?type=clientside_phishing
+// loads correctly.
+- (void)testLoadSafeBrowsingClientsidePhishingInterstitialUI {
+  GURL safeBrowsingURL = GURL(kChromeUIIntersitialsURL)
+                             .Resolve(kChromeInterstitialSafeBrowsingPath);
+  safeBrowsingURL = net::AppendQueryParameter(
+      safeBrowsingURL, kChromeInterstitialSafeBrowsingTypeQueryKey,
+      kChromeInterstitialSafeBrowsingTypeClientsidePhishingValue);
+  [ChromeEarlGrey loadURL:safeBrowsingURL];
+
+  [ChromeEarlGrey waitForWebStateContainingText:"Deceptive site ahead"];
+}
+
+// Tests that chrome://interstitials/safe_browsing?type=billing loads correctly.
+- (void)testLoadSafeBrowsingBillingInterstitialUI {
+  GURL safeBrowsingURL = GURL(kChromeUIIntersitialsURL)
+                             .Resolve(kChromeInterstitialSafeBrowsingPath);
+  safeBrowsingURL = net::AppendQueryParameter(
+      safeBrowsingURL, kChromeInterstitialSafeBrowsingTypeQueryKey,
+      kChromeInterstitialSafeBrowsingTypeBillingValue);
+  [ChromeEarlGrey loadURL:safeBrowsingURL];
+
+  [ChromeEarlGrey waitForWebStateContainingText:
+                      "The page ahead may try to charge you money"];
 }
 
 @end

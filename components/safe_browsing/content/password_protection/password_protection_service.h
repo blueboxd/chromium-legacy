@@ -219,6 +219,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const std::vector<password_manager::MatchingReusedCredential>&
           matching_reused_credentials) = 0;
 
+  // Remove all rows of the phished saved password credential in the
+  // "compromised credentials" table. Calls the password store to remove a row
+  // for each
+  virtual void RemovePhishedSavedPasswordCredential(
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials) = 0;
+
   // Converts from password::metrics_util::PasswordType to
   // LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType.
   static ReusedPasswordType GetPasswordProtectionReusedPasswordType(
@@ -266,6 +273,17 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   }
 #endif
 
+  const std::vector<password_manager::MatchingReusedCredential>&
+  saved_passwords_matching_reused_credentials() const {
+    return saved_passwords_matching_reused_credentials_;
+  }
+#if defined(UNIT_TEST)
+  void set_saved_passwords_matching_reused_credentials(
+      const std::vector<password_manager::MatchingReusedCredential>&
+          credentials) {
+    saved_passwords_matching_reused_credentials_ = credentials;
+  }
+#endif
   const std::vector<std::string>& saved_passwords_matching_domains() const {
     return saved_passwords_matching_domains_;
   }
@@ -465,6 +483,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // interstitial.
   ReusedPasswordAccountType
       reused_password_account_type_for_last_shown_warning_;
+
+  std::vector<password_manager::MatchingReusedCredential>
+      saved_passwords_matching_reused_credentials_;
 
   std::vector<std::string> saved_passwords_matching_domains_;
 

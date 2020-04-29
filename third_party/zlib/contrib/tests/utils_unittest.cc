@@ -5,9 +5,9 @@
 #include <cstddef>
 #include <vector>
 
+#include "infcover.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils_portable.h"
-
 #include "zlib.h"
 
 void TestPayloads(size_t input_size, zlib_internal::WrapperType type) {
@@ -55,4 +55,14 @@ TEST(ZlibTest, RawWrapper) {
   // should be payload_size + 2 for short payloads.
   for (size_t i = 1; i < 1024; ++i)
     TestPayloads(i, zlib_internal::WrapperType::ZRAW);
+}
+
+TEST(ZlibTest, InflateCover) {
+  cover_support();
+  cover_wrap();
+  cover_back();
+  cover_inflate();
+  // TODO(cavalcantii): enable this last test.
+  // cover_trees();
+  cover_fast();
 }

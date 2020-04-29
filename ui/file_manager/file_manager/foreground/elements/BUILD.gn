@@ -109,6 +109,7 @@ js_library("files_toggle_ripple") {
 # TODO(tapted): Move this to //ui/file_manager/base.
 js_library("files_tooltip") {
   visibility += [ "//ui/file_manager/gallery/*" ]
+  deps = [ "//ui/file_manager/file_manager/common/js:util" ]
 }
 
 js_unittest("files_tooltip_unittest") {

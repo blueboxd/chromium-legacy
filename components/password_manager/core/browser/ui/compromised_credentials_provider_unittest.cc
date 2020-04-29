@@ -133,6 +133,41 @@ TEST_F(CompromisedCredentialsProviderTest,
   EXPECT_THAT(store().compromised_credentials(), ElementsAreArray(credentials));
 }
 
+// Tests removing a compromised credentials by compromise type triggers an
+// observer works as expected.
+TEST_F(CompromisedCredentialsProviderTest,
+       NotifyObserversAboutRemovingCompromisedCredentialsByCompromisedType) {
+  CompromisedCredentials phished_credentials =
+      MakeCompromised(kExampleCom, kUsername1, CompromiseType::kPhished);
+  CompromisedCredentials leaked_credentials =
+      MakeCompromised(kExampleCom, kUsername1, CompromiseType::kLeaked);
+
+  StrictMockCompromisedCredentialsProviderObserver observer;
+  provider().AddObserver(&observer);
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged);
+  store().AddCompromisedCredentials(phished_credentials);
+  RunUntilIdle();
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged);
+  store().AddCompromisedCredentials(leaked_credentials);
+  RunUntilIdle();
+
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged).Times(1);
+  store().RemoveCompromisedCredentialsByCompromiseType(
+      phished_credentials.signon_realm, phished_credentials.username,
+      CompromiseType::kPhished, RemoveCompromisedCredentialsReason::kRemove);
+  RunUntilIdle();
+  EXPECT_THAT(store().compromised_credentials(),
+              ElementsAre(leaked_credentials));
+
+  EXPECT_CALL(observer, OnCompromisedCredentialsChanged).Times(1);
+  store().RemoveCompromisedCredentialsByCompromiseType(
+      leaked_credentials.signon_realm, leaked_credentials.username,
+      CompromiseType::kLeaked, RemoveCompromisedCredentialsReason::kRemove);
+  RunUntilIdle();
+  EXPECT_THAT(store().compromised_credentials(), IsEmpty());
+  provider().RemoveObserver(&observer);
+}
+
 // Tests whether adding and removing an observer works as expected.
 TEST_F(CompromisedCredentialsProviderTest,
        NotifyObserversAboutSavedPasswordsChanges) {

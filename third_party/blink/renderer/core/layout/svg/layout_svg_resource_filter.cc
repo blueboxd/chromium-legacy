@@ -23,6 +23,8 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
 
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_image_element.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"
 
 namespace blink {
@@ -61,6 +63,23 @@ SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::PrimitiveUnits() const {
       ->primitiveUnits()
       ->CurrentValue()
       ->EnumValue();
+}
+
+bool LayoutSVGResourceFilter::FindCycleFromSelf(
+    SVGResourcesCycleSolver& solver) const {
+  // Traverse and check all <feImage> 'href' element references.
+  for (auto& feimage_element :
+       Traversal<SVGFEImageElement>::ChildrenOf(*GetElement())) {
+    const SVGElement* target = feimage_element.TargetElement();
+    if (!target)
+      continue;
+    const LayoutObject* target_layout_object = target->GetLayoutObject();
+    if (!target_layout_object)
+      continue;
+    if (FindCycleInSubtree(solver, *target_layout_object))
+      return true;
+  }
+  return false;
 }
 
 LayoutSVGResourceFilter* GetFilterResourceForSVG(const ComputedStyle& style) {

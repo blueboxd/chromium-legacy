@@ -48,6 +48,8 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
     return preserve_aspect_ratio_.Get();
   }
 
+  const SVGElement* TargetElement() const;
+
   void Dispose();
 
   void Trace(Visitor*) override;

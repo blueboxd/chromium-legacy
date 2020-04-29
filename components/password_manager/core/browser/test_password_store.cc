@@ -341,6 +341,20 @@ bool TestPasswordStore::RemoveCompromisedCredentialsImpl(
   return old_size != compromised_credentials_.size();
 }
 
+bool TestPasswordStore::RemoveCompromisedCredentialsByCompromiseTypeImpl(
+    const std::string& signon_realm,
+    const base::string16& username,
+    const CompromiseType& compromise_type,
+    RemoveCompromisedCredentialsReason reason) {
+  const size_t old_size = compromised_credentials_.size();
+  base::EraseIf(compromised_credentials_, [&](const auto& credential) {
+    return credential.signon_realm == signon_realm &&
+           credential.username == username &&
+           credential.compromise_type == compromise_type;
+  });
+  return old_size != compromised_credentials_.size();
+}
+
 std::vector<CompromisedCredentials>
 TestPasswordStore::GetAllCompromisedCredentialsImpl() {
   return std::vector<CompromisedCredentials>(compromised_credentials_.begin(),

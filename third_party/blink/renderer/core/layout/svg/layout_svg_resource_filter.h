@@ -49,6 +49,9 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
 
   static const LayoutSVGResourceType kResourceType = kFilterResourceType;
   LayoutSVGResourceType ResourceType() const override { return kResourceType; }
+
+ private:
+  bool FindCycleFromSelf(SVGResourcesCycleSolver&) const override;
 };
 
 // Get the LayoutSVGResourceFilter from the 'filter' property iff the 'filter'

@@ -43,6 +43,7 @@ using autofill::PasswordForm;
 using base::WaitableEvent;
 using testing::_;
 using testing::DoAll;
+using testing::ElementsAre;
 using testing::ElementsAreArray;
 using testing::IsEmpty;
 using testing::UnorderedElementsAre;
@@ -1488,6 +1489,78 @@ TEST_F(PasswordStoreTest, GetAllCompromisedCredentials) {
       RemoveCompromisedCredentialsReason::kRemove);
   EXPECT_CALL(consumer, OnGetCompromisedCredentials(
                             UnorderedElementsAre(compromised_credentials2)));
+  store->GetAllCompromisedCredentials(&consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
+TEST_F(PasswordStoreTest, RemovePhishedCredentialsByCompromiseType) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
+  CompromisedCredentials leaked_credentials = {
+      "https://example.com/", base::ASCIIToUTF16("username"),
+      base::Time::FromTimeT(100), CompromiseType::kLeaked};
+  CompromisedCredentials phished_credentials = {
+      "https://example.com/", base::ASCIIToUTF16("username"),
+      base::Time::FromTimeT(200), CompromiseType::kPhished};
+
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(nullptr);
+
+  store->AddCompromisedCredentials(leaked_credentials);
+  store->AddCompromisedCredentials(phished_credentials);
+
+  MockCompromisedCredentialsConsumer consumer;
+  EXPECT_CALL(consumer, OnGetCompromisedCredentials(UnorderedElementsAre(
+                            leaked_credentials, phished_credentials)));
+  store->GetAllCompromisedCredentials(&consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&consumer);
+
+  store->RemoveCompromisedCredentialsByCompromiseType(
+      "https://example.com/", base::ASCIIToUTF16("username"),
+      CompromiseType::kPhished,
+      RemoveCompromisedCredentialsReason::kMarkSiteAsLegitimate);
+  WaitForPasswordStore();
+
+  EXPECT_CALL(consumer,
+              OnGetCompromisedCredentials(ElementsAre(leaked_credentials)));
+  store->GetAllCompromisedCredentials(&consumer);
+  WaitForPasswordStore();
+  store->ShutdownOnUIThread();
+}
+
+TEST_F(PasswordStoreTest, RemoveLeakedCredentialsByCompromiseType) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
+  CompromisedCredentials leaked_credentials = {
+      "https://example.com/", base::ASCIIToUTF16("username"),
+      base::Time::FromTimeT(100), CompromiseType::kLeaked};
+  CompromisedCredentials phished_credentials = {
+      "https://example.com/", base::ASCIIToUTF16("username"),
+      base::Time::FromTimeT(200), CompromiseType::kPhished};
+
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(nullptr);
+
+  store->AddCompromisedCredentials(leaked_credentials);
+  store->AddCompromisedCredentials(phished_credentials);
+
+  MockCompromisedCredentialsConsumer consumer;
+  EXPECT_CALL(consumer, OnGetCompromisedCredentials(UnorderedElementsAre(
+                            leaked_credentials, phished_credentials)));
+  store->GetAllCompromisedCredentials(&consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&consumer);
+
+  store->RemoveCompromisedCredentialsByCompromiseType(
+      "https://example.com/", base::ASCIIToUTF16("username"),
+      CompromiseType::kLeaked,
+      RemoveCompromisedCredentialsReason::kMarkSiteAsLegitimate);
+
+  EXPECT_CALL(consumer,
+              OnGetCompromisedCredentials(ElementsAre(phished_credentials)));
   store->GetAllCompromisedCredentials(&consumer);
   WaitForPasswordStore();
 

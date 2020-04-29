@@ -331,7 +331,6 @@ test("components_unittests") {
       "//components/permissions/android:java",
       "//components/policy/android:policy_java",
       "//components/signin/core/browser",
-      "//components/signin/core/browser/android:java",
       "//components/signin/public/android:java",
       "//components/spellcheck/browser/android:java",
       "//components/url_formatter/android:native_java_unittests_java",
@@ -742,7 +741,7 @@ if (is_android) {
       "//components/gcm_driver/android:components_gcm_driver_junit_tests",
       "//components/permissions/android:components_permissions_junit_tests",
       "//components/policy/android:components_policy_junit_tests",
-      "//components/signin/core/browser/android:components_signin_junit_tests",
+      "//components/signin/public/android:components_signin_junit_tests",
       "//components/variations/android:components_variations_junit_tests",
     ]
   }

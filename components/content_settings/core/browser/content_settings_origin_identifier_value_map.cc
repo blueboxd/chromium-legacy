@@ -40,7 +40,9 @@ class RuleIteratorImpl : public RuleIterator {
     DCHECK(HasNext());
     Rule to_return(current_rule_->first.primary_pattern,
                    current_rule_->first.secondary_pattern,
-                   current_rule_->second.value.Clone());
+                   current_rule_->second.value.Clone(),
+                   current_rule_->second.expiration,
+                   current_rule_->second.session_model);
     ++current_rule_;
     return to_return;
   }
@@ -163,7 +165,8 @@ void OriginIdentifierValueMap::SetValue(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     base::Time last_modified,
-    base::Value value) {
+    base::Value value,
+    const ContentSettingConstraints& constraints) {
   DCHECK(primary_pattern.IsValid());
   DCHECK(secondary_pattern.IsValid());
   // TODO(raymes): Remove this after we track down the cause of
@@ -174,6 +177,8 @@ void OriginIdentifierValueMap::SetValue(
   ValueEntry* entry = &entries_[key][patterns];
   entry->value = std::move(value);
   entry->last_modified = last_modified;
+  entry->expiration = constraints.expiration;
+  entry->session_model = constraints.session_model;
 }
 
 void OriginIdentifierValueMap::DeleteValue(

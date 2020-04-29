@@ -184,9 +184,7 @@ void FaviconSource::StartDataRequest(
         base::BindOnce(&FaviconSource::OnFaviconDataAvailable,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        parsed),
-        parsed_history_ui_origin,
-        /*icon_url_for_uma=*/
-        GURL(parsed.icon_url));
+        parsed_history_ui_origin);
   }
 }
 

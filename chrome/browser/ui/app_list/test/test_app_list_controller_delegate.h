@@ -41,13 +41,9 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
                  int event_flags,
                  int64_t display_id) override;
 
-  void Reset();
-
-  bool did_dismiss_view() const { return did_dismiss_view_; }
   const GURL& last_opened_url() const { return last_opened_url_; }
 
  private:
-  bool did_dismiss_view_ = false;
   GURL last_opened_url_;
 };
 

@@ -397,6 +397,13 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
     arc_intent_helper_observer_.Add(intent_helper_bridge);
   }
 
+  // There is no MessageCenterController for unit tests, so observe when the
+  // MessageCenterController is created in production code.
+  if (ash::ArcNotificationsHostInitializer::Get()) {
+    notification_initializer_observer_.Add(
+        ash::ArcNotificationsHostInitializer::Get());
+  }
+
   PublisherBase::Initialize(app_service, apps::mojom::AppType::kArc);
 }
 
@@ -922,6 +929,58 @@ void ArcApps::OnPreferredAppsChanged() {
         apps::mojom::AppType::kArc, app_id,
         ConvertArcIntentFilter(deleted_preferred_app));
   }
+}
+
+void ArcApps::OnSetArcNotificationsInstance(
+    ash::ArcNotificationManagerBase* arc_notification_manager) {
+  DCHECK(arc_notification_manager);
+  notification_observer_.Add(arc_notification_manager);
+}
+
+void ArcApps::OnArcNotificationInitializerDestroyed(
+    ash::ArcNotificationsHostInitializer* initializer) {
+  notification_initializer_observer_.Remove(initializer);
+}
+
+void ArcApps::OnNotificationUpdated(const std::string& notification_id,
+                                    const std::string& app_id) {
+  if (app_id.empty()) {
+    return;
+  }
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
+  }
+
+  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs->GetApp(app_id);
+  if (!app_info) {
+    return;
+  }
+
+  app_notifications_.AddNotification(app_id, notification_id);
+  Publish(app_notifications_.GetAppWithHasBadgeStatus(
+              apps::mojom::AppType::kArc, app_id),
+          subscribers_);
+}
+
+void ArcApps::OnNotificationRemoved(const std::string& notification_id) {
+  const std::string& app_id =
+      app_notifications_.GetAppIdForNotification(notification_id);
+  if (app_id.empty()) {
+    return;
+  }
+
+  app_notifications_.RemoveNotification(notification_id);
+  Publish(app_notifications_.GetAppWithHasBadgeStatus(
+              apps::mojom::AppType::kArc, app_id),
+          subscribers_);
+}
+
+void ArcApps::OnArcNotificationManagerDestroyed(
+    ash::ArcNotificationManagerBase* notification_manager) {
+  notification_observer_.Remove(notification_manager);
 }
 
 void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,

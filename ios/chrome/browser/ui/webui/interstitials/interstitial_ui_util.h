@@ -22,4 +22,9 @@ std::unique_ptr<web::WebInterstitialDelegate> CreateSslBlockingPageDelegate(
 std::unique_ptr<web::WebInterstitialDelegate>
 CreateCaptivePortalBlockingPageDelegate(web::WebState* web_state);
 
+// Creates an interstitial delegate for chrome://interstitials/safe_browsing.
+std::unique_ptr<web::WebInterstitialDelegate>
+CreateSafeBrowsingBlockingPageDelegate(web::WebState* web_state,
+                                       const GURL& url);
+
 #endif  // IOS_CHROME_BROWSER_UI_WEBUI_INTERSTITIALS_INTERSTITIAL_UI_UTIL_H_

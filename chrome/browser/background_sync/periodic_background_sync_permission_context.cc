@@ -5,18 +5,14 @@
 #include "chrome/browser/background_sync/periodic_background_sync_permission_context.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/installable/installable_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/jni_string.h"
-#include "base/android/scoped_java_ref.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/android/chrome_jni_headers/BackgroundSyncPwaDetector_jni.h"
+#include "chrome/browser/android/shortcut_helper.h"
 #endif
 
 PeriodicBackgroundSyncPermissionContext::
@@ -30,26 +26,22 @@ PeriodicBackgroundSyncPermissionContext::
     ~PeriodicBackgroundSyncPermissionContext() = default;
 
 bool PeriodicBackgroundSyncPermissionContext::IsPwaInstalled(
-    const GURL& url) const {
-#if defined(OS_ANDROID)
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> java_url =
-      base::android::ConvertUTF8ToJavaString(env, url.spec());
-  return Java_BackgroundSyncPwaDetector_isPwaInstalled(env, java_url);
-#else
-  return web_app::FindInstalledAppWithUrlInScope(
-             Profile::FromBrowserContext(browser_context()), url)
-      .has_value();
-#endif
+    const GURL& origin) const {
+  // Because we're only passed the requesting origin from the permissions
+  // infrastructure, we can't match the scope of installed PWAs to the exact URL
+  // of the permission request. We instead look for any installed PWA for the
+  // requesting origin. With this logic, if there's already a PWA installed for
+  // google.com/travel, and a request to register Periodic Background Sync comes
+  // in from google.com/maps, this method will return true and registration will
+  // succeed, provided other required conditions are met.
+  return DoesOriginContainAnyInstalledWebApp(browser_context(), origin);
 }
 
 #if defined(OS_ANDROID)
 bool PeriodicBackgroundSyncPermissionContext::IsTwaInstalled(
-    const GURL& url) const {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> java_url =
-      base::android::ConvertUTF8ToJavaString(env, url.spec());
-  return Java_BackgroundSyncPwaDetector_isTwaInstalled(env, java_url);
+    const GURL& origin) const {
+  return ShortcutHelper::DoesOriginContainAnyInstalledTrustedWebActivity(
+      origin);
 }
 #endif
 

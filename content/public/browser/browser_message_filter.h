@@ -31,6 +31,11 @@ struct BrowserMessageFilterTraits;
 
 // Base class for message filters in the browser process.  You can receive and
 // send messages on any thread.
+//
+// BrowserMessageFilters are ref-counted, and a reference to them is held by the
+// IPC ChannelProxy for which they have been installed, so do not rely on the
+// destructor being called on a specific sequence unless you specify otherwise
+// in OnDestruct().
 class CONTENT_EXPORT BrowserMessageFilter
     : public base::RefCountedThreadSafe<
           BrowserMessageFilter, BrowserMessageFilterTraits>,

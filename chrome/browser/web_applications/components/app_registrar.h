@@ -114,6 +114,9 @@ class AppRegistrar {
   // a prefix of |url|, if any.
   base::Optional<AppId> FindAppWithUrlInScope(const GURL& url) const;
 
+  // Returns true if there exists at least one app installed under |scope|.
+  bool DoesScopeContainAnyApp(const GURL& scope) const;
+
   // Finds all apps that are installed under |scope|.
   std::vector<AppId> FindAppsInScope(const GURL& scope) const;
 

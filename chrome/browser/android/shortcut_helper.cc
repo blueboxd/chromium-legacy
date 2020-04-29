@@ -333,8 +333,27 @@ bool ShortcutHelper::IsWebApkInstalled(content::BrowserContext* browser_context,
                                        const GURL& start_url,
                                        const GURL& manifest_url) {
   return !QueryFirstWebApkPackage(start_url).empty() ||
-         WebApkInstallService::Get(browser_context)
-             ->IsInstallInProgress(manifest_url);
+         (!manifest_url.is_empty() && WebApkInstallService::Get(browser_context)
+                                          ->IsInstallInProgress(manifest_url));
+}
+
+// static
+bool ShortcutHelper::DoesOriginContainAnyInstalledWebApk(const GURL& origin) {
+  DCHECK_EQ(origin, origin.GetOrigin());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> java_origin =
+      base::android::ConvertUTF8ToJavaString(env, origin.spec());
+  return Java_ShortcutHelper_doesOriginContainAnyInstalledWebApk(env,
+                                                                 java_origin);
+}
+
+bool ShortcutHelper::DoesOriginContainAnyInstalledTrustedWebActivity(
+    const GURL& origin) {
+  DCHECK_EQ(origin, origin.GetOrigin());
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> java_origin =
+      base::android::ConvertUTF8ToJavaString(env, origin.spec());
+  return Java_ShortcutHelper_doesOriginContainAnyInstalledTwa(env, java_origin);
 }
 
 void ShortcutHelper::SetForceWebApkUpdate(const std::string& id) {

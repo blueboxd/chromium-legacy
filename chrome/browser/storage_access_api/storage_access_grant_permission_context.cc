@@ -6,16 +6,41 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/notreached.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
+
+// Set the default number of "automatic" implicit storage access grants per 3p
+// origin that can be granted. This can be overridden via experimentation to
+// allow for field trials to validate the default setting.
+constexpr int kDefaultImplicitGrantLimit = 5;
+
+namespace {
+
+constexpr base::TimeDelta kImplicitGrantDuration =
+    base::TimeDelta::FromHours(24);
+constexpr base::TimeDelta kExplicitGrantDuration =
+    base::TimeDelta::FromDays(30);
+
+const base::FeatureParam<int> kImplicitGrantLimit{
+    &blink::features::kStorageAccessAPI,
+    "storage-access-api-implicit-grant-limit", kDefaultImplicitGrantLimit};
+
+int GetImplicitGrantLimit() {
+  return kImplicitGrantLimit.Get();
+}
+
+}  // namespace
 
 StorageAccessGrantPermissionContext::StorageAccessGrantPermissionContext(
     content::BrowserContext* browser_context)
@@ -48,9 +73,36 @@ void StorageAccessGrantPermissionContext::DecidePermission(
     return;
   }
 
-  // TODO(https://crbug.com/989663): Apply defined logic to either auto grant an
-  // ephemeral grant or potentially prompt for access. For now we will just
-  // use the default "ask" for the request if it had a user gesture.
+  // TODO(https://crbug.com/989663): Completely adhere to feature logic
+  // regarding prompt/auto-granting access. For now we will perform the most
+  // common/basic auto-grant/prompt check.
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser_context());
+  DCHECK(settings_map);
+
+  // Get all of our implicit grants and see which ones apply to our
+  // |requesting_origin|.
+  ContentSettingsForOneType implicit_grants;
+  settings_map->GetSettingsForOneType(
+      ContentSettingsType::STORAGE_ACCESS, std::string(), &implicit_grants,
+      content_settings::SessionModel::UserSession);
+
+  const int existing_implicit_grants =
+      std::count_if(implicit_grants.begin(), implicit_grants.end(),
+                    [requesting_origin](const auto& entry) {
+                      return entry.primary_pattern.Matches(requesting_origin);
+                    });
+
+  // If we have fewer grants than our limit, we can just set an implicit grant
+  // now and skip prompting the user.
+  if (existing_implicit_grants < GetImplicitGrantLimit()) {
+    NotifyPermissionSet(id, requesting_origin, embedding_origin,
+                        std::move(callback), /*persist=*/true,
+                        CONTENT_SETTING_SESSION_ONLY);
+    // TODO(https://crbug.com/989663): Cleanup intermediary usage of
+    // CONTENT_SETTING_SESSION_ONLY for implicit grants.
+    return;
+  }
 
   // Show prompt.
   PermissionContextBase::DecidePermission(web_contents, id, requesting_origin,
@@ -83,6 +135,14 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSet(
     return;
   }
 
+  // If we were allowed without prompting we can store that state then treat
+  // this as if it was just allowed.
+  const bool implicit_permission =
+      (content_setting == CONTENT_SETTING_SESSION_ONLY);
+  if (implicit_permission) {
+    content_setting = CONTENT_SETTING_ALLOW;
+  }
+
   const bool permission_allowed = (content_setting == CONTENT_SETTING_ALLOW);
   UpdateTabContext(id, requesting_origin, permission_allowed);
 
@@ -102,6 +162,22 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSet(
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser_context());
   DCHECK(settings_map);
+
+  static const content_settings::ContentSettingConstraints implicit_grant = {
+      content_settings::GetConstraintExpiration(kImplicitGrantDuration),
+      content_settings::SessionModel::UserSession};
+  static const content_settings::ContentSettingConstraints explicit_grant = {
+      content_settings::GetConstraintExpiration(kExplicitGrantDuration),
+      content_settings::SessionModel::Durable};
+
+  // This permission was allowed so store it either ephemerally or more
+  // permanently depending on if the allow came from a prompt or automatic
+  // grant.
+  settings_map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromURL(requesting_origin),
+      ContentSettingsPattern::FromURL(embedding_origin),
+      ContentSettingsType::STORAGE_ACCESS, std::string(), content_setting,
+      implicit_permission ? implicit_grant : explicit_grant);
 
   ContentSettingsForOneType grants;
   settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS,

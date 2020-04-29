@@ -236,6 +236,14 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       const std::vector<password_manager::MatchingReusedCredential>&
           matching_reused_credentials) override;
 
+  // Remove all rows of the phished saved password credential in the
+  // "compromised credentials" table. Calls the password store to remove a row
+  // for each MatchingReusedCredential where the phished saved password is used
+  // on.
+  void RemovePhishedSavedPasswordCredential(
+      const std::vector<password_manager::MatchingReusedCredential>&
+          matching_reused_credentials) override;
+
   // Returns the profile PasswordStore associated with this instance.
   password_manager::PasswordStore* GetProfilePasswordStore() const;
 

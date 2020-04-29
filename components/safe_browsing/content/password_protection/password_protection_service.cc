@@ -144,6 +144,8 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
         static_cast<int>(100 * blink::PageZoomLevelToZoomFactor(zoom_level)));
 #endif  // defined(FULL_SAFE_BROWSING)
     if (can_send_ping) {
+      saved_passwords_matching_reused_credentials_ =
+          matching_reused_credentials;
       StartRequest(web_contents, main_frame_url, GURL(), GURL(), username,
                    password_type, matching_reused_credentials,
                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT,

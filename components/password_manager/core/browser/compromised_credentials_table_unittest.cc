@@ -170,6 +170,34 @@ TEST_F(CompromisedCredentialsTableTest,
               ElementsAre(compromised_credentials1, compromised_credentials2));
 }
 
+TEST_F(CompromisedCredentialsTableTest,
+       RemovePhishedCredentialByCompromiseType) {
+  CompromisedCredentials leaked_credentials = test_data();
+  CompromisedCredentials phished_credentials = test_data();
+  phished_credentials.compromise_type = CompromiseType::kPhished;
+
+  EXPECT_TRUE(db()->AddRow(leaked_credentials));
+  EXPECT_TRUE(db()->AddRow(phished_credentials));
+  EXPECT_TRUE(db()->RemoveRowByCompromiseType(
+      kTestDomain, base::ASCIIToUTF16(kUsername), CompromiseType::kPhished,
+      RemoveCompromisedCredentialsReason::kMarkSiteAsLegitimate));
+  EXPECT_THAT(db()->GetAllRows(), ElementsAre(leaked_credentials));
+}
+
+TEST_F(CompromisedCredentialsTableTest,
+       RemoveLeakedCredentialByCompromiseType) {
+  CompromisedCredentials leaked_credentials = test_data();
+  CompromisedCredentials phished_credentials = test_data();
+  phished_credentials.compromise_type = CompromiseType::kPhished;
+
+  EXPECT_TRUE(db()->AddRow(leaked_credentials));
+  EXPECT_TRUE(db()->AddRow(phished_credentials));
+  EXPECT_TRUE(db()->RemoveRowByCompromiseType(
+      kTestDomain, base::ASCIIToUTF16(kUsername), CompromiseType::kLeaked,
+      RemoveCompromisedCredentialsReason::kMarkSiteAsLegitimate));
+  EXPECT_THAT(db()->GetAllRows(), ElementsAre(phished_credentials));
+}
+
 TEST_F(CompromisedCredentialsTableTest, UpdateRow) {
   CompromisedCredentials compromised_credentials1 = test_data();
   CompromisedCredentials compromised_credentials2{

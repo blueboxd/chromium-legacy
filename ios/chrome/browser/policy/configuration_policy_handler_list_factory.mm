@@ -21,6 +21,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_policy_handler.h"
+#include "components/translate/core/browser/translate_pref_names.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/pref_names.h"
 
@@ -60,6 +61,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { policy::key::kSearchSuggestEnabled,
     prefs::kSearchSuggestEnabled,
+    base::Value::Type::BOOLEAN },
+  { policy::key::kTranslateEnabled,
+    prefs::kOfferTranslateEnabled,
     base::Value::Type::BOOLEAN },
   { policy::key::kURLWhitelist,
     policy::policy_prefs::kUrlWhitelist,

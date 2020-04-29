@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -28,6 +29,13 @@ chromeos::ConciergeClient* GetConciergeClient() {
 
 std::string FormatBytes(const int64_t value) {
   return base::UTF16ToUTF8(ui::FormatBytes(value));
+}
+
+void EmitResizeResultMetric(vm_tools::concierge::DiskImageStatus status) {
+  base::UmaHistogramEnumeration(
+      "Crostini.DiskResize.Result", status,
+      static_cast<vm_tools::concierge::DiskImageStatus>(
+          vm_tools::concierge::DiskImageStatus_MAX + 1));
 }
 }  // namespace
 
@@ -196,11 +204,13 @@ class Observer : public chromeos::ConciergeClient::DiskImageObserver {
       case vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS:
         break;
       case vm_tools::concierge::DiskImageStatus::DISK_STATUS_RESIZED:
+        EmitResizeResultMetric(signal.status());
         std::move(callback_).Run(true);
         break;
       default:
         LOG(ERROR) << "Failed or unrecognised status when resizing: "
                    << signal.status() << " " << signal.failure_reason();
+        EmitResizeResultMetric(signal.status());
         std::move(callback_).Run(false);
         delete this;
     }
@@ -220,6 +230,7 @@ void ResizeCrostiniDisk(Profile* profile,
   request.set_vm_name(vm_name);
   request.set_disk_size(size_bytes);
 
+  base::UmaHistogramBoolean("Crostini.DiskResize.Started", true);
   GetConciergeClient()->ResizeDiskImage(
       request, base::BindOnce(&OnResize, std::move(callback)));
 }
@@ -229,9 +240,12 @@ void OnResize(
     base::Optional<vm_tools::concierge::ResizeDiskImageResponse> response) {
   if (!response) {
     LOG(ERROR) << "Got null response from concierge";
+    EmitResizeResultMetric(
+        vm_tools::concierge::DiskImageStatus::DISK_STATUS_UNKNOWN);
     std::move(callback).Run(false);
   } else if (response->status() ==
              vm_tools::concierge::DiskImageStatus::DISK_STATUS_RESIZED) {
+    EmitResizeResultMetric(response->status());
     std::move(callback).Run(true);
   } else if (response->status() ==
              vm_tools::concierge::DiskImageStatus::DISK_STATUS_IN_PROGRESS) {
@@ -240,6 +254,7 @@ void OnResize(
   } else {
     LOG(ERROR) << "Got unexpected or error status from concierge: "
                << response->status();
+    EmitResizeResultMetric(response->status());
     std::move(callback).Run(false);
   }
 }

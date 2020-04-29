@@ -143,19 +143,36 @@ base::Optional<AppId> AppRegistrar::FindAppWithUrlInScope(
   return best_app_id;
 }
 
+bool AppRegistrar::DoesScopeContainAnyApp(const GURL& scope) const {
+  std::string scope_str = scope.spec();
+
+  for (const auto& app_id : GetAppIds()) {
+    if (!IsLocallyInstalled(app_id))
+      continue;
+
+    std::string app_scope = GetAppScope(app_id).spec();
+    DCHECK(!app_scope.empty());
+
+    if (base::StartsWith(app_scope, scope_str, base::CompareCase::SENSITIVE))
+      return true;
+  }
+
+  return false;
+}
+
 std::vector<AppId> AppRegistrar::FindAppsInScope(const GURL& scope) const {
   std::string scope_str = scope.spec();
 
   std::vector<AppId> in_scope;
   for (const auto& app_id : GetAppIds()) {
-    const base::Optional<GURL>& app_scope = GetAppScopeInternal(app_id);
-    if (!app_scope)
+    if (!IsLocallyInstalled(app_id))
       continue;
 
-    if (!base::StartsWith(app_scope->spec(), scope_str,
-                          base::CompareCase::SENSITIVE)) {
+    std::string app_scope = GetAppScope(app_id).spec();
+    DCHECK(!app_scope.empty());
+
+    if (!base::StartsWith(app_scope, scope_str, base::CompareCase::SENSITIVE))
       continue;
-    }
 
     in_scope.push_back(app_id);
   }

@@ -50,13 +50,11 @@ class HistoryUiFaviconRequestHandlerImpl
       const GURL& page_url,
       int desired_size_in_pixel,
       favicon_base::FaviconRawBitmapCallback callback,
-      HistoryUiFaviconRequestOrigin request_origin_for_uma,
-      const GURL& icon_url_for_uma) override;
+      HistoryUiFaviconRequestOrigin request_origin_for_uma) override;
   void GetFaviconImageForPageURL(
       const GURL& page_url,
       favicon_base::FaviconImageCallback callback,
-      HistoryUiFaviconRequestOrigin request_origin_for_uma,
-      const GURL& icon_url_for_uma) override;
+      HistoryUiFaviconRequestOrigin request_origin_for_uma) override;
 
  private:
   // Called after the first attempt to retrieve the icon bitmap from local

@@ -1496,6 +1496,13 @@ extern const char kProcessSharingWithStrictSiteInstancesDescription[];
 
 extern const char kQueryTilesName[];
 extern const char kQueryTilesDescription[];
+extern const char kQueryTilesCountryCode[];
+extern const char kQueryTilesCountryCodeDescription[];
+extern const char kQueryTilesCountryCodeUS[];
+extern const char kQueryTilesCountryCodeIndia[];
+extern const char kQueryTilesCountryCodeBrazil[];
+extern const char kQueryTilesCountryCodeNigeria[];
+extern const char kQueryTilesCountryCodeIndonesia[];
 
 extern const char kReaderModeHeuristicsName[];
 extern const char kReaderModeHeuristicsDescription[];

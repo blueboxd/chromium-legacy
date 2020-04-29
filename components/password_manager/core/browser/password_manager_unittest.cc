@@ -3367,7 +3367,7 @@ TEST_F(PasswordManagerTest, FillSingleUsername) {
   FormData form_data;
   constexpr FormRendererId form_id(1001);
   form_data.unique_renderer_id = form_id;
-  form_data.url = GURL("example.com");
+  form_data.url = GURL("http://example.com");
   FormFieldData field;
   field.form_control_type = "text";
   constexpr FieldRendererId field_id(10);
@@ -3411,7 +3411,7 @@ TEST_F(PasswordManagerTest,
   FormData form_data;
   constexpr FormRendererId form_id(1001);
   form_data.unique_renderer_id = form_id;
-  form_data.url = GURL("example.com");
+  form_data.url = GURL("http://example.com");
 
   FormFieldData username_field;
   username_field.form_control_type = "text";
@@ -3501,6 +3501,7 @@ TEST_F(PasswordManagerTest, UsernameFirstFlowFillingServerAndLocalPredictions) {
   constexpr FieldRendererId kFieldRendererId(1);
 
   FormData non_password_form;
+  non_password_form.url = GURL("http://example.com");
   FormFieldData field;
   field.form_control_type = "text";
   field.unique_renderer_id = kFieldRendererId;

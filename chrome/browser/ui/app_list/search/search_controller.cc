@@ -113,12 +113,10 @@ void SearchController::OpenResult(ChromeSearchResult* result, int event_flags) {
 
   result->Open(event_flags);
 
-  // Launching apps can take some time. It looks nicer to eagerly dismiss the
-  // app list if |result| permits it. Do not close app list for home launcher.
-  if (result->dismiss_view_on_open() &&
-      (!ash::TabletMode::Get() || !ash::TabletMode::Get()->InTabletMode())) {
+  // Launching apps can take some time. It looks nicer to dismiss the app list.
+  // Do not close app list for home launcher.
+  if (!ash::TabletMode::Get() || !ash::TabletMode::Get()->InTabletMode())
     list_controller_->DismissView();
-  }
 }
 
 void SearchController::InvokeResultAction(ChromeSearchResult* result,

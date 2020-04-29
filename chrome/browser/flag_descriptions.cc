@@ -2599,6 +2599,16 @@ const char kProcessSharingWithStrictSiteInstancesDescription[] =
 const char kQueryTilesName[] = "Show query tiles";
 const char kQueryTilesDescription[] = "Shows query tiles in Chrome";
 
+const char kQueryTilesCountryCode[] = "Country code for getting tiles";
+const char kQueryTilesCountryCodeDescription[] =
+    "When query tiles are enabled, this value determines tiles for which "
+    "country should be displayed.";
+const char kQueryTilesCountryCodeUS[] = "US";
+const char kQueryTilesCountryCodeIndia[] = "IN";
+const char kQueryTilesCountryCodeBrazil[] = "BR";
+const char kQueryTilesCountryCodeNigeria[] = "NG";
+const char kQueryTilesCountryCodeIndonesia[] = "ID";
+
 const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
 const char kReaderModeHeuristicsDescription[] =
     "Determines what pages the Reader Mode infobar is shown on.";

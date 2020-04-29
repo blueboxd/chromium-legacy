@@ -23,7 +23,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/ui/password_check_referrer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -42,6 +44,8 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+using ::testing::_;
 
 namespace {
 
@@ -312,6 +316,36 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   histograms.ExpectUniqueSample(
       password_manager::kPasswordCheckReferrerHistogram,
       password_manager::PasswordCheckReferrer::kPhishGuardDialog, 1);
+
+  // Simulate removing the compromised credentials on mark site as legitimate
+  // action.
+  scoped_refptr<password_manager::MockPasswordStore> password_store =
+      base::WrapRefCounted(static_cast<password_manager::MockPasswordStore*>(
+          PasswordStoreFactory::GetInstance()
+              ->SetTestingFactoryAndUse(
+                  browser()->profile(),
+                  base::BindRepeating(&password_manager::BuildPasswordStore<
+                                      content::BrowserContext,
+                                      password_manager::MockPasswordStore>))
+              .get()));
+  std::vector<password_manager::MatchingReusedCredential> credentials = {
+      {"https://example.test", base::ASCIIToUTF16("username1")}};
+  service->set_saved_passwords_matching_reused_credentials({credentials});
+
+  EXPECT_CALL(*password_store, RemoveCompromisedCredentialsImpl(_, _, _))
+      .Times(1);
+  // Simulates clicking on "Mark site legitimate". Site is no longer dangerous.
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::PAGE_INFO,
+                        WarningAction::MARK_AS_LEGITIMATE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
+          web_contents, PasswordType::SAVED_PASSWORD));
+  EXPECT_EQ(security_state::NONE, GetSecurityLevel(web_contents));
+  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
+            GetVisibleSecurityState(web_contents)->malicious_content_status);
 }
 #endif
 

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/component_export.h"
@@ -65,6 +66,11 @@ class COMPONENT_EXPORT(SMBFS) SmbFsMounter {
 
     // Skip attempting to connect to the share.
     bool skip_connect = false;
+
+    // Have smbfs save/restore the share's password.
+    bool save_restore_password = false;
+    std::string account_hash;
+    std::vector<uint8_t> password_salt;
   };
 
   SmbFsMounter(const std::string& share_path,

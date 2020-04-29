@@ -1356,7 +1356,6 @@ crbug.com/711807 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/norm
 crbug.com/711807 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/inlines-004.xht [ Skip ]
 crbug.com/711807 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/inlines-005.xht [ Skip ]
 crbug.com/711807 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/inlines-006.xht [ Skip ]
-crbug.com/711807 [ Win ] virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/inlines-013.xht [ Failure ]
 crbug.com/711807 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/max-width-applies-to-005.xht [ Failure ]
 crbug.com/711807 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/max-width-applies-to-006.xht [ Failure ]
 crbug.com/711807 virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/max-width-applies-to-013.xht [ Failure ]

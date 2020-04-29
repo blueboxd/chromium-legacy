@@ -53,7 +53,8 @@ class ContentSettingsPref {
                          const ContentSettingsPattern& secondary_pattern,
                          const ResourceIdentifier& resource_identifier,
                          base::Time modified_time,
-                         std::unique_ptr<base::Value>&& value);
+                         std::unique_ptr<base::Value>&& value,
+                         const ContentSettingConstraints& constraints);
 
   // Returns the |last_modified| date of a setting.
   base::Time GetWebsiteSettingLastModified(
@@ -92,7 +93,8 @@ class ContentSettingsPref {
                   const ContentSettingsPattern& secondary_pattern,
                   const ResourceIdentifier& resource_identifier,
                   const base::Time last_modified,
-                  const base::Value* value);
+                  const base::Value* value,
+                  const ContentSettingConstraints& constraints);
 
   // In the debug mode, asserts that |lock_| is not held by this thread. It's
   // ok if some other thread holds |lock_|, as long as it will eventually

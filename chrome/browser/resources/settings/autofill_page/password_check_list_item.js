@@ -22,6 +22,9 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 import {loadTimeData} from '../i18n_setup.m.js';
 import {OpenWindowProxyImpl} from '../open_window_proxy.m.js';
 
+// <if expr="chromeos">
+import {BlockingRequestManager} from './blocking_request_manager.js';
+// </if>
 import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 
 Polymer({
@@ -30,6 +33,11 @@ Polymer({
   _template: html`{__html_template__}`,
 
   properties: {
+    // <if expr="chromeos">
+    /** @type {BlockingRequestManager} */
+    tokenRequestManager: Object,
+    // </if>
+
     /**
      * The password that is being displayed.
      * @type {!PasswordManagerProxy.CompromisedCredential}
@@ -150,7 +158,10 @@ Polymer({
               this.set('item', compromisedCredential);
             },
             error => {
-              this.hidePassword();
+              // <if expr="chromeos">
+              // If no password was found, refresh auth token and retry.
+              this.tokenRequestManager.request(this.showPassword.bind(this));
+              // </if>
             });
   },
 

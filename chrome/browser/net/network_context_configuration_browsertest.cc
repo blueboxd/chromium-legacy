@@ -1578,8 +1578,19 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   // The preference is expected to be reset in incognito mode.
   if (is_incognito()) {
     EXPECT_FALSE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));
+    EXPECT_EQ(
+        static_cast<int>(content_settings::CookieControlsMode::kIncognitoOnly),
+        GetPrefService()->GetInteger(prefs::kCookieControlsMode));
     return;
   }
+
+  // For regular sessions, the kBlockThirdpartyCookies preference gets migrated
+  // to kCookieControlsMode. Reset it so it doesn't interfere with the test.
+  EXPECT_EQ(static_cast<int>(content_settings::CookieControlsMode::kOn),
+            GetPrefService()->GetInteger(prefs::kCookieControlsMode));
+  GetPrefService()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kIncognitoOnly));
 
   // The kBlockThirdPartyCookies pref should carry over to the next session.
   EXPECT_TRUE(GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies));

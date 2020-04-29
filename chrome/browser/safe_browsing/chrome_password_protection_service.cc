@@ -985,6 +985,16 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
           prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
       update->RemoveKey(origin.Serialize());
     }
+
+    // If the site is marked as legitimate and the phished password is
+    // a saved password, remove the matching saved password credentials
+    // from the compromised credentials table as the user has considered
+    // the site safe.
+    if (password_type.account_type() ==
+        ReusedPasswordAccountType::SAVED_PASSWORD) {
+      RemovePhishedSavedPasswordCredential(
+          saved_passwords_matching_reused_credentials());
+    }
     for (auto& observer : observer_list_)
       observer.OnMarkingSiteAsLegitimate(url);
     return;
@@ -1676,6 +1686,26 @@ void ChromePasswordProtectionService::PersistPhishedSavedPasswordCredential(
     password_store->AddCompromisedCredentials(
         {credential.signon_realm, credential.username, base::Time::Now(),
          password_manager::CompromiseType::kPhished});
+  }
+}
+
+void ChromePasswordProtectionService::RemovePhishedSavedPasswordCredential(
+    const std::vector<password_manager::MatchingReusedCredential>&
+        matching_reused_credentials) {
+  if (!profile_)
+    return;
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      GetProfilePasswordStore();
+
+  // Password store can be null in tests.
+  if (!password_store) {
+    return;
+  }
+  for (const auto& credential : matching_reused_credentials) {
+    password_store->RemoveCompromisedCredentials(
+        credential.signon_realm, credential.username,
+        password_manager::RemoveCompromisedCredentialsReason::
+            kMarkSiteAsLegitimate);
   }
 }
 

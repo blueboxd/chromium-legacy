@@ -11,12 +11,15 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/arc_notification_manager_base.h"
+#include "ash/public/cpp/arc_notifications_host_initializer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_notifications.h"
 #include "chrome/browser/apps/app_service/arc_icon_once_loader.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
@@ -44,7 +47,9 @@ class AppServiceProxy;
 class ArcApps : public KeyedService,
                 public apps::PublisherBase,
                 public ArcAppListPrefs::Observer,
-                public arc::ArcIntentHelperObserver {
+                public arc::ArcIntentHelperObserver,
+                public ash::ArcNotificationManagerBase::Observer,
+                public ash::ArcNotificationsHostInitializer::Observer {
  public:
   static ArcApps* Get(Profile* profile);
 
@@ -127,6 +132,19 @@ class ArcApps : public KeyedService,
       const base::Optional<std::string>& package_name) override;
   void OnPreferredAppsChanged() override;
 
+  // ash::ArcNotificationsHostInitializer::Observer overrides.
+  void OnSetArcNotificationsInstance(
+      ash::ArcNotificationManagerBase* arc_notification_manager) override;
+  void OnArcNotificationInitializerDestroyed(
+      ash::ArcNotificationsHostInitializer* initializer) override;
+
+  // ArcNotificationManagerBase::Observer overrides.
+  void OnNotificationUpdated(const std::string& notification_id,
+                             const std::string& app_id) override;
+  void OnNotificationRemoved(const std::string& notification_id) override;
+  void OnArcNotificationManagerDestroyed(
+      ash::ArcNotificationManagerBase* notification_manager) override;
+
   void LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                          int32_t size_hint_in_dip,
                          IconEffects icon_effects,
@@ -174,6 +192,16 @@ class ArcApps : public KeyedService,
 
   ScopedObserver<arc::ArcIntentHelperBridge, arc::ArcIntentHelperObserver>
       arc_intent_helper_observer_{this};
+
+  ScopedObserver<ash::ArcNotificationsHostInitializer,
+                 ash::ArcNotificationsHostInitializer::Observer>
+      notification_initializer_observer_{this};
+
+  ScopedObserver<ash::ArcNotificationManagerBase,
+                 ash::ArcNotificationManagerBase::Observer>
+      notification_observer_{this};
+
+  AppNotifications app_notifications_;
 
   base::WeakPtrFactory<ArcApps> weak_ptr_factory_{this};
 

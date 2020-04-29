@@ -22,7 +22,7 @@ TEST(OriginIdentifierValueMapTest, SetGetValue) {
   map.SetValue(ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsType::COOKIES, std::string(), base::Time(),
-               base::Value(1));
+               base::Value(1), {});
 
   std::unique_ptr<base::Value> expected_value(new base::Value(1));
   EXPECT_TRUE(expected_value->Equals(
@@ -57,7 +57,7 @@ TEST(OriginIdentifierValueMapTest, SetDeleteValue) {
   map.SetValue(ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsType::PLUGINS, "java-plugin", base::Time(),
-               base::Value(1));
+               base::Value(1), {});
 
   int actual_value;
   EXPECT_TRUE(map.GetValue(GURL("http://www.google.com"),
@@ -99,11 +99,11 @@ TEST(OriginIdentifierValueMapTest, Clear) {
   map.SetValue(ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsType::PLUGINS, "java-plugin", base::Time(),
-               base::Value(1));
+               base::Value(1), {});
   map.SetValue(ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsType::COOKIES, std::string(), base::Time(),
-               base::Value(1));
+               base::Value(1), {});
   EXPECT_FALSE(map.empty());
   int actual_value;
   EXPECT_TRUE(map.GetValue(GURL("http://www.google.com"),
@@ -126,12 +126,12 @@ TEST(OriginIdentifierValueMapTest, ListEntryPrecedences) {
   map.SetValue(ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsType::COOKIES, std::string(), base::Time(),
-               base::Value(1));
+               base::Value(1), {});
 
   map.SetValue(ContentSettingsPattern::FromString("www.google.com"),
                ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsType::COOKIES, std::string(), base::Time(),
-               base::Value(2));
+               base::Value(2), {});
 
   int actual_value;
   EXPECT_TRUE(map.GetValue(GURL("http://mail.google.com"),
@@ -165,9 +165,11 @@ TEST(OriginIdentifierValueMapTest, IterateNonempty) {
   base::Time t1 = base::Time::Now();
   base::Time t2 = t1 + base::TimeDelta::FromSeconds(1);
   map.SetValue(pattern, ContentSettingsPattern::Wildcard(),
-               ContentSettingsType::COOKIES, std::string(), t1, base::Value(1));
+               ContentSettingsType::COOKIES, std::string(), t1, base::Value(1),
+               {});
   map.SetValue(sub_pattern, ContentSettingsPattern::Wildcard(),
-               ContentSettingsType::COOKIES, std::string(), t2, base::Value(2));
+               ContentSettingsType::COOKIES, std::string(), t2, base::Value(2),
+               {});
 
   std::unique_ptr<content_settings::RuleIterator> rule_iterator(
       map.GetRuleIterator(ContentSettingsType::COOKIES, std::string(), NULL));
@@ -198,9 +200,13 @@ TEST(OriginIdentifierValueMapTest, UpdateLastModified) {
 
   base::Time t1 = base::Time::Now();
   map.SetValue(pattern, ContentSettingsPattern::Wildcard(),
-               ContentSettingsType::COOKIES, std::string(), t1, base::Value(1));
+               ContentSettingsType::COOKIES, std::string(), t1, base::Value(1),
+               {base::Time(), content_settings::SessionModel::Durable});
   map.SetValue(sub_pattern, ContentSettingsPattern::Wildcard(),
-               ContentSettingsType::COOKIES, std::string(), t1, base::Value(2));
+               ContentSettingsType::COOKIES, std::string(), t1, base::Value(2),
+               {content_settings::GetConstraintExpiration(
+                    base::TimeDelta::FromSeconds(100)),
+                content_settings::SessionModel::UserSession});
 
   {
     std::unique_ptr<content_settings::RuleIterator> rule_iterator(
@@ -212,17 +218,24 @@ TEST(OriginIdentifierValueMapTest, UpdateLastModified) {
     EXPECT_EQ(t1,
               map.GetLastModified(rule.primary_pattern, rule.secondary_pattern,
                                   ContentSettingsType::COOKIES, std::string()));
+    ASSERT_FALSE(rule.expiration.is_null());
+    EXPECT_GT(rule.expiration, base::Time::Now());
+    EXPECT_EQ(rule.session_model, content_settings::SessionModel::UserSession);
+
     rule = rule_iterator->Next();
     EXPECT_EQ(pattern, rule.primary_pattern);
     EXPECT_EQ(1, content_settings::ValueToContentSetting(&rule.value));
     EXPECT_EQ(t1,
               map.GetLastModified(rule.primary_pattern, rule.secondary_pattern,
                                   ContentSettingsType::COOKIES, std::string()));
+    ASSERT_TRUE(rule.expiration.is_null());
+    EXPECT_EQ(rule.session_model, content_settings::SessionModel::Durable);
     ASSERT_FALSE(rule_iterator->HasNext());
   }
   base::Time t2 = t1 + base::TimeDelta::FromSeconds(1);
   map.SetValue(pattern, ContentSettingsPattern::Wildcard(),
-               ContentSettingsType::COOKIES, std::string(), t2, base::Value(3));
+               ContentSettingsType::COOKIES, std::string(), t2, base::Value(3),
+               {});
 
   {
     std::unique_ptr<content_settings::RuleIterator> rule_iterator =

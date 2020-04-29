@@ -51,7 +51,8 @@ bool EphemeralProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    std::unique_ptr<base::Value>&& in_value) {
+    std::unique_ptr<base::Value>&& in_value,
+    const ContentSettingConstraints& /*constraint*/) {
   DCHECK(CalledOnValidThread());
 
   if (!base::Contains(supported_types_, content_type))
@@ -72,7 +73,8 @@ bool EphemeralProvider::SetWebsiteSetting(
   if (value) {
     content_settings_rules_.SetValue(
         primary_pattern, secondary_pattern, content_type, resource_identifier,
-        store_last_modified_ ? clock_->Now() : base::Time(), std::move(*value));
+        store_last_modified_ ? clock_->Now() : base::Time(), std::move(*value),
+        {});
     NotifyObservers(primary_pattern, secondary_pattern, content_type,
                     resource_identifier);
   } else {

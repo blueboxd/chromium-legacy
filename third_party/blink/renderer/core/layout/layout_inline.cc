@@ -1124,8 +1124,9 @@ bool LayoutInline::HitTestCulledInline(HitTestResult& result,
   // offset on the rectangles relatively to the block-start. NG is doing the
   // right thing. Legacy is wrong.
   if (parent_cursor) {
-    DCHECK(ContainingNGBlockFlow());
-    DCHECK_EQ(ContainingNGBlockFlow(), parent_cursor->GetLayoutBlockFlow());
+    // Iterate fragments for |this|, including culled inline, but only that are
+    // descendants of |parent_cursor|.
+    DCHECK(IsDescendantOf(parent_cursor->GetLayoutBlockFlow()));
     NGInlineCursor cursor(*parent_cursor);
     cursor.MoveToIncludingCulledInline(*this);
     for (; cursor; cursor.MoveToNextForSameLayoutObject())

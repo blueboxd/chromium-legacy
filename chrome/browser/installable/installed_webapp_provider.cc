@@ -38,7 +38,8 @@ class InstalledWebappIterator : public content_settings::RuleIterator {
 
     return content_settings::Rule(
         ContentSettingsPattern::FromURLNoWildcard(origin),
-        ContentSettingsPattern::Wildcard(), base::Value(setting));
+        ContentSettingsPattern::Wildcard(), base::Value(setting), base::Time(),
+        content_settings::SessionModel::Durable);
   }
 
  private:
@@ -88,7 +89,8 @@ bool InstalledWebappProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    std::unique_ptr<base::Value>&& value) {
+    std::unique_ptr<base::Value>&& value,
+    const content_settings::ContentSettingConstraints& constraints) {
   // You can't set settings through this provider.
   return false;
 }

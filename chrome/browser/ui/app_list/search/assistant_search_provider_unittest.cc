@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "ash/assistant/model/assistant_suggestions_model.h"
-#include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
@@ -58,9 +57,6 @@ class Expect {
   Expect& Matches(const AssistantSuggestion& starter) {
     EXPECT_EQ(r_.id(), "googleassistant://" + starter.id.ToString());
     EXPECT_EQ(r_.title(), base::UTF8ToUTF16(starter.text));
-    EXPECT_EQ(r_.dismiss_view_on_open(),
-              !ash::assistant::util::IsDeepLinkUrl(starter.action_url) &&
-                  !starter.action_url.is_empty());
     return *this;
   }
 

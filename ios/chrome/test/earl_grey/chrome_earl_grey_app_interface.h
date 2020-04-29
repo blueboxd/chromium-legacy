@@ -108,7 +108,8 @@
 + (void)openNewTab;
 
 // Simulates opening http://www.example.com/ from another application.
-+ (void)simulateExternalAppURLOpening;
+// Returns the opened URL.
++ (NSURL*)simulateExternalAppURLOpening;
 
 // Simulates opening the add account sign-in flow from the web.
 + (void)simulateAddAccountFromWeb;

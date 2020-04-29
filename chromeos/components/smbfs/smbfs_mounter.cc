@@ -137,6 +137,15 @@ void SmbFsMounter::OnMountDone(
   mount_options->allow_ntlm = options_.allow_ntlm;
   mount_options->skip_connect = options_.skip_connect;
 
+  if (options_.save_restore_password) {
+    DCHECK_GE(
+        options_.password_salt.size(),
+        static_cast<size_t>(mojom::CredentialStorageOptions::kMinSaltLength));
+    mount_options->credential_storage_options =
+        mojom::CredentialStorageOptions::New(options_.account_hash,
+                                             options_.password_salt);
+  }
+
   if (options_.kerberos_options) {
     mojom::KerberosConfigPtr kerberos_config = mojom::KerberosConfig::New();
     kerberos_config->source = options_.kerberos_options->source;

@@ -12934,6 +12934,19 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="4" label="Non-Debian OS"/>
 </enum>
 
+<enum name="CrostiniDiskImageStatus">
+<!-- Keep this in sync with concierge_service.proto in ChromeOS. -->
+
+  <int value="0" label="DISK_STATUS_UNKNOWN"/>
+  <int value="1" label="DISK_STATUS_CREATED"/>
+  <int value="2" label="DISK_STATUS_EXISTS"/>
+  <int value="3" label="DISK_STATUS_FAILED"/>
+  <int value="4" label="DISK_STATUS_DOES_NOT_EXIST"/>
+  <int value="5" label="DISK_STATUS_DESTROYED"/>
+  <int value="6" label="DISK_STATUS_IN_PROGRESS"/>
+  <int value="7" label="DISK_STATUS_RESIZED"/>
+</enum>
+
 <enum name="CrostiniExportContainerResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed"/>
@@ -27103,6 +27116,24 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3254" label="EventTimingFirstInputExplicitlyRequested"/>
   <int value="3255" label="CustomScrollbarPercentThickness"/>
   <int value="3256" label="CustomScrollbarPartPercentLength"/>
+  <int value="3257" label="V8InvalidatedArrayBufferDetachingProtector"/>
+  <int value="3258" label="V8InvalidatedArrayConstructorProtector"/>
+  <int value="3259" label="V8InvalidatedArrayIteratorLookupChainProtector"/>
+  <int value="3260" label="V8InvalidatedArraySpeciesLookupChainProtector"/>
+  <int value="3261"
+      label="V8InvalidatedIsConcatSpreadableLookupChainProtector"/>
+  <int value="3262" label="V8InvalidatedMapIteratorLookupChainProtector"/>
+  <int value="3263" label="V8InvalidatedNoElementsProtector"/>
+  <int value="3264" label="V8InvalidatedPromiseHookProtector"/>
+  <int value="3265" label="V8InvalidatedPromiseResolveLookupChainProtector"/>
+  <int value="3266" label="V8InvalidatedPromiseSpeciesLookupChainProtector"/>
+  <int value="3267" label="V8InvalidatedPromiseThenLookupChainProtector"/>
+  <int value="3268" label="V8InvalidatedRegExpSpeciesLookupChainProtector"/>
+  <int value="3269" label="V8InvalidatedSetIteratorLookupChainProtector"/>
+  <int value="3270" label="V8InvalidatedStringIteratorLookupChainProtector"/>
+  <int value="3271"
+      label="V8InvalidatedStringLengthOverflowLookupChainProtector"/>
+  <int value="3272" label="V8InvalidatedTypedArraySpeciesLookupChainProtector"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40807,6 +40838,7 @@ from previous Chrome versions.
   <int value="1276209777" label="ntp-switch-to-existing-tab"/>
   <int value="1277386636" label="QueryInOmnibox:disabled"/>
   <int value="1278512661" label="SmartDimNewMlAgent:disabled"/>
+  <int value="1279422279" label="query-tiles-country-code"/>
   <int value="1279584261" label="enable-carrier-switching"/>
   <int value="1280614081" label="show-overdraw-feedback"/>
   <int value="1281471853" label="UseButtonTranslateBubbleUI:disabled"/>
@@ -57155,6 +57187,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="RemoveCompromisedCredentialsReason">
   <int value="0" label="Update - If the credentials was updated."/>
   <int value="1" label="Remove - If the credentials was removed."/>
+  <int value="2" label="The site was marked as legitimate."/>
 </enum>
 
 <enum name="RendererSchedulerFrameOriginType">

@@ -30,25 +30,19 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
   // Requests favicon bitmap at |page_url| of size |desired_size_in_pixel|.
   // Tries to fetch the icon from local storage and falls back to the Google
   // favicon server if user settings allow to query it using history data.
-  // If a non-empty |icon_url_for_uma| (optional) is passed, it will be used to
-  // record UMA about the grouping of requests to the favicon server.
-  // TODO(crbug.com/978775): Remove |icon_url_for_uma|, it is not used any more.
   virtual void GetRawFaviconForPageURL(
       const GURL& page_url,
       int desired_size_in_pixel,
       favicon_base::FaviconRawBitmapCallback callback,
-      HistoryUiFaviconRequestOrigin request_origin_for_uma,
-      const GURL& icon_url_for_uma = GURL()) = 0;
+      HistoryUiFaviconRequestOrigin request_origin_for_uma) = 0;
 
   // Requests favicon image at |page_url|. The same fallback considerations for
   // GetRawFaviconForPageURL apply.
   // This method is only called by desktop code.
-  // TODO(crbug.com/978775): Remove |icon_url_for_uma|, it is not used any more.
   virtual void GetFaviconImageForPageURL(
       const GURL& page_url,
       favicon_base::FaviconImageCallback callback,
-      HistoryUiFaviconRequestOrigin request_origin_for_uma,
-      const GURL& icon_url_for_uma = GURL()) = 0;
+      HistoryUiFaviconRequestOrigin request_origin_for_uma) = 0;
 };
 
 }  // namespace favicon

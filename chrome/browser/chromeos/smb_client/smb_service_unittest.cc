@@ -823,6 +823,71 @@ TEST_F(SmbServiceWithSmbfsTest, Mount) {
   EXPECT_FALSE(info->use_kerberos());
 }
 
+TEST_F(SmbServiceWithSmbfsTest, Mount_SaveCredentials) {
+  CreateService(profile_);
+  WaitForSetupComplete();
+
+  mojo::Remote<smbfs::mojom::SmbFs> smbfs_remote;
+  MockSmbFsImpl smbfs_impl(smbfs_remote.BindNewPipeAndPassReceiver());
+  mojo::Remote<smbfs::mojom::SmbFsDelegate> smbfs_delegate_remote;
+
+  smbfs::SmbFsHost::Delegate* smbfs_host_delegate = nullptr;
+  std::unique_ptr<MockSmbFsMounter> mock_mounter =
+      std::make_unique<MockSmbFsMounter>();
+  smb_service_->SetSmbFsMounterCreationCallbackForTesting(
+      base::BindLambdaForTesting([&mock_mounter, &smbfs_host_delegate](
+                                     const std::string& share_path,
+                                     const std::string& mount_dir_name,
+                                     const SmbFsShare::MountOptions& options,
+                                     smbfs::SmbFsHost::Delegate* delegate)
+                                     -> std::unique_ptr<smbfs::SmbFsMounter> {
+        EXPECT_EQ(share_path, kShareUrl);
+        EXPECT_EQ(options.username, kTestUser);
+        EXPECT_TRUE(options.workgroup.empty());
+        EXPECT_EQ(options.password, kTestPassword);
+        EXPECT_FALSE(options.kerberos_options);
+        EXPECT_TRUE(options.save_restore_password);
+        EXPECT_FALSE(options.account_hash.empty());
+        EXPECT_FALSE(options.password_salt.empty());
+        smbfs_host_delegate = delegate;
+        return std::move(mock_mounter);
+      }));
+  EXPECT_CALL(*mock_mounter, Mount(_))
+      .WillOnce(
+          [this, &smbfs_host_delegate, &smbfs_remote,
+           &smbfs_delegate_remote](smbfs::SmbFsMounter::DoneCallback callback) {
+            std::move(callback).Run(
+                smbfs::mojom::MountError::kOk,
+                std::make_unique<smbfs::SmbFsHost>(
+                    MakeMountPoint(base::FilePath(kMountPath)),
+                    smbfs_host_delegate, std::move(smbfs_remote),
+                    smbfs_delegate_remote.BindNewPipeAndPassReceiver()));
+          });
+
+  base::RunLoop run_loop;
+  smb_service_->Mount(
+      mount_options_, base::FilePath(kSharePath), kTestUser, kTestPassword,
+      false /* use_chromad_kerberos */,
+      false /* should_open_file_manager_after_mount */,
+      true /* save_credentials */,
+      base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
+        EXPECT_EQ(SmbMountResult::kSuccess, result);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  // Check that the share was saved.
+  SmbPersistedShareRegistry registry(profile_);
+  base::Optional<SmbShareInfo> info = registry.Get(SmbUrl(kShareUrl));
+  ASSERT_TRUE(info);
+  EXPECT_EQ(info->share_url().ToString(), kShareUrl);
+  EXPECT_EQ(info->display_name(), kDisplayName);
+  EXPECT_EQ(info->username(), kTestUser);
+  EXPECT_TRUE(info->workgroup().empty());
+  EXPECT_FALSE(info->use_kerberos());
+  EXPECT_FALSE(info->password_salt().empty());
+}
+
 TEST_F(SmbServiceWithSmbfsTest, Mount_ActiveDirectory) {
   CreateService(ad_profile_);
   WaitForSetupComplete();
@@ -946,11 +1011,12 @@ TEST_F(SmbServiceWithSmbfsTest, PreconfiguredMount) {
 }
 
 TEST_F(SmbServiceWithSmbfsTest, MountSaved) {
+  const std::vector<uint8_t> kSalt = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   // Save share in profile.
   {
     SmbPersistedShareRegistry registry(profile_);
     SmbShareInfo info(SmbUrl(kShareUrl), kDisplayName, kTestUser, kTestDomain,
-                      false /* use_kerberos */);
+                      false /* use_kerberos */, kSalt);
     registry.Save(info);
   }
 
@@ -964,7 +1030,7 @@ TEST_F(SmbServiceWithSmbfsTest, MountSaved) {
   std::unique_ptr<MockSmbFsMounter> mock_mounter =
       std::make_unique<MockSmbFsMounter>();
   smb_service_->SetSmbFsMounterCreationCallbackForTesting(
-      base::BindLambdaForTesting([&mock_mounter, &smbfs_host_delegate](
+      base::BindLambdaForTesting([&mock_mounter, &smbfs_host_delegate, kSalt](
                                      const std::string& share_path,
                                      const std::string& mount_dir_name,
                                      const SmbFsShare::MountOptions& options,
@@ -976,6 +1042,9 @@ TEST_F(SmbServiceWithSmbfsTest, MountSaved) {
         EXPECT_TRUE(options.password.empty());
         EXPECT_EQ(options.allow_ntlm, true);
         EXPECT_FALSE(options.kerberos_options);
+        EXPECT_TRUE(options.save_restore_password);
+        EXPECT_FALSE(options.account_hash.empty());
+        EXPECT_EQ(options.password_salt, kSalt);
         smbfs_host_delegate = delegate;
         return std::move(mock_mounter);
       }));

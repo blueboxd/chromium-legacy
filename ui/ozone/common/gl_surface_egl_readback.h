@@ -44,6 +44,9 @@ class GLSurfaceEglReadback : public gl::PbufferGLSurfaceEGL {
   // failure.
   virtual bool HandlePixels(uint8_t* pixels);
 
+  // Reads pixels with glReadPixels from fbo to |buffer|.
+  void ReadPixels(void* buffer);
+
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<uint8_t[]> pixels_;

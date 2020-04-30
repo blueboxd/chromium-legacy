@@ -739,8 +739,14 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  if (url.host_piece() == chrome::kChromeUIPrintHost &&
-      !profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled)) {
+  if (url.host_piece() == chrome::kChromeUIPrintHost) {
+    if (profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled))
+      return nullptr;
+    // Filter out iframes that just display the preview PDF. Ideally, this would
+    // filter out anything other than chrome://print/, but that does not work
+    // for PrintPreviewUI tests that inject test_loader.html.
+    if (url.path() == "/pdf/index.html")
+      return nullptr;
     return &NewWebUI<printing::PrintPreviewUI>;
   }
 #endif

@@ -1976,7 +1976,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
   NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
-  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
+  constexpr auto kOwnerType = blink::mojom::FrameOwnerElementType::kIframe;
   // Add a subframe and navigate it.
   std::string unique_name0("uniqueName0");
   main_test_rfh()->OnCreateChildFrame(
@@ -2118,7 +2118,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
       blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
-      blink::FrameOwnerElementType::kIframe);
+      blink::mojom::FrameOwnerElementType::kIframe);
   FrameTreeNode* subframe = contents()->GetFrameTree()->root()->child_at(0);
   TestRenderFrameHost* subframe_rfh =
       static_cast<TestRenderFrameHost*>(subframe->current_frame_host());
@@ -3353,7 +3353,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
       blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
-      blink::FrameOwnerElementType::kIframe);
+      blink::mojom::FrameOwnerElementType::kIframe);
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
   const GURL subframe_url("http://www.google.com/#");
@@ -3521,7 +3521,7 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
       blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
-      blink::FrameOwnerElementType::kIframe);
+      blink::mojom::FrameOwnerElementType::kIframe);
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
   const GURL url1_sub("http://foo/subframe");
@@ -4782,7 +4782,7 @@ TEST_F(NavigationControllerTest, SubFrameNavigationUIData) {
       blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
-      blink::FrameOwnerElementType::kIframe);
+      blink::mojom::FrameOwnerElementType::kIframe);
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
   const GURL subframe_url("http://foo1/subframe");

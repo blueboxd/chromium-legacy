@@ -7,6 +7,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
 
 namespace settings {
 
@@ -19,6 +20,11 @@ void SafeBrowsingHandler::RegisterMessages() {
       "getSafeBrowsingRadioManagedState",
       base::BindRepeating(
           &SafeBrowsingHandler::HandleGetSafeBrowsingRadioManagedState,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "validateSafeBrowsingEnhanced",
+      base::BindRepeating(
+          &SafeBrowsingHandler::HandleValidateSafeBrowsingEnhanced,
           base::Unretained(this)));
 }
 
@@ -40,6 +46,14 @@ void SafeBrowsingHandler::HandleGetSafeBrowsingRadioManagedState(
                 site_settings::GetValueForManagedState(state.disabled));
 
   ResolveJavascriptCallback(base::Value(callback_id), result);
+}
+
+void SafeBrowsingHandler::HandleValidateSafeBrowsingEnhanced(
+    const base::ListValue* args) {
+  // TODO(crbug.com/1074499) Remove this logic when Enhanced protection is
+  // considered stable.
+  if (!base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection))
+    profile_->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnhanced, false);
 }
 
 SafeBrowsingRadioManagedState

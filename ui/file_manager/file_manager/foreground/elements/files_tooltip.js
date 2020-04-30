@@ -165,8 +165,10 @@ const FilesTooltip = Polymer({
     }
 
     this.$.label.textContent = label;
-    const rect = target.getBoundingClientRect();
+    const invert = 'invert-tooltip';
+    this.$.label.toggleAttribute('invert', target.hasAttribute(invert));
 
+    const rect = target.getBoundingClientRect();
     let top = rect.top + rect.height;
     if (util.isFilesNg()) {
       top += 8;

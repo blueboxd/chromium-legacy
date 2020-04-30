@@ -45,7 +45,7 @@ suite('NavigationBehaviorTest', function() {
   });
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     // Creates 3 elements with IDs step-(0~2).
     for (let i = 0; i < 3; i++) {
       elements.push(document.createElement('test-element'));

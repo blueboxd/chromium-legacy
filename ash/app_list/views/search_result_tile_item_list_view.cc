@@ -17,6 +17,7 @@
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_notifier.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
@@ -150,6 +151,7 @@ int SearchResultTileItemListView::DoUpdate() {
 
   std::vector<SearchResult*> display_results = GetDisplayResults();
 
+  std::vector<std::string> display_ids;
   std::set<std::string> result_id_removed, result_id_added;
   bool is_result_an_installable_app = false;
   bool is_previous_result_installable_app = false;
@@ -194,6 +196,7 @@ int SearchResultTileItemListView::DoUpdate() {
     GetResultViewAt(i)->SetResult(item);
     GetResultViewAt(i)->set_group_index_in_container_view(app_group_index);
     result_id_added.insert(item->id());
+    display_ids.push_back(item->id());
     is_result_an_installable_app = IsResultAnInstallableApp(item);
 
     if (is_play_store_app_search_enabled_ ||
@@ -210,6 +213,11 @@ int SearchResultTileItemListView::DoUpdate() {
     }
 
     is_previous_result_installable_app = is_result_an_installable_app;
+  }
+
+  auto* notifier = view_delegate()->GetNotifier();
+  if (notifier) {
+    notifier->NotifyResultsUpdated(SearchResultDisplayType::kTile, display_ids);
   }
 
   // Track play store results and start the timer for recording their impression

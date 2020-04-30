@@ -10,7 +10,8 @@ bool NavigatorDelegate::CanOverscrollContent() const {
   return false;
 }
 
-bool NavigatorDelegate::ShouldOverrideUserAgentInNewTabs() {
+bool NavigatorDelegate::
+    ShouldOverrideUserAgentForRendererInitiatedNavigation() {
   return false;
 }
 

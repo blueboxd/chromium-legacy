@@ -10,6 +10,7 @@ import android.os.Bundle;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -42,7 +43,7 @@ public class WebappLauncherActivityTest {
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
 
         Assert.assertNotNull(WebApkInfo.create(intent));
-        Assert.assertNull(WebappLauncherActivity.tryCreateWebappInfo(intent));
+        Robolectric.buildActivity(WebappLauncherActivity.class, intent).create();
         Assert.assertNull(WebApkInfo.create(intent));
     }
 }

@@ -299,6 +299,9 @@ Message Message::CreateFromMessageHandle(ScopedMessageHandle* message_handle) {
     }
 
     if (rv != MOJO_RESULT_OK) {
+      // TODO(https://crbug.com/1073859): Remove.
+      CHECK_EQ(rv, MOJO_RESULT_OK);
+
       // Failed to deserialize handles. Return a null message and leave the
       // |*message_handle| intact.
       return Message();

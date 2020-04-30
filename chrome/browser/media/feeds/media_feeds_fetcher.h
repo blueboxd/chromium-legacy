@@ -30,7 +30,8 @@ class MediaFeedsFetcher {
 
   using MediaFeedCallback =
       base::OnceCallback<void(const schema_org::improved::mojom::EntityPtr&,
-                              Status)>;
+                              Status,
+                              /*was_fetched_via_cache=*/bool)>;
   explicit MediaFeedsFetcher(
       scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory);
   ~MediaFeedsFetcher();

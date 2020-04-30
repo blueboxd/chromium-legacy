@@ -120,22 +120,19 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     @Override
     @CallSuper
-    protected void applyConfigurationOverrides(Context baseContext, Configuration overrideConfig) {
-        super.applyConfigurationOverrides(baseContext, overrideConfig);
-        // Before Android M, an IllegalStateException is thrown for trying to access DisplayManager
-        // before attachBaseContext() has been called. Multi-window wasn't added until N, so it is
-        // unlikely for multi-window to be a large issue on Lollipop.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // We override the smallestScreenWidthDp here for two reasons:
-            // 1. To prevent multi-window from hiding the tabstrip when on a tablet.
-            // 2. To ensure mIsTablet only needs to be set once. Since the override lasts for the
-            //    life of the activity, it will never change via onConfigurationUpdated().
-            // See crbug.com/588838, crbug.com/662338, crbug.com/780593.
-            DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(baseContext);
-            int targetSmallestScreenWidthDp =
-                    DisplayUtil.pxToDp(display, DisplayUtil.getSmallestWidth(display));
-            overrideConfig.smallestScreenWidthDp = targetSmallestScreenWidthDp;
-        }
+    protected boolean applyOverrides(Context baseContext, Configuration overrideConfig) {
+        super.applyOverrides(baseContext, overrideConfig);
+
+        // We override the smallestScreenWidthDp here for two reasons:
+        // 1. To prevent multi-window from hiding the tabstrip when on a tablet.
+        // 2. To ensure mIsTablet only needs to be set once. Since the override lasts for the life
+        //    of the activity, it will never change via onConfigurationUpdated().
+        // See crbug.com/588838, crbug.com/662338, crbug.com/780593.
+        DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(baseContext);
+        int targetSmallestScreenWidthDp =
+                DisplayUtil.pxToDp(display, DisplayUtil.getSmallestWidth(display));
+        overrideConfig.smallestScreenWidthDp = targetSmallestScreenWidthDp;
+        return true;
     }
 
     @Override

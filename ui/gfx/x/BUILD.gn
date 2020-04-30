@@ -89,6 +89,14 @@ component("xprotos") {
   sources = get_target_outputs(":gen_xprotos") + [
               "xproto_internal.h",
               "xproto_types.h",
+              "request_queue.h",
+              "request_queue.cc",
+              "xproto_util.h",
+              "xproto_util.cc",
+              "connection.h",
+              "connection.cc",
+              "x11_switches.cc",
+              "x11_switches.h",
             ]
   configs += [
     ":x11_private_config",
@@ -108,8 +116,6 @@ jumbo_component("x") {
     "x11_error_tracker.h",
     "x11_path.cc",
     "x11_path.h",
-    "x11_switches.cc",
-    "x11_switches.h",
     "x11_types.cc",
     "x11_types.h",
   ]

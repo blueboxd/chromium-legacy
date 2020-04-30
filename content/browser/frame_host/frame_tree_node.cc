@@ -113,7 +113,7 @@ FrameTreeNode::FrameTreeNode(
     bool is_created_by_script,
     const base::UnguessableToken& devtools_frame_token,
     const blink::mojom::FrameOwnerProperties& frame_owner_properties,
-    blink::FrameOwnerElementType owner_type)
+    blink::mojom::FrameOwnerElementType owner_type)
     : frame_tree_(frame_tree),
       navigator_(navigator),
       render_manager_(this, frame_tree->manager_delegate()),

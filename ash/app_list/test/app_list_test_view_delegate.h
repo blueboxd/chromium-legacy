@@ -115,6 +115,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
       AppLaunchedMetricParams* metric_params) override;
   gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
   int GetShelfSize() override;
+  AppListNotifier* GetNotifier() override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

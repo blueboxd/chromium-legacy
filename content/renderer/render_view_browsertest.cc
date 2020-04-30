@@ -1215,6 +1215,22 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
       mojom::CreateFrameWidgetParams::New();
   widget_params->routing_id = kProxyRoutingId + 2;
   widget_params->visual_properties = test_visual_properties;
+
+  mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget;
+  mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>
+      blink_frame_widget_receiver =
+          blink_frame_widget
+              .BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> blink_frame_widget_host;
+  mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetHost>
+      blink_frame_widget_host_receiver =
+          blink_frame_widget_host
+              .BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  widget_params->frame_widget = std::move(blink_frame_widget_receiver);
+  widget_params->frame_widget_host = blink_frame_widget_host.Unbind();
+
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_browser_interface_broker), kProxyRoutingId,

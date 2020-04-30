@@ -571,8 +571,11 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
   const DispatcherHeader* dispatcher_headers =
       reinterpret_cast<const DispatcherHeader*>(header + 1);
 
-  if (header->num_dispatchers > std::numeric_limits<uint16_t>::max())
+  if (header->num_dispatchers > std::numeric_limits<uint16_t>::max()) {
+    // TODO(https://crbug.com/1073859): Remove.
+    CHECK_LE(header->num_dispatchers, std::numeric_limits<uint16_t>::max());
     return MOJO_RESULT_ABORTED;
+  }
 
   if (header->num_dispatchers == 0)
     return MOJO_RESULT_OK;
@@ -585,8 +588,11 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
   size_t data_payload_index =
       sizeof(MessageHeader) +
       header->num_dispatchers * sizeof(DispatcherHeader);
-  if (data_payload_index > header->header_size)
+  if (data_payload_index > header->header_size) {
+    // TODO(https://crbug.com/1073859): Remove.
+    CHECK_LE(data_payload_index, header->header_size);
     return MOJO_RESULT_ABORTED;
+  }
   const char* dispatcher_data = reinterpret_cast<const char*>(
       dispatcher_headers + header->num_dispatchers);
   size_t port_index = 0;
@@ -606,6 +612,9 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
     next_payload_index += dh.num_bytes;
     if (!next_payload_index.IsValid() ||
         header->header_size < next_payload_index.ValueOrDie()) {
+      // TODO(https://crbug.com/1073859): Remove.
+      CHECK(next_payload_index.IsValid());
+      CHECK_GE(header->header_size, next_payload_index.ValueOrDie());
       return MOJO_RESULT_ABORTED;
     }
 
@@ -613,6 +622,9 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
     next_port_index += dh.num_ports;
     if (!next_port_index.IsValid() ||
         message_event_->num_ports() < next_port_index.ValueOrDie()) {
+      // TODO(https://crbug.com/1073859): Remove.
+      CHECK(next_port_index.IsValid());
+      CHECK_GE(message_event_->num_ports(), next_port_index.ValueOrDie());
       return MOJO_RESULT_ABORTED;
     }
 
@@ -621,6 +633,9 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
     next_platform_handle_index += dh.num_platform_handles;
     if (!next_platform_handle_index.IsValid() ||
         msg_handles.size() < next_platform_handle_index.ValueOrDie()) {
+      // TODO(https://crbug.com/1073859): Remove.
+      CHECK(next_platform_handle_index.IsValid());
+      CHECK_GE(msg_handles.size(), next_platform_handle_index.ValueOrDie());
       return MOJO_RESULT_ABORTED;
     }
 
@@ -633,6 +648,8 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
         dh.num_platform_handles);
     if (!dispatchers[i].dispatcher &&
         bad_handle_policy == ExtractBadHandlePolicy::kAbort) {
+      // TODO(https://crbug.com/1073859): Remove.
+      CHECK(dispatchers[i].dispatcher);
       return MOJO_RESULT_ABORTED;
     }
 
@@ -642,8 +659,11 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
     platform_handle_index = next_platform_handle_index.ValueOrDie();
   }
 
-  if (!Core::Get()->AddDispatchersFromTransit(dispatchers, handles))
+  if (!Core::Get()->AddDispatchersFromTransit(dispatchers, handles)) {
+    // TODO(https://crbug.com/1073859): Remove.
+    CHECK(false) << "Failed to add dispatchers.";
     return MOJO_RESULT_ABORTED;
+  }
 
   return MOJO_RESULT_OK;
 }

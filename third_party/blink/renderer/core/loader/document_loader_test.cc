@@ -8,9 +8,9 @@
 
 #include "base/auto_reset.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"

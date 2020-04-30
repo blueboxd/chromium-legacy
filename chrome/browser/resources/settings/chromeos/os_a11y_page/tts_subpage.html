@@ -27,7 +27,7 @@
       }
 
       #previewInput {
-        width: 100%;
+        width: 70%;
         --cr-input-error-display: none;
       }
 
@@ -94,7 +94,10 @@
       </select>
     </div>
     <div class="settings-box continuation">
-      <cr-input id="previewInput" label="$i18n{textToSpeechPreviewInputLabel}"
+      <div id="textToSpeechPreviewInput" class="start settings-box-text">
+        $i18n{textToSpeechPreviewInputLabel}
+      </div>
+      <cr-input id="previewInput" aria-labelledby="textToSpeechPreviewInput"
           value="{{previewText_}}"
           disabled="[[isPreviewing_]]">
         <cr-button on-click="onPreviewTtsClick_"

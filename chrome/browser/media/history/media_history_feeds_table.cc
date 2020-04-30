@@ -460,4 +460,26 @@ bool MediaHistoryFeedsTable::Delete(const int64_t feed_id) {
   return statement.Run() && DB()->GetLastChangeCount() >= 1;
 }
 
+base::Optional<url::Origin> MediaHistoryFeedsTable::GetOrigin(
+    const int64_t feed_id) {
+  DCHECK_LT(0, DB()->transaction_nesting());
+  if (!CanAccessDatabase())
+    return base::nullopt;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, "SELECT url FROM mediaFeed WHERE id = ?"));
+  statement.BindInt64(0, feed_id);
+
+  while (statement.Step()) {
+    GURL url(statement.ColumnString(0));
+
+    if (!url.is_valid())
+      break;
+
+    return url::Origin::Create(url);
+  }
+
+  return base::nullopt;
+}
+
 }  // namespace media_history

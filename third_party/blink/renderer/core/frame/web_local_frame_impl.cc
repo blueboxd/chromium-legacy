@@ -97,8 +97,8 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -2304,8 +2304,8 @@ WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
     // FeaturePolicy. For certain flags such as "downloads", dedicated API
     // should be used (see IsAllowedToDownload()).
     auto* local_owner = GetFrame()->DeprecatedLocalOwner();
-    if (local_owner &&
-        local_owner->OwnerType() == FrameOwnerElementType::kIframe) {
+    if (local_owner && local_owner->OwnerType() ==
+                           mojom::blink::FrameOwnerElementType::kIframe) {
       flags |= To<HTMLIFrameElement>(local_owner)
                    ->sandbox_flags_converted_to_feature_policies();
     }

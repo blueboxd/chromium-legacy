@@ -69,6 +69,7 @@ class TestAppListClient : public AppListClient {
       const base::string16& trimmed_query,
       const SearchResultIdWithPositionIndices& results,
       int position_index) override {}
+  AppListNotifier* GetNotifier() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAppListClient);

@@ -34,9 +34,9 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
@@ -136,7 +136,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
                      blink::WebTreeScopeType::kDocument, frame_name,
                      frame_unique_name, false, base::UnguessableToken::Create(),
                      blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
-                     blink::FrameOwnerElementType::kIframe);
+                     blink::mojom::FrameOwnerElementType::kIframe);
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());
 }

@@ -38,6 +38,11 @@ class ServiceConnectionImpl : public ServiceConnection {
       mojom::MachineLearningService::LoadFlatBufferModelCallback
           result_callback) override;
 
+  void LoadTextClassifier(
+      mojo::PendingReceiver<mojom::TextClassifier> receiver,
+      mojom::MachineLearningService::LoadTextClassifierCallback
+          result_callback) override;
+
  private:
   // Binds the top level interface |machine_learning_service_| to an
   // implementation in the ML Service daemon, if it is not already bound. The
@@ -77,6 +82,15 @@ void ServiceConnectionImpl::LoadFlatBufferModel(
   BindMachineLearningServiceIfNeeded();
   machine_learning_service_->LoadFlatBufferModel(
       std::move(spec), std::move(receiver), std::move(result_callback));
+}
+
+void ServiceConnectionImpl::LoadTextClassifier(
+    mojo::PendingReceiver<mojom::TextClassifier> receiver,
+    mojom::MachineLearningService::LoadTextClassifierCallback result_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindMachineLearningServiceIfNeeded();
+  machine_learning_service_->LoadTextClassifier(std::move(receiver),
+                                                std::move(result_callback));
 }
 
 void ServiceConnectionImpl::BindMachineLearningServiceIfNeeded() {

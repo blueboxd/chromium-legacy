@@ -217,9 +217,6 @@ std::string HatsDialog::GetDialogArgs() const {
 
 void HatsDialog::OnDialogClosed(const std::string& json_retval) {
   delete this;
-  // TODO(crbug/1055644): Since supervised users can't use incognito mode, we
-  // need to manually delete the HaTS cookie so that these users can see the
-  // survey more than once.
 }
 
 void HatsDialog::OnCloseContents(WebContents* source, bool* out_close_dialog) {

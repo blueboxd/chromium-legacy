@@ -165,6 +165,8 @@ jumbo_source_set("browser_sources") {
     "download_manager_delegate.h",
     "download_request_utils.h",
     "download_utils.h",
+    "eye_dropper.h",
+    "eye_dropper_listener.h",
     "favicon_status.cc",
     "favicon_status.h",
     "feature_observer_client.h",

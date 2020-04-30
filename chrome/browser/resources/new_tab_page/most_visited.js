@@ -660,6 +660,16 @@ class MostVisitedElement extends PolymerElement {
   }
 
   /**
+   * @param {!Event} e
+   * @private
+   */
+  onTileClick_(e) {
+    this.pageHandler_.onMostVisitedTileNavigation(
+        this.$.tiles.itemForElement(e.target),
+        this.$.tiles.indexForElement(e.target));
+  }
+
+  /**
    * @param {!KeyboardEvent} e
    * @private
    */
@@ -775,7 +785,7 @@ class MostVisitedElement extends PolymerElement {
   /** @private */
   onTilesRendered_() {
     this.pageHandler_.onMostVisitedTilesRendered(
-        BrowserProxy.getInstance().now());
+        this.tiles_, BrowserProxy.getInstance().now());
   }
 }
 

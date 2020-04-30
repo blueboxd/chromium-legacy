@@ -258,22 +258,22 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   } else {
     if (frame_tree_node) {
       switch (frame_tree_node->frame_owner_element_type()) {
-        case blink::FrameOwnerElementType::kObject:
+        case blink::mojom::FrameOwnerElementType::kObject:
           new_request->destination =
               network::mojom::RequestDestination::kObject;
           break;
-        case blink::FrameOwnerElementType::kEmbed:
+        case blink::mojom::FrameOwnerElementType::kEmbed:
           new_request->destination = network::mojom::RequestDestination::kEmbed;
           break;
-        case blink::FrameOwnerElementType::kIframe:
+        case blink::mojom::FrameOwnerElementType::kIframe:
           new_request->destination =
               network::mojom::RequestDestination::kIframe;
           break;
-        case blink::FrameOwnerElementType::kFrame:
+        case blink::mojom::FrameOwnerElementType::kFrame:
           new_request->destination = network::mojom::RequestDestination::kFrame;
           break;
-        case blink::FrameOwnerElementType::kPortal:
-        case blink::FrameOwnerElementType::kNone:
+        case blink::mojom::FrameOwnerElementType::kPortal:
+        case blink::mojom::FrameOwnerElementType::kNone:
           NOTREACHED();
           break;
       }

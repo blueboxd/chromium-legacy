@@ -1067,12 +1067,10 @@ const char kHardwareMediaKeyHandlingDescription[] =
     "Enables using media keys to control the active media session. This "
     "requires MediaSessionService to be enabled too";
 
-const char kHeavyAdPrivacyMitigationsOptOutName[] =
-    "Disable heavy ad privacy mitigations";
-const char kHeavyAdPrivacyMitigationsOptOutDescription[] =
-    "Disables privacy mitigations for the heavy ad intervention. This makes "
-    "the intervention deterministic."
-    "This is intended to be used for debugging only.";
+const char kHeavyAdPrivacyMitigationsName[] = "Heavy ad privacy mitigations";
+const char kHeavyAdPrivacyMitigationsDescription[] =
+    "Enables privacy mitigations for the heavy ad intervention. Disabling "
+    "this makes the intervention deterministic. Defaults to enabled.";
 
 const char kHeavyAdInterventionName[] = "Heavy Ad Intervention";
 const char kHeavyAdInterventionDescription[] =
@@ -2614,6 +2612,9 @@ const char kQueryTilesCountryCodeIndia[] = "IN";
 const char kQueryTilesCountryCodeBrazil[] = "BR";
 const char kQueryTilesCountryCodeNigeria[] = "NG";
 const char kQueryTilesCountryCodeIndonesia[] = "ID";
+const char kQueryTilesInstantFetch[] = "Query tile instant fetch";
+const char kQueryTilesInstantFetchDescription[] =
+    "Immediately schedule background task to fetch query tiles";
 
 const char kReaderModeHeuristicsName[] = "Reader Mode triggering";
 const char kReaderModeHeuristicsDescription[] =

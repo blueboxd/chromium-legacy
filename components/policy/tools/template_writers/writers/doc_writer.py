@@ -33,20 +33,6 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
   files.
   '''
 
-  def _MapListToString(self, item_map, items):
-    '''Creates a comma-separated list.
-
-    Args:
-      item_map: A dictionary containing all the elements of 'items' as
-        keys.
-      items: A list of arbitrary items.
-
-    Returns:
-      Looks up each item of 'items' in 'item_maps' and concatenates the
-      resulting items into a comma-separated list.
-    '''
-    return ', '.join([item_map[x] for x in items])
-
   def _AddTextWithLinks(self, parent, text):
     '''Parse a string for URLs and add it to a DOM node with the URLs replaced
     with <a> HTML links.
@@ -546,9 +532,9 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     for supported_on in supported_on_list:
       text = []
       product = supported_on['product']
-      platforms = supported_on['platforms']
+      platform = supported_on['platform']
       text.append(self._PRODUCT_MAP[product])
-      text.append('(%s)' % self._MapListToString(self._PLATFORM_MAP, platforms))
+      text.append('(%s)' % (self._PLATFORM_MAP[platform]))
       if supported_on['since_version']:
         since_version = self.GetLocalizedMessage('since_version')
         text.append(since_version.replace('$6', supported_on['since_version']))

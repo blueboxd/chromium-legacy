@@ -327,9 +327,12 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
                        gfx::Rect(0, 3, 100, 100), SK_ColorWHITE);
-    CreateFullscreenCandidateYUVVideoQuad(
+    auto* first_video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+    // Set the protected video flag will force DCLayerOverlay to use hw overlay
+    first_video_quad->protected_video_type =
+        gfx::ProtectedVideoType::kHardwareProtected;
 
     SharedQuadState* second_shared_state =
         pass->CreateAndAppendSharedQuadState();
@@ -353,6 +356,7 @@ TEST_F(DCLayerOverlayTest, Occluded) {
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters, nullptr,
         &dc_layer_list, &damage_rect_, &content_bounds_);
+
     EXPECT_EQ(2U, dc_layer_list.size());
     EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
     EXPECT_EQ(-1, dc_layer_list.front().z_order);
@@ -367,9 +371,12 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     CreateOpaqueQuadAt(resource_provider_.get(),
                        pass->shared_quad_state_list.back(), pass.get(),
                        gfx::Rect(3, 3, 100, 100), SK_ColorWHITE);
-    CreateFullscreenCandidateYUVVideoQuad(
+    auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+    // Set the protected video flag will force DCLayerOverlay to use hw overlay
+    video_quad->protected_video_type =
+        gfx::ProtectedVideoType::kHardwareProtected;
 
     SharedQuadState* second_shared_state =
         pass->CreateAndAppendSharedQuadState();
@@ -392,6 +399,7 @@ TEST_F(DCLayerOverlayTest, Occluded) {
         resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
         render_pass_filters, render_pass_backdrop_filters, nullptr,
         &dc_layer_list, &damage_rect_, &content_bounds_);
+
     EXPECT_EQ(2U, dc_layer_list.size());
     EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
     EXPECT_EQ(-1, dc_layer_list.front().z_order);
@@ -854,6 +862,53 @@ TEST_F(DCLayerOverlayTest, UnderlayDamageRectWithQuadOnTopUnchanged) {
       EXPECT_EQ(kOverlayBottomRightRect, damage_rect_);
     else if (i == 2)
       EXPECT_EQ(gfx::Rect(), damage_rect_);
+  }
+}
+
+// If there are multiple overlay quad candidates, the one with the largest
+// size should be promoted to overlay.
+TEST_F(DCLayerOverlayTest, DifferentOverlaySizes) {
+  base::test::ScopedFeatureList feature_list;
+  {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    pass->shared_quad_state_list.back();
+    CreateOpaqueQuadAt(resource_provider_.get(),
+                       pass->shared_quad_state_list.back(), pass.get(),
+                       gfx::Rect(0, 0, 256, 256), SK_ColorWHITE);
+
+    auto* video_quad = CreateFullscreenCandidateYUVVideoQuad(
+        resource_provider_.get(), child_resource_provider_.get(),
+        child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+    gfx::Rect rect(10, 10, 80, 80);
+    video_quad->rect = rect;
+    video_quad->visible_rect = rect;
+
+    auto* second_video_quad = CreateFullscreenCandidateYUVVideoQuad(
+        resource_provider_.get(), child_resource_provider_.get(),
+        child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+    gfx::Rect second_rect(100, 100, 120, 120);
+    second_video_quad->rect = second_rect;
+    second_video_quad->visible_rect = second_rect;
+
+    DCLayerOverlayList dc_layer_list;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
+    damage_rect_ = gfx::Rect(0, 0, 220, 220);
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+        render_pass_filters, render_pass_backdrop_filters, nullptr,
+        &dc_layer_list, &damage_rect_, &content_bounds_);
+
+    // Only one overlay is allowed.
+    EXPECT_EQ(1U, dc_layer_list.size());
+    EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
+    EXPECT_EQ(gfx::Rect(0, 0, 220, 220), damage_rect_);
+
+    // The second video with a larger size should be prmoted to overlay.
+    EXPECT_EQ(second_rect, dc_layer_list.front().quad_rect);
   }
 }
 

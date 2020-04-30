@@ -135,7 +135,7 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
       blink::WebTreeScopeType::kDocument, "", "", true,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(), false,
-      blink::FrameOwnerElementType::kPortal);
+      blink::mojom::FrameOwnerElementType::kPortal);
   outer_node->AddObserver(this);
 
   bool web_contents_created = false;

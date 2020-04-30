@@ -98,6 +98,21 @@ class TileManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
+  void GetSingleTile(base::RepeatingClosure closure,
+                     const std::string& id,
+                     Tile expected) {
+    manager()->GetTile(
+        id, base::BindOnce(&TileManagerTest::OnGetTile, base::Unretained(this),
+                           std::move(closure), std::move(expected)));
+  }
+
+  void OnGetTile(base::RepeatingClosure closure,
+                 base::Optional<Tile> expected,
+                 base::Optional<Tile> actual) {
+    EXPECT_TRUE(test::AreTilesIdentical(expected.value(), actual.value()));
+    std::move(closure).Run();
+  }
+
  protected:
   TileManager* manager() { return manager_.get(); }
   MockTileStore* tile_store() { return tile_store_; }
@@ -207,6 +222,7 @@ TEST_F(TileManagerTest, InitAndLoadSuccess) {
   base::RunLoop loop;
   Init(loop.QuitClosure(), TileGroupStatus::kSuccess);
   GetTiles(loop.QuitClosure(), expected);
+  GetSingleTile(loop.QuitClosure(), "guid-1-1", expected[0]);
   loop.Run();
 }
 

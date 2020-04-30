@@ -68,6 +68,13 @@ bool ValidateReplaceUrl(
   return true;
 }
 
+bool ValidateAppendToQuery(
+    const fuchsia::web::UrlRequestRewriteAppendToQuery& append_to_query) {
+  if (!append_to_query.has_query())
+    return false;
+  return true;
+}
+
 bool ValidateRewrite(const fuchsia::web::UrlRequestRewrite& rewrite) {
   switch (rewrite.Which()) {
     case fuchsia::web::UrlRequestRewrite::Tag::kAddHeaders:
@@ -78,6 +85,8 @@ bool ValidateRewrite(const fuchsia::web::UrlRequestRewrite& rewrite) {
       return ValidateSubstituteQueryPattern(rewrite.substitute_query_pattern());
     case fuchsia::web::UrlRequestRewrite::Tag::kReplaceUrl:
       return ValidateReplaceUrl(rewrite.replace_url());
+    case fuchsia::web::UrlRequestRewrite::Tag::kAppendToQuery:
+      return ValidateAppendToQuery(rewrite.append_to_query());
     default:
       // This is to prevent build breakage when adding new rewrites to the FIDL
       // definition. This can also happen if the client sends an empty rewrite,

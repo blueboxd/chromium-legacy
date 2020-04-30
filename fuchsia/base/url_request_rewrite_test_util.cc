@@ -64,4 +64,14 @@ fuchsia::web::UrlRequestRewrite CreateRewriteReplaceUrl(
   return rewrite;
 }
 
+fuchsia::web::UrlRequestRewrite CreateRewriteAppendToQuery(
+    base::StringPiece query) {
+  fuchsia::web::UrlRequestRewriteAppendToQuery append_to_query;
+  append_to_query.set_query(query.as_string());
+  fuchsia::web::UrlRequestRewrite rewrite;
+  rewrite.set_append_to_query(std::move(append_to_query));
+
+  return rewrite;
+}
+
 }  // namespace cr_fuchsia

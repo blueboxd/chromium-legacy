@@ -12,6 +12,7 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_notifier.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
@@ -147,6 +148,8 @@ int SuggestionChipContainerView::DoUpdate() {
     }
   }
 
+  std::vector<std::string> display_ids;
+
   // Update search results here, but wait until layout to add them as child
   // views when we know this view's bounds.
   for (size_t i = 0; i < static_cast<size_t>(
@@ -154,6 +157,14 @@ int SuggestionChipContainerView::DoUpdate() {
        ++i) {
     suggestion_chip_views_[i]->SetResult(
         i < display_results.size() ? display_results[i] : nullptr);
+    if (i < display_results.size()) {
+      display_ids.push_back(display_results[i]->id());
+    }
+  }
+
+  auto* notifier = view_delegate()->GetNotifier();
+  if (notifier) {
+    notifier->NotifyResultsUpdated(SearchResultDisplayType::kChip, display_ids);
   }
 
   Layout();

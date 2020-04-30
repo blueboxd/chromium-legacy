@@ -1699,20 +1699,17 @@ TEST_F(FrameSequenceTrackerTest, TerminationWithNullPresentationTimeStamp) {
   EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
 }
 
-// Test that a tracker is terminated after 10 submitted frames, remove this
+// Test that a tracker is terminated after 3 submitted frames, remove this
 // once crbug.com/1072482 is fixed.
-TEST_F(FrameSequenceTrackerTest, TerminationAfterTenSubmissions1) {
+TEST_F(FrameSequenceTrackerTest, TerminationAfterThreeSubmissions1) {
   GenerateSequence("b(1)s(1)e(1,0)");
   collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
-  GenerateSequence(
-      "b(2)s(2)e(2,0)b(3)s(3)e(3,0)b(4)s(4)e(4,0)b(5)s(5)e(5,0)b(6)s(6)e(6,0)b("
-      "7)s(7)e(7,0)b(8)s(8)e(8,0)b(9)s(9)e(9,0)b(10)s(10)e(10,0)b(11)s(11)e(11,"
-      "0)b(12)s(12)e(12,0)");
+  GenerateSequence("b(2)s(2)e(2,0)b(3)s(3)e(3,0)b(4)s(4)e(4,0)b(5)s(5)e(5,0)");
   EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
 }
 
-TEST_F(FrameSequenceTrackerTest, TerminationAfterTenSubmissions2) {
+TEST_F(FrameSequenceTrackerTest, TerminationAfterThreeSubmissions2) {
   GenerateSequence("b(1)");
   auto args = CreateBeginFrameArgs(1u, 1u);
   // Ack to an impl frame that doesn't exist in this tracker.
@@ -1721,19 +1718,16 @@ TEST_F(FrameSequenceTrackerTest, TerminationAfterTenSubmissions2) {
   GenerateSequence("e(1,0)");
   collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
-  GenerateSequence(
-      "b(2)s(1)e(2,0)b(3)s(2)e(3,0)b(4)s(3)e(4,0)b(5)s(4)e(5,0)b(6)s(5)e(6,0)b("
-      "7)s(6)e(7,0)b(8)s(7)e(8,0)b(9)s(8)e(9,0)b(10)s(9)e(10,0)b(11)s(10)e(11,"
-      "0)");
+  GenerateSequence("b(2)s(1)e(2,0)b(3)s(2)e(3,0)b(4)s(3)e(4,0)");
   EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
 }
 
-TEST_F(FrameSequenceTrackerTest, TerminationAfterTenSubmissions3) {
+TEST_F(FrameSequenceTrackerTest, TerminationAfterThreeSubmissions3) {
   GenerateSequence(
       "b(1)s(1)e(1,0)P(1)b(2)s(2)e(2,0)P(2)b(3)s(3)e(3,0)P(3)b(4)");
   collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
-  GenerateSequence("s(11)");
+  GenerateSequence("s(4)");
   EXPECT_EQ(NumberOfRemovalTrackers(), 1u);
 }
 

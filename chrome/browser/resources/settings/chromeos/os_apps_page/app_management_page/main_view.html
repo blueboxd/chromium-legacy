@@ -4,17 +4,17 @@
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 
 <dom-module id="app-management-main-view">
   <template>
-    <style include="app-management-shared-css">
+    <style include="cr-shared-style app-management-shared-css">
       .app-management-item-arrow {
         margin-inline-end: 8px;
         padding: 12px;
       }
 
       #no-apps-label {
-        @apply --cr-secondary-text;
         text-align: center;
       }
     </style>
@@ -33,7 +33,7 @@
     </div>
 
     <template is="dom-if" if="[[isAppListEmpty_(appList_)]]">
-      <div id="no-apps-label">
+      <div id="no-apps-label" class="cr-secondary-text">
         $i18n{appManagementNoAppsFound}
       </div>
     </template>

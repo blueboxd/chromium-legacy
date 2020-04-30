@@ -130,6 +130,10 @@ void CastRunner::LaunchPendingComponent(PendingCastComponent* pending_component,
                                         CastComponent::Params params) {
   WebContentRunner* component_owner = main_context_.get();
 
+  // Save the list of CORS exemptions so that they can be used in Context
+  // creation parameters.
+  cors_exempt_headers_ = pending_component->TakeCorsExemptHeaders();
+
   const bool is_isolated =
       params.application_config
           .has_content_directories_for_isolated_application();
@@ -214,6 +218,11 @@ fuchsia::web::CreateContextParams CastRunner::GetCommonContextParams() {
           fuchsia::web::ContextFeatureFlags::VULKAN);
     params.clear_playready_key_system();
   }
+
+  // If there is a list of headers to exempt from CORS checks, pass the list
+  // along to the Context.
+  if (!cors_exempt_headers_.empty())
+    params.set_cors_exempt_headers(cors_exempt_headers_);
 
   return params;
 }

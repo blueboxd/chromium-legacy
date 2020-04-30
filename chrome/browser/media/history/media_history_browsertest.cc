@@ -308,6 +308,36 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
     run_loop.Run();
   }
 
+  static std::set<url::Origin> GetExpectedAssociatedOrigins() {
+    std::set<url::Origin> origins;
+
+    origins.insert(url::Origin::Create(GURL("https://www.google.com")));
+    origins.insert(url::Origin::Create(GURL("https://www.google1.com")));
+    origins.insert(url::Origin::Create(GURL("https://www.google2.com")));
+    origins.insert(url::Origin::Create(GURL("https://www.google3.com")));
+    origins.insert(url::Origin::Create(GURL("https://www.example.org")));
+
+    return origins;
+  }
+
+  static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems() {
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
+
+    {
+      auto item = media_feeds::mojom::MediaFeedItem::New();
+      item->type = media_feeds::mojom::MediaFeedItemType::kVideo;
+      item->name = base::ASCIIToUTF16("The Video");
+      item->date_published = base::Time::FromDeltaSinceWindowsEpoch(
+          base::TimeDelta::FromMinutes(20));
+      item->is_family_friendly = false;
+      item->action_status =
+          media_feeds::mojom::MediaFeedItemActionStatus::kActive;
+      items.push_back(std::move(item));
+    }
+
+    return items;
+  }
+
   Browser* CreateBrowserFromParam() {
     if (GetParam() == TestState::kIncognito) {
       return CreateIncognitoBrowser();

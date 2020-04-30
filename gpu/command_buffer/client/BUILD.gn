@@ -286,6 +286,7 @@ source_set("webgpu_sources") {
     ":gles2_implementation",
     ":webgpu_interface",
     "//gpu/command_buffer/common:webgpu",
+    "//third_party/dawn/src/dawn:dawn_proc",
   ]
   public_deps = [ "//third_party/dawn/src/dawn:dawn_headers" ]
   sources = [

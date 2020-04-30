@@ -24,10 +24,10 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/arc_file_tasks.h"
-#include "chrome/browser/chromeos/file_manager/crostini_file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/guest_os_file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
 #include "chrome/browser/chromeos/file_manager/web_file_tasks.h"
@@ -499,8 +499,8 @@ bool ExecuteFileTask(Profile* profile,
   }
 
   if (task.task_type == TASK_TYPE_CROSTINI_APP) {
-    DCHECK_EQ(kCrostiniAppActionID, task.action_id);
-    ExecuteCrostiniTask(profile, task, file_urls, std::move(done));
+    DCHECK_EQ(kGuestOsAppActionID, task.action_id);
+    ExecuteGuestOsTask(profile, task, file_urls, std::move(done));
     return true;
   }
 
@@ -777,12 +777,11 @@ void FindExtensionAndAppTasks(
   // be used in the same manifest.json.
   FindFileBrowserHandlerTasks(profile, file_urls, result_list_ptr);
 
-  // 5. Find and append Crostini tasks.
-  FindCrostiniTasks(
-      profile, entries, result_list_ptr,
-      // Done. Apply post-filtering and callback.
-      base::BindOnce(PostProcessFoundTasks, profile, entries,
-                     std::move(callback), std::move(result_list)));
+  // 5. Find and append Guest OS tasks.
+  FindGuestOsTasks(profile, entries, result_list_ptr,
+                   // Done. Apply post-filtering and callback.
+                   base::BindOnce(PostProcessFoundTasks, profile, entries,
+                                  std::move(callback), std::move(result_list)));
 }
 
 void FindAllTypesOfTasks(Profile* profile,

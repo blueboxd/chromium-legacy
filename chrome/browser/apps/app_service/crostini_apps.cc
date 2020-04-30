@@ -108,7 +108,9 @@ void CrostiniApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
     apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
-  for (const auto& pair : registry_->GetRegisteredApps()) {
+  for (const auto& pair :
+       registry_->GetRegisteredApps(guest_os::GuestOsRegistryService::VmType::
+                                        ApplicationList_VmType_TERMINA)) {
     const std::string& app_id = pair.first;
     const guest_os::GuestOsRegistryService::Registration& registration =
         pair.second;

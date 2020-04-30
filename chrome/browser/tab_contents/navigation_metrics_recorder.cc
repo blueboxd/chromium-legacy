@@ -4,7 +4,9 @@
 
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -27,7 +29,9 @@
 
 NavigationMetricsRecorder::NavigationMetricsRecorder(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      site_engagement_service_(SiteEngagementService::Get(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
 #if defined(OS_ANDROID)
   // The site isolation synthetic field trial is only needed on Android, as on
   // desktop it would be unnecessarily set for all users.
@@ -77,11 +81,19 @@ void NavigationMetricsRecorder::DidFinishNavigation(
   content::NavigationEntry* last_committed_entry =
       web_contents()->GetController().GetLastCommittedEntry();
 
+  const GURL url = last_committed_entry->GetVirtualURL();
   Profile* profile = Profile::FromBrowserContext(context);
   navigation_metrics::RecordMainFrameNavigation(
-      last_committed_entry->GetVirtualURL(),
-      navigation_handle->IsSameDocument(), profile->IsOffTheRecord(),
+      url, navigation_handle->IsSameDocument(), profile->IsOffTheRecord(),
       ProfileMetrics::GetBrowserProfileType(profile));
+
+  if (url.SchemeIsHTTPOrHTTPS() && !navigation_handle->IsSameDocument() &&
+      !navigation_handle->IsDownload() && !profile->IsOffTheRecord()) {
+    blink::mojom::EngagementLevel engagement_level =
+        site_engagement_service_->GetEngagementLevel(url);
+    UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrame.SiteEngagementLevel",
+                              engagement_level);
+  }
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(NavigationMetricsRecorder)

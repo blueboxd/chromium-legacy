@@ -256,7 +256,17 @@ PagePopupController* ColorChooserPopupUIController::CreatePagePopupController(
 
 void ColorChooserPopupUIController::EyeDropperResponseHandler(bool success,
                                                               uint32_t color) {
-  // TODO(crbug.com/992297): update the color popup with the chosen value.
+  eye_dropper_chooser_.reset();
+
+  if (!popup_)
+    return;
+  // Notify the popup that there is a response from the eye dropper.
+  scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
+  PagePopupClient::AddString("window.updateData = {\n", data.get());
+  AddProperty("success", success, data.get());
+  AddProperty("color", Color(color).Serialized(), data.get());
+  PagePopupClient::AddString("}\n", data.get());
+  popup_->PostMessageToPopup(String::FromUTF8(data->Data(), data->size()));
 }
 
 void ColorChooserPopupUIController::OpenEyeDropper() {

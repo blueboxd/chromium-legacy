@@ -1183,17 +1183,15 @@ void WriteResponse(ServiceWorkerResponseWriter* writer,
                    const std::string& headers,
                    IOBuffer* body,
                    int length) {
-  std::unique_ptr<net::HttpResponseInfo> info =
-      std::make_unique<net::HttpResponseInfo>();
-  info->request_time = base::Time::Now();
-  info->response_time = base::Time::Now();
-  info->was_cached = false;
-  info->headers = new net::HttpResponseHeaders(headers);
-  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(info));
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->request_time = base::Time::Now();
+  response_head->response_time = base::Time::Now();
+  response_head->headers = new net::HttpResponseHeaders(headers);
+  response_head->content_length = length;
 
   int rv = -1234;
-  writer->WriteInfo(info_buffer.get(), base::BindOnce(&OnIOComplete, &rv));
+  writer->WriteResponseHead(*response_head, length,
+                            base::BindOnce(&OnIOComplete, &rv));
   RunNestedUntilIdle();
   EXPECT_LT(0, rv);
 

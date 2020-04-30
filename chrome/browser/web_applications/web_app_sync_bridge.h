@@ -70,8 +70,8 @@ class WebAppSyncBridge : public AppRegistryController,
   void SetAppUserDisplayMode(const AppId& app_id,
                              DisplayMode user_display_mode) override;
   void SetAppIsDisabled(const AppId& app_id, bool is_disabled) override;
-  void SetAppIsLocallyInstalledForTesting(const AppId& app_id,
-                                          bool is_locally_installed) override;
+  void SetAppIsLocallyInstalled(const AppId& app_id,
+                                bool is_locally_installed) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;
 
   // An access to read-only registry. Does an upcast to read-only type.

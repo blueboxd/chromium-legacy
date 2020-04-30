@@ -158,7 +158,7 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
       const bool was_fetched_from_cache,
       const std::vector<media_feeds::mojom::MediaImagePtr>& logos,
       const std::string& display_name,
-      const std::vector<url::Origin>& associated_origins);
+      const std::set<url::Origin>& associated_origins);
 
   std::vector<media_feeds::mojom::MediaFeedItemPtr>
   GetItemsForMediaFeedForDebug(const int64_t feed_id);
@@ -171,7 +171,7 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
 
   void UpdateMediaFeedDisplayTime(const int64_t feed_id);
 
-  void ResetMediaFeed(const int64_t feed_id,
+  void ResetMediaFeed(const url::Origin& origin,
                       media_feeds::mojom::ResetReason reason);
 
   // Cancels pending DB transactions. Should only be called on the UI thread.

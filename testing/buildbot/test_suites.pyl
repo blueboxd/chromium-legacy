@@ -4900,16 +4900,25 @@
     'ios_code_coverage_tests': {
       'ios_common_tests': {
         'variants': [
+          'SIM_IPAD_AIR_2_12_4',
+          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_X_12_4',
           'SIM_IPHONE_X_13_3',
         ],
       },
       'ios_eg2_tests': {
         'variants': [
+          'SIM_IPAD_AIR_2_12_4',
+          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_X_12_4',
           'SIM_IPHONE_X_13_3',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
+          'SIM_IPAD_AIR_2_12_4',
+          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_X_12_4',
           'SIM_IPHONE_X_13_3',
         ],
       },

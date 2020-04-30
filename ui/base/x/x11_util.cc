@@ -60,6 +60,7 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_error_tracker.h"
+#include "ui/gfx/x/xproto_util.h"
 
 #if defined(OS_FREEBSD)
 #include <sys/sysctl.h>
@@ -93,7 +94,7 @@ int DefaultX11ErrorHandler(XDisplay* d, XErrorEvent* e) {
 
   if (base::MessageLoopCurrent::Get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&LogErrorEventDescription, d, *e));
+        FROM_HERE, base::BindOnce(&x11::LogErrorEventDescription, *e));
   } else {
     LOG(ERROR)
         << "X error received: "
@@ -1504,49 +1505,6 @@ void SetX11ErrorHandlers(XErrorHandler error_handler,
   XSetErrorHandler(error_handler ? error_handler : DefaultX11ErrorHandler);
   XSetIOErrorHandler(
       io_error_handler ? io_error_handler : DefaultX11IOErrorHandler);
-}
-
-void LogErrorEventDescription(XDisplay* dpy,
-                              const XErrorEvent& error_event) {
-  char error_str[256];
-  char request_str[256];
-
-  XGetErrorText(dpy, error_event.error_code, error_str, sizeof(error_str));
-
-  strncpy(request_str, "Unknown", sizeof(request_str));
-  if (error_event.request_code < 128) {
-    std::string num = base::NumberToString(error_event.request_code);
-    XGetErrorDatabaseText(
-        dpy, "XRequest", num.c_str(), "Unknown", request_str,
-        sizeof(request_str));
-  } else {
-    int num_ext;
-    gfx::XScopedPtr<char* [],
-                    gfx::XObjectDeleter<char*, int, XFreeExtensionList>>
-        ext_list(XListExtensions(dpy, &num_ext));
-
-    for (int i = 0; i < num_ext; i++) {
-      int ext_code, first_event, first_error;
-      XQueryExtension(dpy, ext_list[i], &ext_code, &first_event, &first_error);
-      if (error_event.request_code == ext_code) {
-        std::string msg = base::StringPrintf(
-            "%s.%d", ext_list[i], error_event.minor_code);
-        XGetErrorDatabaseText(
-            dpy, "XRequest", msg.c_str(), "Unknown", request_str,
-            sizeof(request_str));
-        break;
-      }
-    }
-  }
-
-  LOG(WARNING)
-      << "X error received: "
-      << "serial " << error_event.serial << ", "
-      << "error_code " << static_cast<int>(error_event.error_code)
-      << " (" << error_str << "), "
-      << "request_code " << static_cast<int>(error_event.request_code) << ", "
-      << "minor_code " << static_cast<int>(error_event.minor_code)
-      << " (" << request_str << ")";
 }
 
 // static

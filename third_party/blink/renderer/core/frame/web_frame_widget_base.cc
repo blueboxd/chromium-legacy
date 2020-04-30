@@ -499,6 +499,24 @@ void WebFrameWidgetBase::SetEventListenerProperties(
     cc::EventListenerProperties listener_properties) {
   widget_base_->LayerTreeHost()->SetEventListenerProperties(
       listener_class, listener_properties);
+
+  if (listener_class == cc::EventListenerClass::kTouchStartOrMove ||
+      listener_class == cc::EventListenerClass::kTouchEndOrCancel) {
+    bool has_touch_handlers =
+        EventListenerProperties(cc::EventListenerClass::kTouchStartOrMove) !=
+            cc::EventListenerProperties::kNone ||
+        EventListenerProperties(cc::EventListenerClass::kTouchEndOrCancel) !=
+            cc::EventListenerProperties::kNone;
+    if (!has_touch_handlers_ || *has_touch_handlers_ != has_touch_handlers) {
+      has_touch_handlers_ = has_touch_handlers;
+
+      client_->SetHasTouchEventHandlers(has_touch_handlers);
+      frame_widget_host_->SetHasTouchEventHandlers(has_touch_handlers);
+    }
+  } else if (listener_class == cc::EventListenerClass::kPointerRawUpdate) {
+    client_->SetHasPointerRawUpdateEventHandlers(
+        listener_properties != cc::EventListenerProperties::kNone);
+  }
 }
 
 cc::EventListenerProperties WebFrameWidgetBase::EventListenerProperties(

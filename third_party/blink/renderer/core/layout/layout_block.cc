@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
@@ -2284,6 +2285,8 @@ LayoutUnit LayoutBlock::AvailableLogicalHeightForPercentageComputation() const {
     const LayoutFlexibleBox* flex_box = ToLayoutFlexibleBox(Parent());
     if (flex_box->UseOverrideLogicalHeightForPerentageResolution(*this))
       stretched_flex_height = OverrideContentLogicalHeight();
+  } else if (HasOverrideLogicalHeight() && IsOverrideLogicalHeightDefinite()) {
+    stretched_flex_height = OverrideContentLogicalHeight();
   }
   if (stretched_flex_height != LayoutUnit(-1)) {
     available_height = stretched_flex_height;

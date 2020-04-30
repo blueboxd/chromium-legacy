@@ -19182,6 +19182,22 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Search.QueryTiles.NTP.FakeSearchBox.Chip.Cleared">
+  <owner>shaktisahu@chromium.org</owner>
+  <owner>chrome-upboarding@google.com</owner>
+  <description>
+    Recorded whenever a chip showing on the NTP fake search box was cleared.
+  </description>
+</action>
+
+<action name="Search.QueryTiles.NTP.Tile.Clicked">
+  <owner>shaktisahu@chromium.org</owner>
+  <owner>chrome-upboarding@google.com</owner>
+  <description>
+    Recorded whenever a query tile was clicked in the new tab page.
+  </description>
+</action>
+
 <action name="SearchAnswer_OpenedUrl">
   <owner>vadimt@chromium.org</owner>
   <description>User opens URL from an answer card.</description>

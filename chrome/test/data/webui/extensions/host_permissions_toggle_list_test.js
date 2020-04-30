@@ -18,7 +18,7 @@ suite('HostPermissionsToggleList', function() {
   const CHROMIUM_ORG = 'https://chromium.org/*';
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     element = document.createElement('extensions-host-permissions-toggle-list');
     delegate = new TestService();
     element.delegate = delegate;

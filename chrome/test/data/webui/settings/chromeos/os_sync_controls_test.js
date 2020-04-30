@@ -187,6 +187,14 @@ suite('OsSyncControlsTest', function() {
         syncControls.$.accountSubtitle.textContent.trim());
   });
 
+  // Regression test for https://crbug.com/1076239
+  test('Handles undefined syncStatus', function() {
+    syncControls.syncStatus = undefined;
+    setupWithFeatureEnabled();
+    assertEquals('', syncControls.$.accountTitle.textContent.trim());
+    assertEquals('', syncControls.$.accountSubtitle.textContent.trim());
+  });
+
   test('FeatureDisabled', function() {
     setupWithFeatureDisabled();
 

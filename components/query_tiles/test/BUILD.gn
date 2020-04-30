@@ -7,7 +7,7 @@ source_set("test_lib") {
 
   visibility = [
     "//components/query_tiles/internal:unit_tests",
-    "//components/query_tiles:unit_tests",
+    "//components/query_tiles:query_tiles_unit_tests",
   ]
 
   sources = [

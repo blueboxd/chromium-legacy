@@ -2633,7 +2633,7 @@
     "expiry_milestone": 90
   },
   {
-    "name": "heavy-ad-privacy-mitigations-opt-out",
+    "name": "heavy-ad-privacy-mitigations",
     "owners": [ "johnidel", "jkarlin" ],
     "expiry_milestone": 85
   },
@@ -3516,6 +3516,11 @@
   {
     "name": "query-tiles-country-code",
     "owners": [ "shaktisahu", "qinmin"],
+    "expiry_milestone": 88
+  },
+  {
+    "name": "query-tiles-instant-fetch",
+    "owners": [ "xingliu"],
     "expiry_milestone": 88
   },
   {

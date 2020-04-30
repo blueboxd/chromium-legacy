@@ -82,6 +82,9 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
 
   // Deletes the feed with |feed_id| and returns a boolean if it was successful.
   bool Delete(const int64_t feed_id);
+
+  // Returns the origin of the feed.
+  base::Optional<url::Origin> GetOrigin(const int64_t feed_id);
 };
 
 }  // namespace media_history

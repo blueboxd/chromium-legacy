@@ -24,7 +24,7 @@ suite(extension_code_section_tests.suiteName, function() {
 
   // Initialize an extension item before each test.
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     codeSection = document.createElement('extensions-code-section');
     codeSection.couldNotDisplayCode = couldNotDisplayCode;
     document.body.appendChild(codeSection);

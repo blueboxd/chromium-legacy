@@ -15,5 +15,6 @@ const char kRemoteDebuggerHandles[] = "remote-debugger-handles";
 const char kUserAgentProductAndVersion[] = "user-agent-product";
 const char kAllowRunningInsecureContent[] = "allow-running-insecure-content";
 const char kUseLegacyMetricsService[] = "use-legacy-metrics-service";
+const char kCorsExemptHeaders[] = "cors-exempt-headers";
 
 }  // namespace switches

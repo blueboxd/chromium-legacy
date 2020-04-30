@@ -46,7 +46,7 @@ public class ProgressIndicatorView extends ImageView {
         mProgressDrawable.setBackgroundColor(SuggestionsConfig.getBackgroundColor(resources));
         mProgressDrawable.setAlpha(255);
         mProgressDrawable.setColorSchemeColors(
-                ApiCompatibilityUtils.getColor(resources, R.color.light_active_color));
+                ApiCompatibilityUtils.getColor(resources, R.color.default_control_color_active));
         mProgressDrawable.updateSizes(MaterialProgressDrawable.DEFAULT);
         setImageDrawable(mProgressDrawable);
 

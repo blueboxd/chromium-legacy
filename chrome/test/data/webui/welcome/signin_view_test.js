@@ -25,7 +25,7 @@ suite('SigninViewTest', function() {
     // calls to backend.
     SigninViewProxyImpl.instance_ = new TestSigninViewProxy();
 
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     testElement = document.createElement('signin-view');
     document.body.appendChild(testElement);
   });

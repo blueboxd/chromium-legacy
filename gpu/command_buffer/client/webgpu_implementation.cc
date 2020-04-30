@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <vector>
 
+#include <dawn/dawn_proc.h>
+
 #include "base/numerics/checked_math.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/client/dawn_client_memory_transfer_service.h"
@@ -220,6 +222,11 @@ gpu::ContextResult WebGPUImplementation::Initialize(
       std::make_unique<DawnClientMemoryTransferService>(mapped_memory_.get());
 
   procs_ = dawn_wire::WireClient::GetProcs();
+
+  // TODO(senorblanco): Do this only once per process. Doing it once per
+  // WebGPUImplementation is non-optimal but valid valid, since the returned
+  // procs are always the same.
+  dawnProcSetProcs(&procs_);
 #endif
 
   return gpu::ContextResult::kSuccess;
@@ -339,6 +346,10 @@ void WebGPUImplementation::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
 }
 void WebGPUImplementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
   ImplementationBase::WaitSyncToken(sync_token);
+}
+
+bool WebGPUImplementation::HasGrContextSupport() const {
+  return true;
 }
 
 // ImplementationBase implementation.

@@ -85,6 +85,19 @@ struct TypeConverter<mojom::UrlRequestRewriteReplaceUrlPtr,
 };
 
 template <>
+struct TypeConverter<mojom::UrlRequestRewriteAppendToQueryPtr,
+                     fuchsia::web::UrlRequestRewriteAppendToQuery> {
+  static mojom::UrlRequestRewriteAppendToQueryPtr Convert(
+      const fuchsia::web::UrlRequestRewriteAppendToQuery& input) {
+    mojom::UrlRequestRewriteAppendToQueryPtr append_to_query =
+        mojom::UrlRequestRewriteAppendToQuery::New();
+    if (input.has_query())
+      append_to_query->query = input.query();
+    return append_to_query;
+  }
+};
+
+template <>
 struct TypeConverter<mojom::UrlRequestAccessPolicy,
                      fuchsia::web::UrlRequestAction> {
   static mojom::UrlRequestAccessPolicy Convert(
@@ -120,6 +133,10 @@ struct TypeConverter<mojom::UrlRequestActionPtr,
         return mojom::UrlRequestAction::NewReplaceUrl(
             mojo::ConvertTo<mojom::UrlRequestRewriteReplaceUrlPtr>(
                 input.replace_url()));
+      case fuchsia::web::UrlRequestRewrite::Tag::kAppendToQuery:
+        return mojom::UrlRequestAction::NewAppendToQuery(
+            mojo::ConvertTo<mojom::UrlRequestRewriteAppendToQueryPtr>(
+                input.append_to_query()));
       default:
         // This is to prevent build breakage when adding new rewrites to the
         // FIDL definition.

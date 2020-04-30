@@ -152,5 +152,9 @@ Example bugs:
 * An uncontrolled single-byte out-of-bounds read
 ([128163](https://crbug.com/128163)).
 
+
+## Not a security bug {#TOC-Not-a-security-bug}
+
 The [security FAQ](faq.md) covers many of the cases that we do not consider to
-be security bugs, such as [denial of service](faq.md#TOC-Are-denial-of-service-issues-considered-security-bugs-).
+be security bugs, such as [denial of service](faq.md#TOC-Are-denial-of-service-issues-considered-security-bugs-)
+and, in particular, null pointer dereferences with consistent fixed offsets.

@@ -465,8 +465,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
   OverrideManifest(kManifestTemplate, {kInstallableIconList, "blue"});
   AppId app_id = InstallWebApp();
 
-  GetProvider().registry_controller().SetAppIsLocallyInstalledForTesting(app_id,
-                                                                         false);
+  GetProvider().registry_controller().SetAppIsLocallyInstalled(app_id, false);
   EXPECT_FALSE(GetProvider().registrar().IsLocallyInstalled(app_id));
 
   OverrideManifest(kManifestTemplate, {kInstallableIconList, "red"});

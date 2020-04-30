@@ -3,12 +3,13 @@
 <link rel="import" href="../cr_icon_button/cr_icon_button.html">
 <link rel="import" href="../hidden_style_css.html">
 <link rel="import" href="../icons.html">
+<link rel="import" href="../shared_style_css.html">
 <link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
 <dom-module id="cr-link-row">
   <template strip-whitespace="">
-    <style include="cr-hidden-style">
+    <style include="cr-shared-style cr-hidden-style">
       :host {
         align-items: center;
         align-self: stretch;
@@ -63,20 +64,16 @@
       #subLabel {
         display: flex;
       }
-
-      #subLabel {
-        @apply --cr-secondary-text;
-      }
     </style>
     <iron-icon id="startIcon" icon="[[startIcon]]" hidden="[[!startIcon]]"
         aria-hidden="true">
     </iron-icon>
     <div id="labelWrapper" hidden="[[hideLabelWrapper_]]">
-      <div id="label" class="label" aria-hidden="true">
+      <div id="label" aria-hidden="true">
         [[label]]
         <slot name="label"></slot>
       </div>
-      <div id="subLabel" class="secondary label" aria-hidden="true">
+      <div id="subLabel" class="cr-secondary-text" aria-hidden="true">
         [[subLabel]]
         <slot name="sub-label"></slot>
       </div>

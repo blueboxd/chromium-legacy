@@ -39,12 +39,12 @@
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-shared.h"
@@ -201,7 +201,7 @@ class BLINK_EXPORT WebLocalFrameClient {
                                           const WebString& fallback_name,
                                           const FramePolicy&,
                                           const WebFrameOwnerProperties&,
-                                          FrameOwnerElementType) {
+                                          mojom::FrameOwnerElementType) {
     return nullptr;
   }
 

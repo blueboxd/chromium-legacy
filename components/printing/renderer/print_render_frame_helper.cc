@@ -44,7 +44,7 @@
 #include "printing/printing_features.h"
 #include "printing/units.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_double_size.h"
@@ -806,7 +806,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       const blink::WebString& fallback_name,
       const blink::FramePolicy& frame_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties,
-      blink::FrameOwnerElementType owner_type) override;
+      blink::mojom::FrameOwnerElementType owner_type) override;
   void FrameDetached(DetachType detach_type) override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
 
@@ -1000,7 +1000,7 @@ blink::WebLocalFrame* PrepareFrameAndViewForPrint::CreateChildFrame(
     const blink::WebString& fallback_name,
     const blink::FramePolicy& frame_policy,
     const blink::WebFrameOwnerProperties& frame_owner_properties,
-    blink::FrameOwnerElementType frame_owner_type) {
+    blink::mojom::FrameOwnerElementType frame_owner_type) {
   // This is called when printing a selection and when this selection contains
   // an iframe. This is not supported yet. An empty rectangle will be displayed
   // instead.

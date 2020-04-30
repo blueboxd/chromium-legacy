@@ -27,7 +27,7 @@
 #include "services/network/public/mojom/trust_tokens.mojom-blink-forward.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element_sandbox.h"
@@ -59,8 +59,8 @@ class CORE_EXPORT HTMLIFrameElement final
       Vector<String>* /* messages */) const override;
   DocumentPolicy::FeatureState ConstructRequiredPolicy() const override;
 
-  FrameOwnerElementType OwnerType() const final {
-    return FrameOwnerElementType::kIframe;
+  mojom::blink::FrameOwnerElementType OwnerType() const final {
+    return mojom::blink::FrameOwnerElementType::kIframe;
   }
 
   network::mojom::blink::WebSandboxFlags

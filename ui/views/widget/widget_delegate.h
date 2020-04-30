@@ -30,18 +30,30 @@ class View;
 class VIEWS_EXPORT WidgetDelegate {
  public:
   struct Params {
-    base::string16 title;
-
-    // Whether to display the widget's title in the frame.
-    bool show_title = true;
+    Params();
+    ~Params();
 
 #if defined(USE_AURA)
     // Whether to center the widget's title within the frame.
     bool center_title = false;
 #endif
 
+    // The widget's icon, if any.
+    gfx::ImageSkia icon;
+
     // Whether to show a close button in the widget frame.
     bool show_close_button = true;
+
+    // Whether to show the widget's icon.
+    // TODO(ellyjones): What if this was implied by !icon.isNull()?
+    bool show_icon = false;
+
+    // Whether to display the widget's title in the frame.
+    bool show_title = true;
+
+    // The widget's title, if any.
+    // TODO(ellyjones): Should it be illegal to have show_title && !title?
+    base::string16 title;
   };
 
   WidgetDelegate();
@@ -219,9 +231,11 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Setters for data parameters of the WidgetDelegate. If you use these
   // setters, there is no need to override the corresponding virtual getters.
-  void SetWindowTitle(const base::string16& title);
+  void SetIcon(const gfx::ImageSkia& icon);
   void SetShowCloseButton(bool show_close_button);
+  void SetShowIcon(bool show_icon);
   void SetShowTitle(bool show_title);
+  void SetTitle(const base::string16& title);
 #if defined(USE_AURA)
   void SetCenterTitle(bool center_title);
 #endif

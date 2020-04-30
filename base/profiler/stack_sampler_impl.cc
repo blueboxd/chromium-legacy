@@ -33,12 +33,11 @@ namespace {
 // the thread is suspended.
 class StackCopierDelegate : public StackCopier::Delegate {
  public:
-  StackCopierDelegate(Unwinder* native_unwinder,
-                      Unwinder* aux_unwinder,
-                      ProfileBuilder* profile_builder,
-                      MetadataRecorder::MetadataProvider* metadata_provider)
-      : native_unwinder_(native_unwinder),
-        aux_unwinder_(aux_unwinder),
+  StackCopierDelegate(
+      const base::circular_deque<std::unique_ptr<Unwinder>>* unwinders,
+      ProfileBuilder* profile_builder,
+      MetadataRecorder::MetadataProvider* metadata_provider)
+      : unwinders_(unwinders),
         profile_builder_(profile_builder),
         metadata_provider_(metadata_provider) {}
 
@@ -51,16 +50,14 @@ class StackCopierDelegate : public StackCopier::Delegate {
   // particular, it may not perform any heap allocation or deallocation,
   // including indirectly via use of DCHECK/CHECK or other logging statements.
   void OnStackCopy() override {
-    native_unwinder_->OnStackCapture();
-    if (aux_unwinder_)
-      aux_unwinder_->OnStackCapture();
+    for (const auto& unwinder : *unwinders_)
+      unwinder->OnStackCapture();
 
     profile_builder_->RecordMetadata(*metadata_provider_);
   }
 
  private:
-  Unwinder* const native_unwinder_;
-  Unwinder* const aux_unwinder_;
+  const base::circular_deque<std::unique_ptr<Unwinder>>* unwinders_;
   ProfileBuilder* const profile_builder_;
   const MetadataRecorder::MetadataProvider* const metadata_provider_;
 };
@@ -72,15 +69,17 @@ StackSamplerImpl::StackSamplerImpl(std::unique_ptr<StackCopier> stack_copier,
                                    ModuleCache* module_cache,
                                    StackSamplerTestDelegate* test_delegate)
     : stack_copier_(std::move(stack_copier)),
-      native_unwinder_(std::move(native_unwinder)),
       module_cache_(module_cache),
-      test_delegate_(test_delegate) {}
+      test_delegate_(test_delegate) {
+  DCHECK(native_unwinder);
+  unwinders_.push_front(std::move(native_unwinder));
+}
 
 StackSamplerImpl::~StackSamplerImpl() = default;
 
 void StackSamplerImpl::AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder) {
-  aux_unwinder_ = std::move(unwinder);
-  aux_unwinder_->AddInitialModules(module_cache_);
+  unwinder->AddInitialModules(module_cache_);
+  unwinders_.push_front(std::move(unwinder));
 }
 
 void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
@@ -95,23 +94,21 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
     // holding a lock.
     MetadataRecorder::MetadataProvider metadata_provider(
         GetSampleMetadataRecorder());
-    StackCopierDelegate delegate(native_unwinder_.get(), aux_unwinder_.get(),
-                                 profile_builder, &metadata_provider);
+    StackCopierDelegate delegate(&unwinders_, profile_builder,
+                                 &metadata_provider);
     bool success = stack_copier_->CopyStack(
         stack_buffer, &stack_top, &timestamp, &thread_context, &delegate);
     if (!success)
       return;
   }
-  native_unwinder_->UpdateModules(module_cache_);
-  if (aux_unwinder_)
-    aux_unwinder_->UpdateModules(module_cache_);
+  for (const auto& unwinder : unwinders_)
+    unwinder->UpdateModules(module_cache_);
 
   if (test_delegate_)
     test_delegate_->OnPreStackWalk();
 
   profile_builder->OnSampleCompleted(
-      WalkStack(module_cache_, &thread_context, stack_top,
-                native_unwinder_.get(), aux_unwinder_.get()),
+      WalkStack(module_cache_, &thread_context, stack_top, unwinders_),
       timestamp);
 }
 
@@ -120,18 +117,16 @@ std::vector<Frame> StackSamplerImpl::WalkStackForTesting(
     ModuleCache* module_cache,
     RegisterContext* thread_context,
     uintptr_t stack_top,
-    Unwinder* native_unwinder,
-    Unwinder* aux_unwinder) {
-  return WalkStack(module_cache, thread_context, stack_top, native_unwinder,
-                   aux_unwinder);
+    const base::circular_deque<std::unique_ptr<Unwinder>>& unwinders) {
+  return WalkStack(module_cache, thread_context, stack_top, unwinders);
 }
 
 // static
-std::vector<Frame> StackSamplerImpl::WalkStack(ModuleCache* module_cache,
-                                               RegisterContext* thread_context,
-                                               uintptr_t stack_top,
-                                               Unwinder* native_unwinder,
-                                               Unwinder* aux_unwinder) {
+std::vector<Frame> StackSamplerImpl::WalkStack(
+    ModuleCache* module_cache,
+    RegisterContext* thread_context,
+    uintptr_t stack_top,
+    const base::circular_deque<std::unique_ptr<Unwinder>>& unwinders) {
   std::vector<Frame> stack;
   // Reserve enough memory for most stacks, to avoid repeated
   // allocations. Approximately 99.9% of recorded stacks are 128 frames or
@@ -146,21 +141,24 @@ std::vector<Frame> StackSamplerImpl::WalkStack(ModuleCache* module_cache,
   size_t prior_stack_size;
   UnwindResult result;
   do {
-    // Choose an authoritative unwinder for the current module. Use the aux
-    // unwinder if it thinks it can unwind from the current frame, otherwise use
-    // the native unwinder.
-    Unwinder* unwinder =
-        aux_unwinder && aux_unwinder->CanUnwindFrom(stack.back())
-            ? aux_unwinder
-            : native_unwinder;
+    // Choose an authoritative unwinder for the current module. Use the first
+    // unwinder that thinks it can unwind from the current frame.
+    auto unwinder =
+        std::find_if(unwinders.begin(), unwinders.end(),
+                     [&stack](const std::unique_ptr<Unwinder>& unwinder) {
+                       return unwinder->CanUnwindFrom(stack.back());
+                     });
+    if (unwinder == unwinders.end())
+      return stack;
 
     prior_stack_size = stack.size();
-    result =
-        unwinder->TryUnwind(thread_context, stack_top, module_cache, &stack);
+    result = unwinder->get()->TryUnwind(thread_context, stack_top, module_cache,
+                                        &stack);
 
     // The native unwinder should be the only one that returns COMPLETED
     // since the stack starts in native code.
-    DCHECK(result != UnwindResult::COMPLETED || unwinder == native_unwinder);
+    DCHECK(result != UnwindResult::COMPLETED ||
+           unwinder->get() == unwinders.back().get());
   } while (result != UnwindResult::ABORTED &&
            result != UnwindResult::COMPLETED &&
            // Give up if the authoritative unwinder for the module was unable to

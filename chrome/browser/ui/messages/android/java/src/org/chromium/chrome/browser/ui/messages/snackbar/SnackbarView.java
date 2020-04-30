@@ -234,7 +234,7 @@ public class SnackbarView {
         // Themes are used first.
         if (snackbar.getTheme() == Snackbar.Theme.GOOGLE) {
             return ApiCompatibilityUtils.getColor(view.getResources(),
-                    org.chromium.components.browser_ui.styles.R.color.light_active_color);
+                    org.chromium.components.browser_ui.styles.R.color.default_control_color_active);
         }
 
         assert snackbar.getTheme() == Snackbar.Theme.BASIC;

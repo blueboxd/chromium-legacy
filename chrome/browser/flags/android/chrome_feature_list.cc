@@ -35,6 +35,7 @@
 #include "components/payments/core/features.h"
 #include "components/permissions/features.h"
 #include "components/previews/core/previews_features.h"
+#include "components/query_tiles/switches.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_state/core/features.h"
 #include "components/signin/public/base/account_consistency_method.h"
@@ -166,7 +167,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPayWithGoogleV1,
     &kPhotoPickerVideoSupport,
     &kPhotoPickerZoom,
-    &kQueryTiles,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
     &kReorderBookmarks,
@@ -249,6 +249,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &switches::kSyncErrorInfoBarAndroid,
     &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
+    &upboarding::features::kQueryTiles,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
@@ -495,9 +496,6 @@ const base::Feature kPhotoPickerVideoSupport{"PhotoPickerVideoSupport",
 
 const base::Feature kPhotoPickerZoom{"PhotoPickerZoom",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kQueryTiles{"QueryTiles",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

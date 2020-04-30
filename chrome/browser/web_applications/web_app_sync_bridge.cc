@@ -195,9 +195,8 @@ void WebAppSyncBridge::SetAppIsDisabled(const AppId& app_id, bool is_disabled) {
   }
 }
 
-void WebAppSyncBridge::SetAppIsLocallyInstalledForTesting(
-    const AppId& app_id,
-    bool is_locally_installed) {
+void WebAppSyncBridge::SetAppIsLocallyInstalled(const AppId& app_id,
+                                                bool is_locally_installed) {
   ScopedRegistryUpdate update(this);
   WebApp* web_app = update->UpdateApp(app_id);
   if (web_app)

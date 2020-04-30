@@ -26,7 +26,7 @@ suite(extension_sidebar_tests.suiteName, function() {
   let sidebar;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     sidebar = document.createElement('extensions-sidebar');
     document.body.appendChild(sidebar);
   });
@@ -36,7 +36,7 @@ suite(extension_sidebar_tests.suiteName, function() {
     expectFalse(!!sidebar.$$(selector));
 
     window.history.replaceState(undefined, '', '/shortcuts');
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     sidebar = document.createElement('extensions-sidebar');
     document.body.appendChild(sidebar);
     const whenSelected = eventToPromise('iron-select', sidebar.$.sectionMenu);
@@ -46,7 +46,7 @@ suite(extension_sidebar_tests.suiteName, function() {
           expectEquals(sidebar.$$(selector).id, 'sections-shortcuts');
 
           window.history.replaceState(undefined, '', '/');
-          PolymerTest.clearBody();
+          document.body.innerHTML = '';
           sidebar = document.createElement('extensions-sidebar');
           document.body.appendChild(sidebar);
           const whenSelected =

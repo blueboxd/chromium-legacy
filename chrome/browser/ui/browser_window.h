@@ -488,6 +488,11 @@ class BrowserWindow : public ui::BaseWindow {
   // Shows the platform specific emoji picker.
   virtual void ShowEmojiPanel() = 0;
 
+  // Opens the eye dropper.
+  virtual std::unique_ptr<content::EyeDropper> OpenEyeDropper(
+      content::RenderFrameHost* frame,
+      content::EyeDropperListener* listener) = 0;
+
  protected:
   friend class BrowserCloseManager;
   friend class BrowserView;

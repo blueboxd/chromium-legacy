@@ -30,7 +30,6 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.test.CommandLineInitRule;
-import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
@@ -222,9 +221,10 @@ public class IntentHandlerTest {
     public void testUrlFromIntent_WebappUrl() {
         Intent webappLauncherActivityIntent =
                 WebappTestHelper.createMinimalWebappIntent("id", GOOGLE_URL);
-        WebappInfo webappInfo = WebappInfo.create(webappLauncherActivityIntent);
+        WebappLauncherActivity.LaunchData launchData = new WebappLauncherActivity.LaunchData("id",
+                GOOGLE_URL, null /* webApkPackageName */, false /* isSplashProvidedByWebApk */);
         mIntent = WebappLauncherActivity.createIntentToLaunchForWebapp(
-                webappLauncherActivityIntent, webappInfo, 0);
+                webappLauncherActivityIntent, launchData, 0);
         Assert.assertEquals(GOOGLE_URL, IntentHandler.getUrlFromIntent(mIntent));
     }
 

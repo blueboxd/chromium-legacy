@@ -236,6 +236,9 @@ struct GPU_EXPORT GpuPreferences {
   // Enable the WebGPU command buffer.
   bool enable_webgpu = false;
 
+  // Enable validation layers in Dawn backends.
+  bool enable_dawn_backend_validation = false;
+
   // Enable measuring blocked time on GPU Main thread
   bool enable_gpu_blocked_time_metric = false;
 

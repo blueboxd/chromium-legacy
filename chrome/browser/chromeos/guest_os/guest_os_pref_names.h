@@ -15,9 +15,11 @@ extern const char kGuestOSPathsSharedToVms[];
 
 extern const char kGuestOsRegistry[];
 extern const char kAppDesktopFileIdKey[];
+extern const char kAppVmTypeKey[];
 extern const char kAppVmNameKey[];
 extern const char kAppContainerNameKey[];
 extern const char kAppCommentKey[];
+extern const char kAppExtensionsKey[];
 extern const char kAppMimeTypesKey[];
 extern const char kAppKeywordsKey[];
 extern const char kAppExecutableFileNameKey[];

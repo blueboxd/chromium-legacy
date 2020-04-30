@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.metrics;
 
 import android.content.ContentResolver;
-import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings;
@@ -349,13 +348,7 @@ public class WebApkUma {
         long partitionTotalBytes = partitionStats.getTotalBytes();
         long minimumFreeBytes = getLowSpaceLimitBytes(partitionTotalBytes);
 
-        long webApkExtraSpaceBytes = 0;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Extra installation space is only allowed >= Android L
-            webApkExtraSpaceBytes = WEBAPK_EXTRA_INSTALLATION_SPACE_BYTES;
-        }
-
+        long webApkExtraSpaceBytes = WEBAPK_EXTRA_INSTALLATION_SPACE_BYTES;
         return partitionAvailableBytes - minimumFreeBytes + webApkExtraSpaceBytes;
     }
 

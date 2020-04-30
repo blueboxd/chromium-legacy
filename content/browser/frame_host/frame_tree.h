@@ -20,7 +20,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 
 namespace blink {
@@ -166,7 +166,7 @@ class CONTENT_EXPORT FrameTree {
       const blink::FramePolicy& frame_policy,
       const blink::mojom::FrameOwnerProperties& frame_owner_properties,
       bool was_discarded,
-      blink::FrameOwnerElementType owner_type);
+      blink::mojom::FrameOwnerElementType owner_type);
 
   // Removes a frame from the frame tree. |child|, its children, and objects
   // owned by their RenderFrameHostManagers are immediately deleted. The root

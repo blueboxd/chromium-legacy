@@ -63,7 +63,7 @@ suite(extension_error_page_tests.suiteName, function() {
 
   // Initialize an extension item before each test.
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     const runtimeError = Object.assign(
         {
           source: 'chrome-extension://' + extensionId + '/source.html',

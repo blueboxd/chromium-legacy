@@ -432,6 +432,10 @@ class BrowserView : public BrowserWindow,
 
   void ShowEmojiPanel() override;
 
+  std::unique_ptr<content::EyeDropper> OpenEyeDropper(
+      content::RenderFrameHost* frame,
+      content::EyeDropperListener* listener) override;
+
   BookmarkBarView* GetBookmarkBarView() const;
   LocationBarView* GetLocationBarView() const;
 

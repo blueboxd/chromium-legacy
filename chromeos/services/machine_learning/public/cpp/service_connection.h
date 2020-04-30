@@ -62,6 +62,14 @@ class ServiceConnection {
       mojom::MachineLearningService::LoadFlatBufferModelCallback
           result_callback) = 0;
 
+  // Instruct ML daemon to load the TextClassifier model, binding a
+  // TextClassifier implementation to |receiver|. Bootstraps the initial Mojo
+  // connection to the daemon if necessary.
+  virtual void LoadTextClassifier(
+      mojo::PendingReceiver<mojom::TextClassifier> receiver,
+      mojom::MachineLearningService::LoadTextClassifierCallback
+          result_callback) = 0;
+
  protected:
   ServiceConnection() = default;
   virtual ~ServiceConnection() {}

@@ -45,7 +45,7 @@ suite('ExtensionsActivityLogTest', function() {
 
   // Initialize an extension activity log before each test.
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     // Give this a large enough height that the tabs will be visible.
     document.body.style.height = '300px';
 

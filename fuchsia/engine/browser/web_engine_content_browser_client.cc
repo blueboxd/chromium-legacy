@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/devtools_manager_delegate.h"
@@ -54,11 +55,19 @@ class DevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   DISALLOW_COPY_AND_ASSIGN(DevToolsManagerDelegate);
 };
 
+std::vector<std::string> GetCorsExemptHeaders() {
+  return base::SplitString(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+          switches::kCorsExemptHeaders),
+      ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+}
+
 }  // namespace
 
 WebEngineContentBrowserClient::WebEngineContentBrowserClient(
     fidl::InterfaceRequest<fuchsia::web::Context> request)
     : request_(std::move(request)),
+      cors_exempt_headers_(GetCorsExemptHeaders()),
       allow_insecure_content_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowRunningInsecureContent)) {}
 
@@ -194,11 +203,18 @@ WebEngineContentBrowserClient::CreateNetworkContext(
   context_params->user_agent = GetUserAgent();
   context_params->accept_language = "en-us,en";
 
-  // Whitelist some headers to be used for CORS requests, e.g. for resource
-  // prefetching.
+  // Exempt the minimal headers needed for CORS preflight checks (Purpose,
+  // X-Requested-With).
   content::UpdateCorsExemptHeader(context_params.get());
 
   content::GetNetworkService()->CreateNetworkContext(
       network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
+
+  if (!cors_exempt_headers_.empty()) {
+    // Exempt any embedder-specified headers from CORS prechecking.
+    network_context->SetCorsExtraSafelistedRequestHeaderNames(
+        cors_exempt_headers_);
+  }
+
   return network_context;
 }

@@ -220,12 +220,7 @@ public class WebApkUtils {
             return null;
         }
         try {
-            Drawable drawable = null;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                drawable = resources.getDrawable(resourceId, null);
-            } else {
-                drawable = resources.getDrawable(resourceId);
-            }
+            Drawable drawable = resources.getDrawable(resourceId, null);
             return drawable != null ? ((BitmapDrawable) drawable).getBitmap() : null;
         } catch (Resources.NotFoundException e) {
             return null;
@@ -255,8 +250,6 @@ public class WebApkUtils {
      * @see android.view.Window#setStatusBarColor(int color).
      */
     public static void setStatusBarColor(Window window, int statusBarColor) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
-
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(statusBarColor);
     }

@@ -21,7 +21,7 @@
     <color name="tab_grid_card_thumbnail_placeholder_color_incognito">@color/default_bg_color_dark_elev_3</color>
 
     <!-- TODO(995876): Use semantic name for the selected color -->
-    <color name="tab_grid_card_selected_color">@color/light_active_color</color>
+    <color name="tab_grid_card_selected_color">@color/default_control_color_active</color>
     <color name="tab_grid_card_selected_color_incognito">@color/modern_blue_300</color>
 
     <!-- Tab Group related colors. -->

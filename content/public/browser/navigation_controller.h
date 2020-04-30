@@ -116,6 +116,15 @@ class NavigationController {
 
   // Extra optional parameters for LoadURLWithParams.
   struct CONTENT_EXPORT LoadURLParams {
+    explicit LoadURLParams(const GURL& url);
+
+    // Copies |open_url_params| into LoadURLParams, attempting to copy all
+    // fields that are present in both structs (some properties are ignored
+    // because they are unique to LoadURLParams or OpenURLParams).
+    explicit LoadURLParams(const OpenURLParams& open_url_params);
+
+    ~LoadURLParams();
+
     // The url to load. This field is required.
     GURL url;
 
@@ -242,15 +251,6 @@ class NavigationController {
     // Impression info associated with this navigation. Should only be populated
     // for navigations originating from a link click.
     base::Optional<Impression> impression;
-
-    explicit LoadURLParams(const GURL& url);
-
-    // Copies |open_url_params| into LoadURLParams, attempting to copy all
-    // fields that are present in both structs (some properties are ignored
-    // because they are unique to LoadURLParams or OpenURLParams).
-    explicit LoadURLParams(const OpenURLParams& open_url_params);
-
-    ~LoadURLParams();
 
     DISALLOW_COPY_AND_ASSIGN(LoadURLParams);
   };

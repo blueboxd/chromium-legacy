@@ -36,9 +36,9 @@
 #include "build/build_config.h"
 #include "cc/layers/layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/common/input/web_pointer_event.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -199,13 +199,14 @@ class TestPluginWithEditableText : public FakeWebPlugin {
 };
 
 class TestPluginWebFrameClient : public frame_test_helpers::TestWebFrameClient {
-  WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                  WebTreeScopeType scope,
-                                  const WebString& name,
-                                  const WebString& fallback_name,
-                                  const FramePolicy&,
-                                  const WebFrameOwnerProperties&,
-                                  FrameOwnerElementType owner_type) override {
+  WebLocalFrame* CreateChildFrame(
+      WebLocalFrame* parent,
+      WebTreeScopeType scope,
+      const WebString& name,
+      const WebString& fallback_name,
+      const FramePolicy&,
+      const WebFrameOwnerProperties&,
+      mojom::blink::FrameOwnerElementType owner_type) override {
     return CreateLocalChild(*parent, scope,
                             std::make_unique<TestPluginWebFrameClient>());
   }

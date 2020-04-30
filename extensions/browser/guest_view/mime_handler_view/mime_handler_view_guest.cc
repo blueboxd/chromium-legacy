@@ -134,14 +134,14 @@ void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
         rfh->GetView()->GetRenderWidgetHost()->GetRoutingID();
   }
   auto owner_type = rfh ? rfh->GetFrameOwnerElementType()
-                        : blink::FrameOwnerElementType::kNone;
+                        : blink::mojom::FrameOwnerElementType::kNone;
   // If the embedder frame is the ContentFrame() of a plugin element, then there
   // could be a MimeHandlerViewFrameContainer in the parent frame. Note that
   // the MHVFC is only created through HTMLPlugInElement::UpdatePlugin (manually
   // navigating a plugin element's window would create a MHVFC).
   maybe_has_frame_container_ =
-      owner_type == blink::FrameOwnerElementType::kEmbed ||
-      owner_type == blink::FrameOwnerElementType::kObject;
+      owner_type == blink::mojom::FrameOwnerElementType::kEmbed ||
+      owner_type == blink::mojom::FrameOwnerElementType::kObject;
   DCHECK_NE(MSG_ROUTING_NONE, embedder_widget_routing_id_);
   delegate_->RecordLoadMetric(
       /* in_main_frame */ !GetEmbedderFrame()->GetParent(), mime_type_);

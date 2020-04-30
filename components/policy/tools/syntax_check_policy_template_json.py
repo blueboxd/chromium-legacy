@@ -585,12 +585,25 @@ class PolicyTemplateChecker(object):
           identifier=policy.get('name'))
 
       # 'cloud_only' feature must be an optional boolean flag.
-      self._CheckContains(
+      cloud_only = self._CheckContains(
           features,
           'cloud_only',
           bool,
           optional=True,
           container_name='features')
+
+      # 'platform_only' feature must be an optional boolean flag.
+      platform_only = self._CheckContains(
+          features,
+          'platform_only',
+          bool,
+          optional=True,
+          container_name='features')
+
+      if cloud_only and platform_only:
+        self._Error("cloud_only and platfrom_only must not be true at the same "
+                    "time.")
+
 
       # Chrome OS policies may have a non-empty supported_chrome_os_management
       # list with either 'active_directory' or 'google_cloud' or both.

@@ -110,15 +110,15 @@ WebTimeLimitNavigationThrottle::MaybeCreateThrottleFor(
 WebTimeLimitNavigationThrottle::~WebTimeLimitNavigationThrottle() = default;
 
 ThrottleCheckResult WebTimeLimitNavigationThrottle::WillStartRequest() {
-  return WillStartOrRedirectRequest(/* proceed_if_no_browser */ true);
+  return WillStartOrRedirectRequest();
 }
 
 ThrottleCheckResult WebTimeLimitNavigationThrottle::WillRedirectRequest() {
-  return WillStartOrRedirectRequest(/* proceed_if_no_browser */ true);
+  return WillStartOrRedirectRequest();
 }
 
 ThrottleCheckResult WebTimeLimitNavigationThrottle::WillProcessResponse() {
-  return WillStartOrRedirectRequest(/* proceed_if_no_browser */ false);
+  return WillStartOrRedirectRequest();
 }
 
 const char* WebTimeLimitNavigationThrottle::GetNameForLogging() {
@@ -129,8 +129,8 @@ WebTimeLimitNavigationThrottle::WebTimeLimitNavigationThrottle(
     content::NavigationHandle* navigation_handle)
     : NavigationThrottle(navigation_handle) {}
 
-ThrottleCheckResult WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest(
-    bool proceed_if_no_browser) {
+ThrottleCheckResult
+WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest() {
   content::BrowserContext* browser_context =
       navigation_handle()->GetWebContents()->GetBrowserContext();
 
@@ -151,7 +151,7 @@ ThrottleCheckResult WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest(
 
   Browser* browser = FindBrowserForWebContents(web_contents);
 
-  if (!browser && proceed_if_no_browser)
+  if (!browser)
     return PROCEED;
 
   bool is_windowed = false;

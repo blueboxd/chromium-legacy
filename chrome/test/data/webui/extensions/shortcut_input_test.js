@@ -30,7 +30,7 @@ suite(extension_shortcut_input_tests.suiteName, function() {
   let input;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     input = document.createElement('extensions-shortcut-input');
     input.delegate = new TestService();
     input.commandName = 'Command';

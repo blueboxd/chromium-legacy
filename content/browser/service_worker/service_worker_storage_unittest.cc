@@ -58,6 +58,12 @@ using net::WrappedIOBuffer;
 namespace content {
 namespace service_worker_storage_unittest {
 
+struct ReadResponseHeadResult {
+  int result;
+  network::mojom::URLResponseHeadPtr response_head;
+  scoped_refptr<net::IOBufferWithSize> metadata;
+};
+
 using RegistrationData = storage::mojom::ServiceWorkerRegistrationData;
 using ResourceRecord = storage::mojom::ServiceWorkerResourceRecordPtr;
 
@@ -128,18 +134,16 @@ int WriteResponse(ServiceWorkerStorage* storage,
   std::unique_ptr<ServiceWorkerResponseWriter> writer =
       storage->CreateResponseWriter(id);
 
-  std::unique_ptr<net::HttpResponseInfo> info =
-      std::make_unique<net::HttpResponseInfo>();
-  info->request_time = base::Time::Now();
-  info->response_time = base::Time::Now();
-  info->was_cached = false;
-  info->headers = new net::HttpResponseHeaders(headers);
-  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(info));
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->request_time = base::Time::Now();
+  response_head->response_time = base::Time::Now();
+  response_head->headers = new net::HttpResponseHeaders(headers);
+  response_head->content_length = length;
+
   int rv = 0;
   {
     TestCompletionCallback cb;
-    writer->WriteInfo(info_buffer.get(), cb.callback());
+    writer->WriteResponseHead(*response_head, length, cb.callback());
     rv = cb.WaitForResult();
     if (rv < 0)
       return rv;
@@ -168,14 +172,22 @@ int WriteBasicResponse(ServiceWorkerStorage* storage, int64_t id) {
   return WriteStringResponse(storage, id, headers, std::string(kHttpBody));
 }
 
-int ReadResponseInfo(ServiceWorkerStorage* storage,
-                     int64_t id,
-                     HttpResponseInfoIOBuffer* info_buffer) {
+ReadResponseHeadResult ReadResponseHead(ServiceWorkerStorage* storage,
+                                        int64_t id) {
+  ReadResponseHeadResult out;
+  base::RunLoop loop;
   std::unique_ptr<ServiceWorkerResponseReader> reader =
       storage->CreateResponseReader(id);
-  TestCompletionCallback cb;
-  reader->ReadInfo(info_buffer, cb.callback());
-  return cb.WaitForResult();
+  reader->ReadResponseHead(base::BindLambdaForTesting(
+      [&](int result, network::mojom::URLResponseHeadPtr response_head,
+          scoped_refptr<net::IOBufferWithSize> metadata) {
+        out.result = result;
+        out.response_head = std::move(response_head);
+        out.metadata = std::move(metadata);
+        loop.Quit();
+      }));
+  loop.Run();
+  return out;
 }
 
 bool VerifyBasicResponse(ServiceWorkerStorage* storage,
@@ -184,12 +196,10 @@ bool VerifyBasicResponse(ServiceWorkerStorage* storage,
   const std::string kExpectedHttpBody("Hello");
   std::unique_ptr<ServiceWorkerResponseReader> reader =
       storage->CreateResponseReader(id);
-  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
-      new HttpResponseInfoIOBuffer();
-  int rv = ReadResponseInfo(storage, id, info_buffer.get());
+  ReadResponseHeadResult out = ReadResponseHead(storage, id);
   if (expected_positive_result)
-    EXPECT_LT(0, rv);
-  if (rv <= 0)
+    EXPECT_LT(0, out.result);
+  if (out.result <= 0)
     return false;
 
   std::string received_body;
@@ -198,19 +208,18 @@ bool VerifyBasicResponse(ServiceWorkerStorage* storage,
       base::MakeRefCounted<IOBuffer>(kBigEnough);
   TestCompletionCallback cb;
   reader->ReadData(buffer.get(), kBigEnough, cb.callback());
-  rv = cb.WaitForResult();
+  int rv = cb.WaitForResult();
   EXPECT_EQ(static_cast<int>(kExpectedHttpBody.size()), rv);
   if (rv <= 0)
     return false;
   received_body.assign(buffer->data(), rv);
 
   bool status_match =
-      std::string("HONKYDORY") ==
-          info_buffer->http_info->headers->GetStatusText();
+      std::string("HONKYDORY") == out.response_head->headers->GetStatusText();
   bool data_match = kExpectedHttpBody == received_body;
 
-  EXPECT_TRUE(status_match);
-  EXPECT_TRUE(data_match);
+  EXPECT_EQ(out.response_head->headers->GetStatusText(), "HONKYDORY");
+  EXPECT_EQ(received_body, kExpectedHttpBody);
   return status_match && data_match;
 }
 
@@ -249,18 +258,10 @@ bool VerifyResponseMetadata(ServiceWorkerStorage* storage,
                             const std::string& expected_metadata) {
   std::unique_ptr<ServiceWorkerResponseReader> reader =
       storage->CreateResponseReader(id);
-  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
-      new HttpResponseInfoIOBuffer();
-  {
-    TestCompletionCallback cb;
-    reader->ReadInfo(info_buffer.get(), cb.callback());
-    int rv = cb.WaitForResult();
-    EXPECT_LT(0, rv);
-  }
-  const net::HttpResponseInfo* read_head = info_buffer->http_info.get();
-  if (!read_head->metadata.get())
+  ReadResponseHeadResult out = ReadResponseHead(storage, id);
+  if (!out.metadata.get())
     return false;
-  EXPECT_EQ(0, memcmp(expected_metadata.data(), read_head->metadata->data(),
+  EXPECT_EQ(0, memcmp(expected_metadata.data(), out.metadata->data(),
                       expected_metadata.length()));
   return true;
 }
@@ -652,10 +653,8 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
 
   // Response reader and writer created by the disabled storage should fail to
   // access the disk cache.
-  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
-      new HttpResponseInfoIOBuffer();
-  EXPECT_EQ(net::ERR_CACHE_MISS,
-            ReadResponseInfo(storage(), kResourceId, info_buffer.get()));
+  ReadResponseHeadResult out = ReadResponseHead(storage(), kResourceId);
+  EXPECT_EQ(net::ERR_CACHE_MISS, out.result);
   EXPECT_EQ(net::ERR_FAILED, WriteBasicResponse(storage(), kResourceId));
   EXPECT_EQ(net::ERR_FAILED,
             WriteResponseMetadata(storage(), kResourceId, "foo"));

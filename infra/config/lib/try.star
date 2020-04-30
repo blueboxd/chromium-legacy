@@ -157,7 +157,8 @@ def tryjob(
     disable_reuse=None,
     experiment_percentage=None,
     location_regexp=None,
-    location_regexp_exclude=None):
+    location_regexp_exclude=None,
+    cancel_stale=None):
   """Specifies the details of a tryjob verifier.
 
   See https://chromium.googlesource.com/infra/luci/luci-go/+/refs/heads/master/lucicfg/doc/README.md#luci.cq_tryjob_verifier
@@ -173,6 +174,7 @@ def tryjob(
       experiment_percentage = experiment_percentage,
       location_regexp = location_regexp,
       location_regexp_exclude = location_regexp_exclude,
+      cancel_stale = cancel_stale,
   )
 
 
@@ -227,6 +229,7 @@ def try_builder(
         experiment_percentage = tryjob.experiment_percentage,
         location_regexp = tryjob.location_regexp,
         location_regexp_exclude = tryjob.location_regexp_exclude,
+        cancel_stale = tryjob.cancel_stale
     )
   else:
     # Allow CQ to trigger this builder if user opts in via CQ-Include-Trybots.

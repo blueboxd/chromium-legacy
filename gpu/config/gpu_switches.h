@@ -18,6 +18,7 @@ GPU_EXPORT extern const char kIgnoreGpuBlacklist[];
 GPU_EXPORT extern const char kShaderDiskCacheSizeKB[];
 GPU_EXPORT extern const char kDisableGpuProcessForDX12VulkanInfoCollection[];
 GPU_EXPORT extern const char kEnableUnsafeWebGPU[];
+GPU_EXPORT extern const char kEnableDawnBackendValidation[];
 GPU_EXPORT extern const char kUseHighGPUThreadPriorityForPerfTests[];
 GPU_EXPORT extern const char kNoDelayForDX12VulkanInfoCollection[];
 GPU_EXPORT extern const char kEnableGpuBlockedTime[];

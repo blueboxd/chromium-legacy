@@ -12,7 +12,7 @@ suite('RuntimeHostsDialog', function() {
   const ITEM_ID = 'a'.repeat(32);
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     dialog = document.createElement('extensions-runtime-hosts-dialog');
 
     delegate = new TestService();

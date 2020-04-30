@@ -147,8 +147,8 @@ void ModuleScriptLoader::FetchInternal(
   options.reject_coep_unsafe_none = options_.GetRejectCoepUnsafeNone();
 
   if (level == ModuleGraphLevel::kDependentModuleFetch) {
-    options.initiator_info.imported_module_referrer =
-        module_request.ReferrerString();
+    options.initiator_info.is_imported_module = true;
+    options.initiator_info.referrer = module_request.ReferrerString();
     options.initiator_info.position = module_request.GetReferrerPosition();
   }
 

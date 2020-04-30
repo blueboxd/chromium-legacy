@@ -366,6 +366,10 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
                                         size_t num_handles) {
   if (num_ports != 1 || num_handles != 1 ||
       num_bytes != sizeof(SerializedState)) {
+    // TODO(https://crbug.com/1073859): Remove.
+    CHECK_EQ(num_ports, 1u);
+    CHECK_EQ(num_handles, 1u);
+    CHECK_EQ(num_bytes, sizeof(SerializedState));
     return nullptr;
   }
 
@@ -374,6 +378,8 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
       state->options.capacity_num_bytes < state->options.element_num_bytes ||
       state->read_offset >= state->options.capacity_num_bytes ||
       state->bytes_available > state->options.capacity_num_bytes) {
+    // TODO(https://crbug.com/1073859): Remove.
+    CHECK(false) << "Invalid DataPipeConsumerDispatcher state";
     return nullptr;
   }
 
@@ -393,6 +399,8 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
   auto ring_buffer =
       base::UnsafeSharedMemoryRegion::Deserialize(std::move(region));
   if (!ring_buffer.IsValid()) {
+    // TODO(https://crbug.com/1073859): Remove.
+    CHECK(ring_buffer.IsValid()) << "Invalid shared memory region";
     DLOG(ERROR) << "Failed to deserialize shared buffer handle.";
     return nullptr;
   }
@@ -408,10 +416,15 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
     dispatcher->bytes_available_ = state->bytes_available;
     dispatcher->new_data_available_ = state->bytes_available > 0;
     dispatcher->peer_closed_ = state->flags & kFlagPeerClosed;
-    if (!dispatcher->InitializeNoLock())
+    if (!dispatcher->InitializeNoLock()) {
+      // TODO(https://crbug.com/1073859): Remove.
+      CHECK(false);
       return nullptr;
+    }
     if (state->options.capacity_num_bytes >
         dispatcher->ring_buffer_mapping_.mapped_size()) {
+      // TODO(https://crbug.com/1073859): Remove.
+      CHECK(false);
       return nullptr;
     }
     dispatcher->UpdateSignalsStateNoLock();

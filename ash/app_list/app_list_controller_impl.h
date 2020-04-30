@@ -168,6 +168,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // AppListViewDelegate:
   AppListModel* GetModel() override;
   SearchModel* GetSearchModel() override;
+  AppListNotifier* GetNotifier() override;
   void StartAssistant() override;
   void StartSearch(const base::string16& raw_query) override;
   void OpenSearchResult(const std::string& result_id,

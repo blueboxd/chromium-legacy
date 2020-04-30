@@ -171,6 +171,85 @@ bool GetDuration(const Property& property, T* item) {
   return true;
 }
 
+// Converts a string to a mojo ContentAttribute.
+base::Optional<mojom::ContentAttribute> GetContentAttribute(
+    const std::string& value) {
+  if (value == "iconic")
+    return mojom::ContentAttribute::kIconic;
+
+  if (value == "sceneStill")
+    return mojom::ContentAttribute::kSceneStill;
+
+  if (value == "poster")
+    return mojom::ContentAttribute::kPoster;
+
+  if (value == "background")
+    return mojom::ContentAttribute::kBackground;
+
+  if (value == "forDarkBackground")
+    return mojom::ContentAttribute::kForDarkBackground;
+
+  if (value == "forLightBackground")
+    return mojom::ContentAttribute::kForLightBackground;
+
+  if (value == "hasTitle")
+    return mojom::ContentAttribute::kHasTitle;
+
+  if (value == "noTitle")
+    return mojom::ContentAttribute::kNoTitle;
+
+  if (value == "transparentBackground")
+    return mojom::ContentAttribute::kHasTransparentBackground;
+
+  if (value == "centered")
+    return mojom::ContentAttribute::kCentered;
+
+  if (value == "rightCentered")
+    return mojom::ContentAttribute::kRightCentered;
+
+  if (value == "leftCentered")
+    return mojom::ContentAttribute::kLeftCentered;
+
+  return base::nullopt;
+}
+
+// Gets the content attributes from the image. This should be a list of
+// string attributes in the "additionalProperty" property. This property is
+// optional according to the spec. Returns nullopt if the property is invalid,
+// empty vector if the property is not present or present but empty.
+base::Optional<std::vector<mojom::ContentAttribute>> GetContentAttributes(
+    const EntityPtr& image) {
+  auto* property =
+      GetProperty(image.get(), schema_org::property::kAdditionalProperty);
+
+  if (!property || property->values->entity_values.empty())
+    return std::vector<mojom::ContentAttribute>();
+
+  std::vector<mojom::ContentAttribute> content_attributes;
+  const auto& attribute = property->values->entity_values[0];
+
+  if (attribute->type != schema_org::entity::kPropertyValue)
+    return base::nullopt;
+
+  auto* name = GetProperty(attribute.get(), schema_org::property::kName);
+  if (!name || !IsNonEmptyString(*name) ||
+      name->values->string_values[0] != "contentAttributes") {
+    return base::nullopt;
+  }
+
+  auto* values = GetProperty(attribute.get(), schema_org::property::kValue);
+  if (!values || !IsNonEmptyString(*values))
+    return base::nullopt;
+
+  for (const auto& value : values->values->string_values) {
+    auto attr = GetContentAttribute(value);
+    if (attr.has_value())
+      content_attributes.push_back(attr.value());
+  }
+
+  return content_attributes;
+}
+
 // Gets a list of media images from the property. The property should have at
 // least one media image and no more than kMaxImages. A media image is either a
 // valid URL string or an ImageObject entity containing a width, height, and
@@ -200,14 +279,19 @@ base::Optional<std::vector<mojom::MediaImagePtr>> GetMediaImage(
     if (image_object->type != schema_org::entity::kImageObject)
       continue;
 
+    auto image = mojom::MediaImage::New();
+
     auto* width = GetProperty(image_object.get(), schema_org::property::kWidth);
     if (!width || !IsPositiveInteger(*width))
       continue;
 
     auto* height =
-        GetProperty(image_object.get(), schema_org::property::kWidth);
+        GetProperty(image_object.get(), schema_org::property::kHeight);
     if (!height || !IsPositiveInteger(*height))
       continue;
+
+    image->size = gfx::Size(width->values->long_values[0],
+                            height->values->long_values[0]);
 
     auto* url = GetProperty(image_object.get(), schema_org::property::kUrl);
     if (!url)
@@ -215,16 +299,52 @@ base::Optional<std::vector<mojom::MediaImagePtr>> GetMediaImage(
     if (!IsUrl(*url))
       continue;
 
-    auto image = mojom::MediaImage::New();
     image->src = url->values->url_values[0];
-    image->size = gfx::Size(width->values->long_values[0],
-                            height->values->long_values[0]);
+
+    auto content_attributes = GetContentAttributes(image_object);
+    if (!content_attributes.has_value())
+      continue;
+
+    if (!content_attributes.value().empty()) {
+      image->content_attributes = std::move(content_attributes.value());
+    }
 
     images.push_back(std::move(image));
     if (images.size() == kMaxImages)
       return images;
   }
   return images;
+}
+
+// Returns true if the image has at least one of the provided attributes.
+bool ImageHasOneOfAttributes(const mojom::MediaImagePtr& image,
+                             std::vector<mojom::ContentAttribute> attributes) {
+  for (auto attribute : attributes) {
+    if (base::Contains(image->content_attributes, attribute))
+      return true;
+  }
+  return false;
+}
+
+// Gets logos from a property. Logos have additional requirements beyond those
+// for media images.
+base::Optional<std::vector<mojom::MediaImagePtr>> GetLogoImages(
+    const Property& property) {
+  auto images = GetMediaImage(property);
+  if (!images.has_value())
+    return base::nullopt;
+
+  std::vector<mojom::MediaImagePtr> logos;
+  for (auto& image : images.value()) {
+    if (ImageHasOneOfAttributes(image, {mojom::ContentAttribute::kHasTitle,
+                                        mojom::ContentAttribute::kNoTitle}) &&
+        ImageHasOneOfAttributes(
+            image, {mojom::ContentAttribute::kForDarkBackground,
+                    mojom::ContentAttribute::kForLightBackground})) {
+      logos.push_back(std::move(image));
+    }
+  }
+  return logos;
 }
 
 // Validates the provider property of an entity. Outputs the name and images
@@ -252,9 +372,11 @@ bool ValidateProvider(const Property& provider,
   auto* logo = GetProperty(organization->get(), schema_org::property::kLogo);
   if (!logo)
     return false;
-  auto maybe_images = GetMediaImage(*logo);
+
+  auto maybe_images = GetLogoImages(*logo);
   if (!maybe_images.has_value() || maybe_images.value().empty())
     return false;
+
   *images = std::move(maybe_images.value());
 
   return true;

@@ -32,7 +32,7 @@ Local Modifications: None
 Name: web-platform-tests - Test Suites for Web Platform specifications
 Short Name: wpt
 URL: https://github.com/web-platform-tests/wpt/
-Version: 41d7c3597e5d3128ff3c42bb128781e4c382ba7b
+Version: d2025b24b0b1f4d2e69e83cf83e60c021d9f7b42
 License: LICENSES FOR W3C TEST SUITES (https://www.w3.org/Consortium/Legal/2008/03-bsd-license.html)
 License File: wpt/wpt/LICENSE.md
 Security Critical: no
@@ -43,9 +43,3 @@ Description: This includes code for the manifest tool, lint tool, and wptserve.
     for more details on maintenance.
 Local Modifications:
 - Removed all files except for those listed in wpt/WPTWhiteList.
-- Cherry-picked the server part of https://github.com/web-platform-tests/wpt/pull/21705
-  (we cannot yet directly roll to that revision because of MANIFEST v8 changes).
-- Cherry-picked the server part of https://github.com/web-platform-tests/wpt/pull/21845
-  (Same reason with the previous cherry-pick. This enables pywebsocket3 usage).
-- Cherry-picked https://github.com/web-platform-tests/wpt/pull/23096
-  (This fixes multiprocessing on Windows).

@@ -28,7 +28,7 @@ source_set("util") {
     ":confirmation",
     "//base",
     "//ios/chrome/browser/overlays",
-    "//ios/chrome/browser/overlays/public/common/alerts",
+    "//ios/chrome/browser/overlays/public/web_content_area",
   ]
 }
 
@@ -43,7 +43,7 @@ source_set("unit_tests") {
     ":util",
     "//base",
     "//ios/chrome/browser/overlays",
-    "//ios/chrome/browser/overlays/public/common/alerts",
+    "//ios/chrome/browser/overlays/public/web_content_area",
     "//testing/gtest",
   ]
 }

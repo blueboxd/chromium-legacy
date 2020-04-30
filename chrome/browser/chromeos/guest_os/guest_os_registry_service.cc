@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -109,11 +108,14 @@ base::Value LocaleStringsProtoToDictionary(
 // |name| should be |app.name()| in Dictionary form.
 base::Value AppPrefRegistrationFromApp(
     const vm_tools::apps::App& app,
+    GuestOsRegistryService::VmType vm_type,
     base::Value name,
     const vm_tools::apps::ApplicationList& app_list) {
   base::Value pref_registration(base::Value::Type::DICTIONARY);
   pref_registration.SetKey(guest_os::prefs::kAppDesktopFileIdKey,
                            base::Value(app.desktop_file_id()));
+  pref_registration.SetIntKey(guest_os::prefs::kAppVmTypeKey,
+                              static_cast<int>(vm_type));
   pref_registration.SetKey(guest_os::prefs::kAppVmNameKey,
                            base::Value(app_list.vm_name()));
   pref_registration.SetKey(guest_os::prefs::kAppContainerNameKey,
@@ -123,6 +125,8 @@ base::Value AppPrefRegistrationFromApp(
                            ProtoToDictionary(app.comment()));
   pref_registration.SetKey(guest_os::prefs::kAppExecutableFileNameKey,
                            base::Value(app.executable_file_name()));
+  pref_registration.SetKey(guest_os::prefs::kAppExtensionsKey,
+                           ProtoToList(app.extensions()));
   pref_registration.SetKey(guest_os::prefs::kAppMimeTypesKey,
                            ProtoToList(app.mime_types()));
   pref_registration.SetKey(guest_os::prefs::kAppKeywordsKey,
@@ -267,7 +271,7 @@ static std::string Join(const List& list) {
   std::string joined = "[";
   const char* seperator = "";
   for (const auto& list_item : list) {
-    joined += ToString(list_item) + seperator;
+    joined += seperator + ToString(list_item);
     seperator = ", ";
   }
   joined += "]";
@@ -293,6 +297,20 @@ std::string GuestOsRegistryService::Registration::DesktopFileId() const {
       .FindKeyOfType(guest_os::prefs::kAppDesktopFileIdKey,
                      base::Value::Type::STRING)
       ->GetString();
+}
+
+GuestOsRegistryService::VmType GuestOsRegistryService::Registration::VmType()
+    const {
+  if (is_terminal_app_)
+    return GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA;
+  base::Optional<int> vm_type =
+      pref_.FindIntKey(guest_os::prefs::kAppVmTypeKey);
+  // The VmType field is new, existing Apps that do not include it must be
+  // TERMINA Apps, as Plugin VM apps are not yet in production.
+  if (!vm_type) {
+    return GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA;
+  }
+  return static_cast<GuestOsRegistryService::VmType>(*vm_type);
 }
 
 std::string GuestOsRegistryService::Registration::VmName() const {
@@ -330,6 +348,13 @@ std::string GuestOsRegistryService::Registration::ExecutableFileName() const {
   if (!executable_file_name)
     return std::string();
   return executable_file_name->GetString();
+}
+
+std::set<std::string> GuestOsRegistryService::Registration::Extensions() const {
+  if (pref_.is_none())
+    return {};
+  return ListToStringSet(pref_.FindKeyOfType(guest_os::prefs::kAppExtensionsKey,
+                                             base::Value::Type::LIST));
 }
 
 std::set<std::string> GuestOsRegistryService::Registration::MimeTypes() const {
@@ -478,7 +503,7 @@ base::WeakPtr<GuestOsRegistryService> GuestOsRegistryService::GetWeakPtr() {
 }
 
 std::map<std::string, GuestOsRegistryService::Registration>
-GuestOsRegistryService::GetRegisteredApps() const {
+GuestOsRegistryService::GetAllRegisteredApps() const {
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(guest_os::prefs::kGuestOsRegistry);
   std::map<std::string, GuestOsRegistryService::Registration> result;
@@ -494,6 +519,19 @@ GuestOsRegistryService::GetRegisteredApps() const {
                    Registration(nullptr, /*is_terminal_app=*/true));
   }
   return result;
+}
+
+std::map<std::string, GuestOsRegistryService::Registration>
+GuestOsRegistryService::GetRegisteredApps(VmType vm_type) const {
+  auto apps = GetAllRegisteredApps();
+  for (auto it = apps.cbegin(); it != apps.cend();) {
+    if (it->second.VmType() == vm_type) {
+      ++it;
+    } else {
+      it = apps.erase(it);
+    }
+  }
+  return apps;
 }
 
 base::Optional<GuestOsRegistryService::Registration>
@@ -663,8 +701,8 @@ void GuestOsRegistryService::UpdateApplicationList(
           app.desktop_file_id(), app_list.vm_name(), app_list.container_name());
       new_app_ids.insert(app_id);
 
-      base::Value pref_registration =
-          AppPrefRegistrationFromApp(app, std::move(name), app_list);
+      base::Value pref_registration = AppPrefRegistrationFromApp(
+          app, app_list.vm_type(), std::move(name), app_list);
 
       base::Value* old_app = apps->FindKey(app_id);
       if (old_app && EqualsExcludingTimestamps(pref_registration, *old_app))

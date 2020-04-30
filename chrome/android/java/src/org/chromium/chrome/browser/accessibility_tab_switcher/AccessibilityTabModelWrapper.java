@@ -87,8 +87,8 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
     public void setup(AccessibilityTabModelAdapterListener listener) {
         mTabIconDarkColor = AppCompatResources.getColorStateList(
                 getContext(), R.color.default_icon_color_tint_list);
-        mTabIconSelectedDarkColor =
-                AppCompatResources.getColorStateList(getContext(), R.color.light_active_color);
+        mTabIconSelectedDarkColor = AppCompatResources.getColorStateList(
+                getContext(), R.color.default_control_color_active);
         mTabIconLightColor =
                 AppCompatResources.getColorStateList(getContext(), R.color.white_alpha_70);
         mTabIconSelectedLightColor =

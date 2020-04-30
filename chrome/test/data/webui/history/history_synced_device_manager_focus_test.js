@@ -11,7 +11,7 @@ suite('<history-synced-device-manager>', function() {
   let element;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     return ensureLazyLoaded().then(() => {
       element = document.createElement('history-synced-device-manager');

@@ -421,10 +421,9 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
     class LocalMockWriter(mock_writer.MockWriter):
 
       def WritePolicy(self, policy):
-        self.tester.assertEquals(policy['supported_on'][0]['platforms'],
-                                 ['win7'])
+        self.tester.assertEquals(policy['supported_on'][0]['platform'], 'win7')
         self.tester.assertEquals(
-            policy['items'][0]['supported_on'][0]['platforms'], ['win7'])
+            policy['items'][0]['supported_on'][0]['platform'], 'win7')
 
     self.do_test(policy_data_mock, LocalMockWriter())
 

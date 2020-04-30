@@ -20,7 +20,7 @@ suite('Metrics', function() {
   });
 
   setup(async () => {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     BrowserService.instance_ = new TestBrowserService();
     testService = BrowserService.getInstance();

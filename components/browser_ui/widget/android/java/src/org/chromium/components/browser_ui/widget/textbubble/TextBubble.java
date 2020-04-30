@@ -218,7 +218,7 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
 
         // Set predefined styles for the TextBubble.
         mDrawable.setBubbleColor(ApiCompatibilityUtils.getColor(
-                mContext.getResources(), R.color.light_active_color));
+                mContext.getResources(), R.color.default_control_color_active));
     }
 
     /** Shows the bubble. Will have no effect if the bubble is already showing. */

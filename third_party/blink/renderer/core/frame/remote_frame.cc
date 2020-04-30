@@ -621,7 +621,7 @@ bool RemoteFrame::IsIgnoredForHitTest() const {
   if (!owner || !owner->GetLayoutObject())
     return false;
 
-  return owner->OwnerType() == FrameOwnerElementType::kPortal ||
+  return owner->OwnerType() == mojom::blink::FrameOwnerElementType::kPortal ||
          !visible_to_hit_testing_;
 }
 

@@ -6,9 +6,9 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/overlays/public/common/alerts/alert_overlay.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/alert_overlay.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 #include "ios/chrome/grit/ios_strings.h"

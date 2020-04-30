@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_COMMON_CONFIRMATION_CONFIRMATION_OVERLAY_RESPONSE_UTIL_H_
 #define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_COMMON_CONFIRMATION_CONFIRMATION_OVERLAY_RESPONSE_UTIL_H_
 
-#import "ios/chrome/browser/overlays/public/common/alerts/alert_overlay.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/alert_overlay.h"
 
 // Utility function for creating a ResponseConverter that returns a
 // ConfirmationOverlayResponse.  |confirm_button_index| is the button index of

@@ -40,9 +40,9 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -403,7 +403,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
                                   const WebString& fallback_name,
                                   const FramePolicy&,
                                   const WebFrameOwnerProperties&,
-                                  FrameOwnerElementType) override;
+                                  mojom::blink::FrameOwnerElementType) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()

@@ -135,7 +135,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
   let boundTestVisible;
 
   function setupActivityLogHistory() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     activityLogHistory = document.createElement('activity-log-history');
     boundTestVisible = testVisible.bind(null, activityLogHistory);

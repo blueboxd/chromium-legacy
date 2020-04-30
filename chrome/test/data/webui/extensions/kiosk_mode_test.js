@@ -74,7 +74,7 @@ suite(extension_kiosk_mode_tests.suiteName, function() {
 
   /** @return {!Promise} */
   function initPage() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     browserProxy.reset();
     dialog = document.createElement('extensions-kiosk-dialog');
     document.body.appendChild(dialog);

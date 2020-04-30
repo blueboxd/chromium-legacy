@@ -20,9 +20,9 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_replication_state.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
@@ -85,7 +85,7 @@ class CONTENT_EXPORT FrameTreeNode {
       bool is_created_by_script,
       const base::UnguessableToken& devtools_frame_token,
       const blink::mojom::FrameOwnerProperties& frame_owner_properties,
-      blink::FrameOwnerElementType owner_type);
+      blink::mojom::FrameOwnerElementType owner_type);
 
   ~FrameTreeNode();
 
@@ -403,7 +403,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // will never be reused - this saves memory.
   void PruneChildFrameNavigationEntries(NavigationEntryImpl* entry);
 
-  blink::FrameOwnerElementType frame_owner_element_type() const {
+  blink::mojom::FrameOwnerElementType frame_owner_element_type() const {
     return replication_state_.frame_owner_element_type;
   }
   // Only meaningful to call on a root frame. The value of |feature_state| will

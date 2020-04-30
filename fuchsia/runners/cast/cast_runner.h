@@ -108,6 +108,9 @@ class CastRunner : public fuchsia::sys::Runner,
                  base::UniquePtrComparator>
       pending_components_;
 
+  // List of HTTP headers to exempt from CORS checks.
+  std::vector<std::vector<uint8_t>> cors_exempt_headers_;
+
   // Last component that was created with permission to access MICROPHONE.
   CastComponent* audio_capturer_component_ = nullptr;
 

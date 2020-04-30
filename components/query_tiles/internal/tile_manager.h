@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/time/clock.h"
 #include "components/query_tiles/internal/config.h"
 #include "components/query_tiles/internal/store.h"
@@ -25,6 +26,7 @@ class TileManager {
   using TileStore = Store<TileGroup>;
   using TileGroupStatusCallback = base::OnceCallback<void(TileGroupStatus)>;
   using GetTilesCallback = base::OnceCallback<void(std::vector<Tile>)>;
+  using TileCallback = base::OnceCallback<void(base::Optional<Tile>)>;
 
   // Creates the instance.
   static std::unique_ptr<TileManager> Create(
@@ -38,6 +40,9 @@ class TileManager {
 
   // Returns tiles to the caller.
   virtual void GetTiles(GetTilesCallback callback) = 0;
+
+  // Returns the tile associated with |tile_id| to the caller.
+  virtual void GetTile(const std::string& tile_id, TileCallback callback) = 0;
 
   // Save the query tiles into database.
   virtual void SaveTiles(std::vector<std::unique_ptr<Tile>> top_level_tiles,

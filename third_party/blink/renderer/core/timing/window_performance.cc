@@ -75,17 +75,17 @@ String GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
 
 AtomicString GetFrameOwnerType(HTMLFrameOwnerElement* frame_owner) {
   switch (frame_owner->OwnerType()) {
-    case FrameOwnerElementType::kNone:
+    case mojom::blink::FrameOwnerElementType::kNone:
       return "window";
-    case FrameOwnerElementType::kIframe:
+    case mojom::blink::FrameOwnerElementType::kIframe:
       return "iframe";
-    case FrameOwnerElementType::kObject:
+    case mojom::blink::FrameOwnerElementType::kObject:
       return "object";
-    case FrameOwnerElementType::kEmbed:
+    case mojom::blink::FrameOwnerElementType::kEmbed:
       return "embed";
-    case FrameOwnerElementType::kFrame:
+    case mojom::blink::FrameOwnerElementType::kFrame:
       return "frame";
-    case FrameOwnerElementType::kPortal:
+    case mojom::blink::FrameOwnerElementType::kPortal:
       return "portal";
   }
   NOTREACHED();
@@ -94,7 +94,7 @@ AtomicString GetFrameOwnerType(HTMLFrameOwnerElement* frame_owner) {
 
 String GetFrameSrc(HTMLFrameOwnerElement* frame_owner) {
   switch (frame_owner->OwnerType()) {
-    case FrameOwnerElementType::kObject:
+    case mojom::blink::FrameOwnerElementType::kObject:
       return GetFrameAttribute(frame_owner, html_names::kDataAttr, false);
     default:
       return GetFrameAttribute(frame_owner, html_names::kSrcAttr, false);

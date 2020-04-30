@@ -138,7 +138,13 @@ class URLManifestItem(ManifestItem):
     def https(self):
         # type: () -> bool
         flags = set(urlparse(self.url).path.rsplit("/", 1)[1].split(".")[1:-1])
-        return ("https" in flags or "serviceworker" in flags)
+        return "https" in flags or "serviceworker" in flags
+
+    @property
+    def h2(self):
+        # type: () -> bool
+        flags = set(urlparse(self.url).path.rsplit("/", 1)[1].split(".")[1:-1])
+        return "h2" in flags
 
     def to_json(self):
         # type: () -> Tuple[Optional[Text], Dict[Any, Any]]
@@ -199,7 +205,7 @@ class TestharnessTest(URLManifestItem):
         if self.jsshell:
             rv[-1]["jsshell"] = True
         if self.script_metadata:
-            rv[-1]["script_metadata"] = self.script_metadata
+            rv[-1]["script_metadata"] = [(k.decode('utf8'), v.decode('utf8')) for (k,v) in self.script_metadata]
         return rv
 
 

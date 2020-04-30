@@ -38,9 +38,7 @@
       }
 
       #networkStateText {
-        color: var(--cr-secondary-text-color);
         font-size: inherit;
-        font-weight: 400;
       }
 
       #networkStateText[active] {
@@ -70,6 +68,7 @@
       <div id="divText" class="layout horizontal flex">
         <div aria-hidden="true">[[getItemName_(item)]]</div>
         <div id="networkStateText"
+            class="cr-secondary-text"
             hidden$="[[!isStateTextVisible_(networkState)]]"
             active$="[[isStateTextActive_(networkState,
                          activationUnavailable)]]">

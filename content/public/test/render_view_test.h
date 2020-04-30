@@ -44,6 +44,7 @@ class ContentBrowserClient;
 class ContentClient;
 class ContentRendererClient;
 class CompositorDependencies;
+class FakeRenderWidgetHost;
 class PageState;
 class RendererMainPlatformDelegate;
 class RendererBlinkPlatformImpl;
@@ -219,6 +220,7 @@ class RenderViewTest : public testing::Test {
   std::unique_ptr<ContentBrowserClient> content_browser_client_;
   std::unique_ptr<ContentRendererClient> content_renderer_client_;
   std::unique_ptr<MockRenderThread> render_thread_;
+  std::unique_ptr<FakeRenderWidgetHost> render_widget_host_;
 
   // Used to setup the process so renderers can run.
   std::unique_ptr<RendererMainPlatformDelegate> platform_;

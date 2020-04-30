@@ -20,21 +20,11 @@ namespace mirroring {
 
 namespace {
 
-// Default end-to-end latency value
+// Default end-to-end latency. Currently adaptive latency control is disabled
+// because of audio playout regressions (b/32876644).
+// TODO(openscreen/44): Re-enable in port to Open Screen.
 constexpr base::TimeDelta kDefaultPlayoutDelay =
     base::TimeDelta::FromMilliseconds(400);
-
-// Starting end-to-end latency for animated content.
-constexpr base::TimeDelta kAnimatedPlayoutDelay = kDefaultPlayoutDelay;
-
-// Minimum end-to-end latency.
-constexpr base::TimeDelta kMinPlayoutDelay = kDefaultPlayoutDelay;
-
-// Maximum end-to-end latency.  Currently, this is kMinPlayoutDelay, effectively
-// disabling adaptive latency control, because of audio playout regressions
-// (b/32876644).
-// TODO(openscreen/44): Re-enable in port to Open Screen.
-constexpr base::TimeDelta kMaxPlayoutDelay = kDefaultPlayoutDelay;
 
 constexpr int kAudioTimebase = 48000;
 constexpr int kVidoTimebase = 90000;
@@ -99,9 +89,10 @@ FrameSenderConfig MirrorSettings::GetDefaultAudioConfig(
   FrameSenderConfig config;
   config.sender_ssrc = 1;
   config.receiver_ssrc = 2;
-  config.min_playout_delay = GetPlayoutDelay();
-  config.max_playout_delay = GetPlayoutDelay();
-  config.animated_playout_delay = GetPlayoutDelay();
+  const base::TimeDelta playout_delay = GetPlayoutDelay();
+  config.min_playout_delay = playout_delay;
+  config.max_playout_delay = playout_delay;
+  config.animated_playout_delay = playout_delay;
   config.rtp_payload_type = payload_type;
   config.rtp_timebase = kAudioTimebase;
   config.channels = kAudioChannels;
@@ -119,9 +110,10 @@ FrameSenderConfig MirrorSettings::GetDefaultVideoConfig(
   FrameSenderConfig config;
   config.sender_ssrc = 11;
   config.receiver_ssrc = 12;
-  config.min_playout_delay = GetPlayoutDelay();
-  config.max_playout_delay = GetPlayoutDelay();
-  config.animated_playout_delay = kAnimatedPlayoutDelay;
+  const base::TimeDelta playout_delay = GetPlayoutDelay();
+  config.min_playout_delay = playout_delay;
+  config.max_playout_delay = playout_delay;
+  config.animated_playout_delay = playout_delay;
   config.rtp_payload_type = payload_type;
   config.rtp_timebase = kVidoTimebase;
   config.channels = 1;
@@ -176,15 +168,11 @@ base::Value MirrorSettings::ToDictionaryValue() {
   settings.SetKey("minVideoBitrate", base::Value(kMinVideoBitrate));
   settings.SetKey("maxVideoBitrate", base::Value(kMaxVideoBitrate));
   settings.SetKey("audioBitrate", base::Value(kAudioBitrate));
-  settings.SetKey(
-      "maxLatencyMillis",
-      base::Value(static_cast<int32_t>(kMaxPlayoutDelay.InMilliseconds())));
-  settings.SetKey(
-      "minLatencyMillis",
-      base::Value(static_cast<int32_t>(kMinPlayoutDelay.InMilliseconds())));
-  settings.SetKey("animatedLatencyMillis",
-                  base::Value(static_cast<int32_t>(
-                      kAnimatedPlayoutDelay.InMilliseconds())));
+  const int32_t playout_delay(
+      static_cast<int32_t>(GetPlayoutDelay().InMilliseconds()));
+  settings.SetKey("maxLatencyMillis", base::Value(playout_delay));
+  settings.SetKey("minLatencyMillis", base::Value(playout_delay));
+  settings.SetKey("animatedLatencyMillis", base::Value(playout_delay));
   settings.SetKey("dscpEnabled", base::Value(false));
   settings.SetKey("enableLogging", base::Value(true));
   settings.SetKey("useTdls", base::Value(false));

@@ -383,11 +383,24 @@ class WebContents : public PageNavigator,
   virtual WebUI* GetWebUI() = 0;
   virtual WebUI* GetCommittedWebUI() = 0;
 
-  // Allows overriding the user agent used for NavigationEntries it owns.
-  // |override_in_new_tabs| is set when we are overriding user agent for new
-  // tabs.
+  // Sets the user-agent that may be used for navigations in this WebContents.
+  // The user-agent is *only* used when
+  // NavigationEntry::SetIsOverridingUserAgent(true) is used (the value of
+  // is-overriding-user-agent may be specified in LoadURLParams). If
+  // |override_in_new_tabs| is true, and the first navigation in the tab is
+  // renderer initiated, then is-overriding-user-agent is set to true for the
+  // NavigationEntry. See SetRendererInitiatedUserAgentOverrideOption() for
+  // details on how renderer initiated navigations are configured.
   virtual void SetUserAgentOverride(const blink::UserAgentOverride& ua_override,
                                     bool override_in_new_tabs) = 0;
+
+  // Configures the value of is-overriding-user-agent for renderer initiated
+  // navigations. The default is UA_OVERRIDE_INHERIT. This value does not apply
+  // to the first renderer initiated navigation if the tab has no navigations.
+  // See SetUserAgentOverride() for details on that.
+  virtual void SetRendererInitiatedUserAgentOverrideOption(
+      NavigationController::UserAgentOverrideOption option) = 0;
+
   virtual const blink::UserAgentOverride& GetUserAgentOverride() = 0;
 
   // Set the accessibility mode so that accessibility events are forwarded

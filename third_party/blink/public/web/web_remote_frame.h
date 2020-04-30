@@ -7,8 +7,8 @@
 
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-shared.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -72,13 +72,13 @@ class WebRemoteFrame : public WebFrame {
                                           blink::InterfaceRegistry*,
                                           WebFrame* previous_sibling,
                                           const WebFrameOwnerProperties&,
-                                          FrameOwnerElementType,
+                                          mojom::FrameOwnerElementType,
                                           WebFrame* opener) = 0;
 
   virtual WebRemoteFrame* CreateRemoteChild(WebTreeScopeType,
                                             const WebString& name,
                                             const FramePolicy&,
-                                            FrameOwnerElementType,
+                                            mojom::FrameOwnerElementType,
                                             WebRemoteFrameClient*,
                                             blink::InterfaceRegistry*,
                                             AssociatedInterfaceProvider*,

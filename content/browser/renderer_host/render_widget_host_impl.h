@@ -847,12 +847,26 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                            AddAndRemoveInputEventObserver);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            AddAndRemoveImeInputEventObserver);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
+                           InputRouterReceivesHasTouchEventHandlers);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, EventDispatchPostDetach);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, InputEventRWHLatencyComponent);
   FRIEND_TEST_ALL_PREFIXES(DevToolsManagerTest,
                            NoUnresponsiveDialogInInspectedContents);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest,
                            ConflictingAllocationsResolve);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            ResizeAndCrossProcessPostMessagePreserveOrder);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostInputEventRouterTest,
+                           EnsureRendererDestroyedHandlesUnAckedTouchEvents);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, TouchEventState);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, TouchEventSyncAsync);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraOverscrollTest,
+                           OverscrollWithTouchEvents);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraOverscrollTest,
+                           TouchGestureEndDispatchedAfterOverscrollComplete);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           InvalidEventsHaveSyncHandlingDisabled);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostInputEventRouterTest,
                            EnsureRendererDestroyedHandlesUnAckedTouchEvents);
   friend class MockRenderWidgetHost;
@@ -901,13 +915,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                    std::vector<IPC::Message> messages);
   void OnForceRedrawComplete(int snapshot_id);
   void OnFirstVisuallyNonEmptyPaint();
-  void OnHasTouchEventHandlers(bool has_handlers);
   void OnIntrinsicSizingInfoChanged(blink::WebIntrinsicSizingInfo info);
 
   // blink::mojom::FrameWidgetHost overrides.
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
                                        const gfx::Rect& rect_to_zoom) override;
   void ZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom) override;
+  void SetHasTouchEventHandlers(bool has_handlers) override;
 
   // When the RenderWidget is destroyed and recreated, this resets states in the
   // browser to match the clean start for the renderer side.

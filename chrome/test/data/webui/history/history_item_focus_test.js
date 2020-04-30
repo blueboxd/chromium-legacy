@@ -11,7 +11,7 @@ suite('<history-item> focus test', function() {
   let item;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     BrowserService.instance_ = new TestBrowserService();
 
     item = document.createElement('history-item');

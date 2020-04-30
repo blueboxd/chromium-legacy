@@ -10,7 +10,7 @@ suite('<history-searched-label> unit test', function() {
   let label;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     label = document.createElement('history-searched-label');
     document.body.appendChild(label);
   });

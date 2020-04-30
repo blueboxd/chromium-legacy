@@ -27,7 +27,7 @@ suite('<history-item> unit test', function() {
   let item;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     BrowserService.instance_ = new TestBrowserService();
 
     item = document.createElement('history-item');
@@ -70,7 +70,7 @@ suite('<history-item> integration test', function() {
   let element;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     const testService = new TestBrowserService();
     BrowserService.instance_ = testService;
 

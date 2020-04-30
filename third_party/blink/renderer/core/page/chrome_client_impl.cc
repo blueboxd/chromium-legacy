@@ -952,21 +952,6 @@ void ChromeClientImpl::SetEventListenerProperties(
   }
 
   widget->SetEventListenerProperties(event_class, properties);
-
-  WebWidgetClient* client = widget->Client();
-  if (event_class == cc::EventListenerClass::kTouchStartOrMove ||
-      event_class == cc::EventListenerClass::kTouchEndOrCancel) {
-    client->SetHasTouchEventHandlers(
-        widget->EventListenerProperties(
-            cc::EventListenerClass::kTouchStartOrMove) !=
-            cc::EventListenerProperties::kNone ||
-        widget->EventListenerProperties(
-            cc::EventListenerClass::kTouchEndOrCancel) !=
-            cc::EventListenerProperties::kNone);
-  } else if (event_class == cc::EventListenerClass::kPointerRawUpdate) {
-    client->SetHasPointerRawUpdateEventHandlers(
-        properties != cc::EventListenerProperties::kNone);
-  }
 }
 
 cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(

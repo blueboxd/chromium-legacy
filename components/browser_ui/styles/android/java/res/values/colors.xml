@@ -5,8 +5,6 @@
 
 <!-- TODO(crbug.com/1017190): Remove the UnusedResources workaround. -->
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
-    <color name="light_active_color">@color/default_control_color_active_light</color>
-
     <!-- Text colors -->
     <color name="default_primary_color">#F2F2F2</color>
     <color name="input_underline_error_color">#D32F2F</color>

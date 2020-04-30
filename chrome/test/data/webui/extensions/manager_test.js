@@ -34,7 +34,7 @@ suite(extension_manager_tests.suiteName, function() {
   }
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     manager = document.createElement('extensions-manager');
     document.body.appendChild(manager);
 

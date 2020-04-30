@@ -626,8 +626,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnForceRedrawComplete)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint,
                         OnFirstVisuallyNonEmptyPaint)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_HasTouchEventHandlers,
-                        OnHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_IntrinsicSizingInfoChanged,
                         OnIntrinsicSizingInfoChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -2713,11 +2711,6 @@ void RenderWidgetHostImpl::DecrementInFlightEventCount(
   }
 }
 
-void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
-  input_router_->OnHasTouchEventHandlers(has_handlers);
-  has_touch_handler_ = has_handlers;
-}
-
 void RenderWidgetHostImpl::OnIntrinsicSizingInfoChanged(
     blink::WebIntrinsicSizingInfo info) {
   if (view_)
@@ -3304,6 +3297,11 @@ void RenderWidgetHostImpl::ZoomToFindInPageRectInMainFrame(
 
   auto* root_rvhi = RenderViewHostImpl::From(root_view->GetRenderWidgetHost());
   root_rvhi->ZoomToFindInPageRect(transformed_rect_to_zoom);
+}
+
+void RenderWidgetHostImpl::SetHasTouchEventHandlers(bool has_handlers) {
+  input_router_->OnHasTouchEventHandlers(has_handlers);
+  has_touch_handler_ = has_handlers;
 }
 
 gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {

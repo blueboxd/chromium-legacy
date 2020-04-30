@@ -341,8 +341,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   WebUI* GetCommittedWebUI() override;
   void SetUserAgentOverride(const blink::UserAgentOverride& ua_override,
                             bool override_in_new_tabs) override;
+  void SetRendererInitiatedUserAgentOverrideOption(
+      NavigationController::UserAgentOverrideOption option) override;
   const blink::UserAgentOverride& GetUserAgentOverride() override;
-  bool ShouldOverrideUserAgentInNewTabs() override;
+  bool ShouldOverrideUserAgentForRendererInitiatedNavigation() override;
   void EnableWebContentsOnlyAccessibilityMode() override;
   bool IsWebContentsOnlyAccessibilityModeForTesting() override;
   bool IsFullAccessibilityModeForTesting() override;
@@ -2003,6 +2005,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Whether we should override user agent in new tabs.
   bool should_override_user_agent_in_new_tabs_ = false;
+
+  // Used to determine the value of is-user-agent-overriden for renderer
+  // initiated navigations.
+  NavigationController::UserAgentOverrideOption
+      renderer_initiated_user_agent_override_option_ =
+          NavigationController::UA_OVERRIDE_INHERIT;
 
   // Gets notified about changes in viewport fit events.
   std::unique_ptr<DisplayCutoutHostImpl> display_cutout_host_impl_;

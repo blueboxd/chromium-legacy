@@ -139,6 +139,38 @@ class AssociatedReceiver {
     return remote;
   }
 
+  // Like BindNewEndpointAndPassRemote() above, but it creates a dedicated
+  // message pipe. The returned remote can be bound directly to an
+  // implementation, without being first passed through a message pipe endpoint.
+  //
+  // For testing, where the returned request is bound to e.g. a mock and there
+  // are no other interfaces involved.
+  PendingAssociatedRemote<Interface>
+  BindNewEndpointAndPassDedicatedRemoteForTesting() WARN_UNUSED_RESULT {
+    DCHECK(!is_bound()) << "AssociatedReceiver is already bound";
+
+    MessagePipe pipe;
+    scoped_refptr<internal::MultiplexRouter> router0 =
+        new internal::MultiplexRouter(
+            std::move(pipe.handle0), internal::MultiplexRouter::MULTI_INTERFACE,
+            false, base::SequencedTaskRunnerHandle::Get());
+    scoped_refptr<internal::MultiplexRouter> router1 =
+        new internal::MultiplexRouter(
+            std::move(pipe.handle1), internal::MultiplexRouter::MULTI_INTERFACE,
+            true, base::SequencedTaskRunnerHandle::Get());
+
+    ScopedInterfaceEndpointHandle remote_handle;
+    ScopedInterfaceEndpointHandle receiver_handle;
+    ScopedInterfaceEndpointHandle::CreatePairPendingAssociation(
+        &remote_handle, &receiver_handle);
+    InterfaceId id = router1->AssociateInterface(std::move(receiver_handle));
+    receiver_handle = router0->CreateLocalEndpointHandle(id);
+
+    Bind(PendingAssociatedReceiver<Interface>(std::move(receiver_handle)),
+         nullptr);
+    return PendingAssociatedRemote<Interface>(std::move(remote_handle), 0);
+  }
+
   // Binds this AssociatedReceiver by consuming |pending_receiver|. Must only be
   // called on an unbound AssociatedReceiver.
   //

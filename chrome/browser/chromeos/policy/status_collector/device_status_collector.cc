@@ -561,11 +561,15 @@ bool AddCrostiniAppInfo(
 // Utility method to add a list of installed Crostini Apps to Crostini status
 void AddCrostiniAppListForProfile(Profile* const profile,
                                   em::CrostiniStatus* const crostini_status) {
-  auto* registry_service =
-      guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
-  for (const auto& pair : registry_service->GetRegisteredApps()) {
+  const std::map<std::string, guest_os::GuestOsRegistryService::Registration>&
+      registered_apps =
+          guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile)
+              ->GetRegisteredApps(guest_os::GuestOsRegistryService::VmType::
+                                      ApplicationList_VmType_TERMINA);
+  for (const auto& pair : registered_apps) {
     const std::string& registered_app_id = pair.first;
-    const auto& registration = pair.second;
+    const guest_os::GuestOsRegistryService::Registration& registration =
+        pair.second;
     em::CrostiniApp* const app = crostini_status->add_installed_apps();
     if (!AddCrostiniAppInfo(registration, app)) {
       LOG(ERROR) << "Could not retrieve all required information for "

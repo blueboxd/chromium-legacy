@@ -22,6 +22,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/app_list_notifier_impl.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/app_sync_ui_state_watcher.h"
@@ -55,7 +56,8 @@ bool IsTabletMode() {
 }  // namespace
 
 AppListClientImpl::AppListClientImpl()
-    : app_list_controller_(ash::AppListController::Get()) {
+    : app_list_notifier_(std::make_unique<AppListNotifierImpl>()),
+      app_list_controller_(ash::AppListController::Get()) {
   app_list_controller_->SetClient(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
@@ -536,6 +538,10 @@ void AppListClientImpl::NotifySearchResultsForLogging(
     search_controller_->OnSearchResultsDisplayed(trimmed_query, results,
                                                  position_index);
   }
+}
+
+ash::AppListNotifier* AppListClientImpl::GetNotifier() {
+  return app_list_notifier_.get();
 }
 
 ash::ShelfLaunchSource AppListClientImpl::AppListSourceToLaunchSource(

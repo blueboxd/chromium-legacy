@@ -29,6 +29,7 @@
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_list/app_list_notifier.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -218,6 +219,12 @@ AppListModel* AppListControllerImpl::GetModel() {
 
 SearchModel* AppListControllerImpl::GetSearchModel() {
   return &search_model_;
+}
+
+AppListNotifier* AppListControllerImpl::GetNotifier() {
+  if (!client_)
+    return nullptr;
+  return client_->GetNotifier();
 }
 
 void AppListControllerImpl::AddItem(
@@ -1074,6 +1081,9 @@ void AppListControllerImpl::StartSearch(const base::string16& raw_query) {
     base::string16 query;
     base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
     client_->StartSearch(query);
+    auto* notifier = GetNotifier();
+    if (notifier)
+      notifier->NotifySearchQueryChanged(raw_query);
   }
 }
 
@@ -1122,6 +1132,10 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
                                result->distance_from_origin());
     }
   }
+
+  auto* notifier = GetNotifier();
+  if (notifier)
+    notifier->NotifyLaunch(result->display_type(), result->id());
 
   if (presenter_.IsVisibleDeprecated() && result->is_omnibox_search() &&
       IsAssistantAllowedAndEnabled() &&
@@ -1398,6 +1412,9 @@ void AppListControllerImpl::OnStateTransitionAnimationCompleted(
     AppListViewState state) {
   if (!state_transition_animation_callback_.is_null())
     state_transition_animation_callback_.Run(state);
+  auto* notifier = GetNotifier();
+  if (notifier)
+    notifier->NotifyUIStateChanged(state);
 }
 
 void AppListControllerImpl::GetAppLaunchedMetricParams(

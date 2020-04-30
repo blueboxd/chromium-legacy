@@ -3866,7 +3866,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
     const blink::WebString& fallback_name,
     const blink::FramePolicy& frame_policy,
     const blink::WebFrameOwnerProperties& frame_owner_properties,
-    blink::FrameOwnerElementType frame_owner_element_type) {
+    blink::mojom::FrameOwnerElementType frame_owner_element_type) {
   DCHECK_EQ(frame_, parent);
 
   // Synchronously notify the browser of a child frame creation to get the

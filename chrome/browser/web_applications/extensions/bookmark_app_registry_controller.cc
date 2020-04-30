@@ -68,7 +68,7 @@ void BookmarkAppRegistryController::SetAppIsDisabled(
   NOTIMPLEMENTED();
 }
 
-void BookmarkAppRegistryController::SetAppIsLocallyInstalledForTesting(
+void BookmarkAppRegistryController::SetAppIsLocallyInstalled(
     const web_app::AppId& app_id,
     bool is_locally_installed) {
   SetBookmarkAppIsLocallyInstalled(profile(), GetExtension(app_id),

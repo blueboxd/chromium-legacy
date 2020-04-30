@@ -12,9 +12,9 @@
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
 
         <!-- Color of checkboxes, switches, buttons, etc. -->
-        <item name="colorAccent">@color/light_active_color</item>
+        <item name="colorAccent">@color/default_control_color_active</item>
         <item name="colorControlNormal">@color/control_normal_color</item>
-        <item name="colorControlActivated">@color/light_active_color</item>
+        <item name="colorControlActivated">@color/default_control_color_active</item>
         <item name="colorControlHighlight">@color/control_highlight_color</item>
     </style>
 
@@ -36,11 +36,11 @@
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
 
         <!--  Overriding AppCompat values -->
-        <item name="colorAccent">@color/light_active_color</item>
-        <item name="colorControlActivated">@color/light_active_color</item>
+        <item name="colorAccent">@color/default_control_color_active</item>
+        <item name="colorControlActivated">@color/default_control_color_active</item>
         <item name="colorControlNormal">@color/control_normal_color</item>
         <item name="colorControlHighlight">@color/control_highlight_color</item>
-        <item name="colorPrimary">@color/light_active_color</item>
+        <item name="colorPrimary">@color/default_control_color_active</item>
         <item name="buttonBarButtonStyle">@style/AlertDialogButtonStyle</item>
         <item name="spinnerStyle">@style/SpinnerStyle</item>
     </style>

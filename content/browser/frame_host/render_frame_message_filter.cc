@@ -45,8 +45,8 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "url/gurl.h"
@@ -77,7 +77,7 @@ void CreateChildFrameOnUI(
     const base::UnguessableToken& devtools_frame_token,
     const blink::FramePolicy& frame_policy,
     const blink::mojom::FrameOwnerProperties& frame_owner_properties,
-    blink::FrameOwnerElementType owner_type,
+    blink::mojom::FrameOwnerElementType owner_type,
     int new_routing_id,
     mojo::ScopedMessagePipeHandle interface_provider_receiver_handle,
     mojo::ScopedMessagePipeHandle browser_interface_broker_handle) {

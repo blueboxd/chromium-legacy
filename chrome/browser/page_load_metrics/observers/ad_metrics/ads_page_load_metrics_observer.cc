@@ -1072,10 +1072,14 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   if (!frame_data->MaybeTriggerHeavyAdIntervention())
     return;
 
-  // Don't trigger the heavy ad intervention on reloads.
-  UMA_HISTOGRAM_BOOLEAN(kIgnoredByReloadHistogramName, page_load_is_reload_);
-  if (page_load_is_reload_)
-    return;
+  // Don't trigger the heavy ad intervention on reloads. Gate this behind the
+  // privacy mitigations flag to help developers debug (otherwise they need to
+  // trigger new navigations to the site to test it).
+  if (heavy_ad_privacy_mitigations_enabled_) {
+    UMA_HISTOGRAM_BOOLEAN(kIgnoredByReloadHistogramName, page_load_is_reload_);
+    if (page_load_is_reload_)
+      return;
+  }
 
   // Check to see if we are allowed to activate on this host.
   if (IsBlocklisted())

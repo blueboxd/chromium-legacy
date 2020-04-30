@@ -145,7 +145,8 @@ class TabSelectionEditorMediator
                 // associated bug is landed.
                 @ColorInt
                 int toolbarBackgroundColor = ApiCompatibilityUtils.getColor(mContext.getResources(),
-                        isIncognito ? R.color.modern_blue_300 : R.color.light_active_color);
+                        isIncognito ? R.color.modern_blue_300
+                                    : R.color.default_control_color_active);
                 ColorStateList toolbarTintColorList = AppCompatResources.getColorStateList(mContext,
                         isIncognito ? R.color.dark_text_color_list
                                     : R.color.default_text_color_inverse_list);

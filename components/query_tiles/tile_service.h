@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/query_tiles/tile.h"
@@ -21,6 +22,7 @@ namespace upboarding {
 
 using TileList = std::vector<Tile>;
 using GetTilesCallback = base::OnceCallback<void(TileList)>;
+using TileCallback = base::OnceCallback<void(base::Optional<Tile>)>;
 using VisualsCallback = base::OnceCallback<void(const gfx::Image&)>;
 
 // The central class on chrome client responsible for fetching, storing,
@@ -29,6 +31,9 @@ class TileService : public KeyedService, public base::SupportsUserData {
  public:
   // Called to retrieve all the tiles.
   virtual void GetQueryTiles(GetTilesCallback callback) = 0;
+
+  // Called to retrieve the tile associated with |tile_id|.
+  virtual void GetTile(const std::string& tile_id, TileCallback callback) = 0;
 
   // Called to retrieve thumbnail for the given tile id.
   // TODO(shaktisahu): Remove this method since we are leaning towards using

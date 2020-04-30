@@ -10,5 +10,8 @@ mojom("mojom") {
     "machine_learning_service.mojom",
     "model.mojom",
     "tensor.mojom",
+    "text_classifier.mojom",
   ]
+
+  public_deps = [ "//mojo/public/mojom/base" ]
 }

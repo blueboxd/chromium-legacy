@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_EVENTS_CALLBACK;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_FIRST_TIME;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_SCOPE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_DISMISSED_BY_USER;
@@ -66,10 +67,16 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
         mModel.set(DISCLOSURE_STATE, DISCLOSURE_STATE_DISMISSED_BY_USER);
     }
 
+    @Override
+    public void onDisclosureShown() {
+        mBrowserServicesStore.setUserSeenTwaDisclosureForPackage(mClientPackageNameProvider.get());
+    }
+
     /** Shows the disclosure if it is not already showing and hasn't been accepted. */
     private void showIfNeeded() {
         if (!isShowing() && !wasDismissed()) {
             mRecorder.recordDisclosureShown();
+            mModel.set(DISCLOSURE_FIRST_TIME, isFirstTime());
             mModel.set(DISCLOSURE_STATE, DISCLOSURE_STATE_SHOWN);
         }
     }
@@ -84,6 +91,12 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
     /** Has a disclosure been dismissed for this client package before? */
     private boolean wasDismissed() {
         return mBrowserServicesStore.hasUserAcceptedTwaDisclosureForPackage(
+                mClientPackageNameProvider.get());
+    }
+
+    /** Is this the first time the user has seen the disclosure? */
+    private boolean isFirstTime() {
+        return !mBrowserServicesStore.hasUserSeenTwaDisclosureForPackage(
                 mClientPackageNameProvider.get());
     }
 

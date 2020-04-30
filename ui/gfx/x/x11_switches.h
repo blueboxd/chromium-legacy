@@ -5,14 +5,13 @@
 #ifndef UI_GFX_X_X11_SWITCHES_H_
 #define UI_GFX_X_X11_SWITCHES_H_
 
-#include "build/build_config.h"
-#include "ui/gfx/gfx_export.h"
+#include "base/component_export.h"
 
 namespace switches {
 
-GFX_EXPORT extern const char kX11Display[];
+COMPONENT_EXPORT(X11) extern const char kX11Display[];
 
-GFX_EXPORT extern const char kNoXshm[];
+COMPONENT_EXPORT(X11) extern const char kNoXshm[];
 
 }  // namespace switches
 

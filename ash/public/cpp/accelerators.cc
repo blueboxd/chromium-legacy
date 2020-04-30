@@ -118,6 +118,7 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, RESTORE_TAB},
     // This corresponds to the "Print Screen" key.
     {true, ui::VKEY_SNAPSHOT, ui::EF_NONE, TAKE_SCREENSHOT},
+    {true, ui::VKEY_SNAPSHOT, ui::EF_ALT_DOWN, TAKE_PARTIAL_SCREENSHOT},
     // On Chrome OS, Search key is mapped to LWIN. The Search key binding should
     // act on release instead of press when using Search as a modifier key for
     // extended keyboard shortcuts.

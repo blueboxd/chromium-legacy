@@ -78,6 +78,19 @@ void ApplyReplaceUrl(network::ResourceRequest* request,
   request->url = request->url.ReplaceComponents(replacements);
 }
 
+void ApplyAppendToQuery(
+    network::ResourceRequest* request,
+    const mojom::UrlRequestRewriteAppendToQueryPtr& append_to_query) {
+  std::string url_query;
+  if (request->url.has_query() && !request->url.query().empty())
+    url_query = request->url.query() + "&";
+  url_query += append_to_query->query;
+
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(url_query);
+  request->url = request->url.ReplaceComponents(replacements);
+}
+
 void ApplyRewrite(network::ResourceRequest* request,
                   const mojom::UrlRequestActionPtr& rewrite) {
   switch (rewrite->which()) {
@@ -93,6 +106,9 @@ void ApplyRewrite(network::ResourceRequest* request,
       break;
     case mojom::UrlRequestAction::Tag::REPLACE_URL:
       ApplyReplaceUrl(request, rewrite->get_replace_url());
+      break;
+    case mojom::UrlRequestAction::Tag::APPEND_TO_QUERY:
+      ApplyAppendToQuery(request, rewrite->get_append_to_query());
       break;
     case mojom::UrlRequestAction::Tag::POLICY:
       break;

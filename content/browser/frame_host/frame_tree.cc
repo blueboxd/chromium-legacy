@@ -112,7 +112,7 @@ FrameTree::FrameTree(Navigator* navigator,
                               false,
                               base::UnguessableToken::Create(),
                               blink::mojom::FrameOwnerProperties(),
-                              blink::FrameOwnerElementType::kNone)),
+                              blink::mojom::FrameOwnerElementType::kNone)),
       focused_frame_tree_node_id_(FrameTreeNode::kFrameTreeNodeInvalidId),
       load_progress_(0.0) {}
 
@@ -189,7 +189,7 @@ FrameTreeNode* FrameTree::AddFrame(
     const blink::FramePolicy& frame_policy,
     const blink::mojom::FrameOwnerProperties& frame_owner_properties,
     bool was_discarded,
-    blink::FrameOwnerElementType owner_type) {
+    blink::mojom::FrameOwnerElementType owner_type) {
   CHECK_NE(new_routing_id, MSG_ROUTING_NONE);
 
   // A child frame always starts with an initial empty document, which means
@@ -248,7 +248,7 @@ FrameTreeNode* FrameTree::AddFrame(
   // we can announce the creation of the initial RenderFrame which already
   // exists in the renderer process.
   if (added_node->frame_owner_element_type() !=
-      blink::FrameOwnerElementType::kPortal) {
+      blink::mojom::FrameOwnerElementType::kPortal) {
     // Portals do not have a live RenderFrame in the renderer process.
     added_node->current_frame_host()->SetRenderFrameCreated(true);
   }

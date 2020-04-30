@@ -4,14 +4,24 @@
 
 module new_tab_page.mojom;
 
+import "mojo/public/mojom/base/text_direction.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "skia/public/mojom/skcolor.mojom";
 import "url/mojom/url.mojom";
-import "mojo/public/mojom/base/text_direction.mojom";
 
 struct MostVisitedTile {
   string title;
   mojo_base.mojom.TextDirection title_direction;
   url.mojom.Url url;
+
+  // ======= METRICS =======
+  // Identifier of most visited entry source (e.g. top sites).
+  int32 source;
+  // Identifier of most visited entry title source (e.g. page's title tag).
+  int32 title_source;
+  // Time the most visited entry was generated (e.g. received by a suggestion
+  // server).
+  mojo_base.mojom.Time data_generation_time;
 };
 
 struct MostVisitedInfo {
@@ -246,10 +256,12 @@ interface PageHandler {
   ChooseLocalCustomBackground() => (bool success);
 
   // ======= METRICS =======
-  // Logs that most visited tiles were displayed / updated at |time|. The first
-  // instance of this event is used as a proxy for when the NTP has finished
-  // loading.
-  OnMostVisitedTilesRendered(double time);
+  // Logs that |tiles| were displayed / updated at |time|. The first instance of
+  // this event is used as a proxy for when the NTP has finished loading.
+  OnMostVisitedTilesRendered(array<MostVisitedTile> tiles, double time);
+  // Logs that |tile| at position |index| was triggered to navigate to that
+  // most visited entry.
+  OnMostVisitedTileNavigation(MostVisitedTile tile, uint32 index);
 };
 
 // WebUI-side handler for requests from the browser.

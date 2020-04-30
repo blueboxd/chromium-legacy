@@ -22,6 +22,7 @@ void TestScreenshotDelegate::HandleTakePartialScreenshot(
 }
 
 void TestScreenshotDelegate::HandleTakeWindowScreenshot(aura::Window* window) {
+  ++handle_take_window_screenshot_count_;
   selected_window_ = window;
 }
 

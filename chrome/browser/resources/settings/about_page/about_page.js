@@ -132,6 +132,20 @@ Polymer({
     // </if>
   },
 
+  /**
+   * @return {string}
+   * @private
+   */
+  getPromoteUpdaterClass_() {
+    // <if expr="_google_chrome and is_macosx">
+    if (this.promoteUpdaterStatus_.disabled) {
+      return 'cr-secondary-text';
+    }
+    // </if>
+
+    return '';
+  },
+
   // <if expr="not chromeos">
   /** @private */
   startListening_() {

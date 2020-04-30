@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
@@ -19,6 +20,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
+#include "components/lookalikes/core/features.h"
 #include "components/security_state/core/features.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
@@ -270,6 +272,11 @@ bool IsTopDomain(const DomainInfo& domain_info) {
 bool ShouldBlockLookalikeUrlNavigation(LookalikeUrlMatchType match_type,
                                        const DomainInfo& navigated_domain) {
   if (match_type == LookalikeUrlMatchType::kSiteEngagement) {
+    return true;
+  }
+  if (match_type == LookalikeUrlMatchType::kTargetEmbedding &&
+      base::FeatureList::IsEnabled(
+          lookalikes::features::kDetectTargetEmbeddingLookalikes)) {
     return true;
   }
   return match_type == LookalikeUrlMatchType::kTopSite &&

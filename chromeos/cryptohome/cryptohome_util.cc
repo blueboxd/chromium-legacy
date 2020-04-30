@@ -156,6 +156,12 @@ std::vector<KeyDefinition> GetKeyDataReplyToKeyDefinitions(
       case KeyData::KEY_TYPE_CHALLENGE_RESPONSE:
         key_definition.type = KeyDefinition::TYPE_CHALLENGE_RESPONSE;
         break;
+      case KeyData::KEY_TYPE_FINGERPRINT:
+        // KEY_TYPE_FINGERPRINT means the key is a request for fingerprint auth
+        // and does not really carry any auth information. KEY_TYPE_FINGERPRINT
+        // is not expected to be used in GetKeyData.
+        NOTREACHED();
+        break;
     }
     key_definition.label = it->label();
     key_definition.revision = it->revision();
@@ -330,6 +336,9 @@ MountError CryptohomeErrorToMountError(CryptohomeErrorCode code) {
     case CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_GET_FAILED:
     case CRYPTOHOME_ERROR_INSTALL_ATTRIBUTES_SET_FAILED:
     case CRYPTOHOME_ERROR_INVALID_ARGUMENT:
+    case CRYPTOHOME_ERROR_FINGERPRINT_ERROR_INTERNAL:
+    case CRYPTOHOME_ERROR_FINGERPRINT_RETRY_REQUIRED:
+    case CRYPTOHOME_ERROR_FINGERPRINT_DENIED:
       return MOUNT_ERROR_FATAL;
     case CRYPTOHOME_ERROR_AUTHORIZATION_KEY_NOT_FOUND:
     case CRYPTOHOME_ERROR_KEY_NOT_FOUND:

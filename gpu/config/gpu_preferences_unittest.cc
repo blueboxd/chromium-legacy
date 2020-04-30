@@ -75,6 +75,8 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
   EXPECT_EQ(left.enable_gpu_benchmarking_extension,
             right.enable_gpu_benchmarking_extension);
   EXPECT_EQ(left.enable_webgpu, right.enable_webgpu);
+  EXPECT_EQ(left.enable_dawn_backend_validation,
+            right.enable_dawn_backend_validation);
   EXPECT_EQ(left.enable_gpu_blocked_time_metric,
             right.enable_gpu_blocked_time_metric);
   EXPECT_EQ(left.enable_perf_data_collection,
@@ -171,6 +173,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
                                mojom::VulkanImplementationName::kNative)
     GPU_PREFERENCES_FIELD(enable_gpu_benchmarking_extension, true)
     GPU_PREFERENCES_FIELD(enable_webgpu, true)
+    GPU_PREFERENCES_FIELD(enable_dawn_backend_validation, true)
     GPU_PREFERENCES_FIELD(enable_gpu_blocked_time_metric, true)
     GPU_PREFERENCES_FIELD(enable_perf_data_collection, true)
 #if defined(USE_OZONE)

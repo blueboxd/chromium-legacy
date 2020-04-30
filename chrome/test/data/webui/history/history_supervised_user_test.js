@@ -16,7 +16,7 @@ suite('history-list supervised-user', function() {
       [createHistoryEntry('2016-03-15', 'https://www.google.com')];
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     testService = new TestBrowserService();
     BrowserService.instance_ = testService;
 

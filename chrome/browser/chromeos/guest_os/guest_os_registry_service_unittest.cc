@@ -58,7 +58,7 @@ class GuestOsRegistryServiceTest : public testing::Test {
 
   std::vector<std::string> GetRegisteredAppIds() {
     std::vector<std::string> result;
-    for (const auto& pair : service_->GetRegisteredApps()) {
+    for (const auto& pair : service_->GetAllRegisteredApps()) {
       result.emplace_back(pair.first);
     }
     return result;
@@ -79,6 +79,7 @@ class GuestOsRegistryServiceTest : public testing::Test {
 
 TEST_F(GuestOsRegistryServiceTest, SetAndGetRegistration) {
   std::string desktop_file_id = "vim";
+  auto vm_type = vm_tools::apps::ApplicationList::TERMINA;
   std::string vm_name = "awesomevm";
   std::string container_name = "awesomecontainer";
   std::map<std::string, std::string> name = {{"", "Vim"}};
@@ -96,6 +97,7 @@ TEST_F(GuestOsRegistryServiceTest, SetAndGetRegistration) {
   EXPECT_FALSE(service()->GetRegistration(app_id).has_value());
 
   ApplicationList app_list;
+  app_list.set_vm_type(vm_type);
   app_list.set_vm_name(vm_name);
   app_list.set_container_name(container_name);
 
@@ -133,6 +135,10 @@ TEST_F(GuestOsRegistryServiceTest, SetAndGetRegistration) {
       service()->GetRegistration(app_id);
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->DesktopFileId(), desktop_file_id);
+  EXPECT_EQ(
+      result->VmType(),
+      base::make_optional(
+          GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA));
   EXPECT_EQ(result->VmName(), vm_name);
   EXPECT_EQ(result->ContainerName(), container_name);
   EXPECT_EQ(result->Name(), name[""]);

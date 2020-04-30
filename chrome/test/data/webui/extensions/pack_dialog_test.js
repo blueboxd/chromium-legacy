@@ -65,7 +65,7 @@ suite(extension_pack_dialog_tests.suiteName, function() {
   let mockDelegate;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     mockDelegate = new MockDelegate();
     packDialog = document.createElement('extensions-pack-dialog');
     packDialog.delegate = mockDelegate;

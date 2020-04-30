@@ -27,7 +27,7 @@ suite(extension_item_list_tests.suiteName, function() {
 
   // Initialize an extension item before each test.
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     itemList = document.createElement('extensions-item-list');
     boundTestVisible = testVisible.bind(null, itemList);
 

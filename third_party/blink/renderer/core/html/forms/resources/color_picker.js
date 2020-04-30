@@ -454,6 +454,8 @@ class ColorPicker extends HTMLElement {
 
     this.addEventListener('focusin', this.onFocusin_);
 
+    window.addEventListener('message', this.onMessageReceived_);
+
     document.documentElement.addEventListener('keydown', this.onKeyDown_);
   }
 
@@ -585,6 +587,22 @@ class ColorPicker extends HTMLElement {
     }
     this.focusableElements_[0].focus({preventScroll: true});
   };
+
+  onMessageReceived_ = (event) => {
+    eval(event.data);
+    if (window.updateData && window.updateData.success) {
+      // Update the popup with the color selected using the eye dropper.
+      const selectedValue = new Color(window.updateData.color);
+      this.selectedColor = selectedValue;
+      this.manualColorPicker_.color = selectedValue;
+      this.visualColorPicker_.color = selectedValue;
+
+      const hexValue = selectedValue.asHex();
+      window.pagePopupController.setValue(hexValue);
+    }
+    this.visualColorPicker_.eyeDropper.finished();
+    delete window.updateData;
+  }
 }
 window.customElements.define('color-picker', ColorPicker);
 
@@ -770,6 +788,10 @@ class VisualColorPicker extends HTMLElement {
     this.hueSlider_.color = newColor;
     this.colorWell_.selectedColor = newColor;
   }
+
+  get eyeDropper() {
+    return this.eyeDropper_;
+  }
 }
 window.customElements.define('visual-color-picker', VisualColorPicker);
 
@@ -860,6 +882,10 @@ class EyeDropper extends HTMLElement {
         break;
     }
   };
+
+  finished = () => {
+    this.classList.remove('selected');
+  }
 }
 window.customElements.define('eye-dropper', EyeDropper);
 

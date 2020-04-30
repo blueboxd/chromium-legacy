@@ -1008,10 +1008,6 @@ class CONTENT_EXPORT RenderWidget
 
   gfx::Rect compositor_visible_rect_;
 
-  // Different consumers in the browser process makes different assumptions, so
-  // must always send the first IPC regardless of value.
-  base::Optional<bool> has_touch_handlers_;
-
   uint32_t last_capture_sequence_number_ = 0u;
 
   std::unique_ptr<blink::scheduler::WebWidgetScheduler> widget_scheduler_;

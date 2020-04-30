@@ -79,7 +79,6 @@ class SequencedTaskRunner;
 namespace blink {
 namespace mojom {
 class BadgeService;
-class CredentialManager;
 class RendererPreferences;
 class RendererPreferenceWatcher;
 class WebUsbService;
@@ -1001,12 +1000,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void RegisterBrowserInterfaceBindersForFrame(
       RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<RenderFrameHost*>* map) {}
-
-  // Content was unable to bind a CredentialManager pending receiver, so the
-  // embedder should try.
-  virtual void BindCredentialManagerReceiver(
-      RenderFrameHost* render_frame_host,
-      mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) {}
 
   // Content was unable to bind a receiver for this associated interface, so the
   // embedder should try. Returns true if the |handle| was actually taken and

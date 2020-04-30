@@ -31,7 +31,7 @@ suite('<history-synced-device-manager>', function() {
   };
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     window.history.replaceState({}, '', '/');
     testService = new TestBrowserService();
     BrowserService.instance_ = testService;

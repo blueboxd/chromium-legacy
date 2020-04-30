@@ -39,59 +39,27 @@
 #include "ui/views/controls/editable_combobox/editable_combobox.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
+#include "ui/views/view_class_properties.h"
 
 namespace {
 
-enum PasswordSaveUpdateWithAccountStoreViewColumnSetType {
-  // | | (LEADING, FILL) | | (FILL, FILL) | |
-  // Used for the username/password line of the bubble, for the pending view.
-  DOUBLE_VIEW_COLUMN_SET_USERNAME,
-  DOUBLE_VIEW_COLUMN_SET_PASSWORD,
-  DOUBLE_VIEW_COLUMN_SET_DESTINATION,
-
-  // | | (LEADING, FILL) | | (FILL, FILL) | | (TRAILING, FILL) | |
-  // Used for the password line of the bubble, for the pending view.
-  // Views are label, password and the eye icon.
-  TRIPLE_VIEW_COLUMN_SET,
-};
-
-// Construct an appropriate ColumnSet for the given |type|, and add it
-// to |layout|.
-void BuildColumnSet(views::GridLayout* layout,
-                    PasswordSaveUpdateWithAccountStoreViewColumnSetType type) {
-  views::ColumnSet* column_set = layout->AddColumnSet(type);
-  const int column_divider = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
-  switch (type) {
-    case DOUBLE_VIEW_COLUMN_SET_USERNAME:
-    case DOUBLE_VIEW_COLUMN_SET_PASSWORD:
-    case DOUBLE_VIEW_COLUMN_SET_DESTINATION:
-      column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                            views::GridLayout::kFixedSize,
-                            views::GridLayout::USE_PREF, 0, 0);
-      column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
-                                   column_divider);
-      column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                            1.0, views::GridLayout::USE_PREF, 0, 0);
-      break;
-    case TRIPLE_VIEW_COLUMN_SET:
-      column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                            views::GridLayout::kFixedSize,
-                            views::GridLayout::USE_PREF, 0, 0);
-      column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
-                                   column_divider);
-      column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                            1.0, views::GridLayout::USE_PREF, 0, 0);
-      column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
-                                   column_divider);
-      column_set->AddColumn(
-          views::GridLayout::TRAILING, views::GridLayout::FILL,
-          views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
-      break;
-  }
+std::unique_ptr<views::View> CreateRow() {
+  auto row = std::make_unique<views::View>();
+  views::FlexLayout* row_layout =
+      row->SetLayoutManager(std::make_unique<views::FlexLayout>());
+  row_layout->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetIgnoreDefaultMainAxisMargins(true)
+      .SetCollapseMargins(true)
+      .SetDefault(
+          views::kMarginsKey,
+          gfx::Insets(
+              /*vertical=*/0,
+              /*horizontal=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
+                  views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
+  return row;
 }
 
 // Builds a credential row, adds the given elements to the layout.
@@ -100,7 +68,7 @@ void BuildColumnSet(views::GridLayout* layout,
 // DOUBLE_VIEW_COLUMN_SET_PASSWORD will be used for password row instead of
 // TRIPLE_VIEW_COLUMN_SET.
 void BuildCredentialRows(
-    views::GridLayout* layout,
+    views::View* parent_view,
     std::unique_ptr<views::View> destination_field,
     std::unique_ptr<views::View> username_field,
     std::unique_ptr<views::View> password_field,
@@ -135,50 +103,52 @@ void BuildCredentialRows(
   int fields_height = std::max({destination_field_height,
                                 username_field->GetPreferredSize().height(),
                                 password_field->GetPreferredSize().height()});
+  if (destination_label)
+    destination_label->SetPreferredSize(gfx::Size(labels_width, fields_height));
+
+  username_label->SetPreferredSize(gfx::Size(labels_width, fields_height));
+  password_label->SetPreferredSize(gfx::Size(labels_width, fields_height));
 
   // Destination row.
   if (destination_field) {
-    BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET_DESTINATION);
-    layout->StartRow(views::GridLayout::kFixedSize,
-                     DOUBLE_VIEW_COLUMN_SET_DESTINATION);
-    layout->AddView(std::move(destination_label), 1, 1,
-                    views::GridLayout::LEADING, views::GridLayout::FILL,
-                    labels_width, 0);
-    layout->AddView(std::move(destination_field), 1, 1, views::GridLayout::FILL,
-                    views::GridLayout::FILL, 0, fields_height);
+    std::unique_ptr<views::View> destination_row = CreateRow();
 
-    layout->AddPaddingRow(views::GridLayout::kFixedSize,
-                          ChromeLayoutProvider::Get()->GetDistanceMetric(
-                              DISTANCE_CONTROL_LIST_VERTICAL));
+    destination_row->AddChildView(std::move(destination_label));
+    destination_field->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                                 views::MaximumFlexSizeRule::kUnbounded));
+    destination_row->AddChildView(std::move(destination_field));
+
+    parent_view->AddChildView(std::move(destination_row));
   }
 
   // Username row.
-  BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET_USERNAME);
-  layout->StartRow(views::GridLayout::kFixedSize,
-                   DOUBLE_VIEW_COLUMN_SET_USERNAME);
-  layout->AddView(std::move(username_label), 1, 1, views::GridLayout::LEADING,
-                  views::GridLayout::FILL, labels_width, 0);
-  layout->AddView(std::move(username_field), 1, 1, views::GridLayout::FILL,
-                  views::GridLayout::FILL, 0, fields_height);
+  std::unique_ptr<views::View> username_row = CreateRow();
+  username_row->AddChildView(std::move(username_label));
+  username_field->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                               views::MaximumFlexSizeRule::kUnbounded));
+  username_row->AddChildView(std::move(username_field));
 
-  layout->AddPaddingRow(views::GridLayout::kFixedSize,
-                        ChromeLayoutProvider::Get()->GetDistanceMetric(
-                            DISTANCE_CONTROL_LIST_VERTICAL));
+  parent_view->AddChildView(std::move(username_row));
 
   // Password row.
-  PasswordSaveUpdateWithAccountStoreViewColumnSetType type =
-      password_view_button ? TRIPLE_VIEW_COLUMN_SET
-                           : DOUBLE_VIEW_COLUMN_SET_PASSWORD;
-  BuildColumnSet(layout, type);
-  layout->StartRow(views::GridLayout::kFixedSize, type);
-  layout->AddView(std::move(password_label), 1, 1, views::GridLayout::LEADING,
-                  views::GridLayout::FILL, labels_width, 0);
-  layout->AddView(std::move(password_field), 1, 1, views::GridLayout::FILL,
-                  views::GridLayout::FILL, 0, fields_height);
+  std::unique_ptr<views::View> password_row = CreateRow();
+  password_row->AddChildView(std::move(password_label));
+  password_field->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                               views::MaximumFlexSizeRule::kUnbounded));
+  password_row->AddChildView(std::move(password_field));
+
   // The eye icon is also added to the layout if it was passed.
   if (password_view_button) {
-    layout->AddView(std::move(password_view_button));
+    password_row->AddChildView(std::move(password_view_button));
   }
+
+  parent_view->AddChildView(std::move(password_row));
 }
 
 // Create a vector which contains only the values in |items| and no elements.
@@ -370,8 +340,18 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
     std::unique_ptr<views::ToggleImageButton> password_view_button =
         CreatePasswordViewButton(this, are_passwords_revealed_);
 
-    views::GridLayout* layout =
-        SetLayoutManager(std::make_unique<views::GridLayout>());
+    views::FlexLayout* layout =
+        SetLayoutManager(std::make_unique<views::FlexLayout>());
+    layout->SetOrientation(views::LayoutOrientation::kVertical)
+        .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
+        .SetIgnoreDefaultMainAxisMargins(true)
+        .SetCollapseMargins(true)
+        .SetDefault(
+            views::kMarginsKey,
+            gfx::Insets(
+                /*vertical=*/ChromeLayoutProvider::Get()->GetDistanceMetric(
+                    DISTANCE_CONTROL_LIST_VERTICAL),
+                /*horizontal=*/0));
 
     username_dropdown_ = username_dropdown.get();
     password_dropdown_ = password_dropdown.get();
@@ -379,8 +359,9 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
     password_view_button_ = password_view_button.get();
 
     BuildCredentialRows(
-        layout, std::move(destination_dropdown), std::move(username_dropdown),
-        std::move(password_dropdown), std::move(password_view_button));
+        /*parent_view=*/this, std::move(destination_dropdown),
+        std::move(username_dropdown), std::move(password_dropdown),
+        std::move(password_view_button));
   }
 
   {
@@ -525,8 +506,7 @@ void PasswordSaveUpdateWithAccountStoreView::
 }
 
 void PasswordSaveUpdateWithAccountStoreView::UpdateDialogButtons() {
-  DialogDelegate::SetButtons(
-      (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
+  DialogDelegate::SetButtons((ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(controller_.IsCurrentStateUpdate()

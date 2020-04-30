@@ -629,7 +629,8 @@ void LayoutBox::UpdateFromStyle() {
   LayoutBoxModelObject::UpdateFromStyle();
 
   const ComputedStyle& style_to_use = StyleRef();
-  SetFloating(!IsOutOfFlowPositioned() && style_to_use.IsFloating());
+  SetFloating(style_to_use.IsFloating() && !IsOutOfFlowPositioned() &&
+              !style_to_use.IsFlexOrGridItem());
   SetHasTransformRelatedProperty(style_to_use.HasTransformRelatedProperty());
   SetHasReflection(style_to_use.BoxReflect());
   // LayoutTable and LayoutTableCell will overwrite this flag if needed.
@@ -1524,6 +1525,10 @@ LayoutUnit LayoutBox::OverrideLogicalHeight() const {
   if (extra_input_ && extra_input_->override_block_size)
     return *extra_input_->override_block_size;
   return rare_data_->override_logical_height_;
+}
+
+bool LayoutBox::IsOverrideLogicalHeightDefinite() const {
+  return extra_input_ && extra_input_->is_override_block_size_definite;
 }
 
 bool LayoutBox::HasOverrideLogicalHeight() const {
@@ -4422,9 +4427,14 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
       const LayoutFlexibleBox& flex_box = ToLayoutFlexibleBox(*Parent());
       if (flex_box.UseOverrideLogicalHeightForPerentageResolution(*this))
         return OverrideContentLogicalHeight();
-    } else if (GetCachedLayoutResult()) {
+    } else if (HasOverrideContainingBlockContentLogicalWidth() &&
+               IsOrthogonalWritingModeRoot()) {
+      return OverrideContainingBlockContentLogicalWidth();
+    } else if (HasOverrideContainingBlockContentLogicalHeight()) {
+      return OverrideContainingBlockContentLogicalHeight();
+    } else if (const auto* previous_result = GetCachedLayoutResult()) {
       const NGConstraintSpace& space =
-          GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+          previous_result->GetConstraintSpaceForCaching();
       if (space.IsFixedBlockSize() && !space.IsFixedBlockSizeIndefinite())
         return space.AvailableSize().block_size;
     }

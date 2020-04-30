@@ -42,7 +42,7 @@ suite(extension_manager_unit_tests.suiteName, function() {
   const testActivities = {activities: []};
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     service = new TestService();
     Service.instance_ = service;

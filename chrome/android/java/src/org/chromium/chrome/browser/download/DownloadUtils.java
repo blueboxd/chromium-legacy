@@ -553,7 +553,8 @@ public class DownloadUtils {
      * @return Background color.
      */
     public static int getIconBackgroundColor(Context context) {
-        return ApiCompatibilityUtils.getColor(context.getResources(), R.color.light_active_color);
+        return ApiCompatibilityUtils.getColor(
+                context.getResources(), R.color.default_control_color_active);
     }
 
     /**

@@ -85,7 +85,8 @@ public class AddExceptionPreference
 
         setKey(key);
         Resources resources = getContext().getResources();
-        mPrefAccentColor = ApiCompatibilityUtils.getColor(resources, R.color.light_active_color);
+        mPrefAccentColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.default_control_color_active);
         mErrorColor = resources.getColor(R.color.default_red);
         mDefaultColor = resources.getColor(R.color.default_text_color);
 

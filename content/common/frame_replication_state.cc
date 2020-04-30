@@ -28,7 +28,7 @@ FrameReplicationState::FrameReplicationState(
     bool has_potentially_trustworthy_unique_origin,
     bool has_received_user_gesture,
     bool has_received_user_gesture_before_nav,
-    blink::FrameOwnerElementType owner_type)
+    blink::mojom::FrameOwnerElementType owner_type)
     : name(name),
       unique_name(unique_name),
       active_sandbox_flags(network::mojom::WebSandboxFlags::kNone),

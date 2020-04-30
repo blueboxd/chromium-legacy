@@ -21,10 +21,23 @@ namespace ui {
 
 class WaylandBufferManagerGpu;
 
-// Returns SkSurface, which must be used to write to a shared memory region. It
-// is guaranteed that the returned SkSurface is not backed by the shared memory
-// region used by a Wayland compositor. Instead, a new SkSurface will be
-// returned and the client can write to it without resulting in tearing.
+// WaylandCanvasSurface creates an SkCanvas whose contents is backed by a shared
+// memory region. The shared memory region is registered with the Wayland server
+// as a wl_buffer.
+//
+// Basic control flow:
+//   1. WaylandCanvasSurface creates an anonymous shared memory region.
+//   2. WaylandCanvasSurface creates an SkCanvas that rasters directly into
+//   this shared memory region.
+//   3. WaylandCanvasSurface registers the shared memory region with the
+//   WaylandServer via IPC through WaylandBufferManagerGpu and
+//   WaylandBufferManagerHost. See
+//   WaylandBufferManagerHost::CreateShmBasedBuffer. This creates a wl_buffer
+//   object in the browser process.
+//   4. WaylandCanvasSurface::CommitBuffer simply routes via IPC through the
+//   browser process to the Wayland server. It is not safe to modify the shared
+//   memory region in (1) until OnSubmission/OnPresentation callbacks are
+//   received.
 class WaylandCanvasSurface : public SurfaceOzoneCanvas,
                              public WaylandSurfaceGpu {
  public:
@@ -33,6 +46,9 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas,
   ~WaylandCanvasSurface() override;
 
   // SurfaceOzoneCanvas
+
+  // GetCanvas() returns an SkCanvas whose shared memory region is not being
+  // used by Wayland. If no such SkCanvas is available, a new one is created.
   SkCanvas* GetCanvas() override;
   void ResizeCanvas(const gfx::Size& viewport_size) override;
   void PresentCanvas(const gfx::Rect& damage) override;

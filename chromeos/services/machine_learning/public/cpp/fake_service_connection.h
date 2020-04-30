@@ -14,6 +14,7 @@
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/text_classifier.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
@@ -24,16 +25,22 @@ namespace machine_learning {
 // Handles LoadModel (and Model::CreateGraphExecutor) by binding to itself.
 // Handles GraphExecutor::Execute by always returning the value specified by
 // a previous call to SetOutputValue.
+// Handles TextClassifier::Annotate by always returning the value specified by
+// a previous call to SetOutputAnnotation.
+// Handles TextClassifier::SuggestSelection by always returning the value
+// specified by a previous call to SetOutputSelection.
 // For use with ServiceConnection::UseFakeServiceConnectionForTesting().
 class FakeServiceConnectionImpl : public ServiceConnection,
                                   public mojom::Model,
+                                  public mojom::TextClassifier,
                                   public mojom::GraphExecutor {
  public:
   FakeServiceConnectionImpl();
   ~FakeServiceConnectionImpl() override;
 
-  // It's safe to execute LoadBuiltinModel and LoadFlatBufferModel for multi
-  // times, but all the receivers will be bound to the same instance.
+  // It's safe to execute LoadBuiltinModel, LoadFlatBufferModel and
+  // LoadTextClassifier for multi times, but all the receivers will be bound to
+  // the same instance.
   void LoadBuiltinModel(mojom::BuiltinModelSpecPtr spec,
                         mojo::PendingReceiver<mojom::Model> receiver,
                         mojom::MachineLearningService::LoadBuiltinModelCallback
@@ -42,6 +49,11 @@ class FakeServiceConnectionImpl : public ServiceConnection,
       mojom::FlatBufferModelSpecPtr spec,
       mojo::PendingReceiver<mojom::Model> receiver,
       mojom::MachineLearningService::LoadFlatBufferModelCallback callback)
+      override;
+
+  void LoadTextClassifier(
+      mojo::PendingReceiver<mojom::TextClassifier> receiver,
+      mojom::MachineLearningService::LoadTextClassifierCallback callback)
       override;
 
   // mojom::Model:
@@ -60,8 +72,15 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   void SetLoadModelFailure();
   void SetCreateGraphExecutorFailure();
   void SetExecuteFailure();
-  // Reset all the failures and make Execute succeed.
+  void SetLoadTextClassifierFailure();
+  // Reset all the Model related failures and make Execute succeed.
   void SetExecuteSuccess();
+  // Reset all the TextClassifier related failures and make LoadTextClassifier
+  // succeed.
+  // Currently, there are three interfaces related to TextClassifier
+  // (|LoadTextClassifier|, |Annotate| and |SuggestSelection|) but only
+  // |LoadTextClassifier| can fail.
+  void SetTextClassifierSuccess();
 
   // Call SetOutputValue() before Execute() to set the output tensor.
   void SetOutputValue(const std::vector<int64_t>& shape,
@@ -76,6 +95,23 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   void SetAsyncMode(bool async_mode);
   void RunPendingCalls();
 
+  // Call SetOutputAnnotation() before Annotate() to set the output annotation.
+  void SetOutputAnnotation(
+      const std::vector<mojom::TextAnnotationPtr>& annotation);
+
+  // Call SetOutputSelection() before SuggestSelection() to set the output
+  // selection.
+  void SetOutputSelection(const mojom::CodepointSpanPtr& selection);
+
+  // mojom::TextClassifier:
+  void Annotate(mojom::TextAnnotationRequestPtr request,
+                mojom::TextClassifier::AnnotateCallback callback) override;
+
+  // mojom::TextClassifier:
+  void SuggestSelection(
+      mojom::TextSuggestSelectionRequestPtr request,
+      mojom::TextClassifier::SuggestSelectionCallback callback) override;
+
  private:
   void ScheduleCall(base::OnceClosure call);
   void HandleLoadBuiltinModelCall(
@@ -88,13 +124,26 @@ class FakeServiceConnectionImpl : public ServiceConnection,
       mojo::PendingReceiver<mojom::GraphExecutor> receiver,
       mojom::Model::CreateGraphExecutorCallback callback);
   void HandleExecuteCall(mojom::GraphExecutor::ExecuteCallback callback);
+  void HandleLoadTextClassifierCall(
+      mojo::PendingReceiver<mojom::TextClassifier> receiver,
+      mojom::MachineLearningService::LoadTextClassifierCallback callback);
+  void HandleAnnotateCall(mojom::TextAnnotationRequestPtr request,
+                          mojom::TextClassifier::AnnotateCallback callback);
+  void HandleSuggestSelectionCall(
+      mojom::TextSuggestSelectionRequestPtr request,
+      mojom::TextClassifier::SuggestSelectionCallback callback);
 
   mojo::ReceiverSet<mojom::Model> model_receivers_;
   mojo::ReceiverSet<mojom::GraphExecutor> graph_receivers_;
+  mojo::ReceiverSet<mojom::TextClassifier> text_classifier_receivers_;
   mojom::TensorPtr output_tensor_;
   mojom::LoadModelResult load_model_result_;
+  mojom::LoadModelResult load_text_classifier_result_;
   mojom::CreateGraphExecutorResult create_graph_executor_result_;
   mojom::ExecuteResult execute_result_;
+  std::vector<mojom::TextAnnotationPtr> annotate_result_;
+  mojom::CodepointSpanPtr suggest_selection_result_;
+
   bool async_mode_;
   std::vector<base::OnceClosure> pending_calls_;
 

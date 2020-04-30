@@ -7,11 +7,13 @@
 #include <memory>
 #include <string>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
@@ -219,6 +221,28 @@ TEST_F(SafeBrowsingHandlerTest, ProvideRadioManagedState) {
                 control_state->FindKey("indicator")->GetString());
     }
   }
+}
+
+TEST_F(SafeBrowsingHandlerTest, ValidateSafeBrowsingPrefs) {
+  base::ListValue args;
+  base::test::ScopedFeatureList scoped_feature_list_;
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      profile()->GetTestingPrefService();
+
+  pref_service->SetBoolean(prefs::kSafeBrowsingEnhanced, true);
+
+  // Ensure the preference is not changed when the Enhanced feature is enabled.
+  scoped_feature_list_.InitWithFeatures({safe_browsing::kEnhancedProtection},
+                                        {});
+  handler()->HandleValidateSafeBrowsingEnhanced(&args);
+  EXPECT_TRUE(pref_service->GetBoolean(prefs::kSafeBrowsingEnhanced));
+  scoped_feature_list_.Reset();
+
+  // Ensure the preference is disabled when the Enhanced feature is disabled.
+  scoped_feature_list_.InitWithFeatures({},
+                                        {safe_browsing::kEnhancedProtection});
+  handler()->HandleValidateSafeBrowsingEnhanced(&args);
+  EXPECT_FALSE(pref_service->GetBoolean(prefs::kSafeBrowsingEnhanced));
 }
 
 }  // namespace settings

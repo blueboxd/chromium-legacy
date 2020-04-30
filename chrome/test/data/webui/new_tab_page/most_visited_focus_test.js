@@ -45,6 +45,9 @@ suite('NewTabPageMostVisitedFocusTest', () => {
         title: char,
         titleDirection: mojoBase.mojom.TextDirection.LEFT_TO_RIGHT,
         url: {url: `https://${char}/`},
+        source: i,
+        titleSource: i,
+        dataGenerationTime: {internalValue: 0},
       };
     });
     const tilesRendered = eventToPromise('dom-change', mostVisited.$.tiles);

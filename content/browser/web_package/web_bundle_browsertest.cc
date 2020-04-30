@@ -15,7 +15,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
-#include "build/build_config.h"
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -288,21 +287,6 @@ class TestBrowserClient : public ContentBrowserClient {
   DISALLOW_COPY_AND_ASSIGN(TestBrowserClient);
 };
 
-ContentBrowserClient* MaybeSetBrowserClientForTesting(
-    ContentBrowserClient* browser_client) {
-#if defined(OS_ANDROID)
-  // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
-  // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
-  // this test available on KitKat.
-  int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                               &bugfix_version);
-  if (major_version < 5)
-    return nullptr;
-#endif  // defined(OS_ANDROID)
-  return SetBrowserClientForTesting(browser_client);
-}
-
 class WebBundleBrowserTestBase : public ContentBrowserTest {
  protected:
   WebBundleBrowserTestBase() = default;
@@ -310,23 +294,16 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
-    original_client_ = MaybeSetBrowserClientForTesting(&browser_client_);
+    original_client_ = SetBrowserClientForTesting(&browser_client_);
   }
 
   void TearDownOnMainThread() override {
     ContentBrowserTest::TearDownOnMainThread();
-    if (original_client_)
-      SetBrowserClientForTesting(original_client_);
+    SetBrowserClientForTesting(original_client_);
   }
 
-  // Returns false if we cannot override accept languages. It happens only on
-  // Android Kitkat or older systems.
-  bool SetAcceptLangs(const std::string langs) {
-    if (!original_client_)
-      return false;
-
+  void SetAcceptLangs(const std::string langs) {
     browser_client_.SetAcceptLangs(langs);
-    return true;
   }
 
   void NavigateAndWaitForTitle(const GURL& test_data_url,
@@ -366,9 +343,8 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
         base::StringPrintf("location.href = '%s';", url.spec().c_str()), title);
   }
 
-  ContentBrowserClient* original_client_ = nullptr;
-
  private:
+  ContentBrowserClient* original_client_ = nullptr;
   TestBrowserClient browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebBundleBrowserTestBase);
@@ -468,13 +444,12 @@ class InvalidTrustableWebBundleFileUrlBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
-    original_client_ = MaybeSetBrowserClientForTesting(&browser_client_);
+    original_client_ = SetBrowserClientForTesting(&browser_client_);
   }
 
   void TearDownOnMainThread() override {
     ContentBrowserTest::TearDownOnMainThread();
-    if (original_client_)
-      SetBrowserClientForTesting(original_client_);
+    SetBrowserClientForTesting(original_client_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -482,9 +457,8 @@ class InvalidTrustableWebBundleFileUrlBrowserTest : public ContentBrowserTest {
                                     kInvalidFileUrl);
   }
 
-  ContentBrowserClient* original_client_ = nullptr;
-
  private:
+  ContentBrowserClient* original_client_ = nullptr;
   TestBrowserClient browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidTrustableWebBundleFileUrlBrowserTest);
@@ -492,10 +466,6 @@ class InvalidTrustableWebBundleFileUrlBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(InvalidTrustableWebBundleFileUrlBrowserTest,
                        NoCrashOnNavigation) {
-  // Don't run the test if we couldn't override BrowserClient. It happens only
-  // on Android Kitkat or older systems.
-  if (!original_client_)
-    return;
   base::RunLoop run_loop;
   FinishNavigationObserver finish_navigation_observer(shell()->web_contents(),
                                                       run_loop.QuitClosure());
@@ -570,29 +540,15 @@ class WebBundleTrustableFileBrowserTest
 
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest,
                        TrustableWebBundleFile) {
-  // Don't run the test if we couldn't override BrowserClient. It happens only
-  // on Android Kitkat or older systems.
-  if (!original_client_)
-    return;
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, RangeRequest) {
-  // Don't run the test if we couldn't override BrowserClient. It happens only
-  // on Android Kitkat or older systems.
-  if (!original_client_)
-    return;
-
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
   RunTestScript("test-range-request.js");
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, Navigations) {
-  // Don't run the test if we couldn't override BrowserClient. It happens only
-  // on Android Kitkat or older systems.
-  if (!original_client_)
-    return;
-
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
   // Move to page 1.
   NavigateToURLAndWaitForTitle(GURL(kTestPage1Url), "Page 1");
@@ -637,10 +593,6 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, Navigations) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, NavigationWithHash) {
-  // Don't run the test if we couldn't override BrowserClient. It happens only
-  // on Android Kitkat or older systems.
-  if (!original_client_)
-    return;
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
   NavigateToURLAndWaitForTitle(GURL(kTestPageForHashUrl), "#hello");
 
@@ -653,10 +605,6 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, NavigationWithHash) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, BaseURI) {
-  // Don't run the test if we couldn't override BrowserClient. It happens only
-  // on Android Kitkat or older systems.
-  if (!original_client_)
-    return;
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
   EXPECT_EQ(ExecuteAndGetString("(new Request('./foo/bar')).url"),
             "https://test.example.org/foo/bar");
@@ -695,11 +643,6 @@ class WebBundleTrustableFileNotFoundBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(WebBundleTrustableFileNotFoundBrowserTest, NotFound) {
-  // Don't run the test if we couldn't override BrowserClient. It happens only
-  // on Android Kitkat or older systems.
-  if (!original_client_)
-    return;
-
   std::string console_message = ExpectNavigationFailureAndReturnConsoleMessage(
       shell()->web_contents(), test_data_url());
 
@@ -953,15 +896,14 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, ParseResponseCrash) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, Variants) {
-  if (!SetAcceptLangs("ja,en"))
-    return;
+  SetAcceptLangs("ja,en");
   const GURL test_data_url =
       GetTestUrlForFile(GetTestDataPath("variants_test.wbn"));
   NavigateAndWaitForTitle(test_data_url,
                           web_bundle_utils::GetSynthesizedUrlForWebBundle(
                               test_data_url, GURL(kTestPageUrl)),
                           "lang=ja");
-  ASSERT_TRUE(SetAcceptLangs("en,ja"));
+  SetAcceptLangs("en,ja");
   NavigateAndWaitForTitle(test_data_url,
                           web_bundle_utils::GetSynthesizedUrlForWebBundle(
                               test_data_url, GURL(kTestPageUrl)),

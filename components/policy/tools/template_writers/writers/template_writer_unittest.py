@@ -158,7 +158,7 @@ class TemplateWriterUnittests(unittest.TestCase):
     platform = 'win'
     policy = {
         'supported_on': [{
-            'platforms': ['win'],
+            'platform': 'win',
             'since_version': '11',
             'until_version': '12'
         }]
@@ -170,7 +170,7 @@ class TemplateWriterUnittests(unittest.TestCase):
 
     policy = {
         'supported_on': [{
-            'platforms': ['win'],
+            'platform': 'win',
             'since_version': '11',
             'until_version': ''
         }]
@@ -183,11 +183,11 @@ class TemplateWriterUnittests(unittest.TestCase):
   def testPoliciesIsSupportedOnMulitplePlatform(self):
     policy = {
         'supported_on': [{
-            'platforms': ['win'],
+            'platform': 'win',
             'since_version': '12',
             'until_version': ''
         }, {
-            'platforms': ['mac'],
+            'platform': 'mac',
             'since_version': '11',
             'until_version': ''
         }]

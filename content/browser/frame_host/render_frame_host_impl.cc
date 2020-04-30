@@ -2210,12 +2210,12 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     const base::UnguessableToken& devtools_frame_token,
     const blink::FramePolicy& frame_policy,
     const blink::mojom::FrameOwnerProperties& frame_owner_properties,
-    const blink::FrameOwnerElementType owner_type) {
+    const blink::mojom::FrameOwnerElementType owner_type) {
   // TODO(lukasza): Call ReceivedBadMessage when |frame_unique_name| is empty.
   DCHECK(!frame_unique_name.empty());
   DCHECK(new_interface_provider_provider_receiver.is_valid());
   DCHECK(browser_interface_broker_receiver.is_valid());
-  if (owner_type == blink::FrameOwnerElementType::kNone) {
+  if (owner_type == blink::mojom::FrameOwnerElementType::kNone) {
     // Any child frame must have a HTMLFrameOwnerElement in its parent document
     // and therefore the corresponding type of kNone (specific to main frames)
     // is invalid.
@@ -3508,7 +3508,8 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
       std::move(subresource_loader_factories));
 }
 
-blink::FrameOwnerElementType RenderFrameHostImpl::GetFrameOwnerElementType() {
+blink::mojom::FrameOwnerElementType
+RenderFrameHostImpl::GetFrameOwnerElementType() {
   return frame_tree_node_->frame_owner_element_type();
 }
 
@@ -4263,7 +4264,7 @@ void RenderFrameHostImpl::OnFrameDidCallFocus() {
 void RenderFrameHostImpl::RenderFallbackContentInParentProcess() {
   bool is_object_type =
       frame_tree_node()->current_replication_state().frame_owner_element_type ==
-      blink::FrameOwnerElementType::kObject;
+      blink::mojom::FrameOwnerElementType::kObject;
   if (!is_object_type) {
     // Only object elements are expected to render their own fallback content
     // and since the owner type is set at the creation time of the
@@ -7208,12 +7209,6 @@ void RenderFrameHostImpl::GetAuthenticator(
 #else
   GetJavaInterfaces()->GetInterface(std::move(receiver));
 #endif  // !defined(OS_ANDROID)
-}
-
-void RenderFrameHostImpl::GetCredentialManager(
-    mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) {
-  GetContentClient()->browser()->BindCredentialManagerReceiver(
-      this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetPushMessaging(

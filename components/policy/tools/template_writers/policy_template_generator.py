@@ -86,12 +86,12 @@ class PolicyTemplateGenerator:
       supported_on: The list with its items converted to dictionaries. E.g.:
       [{
         'product': 'chrome',
-        'platforms': 'win',
+        'platform': 'win',
         'since_version': '8',
         'until_version': '10'
       }, {
         'product': 'chrome_frame',
-        'platforms': 'win',
+        'platform': 'win',
         'since_version': '10',
         'until_version': ''
       }]
@@ -119,12 +119,13 @@ class PolicyTemplateGenerator:
         }[product_platform_part]
         platforms = [platform]
       since_version, until_version = version_part.split('-')
-      result.append({
-          'product': product,
-          'platforms': platforms,
-          'since_version': since_version,
-          'until_version': until_version
-      })
+      for platform in platforms:
+        result.append({
+            'product': product,
+            'platform': platform,
+            'since_version': since_version,
+            'until_version': until_version
+        })
     return result
 
   def _ProcessPolicy(self, policy):

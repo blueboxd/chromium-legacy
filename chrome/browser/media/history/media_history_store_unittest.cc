@@ -803,13 +803,31 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
     return logos;
   }
 
-  static std::vector<url::Origin> GetExpectedAssociatedOrigins() {
-    std::vector<url::Origin> origins;
+  static std::set<url::Origin> ToSet(const std::vector<url::Origin>& origins) {
+    std::set<url::Origin> out;
+    for (auto& origin : origins)
+      out.insert(origin);
 
-    origins.push_back(url::Origin::Create(GURL("https://www.google1.com")));
-    origins.push_back(url::Origin::Create(GURL("https://www.google2.com")));
-    origins.push_back(url::Origin::Create(GURL("https://www.google3.com")));
-    origins.push_back(url::Origin::Create(GURL("https://www.example.org")));
+    return out;
+  }
+
+  static std::set<url::Origin> ToSet(const GURL& url) {
+    std::set<url::Origin> out;
+    out.insert(url::Origin::Create(url));
+    return out;
+  }
+
+  static std::set<url::Origin> GetExpectedAssociatedOrigins(
+      base::Optional<GURL> feed_url_to_add = base::nullopt) {
+    std::set<url::Origin> origins;
+
+    origins.insert(url::Origin::Create(GURL("https://www.google1.com")));
+    origins.insert(url::Origin::Create(GURL("https://www.google2.com")));
+    origins.insert(url::Origin::Create(GURL("https://www.google3.com")));
+    origins.insert(url::Origin::Create(GURL("https://www.example.org")));
+
+    if (feed_url_to_add)
+      origins.insert(url::Origin::Create(*feed_url_to_add));
 
     return origins;
   }
@@ -888,7 +906,8 @@ TEST_P(MediaHistoryStoreFeedsTest, DiscoverMediaFeed) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  const GURL feed_url("https://www.google.com/feed");
+  service()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -925,7 +944,8 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
       EXPECT_FALSE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
-      EXPECT_EQ(GetExpectedAssociatedOrigins(), feeds[0]->associated_origins);
+      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url),
+                ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(GetExpectedItems(), items);
     }
@@ -939,7 +959,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
       feed_id, GetAltExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), kExpectedDisplayName,
-      std::vector<url::Origin>(), base::DoNothing());
+      std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   base::Optional<base::Time> last_fetch_time_not_cache_hit;
@@ -967,7 +987,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
       EXPECT_TRUE(feeds[0]->logos.empty());
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
       EXPECT_FALSE(feeds[0]->last_display_time.has_value());
-      EXPECT_TRUE(feeds[0]->associated_origins.empty());
+      EXPECT_EQ(ToSet(feed_url), ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(GetAltExpectedItems(), items);
 
@@ -983,7 +1003,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
       feed_id, GetAltExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ true,
       std::vector<media_feeds::mojom::MediaImagePtr>(), kExpectedDisplayName,
-      std::vector<url::Origin>(), base::DoNothing());
+      std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1009,7 +1029,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
       EXPECT_TRUE(feeds[0]->logos.empty());
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
       EXPECT_FALSE(feeds[0]->last_display_time.has_value());
-      EXPECT_TRUE(feeds[0]->associated_origins.empty());
+      EXPECT_EQ(ToSet(feed_url), ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(GetAltExpectedItems(), items);
 
@@ -1054,7 +1074,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_WithEmpty) {
       feed_id, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
-      std::vector<url::Origin>(), base::DoNothing());
+      std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1076,7 +1096,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_WithEmpty) {
       media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
-      std::vector<url::Origin>(), base::DoNothing());
+      std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1090,8 +1110,11 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_WithEmpty) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_MultipleFeeds) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
-  service()->DiscoverMediaFeed(GURL("https://www.google.co.uk/feed"));
+  const GURL feed_a_url("https://www.google.com/feed");
+  const GURL feed_b_url("https://www.google.co.uk/feed");
+
+  service()->DiscoverMediaFeed(feed_a_url);
+  service()->DiscoverMediaFeed(feed_b_url);
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -1112,7 +1135,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_MultipleFeeds) {
       media_feeds::mojom::FetchResult::kFailedNetworkError,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
-      std::vector<url::Origin>(), base::DoNothing());
+      std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1128,13 +1151,14 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_MultipleFeeds) {
       EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
                 feeds[0]->last_fetch_result);
       EXPECT_EQ(0, feeds[0]->fetch_failed_count);
-      EXPECT_EQ(GetExpectedAssociatedOrigins(), feeds[0]->associated_origins);
+      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_a_url),
+                ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
       EXPECT_EQ(media_feeds::mojom::FetchResult::kFailedNetworkError,
                 feeds[1]->last_fetch_result);
       EXPECT_EQ(1, feeds[1]->fetch_failed_count);
-      EXPECT_TRUE(feeds[1]->associated_origins.empty());
+      EXPECT_EQ(ToSet(feed_b_url), ToSet(feeds[1]->associated_origins));
     }
 
     // The OTR service should have the same data.
@@ -1195,7 +1219,7 @@ TEST_P(MediaHistoryStoreFeedsTest, RediscoverMediaFeed) {
       feed_id, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
-      std::vector<url::Origin>(), base::DoNothing());
+      std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1278,7 +1302,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_IncreaseFailed) {
       feed_id, GetExpectedItems(),
       media_feeds::mojom::FetchResult::kFailedNetworkError,
       /* was_fetched_from_cache= */ false, GetExpectedLogos(),
-      kExpectedDisplayName, std::vector<url::Origin>(), base::DoNothing());
+      kExpectedDisplayName, std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1302,7 +1326,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_IncreaseFailed) {
       feed_id, GetExpectedItems(),
       media_feeds::mojom::FetchResult::kFailedBackendError,
       /* was_fetched_from_cache= */ false, GetExpectedLogos(),
-      kExpectedDisplayName, std::vector<url::Origin>(), base::DoNothing());
+      kExpectedDisplayName, std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1325,7 +1349,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_IncreaseFailed) {
   service()->StoreMediaFeedFetchResult(
       feed_id, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false, GetExpectedLogos(),
-      kExpectedDisplayName, std::vector<url::Origin>(), base::DoNothing());
+      kExpectedDisplayName, std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1403,7 +1427,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckLogoMax) {
       feed_id, GetExpectedItems(),
       media_feeds::mojom::FetchResult::kFailedNetworkError,
       /* was_fetched_from_cache= */ false, std::move(logos),
-      kExpectedDisplayName, std::vector<url::Origin>(), base::DoNothing());
+      kExpectedDisplayName, std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1484,7 +1508,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckImageMax) {
   service()->StoreMediaFeedFetchResult(
       feed_id, std::move(items), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false, GetExpectedLogos(),
-      kExpectedDisplayName, std::vector<url::Origin>(), base::DoNothing());
+      kExpectedDisplayName, std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1522,7 +1546,7 @@ TEST_P(MediaHistoryStoreFeedsTest,
   service()->StoreMediaFeedFetchResult(
       feed_id, std::move(items), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false, GetExpectedLogos(),
-      kExpectedDisplayName, std::vector<url::Origin>(), base::DoNothing());
+      kExpectedDisplayName, std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -1556,7 +1580,7 @@ TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
       feed_id_a, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
-      std::vector<url::Origin>(), base::DoNothing());
+      std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   service()->StoreMediaFeedFetchResult(
@@ -1564,7 +1588,7 @@ TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
       media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
-      std::vector<url::Origin>(), base::DoNothing());
+      std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   std::map<int64_t, media_feeds::mojom::SafeSearchResult> found_ids;
@@ -1687,14 +1711,14 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
             media_feeds::mojom::FetchResult::kSuccess,
             /* was_fetched_from_cache= */ false,
             std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
-            std::vector<url::Origin>(), base::DoNothing());
+            std::set<url::Origin>(), base::DoNothing());
       } else if (i % 2 == 0) {
         service()->StoreMediaFeedFetchResult(
             i + 1, GetAltExpectedItems(),
             media_feeds::mojom::FetchResult::kSuccess,
             /* was_fetched_from_cache= */ false,
             std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
-            std::vector<url::Origin>(), base::DoNothing());
+            std::set<url::Origin>(), base::DoNothing());
       }
     }
   }
@@ -1928,7 +1952,7 @@ TEST_P(MediaHistoryStoreFeedsTest, FeedItemsClickAndShown) {
   service()->StoreMediaFeedFetchResult(
       feed_id, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false, GetExpectedLogos(),
-      kExpectedDisplayName, std::vector<url::Origin>(), base::DoNothing());
+      kExpectedDisplayName, std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {
@@ -2033,31 +2057,45 @@ TEST_P(MediaHistoryStoreFeedsTest, FeedItemsClickAndShown) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeed) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  const GURL feed_url_a("https://www.google.com/feed");
+  const GURL feed_url_b("https://www.google.co.uk/feed");
+
+  service()->DiscoverMediaFeed(feed_url_a);
+  service()->DiscoverMediaFeed(feed_url_b);
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
   // feed will not have been stored. This is so we can run the rest of the test
   // to ensure a no-op.
-  const int feed_id = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
+  const int feed_id_a = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
+  const int feed_id_b = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[1]->id;
 
   service()->StoreMediaFeedFetchResult(
-      feed_id, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
+      feed_id_a, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false, GetExpectedLogos(),
-      kExpectedDisplayName, std::vector<url::Origin>(), base::DoNothing());
-  service()->UpdateMediaFeedDisplayTime(feed_id);
+      kExpectedDisplayName, GetExpectedAssociatedOrigins(), base::DoNothing());
+  service()->UpdateMediaFeedDisplayTime(feed_id_a);
+
+  service()->StoreMediaFeedFetchResult(
+      feed_id_b, GetAltExpectedItems(),
+      media_feeds::mojom::FetchResult::kSuccess,
+      /* was_fetched_from_cache= */ false, GetExpectedLogos(),
+      kExpectedDisplayName, std::set<url::Origin>(), base::DoNothing());
+  service()->UpdateMediaFeedDisplayTime(feed_id_b);
   WaitForDB();
 
   {
     // The media items should be stored and the feed should be updated.
     auto feeds = GetMediaFeedsSync(service());
-    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+    auto items_a = GetItemsForMediaFeedSync(service(), feed_id_a);
+    auto items_b = GetItemsForMediaFeedSync(service(), feed_id_b);
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
-      EXPECT_TRUE(items.empty());
+      EXPECT_TRUE(items_a.empty());
+      EXPECT_TRUE(items_b.empty());
     } else {
-      EXPECT_EQ(feed_id, feeds[0]->id);
+      EXPECT_EQ(feed_id_a, feeds[0]->id);
       EXPECT_FALSE(feeds[0]->last_discovery_time.is_null());
       EXPECT_TRUE(feeds[0]->last_fetch_time.has_value());
       EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
@@ -2072,29 +2110,39 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeed) {
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
       EXPECT_TRUE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url_a),
+                ToSet(feeds[0]->associated_origins));
 
-      EXPECT_EQ(GetExpectedItems(), items);
+      EXPECT_EQ(feed_id_b, feeds[1]->id);
+      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
+
+      EXPECT_EQ(GetExpectedItems(), items_a);
+      EXPECT_EQ(GetAltExpectedItems(), items_b);
     }
 
     // The OTR service should have the same data.
     EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
-    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+    EXPECT_EQ(items_a, GetItemsForMediaFeedSync(otr_service(), feed_id_a));
+    EXPECT_EQ(items_b, GetItemsForMediaFeedSync(otr_service(), feed_id_b));
   }
 
-  service()->ResetMediaFeed(feed_id, media_feeds::mojom::ResetReason::kCookies);
+  service()->ResetMediaFeed(url::Origin::Create(feed_url_a),
+                            media_feeds::mojom::ResetReason::kCookies);
   WaitForDB();
 
   {
     // The feed should have been reset. The display time, the discovery time and
     // the reset reason should still be present.
     auto feeds = GetMediaFeedsSync(service());
-    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+    auto items_a = GetItemsForMediaFeedSync(service(), feed_id_a);
+    auto items_b = GetItemsForMediaFeedSync(service(), feed_id_b);
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
-      EXPECT_TRUE(items.empty());
+      EXPECT_TRUE(items_a.empty());
+      EXPECT_TRUE(items_b.empty());
     } else {
-      EXPECT_EQ(feed_id, feeds[0]->id);
+      EXPECT_EQ(feed_id_a, feeds[0]->id);
       EXPECT_FALSE(feeds[0]->last_discovery_time.is_null());
       EXPECT_FALSE(feeds[0]->last_fetch_time.has_value());
       EXPECT_EQ(media_feeds::mojom::FetchResult::kNone,
@@ -2109,32 +2157,40 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeed) {
       EXPECT_TRUE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
                 feeds[0]->reset_reason);
+      EXPECT_TRUE(feeds[0]->associated_origins.empty());
 
-      EXPECT_TRUE(items.empty());
+      EXPECT_EQ(feed_id_b, feeds[1]->id);
+      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
+
+      EXPECT_TRUE(items_a.empty());
+      EXPECT_EQ(GetAltExpectedItems(), items_b);
     }
 
     // The OTR service should have the same data.
     EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
-    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+    EXPECT_EQ(items_a, GetItemsForMediaFeedSync(otr_service(), feed_id_a));
+    EXPECT_EQ(items_b, GetItemsForMediaFeedSync(otr_service(), feed_id_b));
   }
 
   service()->StoreMediaFeedFetchResult(
-      feed_id, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
+      feed_id_a, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false, GetExpectedLogos(),
-      kExpectedDisplayName, std::vector<url::Origin>(), base::DoNothing());
-  service()->UpdateMediaFeedDisplayTime(feed_id);
+      kExpectedDisplayName, GetExpectedAssociatedOrigins(), base::DoNothing());
+  service()->UpdateMediaFeedDisplayTime(feed_id_a);
   WaitForDB();
 
   {
     // The media items and feed should be repopulated.
     auto feeds = GetMediaFeedsSync(service());
-    auto items = GetItemsForMediaFeedSync(service(), feed_id);
+    auto items_a = GetItemsForMediaFeedSync(service(), feed_id_a);
+    auto items_b = GetItemsForMediaFeedSync(service(), feed_id_b);
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
-      EXPECT_TRUE(items.empty());
+      EXPECT_TRUE(items_a.empty());
+      EXPECT_TRUE(items_b.empty());
     } else {
-      EXPECT_EQ(feed_id, feeds[0]->id);
+      EXPECT_EQ(feed_id_a, feeds[0]->id);
       EXPECT_FALSE(feeds[0]->last_discovery_time.is_null());
       EXPECT_TRUE(feeds[0]->last_fetch_time.has_value());
       EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
@@ -2149,13 +2205,20 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeed) {
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
       EXPECT_TRUE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url_a),
+                ToSet(feeds[0]->associated_origins));
 
-      EXPECT_EQ(GetExpectedItems(), items);
+      EXPECT_EQ(feed_id_b, feeds[1]->id);
+      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
+
+      EXPECT_EQ(GetExpectedItems(), items_a);
+      EXPECT_EQ(GetAltExpectedItems(), items_b);
     }
 
     // The OTR service should have the same data.
     EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
-    EXPECT_EQ(items, GetItemsForMediaFeedSync(otr_service(), feed_id));
+    EXPECT_EQ(items_a, GetItemsForMediaFeedSync(otr_service(), feed_id_a));
+    EXPECT_EQ(items_b, GetItemsForMediaFeedSync(otr_service(), feed_id_b));
   }
 }
 
@@ -2174,7 +2237,7 @@ TEST_P(MediaHistoryStoreFeedsTest, DeleteMediaFeed) {
       feed_id_a, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
-      std::vector<url::Origin>(), base::DoNothing());
+      std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   service()->StoreMediaFeedFetchResult(
@@ -2182,7 +2245,7 @@ TEST_P(MediaHistoryStoreFeedsTest, DeleteMediaFeed) {
       media_feeds::mojom::FetchResult::kFailedNetworkError,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), std::string(),
-      std::vector<url::Origin>(), base::DoNothing());
+      std::set<url::Origin>(), base::DoNothing());
   WaitForDB();
 
   {

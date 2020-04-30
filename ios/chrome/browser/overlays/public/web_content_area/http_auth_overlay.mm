@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #import "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/overlays/public/common/alerts/alert_overlay.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/alert_overlay.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"

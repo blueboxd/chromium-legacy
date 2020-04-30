@@ -1374,8 +1374,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->Show();
 
   // Start with no touch-event handler in the renderer.
-  widget_host_->OnMessageReceived(
-      WidgetHostMsg_HasTouchEventHandlers(0, false));
+  widget_host_->SetHasTouchEventHandlers(false);
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
                        ui::EventTimeForNow(),
@@ -1417,7 +1416,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   // Now install some touch-event handlers and do the same steps. The touch
   // events should now be consumed. However, the touch-event state should be
   // updated as before.
-  widget_host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
+  widget_host_->SetHasTouchEventHandlers(true);
 
   view_->OnTouchEvent(&press);
   base::RunLoop().RunUntilIdle();
@@ -1446,8 +1445,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(3U, events.size());
 
-  widget_host_->OnMessageReceived(
-      WidgetHostMsg_HasTouchEventHandlers(0, false));
+  widget_host_->SetHasTouchEventHandlers(false);
 
   // All outstanding events should have already been sent but no new events
   // should get sent.
@@ -2471,7 +2469,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
   view_->InitAsChild(nullptr);
   view_->Show();
 
-  widget_host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
+  widget_host_->SetHasTouchEventHandlers(true);
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
                        ui::EventTimeForNow(),
@@ -4222,7 +4220,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 // gesture deals with them correctly.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
   SetUpOverscrollEnvironmentWithDebounce(10);
-  widget_host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
+  widget_host_->SetHasTouchEventHandlers(true);
 
   // The test sends an intermingled sequence of touch and gesture events.
   PressTouchPoint(0, 1);
@@ -4348,7 +4346,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
 TEST_F(RenderWidgetHostViewAuraOverscrollTest,
        DISABLED_TouchGestureEndDispatchedAfterOverscrollComplete) {
   SetUpOverscrollEnvironmentWithDebounce(10);
-  widget_host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
+  widget_host_->SetHasTouchEventHandlers(true);
 
   PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
@@ -4936,7 +4934,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   view_->InitAsChild(nullptr);
   view_->Show();
 
-  widget_host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
+  widget_host_->SetHasTouchEventHandlers(true);
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
                        ui::EventTimeForNow(),

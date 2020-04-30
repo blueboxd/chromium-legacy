@@ -51,13 +51,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/data_element.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
@@ -4456,13 +4456,14 @@ class ContextLifetimeTestWebFrameClient
   }
 
   // WebLocalFrameClient:
-  WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                  WebTreeScopeType scope,
-                                  const WebString& name,
-                                  const WebString& fallback_name,
-                                  const FramePolicy&,
-                                  const WebFrameOwnerProperties&,
-                                  FrameOwnerElementType) override {
+  WebLocalFrame* CreateChildFrame(
+      WebLocalFrame* parent,
+      WebTreeScopeType scope,
+      const WebString& name,
+      const WebString& fallback_name,
+      const FramePolicy&,
+      const WebFrameOwnerProperties&,
+      mojom::blink::FrameOwnerElementType) override {
     return CreateLocalChild(*parent, scope,
                             std::make_unique<ContextLifetimeTestWebFrameClient>(
                                 create_notifications_, release_notifications_));
@@ -7220,7 +7221,7 @@ class TestCachePolicyWebFrameClient
       const WebString&,
       const FramePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties,
-      FrameOwnerElementType) override {
+      mojom::blink::FrameOwnerElementType) override {
     auto child = std::make_unique<TestCachePolicyWebFrameClient>();
     auto* child_ptr = child.get();
     child_clients_.push_back(std::move(child));
@@ -7666,7 +7667,7 @@ class FailCreateChildFrame : public frame_test_helpers::TestWebFrameClient {
       const WebString& fallback_name,
       const FramePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties,
-      FrameOwnerElementType) override {
+      mojom::blink::FrameOwnerElementType) override {
     ++call_count_;
     return nullptr;
   }
@@ -8838,13 +8839,14 @@ class WebFrameSwapTestClient : public frame_test_helpers::TestWebFrameClient {
  public:
   WebFrameSwapTestClient() {}
 
-  WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                  WebTreeScopeType scope,
-                                  const WebString& name,
-                                  const WebString& fallback_name,
-                                  const FramePolicy&,
-                                  const WebFrameOwnerProperties&,
-                                  FrameOwnerElementType) override {
+  WebLocalFrame* CreateChildFrame(
+      WebLocalFrame* parent,
+      WebTreeScopeType scope,
+      const WebString& name,
+      const WebString& fallback_name,
+      const FramePolicy&,
+      const WebFrameOwnerProperties&,
+      mojom::blink::FrameOwnerElementType) override {
     return CreateLocalChild(*parent, scope,
                             std::make_unique<WebFrameSwapTestClient>());
   }
@@ -10481,13 +10483,21 @@ TEST_F(WebFrameTest, OrientationFrameDetach) {
   web_view_impl->MainFrameImpl()->SendOrientationChangeEvent();
 }
 
-// https://crbug.com/1069355
-TEST_F(WebFrameTest, DISABLED_MaxFramesDetach) {
-  RegisterMockedHttpURLLoad("max-frames-detach.html");
+TEST_F(WebFrameTest, MaxFrames) {
   frame_test_helpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl =
-      web_view_helper.InitializeAndLoad(base_url_ + "max-frames-detach.html");
-  web_view_impl->MainFrameImpl()->CollectGarbageForTesting();
+  web_view_helper.InitializeRemote();
+  Page* page = web_view_helper.GetWebView()->GetPage();
+
+  WebLocalFrameImpl* frame =
+      frame_test_helpers::CreateLocalChild(*web_view_helper.RemoteMainFrame());
+  while (page->SubframeCount() < Page::kMaxNumberOfFrames) {
+    frame_test_helpers::CreateRemoteChild(*web_view_helper.RemoteMainFrame());
+  }
+  auto* iframe = MakeGarbageCollected<HTMLIFrameElement>(
+      *frame->GetFrame()->GetDocument());
+  iframe->setAttribute(html_names::kSrcAttr, "");
+  frame->GetFrame()->GetDocument()->body()->appendChild(iframe);
+  EXPECT_FALSE(iframe->ContentFrame());
 }
 
 TEST_F(WebFrameTest, ImageDocumentLoadResponseEnd) {
@@ -10738,13 +10748,14 @@ class WebLocalFrameVisibilityChangeTest
   WebLocalFrame* MainFrame() { return frame_; }
 
   // frame_test_helpers::TestWebFrameClient:
-  WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                  WebTreeScopeType scope,
-                                  const WebString& name,
-                                  const WebString& fallback_name,
-                                  const FramePolicy&,
-                                  const WebFrameOwnerProperties&,
-                                  FrameOwnerElementType) override {
+  WebLocalFrame* CreateChildFrame(
+      WebLocalFrame* parent,
+      WebTreeScopeType scope,
+      const WebString& name,
+      const WebString& fallback_name,
+      const FramePolicy&,
+      const WebFrameOwnerProperties&,
+      mojom::blink::FrameOwnerElementType) override {
     return CreateLocalChild(*parent, scope, &child_client_);
   }
 
@@ -12436,13 +12447,14 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
     ~MainFrameClient() override = default;
 
     // frame_test_helpers::TestWebFrameClient:
-    WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
-                                    WebTreeScopeType scope,
-                                    const WebString& name,
-                                    const WebString& fallback_name,
-                                    const FramePolicy&,
-                                    const WebFrameOwnerProperties&,
-                                    FrameOwnerElementType) override {
+    WebLocalFrame* CreateChildFrame(
+        WebLocalFrame* parent,
+        WebTreeScopeType scope,
+        const WebString& name,
+        const WebString& fallback_name,
+        const FramePolicy&,
+        const WebFrameOwnerProperties&,
+        mojom::blink::FrameOwnerElementType) override {
       return CreateLocalChild(*parent, scope, &child_client_);
     }
 
@@ -12706,7 +12718,7 @@ class TestFallbackWebFrameClient
       const WebString&,
       const FramePolicy&,
       const WebFrameOwnerProperties& frameOwnerProperties,
-      FrameOwnerElementType) override {
+      mojom::blink::FrameOwnerElementType) override {
     DCHECK(child_client_);
     return CreateLocalChild(*parent, scope, child_client_);
   }

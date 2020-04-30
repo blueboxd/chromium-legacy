@@ -37,7 +37,7 @@ suite(extension_manager_unit_tests.suiteName, function() {
     browserProxy = new TestKioskBrowserProxy();
     KioskBrowserProxyImpl.instance_ = browserProxy;
 
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     service = new TestService();
     Service.instance_ = service;

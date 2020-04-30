@@ -35,17 +35,17 @@ class ChromeOsAdmlWriterUnittest(adml_writer_unittest.AdmlWriterUnittest):
     self.assertTrue(
         self.writer.IsPolicySupported({
             'supported_on': [{
-                'platforms': ['chrome_os', 'zzz']
+                'platform': 'chrome_os'
             }, {
-                'platforms': ['aaa']
+                'platform': 'aaa'
             }]
         }))
     self.assertFalse(
         self.writer.IsPolicySupported({
             'supported_on': [{
-                'platforms': ['win', 'mac', 'linux']
+                'platform': 'win'
             }, {
-                'platforms': ['aaa']
+                'platform': 'aaa'
             }]
         }))
 
@@ -54,10 +54,10 @@ class ChromeOsAdmlWriterUnittest(adml_writer_unittest.AdmlWriterUnittest):
     # cloud only managed polices are not put in the ADMX file).
     policy = {
         'name':
-            'PolicyName',
+        'PolicyName',
         'supported_on': [{
             'product': 'chrome_os',
-            'platforms': ['chrome_os'],
+            'platform': 'chrome_os',
             'since_version': '8',
             'until_version': '',
         }],

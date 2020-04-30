@@ -64,8 +64,8 @@
         <!-- With ActionBar but not window title -->
         <!-- TODO(huayinz): Check if windowActionBar is actually needed. -->
         <item name="windowActionBar">true</item>
-        <item name="colorPrimary">@color/light_active_color</item>
-        <item name="colorAccent">@color/light_active_color</item>
+        <item name="colorPrimary">@color/default_control_color_active</item>
+        <item name="colorAccent">@color/default_control_color_active</item>
     </style>
 
     <style name="Theme.Chromium" parent="Base.Theme.Chromium" />
@@ -173,7 +173,7 @@
         <item name="android:textAppearance">@style/TextAppearance.TextMedium.Primary</item>
         <item name="android:textColorLink">@color/default_text_color_link</item>
         <item name="colorPrimaryDark">@android:color/black</item>
-        <item name="colorAccent">@color/light_active_color</item>
+        <item name="colorAccent">@color/default_control_color_active</item>
         <item name="colorControlHighlight">@color/control_highlight_color</item>
         <item name="spinnerStyle">@style/SpinnerStyle</item>
 

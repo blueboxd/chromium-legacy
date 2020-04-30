@@ -1504,7 +1504,7 @@ TEST_F(RenderWidgetHostTest, InputRouterReceivesHasTouchEventHandlers) {
 
   ASSERT_FALSE(host_->mock_input_router()->has_handlers_);
 
-  host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
+  host_->SetHasTouchEventHandlers(true);
   EXPECT_TRUE(host_->mock_input_router()->has_handlers_);
 }
 
@@ -1545,7 +1545,7 @@ void CheckLatencyInfoComponentInGestureScrollUpdate(
 // ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT will always present in the
 // event's LatencyInfo.
 TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
-  host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
+  host_->SetHasTouchEventHandlers(true);
 
   // Tests RWHI::ForwardWheelEvent().
   SimulateWheelEvent(-5, 0, 0, true, WebMouseWheelEvent::kPhaseBegan);
@@ -1852,7 +1852,7 @@ TEST_F(RenderWidgetHostTest, HideUnthrottlesResize) {
 // Tests that event dispatch after the delegate has been detached doesn't cause
 // a crash. See crbug.com/563237.
 TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
-  host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
+  host_->SetHasTouchEventHandlers(true);
   process_->sink().ClearMessages();
 
   host_->DetachDelegate();

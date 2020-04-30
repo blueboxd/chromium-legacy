@@ -25,7 +25,7 @@ suite('ExtensionsActivityLogStreamItemTest', function() {
 
   // Initialize an activity log stream item before each test.
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     testStreamItem = {
       id: 'testAPI.testMethod1550101623113',
       name: 'testAPI.testMethod',

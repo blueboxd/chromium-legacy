@@ -16,13 +16,16 @@ class WebAppMenuModel : public AppMenuModel {
   WebAppMenuModel(ui::AcceleratorProvider* provider, Browser* browser);
   ~WebAppMenuModel() override;
 
- private:
   // AppMenuModel:
-  void Build() override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
+
+ protected:
+  // AppMenuModel:
+  void Build() override;
   void LogMenuAction(AppMenuAction action_id) override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(WebAppMenuModel);
 };
 

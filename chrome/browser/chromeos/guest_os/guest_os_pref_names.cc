@@ -16,9 +16,11 @@ const char kGuestOSPathsSharedToVms[] = "guest_os.paths_shared_to_vms";
 const char kGuestOsRegistry[] = "crostini.registry";
 // Keys for the |kGuestOsRegistry| Dictionary stored in prefs for each app.
 const char kAppDesktopFileIdKey[] = "desktop_file_id";
+const char kAppVmTypeKey[] = "vm_type";
 const char kAppVmNameKey[] = "vm_name";
 const char kAppContainerNameKey[] = "container_name";
 const char kAppCommentKey[] = "comment";
+const char kAppExtensionsKey[] = "extensions";
 const char kAppMimeTypesKey[] = "mime_types";
 const char kAppKeywordsKey[] = "keywords";
 const char kAppExecutableFileNameKey[] = "executable_file_name";

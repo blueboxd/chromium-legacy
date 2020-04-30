@@ -35,7 +35,7 @@ suite(extension_load_error_tests.suiteName, function() {
   };
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     mockDelegate = new TestService();
     loadError = document.createElement('extensions-load-error');
     loadError.delegate = mockDelegate;

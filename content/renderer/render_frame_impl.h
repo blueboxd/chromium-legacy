@@ -79,7 +79,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
@@ -88,6 +87,7 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
@@ -665,7 +665,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& fallback_name,
       const blink::FramePolicy& frame_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties,
-      blink::FrameOwnerElementType frame_owner_element_type) override;
+      blink::mojom::FrameOwnerElementType frame_owner_element_type) override;
   std::pair<blink::WebRemoteFrame*, base::UnguessableToken> CreatePortal(
       blink::CrossVariantMojoAssociatedReceiver<
           blink::mojom::PortalInterfaceBase> portal_endpoint,

@@ -621,6 +621,8 @@ public final class ChromePreferenceKeys {
             "twa_dialog_number_of_dismissals_on_uninstall";
     public static final String TWA_DISCLOSURE_ACCEPTED_PACKAGES =
             "trusted_web_activity_disclosure_accepted_packages";
+    public static final String TWA_DISCLOSURE_SEEN_PACKAGES =
+            "Chrome.TrustedWebActivities.DisclosureAcceptedPackages";
 
     /**
      * Whether or not darken websites is enabled.
@@ -682,7 +684,8 @@ public final class ChromePreferenceKeys {
                 FLAGS_CACHED_DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED,
                 FLAGS_FIELD_TRIAL_PARAM_CACHED.pattern(),
                 HOMEPAGE_LOCATION_POLICY,
-                HOMEPAGE_USE_CHROME_NTP
+                HOMEPAGE_USE_CHROME_NTP,
+                TWA_DISCLOSURE_SEEN_PACKAGES
         );
         // clang-format on
     }

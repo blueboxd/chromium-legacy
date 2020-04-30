@@ -480,7 +480,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     std::unique_ptr<webgpu::WebGPUDecoder> webgpu_decoder(
         webgpu::WebGPUDecoder::Create(
             this, command_buffer_.get(), task_executor_->shared_image_manager(),
-            context_group_->memory_tracker(), task_executor_->outputter()));
+            context_group_->memory_tracker(), task_executor_->outputter(),
+            task_executor_->gpu_preferences()));
     gpu::ContextResult result = webgpu_decoder->Initialize();
     if (result != gpu::ContextResult::kSuccess) {
       DestroyOnGpuThread();

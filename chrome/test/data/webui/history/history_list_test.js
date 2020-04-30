@@ -67,7 +67,7 @@ suite(history_list_test.suiteName, function() {
 
   setup(function() {
     window.history.replaceState({}, '', '/');
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     testService = new TestBrowserService();
     BrowserService.instance_ = testService;
 

@@ -83,6 +83,7 @@
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
+#include "chrome/browser/ui/views/eye_dropper/eye_dropper.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
@@ -3267,6 +3268,12 @@ bool BrowserView::IsVisibleOnAllWorkspaces() const {
 
 void BrowserView::ShowEmojiPanel() {
   GetWidget()->ShowEmojiPanel();
+}
+
+std::unique_ptr<content::EyeDropper> BrowserView::OpenEyeDropper(
+    content::RenderFrameHost* frame,
+    content::EyeDropperListener* listener) {
+  return ShowEyeDropper(frame, listener);
 }
 
 void BrowserView::ShowInProductHelpPromo(InProductHelpFeature iph_feature) {

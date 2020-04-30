@@ -98,9 +98,9 @@ class CONTENT_EXPORT NavigatorDelegate {
   // Returns the overridden user agent string if it's set.
   virtual const blink::UserAgentOverride& GetUserAgentOverride() = 0;
 
-  // Returns whether we should override the user agent in new tabs, e.g., for
-  // Android Webview's popup window when current entry.
-  virtual bool ShouldOverrideUserAgentInNewTabs() = 0;
+  // Returns the value to use for NavigationEntry::IsOverridingUserAgent() for
+  // a renderer initiated navigation.
+  virtual bool ShouldOverrideUserAgentForRendererInitiatedNavigation();
 
   // A RenderFrameHost in the specified |frame_tree_node| started loading a new
   // document. This correponds to Blink's notion of the throbber starting.

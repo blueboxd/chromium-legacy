@@ -42,7 +42,8 @@ public class FreIntentCreator {
                 WebappLauncherActivity.maybeSlowlyGenerateWebApkInfoFromIntent(fromIntent);
         Intent intentToLaunchAfterFreComplete = (webApkInfo == null)
                 ? fromIntent
-                : WebappLauncherActivity.createRelaunchWebApkIntent(fromIntent, webApkInfo);
+                : WebappLauncherActivity.createRelaunchWebApkIntent(
+                        fromIntent, webApkInfo.webApkPackageName(), webApkInfo.url());
 
         Intent result = createInternal(caller, fromIntent, preferLightweightFre, webApkInfo);
         addPendingIntent(caller, result, intentToLaunchAfterFreComplete, requiresBroadcast);

@@ -201,6 +201,10 @@ int AppListTestViewDelegate::GetShelfSize() {
   return 56;
 }
 
+AppListNotifier* AppListTestViewDelegate::GetNotifier() {
+  return nullptr;
+}
+
 void AppListTestViewDelegate::RecordAppLaunched(
     ash::AppListLaunchedFrom launched_from) {
   RecordAppListAppLaunched(launched_from, model_->state_fullscreen(),

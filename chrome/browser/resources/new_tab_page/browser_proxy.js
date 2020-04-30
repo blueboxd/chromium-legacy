@@ -4,6 +4,7 @@
 
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 
 import './skcolor.mojom-lite.js';

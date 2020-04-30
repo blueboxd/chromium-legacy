@@ -205,6 +205,7 @@
   {
     "prefix": "layout_ng_fragment_traversal",
     "bases": ["external/wpt/css/CSS2",
+              "external/wpt/css/css-contain",
               "fast/block",
               "fast/table"],
     "args": ["--enable-blink-features=LayoutNGFragmentTraversal"]

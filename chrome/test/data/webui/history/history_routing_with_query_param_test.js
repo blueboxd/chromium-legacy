@@ -14,7 +14,7 @@ import {flushTasks} from 'chrome://test/test_util.m.js';
       let testService;
 
       setup(function() {
-        PolymerTest.clearBody();
+        document.body.innerHTML = '';
         window.history.replaceState({}, '', '/?q=query');
         testService = new TestBrowserService();
         BrowserService.instance_ = testService;

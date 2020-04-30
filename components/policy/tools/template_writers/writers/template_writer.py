@@ -87,10 +87,7 @@ class TemplateWriter(object):
     for supported_on in policy['supported_on']:
       if not self.IsVersionSupported(policy, supported_on):
         continue
-      if '*' in self.platforms:
-        return True
-      if any(
-          platform in self.platforms for platform in supported_on['platforms']):
+      if '*' in self.platforms or supported_on['platform'] in self.platforms:
         return True
     return False
 
@@ -134,9 +131,9 @@ class TemplateWriter(object):
       return False
 
     for supported_on in item['supported_on']:
-      if (platform in supported_on['platforms'] and
-          (not product or product in supported_on['product']) and
-          self.IsVersionSupported(item, supported_on)):
+      if (platform == supported_on['platform']
+          and (not product or product in supported_on['product'])
+          and self.IsVersionSupported(item, supported_on)):
         return True
     return False
 

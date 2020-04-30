@@ -54,11 +54,14 @@
 
     dumpInitiator('initiator.css');
     dumpInitiator('size=100');
+    dumpInitiator('size=200');
+    dumpInitiator('size=300');
     dumpInitiator('size=400');
     dumpInitiator('style.css');
     dumpInitiator('empty.html');
     dumpInitiator('module1.js');
     dumpInitiator('module2.js');
+    dumpInitiator('example.ttf');
     TestRunner.completeTest();
   }
 })();

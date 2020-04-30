@@ -11,6 +11,9 @@
 
 namespace media_history {
 
+const char MediaHistoryFeedAssociatedOriginsTable::kTableName[] =
+    "mediaFeedAssociatedOrigin";
+
 MediaHistoryFeedAssociatedOriginsTable::MediaHistoryFeedAssociatedOriginsTable(
     scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
     : MediaHistoryTableBase(std::move(db_task_runner)) {}
@@ -38,6 +41,13 @@ MediaHistoryFeedAssociatedOriginsTable::CreateTableIfNonExistent() {
     success = DB()->Execute(
         "CREATE INDEX IF NOT EXISTS mediaFeedAssociatedOrigin_feed_index ON "
         "mediaFeedAssociatedOrigin (feed_id)");
+  }
+
+  if (success) {
+    success = DB()->Execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS "
+        "mediaFeedAssociatedOrigin_unique_index ON "
+        "mediaFeedAssociatedOrigin(feed_id, origin)");
   }
 
   if (!success) {
@@ -101,6 +111,23 @@ std::vector<url::Origin> MediaHistoryFeedAssociatedOriginsTable::Get(
   }
 
   return origins;
+}
+
+std::set<int64_t> MediaHistoryFeedAssociatedOriginsTable::GetFeeds(
+    const url::Origin& origin) {
+  std::set<int64_t> feeds;
+  if (!CanAccessDatabase())
+    return feeds;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT feed_id FROM mediaFeedAssociatedOrigin WHERE origin = ?"));
+  statement.BindString(0, MediaHistoryOriginTable::GetOriginForStorage(origin));
+
+  while (statement.Step())
+    feeds.insert(statement.ColumnInt64(0));
+
+  return feeds;
 }
 
 }  // namespace media_history

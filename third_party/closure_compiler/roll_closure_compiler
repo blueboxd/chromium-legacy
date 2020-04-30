@@ -25,6 +25,7 @@ trap cleanup SIGINT SIGHUP SIGTERM
 old_chrome_sha1=$(get_sha1 "${EXTERNS_DIR}/chrome.js")
 old_extensions_sha1=$(get_sha1 "${EXTERNS_DIR}/chrome_extensions.js")
 old_polymer_sha1=$(get_sha1 "${EXTERNS_DIR}/polymer-1.0.js")
+old_mocha_sha1=$(get_sha1 "${EXTERNS_DIR}/mocha-2.5.js")
 
 cd "${TEMP_DIR}"
 
@@ -41,6 +42,7 @@ cp "${jar_file}" "${SCRIPT_DIR}/compiler/compiler.jar"
 wget ${EXTERNS_DIR_URL}/chrome.js
 wget ${EXTERNS_DIR_URL}/chrome_extensions.js
 wget ${EXTERNS_DIR_URL}/polymer-1.0.js
+wget ${EXTERNS_DIR_URL}/mocha-2.5.js
 
 readonly WARNING="$(cat <<EOT
 //    SSSSSSSSSSSSSSS TTTTTTTTTTTTTTTTTTTTTTT     OOOOOOOOO     PPPPPPPPPPPPPPPPP
@@ -65,6 +67,7 @@ EOT
 (echo "${WARNING}" && cat chrome.js) > "${EXTERNS_DIR}/chrome.js"
 (echo "${WARNING}" && cat chrome_extensions.js) > "${EXTERNS_DIR}/chrome_extensions.js"
 (echo "${WARNING}" && cat polymer-1.0.js) > "${EXTERNS_DIR}/polymer-1.0.js"
+(echo "${WARNING}" && cat mocha-2.5.js) > "${EXTERNS_DIR}/mocha-2.5.js"
 
 new_chrome_sha1=$(get_sha1 "${EXTERNS_DIR}/chrome.js")
 if [[ "${new_chrome_sha1}" != "${old_chrome_sha1}" ]]; then
@@ -79,6 +82,11 @@ fi
 new_polymer_sha1=$(get_sha1 "${EXTERNS_DIR}/polymer-1.0.js")
 if [[ "${new_polymer_sha1}" != "${old_polymer_sha1}" ]]; then
   polymer_range="polymer-1.0.js: ${old_polymer_sha1} -> ${new_polymer_sha1}"
+fi
+
+new_mocha_sha1=$(get_sha1 "${EXTERNS_DIR}/mocha-2.5.js")
+if [[ "${new_mocha_sha1}" != "${old_mocha_sha1}" ]]; then
+  mocha_range="mocha-2.5.js: ${old_mocha_sha1} -> ${new_mocha_sha1}"
 fi
 
 echo
@@ -102,6 +110,10 @@ echo "@  externs/polymer-1.0.js SHA1:"
 echo "@    Old: ${old_polymer_sha1}"
 echo "@    New: ${new_polymer_sha1}"
 echo "@"
+echo "@  externs/mocha-2.5.js SHA1:"
+echo "@    Old: ${old_mocha_sha1}"
+echo "@    New: ${new_mocha_sha1}"
+echo "@"
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo
 
@@ -113,6 +125,7 @@ echo
 if [[ ! -z "${chrome_range}" ]]; then echo "${chrome_range}"; fi
 if [[ ! -z "${extensions_range}" ]]; then echo "${extensions_range}"; fi
 if [[ ! -z "${polymer_range}" ]]; then echo "${polymer_range}"; fi
+if [[ ! -z "${mocha_range}" ]]; then echo "${mocha_range}"; fi
 echo
 echo "TBR="
 echo "BUG='"

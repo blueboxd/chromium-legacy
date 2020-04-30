@@ -102,7 +102,7 @@ suite(extension_item_tests.suiteName, function() {
 
   // Initialize an extension item before each test.
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     mockDelegate = new MockItemDelegate();
     item = document.createElement('extensions-item');
     item.data = createExtensionInfo();

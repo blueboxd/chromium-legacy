@@ -30,6 +30,7 @@ class TileServiceImpl : public TileService {
  private:
   // TileService implementation.
   void GetQueryTiles(GetTilesCallback callback) override;
+  void GetTile(const std::string& tile_id, TileCallback callback) override;
   void GetVisuals(const std::string& tile_id,
                   VisualsCallback callback) override;
 

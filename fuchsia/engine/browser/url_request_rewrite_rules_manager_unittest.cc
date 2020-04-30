@@ -140,6 +140,24 @@ TEST_F(UrlRequestRewriteRulesManagerTest, ConvertReplaceUrl) {
   ASSERT_EQ(replace_url->new_url.spec().compare(url.spec()), 0);
 }
 
+// Tests AppendToQuery rewrites are properly converted to their Mojo equivalent.
+TEST_F(UrlRequestRewriteRulesManagerTest, ConvertAppendToQuery) {
+  EXPECT_EQ(UpdateRulesFromRewrite(
+                cr_fuchsia::CreateRewriteAppendToQuery("foo=bar&foo")),
+            ZX_OK);
+  scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
+      cached_rules = url_request_rewrite_rules_manager_->GetCachedRules();
+  ASSERT_EQ(cached_rules->data.size(), 1u);
+  ASSERT_FALSE(cached_rules->data[0]->hosts_filter);
+  ASSERT_FALSE(cached_rules->data[0]->schemes_filter);
+  ASSERT_EQ(cached_rules->data[0]->actions.size(), 1u);
+  ASSERT_TRUE(cached_rules->data[0]->actions[0]->is_append_to_query());
+
+  const mojom::UrlRequestRewriteAppendToQueryPtr& append_to_query =
+      cached_rules->data[0]->actions[0]->get_append_to_query();
+  ASSERT_EQ(append_to_query->query.compare("foo=bar&foo"), 0);
+}
+
 // Tests validation is working as expected.
 TEST_F(UrlRequestRewriteRulesManagerTest, Validation) {
   // Empty rewrite.
@@ -197,6 +215,13 @@ TEST_F(UrlRequestRewriteRulesManagerTest, Validation) {
   {
     fuchsia::web::UrlRequestRewrite rewrite;
     rewrite.set_replace_url(fuchsia::web::UrlRequestRewriteReplaceUrl());
+    EXPECT_EQ(UpdateRulesFromRewrite(std::move(rewrite)), ZX_ERR_INVALID_ARGS);
+  }
+
+  // Empty AppendToQuery.
+  {
+    fuchsia::web::UrlRequestRewrite rewrite;
+    rewrite.set_append_to_query(fuchsia::web::UrlRequestRewriteAppendToQuery());
     EXPECT_EQ(UpdateRulesFromRewrite(std::move(rewrite)), ZX_ERR_INVALID_ARGS);
   }
 }

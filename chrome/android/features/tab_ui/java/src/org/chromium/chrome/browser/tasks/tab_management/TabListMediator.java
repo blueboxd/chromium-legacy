@@ -1244,7 +1244,7 @@ class TabListMediator {
             ColorStateList actionbuttonSelectedBackgroundColorList =
                     AppCompatResources.getColorStateList(mContext,
                             pseudoTab.isIncognito() ? R.color.modern_blue_300
-                                                    : R.color.light_active_color);
+                                                    : R.color.default_control_color_active);
 
             tabInfo.set(TabProperties.CHECKED_DRAWABLE_STATE_LIST, checkedDrawableColorList);
             tabInfo.set(TabProperties.SELECTABLE_TAB_ACTION_BUTTON_BACKGROUND,

@@ -20,6 +20,9 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetDelegate:
 
+WidgetDelegate::Params::Params() = default;
+WidgetDelegate::Params::~Params() = default;
+
 WidgetDelegate::WidgetDelegate() = default;
 WidgetDelegate::~WidgetDelegate() {
   CHECK(can_delete_this_) << "A WidgetDelegate must outlive its Widget";
@@ -106,11 +109,11 @@ gfx::ImageSkia WidgetDelegate::GetWindowAppIcon() {
 
 // Returns the icon to be displayed in the window.
 gfx::ImageSkia WidgetDelegate::GetWindowIcon() {
-  return gfx::ImageSkia();
+  return params_.icon;
 }
 
 bool WidgetDelegate::ShouldShowWindowIcon() const {
-  return false;
+  return params_.show_icon;
 }
 
 bool WidgetDelegate::ExecuteWindowsCommand(int command_id) {
@@ -189,20 +192,28 @@ bool WidgetDelegate::ShouldDescendIntoChildForEventHandling(
   return true;
 }
 
-void WidgetDelegate::SetWindowTitle(const base::string16& title) {
-  if (params_.title == title)
-    return;
-  params_.title = title;
-  if (GetWidget())
-    GetWidget()->UpdateWindowTitle();
+void WidgetDelegate::SetIcon(const gfx::ImageSkia& icon) {
+  params_.icon = icon;
 }
 
 void WidgetDelegate::SetShowCloseButton(bool show_close_button) {
   params_.show_close_button = show_close_button;
 }
 
+void WidgetDelegate::SetShowIcon(bool show_icon) {
+  params_.show_icon = show_icon;
+}
+
 void WidgetDelegate::SetShowTitle(bool show_title) {
   params_.show_title = show_title;
+}
+
+void WidgetDelegate::SetTitle(const base::string16& title) {
+  if (params_.title == title)
+    return;
+  params_.title = title;
+  if (GetWidget())
+    GetWidget()->UpdateWindowTitle();
 }
 
 #if defined(USE_AURA)

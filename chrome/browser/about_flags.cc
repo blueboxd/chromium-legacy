@@ -1822,6 +1822,7 @@ const FeatureEntry::Choice kWebOtpBackendChoices[] = {
     {flag_descriptions::kWebOtpBackendUserConsent, switches::kWebOtpBackend,
      switches::kWebOtpBackendUserConsent},
 };
+
 const FeatureEntry::Choice kQueryTilesCountryChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kQueryTilesCountryCodeUS,
@@ -1835,6 +1836,7 @@ const FeatureEntry::Choice kQueryTilesCountryChoices[] = {
     {flag_descriptions::kQueryTilesCountryCodeIndonesia,
      upboarding::switches::kQueryTilesCountryCode, "ID"},
 };
+
 #endif  // defined(OS_ANDROID)
 
 // The choices for --enable-experimental-cookie-features. This really should
@@ -2786,10 +2788,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(offline_pages::kOnTheFlyMhtmlHashComputationFeature)},
     {"query-tiles", flag_descriptions::kQueryTilesName,
      flag_descriptions::kQueryTilesDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kQueryTiles)},
+     FEATURE_VALUE_TYPE(upboarding::features::kQueryTiles)},
     {"query-tiles-country-code", flag_descriptions::kQueryTilesCountryCode,
      flag_descriptions::kQueryTilesCountryCodeDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kQueryTilesCountryChoices)},
+    {"query-tiles-instant-fetch", flag_descriptions::kQueryTilesInstantFetch,
+     flag_descriptions::kQueryTilesInstantFetchDescription, kOsAndroid,
+     SINGLE_VALUE_TYPE(upboarding::switches::kQueryTilesInstantBackgroundTask)},
     {"android-picture-in-picture-api",
      flag_descriptions::kAndroidPictureInPictureAPIName,
      flag_descriptions::kAndroidPictureInPictureAPIDescription, kOsAndroid,
@@ -5140,9 +5145,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHeavyAdInterventionDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kHeavyAdIntervention)},
 
-    {"heavy-ad-privacy-mitigations-opt-out",
-     flag_descriptions::kHeavyAdPrivacyMitigationsOptOutName,
-     flag_descriptions::kHeavyAdPrivacyMitigationsOptOutDescription, kOsAll,
+    {"heavy-ad-privacy-mitigations",
+     flag_descriptions::kHeavyAdPrivacyMitigationsName,
+     flag_descriptions::kHeavyAdPrivacyMitigationsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kHeavyAdPrivacyMitigations)},
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)

@@ -814,7 +814,7 @@ RendererBlinkPlatformImpl::CreateWebGPUGraphicsContext3DProvider(
 
   constexpr bool automatic_flushes = true;
   constexpr bool support_locking = false;
-  constexpr bool support_grcontext = false;
+  constexpr bool support_grcontext = true;
 
   scoped_refptr<viz::ContextProviderCommandBuffer> provider(
       new viz::ContextProviderCommandBuffer(

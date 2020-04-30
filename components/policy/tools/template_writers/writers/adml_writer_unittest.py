@@ -449,17 +449,17 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     self.assertTrue(
         self.writer.IsPolicySupported({
             'supported_on': [{
-                'platforms': ['win', 'zzz']
+                'platform': 'win'
             }, {
-                'platforms': ['aaa']
+                'platform': 'aaa'
             }]
         }))
     self.assertFalse(
         self.writer.IsPolicySupported({
             'supported_on': [{
-                'platforms': ['mac', 'linux']
+                'platform': 'mac',
             }, {
-                'platforms': ['aaa']
+                'platform': 'aaa'
             }]
         }))
 

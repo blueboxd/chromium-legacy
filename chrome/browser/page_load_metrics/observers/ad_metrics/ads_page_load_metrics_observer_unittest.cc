@@ -2206,6 +2206,32 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdPageReload_InterventionIgnored) {
       SuffixedHistogram("HeavyAds.IgnoredByReload"), 1);
 }
 
+TEST_F(AdsPageLoadMetricsObserverTest,
+       HeavyAdPageReloadPrivacyMitigationsDisabled_InterventionAllowed) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({features::kHeavyAdIntervention},
+                                {features::kHeavyAdPrivacyMitigations});
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+
+  // Reload the page.
+  NavigationSimulator::Reload(web_contents());
+
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add enough data to trigger the intervention.
+  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
+
+  // Verify we trigger the intervention.
+  EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
+
+  // The histogram should not be recorded when the reload logic is ignored by
+  // the privacy mitigations flag.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.IgnoredByReload"), 0);
+}
+
 // Verifies when there is no heavy ad on the page, we do not record aggregate
 // heavy ad metrics.
 TEST_F(AdsPageLoadMetricsObserverTest,
@@ -2271,8 +2297,8 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.IgnoredByReload"), false, 1);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.IgnoredByReload"), 0);
 
   // This histogram should not be recorded when the blocklist is disabled.
   histogram_tester().ExpectTotalCount(

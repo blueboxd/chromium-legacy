@@ -180,7 +180,10 @@ interface FrameNavigationControl {
   // Request for the renderer to execute JavaScript in the frame's context.
   //
   // |javascript| is the string containing the JavaScript to be executed in the
-  // target frame's context.
+  // target frame's context. Note that this uses BigString16 rather than
+  // String16 as this is used in contexts, like DevTools, where the contents of
+  // the JavaScript script is user-provided, and therefore we can't guarantee
+  // the size of the script.
   //
   // |wants_result| is true if the result of this execution is required by the
   // caller. If it is false, a reply is still required by Mojo, but a null value
@@ -190,14 +193,14 @@ interface FrameNavigationControl {
   // order with other navigation-related messages. Fix this and move this to a
   // non-navigate-related interface if possible.
   JavaScriptExecuteRequest(
-      mojo_base.mojom.String16 javascript,
+      mojo_base.mojom.BigString16 javascript,
       bool wants_result) => (mojo_base.mojom.Value result);
 
   // ONLY FOR TESTS: Same as above but this can optionally trigger a fake user
   // activation notification to test functionalities that are gated by user
   // activation.
   JavaScriptExecuteRequestForTests(
-      mojo_base.mojom.String16 javascript,
+      mojo_base.mojom.BigString16 javascript,
       bool wants_result,
       bool has_user_gesture,
       int32 world_id)
@@ -206,7 +209,7 @@ interface FrameNavigationControl {
   // Same as JavaScriptExecuteRequest above except the script is run in the
   // isolated world specified by the fourth parameter.
   JavaScriptExecuteRequestInIsolatedWorld(
-      mojo_base.mojom.String16 javascript,
+      mojo_base.mojom.BigString16 javascript,
       bool wants_result,
       int32 world_id) => (mojo_base.mojom.Value result);
 

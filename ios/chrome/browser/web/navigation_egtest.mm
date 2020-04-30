@@ -562,6 +562,11 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 // Tests that navigating forward from a WebUI URL works when resuming from
 // session restore. This is a regression test for https://crbug.com/814790.
 - (void)testRestoreHistoryToWebUIAndNavigateForward {
+  // TODO(crbug.com/1076598): Test is failing when running on iOS 13.4.
+  if (base::ios::IsRunningOnOrLater(13, 4, 0)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 13.4 and later.");
+  }
+
 #if TARGET_IPHONE_SIMULATOR
   if (!base::ios::IsRunningOnIOS13OrLater() && ![ChromeEarlGrey isIPadIdiom]) {
     // This test is failing on one bot for that very specific configuration. See
@@ -589,6 +594,11 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 // Tests that navigating forward from NTP works when resuming from session
 // restore. This is a regression test for https://crbug.com/814790.
 - (void)testRestoreHistoryToNTPAndNavigateForward {
+  // TODO(crbug.com/1076598): Test is failing when running on iOS 13.4.
+  if (base::ios::IsRunningOnOrLater(13, 4, 0)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 13.4 and later.");
+  }
+
 #if TARGET_IPHONE_SIMULATOR
   if (!base::ios::IsRunningOnIOS13OrLater() && ![ChromeEarlGrey isIPadIdiom]) {
     // This test is failing on one bot for that very specific configuration. See

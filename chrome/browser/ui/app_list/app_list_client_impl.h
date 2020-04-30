@@ -32,6 +32,7 @@ class SearchResourceManager;
 }  // namespace app_list
 
 class AppListClientWithProfileTest;
+class AppListNotifierImpl;
 class AppListModelUpdater;
 class AppSyncUIStateWatcher;
 class Profile;
@@ -94,6 +95,7 @@ class AppListClientImpl
       const base::string16& trimmed_query,
       const ash::SearchResultIdWithPositionIndices& results,
       int position_index) override;
+  ash::AppListNotifier* GetNotifier() override;
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(user_manager::User* active_user) override;
@@ -181,6 +183,7 @@ class AppListClientImpl
   std::unique_ptr<app_list::SearchResourceManager> search_resource_manager_;
   std::unique_ptr<app_list::SearchController> search_controller_;
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
+  std::unique_ptr<AppListNotifierImpl> app_list_notifier_;
 
   ScopedObserver<TemplateURLService, TemplateURLServiceObserver>
       template_url_service_observer_{this};

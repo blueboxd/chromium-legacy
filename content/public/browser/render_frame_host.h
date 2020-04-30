@@ -26,11 +26,11 @@
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -494,9 +494,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the type of frame owner element for the FrameTreeNode associated
   // with this RenderFrameHost (e.g., <iframe>, <object>, etc). Note that it
-  // returns blink::FrameOwnerElementType::kNone if the RenderFrameHost is a
-  // main frame.
-  virtual blink::FrameOwnerElementType GetFrameOwnerElementType() = 0;
+  // returns blink::mojom::FrameOwnerElementType::kNone if the RenderFrameHost
+  // is a main frame.
+  virtual blink::mojom::FrameOwnerElementType GetFrameOwnerElementType() = 0;
 
   // Returns the transient bit of the User Activation v2 state of the
   // FrameTreeNode associated with this RenderFrameHost.

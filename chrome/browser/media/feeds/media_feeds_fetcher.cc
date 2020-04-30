@@ -95,26 +95,33 @@ void MediaFeedsFetcher::OnURLFetchComplete(
   DCHECK(request);
 
   if (request->NetError() != net::OK) {
-    std::move(callback).Run(nullptr, Status::kRequestFailed);
+    std::move(callback).Run(nullptr, Status::kRequestFailed, false);
     return;
   }
 
   int response_code = 0;
-  if (request->ResponseInfo() && request->ResponseInfo()->headers)
-    response_code = request->ResponseInfo()->headers->response_code();
+  bool was_fetched_via_cache = false;
+
+  if (request->ResponseInfo()) {
+    was_fetched_via_cache = request->ResponseInfo()->was_fetched_via_cache;
+
+    if (request->ResponseInfo()->headers)
+      response_code = request->ResponseInfo()->headers->response_code();
+  }
 
   if (response_code == net::HTTP_GONE) {
-    std::move(callback).Run(nullptr, Status::kGone);
+    std::move(callback).Run(nullptr, Status::kGone, was_fetched_via_cache);
     return;
   }
 
   if (response_code != net::HTTP_OK) {
-    std::move(callback).Run(nullptr, Status::kRequestFailed);
+    std::move(callback).Run(nullptr, Status::kRequestFailed,
+                            was_fetched_via_cache);
     return;
   }
 
   if (!feed_data || feed_data->empty()) {
-    std::move(callback).Run(nullptr, Status::kNotFound);
+    std::move(callback).Run(nullptr, Status::kNotFound, was_fetched_via_cache);
     return;
   }
 
@@ -123,11 +130,13 @@ void MediaFeedsFetcher::OnURLFetchComplete(
       extractor_.Extract(*feed_data);
 
   if (!schema_org::ValidateEntity(parsed_entity.get())) {
-    std::move(callback).Run(nullptr, Status::kInvalidFeedData);
+    std::move(callback).Run(nullptr, Status::kInvalidFeedData,
+                            was_fetched_via_cache);
     return;
   }
 
-  std::move(callback).Run(std::move(parsed_entity), Status::kOk);
+  std::move(callback).Run(std::move(parsed_entity), Status::kOk,
+                          was_fetched_via_cache);
 }
 
 }  // namespace media_feeds

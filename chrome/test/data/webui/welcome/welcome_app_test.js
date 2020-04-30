@@ -30,7 +30,7 @@ suite('WelcomeWelcomeAppTest', function() {
   let testSetAsDefaultProxy;
 
   function resetTestElement() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     navigateTo(Routes.LANDING, 'landing');
     testElement = document.createElement('welcome-app');
     document.body.appendChild(testElement);

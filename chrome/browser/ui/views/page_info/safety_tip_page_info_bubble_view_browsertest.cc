@@ -675,8 +675,8 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithAllFeatures);
 }
 
-// Tests that Safety Tips trigger (or not) on lookalike domains with embedded
-// top domain when enabled, and not otherwise.
+// Tests that when Safety Tips are enabled, lookalike domains with embedded top
+// domain will trigger Safety Tips.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnTargetEmbedding) {
   // This domain has google.com embedded.
@@ -695,8 +695,8 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithAllFeatures);
 }
 
-// Tests that Safety Tips trigger (or not) on lookalike domains with embedded
-// engaged domain when enabled, and not otherwise.
+// Tests that when Safety Tips are enabled, lookalike domains with embedded
+// engaged domain will trigger Safety Tips.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnHighEngagementTargetEmbedding) {
   // This domain has foo.com embedded.

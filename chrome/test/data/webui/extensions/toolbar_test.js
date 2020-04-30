@@ -32,7 +32,7 @@ suite(extension_toolbar_tests.suiteName, function() {
   let toolbar;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     toolbar = document.createElement('extensions-toolbar');
     document.body.appendChild(toolbar);
     toolbar.inDevMode = false;

@@ -1186,10 +1186,6 @@ jumbo_component("base") {
 
   if (is_ios) {
     sources += [
-      "allocator/allocator_interception_mac.h",
-      "allocator/allocator_interception_mac.mm",
-      "allocator/malloc_zone_functions_mac.cc",
-      "allocator/malloc_zone_functions_mac.h",
       "critical_closure_internal_ios.mm",
       "ios/block_types.h",
       "ios/crb_protocol_observers.h",
@@ -2018,6 +2014,22 @@ jumbo_component("base") {
       "time/time_conversion_posix.cc",
       "time/time_mac.cc",
     ]
+
+    if (use_allocator_shim) {
+      sources += [
+        "allocator/allocator_interception_mac.h",
+        "allocator/allocator_interception_mac.mm",
+        "allocator/malloc_zone_functions_mac.cc",
+        "allocator/malloc_zone_functions_mac.h",
+      ]
+    } else {
+      sources -= [
+        "sampling_heap_profiler/poisson_allocation_sampler.cc",
+        "sampling_heap_profiler/poisson_allocation_sampler.h",
+        "sampling_heap_profiler/sampling_heap_profiler.cc",
+        "sampling_heap_profiler/sampling_heap_profiler.h",
+      ]
+    }
 
     if (current_cpu == "x64" || current_cpu == "arm64") {
       sources += [ "time/time_exploded_posix.cc" ]
@@ -3014,8 +3026,6 @@ test("base_unittests") {
 
   if (is_ios) {
     sources += [
-      "allocator/allocator_interception_mac_unittest.mm",
-      "allocator/malloc_zone_functions_mac_unittest.cc",
       "ios/crb_protocol_observers_unittest.mm",
       "ios/device_util_unittest.mm",
       "ios/weak_nsobject_unittest.mm",
@@ -3042,6 +3052,13 @@ test("base_unittests") {
       "mac/scoped_nsobject_unittest.mm",
       "strings/sys_string_conversions_mac_unittest.mm",
     ]
+
+    if (use_allocator_shim) {
+      sources += [
+        "allocator/allocator_interception_mac_unittest.mm",
+        "allocator/malloc_zone_functions_mac_unittest.cc",
+      ]
+    }
   }
 
   if (use_partition_alloc) {

@@ -41,7 +41,7 @@ class WebTimeLimitNavigationThrottle : public content::NavigationThrottle {
   explicit WebTimeLimitNavigationThrottle(
       content::NavigationHandle* navigation_handle);
 
-  ThrottleCheckResult WillStartOrRedirectRequest(bool proceed_if_no_browser);
+  ThrottleCheckResult WillStartOrRedirectRequest();
 };
 
 }  // namespace chromeos

@@ -34,6 +34,7 @@ class TileViewHolder extends ViewHolder {
                 v -> { properties.get(TileListProperties.CLICK_CALLBACK).onResult(tile); });
 
         final ImageView thumbnail = itemView.findViewById(R.id.thumbnail);
+        thumbnail.setImageResource(0);
         properties.get(TileListProperties.VISUALS_CALLBACK).getVisuals(tile, bitmaps -> {
             thumbnail.setImageBitmap(
                     (bitmaps == null || bitmaps.isEmpty()) ? null : bitmaps.get(0));

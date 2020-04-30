@@ -19,7 +19,7 @@ namespace blink {
 RemoteFrameOwner::RemoteFrameOwner(
     const FramePolicy& frame_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
-    FrameOwnerElementType frame_owner_element_type)
+    mojom::blink::FrameOwnerElementType frame_owner_element_type)
     : frame_policy_(frame_policy),
       browsing_context_container_name_(
           static_cast<String>(frame_owner_properties.name)),
@@ -67,7 +67,7 @@ void RemoteFrameOwner::DispatchLoad() {
 }
 
 void RemoteFrameOwner::RenderFallbackContent(Frame* failed_frame) {
-  if (frame_owner_element_type_ != FrameOwnerElementType::kObject)
+  if (frame_owner_element_type_ != mojom::blink::FrameOwnerElementType::kObject)
     return;
   DCHECK(failed_frame->IsLocalFrame());
   LocalFrame* local_frame = To<LocalFrame>(failed_frame);

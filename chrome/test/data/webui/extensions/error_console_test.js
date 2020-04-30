@@ -17,7 +17,7 @@ suite('CrExtensionsErrorConsoleTest', function() {
 
   // Initialize an extension activity log item before each test.
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     window.history.replaceState(
         {}, '', '?errors=oehidglfoeondlkoeloailjdmmghacge');
     const manager = document.createElement('extensions-manager');

@@ -172,7 +172,7 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     blink::InterfaceRegistry* interface_registry,
     WebFrame* previous_sibling,
     const WebFrameOwnerProperties& frame_owner_properties,
-    FrameOwnerElementType frame_owner_element_type,
+    mojom::blink::FrameOwnerElementType frame_owner_element_type,
     WebFrame* opener) {
   auto* child = MakeGarbageCollected<WebLocalFrameImpl>(
       util::PassKey<WebRemoteFrameImpl>(), scope, client, interface_registry);
@@ -210,7 +210,7 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
     WebTreeScopeType scope,
     const WebString& name,
     const FramePolicy& frame_policy,
-    FrameOwnerElementType frame_owner_element_type,
+    mojom::blink::FrameOwnerElementType frame_owner_element_type,
     WebRemoteFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
     AssociatedInterfaceProvider* associated_interface_provider,

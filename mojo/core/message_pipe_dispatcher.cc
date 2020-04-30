@@ -348,8 +348,13 @@ scoped_refptr<Dispatcher> MessagePipeDispatcher::Deserialize(
     size_t num_ports,
     PlatformHandle* handles,
     size_t num_handles) {
-  if (num_ports != 1 || num_handles || num_bytes != sizeof(SerializedState))
+  if (num_ports != 1 || num_handles || num_bytes != sizeof(SerializedState)) {
+    // TODO(https://crbug.com/1073859): Remove.
+    CHECK_EQ(num_ports, 1u);
+    CHECK(!num_handles);
+    CHECK_EQ(num_bytes, sizeof(SerializedState));
     return nullptr;
+  }
 
   const SerializedState* state = static_cast<const SerializedState*>(data);
 

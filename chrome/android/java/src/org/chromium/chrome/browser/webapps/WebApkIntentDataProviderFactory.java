@@ -75,8 +75,7 @@ public class WebApkIntentDataProviderFactory {
      * @param intent Intent containing info about the app.
      */
     public static BrowserServicesIntentDataProvider create(Intent intent) {
-        String webApkPackageName =
-                IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
+        String webApkPackageName = WebappIntentUtils.getWebApkPackageName(intent);
 
         if (TextUtils.isEmpty(webApkPackageName)) {
             return null;
@@ -108,7 +107,7 @@ public class WebApkIntentDataProviderFactory {
             shareData = new ShareData(subject, text, files);
         }
 
-        String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
+        String url = WebappIntentUtils.getUrl(intent);
         int source = computeSource(intent, shareData);
 
         boolean canUseSplashFromContentProvider = IntentUtils.safeGetBooleanExtra(

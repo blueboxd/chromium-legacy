@@ -389,9 +389,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
       override;
-  void BindCredentialManagerReceiver(
-      content::RenderFrameHost* render_frame_host,
-      mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) override;
   bool BindAssociatedReceiverFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,

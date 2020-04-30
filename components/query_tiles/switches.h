@@ -5,11 +5,25 @@
 #ifndef COMPONENTS_QUERY_TILES_SWITCHES_H_
 #define COMPONENTS_QUERY_TILES_SWITCHES_H_
 
+#include "base/feature_list.h"
+
 namespace upboarding {
+namespace features {
+
+// Main feature flag for the query tiles feature.
+extern const base::Feature kQueryTiles;
+
+}  // namespace features
+
 namespace switches {
+
 // If set, this value overrides the default country code to be sent to the
 // server when fetching tiles.
 extern const char kQueryTilesCountryCode[];
+
+// If set, the background task will be started after a short period.
+extern const char kQueryTilesInstantBackgroundTask[];
+
 }  // namespace switches
 }  // namespace upboarding
 

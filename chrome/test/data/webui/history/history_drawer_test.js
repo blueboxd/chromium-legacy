@@ -10,7 +10,7 @@ suite('drawer-test', function() {
   let app;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     const testService = new TestBrowserService();
     BrowserService.instance_ = testService;
     app = document.createElement('history-app');

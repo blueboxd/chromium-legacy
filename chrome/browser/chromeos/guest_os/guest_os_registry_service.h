@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
+#include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/resource/scale_factor.h"
 
@@ -65,6 +66,8 @@ namespace guest_os {
 // so some care is required.
 class GuestOsRegistryService : public KeyedService {
  public:
+  using VmType = vm_tools::apps::ApplicationList_VmType;
+
   class Registration {
    public:
     Registration(const base::Value* pref, bool is_terminal_app);
@@ -73,12 +76,14 @@ class GuestOsRegistryService : public KeyedService {
     ~Registration();
 
     std::string DesktopFileId() const;
+    VmType VmType() const;
     std::string VmName() const;
     std::string ContainerName() const;
 
     std::string Name() const;
     std::string Comment() const;
     std::string ExecutableFileName() const;
+    std::set<std::string> Extensions() const;
     std::set<std::string> MimeTypes() const;
     std::set<std::string> Keywords() const;
     bool NoDisplay() const;
@@ -135,7 +140,12 @@ class GuestOsRegistryService : public KeyedService {
 
   // Return all installed apps. This always includes the Terminal app.
   std::map<std::string, GuestOsRegistryService::Registration>
-  GetRegisteredApps() const;
+  GetAllRegisteredApps() const;
+
+  // Return all installed apps for a given vm.
+  // If |vm_type == TERMINA_VM| then this includes the Terminal app.
+  std::map<std::string, GuestOsRegistryService::Registration> GetRegisteredApps(
+      VmType vm_type) const;
 
   // Return null if |app_id| is not found in the registry.
   base::Optional<GuestOsRegistryService::Registration> GetRegistration(

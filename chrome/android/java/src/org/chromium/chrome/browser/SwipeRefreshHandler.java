@@ -117,7 +117,7 @@ public class SwipeRefreshHandler
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mSwipeRefreshLayout.setProgressBackgroundColorSchemeResource(
                 R.color.default_bg_color_elev_2);
-        mSwipeRefreshLayout.setColorSchemeResources(R.color.light_active_color);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.default_control_color_active);
         if (mContainerView != null) mSwipeRefreshLayout.setEnabled(true);
 
         mSwipeRefreshLayout.setOnRefreshListener(() -> {

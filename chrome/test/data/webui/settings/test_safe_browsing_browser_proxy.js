@@ -10,6 +10,7 @@ export class TestSafeBrowsingBrowserProxy extends TestBrowserProxy {
     super();
     this.mockMethods([
       'getSafeBrowsingRadioManagedState',
+      'validateSafeBrowsingEnhanced',
     ]);
   }
 }

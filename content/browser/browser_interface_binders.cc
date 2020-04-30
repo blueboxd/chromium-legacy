@@ -560,9 +560,6 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::PushMessaging>(base::BindRepeating(
       &RenderFrameHostImpl::GetPushMessaging, base::Unretained(host)));
 
-  map->Add<blink::mojom::CredentialManager>(base::BindRepeating(
-      &RenderFrameHostImpl::GetCredentialManager, base::Unretained(host)));
-
   map->Add<blink::mojom::Authenticator>(base::BindRepeating(
       &RenderFrameHostImpl::GetAuthenticator, base::Unretained(host)));
 
@@ -687,6 +684,8 @@ void PopulateBinderMapWithContext(
       &EmptyBinderForFrame<payments::mojom::PaymentRequest>));
   map->Add<blink::mojom::AnchorElementMetricsHost>(base::BindRepeating(
       &EmptyBinderForFrame<blink::mojom::AnchorElementMetricsHost>));
+  map->Add<blink::mojom::CredentialManager>(base::BindRepeating(
+      &EmptyBinderForFrame<blink::mojom::CredentialManager>));
 #if !defined(OS_ANDROID)
   map->Add<media::mojom::SpeechRecognitionContext>(base::BindRepeating(
       &EmptyBinderForFrame<media::mojom::SpeechRecognitionContext>));

@@ -500,6 +500,19 @@ void PrePaintTreeWalk::WalkLegacyChildren(const LayoutObject& object) {
       child->GetMutableForPainting().ClearPaintFlags();
       continue;
     }
+    // Skip out-of-flow positioned children lest they be walked twice. If |this|
+    // is an NG object, but it still walks its children the legacy way (this may
+    // happen to table-cells; see LayoutObject::CanTraversePhysicalFragments()),
+    // we're either going to handle it in the code below after the loop - if
+    // |this| is actually the containing block. Otherwise it will be handled by
+    // some ancestor - either in the same code below (if it's a legacy-walking
+    // object) or via regular child fragment traversal. If we walk it here as
+    // well, we'd end up walking it twice. This is both bad for performance, and
+    // also correctness, as fragment items are sensitive to how they're walked
+    // (see SetupFragmentData()).
+    if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled() &&
+                 child->IsOutOfFlowPositioned() && object.IsLayoutNGObject()))
+      continue;
     Walk(*child, /* iterator */ nullptr);
   }
 

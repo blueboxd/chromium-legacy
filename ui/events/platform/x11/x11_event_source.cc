@@ -4,7 +4,14 @@
 
 #include "ui/events/platform/x11/x11_event_source.h"
 
+#include <X11/Xlib-xcb.h>
+#include <xcb/xcb.h>
+#include <xcb/xcbext.h>
+
+#include <type_traits>
+
 #include "base/logging.h"
+#include "base/memory/free_deleter.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
@@ -31,6 +38,27 @@
 namespace ui {
 
 namespace {
+
+// On the wire, sequence IDs are 16 bits.  In xcb, they're usually extended to
+// 32 and sometimes 64 bits.  In Xlib, they're extended to unsigned long, which
+// may be 32 or 64 bits depending on the platform.  This function is intended to
+// prevent bugs caused by comparing two differently sized sequences.  Also
+// handles rollover.  To use, compare the result of this function with 0.  For
+// example, to compare seq1 <= seq2, use CompareSequenceIds(seq1, seq2) <= 0.
+template <typename T, typename U>
+auto CompareSequenceIds(T t, U u) {
+  static_assert(std::is_unsigned<T>::value, "");
+  static_assert(std::is_unsigned<U>::value, "");
+  // Cast to the smaller of the two types so that comparisons will always work.
+  // If we casted to the larger type, then the smaller type will be zero-padded
+  // and may incorrectly compare less than the other value.
+  using SmallerType =
+      typename std::conditional<sizeof(T) <= sizeof(U), T, U>::type;
+  SmallerType t0 = static_cast<SmallerType>(t);
+  SmallerType u0 = static_cast<SmallerType>(u);
+  using SignedType = typename std::make_signed<SmallerType>::type;
+  return static_cast<SignedType>(t0 - u0);
+}
 
 bool InitializeXkb(XDisplay* display) {
   if (!display)
@@ -101,6 +129,18 @@ x11::Bool IsPropertyNotifyForTimestamp(Display* display,
 
 }  // namespace
 
+X11EventSource::Request::Request(bool is_void,
+                                 unsigned int sequence,
+                                 ResponseCallback callback)
+    : is_void(is_void), sequence(sequence), callback(std::move(callback)) {}
+
+X11EventSource::Request::Request(Request&& other)
+    : is_void(other.is_void),
+      sequence(other.sequence),
+      callback(std::move(other.callback)) {}
+
+X11EventSource::Request::~Request() = default;
+
 #if defined(USE_GLIB)
 using X11EventWatcherImpl = X11EventWatcherGlib;
 #else
@@ -148,14 +188,57 @@ X11EventSource* X11EventSource::GetInstance() {
 
 void X11EventSource::DispatchXEvents() {
   DCHECK(display_);
-  // Handle all pending events.
-  // It may be useful to eventually align this event dispatch with vsync, but
-  // not yet.
-  continue_stream_ = true;
-  while (XPending(display_) && continue_stream_) {
+
+  auto process_next_response = [&]() {
+    xcb_connection_t* connection = XGetXCBConnection(display_);
+    auto request = std::move(requests_.front());
+    requests_.pop();
+
+    void* raw_reply = nullptr;
+    xcb_generic_error_t* raw_error = nullptr;
+    xcb_poll_for_reply(connection, request.sequence, &raw_reply, &raw_error);
+    DCHECK(request.is_void || raw_reply || raw_error);
+
+    std::move(request.callback)
+        .Run(Reply{reinterpret_cast<uint8_t*>(raw_reply)}, Error{raw_error});
+  };
+
+  auto process_next_event = [&]() {
     XEvent xevent;
     XNextEvent(display_, &xevent);
     ExtractCookieDataDispatchEvent(&xevent);
+  };
+
+  // Handle all pending events.
+  continue_stream_ = true;
+  while (continue_stream_) {
+    bool has_next_response =
+        !requests_.empty() &&
+        CompareSequenceIds(XLastKnownRequestProcessed(display_),
+                           requests_.front().sequence) >= 0;
+    bool has_next_event = XPending(display_);
+
+    if (has_next_response && has_next_event) {
+      auto next_response_sequence = requests_.front().sequence;
+
+      XEvent event;
+      XPeekEvent(display_, &event);
+      auto next_event_sequence = event.xany.serial;
+
+      // All events have the sequence number of the last processed request
+      // included in them.  So if a reply and an event have the same sequence,
+      // the reply must have been received first.
+      if (CompareSequenceIds(next_event_sequence, next_response_sequence) <= 0)
+        process_next_response();
+      else
+        process_next_event();
+    } else if (has_next_response) {
+      process_next_response();
+    } else if (has_next_event) {
+      process_next_event();
+    } else {
+      break;
+    }
   }
 }
 
@@ -428,6 +511,15 @@ void X11EventSource::OnDispatcherListChanged() {
     // Force the initial device query to have an update list of active devices.
     hotplug_event_handler_->OnHotplugEvent();
   }
+}
+
+void X11EventSource::AddRequest(bool is_void,
+                                unsigned int sequence,
+                                ResponseCallback callback) {
+  DCHECK(requests_.empty() ||
+         CompareSequenceIds(requests_.back().sequence, sequence) < 0);
+
+  requests_.emplace(is_void, sequence, std::move(callback));
 }
 
 // ScopedXEventDispatcher implementation

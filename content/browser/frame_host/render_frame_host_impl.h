@@ -88,7 +88,6 @@
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
@@ -100,6 +99,7 @@
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
@@ -346,7 +346,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void PrepareForInnerWebContentsAttach(
       PrepareForInnerWebContentsAttachCallback callback) override;
   void UpdateSubresourceLoaderFactories() override;
-  blink::FrameOwnerElementType GetFrameOwnerElementType() override;
+  blink::mojom::FrameOwnerElementType GetFrameOwnerElementType() override;
   bool HasTransientUserActivation() override;
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
@@ -481,7 +481,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const base::UnguessableToken& devtools_frame_token,
       const blink::FramePolicy& frame_policy,
       const blink::mojom::FrameOwnerProperties& frame_owner_properties,
-      blink::FrameOwnerElementType owner_type);
+      blink::mojom::FrameOwnerElementType owner_type);
 
   // Update this frame's state at the appropriate time when a navigation
   // commits. This is called by NavigatorImpl::DidNavigate as a helper, in the
@@ -1194,8 +1194,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void CreateWebBluetoothService(
       mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
-  void GetCredentialManager(
-      mojo::PendingReceiver<blink::mojom::CredentialManager> receiver);
 
   void GetAuthenticator(
       mojo::PendingReceiver<blink::mojom::Authenticator> receiver);

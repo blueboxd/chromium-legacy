@@ -10,7 +10,7 @@ import {isMac} from 'chrome://resources/js/cr.m.js';
  * @param {Element} element
  */
 export function replaceBody(element) {
-  PolymerTest.clearBody();
+  document.body.innerHTML = '';
 
   window.history.replaceState({}, '', '/');
 

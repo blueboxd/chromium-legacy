@@ -411,7 +411,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
 
   // Tell the child that it has event handlers, to prevent the touch event
   // queue in the renderer host from acking the touch events immediately.
-  child.widget_host->OnHasTouchEventHandlers(true);
+  child.widget_host->SetHasTouchEventHandlers(true);
 
   // Make sure we route touch events to child. This will cause the RWH's
   // InputRouter to IPC the event into the ether, from which it will never

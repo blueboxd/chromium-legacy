@@ -88,7 +88,7 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
   DCHECK(web_app_info_);
 
   WidgetDelegate::SetShowCloseButton(true);
-  WidgetDelegate::SetWindowTitle(
+  WidgetDelegate::SetTitle(
       l10n_util::GetStringUTF16(IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE));
 
   DialogDelegate::SetButtonLabel(

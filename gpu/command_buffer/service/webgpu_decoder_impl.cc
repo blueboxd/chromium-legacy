@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
+#include "gpu/config/gpu_preferences.h"
 #include "ipc/ipc_channel.h"
 
 namespace gpu {
@@ -315,7 +316,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                     CommandBufferServiceBase* command_buffer_service,
                     SharedImageManager* shared_image_manager,
                     MemoryTracker* memory_tracker,
-                    gles2::Outputter* outputter);
+                    gles2::Outputter* outputter,
+                    const GpuPreferences& gpu_preferences);
   ~WebGPUDecoderImpl() override;
 
   // WebGPUDecoder implementation
@@ -591,9 +593,11 @@ WebGPUDecoder* CreateWebGPUDecoderImpl(
     CommandBufferServiceBase* command_buffer_service,
     SharedImageManager* shared_image_manager,
     MemoryTracker* memory_tracker,
-    gles2::Outputter* outputter) {
+    gles2::Outputter* outputter,
+    const GpuPreferences& gpu_preferences) {
   return new WebGPUDecoderImpl(client, command_buffer_service,
-                               shared_image_manager, memory_tracker, outputter);
+                               shared_image_manager, memory_tracker, outputter,
+                               gpu_preferences);
 }
 
 WebGPUDecoderImpl::WebGPUDecoderImpl(
@@ -601,7 +605,8 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
     CommandBufferServiceBase* command_buffer_service,
     SharedImageManager* shared_image_manager,
     MemoryTracker* memory_tracker,
-    gles2::Outputter* outputter)
+    gles2::Outputter* outputter,
+    const GpuPreferences& gpu_preferences)
     : WebGPUDecoder(client, command_buffer_service, outputter),
       shared_image_representation_factory_(
           std::make_unique<SharedImageRepresentationFactory>(
@@ -611,6 +616,8 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
       memory_transfer_service_(new DawnServiceMemoryTransferService(this)),
       dawn_instance_(new dawn_native::Instance()) {
   dawn_instance_->SetPlatform(dawn_platform_.get());
+  dawn_instance_->EnableBackendValidation(
+      gpu_preferences.enable_dawn_backend_validation);
 }
 
 WebGPUDecoderImpl::~WebGPUDecoderImpl() {

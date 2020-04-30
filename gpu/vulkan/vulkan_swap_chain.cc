@@ -22,7 +22,7 @@ VkSemaphore CreateSemaphore(VkDevice vk_device) {
   VkSemaphore vk_semaphore;
   auto result = vkCreateSemaphore(vk_device, &semaphore_create_info, nullptr,
                                   &vk_semaphore);
-  DLOG_IF(FATAL, VK_SUCCESS != result)
+  LOG_IF(FATAL, VK_SUCCESS != result)
       << "vkCreateSemaphore() failed: " << result;
   return vk_semaphore;
 }
@@ -128,7 +128,7 @@ gfx::SwapResult VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
     LOG(FATAL) << "vkQueuePresentKHR() failed: " << result;
     return gfx::SwapResult::SWAP_FAILED;
   }
-  DLOG_IF(ERROR, result == VK_SUBOPTIMAL_KHR) << "Swapchian is suboptimal.";
+  LOG_IF(ERROR, result == VK_SUBOPTIMAL_KHR) << "Swapchian is suboptimal.";
 
   if (current_image_data.present_begin_semaphore != VK_NULL_HANDLE) {
     // |present_begin_semaphore| for the previous present for this image can be
@@ -369,7 +369,7 @@ bool VulkanSwapChain::AcquireNextImage() {
       acquired_image_.emplace(next_image);
       break;
     }
-    DLOG_IF(ERROR, it != in_present_images_.begin())
+    LOG_IF(ERROR, it != in_present_images_.begin())
         << "vkAcquireNextImageKHR() returned an unexpected image.";
   } while (true);
   return true;

@@ -404,7 +404,7 @@ void DumpAccessibilityTestBase::WaitForAXTreeLoaded(
     std::string url = node->current_url().spec();
     if (url != url::kAboutBlankURL && !url.empty() &&
         node->frame_owner_element_type() !=
-            blink::FrameOwnerElementType::kPortal) {
+            blink::mojom::FrameOwnerElementType::kPortal) {
       all_frame_urls.push_back(url);
     }
   }

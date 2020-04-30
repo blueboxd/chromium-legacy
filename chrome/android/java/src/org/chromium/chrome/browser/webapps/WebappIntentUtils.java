@@ -66,8 +66,16 @@ public class WebappIntentUtils {
         return isLongColorValid(longColor) ? Integer.valueOf((int) longColor) : null;
     }
 
-    public static String idFromIntent(Intent intent) {
+    public static String getId(Intent intent) {
         return IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ID);
+    }
+
+    public static String getUrl(Intent intent) {
+        return IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_URL);
+    }
+
+    public static String getWebApkPackageName(Intent intent) {
+        return IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
     }
 
     /**

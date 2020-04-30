@@ -16,6 +16,8 @@ source_set("internal") {
     "image_loader.h",
     "proto_conversion.cc",
     "proto_conversion.h",
+    "stats.cc",
+    "stats.h",
     "store.h",
     "tile_fetcher.cc",
     "tile_fetcher.h",

@@ -1,4 +1,4 @@
-<style include="iron-flex shared-style">
+<style include="cr-shared-style iron-flex shared-style">
   :host {
     --checkup-card-margin: 24px;
     --banner-img-height: 115px;
@@ -25,7 +25,6 @@
   }
 
   #banner-description {
-    @apply --cr-secondary-text;
     flex-basis: var(--extensions-card-width);
     text-overflow: ellipsis;
   }
@@ -58,7 +57,7 @@
 <div id="card">
   <div id="banner-title" class="cr-title-text">$i18n{checkupTitle}</div>
   <div id="banner-img"></div>
-  <div id="banner-description">
+  <div id="banner-description" class="cr-secondary-text">
     <p>$i18n{checkupBody1}</p>
     <p>$i18n{checkupBody2}</p>
   </div>

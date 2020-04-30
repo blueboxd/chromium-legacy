@@ -13,7 +13,7 @@ suite('<history-toolbar>', function() {
   let toolbar;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     window.history.replaceState({}, '', '/');
     BrowserService.instance_ = new TestBrowserService();
 

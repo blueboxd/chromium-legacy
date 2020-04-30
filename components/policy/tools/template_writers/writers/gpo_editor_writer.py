@@ -33,7 +33,7 @@ class GpoEditorWriter(template_writer.TemplateWriter):
   def IsPolicyOnWin7Only(self, policy):
     ''' Returns true if the policy is supported on win7 only.'''
     for suppported_on in policy.get('supported_on', []):
-      if 'win7' in suppported_on.get('platforms', []):
+      if 'win7' == suppported_on.get('platform', []):
         return True
     return False
 

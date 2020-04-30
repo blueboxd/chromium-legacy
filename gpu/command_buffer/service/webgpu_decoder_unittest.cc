@@ -48,11 +48,16 @@ class WebGPUDecoderTest : public ::testing::Test {
 
     gl_context_->MakeCurrent(gl_surface_.get());
 
+#if defined(OS_WIN)
+    // D3D shared images are only supported with passthrough command decoder.
+    gpu_preferences_.use_passthrough_cmd_decoder = true;
+#endif  // OS_WIN
+
     decoder_client_.reset(new FakeDecoderClient());
     command_buffer_service_.reset(new FakeCommandBufferServiceBase());
     decoder_.reset(WebGPUDecoder::Create(
         decoder_client_.get(), command_buffer_service_.get(),
-        &shared_image_manager_, nullptr, &outputter_));
+        &shared_image_manager_, nullptr, &outputter_, gpu_preferences_));
     ASSERT_EQ(decoder_->Initialize(), ContextResult::kSuccess);
 
     constexpr uint32_t kAdapterClientID = 0;
@@ -67,14 +72,8 @@ class WebGPUDecoderTest : public ::testing::Test {
     requestDeviceCmd.Init(kDeviceClientID, kAdapterServiceID, 0, 0, 0);
     ASSERT_EQ(error::kNoError, ExecuteCmd(requestDeviceCmd));
 
-    GpuPreferences gpu_preferences;
-#if defined(OS_WIN)
-    // D3D shared images are only supported with passthrough command decoder.
-    gpu_preferences.use_passthrough_cmd_decoder = true;
-#endif  // OS_WIN
-
     factory_ = std::make_unique<SharedImageFactory>(
-        gpu_preferences, GpuDriverBugWorkarounds(), GpuFeatureInfo(),
+        gpu_preferences_, GpuDriverBugWorkarounds(), GpuFeatureInfo(),
         /*context_state=*/nullptr, /*mailbox_manager=*/nullptr,
         &shared_image_manager_, /*image_factory=*/nullptr, /*tracker=*/nullptr,
         /*enable_wrapped_sk_image=*/false);
@@ -119,6 +118,7 @@ class WebGPUDecoderTest : public ::testing::Test {
   }
 
  protected:
+  GpuPreferences gpu_preferences_;
   std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
   std::unique_ptr<WebGPUDecoder> decoder_;
   std::unique_ptr<FakeDecoderClient> decoder_client_;

@@ -246,8 +246,8 @@ class ChromePasswordManagerClient
   void SetTestObserver(PasswordGenerationPopupObserver* observer);
 
   static void BindCredentialManager(
-      mojo::PendingReceiver<blink::mojom::CredentialManager> receiver,
-      content::RenderFrameHost* render_frame_host);
+      content::RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::CredentialManager> receiver);
 
   // A helper method to determine whether a save/update bubble can be shown
   // on this |url|.

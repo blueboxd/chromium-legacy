@@ -8,7 +8,7 @@ import {$} from 'chrome://resources/js/util.m.js';
 
 suite('listenForPrivilegedLinkClicks unit test', function() {
   test('click handler', async () => {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     const testService = new TestBrowserService();
     BrowserService.instance_ = testService;
 

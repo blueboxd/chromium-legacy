@@ -34,16 +34,6 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
   DCLayerOverlay& operator=(const DCLayerOverlay& other);
   ~DCLayerOverlay();
 
-  // TODO(magchen): Once software protected video is enabled for all GPUs and
-  // all configurations, RequiresOverlay() will be true for all protected video.
-  // Currently, we only force the overlay swap chain path (RequiresOverlay) for
-  // hardware protected video and soon for Finch experiment on software
-  // protected video.
-  bool RequiresOverlay() const {
-    return (protected_video_type ==
-            gfx::ProtectedVideoType::kHardwareProtected);
-  }
-
   // Resource ids for video Y and UV planes, a single NV12 image, or a swap
   // chain image. See DirectCompositionSurfaceWin for details.
   enum : size_t { kNumResources = 2 };
@@ -112,12 +102,29 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
   QuadList::Iterator ProcessRenderPassDrawQuad(RenderPass* render_pass,
                                                gfx::Rect* damage_rect,
                                                QuadList::Iterator it);
+
   void ProcessRenderPass(DisplayResourceProvider* resource_provider,
                          const gfx::RectF& display_rect,
                          RenderPass* render_pass,
                          bool is_root,
                          gfx::Rect* damage_rect,
                          DCLayerOverlayList* dc_layer_overlays);
+
+  // UpdateDCLayerOverlays() adds the quad at |it| to the overlay list
+  // |dc_layer_overlays|.
+  void UpdateDCLayerOverlays(const gfx::RectF& display_rect,
+                             RenderPass* render_pass,
+                             bool is_root,
+                             const QuadList::Iterator& it,
+                             const gfx::Rect& quad_rectangle_in_target_space,
+                             const gfx::Rect& occluding_damage_rect,
+                             bool is_overlay,
+                             QuadList::Iterator* next_it,
+                             gfx::Rect* this_frame_overlay_rect,
+                             gfx::Rect* this_frame_underlay_rect,
+                             gfx::Rect* damage_rect,
+                             DCLayerOverlayList* dc_layer_overlays);
+
   // Returns an iterator to the element after |it|.
   QuadList::Iterator ProcessForOverlay(const gfx::RectF& display_rect,
                                        RenderPass* render_pass,

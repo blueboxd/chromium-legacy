@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/base_export.h"
+#include "base/containers/circular_deque.h"
 #include "base/profiler/frame.h"
 #include "base/profiler/register_context.h"
 #include "base/profiler/stack_copier.h"
@@ -36,22 +37,22 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
                          ProfileBuilder* profile_builder) override;
 
   // Exposes the internal function for unit testing.
-  static std::vector<Frame> WalkStackForTesting(ModuleCache* module_cache,
-                                                RegisterContext* thread_context,
-                                                uintptr_t stack_top,
-                                                Unwinder* native_unwinder,
-                                                Unwinder* aux_unwinder);
+  static std::vector<Frame> WalkStackForTesting(
+      ModuleCache* module_cache,
+      RegisterContext* thread_context,
+      uintptr_t stack_top,
+      const base::circular_deque<std::unique_ptr<Unwinder>>& unwinders);
 
  private:
-  static std::vector<Frame> WalkStack(ModuleCache* module_cache,
-                                      RegisterContext* thread_context,
-                                      uintptr_t stack_top,
-                                      Unwinder* native_unwinder,
-                                      Unwinder* aux_unwinder);
+  static std::vector<Frame> WalkStack(
+      ModuleCache* module_cache,
+      RegisterContext* thread_context,
+      uintptr_t stack_top,
+      const base::circular_deque<std::unique_ptr<Unwinder>>& unwinders);
 
   const std::unique_ptr<StackCopier> stack_copier_;
-  const std::unique_ptr<Unwinder> native_unwinder_;
-  std::unique_ptr<Unwinder> aux_unwinder_;
+  // Store all unwinder in decreasing priority order.
+  base::circular_deque<std::unique_ptr<Unwinder>> unwinders_;
   ModuleCache* const module_cache_;
   StackSamplerTestDelegate* const test_delegate_;
 };

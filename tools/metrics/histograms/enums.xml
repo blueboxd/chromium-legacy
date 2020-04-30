@@ -7082,6 +7082,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Is Tagged"/>
 </enum>
 
+<enum name="BooleanIsTopLevel">
+  <int value="0" label="Not Top Level"/>
+  <int value="1" label="Top Level"/>
+</enum>
+
 <enum name="BooleanIsUseRelinker">
   <obsolete>
     Removed in 2019-07.
@@ -11834,9 +11839,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="CorruptionStates">
-  <int value="0" label="Corruption Detected After Mount"/>
-  <int value="1" label="Mount Failed"/>
-  <int value="2" label="Rolled Back During Mount"/>
+  <int value="0" label="Mount Failed"/>
+  <int value="1" label="Rolled Back During Mount"/>
+  <int value="2" label="Corruption Detected After Mount"/>
 </enum>
 
 <enum name="CorsAccessCheckError">
@@ -38541,6 +38546,7 @@ from previous Chrome versions.
   <int value="-1416758392" label="migrate-linux-to-logindb:disabled"/>
   <int value="-1416754663" label="enable-mac-views-native-app-windows"/>
   <int value="-1416184931" label="TranslateRankerEnforcement:enabled"/>
+  <int value="-1412230070" label="query-tiles-instant-background-task"/>
   <int value="-1411733990" label="OmniboxDedupeGoogleDriveURLs:disabled"/>
   <int value="-1411219910"
       label="enable-experimental-accessibility-chromevox-annotations"/>
@@ -72704,6 +72710,7 @@ Called by update_scheduler_enums.py.-->
   <int value="48" label="Open in Chrome"/>
   <int value="49" label="Site Settings"/>
   <int value="50" label="App Info"/>
+  <int value="51" label="Uninstall app"/>
 </enum>
 
 <enum name="XFrameOptions">

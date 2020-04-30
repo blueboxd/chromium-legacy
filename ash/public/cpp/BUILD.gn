@@ -39,6 +39,7 @@ component("cpp") {
     "app_list/app_list_features.h",
     "app_list/app_list_metrics.cc",
     "app_list/app_list_metrics.h",
+    "app_list/app_list_notifier.h",
     "app_list/app_list_switches.cc",
     "app_list/app_list_switches.h",
     "app_list/app_list_types.cc",

@@ -15,7 +15,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
@@ -226,23 +225,12 @@ class SignedExchangeRequestHandlerBrowserTestBase
     inactive_rfh_deletion_observer_ =
         std::make_unique<InactiveRenderFrameHostDeletionObserver>(
             shell()->web_contents());
-#if defined(OS_ANDROID)
-    // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
-    // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
-    // this test available on KitKat.
-    int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
-    base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                                 &bugfix_version);
-    if (major_version < 5)
-      return;
-#endif
     original_client_ = SetBrowserClientForTesting(&client_);
   }
 
   void TearDownOnMainThread() override {
     sxg_test_helper_.TearDownOnMainThread();
-    if (original_client_)
-      SetBrowserClientForTesting(original_client_);
+    SetBrowserClientForTesting(original_client_);
   }
 
  protected:
@@ -258,18 +246,12 @@ class SignedExchangeRequestHandlerBrowserTestBase
     sxg_test_helper_.InstallMockCertChainInterceptor();
   }
 
-  // Returns false if we cannot override accept languages. It happens only on
-  // Android Kitkat or older systems.
-  bool SetAcceptLangs(const std::string langs) {
-    if (!original_client_)
-      return false;
-
+  void SetAcceptLangs(const std::string langs) {
     client_.SetAcceptLangs(langs);
     StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
         BrowserContext::GetDefaultStoragePartition(
             shell()->web_contents()->GetBrowserContext()));
     partition->GetPrefetchURLLoaderService()->SetAcceptLanguages(langs);
-    return true;
   }
 
   std::unique_ptr<InactiveRenderFrameHostDeletionObserver>
@@ -448,8 +430,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, VariantMatch) {
-  if (!SetAcceptLangs("en-US,fr"))
-    return;
+  SetAcceptLangs("en-US,fr");
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/sxg/test.example.org.public.pem.cbor");
@@ -490,8 +471,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, VariantMatch) {
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        VariantMismatch) {
-  if (!SetAcceptLangs("en-US,ja"))
-    return;
+  SetAcceptLangs("en-US,ja");
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/sxg/test.example.org.public.pem.cbor");

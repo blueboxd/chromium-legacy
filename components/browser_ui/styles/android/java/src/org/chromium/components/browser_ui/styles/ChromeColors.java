@@ -48,6 +48,30 @@ public class ChromeColors {
     }
 
     /**
+     * Returns the large text primary style based on the given parameter.
+     *
+     * @param forceLightTextColor When true, returns the light-mode large text primary style;
+     *         otherwise returns adaptive large text primary style.
+     * @return The large text primary style.
+     */
+    public static int getLargeTextPrimaryStyle(boolean forceLightTextColor) {
+        return forceLightTextColor ? R.style.TextAppearance_TextLarge_Primary_Light
+                                   : R.style.TextAppearance_TextLarge_Primary;
+    }
+
+    /**
+     * Returns the medium text secondary style based on the given parameter.
+     *
+     * @param forceLightTextColor When true, returns the light-mode medium text secondary style;
+     *         otherwise returns adaptive medium text secondary style.
+     * @return The medium text secondary style.
+     */
+    public static int getMediumTextSecondaryStyle(boolean forceLightTextColor) {
+        return forceLightTextColor ? R.style.TextAppearance_TextMedium_Secondary_Light
+                                   : R.style.TextAppearance_TextMedium_Secondary;
+    }
+
+    /**
      * Returns the primary icon tint resource to use based on the current parameters and whether
      * the app is in night mode.
      *

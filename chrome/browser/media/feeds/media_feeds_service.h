@@ -85,7 +85,8 @@ class MediaFeedsService : public KeyedService {
   void OnFetchResponse(int64_t feed_id,
                        base::OnceClosure callback,
                        const schema_org::improved::mojom::EntityPtr& response,
-                       MediaFeedsFetcher::Status status);
+                       MediaFeedsFetcher::Status status,
+                       bool was_fetched_via_cache);
 
   void OnSafeSearchPrefChanged();
 

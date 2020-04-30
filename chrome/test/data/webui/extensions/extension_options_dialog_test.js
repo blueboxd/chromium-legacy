@@ -15,7 +15,7 @@ import {eventToPromise} from '../test_util.m.js';
 
 suite('ExtensionOptionsDialogTest', () => {
   test('show options dialog', async () => {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     window.history.replaceState(
         {}, '', '/?id=ibbpngabdmdpednkhonkkobdeccpkiff');
 

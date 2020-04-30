@@ -389,9 +389,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutBox* EnclosingScrollableBox() const;
 
   // Returns the root of the inline formatting context |this| belongs to. |this|
-  // must be |IsInline()|. The root is the object that holds |NGPaintFragment|
-  // if it's in LayoutNG context.
+  // must be |IsInline()|. The root is the object that holds |NGInlineNodeData|
+  // and the root |NGPaintFragment| if it's in LayoutNG context. See also
+  // |ContainingFragmentainer()|.
   LayoutBlockFlow* RootInlineFormattingContext() const;
+
+  // Returns the |LayoutBlockFlow| that has |NGFragmentItems| for |this|. This
+  // is usually the same as |RootInlineFormattingContext()|, but it is the child
+  // of that when the IFC has multicol applied. TODO(crbug.com/1076470)
+  LayoutBlockFlow* FragmentItemsContainer() const;
 
   // Returns the containing block flow if it's a LayoutNGBlockFlow, or nullptr
   // otherwise. Note that the semantics is different from |EnclosingBox| for
@@ -1162,13 +1168,23 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool IsHTMLLegendElement() const { return bitfields_.IsHTMLLegendElement(); }
 
+  // Returns true if this can be used as a rendered legend.
+  bool IsRenderedLegendCandidate() const {
+    // Note, we can't directly use LayoutObject::IsFloating() because in the
+    // case where the legend is a flex/grid item, LayoutObject::IsFloating()
+    // could get set to false, even if the legend's computed style indicates
+    // that it is floating.
+    return IsHTMLLegendElement() && !IsOutOfFlowPositioned() &&
+           !Style()->IsFloating();
+  }
+
   // Return true if this is the "rendered legend" of a fieldset. They get
   // special treatment, in that they establish a new formatting context, and
   // shrink to fit if no logical width is specified.
   //
   // This function is performance sensitive.
   inline bool IsRenderedLegend() const {
-    if (LIKELY(!IsHTMLLegendElement()))
+    if (LIKELY(!IsRenderedLegendCandidate()))
       return false;
 
     return IsRenderedLegendInternal();

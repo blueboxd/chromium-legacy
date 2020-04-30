@@ -11,47 +11,22 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_delegate.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/text_input_client_messages.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/fake_local_frame.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/test/mock_widget_impl.h"
 #include "ipc/ipc_test_sink.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
 
 namespace content {
 
 namespace {
 const int64_t kTaskDelayMs = 200;
-
-class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
- public:
-  MockRenderWidgetHostDelegate() {}
-  ~MockRenderWidgetHostDelegate() override {}
-
- private:
-  void ExecuteEditCommand(
-      const std::string& command,
-      const base::Optional<base::string16>& value) override {}
-  void Undo() override {}
-  void Redo() override {}
-  void Cut() override {}
-  void Copy() override {}
-  void Paste() override {}
-  void PasteAndMatchStyle() override {}
-  void SelectAll() override {}
-};
 
 // Stub out local frame mojo binding. Intercepts calls for text input
 // and marks the message as received. This class attaches to the first

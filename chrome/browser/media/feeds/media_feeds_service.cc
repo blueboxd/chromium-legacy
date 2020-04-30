@@ -23,6 +23,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "media/base/media_switches.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace media_feeds {
@@ -38,6 +39,21 @@ GURL Normalize(const GURL& url) {
   replacements.ClearQuery();
   replacements.ClearRef();
   return url.ReplaceComponents(replacements);
+}
+
+media_feeds::mojom::FetchResult GetFetchResult(
+    MediaFeedsFetcher::Status status) {
+  switch (status) {
+    case MediaFeedsFetcher::Status::kOk:
+      return media_feeds::mojom::FetchResult::kSuccess;
+    case MediaFeedsFetcher::Status::kInvalidFeedData:
+    case MediaFeedsFetcher::Status::kRequestFailed:
+      return media_feeds::mojom::FetchResult::kFailedBackendError;
+    case MediaFeedsFetcher::Status::kNotFound:
+      return media_feeds::mojom::FetchResult::kFailedNetworkError;
+    default:
+      return media_feeds::mojom::FetchResult::kNone;
+  }
 }
 
 }  // namespace
@@ -265,7 +281,8 @@ void MediaFeedsService::OnFetchResponse(
     int64_t feed_id,
     base::OnceClosure callback,
     const schema_org::improved::mojom::EntityPtr& response,
-    MediaFeedsFetcher::Status status) {
+    MediaFeedsFetcher::Status status,
+    bool was_fetched_via_cache) {
   if (status == MediaFeedsFetcher::Status::kGone) {
     GetMediaHistoryService()->DeleteMediaFeed(feed_id, std::move(callback));
     fetchers_.erase(feed_id);
@@ -274,25 +291,21 @@ void MediaFeedsService::OnFetchResponse(
 
   std::vector<media_feeds::mojom::MediaImagePtr> logos;
   std::string display_name;
-  auto feed_items = GetMediaFeeds(response, &logos, &display_name);
+  auto feed_items =
+      GetMediaFeeds(response, &logos, &display_name)
+          .value_or(std::vector<media_feeds::mojom::MediaFeedItemPtr>());
+  const bool has_items = !feed_items.empty();
 
-  if (!feed_items.has_value()) {
-    std::move(callback).Run();
-    fetchers_.erase(feed_id);
-    return;
-  }
-
-  // TODO(crbug.com/1074486): Set the fetch result and was_fetched_from_cache.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      feed_id, std::move(feed_items.value()), mojom::FetchResult::kSuccess,
-      false, std::move(logos), display_name, std::vector<url::Origin>(),
-      std::move(callback));
+      feed_id, std::move(feed_items), GetFetchResult(status),
+      was_fetched_via_cache, std::move(logos), display_name,
+      std::set<url::Origin>(), std::move(callback));
 
   fetchers_.erase(feed_id);
 
   // If safe search checking is enabled then we should check the new feed items
   // against the Safe Search API.
-  if (IsSafeSearchCheckingEnabled()) {
+  if (has_items && IsSafeSearchCheckingEnabled()) {
     GetMediaHistoryService()->GetPendingSafeSearchCheckMediaFeedItems(
         base::BindOnce(&MediaFeedsService::CheckItemsAgainstSafeSearch,
                        weak_factory_.GetWeakPtr()));

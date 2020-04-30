@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/engagement/site_engagement_score.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -33,6 +35,33 @@ IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest, TestMetrics) {
   histograms.ExpectTotalCount("Navigation.MainFrameSchemeDifferentPage", 1);
   histograms.ExpectBucketCount("Navigation.MainFrameSchemeDifferentPage",
                                5 /* data: */, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest,
+                       TestMEngagementLevel) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  NavigationMetricsRecorder* recorder =
+      content::WebContentsUserData<NavigationMetricsRecorder>::FromWebContents(
+          web_contents);
+  ASSERT_TRUE(recorder);
+
+  const GURL url("https://google.com");
+  base::HistogramTester histograms;
+  ui_test_utils::NavigateToURL(browser(), url);
+  histograms.ExpectTotalCount("Navigation.MainFrame.SiteEngagementLevel", 1);
+  histograms.ExpectBucketCount("Navigation.MainFrame.SiteEngagementLevel",
+                               blink::mojom::EngagementLevel::NONE, 1);
+
+  SiteEngagementService::Get(browser()->profile())
+      ->ResetBaseScoreForURL(url, 50);
+  ui_test_utils::NavigateToURL(browser(), url);
+  histograms.ExpectTotalCount("Navigation.MainFrame.SiteEngagementLevel", 2);
+  histograms.ExpectBucketCount("Navigation.MainFrame.SiteEngagementLevel",
+                               blink::mojom::EngagementLevel::NONE, 1);
+  histograms.ExpectBucketCount("Navigation.MainFrame.SiteEngagementLevel",
+                               blink::mojom::EngagementLevel::HIGH, 1);
 }
 
 }  // namespace

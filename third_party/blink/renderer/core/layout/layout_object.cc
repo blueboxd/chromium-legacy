@@ -543,10 +543,8 @@ bool LayoutObject::HasClipRelatedProperty() const {
 
 bool LayoutObject::IsRenderedLegendInternal() const {
   DCHECK(IsBox());
-  DCHECK(IsHTMLLegendElement());
+  DCHECK(IsRenderedLegendCandidate());
 
-  if (IsFloatingOrOutOfFlowPositioned())
-    return false;
   const auto* parent = Parent();
   if (RuntimeEnabledFeatures::LayoutNGFieldsetEnabled()) {
     // If there is a rendered legend, it will be found inside the anonymous
@@ -841,6 +839,15 @@ LayoutBlockFlow* LayoutObject::RootInlineFormattingContext() const {
         return DynamicTo<LayoutBlockFlow>(block_flow->Parent());
       return block_flow;
     }
+  }
+  return nullptr;
+}
+
+LayoutBlockFlow* LayoutObject::FragmentItemsContainer() const {
+  DCHECK(IsInline());
+  for (LayoutObject* parent = Parent(); parent; parent = parent->Parent()) {
+    if (auto* block_flow = DynamicTo<LayoutBlockFlow>(parent))
+      return block_flow;
   }
   return nullptr;
 }

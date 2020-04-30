@@ -24,6 +24,11 @@ void TileServiceImpl::GetQueryTiles(GetTilesCallback callback) {
   tile_manager_->GetTiles(std::move(callback));
 }
 
+void TileServiceImpl::GetTile(const std::string& tile_id,
+                              TileCallback callback) {
+  tile_manager_->GetTile(tile_id, std::move(callback));
+}
+
 void TileServiceImpl::GetVisuals(const std::string& tile_id,
                                  VisualsCallback callback) {
   NOTIMPLEMENTED();

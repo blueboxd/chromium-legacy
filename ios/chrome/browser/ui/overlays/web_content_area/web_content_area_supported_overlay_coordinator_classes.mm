@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/overlays/web_content_area/web_content_area_supported_overlay_coordinator_classes.h"
 
-#import "ios/chrome/browser/ui/overlays/web_content_area/alerts/web_content_area_alert_overlay_coordinator.h"
+#import "ios/chrome/browser/ui/overlays/web_content_area/alerts/alert_overlay_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,7 +13,7 @@
 namespace web_content_area {
 
 NSArray<Class>* GetSupportedOverlayCoordinatorClasses() {
-  return @[ [WebContentAreaOverlayCoordinator class] ];
+  return @[ [AlertOverlayCoordinator class] ];
 }
 
 }  // web_content_area

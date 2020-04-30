@@ -30,6 +30,9 @@ fuchsia::web::UrlRequestRewrite CreateRewriteReplaceUrl(
     base::StringPiece url_ends_with,
     base::StringPiece new_url);
 
+fuchsia::web::UrlRequestRewrite CreateRewriteAppendToQuery(
+    base::StringPiece query);
+
 }  // namespace cr_fuchsia
 
 #endif  // FUCHSIA_BASE_URL_REQUEST_REWRITE_TEST_UTIL_H_

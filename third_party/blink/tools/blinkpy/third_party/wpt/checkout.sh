@@ -9,7 +9,7 @@ cd $DIR
 
 TARGET_DIR=$DIR/wpt
 REMOTE_REPO="https://github.com/web-platform-tests/wpt.git"
-WPT_HEAD=41d7c3597e5d3128ff3c42bb128781e4c382ba7b
+WPT_HEAD=d2025b24b0b1f4d2e69e83cf83e60c021d9f7b42
 
 function clone {
   # Remove existing repo if already exists.
@@ -19,11 +19,6 @@ function clone {
   git clone $REMOTE_REPO $TARGET_DIR
   cd $TARGET_DIR && git checkout $WPT_HEAD
   echo "WPTHead: " `git rev-parse HEAD`
-
-  # Apply local changes.
-  git cherry-pick 644a206e8ace488eac7e2b2a58a4b5354b02363a
-  git cherry-pick 7e52ecb9b61b73425093d39dbadceb9c6e10b754
-  git cherry-pick 07ca316106218e6c21133fed91176d8e41df1d17
 }
 
 function reduce {
@@ -32,7 +27,7 @@ function reduce {
   # xargs on some platforms, so we remove those directories first.
   rm -fr html css
   # Remove all except white-listed.
-  comm -23 <(find . -type f | sort) <(cat ../WPTWhiteList | sort) | xargs -n 1 rm
+  comm -23 <(find . -type f | sort) <(cat ../WPTWhiteList | sort) | xargs -d '\n' -n 1 rm
   find . -empty -type d -delete
 }
 

@@ -16,7 +16,7 @@
   // method will wait to resolve the promise until the given |frameIndex| is
   // available or reject the promise if we receive all data or fail before
   // |frameIndex| is available.
-  Promise<ImageFrame> decode(unsigned long frameIndex);
+  Promise<ImageFrame> decode(optional unsigned long frameIndex = 0);
 
   // The number of frames in the image.
   //

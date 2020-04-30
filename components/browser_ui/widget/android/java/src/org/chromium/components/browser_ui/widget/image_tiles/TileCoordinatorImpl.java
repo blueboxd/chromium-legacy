@@ -17,15 +17,14 @@ import java.util.List;
 class TileCoordinatorImpl implements ImageTileCoordinator {
     private final TileListModel mModel;
     private final TileListView mView;
+    private final TileMediator mMediator;
 
     /** Constructor. */
     public TileCoordinatorImpl(Context context, TileConfig config,
             Callback<ImageTile> tileClickCallback, TileVisualsProvider visualsProvider) {
         mModel = new TileListModel();
         mView = new TileListView(context, config, mModel);
-
-        mModel.getProperties().set(TileListProperties.CLICK_CALLBACK, tileClickCallback);
-        mModel.getProperties().set(TileListProperties.VISUALS_CALLBACK, visualsProvider);
+        mMediator = new TileMediator(config, mModel, tileClickCallback, visualsProvider);
     }
 
     @Override

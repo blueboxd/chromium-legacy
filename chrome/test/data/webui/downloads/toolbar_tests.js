@@ -17,7 +17,7 @@ suite('toolbar tests', function() {
       }
     }
 
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     toolbar = document.createElement('downloads-toolbar');
     SearchService.instance_ = new TestSearchService;
     document.body.appendChild(toolbar);

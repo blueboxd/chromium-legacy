@@ -5,6 +5,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/bind.h"
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
@@ -269,6 +270,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 - (void)testDontCloseNTPWhenSwitchingWithForwardHistory {
+  // TODO(crbug.com/1076573): Test is failing when running on iOS 13.4.
+  if (base::ios::IsRunningOnOrLater(13, 4, 0)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 13.4 and later.");
+  }
+
 // TODO(crbug.com/1067817): Test won't pass on iPad devices.
 #if !TARGET_IPHONE_SIMULATOR
   if ([ChromeEarlGrey isIPadIdiom]) {

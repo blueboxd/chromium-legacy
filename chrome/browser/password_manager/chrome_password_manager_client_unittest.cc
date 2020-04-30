@@ -662,7 +662,7 @@ TEST_F(ChromePasswordManagerClientTest, BindCredentialManager_MissingInstance) {
 
   // This call should not crash.
   ChromePasswordManagerClient::BindCredentialManager(
-      mojo::NullReceiver(), web_contents->GetMainFrame());
+      web_contents->GetMainFrame(), mojo::NullReceiver());
 }
 
 TEST_F(ChromePasswordManagerClientTest, CanShowBubbleOnURL) {

@@ -95,7 +95,7 @@ suite('bookmarks.StoreClient', function() {
   });
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     // Reset store instance:
     Store.instance_ = new Store();

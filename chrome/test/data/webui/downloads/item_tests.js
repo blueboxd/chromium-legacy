@@ -14,7 +14,7 @@ suite('item tests', function() {
   let testIconLoader;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     // This isn't strictly necessary, but is a probably good idea.
     BrowserProxy.instance_ = new TestDownloadsProxy;

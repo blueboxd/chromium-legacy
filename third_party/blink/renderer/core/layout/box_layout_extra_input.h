@@ -29,6 +29,10 @@ struct BoxLayoutExtraInput {
   // one instead.
   base::Optional<LayoutUnit> override_block_size;
 
+  // If the |override_block_size| should be treated as definite for the
+  // purposes of percent block-size resolution.
+  bool is_override_block_size_definite = true;
+
   // Available inline size. https://drafts.csswg.org/css-sizing/#available
   LayoutUnit available_inline_size;
 

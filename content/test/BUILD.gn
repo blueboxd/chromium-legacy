@@ -123,6 +123,8 @@ jumbo_static_library("test_support") {
     "../public/test/fake_local_frame.h",
     "../public/test/fake_remote_frame.cc",
     "../public/test/fake_remote_frame.h",
+    "../public/test/fake_render_widget_host.cc",
+    "../public/test/fake_render_widget_host.h",
     "../public/test/fake_service_worker_context.cc",
     "../public/test/fake_service_worker_context.h",
     "../public/test/fake_speech_recognition_manager.cc",

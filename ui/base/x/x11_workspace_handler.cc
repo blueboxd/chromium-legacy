@@ -7,9 +7,25 @@
 #include "base/strings/string_number_conversions.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/x/x11_window_event_manager.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
+
+namespace {
+
+x11::Future<x11::XProto::GetPropertyReply> GetWorkspace() {
+  auto* connection = x11::Connection::Get();
+  return connection->GetProperty({
+      .window = XDefaultRootWindow(connection->display()),
+      .property = gfx::GetAtom("_NET_CURRENT_DESKTOP"),
+      .type = gfx::GetAtom("CARDINAL"),
+      .long_length = 1,
+  });
+}
+
+}  // namespace
 
 X11WorkspaceHandler::X11WorkspaceHandler(Delegate* delegate)
     : xdisplay_(gfx::GetXDisplay()),
@@ -30,17 +46,8 @@ X11WorkspaceHandler::~X11WorkspaceHandler() {
 
 std::string X11WorkspaceHandler::GetCurrentWorkspace() {
   if (workspace_.empty())
-    UpdateWorkspace();
+    OnWorkspaceResponse(GetWorkspace().Sync());
   return workspace_;
-}
-
-bool X11WorkspaceHandler::UpdateWorkspace() {
-  int desktop;
-  if (ui::GetCurrentDesktop(&desktop)) {
-    workspace_ = base::NumberToString(desktop);
-    return true;
-  }
-  return false;
 }
 
 bool X11WorkspaceHandler::DispatchXEvent(XEvent* event) {
@@ -51,8 +58,9 @@ bool X11WorkspaceHandler::DispatchXEvent(XEvent* event) {
   switch (event->type) {
     case PropertyNotify: {
       if (event->xproperty.atom == gfx::GetAtom("_NET_CURRENT_DESKTOP")) {
-        if (UpdateWorkspace())
-          delegate_->OnCurrentWorkspaceChanged(workspace_);
+        GetWorkspace().OnResponse(
+            base::BindOnce(&X11WorkspaceHandler::OnWorkspaceResponse,
+                           weak_factory_.GetWeakPtr()));
       }
       break;
     }
@@ -60,6 +68,20 @@ bool X11WorkspaceHandler::DispatchXEvent(XEvent* event) {
       NOTREACHED();
   }
   return false;
+}
+
+void X11WorkspaceHandler::OnWorkspaceResponse(
+    x11::XProto::GetPropertyResponse response) {
+  if (!response)
+    return;
+  DCHECK_EQ(response->bytes_after, 0U);
+  DCHECK_EQ(response->format, 32);
+  DCHECK_EQ(response->type, gfx::GetAtom("CARDINAL"));
+
+  uint32_t workspace;
+  memcpy(&workspace, response->value.data(), 4);
+  workspace_ = base::NumberToString(workspace);
+  delegate_->OnCurrentWorkspaceChanged(workspace_);
 }
 
 }  // namespace ui

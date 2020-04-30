@@ -34,7 +34,7 @@ suite(extension_shortcut_tests.suiteName, function() {
   let twoCommands;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     keyboardShortcuts = document.createElement('extensions-keyboard-shortcuts');
     keyboardShortcuts.delegate = new TestService();
 

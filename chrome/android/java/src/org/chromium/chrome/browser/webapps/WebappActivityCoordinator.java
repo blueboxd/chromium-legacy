@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigatio
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
+import org.chromium.chrome.browser.metrics.LaunchMetrics;
 
 import javax.inject.Inject;
 
@@ -88,7 +89,9 @@ public class WebappActivityCoordinator implements InflationObserver {
     }
 
     @Override
-    public void onPreInflationStartup() {}
+    public void onPreInflationStartup() {
+        LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(mActivity.getWebappInfo());
+    }
 
     @Override
     public void onPostInflationStartup() {

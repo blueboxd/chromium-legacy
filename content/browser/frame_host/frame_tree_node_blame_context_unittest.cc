@@ -105,7 +105,7 @@ class FrameTreeNodeBlameContextTest : public RenderViewHostImplTestHarness {
           base::StringPrintf("uniqueName%d", child_id), false,
           base::UnguessableToken::Create(), blink::FramePolicy(),
           blink::mojom::FrameOwnerProperties(), false,
-          blink::FrameOwnerElementType::kIframe);
+          blink::mojom::FrameOwnerElementType::kIframe);
       FrameTreeNode* child = node->child_at(child_num - 1);
       consumption += CreateSubframes(child, child_id, shape + consumption);
     }

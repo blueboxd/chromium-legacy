@@ -695,3 +695,11 @@ No. PDF files have some powerful capabilities including invoking printing or
 posting form data. To mitigate abuse of these capabiliies, such as beaconing
 upon document open, we require interaction with the document (a "user gesture")
 before allowing their use.
+
+<a name="TOC-Why-arent-null-pointer-dereferences-considered-security-bugs-"></a>
+## Why aren't null pointer dereferences considered security bugs?
+
+Null pointer dereferences with consistent, small, fixed offsets are not considered
+security bugs. A read or write to the NULL page results in a non-exploitable crash.
+If the offset is larger than a page, or if there's uncertainty about whether the
+offset is controllable, it is considered a security bug.

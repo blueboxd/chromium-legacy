@@ -3645,13 +3645,6 @@ bool ChromeContentBrowserClient::IsRendererCodeIntegrityEnabled() {
 
 #endif  // defined(OS_WIN)
 
-void ChromeContentBrowserClient::BindCredentialManagerReceiver(
-    content::RenderFrameHost* render_frame_host,
-    mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) {
-  ChromePasswordManagerClient::BindCredentialManager(std::move(receiver),
-                                                     render_frame_host);
-}
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 bool ShouldEnableAudioSandbox(const policy::PolicyMap& policies) {

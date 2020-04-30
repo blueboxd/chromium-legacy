@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.view;
 
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_EVENTS_CALLBACK;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_FIRST_TIME;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_SCOPE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_NOT_SHOWN;
@@ -62,9 +64,12 @@ public class DisclosureNotification implements
 
     private void show() {
         String mCurrentScope = mModel.get(DISCLOSURE_SCOPE);
-        // TODO(https://crbug.com/1068106): Determine whether this is the first display.
-        ChromeNotification notification = createNotification(true, mCurrentScope);
+        boolean firstTime = mModel.get(DISCLOSURE_FIRST_TIME);
+
+        ChromeNotification notification = createNotification(firstTime, mCurrentScope);
         mNotificationManager.notify(notification);
+
+        mModel.get(DISCLOSURE_EVENTS_CALLBACK).onDisclosureShown();
     }
 
     private void dismiss() {

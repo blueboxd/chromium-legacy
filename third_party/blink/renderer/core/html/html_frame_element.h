@@ -25,7 +25,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_ELEMENT_H_
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 
@@ -44,8 +44,8 @@ class CORE_EXPORT HTMLFrameElement final : public HTMLFrameElementBase {
   ParsedFeaturePolicy ConstructContainerPolicy(
       Vector<String>* /* messages */) const override;
 
-  FrameOwnerElementType OwnerType() const final {
-    return FrameOwnerElementType::kFrame;
+  mojom::blink::FrameOwnerElementType OwnerType() const final {
+    return mojom::blink::FrameOwnerElementType::kFrame;
   }
 
  private:

@@ -1328,12 +1328,31 @@ void WebContentsImpl::SetUserAgentOverride(
     observer.UserAgentOverrideSet(ua_override);
 }
 
+void WebContentsImpl::SetRendererInitiatedUserAgentOverrideOption(
+    NavigationController::UserAgentOverrideOption option) {
+  renderer_initiated_user_agent_override_option_ = option;
+}
+
 const blink::UserAgentOverride& WebContentsImpl::GetUserAgentOverride() {
   return renderer_preferences_.user_agent_override;
 }
 
-bool WebContentsImpl::ShouldOverrideUserAgentInNewTabs() {
-  return should_override_user_agent_in_new_tabs_;
+bool WebContentsImpl::ShouldOverrideUserAgentForRendererInitiatedNavigation() {
+  NavigationEntryImpl* current_entry = controller_.GetLastCommittedEntry();
+  if (!current_entry)
+    return should_override_user_agent_in_new_tabs_;
+
+  switch (renderer_initiated_user_agent_override_option_) {
+    case NavigationController::UA_OVERRIDE_INHERIT:
+      return current_entry->GetIsOverridingUserAgent();
+    case NavigationController::UA_OVERRIDE_TRUE:
+      return true;
+    case NavigationController::UA_OVERRIDE_FALSE:
+      return false;
+    default:
+      break;
+  }
+  return false;
 }
 
 void WebContentsImpl::EnableWebContentsOnlyAccessibilityMode() {

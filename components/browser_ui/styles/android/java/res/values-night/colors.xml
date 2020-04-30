@@ -4,8 +4,6 @@
      found in the LICENSE file. -->
 
 <resources>
-    <color name="light_active_color">@color/default_control_color_active_dark</color>
-
     <!-- Control colors for toggles, checkboxes, radio buttons, list item highlight, and accent.
          Note that these should NOT be used for icon tint. -->
     <color name="control_normal_color">@color/default_control_color_normal_dark</color>

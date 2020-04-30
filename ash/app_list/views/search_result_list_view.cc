@@ -19,6 +19,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_list/app_list_notifier.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -218,8 +219,12 @@ int SearchResultListView::DoUpdate() {
   if (IsAssistantSearchEnabled(view_delegate_))
     CalculateDisplayIcons(display_results, &assistant_item_icons);
 
+  // TODO(crbug.com/1076270): The logic for zero state and Drive quick access
+  // files below exists only for metrics, and can be folded into the
+  // AppListNotifier and done in chrome.
   bool found_zero_state_file = false;
   bool found_drive_quick_access = false;
+  std::vector<std::string> display_ids;
 
   for (size_t i = 0; i < results_container_->children().size(); ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
@@ -248,12 +253,18 @@ int SearchResultListView::DoUpdate() {
             display_results[i]->title()));
       }
 
+      display_ids.push_back(display_results[i]->id());
       result_view->SetResult(display_results[i]);
       result_view->SetVisible(true);
     } else {
       result_view->SetResult(nullptr);
       result_view->SetVisible(false);
     }
+  }
+
+  auto* notifier = view_delegate_->GetNotifier();
+  if (notifier) {
+    notifier->NotifyResultsUpdated(SearchResultDisplayType::kList, display_ids);
   }
 
   // Logic for logging impression of items that were shown to user.

@@ -796,10 +796,9 @@ void MoveTabsToNewWindow(Browser* browser,
     std::unique_ptr<WebContents> contents_move =
         browser->tab_strip_model()->DetachWebContentsAt(adjusted_index);
     int add_types = TabStripModel::ADD_ACTIVE |
-                    TabStripModel::ADD_INHERIT_OPENER |
                     (pinned ? TabStripModel::ADD_PINNED : 0);
     new_browser->tab_strip_model()->AddWebContents(std::move(contents_move), -1,
-                                                   ui::PAGE_TRANSITION_LINK,
+                                                   ui::PAGE_TRANSITION_TYPED,
                                                    add_types, new_group);
   }
   new_browser->window()->Show();
@@ -856,9 +855,9 @@ bool CanDuplicateTabAt(const Browser* browser, int index) {
          contents->GetController().GetLastCommittedEntry();
 }
 
-void MoveToExistingWindow(Browser* source,
-                          Browser* target,
-                          const std::vector<int>& tab_indices) {
+void MoveTabsToExistingWindow(Browser* source,
+                              Browser* target,
+                              const std::vector<int>& tab_indices) {
   if (tab_indices.empty())
     return;
 
@@ -870,10 +869,9 @@ void MoveToExistingWindow(Browser* source,
     std::unique_ptr<WebContents> contents_move =
         source->tab_strip_model()->DetachWebContentsAt(adjusted_index);
     int add_types = TabStripModel::ADD_ACTIVE |
-                    TabStripModel::ADD_INHERIT_OPENER |
                     (pinned ? TabStripModel::ADD_PINNED : 0);
     target->tab_strip_model()->AddWebContents(
-        std::move(contents_move), -1, ui::PAGE_TRANSITION_LINK, add_types);
+        std::move(contents_move), -1, ui::PAGE_TRANSITION_TYPED, add_types);
   }
   target->window()->Show();
 }

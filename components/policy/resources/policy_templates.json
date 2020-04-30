@@ -148,6 +148,9 @@
 #   'cloud_only' Set to True if the policy is forced or recommended to set from
 #   Admin console only. This hides the policy from policy templates and
 #   documentation.
+#   'platform_only' Set to True if the policy can only be set from platform
+#   policy but do not support Admin console. This is only used as a hint for
+#   Admin console.
 #
 #   The 'max_size' key is used to specify the maximal size of the external data
 #   that a policy can reference, in bytes. This annotation is compulsory for
@@ -17249,6 +17252,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
+        'cloud_only': True,
       },
       'supported_on': ['chrome.*:70-'],
       'future': True,
@@ -17271,6 +17275,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
+        'cloud_only': True,
       },
       'supported_on': ['chrome.*:70-'],
       'future': True,
@@ -17293,6 +17298,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
+        'cloud_only': True,
       },
       'supported_on': ['chrome.*:70-'],
       'future': True,
@@ -17315,6 +17321,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
+        'cloud_only': True,
       },
       'supported_on': ['chrome.*:70-'],
       'future': True,
@@ -17337,6 +17344,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
+        'cloud_only': True,
       },
       'supported_on': ['chrome.*:72-'],
       'future': True,
@@ -17359,9 +17367,10 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
+        'cloud_only': True,
       },
-      'supported_on': ['chrome.*:72-'],
-      'future': True,
+      'supported_on': ['chrome.*:72-84'],
+      'deprecated': True,
       'caption': '''Report Safe Browsing information''',
       'example_value': False,
       'desc': '''This policy controls whether to report Safe Browsing information including the number of Safe Browsing warning and the number of safe browsering warning click through.
@@ -17381,6 +17390,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
+        'cloud_only': True,
       },
       'supported_on': ['chrome.*:83-', 'chrome_os:83-'],
       'future': True,
@@ -17406,9 +17416,9 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'supported_on': ['chrome.*:72-', 'chrome_os:81-'],
-      'future': True,
       'caption': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud reporting''',
       'example_value': True,
       'desc': '''This policy controls <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud reporting which uploads information about the browser operation to Google Admin console.
@@ -19247,6 +19257,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
+        'cloud_only': True,
       },
       'example_value': 2,
       'caption': '''Scan users downloads with Safe Browsing''',
@@ -19272,6 +19283,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 585,
       'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
@@ -19317,6 +19329,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 586,
       'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
@@ -19368,6 +19381,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 587,
       'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
@@ -19419,6 +19433,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 588,
       'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
@@ -19470,6 +19485,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 668,
       'supported_on': ['chrome.*:81-', 'chrome_os:81-'],
@@ -19521,6 +19537,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 589,
       'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
@@ -19550,6 +19567,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 590,
       'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
@@ -19575,6 +19593,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 591,
       'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
@@ -19661,6 +19680,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 696,
       'supported_on': ['chrome.*:84-', 'chrome_os:84-'],
@@ -19754,6 +19774,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 693,
       'supported_on': ['chrome.*:84-', 'chrome_os:84-'],
@@ -19890,6 +19911,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 600,
       'supported_on': ['chrome.*:78-', 'chrome_os:81-'],
@@ -19916,6 +19938,7 @@
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
+        'cloud_only': True,
       },
       'id': 669,
       'supported_on': ['chrome.*:81-', 'chrome_os:81-'],
@@ -21174,6 +21197,14 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
     'doc_feature_per_profile': {
       'desc': '''The name of the feature that indicates whether a policy is applicable to browser Profiles individually or whether it affects the entire browser.''',
+      'text': '''Per Profile'''
+    },
+    'doc_feature_cloud_only': {
+      'desc': '''The name of the fature that indicates whether a policy can only be set from Admin Console.''',
+      'text': '''Cloud Only'''
+    },
+    'doc_feature_platform_only': {
+      'desc': '''The name of the feature that indicates whether a policy can only be set with platfrom policy.''',
       'text': '''Per Profile'''
     },
     'doc_deprecated': {

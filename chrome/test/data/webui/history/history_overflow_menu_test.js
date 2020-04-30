@@ -13,7 +13,7 @@ suite('#overflow-menu', function() {
   let target2;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     const testService = new TestBrowserService();
     BrowserService.instance_ = testService;
 

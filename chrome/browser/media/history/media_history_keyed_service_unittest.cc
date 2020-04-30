@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
+#include "chrome/browser/media/history/media_history_feed_associated_origins_table.h"
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
@@ -199,6 +200,17 @@ class MediaHistoryKeyedServiceTest
 
     run_loop.Run();
     return out;
+  }
+
+  static std::set<url::Origin> GetExpectedAssociatedOrigins() {
+    std::set<url::Origin> origins;
+
+    origins.insert(url::Origin::Create(GURL("https://www.google1.com")));
+    origins.insert(url::Origin::Create(GURL("https://www.google2.com")));
+    origins.insert(url::Origin::Create(GURL("https://www.google3.com")));
+    origins.insert(url::Origin::Create(GURL("https://www.example.org")));
+
+    return origins;
   }
 
   static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems() {
@@ -417,12 +429,12 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
       1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), "Test",
-      std::vector<url::Origin>(), base::DoNothing());
+      GetExpectedAssociatedOrigins(), base::DoNothing());
   service()->StoreMediaFeedFetchResult(
       2, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), "test",
-      std::vector<url::Origin>(), base::DoNothing());
+      GetExpectedAssociatedOrigins(), base::DoNothing());
 
   // Wait until the feed data has finished saving.
   WaitForDB();
@@ -437,6 +449,8 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
     EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
     EXPECT_EQ(2,
               stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
+    EXPECT_EQ(10, stats->table_row_counts
+                      [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
 
     // There are 10 session images because each session has an image with two
     // sizes.
@@ -482,6 +496,8 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
     EXPECT_EQ(1, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
     EXPECT_EQ(1,
               stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
+    EXPECT_EQ(5, stats->table_row_counts
+                     [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
 
     // There are 4 session images because each session has an image with two
     // sizes.
@@ -636,12 +652,12 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
       1, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), "Test",
-      std::vector<url::Origin>(), base::DoNothing());
+      GetExpectedAssociatedOrigins(), base::DoNothing());
   service()->StoreMediaFeedFetchResult(
       2, GetExpectedItems(), media_feeds::mojom::FetchResult::kSuccess,
       /* was_fetched_from_cache= */ false,
       std::vector<media_feeds::mojom::MediaImagePtr>(), "test",
-      std::vector<url::Origin>(), base::DoNothing());
+      GetExpectedAssociatedOrigins(), base::DoNothing());
 
   // Wait until the feed data has finished saving.
   WaitForDB();
@@ -656,6 +672,8 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
     EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
     EXPECT_EQ(2,
               stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
+    EXPECT_EQ(10, stats->table_row_counts
+                      [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
 
     // There are 10 session images because each session has an image with two
     // sizes.
@@ -717,6 +735,8 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
     EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
     EXPECT_EQ(2,
               stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
+    EXPECT_EQ(10, stats->table_row_counts
+                      [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
 
     // There are 6 session images because each session has an image with two
     // sizes.

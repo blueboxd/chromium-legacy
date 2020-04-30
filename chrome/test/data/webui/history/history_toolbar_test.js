@@ -17,7 +17,7 @@ suite('history-toolbar', function() {
       [createHistoryEntry('2016-03-15', 'https://google.com')];
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     testService = new TestBrowserService();
     BrowserService.instance_ = testService;
 

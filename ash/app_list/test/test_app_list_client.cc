@@ -24,4 +24,8 @@ void TestAppListClient::GetContextMenuModel(
   std::move(callback).Run(nullptr);
 }
 
+AppListNotifier* TestAppListClient::GetNotifier() {
+  return nullptr;
+}
+
 }  // namespace ash

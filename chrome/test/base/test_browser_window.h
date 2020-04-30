@@ -192,6 +192,9 @@ class TestBrowserWindow : public BrowserWindow {
   std::string GetWorkspace() const override;
   bool IsVisibleOnAllWorkspaces() const override;
   void ShowEmojiPanel() override {}
+  std::unique_ptr<content::EyeDropper> OpenEyeDropper(
+      content::RenderFrameHost* frame,
+      content::EyeDropperListener* listener) override;
 
   void ShowInProductHelpPromo(InProductHelpFeature iph_feature) override {}
 

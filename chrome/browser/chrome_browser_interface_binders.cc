@@ -18,6 +18,7 @@
 #include "chrome/browser/media/history/media_history_store.mojom.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/predictors/network_hints_handler_impl.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_processor_impl.h"
@@ -58,6 +59,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
+#include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
@@ -371,6 +373,9 @@ void PopulateChromeFrameBinders(
 
   map->Add<translate::mojom::ContentTranslateDriver>(
       base::BindRepeating(&language::BindContentTranslateDriver));
+
+  map->Add<blink::mojom::CredentialManager>(
+      base::BindRepeating(&ChromePasswordManagerClient::BindCredentialManager));
 
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(

@@ -26,6 +26,21 @@ WebAppMenuModel::WebAppMenuModel(ui::AcceleratorProvider* provider,
 
 WebAppMenuModel::~WebAppMenuModel() {}
 
+bool WebAppMenuModel::IsCommandIdEnabled(int command_id) const {
+  return command_id == kUninstallAppCommandId
+             ? browser()->app_controller()->CanUninstall()
+             : AppMenuModel::IsCommandIdEnabled(command_id);
+}
+
+void WebAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
+  if (command_id == kUninstallAppCommandId) {
+    LogMenuAction(MENU_ACTION_UNINSTALL_APP);
+    browser()->app_controller()->Uninstall();
+  } else {
+    AppMenuModel::ExecuteCommand(command_id, event_flags);
+  }
+}
+
 void WebAppMenuModel::Build() {
   if (CreateActionToolbarOverflowMenu())
     AddSeparator(ui::UPPER_SEPARATOR);
@@ -68,20 +83,6 @@ void WebAppMenuModel::Build() {
     AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
   AddSeparator(ui::LOWER_SEPARATOR);
   CreateCutCopyPasteMenu();
-}
-
-bool WebAppMenuModel::IsCommandIdEnabled(int command_id) const {
-  return command_id == kUninstallAppCommandId
-             ? browser()->app_controller()->CanUninstall()
-             : AppMenuModel::IsCommandIdEnabled(command_id);
-}
-
-void WebAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
-  if (command_id == kUninstallAppCommandId) {
-    browser()->app_controller()->Uninstall();
-  } else {
-    AppMenuModel::ExecuteCommand(command_id, event_flags);
-  }
 }
 
 void WebAppMenuModel::LogMenuAction(AppMenuAction action_id) {

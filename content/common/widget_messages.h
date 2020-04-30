@@ -260,8 +260,4 @@ IPC_MESSAGE_ROUTED0(WidgetHostMsg_WaitForNextFrameForTests_ACK)
 // after the frame widget has painted something.
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint)
 
-// Notifies whether there are JavaScript touch event handlers or not.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_HasTouchEventHandlers,
-                    bool /* has_handlers */)
-
 #endif  //  CONTENT_COMMON_WIDGET_MESSAGES_H_

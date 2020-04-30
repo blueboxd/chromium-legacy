@@ -1,0 +1,49 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/eye_dropper/eye_dropper.h"
+
+#include <memory>
+#include <string>
+
+#include "build/build_config.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/test/test_browser_ui.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/eye_dropper.h"
+
+class EyeDropperBrowserTest : public UiBrowserTest {
+ public:
+  EyeDropperBrowserTest() = default;
+
+  // UiBrowserTest:
+  void ShowUi(const std::string& name) override {
+    content::RenderFrameHost* parent_frame =
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+    eye_dropper_ = ShowEyeDropper(parent_frame, /*listener=*/nullptr);
+  }
+
+  bool VerifyUi() override {
+#if defined(OS_WIN)
+    return eye_dropper_ != nullptr;
+#else
+    return true;
+#endif
+  }
+
+  void WaitForUserDismissal() override {
+    // Consider closing the browser to be dismissal.
+    ui_test_utils::WaitForBrowserToClose();
+  }
+
+  void DismissUi() override { eye_dropper_.reset(); }
+
+ private:
+  std::unique_ptr<content::EyeDropper> eye_dropper_;
+};
+
+// Invokes the eye dropper.
+IN_PROC_BROWSER_TEST_F(EyeDropperBrowserTest, InvokeUi_default) {
+  ShowAndVerifyUi();
+}

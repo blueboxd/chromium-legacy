@@ -69,17 +69,6 @@ public class DisclosureInfobar implements
         lifecycleDispatcher.register(this);
     }
 
-    public void showIfNeeded() {
-        if (mModel.get(DISCLOSURE_STATE) != DISCLOSURE_STATE_SHOWN) return;
-
-        Snackbar snackbar = makeRunningInChromeInfobar(mSnackbarController);
-        if (snackbar == null) {
-            return;
-        }
-
-        mSnackbarManager.get().showSnackbar(snackbar);
-    }
-
     @Override
     public void onPropertyChanged(PropertyObservable<PropertyKey> source,
             @Nullable PropertyKey propertyKey) {
@@ -119,5 +108,17 @@ public class DisclosureInfobar implements
         return Snackbar.make(title, mSnackbarController, type, code)
                 .setAction(action, null)
                 .setSingleLine(false);
+    }
+
+    public void showIfNeeded() {
+        if (mModel.get(DISCLOSURE_STATE) != DISCLOSURE_STATE_SHOWN) return;
+
+        Snackbar snackbar = makeRunningInChromeInfobar(mSnackbarController);
+        if (snackbar == null) {
+            return;
+        }
+
+        mSnackbarManager.get().showSnackbar(snackbar);
+        mModel.get(DISCLOSURE_EVENTS_CALLBACK).onDisclosureShown();
     }
 }

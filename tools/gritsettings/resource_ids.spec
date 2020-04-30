@@ -286,10 +286,11 @@
   },
   # Both help_app_bundle_resources.grd and help_app_bundle_mock_resources.grd
   # start with the same id because only one of them is built depending on if
-  # src_internal is available. Lower bound for number of resource ids is number
-  # of languages (74).
+  # src_internal is available. Lower bound is that we bundle ~100 images for
+  # offline articles with the app, as well as strings in every language (74),
+  # and bundled content in the top 25 languages (25 x 2).
   "chromeos/components/help_app_ui/resources/app/help_app_bundle_resources.grd": {
-    "META": {"sizes": {"includes": [100],}},  # Relies on src-internal.
+    "META": {"sizes": {"includes": [300],}},  # Relies on src-internal.
     "includes": [2540],
   },
   "chromeos/components/help_app_ui/resources/mock/help_app_bundle_mock_resources.grd": {

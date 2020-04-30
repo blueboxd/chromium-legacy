@@ -188,7 +188,7 @@ try_.chromium_chromiumos_builder(
 try_.chromium_chromiumos_builder(
     name = 'linux-chromeos-rel',
     goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(),
+    tryjob = try_.job(cancel_stale = False),
     use_clang_coverage = True,
 )
 
@@ -472,13 +472,13 @@ try_.chromium_win_builder(
     builderless = False,
     executable = 'recipe:chromium_libfuzzer_trybot',
     os = os.WINDOWS_ANY,
-    tryjob = try_.job(),
+    tryjob = try_.job(cancel_stale = False),
 )
 
 try_.chromium_win_builder(
     name = 'win_chromium_compile_dbg_ng',
     goma_jobs = goma.jobs.J150,
-    tryjob = try_.job(),
+    tryjob = try_.job(cancel_stale = False),
 )
 
 try_.chromium_win_builder(
@@ -487,7 +487,7 @@ try_.chromium_win_builder(
     os = os.WINDOWS_10,
     ssd = True,
     use_clang_coverage = True,
-    tryjob = try_.job(),
+    tryjob = try_.job(cancel_stale = False),
 )
 
 

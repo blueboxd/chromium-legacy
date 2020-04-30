@@ -175,7 +175,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
     assertNotEquals('', feedsContents.childNodes[12].textContent.trim());
     assertEquals('None', feedsContents.childNodes[13].textContent.trim());
     assertEquals(
-        'https://www.google1.com, https://www.google2.com',
+        'https://example.com, https://www.google1.com, https://www.google2.com',
         feedsContents.childNodes[14].textContent.trim());
     assertEquals(
         'https://www.example.org/logo1.pnghttps://www.example.org/logo2.png',

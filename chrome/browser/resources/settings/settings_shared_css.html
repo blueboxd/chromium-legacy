@@ -289,8 +289,10 @@
       }
 
       /* The lower line of text in a two-line row. */
+      /* TODO: Remove and merge with .cr-secondary-text. */
       .secondary {
-        @apply --cr-secondary-text;
+        color: var(--cr-secondary-text-color);
+        font-weight: 400;
       }
 
       /* The |:empty| CSS selector only works when there is no whitespace.

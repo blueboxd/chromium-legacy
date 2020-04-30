@@ -147,7 +147,7 @@ public class LanguageListPreference extends Preference {
         mAddLanguageButton = (TextView) holder.findViewById(R.id.add_language);
         mAddLanguageButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 TintedDrawable.constructTintedDrawable(
-                        getContext(), R.drawable.plus, R.color.light_active_color),
+                        getContext(), R.drawable.plus, R.color.default_control_color_active),
                 null, null, null);
         mAddLanguageButton.setOnClickListener(view -> {
             mLauncher.launchAddLanguage();

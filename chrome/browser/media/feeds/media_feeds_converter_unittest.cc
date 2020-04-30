@@ -32,10 +32,11 @@ using schema_org::improved::mojom::ValuesPtr;
 class MediaFeedsConverterTest : public testing::Test {
  public:
   MediaFeedsConverterTest()
-      : extractor_({schema_org::entity::kCompleteDataFeed,
-                    schema_org::entity::kMovie,
-                    schema_org::entity::kWatchAction,
-                    schema_org::entity::kTVEpisode}) {}
+      : extractor_(
+            {schema_org::entity::kCompleteDataFeed, schema_org::entity::kMovie,
+             schema_org::entity::kWatchAction, schema_org::entity::kTVEpisode,
+             schema_org::entity::kImageObject,
+             schema_org::entity::kPropertyValue}) {}
 
  protected:
   Property* GetProperty(Entity* entity, const std::string& name);
@@ -54,7 +55,10 @@ class MediaFeedsConverterTest : public testing::Test {
   EntityPtr ValidMediaFeed();
   EntityPtr ValidEpisode(int episode_number, EntityPtr action);
   EntityPtr ValidMediaFeedItem();
+  EntityPtr ValidMediaImage();
+  EntityPtr WithContentAttributes(EntityPtr image);
   mojom::MediaFeedItemPtr ExpectedFeedItem();
+  mojom::MediaImagePtr ExpectedMediaImage();
   EntityPtr AddItemToFeed(EntityPtr feed, EntityPtr item);
   base::Optional<std::vector<mojom::MediaFeedItemPtr>> GetResults(
       const schema_org::improved::mojom::EntityPtr& schema_org_entity);
@@ -180,7 +184,17 @@ EntityPtr MediaFeedsConverterTest::ValidMediaFeed() {
           "provider": {
             "@type": "Organization",
             "name": "Media Site",
-            "logo": "https://www.example.org/logo.jpg",
+            "logo": {
+              "@type": "ImageObject",
+              "width": 1113,
+              "height": 245,
+              "url": "https://www.example.org/logo.jpg",
+              "additionalProperty": {
+                "@type": "PropertyValue",
+                "name": "contentAttributes",
+                "value": ["forDarkBackground", "hasTitle"]
+              }
+            },
             "member": {
               "@type": "Person",
               "name": "Becca Hughes",
@@ -232,6 +246,32 @@ EntityPtr MediaFeedsConverterTest::ValidMediaFeedItem() {
   return item;
 }
 
+EntityPtr MediaFeedsConverterTest::ValidMediaImage() {
+  return extractor_.Extract(
+      R"END(
+        {
+          "@type": "ImageObject",
+          "width": 336,
+          "height": 188,
+          "url": "https://www.example.com/image.jpg"
+        }
+      )END");
+}
+
+EntityPtr MediaFeedsConverterTest::WithContentAttributes(EntityPtr image) {
+  auto attributes = extractor_.Extract(
+      R"END(
+        {
+          "@type": "PropertyValue",
+          "name": "contentAttributes",
+          "value": ["hasTitle", "iconic", "poster"]
+        }
+      )END");
+  image->properties.push_back(CreateEntityProperty(
+      schema_org::property::kAdditionalProperty, std::move(attributes)));
+  return image;
+}
+
 mojom::MediaFeedItemPtr MediaFeedsConverterTest::ExpectedFeedItem() {
   mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
   expected_item->type = mojom::MediaFeedItemType::kMovie;
@@ -253,6 +293,15 @@ mojom::MediaFeedItemPtr MediaFeedsConverterTest::ExpectedFeedItem() {
   expected_item->action->url = GURL("https://www.example.org");
   expected_item->action->start_time = base::TimeDelta::FromHours(1);
   return expected_item;
+}
+
+mojom::MediaImagePtr MediaFeedsConverterTest::ExpectedMediaImage() {
+  mojom::MediaImagePtr expected_image = mojom::MediaImage::New();
+
+  expected_image->src = GURL("https://www.example.com/image.jpg");
+  expected_image->size = gfx::Size(336, 188);
+
+  return expected_image;
 }
 
 EntityPtr MediaFeedsConverterTest::AddItemToFeed(EntityPtr feed,
@@ -281,6 +330,10 @@ TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeed) {
 
   mojom::MediaImagePtr expected_image = mojom::MediaImage::New();
   expected_image->src = GURL("https://www.example.org/logo.jpg");
+  expected_image->size = gfx::Size(1113, 245);
+  expected_image->content_attributes = {
+      mojom::ContentAttribute::kForDarkBackground,
+      mojom::ContentAttribute::kHasTitle};
 
   auto result = GetMediaFeeds(std::move(entity), &logos, &display_name);
 
@@ -322,16 +375,18 @@ TEST_F(MediaFeedsConverterTest, FailsInvalidProviderOrganizationName) {
   EXPECT_FALSE(GetResults(std::move(entity)).has_value());
 }
 
+// Fails because the logo does not have the required title content attribute.
 TEST_F(MediaFeedsConverterTest, FailsInvalidProviderOrganizationLogo) {
   EntityPtr entity = ValidMediaFeed();
 
   Property* organization =
       GetProperty(entity.get(), schema_org::property::kProvider);
-  Property* organization_name =
+  Property* organization_logo =
       GetProperty(organization->values->entity_values[0].get(),
                   schema_org::property::kLogo);
 
-  organization_name->values->url_values = {GURL("")};
+  organization_logo->values->entity_values.clear();
+  organization_logo->values->entity_values.push_back(ValidMediaImage());
 
   EXPECT_FALSE(GetResults(std::move(entity)).has_value());
 }
@@ -1021,6 +1076,52 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithPlayNextNoSeason) {
   EXPECT_EQ(result.value()[0]->play_next_candidate,
             expected_item->play_next_candidate);
   EXPECT_EQ(expected_item, result.value()[0]);
+}
+
+TEST_F(MediaFeedsConverterTest, SucceedsItemWithImageObject) {
+  EntityPtr item = ValidMediaFeedItem();
+
+  auto* image = GetProperty(item.get(), schema_org::property::kImage);
+  image->values->url_values = {};
+  image->values->entity_values.push_back(ValidMediaImage());
+
+  auto expected = ExpectedFeedItem();
+  expected->images.clear();
+  expected->images.push_back(ExpectedMediaImage());
+
+  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
+
+  auto result = GetResults(std::move(entity));
+
+  EXPECT_TRUE(result.has_value());
+  ASSERT_EQ(result.value().size(), 1u);
+  EXPECT_EQ(expected, result.value()[0]);
+}
+
+TEST_F(MediaFeedsConverterTest,
+       SucceedsItemWithImageObjectAndContentAttributes) {
+  EntityPtr item = ValidMediaFeedItem();
+
+  auto* image = GetProperty(item.get(), schema_org::property::kImage);
+  image->values->url_values = {};
+  image->values->entity_values.push_back(
+      WithContentAttributes(ValidMediaImage()));
+
+  auto expected = ExpectedFeedItem();
+  expected->images.clear();
+  auto expected_image = ExpectedMediaImage();
+  expected_image->content_attributes = {mojom::ContentAttribute::kHasTitle,
+                                        mojom::ContentAttribute::kIconic,
+                                        mojom::ContentAttribute::kPoster};
+  expected->images.push_back(std::move(expected_image));
+
+  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
+
+  auto result = GetResults(std::move(entity));
+
+  EXPECT_TRUE(result.has_value());
+  ASSERT_EQ(result.value().size(), 1u);
+  EXPECT_EQ(expected, result.value()[0]);
 }
 
 }  // namespace media_feeds

@@ -35,6 +35,10 @@ class SafeBrowsingHandler : public SettingsPageUIHandler {
   // Calculate and return the current Safe Browsing radio buttons.
   void HandleGetSafeBrowsingRadioManagedState(const base::ListValue* args);
 
+  // Confirm that the current Safe Browsing Enhanced preference is appropriate
+  // for the currently enabled features, updating it if required.
+  void HandleValidateSafeBrowsingEnhanced(const base::ListValue* args);
+
  private:
   friend class SafeBrowsingHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingHandlerTest, GenerateRadioManagedState);

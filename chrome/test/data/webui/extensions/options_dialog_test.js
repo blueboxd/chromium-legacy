@@ -23,7 +23,7 @@ suite(extension_options_dialog_tests.suiteName, function() {
   let data;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     optionsDialog = document.createElement('extensions-options-dialog');
     document.body.appendChild(optionsDialog);
 

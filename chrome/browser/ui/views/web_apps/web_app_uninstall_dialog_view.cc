@@ -64,7 +64,7 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
       image_size);
 
   WidgetDelegate::SetShowCloseButton(false);
-  WidgetDelegate::SetWindowTitle(l10n_util::GetStringFUTF16(
+  WidgetDelegate::SetTitle(l10n_util::GetStringFUTF16(
       IDS_EXTENSION_PROMPT_UNINSTALL_TITLE,
       base::UTF8ToUTF16(provider->registrar().GetAppShortName(app_id_))));
 

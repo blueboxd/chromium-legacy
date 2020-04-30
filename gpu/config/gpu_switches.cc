@@ -39,6 +39,9 @@ const char kDisableGpuProcessForDX12VulkanInfoCollection[] =
 
 const char kEnableUnsafeWebGPU[] = "enable-unsafe-webgpu";
 
+// Enable validation layers in Dawn backends.
+const char kEnableDawnBackendValidation[] = "enable-dawn-backend-validation";
+
 // Increases the priority (to REALTIME_AUDIO) of gpu process and compositor
 // thread.
 // This is only to be used for perf tests on macOS for more reliable values.

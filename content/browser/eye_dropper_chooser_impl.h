@@ -5,24 +5,40 @@
 #ifndef CONTENT_BROWSER_EYE_DROPPER_CHOOSER_IMPL_H_
 #define CONTENT_BROWSER_EYE_DROPPER_CHOOSER_IMPL_H_
 
+#include <memory>
+
+#include "content/public/browser/eye_dropper_listener.h"
 #include "content/public/browser/frame_service_base.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
 
 namespace content {
 
+class EyeDropper;
+class EyeDropperListener;
+
 class EyeDropperChooserImpl final
-    : public FrameServiceBase<blink::mojom::EyeDropperChooser> {
+    : public FrameServiceBase<blink::mojom::EyeDropperChooser>,
+      public EyeDropperListener {
  public:
   static void Create(RenderFrameHost*,
                      mojo::PendingReceiver<blink::mojom::EyeDropperChooser>);
 
-  // EyeDropperChooser implementation.
+  // EyeDropperChooser:
   void Choose(ChooseCallback) override;
+
+  // EyeDropperListener:
+  void ColorSelected(SkColor color) override;
+  void ColorSelectionCanceled() override;
 
  private:
   EyeDropperChooserImpl(RenderFrameHost*,
                         mojo::PendingReceiver<blink::mojom::EyeDropperChooser>);
+
+  ~EyeDropperChooserImpl() override;
+
+  ChooseCallback callback_;
+  std::unique_ptr<EyeDropper> eye_dropper_;
 
   DISALLOW_COPY_AND_ASSIGN(EyeDropperChooserImpl);
 };

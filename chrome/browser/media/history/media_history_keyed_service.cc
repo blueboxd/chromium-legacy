@@ -268,7 +268,7 @@ void MediaHistoryKeyedService::StoreMediaFeedFetchResult(
     const bool was_fetched_from_cache,
     std::vector<media_feeds::mojom::MediaImagePtr> logos,
     const std::string& display_name,
-    const std::vector<url::Origin>& associated_origins,
+    const std::set<url::Origin>& associated_origins,
     base::OnceClosure callback) {
   if (auto* store = store_->GetForWrite()) {
     store->db_task_runner_->PostTaskAndReply(
@@ -405,14 +405,14 @@ void MediaHistoryKeyedService::MarkMediaFeedItemAsClicked(
 }
 
 void MediaHistoryKeyedService::ResetMediaFeed(
-    const int64_t feed_id,
+    const url::Origin& origin,
     media_feeds::mojom::ResetReason reason) {
   CHECK_NE(media_feeds::mojom::ResetReason::kNone, reason);
 
   if (auto* store = store_->GetForWrite()) {
     store->db_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaHistoryStore::ResetMediaFeed, store,
-                                  feed_id, reason));
+                                  origin, reason));
   }
 }
 

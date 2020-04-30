@@ -22,7 +22,7 @@ import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-
 
       setup(function() {
         window.history.replaceState({}, '', '/');
-        PolymerTest.clearBody();
+        document.body.innerHTML = '';
         BrowserService.instance_ = new TestBrowserService();
         app = document.createElement('history-app');
         document.body.appendChild(app);

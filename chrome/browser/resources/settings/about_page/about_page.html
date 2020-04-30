@@ -39,12 +39,6 @@
       cr-button {
         white-space: nowrap;
       }
-
-<if expr="_google_chrome and is_macosx">
-      #promoteUpdater[disabled] {
-        @apply --cr-secondary-text;
-      }
-</if>
     </style>
     <settings-section page-title="$i18n{aboutPageTitle}" section="about">
       <div class="cr-row two-line first">
@@ -111,8 +105,8 @@
       </div>
 <if expr="_google_chrome and is_macosx">
       <template is="dom-if" if="[[!promoteUpdaterStatus_.hidden]]">
-        <div id="promoteUpdater" class="cr-row"
-            disabled$="[[promoteUpdaterStatus_.disabled]]"
+        <div id="promoteUpdater"
+            class$="cr-row [[getPromoteUpdaterClass_(promoteUpdaterStatus_.disabled)]]"
             actionable$="[[promoteUpdaterStatus_.actionable]]"
             on-click="onPromoteUpdaterTap_">
           <div class="flex">

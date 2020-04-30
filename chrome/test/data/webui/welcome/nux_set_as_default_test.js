@@ -25,7 +25,7 @@ suite('SetAsDefaultTest', function() {
     testSetAsDefaultProxy = new TestNuxSetAsDefaultProxy();
     NuxSetAsDefaultProxyImpl.instance_ = testSetAsDefaultProxy;
 
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     testElement = document.createElement('nux-set-as-default');
     document.body.appendChild(testElement);
     let navigateToNextStep;

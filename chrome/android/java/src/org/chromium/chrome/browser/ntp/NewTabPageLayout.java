@@ -267,8 +267,10 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         setSearchProviderInfo(searchProviderHasLogo, searchProviderIsGoogle);
         mSearchProviderLogoView.showSearchProviderInitialView();
 
-        mQueryTileSection = new QueryTileSection(findViewById(R.id.query_tiles),
-                mSearchBoxCoordinator, profile, mManager::performSearchQuery);
+        if (searchProviderHasLogo) {
+            mQueryTileSection = new QueryTileSection(findViewById(R.id.query_tiles),
+                    mSearchBoxCoordinator, profile, mManager::performSearchQuery);
+        }
 
         mTileGroup.startObserving(
                 getMaxRowsForMostVisitedTiles() * getMaxColumnsForMostVisitedTiles());
@@ -787,7 +789,10 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     }
 
     private int getMaxRowsForMostVisitedTiles() {
-        return mQueryTileSection != null && mQueryTileSection.shouldConsiderAsSmallScreen() ? 1 : 2;
+        Integer maxRows = mQueryTileSection == null
+                ? null
+                : mQueryTileSection.getMaxRowsForMostVisitedTiles();
+        return maxRows == null ? 2 : maxRows.intValue();
     }
 
     /**

@@ -1017,8 +1017,8 @@ void ChromePasswordManagerClient::SetTestObserver(
 
 // static
 void ChromePasswordManagerClient::BindCredentialManager(
-    mojo::PendingReceiver<blink::mojom::CredentialManager> receiver,
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) {
   // Only valid for the main frame.
   if (render_frame_host->GetParent())
     return;

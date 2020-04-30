@@ -114,6 +114,21 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   return theme;
 }
 
+ntp_tiles::NTPTileImpression MakeNTPTileImpression(
+    const new_tab_page::mojom::MostVisitedTile& tile,
+    uint32_t index) {
+  return ntp_tiles::NTPTileImpression(
+      /*index=*/index,
+      /*source=*/static_cast<ntp_tiles::TileSource>(tile.source),
+      /*title_source=*/
+      static_cast<ntp_tiles::TileTitleSource>(tile.title_source),
+      /*visual_type=*/
+      ntp_tiles::TileVisualType::ICON_REAL /* unused on desktop */,
+      /*icon_type=*/favicon_base::IconType::kInvalid /* unused on desktop */,
+      /*data_generation_time=*/tile.data_generation_time,
+      /*url_for_rappor=*/GURL() /* unused */);
+}
+
 }  // namespace
 
 NewTabPageHandler::NewTabPageHandler(
@@ -374,10 +389,24 @@ void NewTabPageHandler::ChooseLocalCustomBackground(
   choose_local_custom_background_callback_ = std::move(callback);
 }
 
-void NewTabPageHandler::OnMostVisitedTilesRendered(double time) {
+void NewTabPageHandler::OnMostVisitedTilesRendered(
+    std::vector<new_tab_page::mojom::MostVisitedTilePtr> tiles,
+    double time) {
+  auto* logger = NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_);
+  for (size_t i = 0; i < tiles.size(); i++) {
+    logger->LogMostVisitedImpression(MakeNTPTileImpression(*tiles[i], i));
+  }
+  // This call flushes all most visited impression logs to UMA histograms.
+  // Therefore, it must come last.
+  logger->LogEvent(NTP_ALL_TILES_LOADED,
+                   base::Time::FromJsTime(time) - ntp_creation_time_);
+}
+
+void NewTabPageHandler::OnMostVisitedTileNavigation(
+    new_tab_page::mojom::MostVisitedTilePtr tile,
+    uint32_t index) {
   NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
-      ->LogEvent(NTP_ALL_TILES_LOADED,
-                 base::Time::FromJsTime(time) - ntp_creation_time_);
+      ->LogMostVisitedNavigation(MakeNTPTileImpression(*tile, index));
 }
 
 void NewTabPageHandler::NtpThemeChanged(const NtpTheme& ntp_theme) {
@@ -399,6 +428,9 @@ void NewTabPageHandler::MostVisitedInfoChanged(
           base::i18n::GetFirstStrongCharacterDirection(tile.title);
     }
     value->url = tile.url;
+    value->source = static_cast<int32_t>(tile.source);
+    value->title_source = static_cast<int32_t>(tile.title_source);
+    value->data_generation_time = tile.data_generation_time;
     list.push_back(std::move(value));
   }
   result->custom_links_enabled = !info.use_most_visited;

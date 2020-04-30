@@ -25,7 +25,7 @@ suite('manager tests', function() {
   let toastManager;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     testBrowserProxy = new TestDownloadsProxy();
     callbackRouterRemote = testBrowserProxy.callbackRouterRemote;

@@ -28,6 +28,10 @@
 ./tools/manifest/update.py
 ./tools/manifest/utils.py
 ./tools/manifest/vcs.py
+./tools/quic/commands.json
+./tools/quic/__init__.py
+./tools/quic/requirements.txt
+./tools/quic/serve.py
 ./tools/serve/__init__.py
 ./tools/serve/commands.json
 ./tools/serve/serve.py

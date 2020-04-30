@@ -29,6 +29,5 @@ public class WebLayerTest {
                 () -> { return mActivityTestRule.getWebLayer().getUserAgentString(); });
         Assert.assertNotNull(userAgent);
         Assert.assertFalse(userAgent.isEmpty());
-        Assert.assertNotEquals(-1, userAgent.indexOf("Mobile"));
     }
 }

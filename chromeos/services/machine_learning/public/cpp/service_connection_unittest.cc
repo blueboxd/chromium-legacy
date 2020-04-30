@@ -74,6 +74,15 @@ TEST_F(ServiceConnectionTest, LoadFlatBufferModel) {
       base::BindOnce([](mojom::LoadModelResult result) {}));
 }
 
+// Tests that LoadTextClassifier runs OK (no crash) in a basic Mojo
+// environment.
+TEST_F(ServiceConnectionTest, LoadTextClassifier) {
+  mojo::Remote<mojom::TextClassifier> text_classifier;
+  ServiceConnection::GetInstance()->LoadTextClassifier(
+      text_classifier.BindNewPipeAndPassReceiver(),
+      base::BindOnce([](mojom::LoadModelResult result) {}));
+}
+
 // Tests the fake ML service for builtin model.
 TEST_F(ServiceConnectionTest, FakeServiceConnectionForBuiltinModel) {
   mojo::Remote<mojom::Model> model;
@@ -194,6 +203,106 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForFlatBufferModel) {
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_done);
+}
+
+// Tests the fake ML service for text classifier annotation.
+TEST_F(ServiceConnectionTest,
+       FakeServiceConnectionForTextClassifierAnnotation) {
+  mojo::Remote<mojom::TextClassifier> text_classifier;
+  bool callback_done = false;
+  FakeServiceConnectionImpl fake_service_connection;
+  ServiceConnection::UseFakeServiceConnectionForTesting(
+      &fake_service_connection);
+
+  auto dummy_data = mojom::TextEntityData::New();
+  dummy_data->set_numeric_value(123456789.);
+  std::vector<mojom::TextEntityPtr> entities;
+  entities.emplace_back(
+      mojom::TextEntity::New("dummy",                      // Entity name.
+                             1.0,                          // Confidence score.
+                             std::move(dummy_data)));      // Data extracted.
+  auto dummy_annotation = mojom::TextAnnotation::New(123,  // Start offset.
+                                                     321,  // End offset.
+                                                     std::move(entities));
+  std::vector<mojom::TextAnnotationPtr> annotations;
+  annotations.emplace_back(std::move(dummy_annotation));
+  fake_service_connection.SetOutputAnnotation(annotations);
+
+  ServiceConnection::GetInstance()->LoadTextClassifier(
+      text_classifier.BindNewPipeAndPassReceiver(),
+      base::BindOnce(
+          [](bool* callback_done, mojom::LoadModelResult result) {
+            EXPECT_EQ(result, mojom::LoadModelResult::OK);
+            *callback_done = true;
+          },
+          &callback_done));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(callback_done);
+  ASSERT_TRUE(text_classifier.is_bound());
+
+  auto request = mojom::TextAnnotationRequest::New();
+  bool infer_callback_done = false;
+  text_classifier->Annotate(
+      std::move(request),
+      base::Bind(
+          [](bool* infer_callback_done,
+             std::vector<mojom::TextAnnotationPtr> annotations) {
+            *infer_callback_done = true;
+            // Check if the annotation is correct.
+            EXPECT_EQ(annotations[0]->start_offset, 123u);
+            EXPECT_EQ(annotations[0]->end_offset, 321u);
+            EXPECT_EQ(annotations[0]->entities[0]->name, "dummy");
+            EXPECT_EQ(annotations[0]->entities[0]->confidence_score, 1.0);
+            EXPECT_EQ(annotations[0]->entities[0]->data->get_numeric_value(),
+                      123456789.);
+          },
+          &infer_callback_done));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(infer_callback_done);
+}
+
+// Tests the fake ML service for text classifier suggest selection.
+TEST_F(ServiceConnectionTest,
+       FakeServiceConnectionForTextClassifierSuggestSelection) {
+  mojo::Remote<mojom::TextClassifier> text_classifier;
+  bool callback_done = false;
+  FakeServiceConnectionImpl fake_service_connection;
+  ServiceConnection::UseFakeServiceConnectionForTesting(
+      &fake_service_connection);
+
+  auto span = mojom::CodepointSpan::New();
+  span->start_offset = 1;
+  span->end_offset = 2;
+  fake_service_connection.SetOutputSelection(span);
+
+  ServiceConnection::GetInstance()->LoadTextClassifier(
+      text_classifier.BindNewPipeAndPassReceiver(),
+      base::BindOnce(
+          [](bool* callback_done, mojom::LoadModelResult result) {
+            EXPECT_EQ(result, mojom::LoadModelResult::OK);
+            *callback_done = true;
+          },
+          &callback_done));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(callback_done);
+  ASSERT_TRUE(text_classifier.is_bound());
+
+  auto request = mojom::TextSuggestSelectionRequest::New();
+  request->user_selection = mojom::CodepointSpan::New();
+  bool infer_callback_done = false;
+  text_classifier->SuggestSelection(
+      std::move(request),
+      base::Bind(
+          [](bool* infer_callback_done,
+             mojom::CodepointSpanPtr suggested_span) {
+            *infer_callback_done = true;
+            // Check if the suggestion is correct.
+            EXPECT_EQ(suggested_span->start_offset, 1u);
+            EXPECT_EQ(suggested_span->end_offset, 2u);
+          },
+          &infer_callback_done));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(infer_callback_done);
 }
 
 }  // namespace

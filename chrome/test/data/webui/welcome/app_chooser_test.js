@@ -70,7 +70,7 @@ suite('AppChooserTest', function() {
 
     testAppBrowserProxy.setAppList(apps);
 
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     testElement = document.createElement('nux-google-apps');
     document.body.appendChild(testElement);

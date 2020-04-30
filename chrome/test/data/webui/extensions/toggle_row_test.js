@@ -10,7 +10,6 @@ suite('extensions-toggle-row', function() {
   let row;
 
   setup(function() {
-    PolymerTest.clearBody();
     document.body.innerHTML = `
       <extensions-toggle-row id="row">
         <span id="label">Description</span>

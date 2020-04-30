@@ -48,7 +48,6 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
@@ -61,6 +60,7 @@
 #include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
@@ -102,8 +102,8 @@ using FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap =
 #define IPC_MESSAGE_START FrameMsgStart
 IPC_ENUM_TRAITS_MAX_VALUE(content::FrameDeleteIntention,
                           content::FrameDeleteIntention::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::FrameOwnerElementType,
-                          blink::FrameOwnerElementType::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameOwnerElementType,
+                          blink::mojom::FrameOwnerElementType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::AdFrameType,
                           blink::mojom::AdFrameType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ContextMenuDataMediaType,
@@ -438,7 +438,8 @@ IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params)
   IPC_STRUCT_MEMBER(bool, is_created_by_script)
   IPC_STRUCT_MEMBER(blink::FramePolicy, frame_policy)
   IPC_STRUCT_MEMBER(blink::mojom::FrameOwnerProperties, frame_owner_properties)
-  IPC_STRUCT_MEMBER(blink::FrameOwnerElementType, frame_owner_element_type)
+  IPC_STRUCT_MEMBER(blink::mojom::FrameOwnerElementType,
+                    frame_owner_element_type)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params_Reply)

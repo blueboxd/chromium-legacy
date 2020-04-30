@@ -101,10 +101,8 @@ public class DexOptimizer {
             if (currentApiVersion >= Build.VERSION_CODES.M) {
                 return new File(
                         dexPath.getParentFile(), "oat/" + VMRuntime.getCurrentInstructionSet());
-            } else if (currentApiVersion >= Build.VERSION_CODES.LOLLIPOP) {
-                return new File(dexPath.getParentFile(), VMRuntime.getCurrentInstructionSet());
             } else {
-                return dexPath.getParentFile();
+                return new File(dexPath.getParentFile(), VMRuntime.getCurrentInstructionSet());
             }
         } catch (NoSuchMethodException e) {
             return null;

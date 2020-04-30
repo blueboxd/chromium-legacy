@@ -166,6 +166,13 @@ jumbo_component("events_base") {
 
   if (use_x11 || ozone_platform_x11) {
     public_deps += [ "//ui/events/keycodes:x11" ]
+
+    # TODO(https://crbug.com/1076277): This dependency on //ui/gfx/x
+    # is unnecessary and should be removed.  It is included for now
+    # to work around a bug in lld that introduces unnecessary
+    # nondeterminism in the DSO (see c#6 on the bug for an
+    # explanation).
+    deps += [ "//ui/gfx/x" ]
   }
 
   if (!is_ios) {

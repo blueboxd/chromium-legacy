@@ -28,6 +28,7 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/public/test/fake_render_widget_host.h"
 #include "content/public/test/frame_load_waiter.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/loader/resource_dispatcher.h"
@@ -379,6 +380,8 @@ void RenderViewTest::SetUp() {
   if (!render_thread_)
     render_thread_ = std::make_unique<MockRenderThread>();
 
+  render_widget_host_.reset(new FakeRenderWidgetHost());
+
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
   blink_platform_impl_.Initialize();
@@ -463,6 +466,8 @@ void RenderViewTest::SetUp() {
   view_params->hidden = false;
   view_params->never_composited = false;
   view_params->visual_properties = InitialVisualProperties();
+  std::tie(view_params->frame_widget_host, view_params->frame_widget) =
+      render_widget_host_->BindNewFrameWidgetInterfaces();
 
   RenderViewImpl* view = RenderViewImpl::Create(
       compositor_deps_.get(), std::move(view_params),

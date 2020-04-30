@@ -39,6 +39,9 @@
     <!-- Ripple colors for clickable widgets -->
     <color name="ripple_color_blue">@color/ripple_color_blue_light</color>
 
+    <!-- Colors used for Widgets (checkboxes, switches, buttons, etc)-->
+    <color name="default_control_color_active">@color/default_control_color_active_dark</color>
+
     <!-- Chip colors -->
     <color name="chip_text_color_selected">@color/chip_text_color_selected_dark</color>
     <color name="chip_background_color_disabled">@color/chip_background_color_disabled_light</color>

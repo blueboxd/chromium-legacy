@@ -41,7 +41,9 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/skia_bindings/gles2_implementation_with_grcontext_support.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
+#include "gpu/skia_bindings/grcontext_for_webgpu_interface.h"
 #include "services/viz/public/cpp/gpu/command_buffer_metrics.h"
+#include "skia/buildflags.h"
 #include "third_party/skia/include/core/SkTraceMemoryDump.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/trace_util.h"
@@ -383,6 +385,10 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
 
   if (gr_context_)
     return gr_context_->get();
+#if BUILDFLAG(SKIA_USE_DAWN)
+  else if (webgpu_gr_context_)
+    return webgpu_gr_context_->get();
+#endif
 
   if (attributes_.enable_oop_rasterization)
     return nullptr;
@@ -396,6 +402,17 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
   gpu::DetermineGrCacheLimitsFromAvailableMemory(
       &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
 
+  if (attributes_.context_type == gpu::CONTEXT_TYPE_WEBGPU) {
+#if BUILDFLAG(SKIA_USE_DAWN)
+    webgpu_gr_context_.reset(new skia_bindings::GrContextForWebGPUInterface(
+        webgpu_interface_.get(), ContextSupport(), ContextCapabilities(),
+        max_resource_cache_bytes, max_glyph_cache_texture_bytes));
+    cache_controller_->SetGrContext(webgpu_gr_context_->get());
+    return webgpu_gr_context_->get();
+#else
+    return nullptr;
+#endif
+  }
   gpu::gles2::GLES2Interface* gl_interface;
   if (trace_impl_)
     gl_interface = trace_impl_.get();

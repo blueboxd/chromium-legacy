@@ -64,12 +64,13 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
  private:
   fidl::InterfaceRequest<fuchsia::web::Context> request_;
 
+  const std::vector<std::string> cors_exempt_headers_;
+  const bool allow_insecure_content_;
+
   // Owned by content::BrowserMainLoop.
   WebEngineBrowserMainParts* main_parts_;
 
   MediaResourceProviderService media_resource_provider_service_;
-
-  const bool allow_insecure_content_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineContentBrowserClient);
 };

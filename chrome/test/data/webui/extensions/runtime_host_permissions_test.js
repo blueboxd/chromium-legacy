@@ -18,7 +18,7 @@ suite('RuntimeHostPermissions', function() {
   const ITEM_ID = 'a'.repeat(32);
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     element = document.createElement('extensions-runtime-host-permissions');
     delegate = new TestService();
     element.delegate = delegate;

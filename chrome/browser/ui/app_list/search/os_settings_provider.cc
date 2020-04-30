@@ -82,6 +82,8 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
 OsSettingsProvider::~OsSettingsProvider() = default;
 
 void OsSettingsProvider::Start(const base::string16& query) {
+  ClearResultsSilently();
+
   // This provider does not handle zero-state.
   if (query.empty())
     return;

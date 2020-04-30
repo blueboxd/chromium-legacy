@@ -8,7 +8,7 @@
 /**
  * @typedef {{resolver: !PromiseResolver,
  *            callCount: number,
- *            resultMapper: Function}}
+ *            resultMapper: (!Function|undefined)}}
  */
 let MethodData;
 
@@ -56,7 +56,7 @@ let MethodData;
   /**
    * Creates a |TestBrowserProxy|, which has mock functions for all functions of
    * class |clazz|.
-   * @param {Class} clazz
+   * @param {Object} clazz
    * @return {TestBrowserProxy}
    */
   static fromClass(clazz) {
@@ -74,6 +74,7 @@ let MethodData;
    * invoked when a method is called using |setResultMapperFor(methodName)|.
    * @param {!Array<string>} methodNames
    * @protected
+   * @suppress {checkTypes}
    */
   mockMethods(methodNames) {
     methodNames.forEach(methodName => {
@@ -97,32 +98,26 @@ let MethodData;
    * Called by subclasses when a tracked method is called from the code that
    * is being tested.
    * @param {string} methodName
-   * @param {*=} args Optional argument to be forwarded to the testing
+   * @param {*=} opt_arg Optional argument to be forwarded to the testing
    *     code, useful for checking whether the proxy method was called with
    *     the expected arguments.
    * @protected
    */
-  methodCalled(methodName, args) {
+  methodCalled(methodName, opt_arg) {
     const methodData = this.resolverMap_.get(methodName);
     methodData.callCount += 1;
-    const {callCount, resolvers} = methodData;
-    if (resolvers.length >= callCount) {
-      resolvers[callCount - 1].resolve(args);
-    } else {
-      assert(resolvers.length === callCount - 1);
-      const resolver = new PromiseResolver();
-      resolver.resolve(args);
-      resolvers.push(resolver);
-    }
+    this.resolverMap_.set(methodName, methodData);
+    methodData.resolver.resolve(opt_arg);
   }
 
   /**
    * Called by subclasses when a tracked method is called from the code that
    * is being tested.
    * @param {string} methodName
-   * @param {!{arg: *, args: Array}} argObject Optional argument to be forwarded
-   *     to the testing code, useful for checking whether the proxy method was
-   *     called with the expected arguments. Only |arg| or |args| should be set.
+   * @param {!{arg: *, args: (!Array|undefined)}} argObject Optional argument to
+   *     be forwarded to the testing code, useful for checking whether the proxy
+   *     method was called with the expected arguments. Only |arg| or |args|
+   *     should be set.
    * @return {*}
    * @private
    */
@@ -141,19 +136,11 @@ let MethodData;
 
   /**
    * @param {string} methodName
-   * @param {number=} callCount
    * @return {!Promise} A promise that is resolved when the given method
-   *     is called |callCount| times.
+   *     is called.
    */
-  whenCalled(methodName, callCount = 1) {
-    const {resolvers} = this.getMethodData_(methodName);
-    for (let i = 0; i < callCount - resolvers.length; i++) {
-      resolvers.push(new PromiseResolver());
-    }
-    if (callCount === 1) {
-      return resolvers[0].promise;
-    }
-    return Promise.all(resolvers.slice(0, callCount).map(r => r.promise));
+  whenCalled(methodName) {
+    return this.getMethodData_(methodName).resolver.promise;
   }
 
   /**
@@ -224,6 +211,7 @@ let MethodData;
    * @private
    */
   createMethodData_(methodName) {
-    this.resolverMap_.set(methodName, {resolvers: [], callCount: 0});
+    this.resolverMap_.set(
+        methodName, {resolver: new PromiseResolver(), callCount: 0});
   }
 }

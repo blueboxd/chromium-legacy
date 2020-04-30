@@ -86,7 +86,7 @@ TEST(CastMessageUtilTest, CreateStopRequest) {
 }
 
 TEST(CastMessageUtilTest, CreateCastMessageWithObject) {
-  const char payload[] = R"({"foo": "bar"})";
+  constexpr char payload[] = R"({"foo": "bar"})";
   const auto message = CreateCastMessage("theNamespace", ParseJson(payload),
                                          "theSourceId", "theDestinationId");
   ASSERT_TRUE(IsCastMessageValid(message));
@@ -97,7 +97,7 @@ TEST(CastMessageUtilTest, CreateCastMessageWithObject) {
 }
 
 TEST(CastMessageUtilTest, CreateCastMessageWithString) {
-  const char payload[] = "foo";
+  constexpr char payload[] = "foo";
   const auto message = CreateCastMessage("theNamespace", base::Value(payload),
                                          "theSourceId", "theDestinationId");
   ASSERT_TRUE(IsCastMessageValid(message));

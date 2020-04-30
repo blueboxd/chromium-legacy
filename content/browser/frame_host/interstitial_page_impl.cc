@@ -572,7 +572,8 @@ const blink::UserAgentOverride& InterstitialPageImpl::GetUserAgentOverride() {
   return NoUAOverride();
 }
 
-bool InterstitialPageImpl::ShouldOverrideUserAgentInNewTabs() {
+bool InterstitialPageImpl::
+    ShouldOverrideUserAgentForRendererInitiatedNavigation() {
   return false;
 }
 

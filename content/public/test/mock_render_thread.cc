@@ -329,6 +329,21 @@ void MockRenderThread::OnCreateWindow(
   reply->main_frame_widget_route_id = GetNextRoutingID();
   reply->cloned_session_storage_namespace_id =
       blink::AllocateSessionStorageNamespaceId();
+
+  mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget;
+  mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>
+      blink_frame_widget_receiver =
+          blink_frame_widget
+              .BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> blink_frame_widget_host;
+  mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetHost>
+      blink_frame_widget_host_receiver =
+          blink_frame_widget_host
+              .BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  reply->frame_widget = std::move(blink_frame_widget_receiver);
+  reply->frame_widget_host = blink_frame_widget_host.Unbind();
 }
 
 }  // namespace content

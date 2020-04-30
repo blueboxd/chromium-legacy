@@ -26,6 +26,14 @@ import {ManagedState} from '../site_settings/site_settings_prefs_browser_proxy.j
      * @return {!Promise<!SafeBrowsingRadioManagedState>}
      */
     getSafeBrowsingRadioManagedState() {}
+
+    /**
+     * Ensures that Safe Browsing Enhanced preference is in a consistent
+     * state for the currently enabled features.
+     * TODO(crbug.com/1074499) Remove this logic when Enhanced protection is
+     * considered stable.
+     */
+     validateSafeBrowsingEnhanced() {}
   }
 
   /** @implements {SafeBrowsingBrowserProxy} */
@@ -33,6 +41,11 @@ import {ManagedState} from '../site_settings/site_settings_prefs_browser_proxy.j
     /** @override */
     getSafeBrowsingRadioManagedState() {
       return sendWithPromise('getSafeBrowsingRadioManagedState');
+    }
+
+    /** @override */
+    validateSafeBrowsingEnhanced() {
+      chrome.send('validateSafeBrowsingEnhanced');
     }
   }
 

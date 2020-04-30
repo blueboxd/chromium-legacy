@@ -168,7 +168,7 @@ TEST_F(FrameTreeTest, Shape) {
   // frame liveness.
   EXPECT_EQ("1: []", GetTreeState(frame_tree));
 
-  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
+  constexpr auto kOwnerType = blink::mojom::FrameOwnerElementType::kIframe;
   // Simulate attaching a series of frames to build the frame tree.
   frame_tree->AddFrame(root->current_frame_host(), process_id, 14,
                        CreateStubInterfaceProviderReceiver(),
@@ -355,7 +355,7 @@ TEST_F(FrameTreeTest, FindFrames) {
   FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
 
-  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
+  constexpr auto kOwnerType = blink::mojom::FrameOwnerElementType::kIframe;
   main_test_rfh()->OnCreateChildFrame(
       22, CreateStubInterfaceProviderReceiver(),
       CreateStubBrowserInterfaceBrokerReceiver(),
@@ -417,7 +417,7 @@ TEST_F(FrameTreeTest, FindFrames) {
 TEST_F(FrameTreeTest, GetSibling) {
   main_test_rfh()->InitializeRenderFrameIfNeeded();
 
-  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
+  constexpr auto kOwnerType = blink::mojom::FrameOwnerElementType::kIframe;
   // Add a few child frames to the main frame.
   FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
@@ -477,7 +477,7 @@ TEST_F(FrameTreeTest, ObserverWalksTreeDuringFrameCreation) {
   FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
 
-  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
+  constexpr auto kOwnerType = blink::mojom::FrameOwnerElementType::kIframe;
   // Simulate attaching a series of frames to build the frame tree.
   main_test_rfh()->OnCreateChildFrame(
       14, CreateStubInterfaceProviderReceiver(),
@@ -512,7 +512,7 @@ TEST_F(FrameTreeTest, ObserverWalksTreeAfterCrash) {
   contents()->NavigateAndCommit(GURL("http://www.google.com"));
   EXPECT_EQ("RenderFrameCreated(1) -> 1: []", activity.GetLog());
 
-  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
+  constexpr auto kOwnerType = blink::mojom::FrameOwnerElementType::kIframe;
   main_test_rfh()->OnCreateChildFrame(
       22, CreateStubInterfaceProviderReceiver(),
       CreateStubBrowserInterfaceBrokerReceiver(),
@@ -562,7 +562,7 @@ TEST_F(FrameTreeTest, FailAddFrameWithWrongProcessId) {
       blink::WebTreeScopeType::kDocument, std::string(), "uniqueName0", false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(), false,
-      blink::FrameOwnerElementType::kIframe));
+      blink::mojom::FrameOwnerElementType::kIframe));
   ASSERT_EQ("1: []", GetTreeState(frame_tree));
 }
 
@@ -574,7 +574,7 @@ TEST_F(FrameTreeTest, ProcessCrashClearsGlobalMap) {
   // Add a couple child frames to the main frame.
   FrameTreeNode* root = contents()->GetFrameTree()->root();
 
-  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
+  constexpr auto kOwnerType = blink::mojom::FrameOwnerElementType::kIframe;
   main_test_rfh()->OnCreateChildFrame(
       22, CreateStubInterfaceProviderReceiver(),
       CreateStubBrowserInterfaceBrokerReceiver(),

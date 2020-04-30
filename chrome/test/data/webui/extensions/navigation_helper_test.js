@@ -35,7 +35,7 @@ suite(extension_navigation_helper_tests.suiteName, function() {
   let navigationHelper;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     navigationHelper = new NavigationHelper();
   });
 

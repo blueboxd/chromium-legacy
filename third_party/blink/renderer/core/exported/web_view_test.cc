@@ -50,10 +50,10 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
@@ -3934,7 +3934,7 @@ class CreateChildCounterFrameClient
                                   const WebString& fallback_name,
                                   const FramePolicy&,
                                   const WebFrameOwnerProperties&,
-                                  FrameOwnerElementType) override;
+                                  mojom::blink::FrameOwnerElementType) override;
 
   int Count() const { return count_; }
 
@@ -3949,7 +3949,7 @@ WebLocalFrame* CreateChildCounterFrameClient::CreateChildFrame(
     const WebString& fallback_name,
     const FramePolicy& frame_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
-    FrameOwnerElementType frame_owner_element_type) {
+    mojom::blink::FrameOwnerElementType frame_owner_element_type) {
   ++count_;
   return TestWebFrameClient::CreateChildFrame(
       parent, scope, name, fallback_name, frame_policy, frame_owner_properties,

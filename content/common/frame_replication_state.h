@@ -11,9 +11,9 @@
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
 #include "url/origin.h"
 
@@ -36,7 +36,7 @@ struct CONTENT_EXPORT FrameReplicationState {
       bool has_potentially_trustworthy_unique_origin,
       bool has_received_user_gesture,
       bool has_received_user_gesture_before_nav,
-      blink::FrameOwnerElementType owner_type);
+      blink::mojom::FrameOwnerElementType owner_type);
   FrameReplicationState(const FrameReplicationState& other);
   ~FrameReplicationState();
 
@@ -147,8 +147,8 @@ struct CONTENT_EXPORT FrameReplicationState {
   // created. However, making it const makes it a pain to embed into IPC message
   // params: having a const member implicitly deletes the copy assignment
   // operator.
-  blink::FrameOwnerElementType frame_owner_element_type =
-      blink::FrameOwnerElementType::kNone;
+  blink::mojom::FrameOwnerElementType frame_owner_element_type =
+      blink::mojom::FrameOwnerElementType::kNone;
 
   // Whether this frame is an ad frame. Once a frame becomes an ad, it stays as
   // an ad throughout its lifetime, even if it later navigates to a non-ad

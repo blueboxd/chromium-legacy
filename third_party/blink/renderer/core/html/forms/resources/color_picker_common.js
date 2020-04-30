@@ -19,6 +19,7 @@ var DefaultColorPalette = [
  * @param {Event} event
  */
 function handleMessage(event) {
+  window.removeEventListener('message', handleMessage, false);
   initialize(JSON.parse(event.data));
   global.argumentsReceived = true;
 }

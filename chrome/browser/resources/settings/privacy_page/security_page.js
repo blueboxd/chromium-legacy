@@ -172,6 +172,11 @@ Polymer({
     this.metricsBrowserProxy_ = MetricsBrowserProxyImpl.getInstance();
   },
 
+  /** @override */
+  attached() {
+    SafeBrowsingBrowserProxyImpl.getInstance().validateSafeBrowsingEnhanced();
+  },
+
   /**
    * Updates the various underlying cookie prefs based on the newly selected
    * radio button.

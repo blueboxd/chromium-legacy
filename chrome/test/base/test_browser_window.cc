@@ -252,6 +252,12 @@ bool TestBrowserWindow::IsVisibleOnAllWorkspaces() const {
   return false;
 }
 
+std::unique_ptr<content::EyeDropper> TestBrowserWindow::OpenEyeDropper(
+    content::RenderFrameHost* frame,
+    content::EyeDropperListener* listener) {
+  return nullptr;
+}
+
 void TestBrowserWindow::SetNativeWindow(gfx::NativeWindow window) {
   native_window_ = window;
 }

@@ -345,6 +345,10 @@ class CORE_EXPORT WebFrameWidgetBase
   mojo::AssociatedRemote<mojom::blink::FrameWidgetHost> frame_widget_host_;
   mojo::AssociatedReceiver<mojom::blink::FrameWidget> receiver_;
 
+  // Different consumers in the browser process makes different assumptions, so
+  // must always send the first IPC regardless of value.
+  base::Optional<bool> has_touch_handlers_;
+
   friend class WebViewImpl;
   friend class ReportTimeSwapPromise;
 };

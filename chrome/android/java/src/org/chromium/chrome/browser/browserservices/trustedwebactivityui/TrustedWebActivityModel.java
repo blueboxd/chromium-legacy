@@ -23,8 +23,17 @@ public class TrustedWebActivityModel extends PropertyModel {
     public static final int DISCLOSURE_STATE_SHOWN = 1;
     public static final int DISCLOSURE_STATE_DISMISSED_BY_USER = 2;
 
+    /** The webpage scope that the disclosure is valid for, it may be displayed to the user. */
     public static final WritableObjectPropertyKey<String> DISCLOSURE_SCOPE =
             new WritableObjectPropertyKey<>();
+
+    /**
+     * Whether this is the first time the disclosure has been shown.
+     * This determines the priority of the notification disclosure.
+     * Only valid when DISCLOSURE_STATE == DISCLOSURE_STATE_SHOWN.
+     */
+    public static final WritableBooleanPropertyKey DISCLOSURE_FIRST_TIME =
+            new WritableBooleanPropertyKey();
 
     /** Callback for routing disclosure-related view events back to controller side. */
     public static final WritableObjectPropertyKey<DisclosureEventsCallback>
@@ -36,10 +45,14 @@ public class TrustedWebActivityModel extends PropertyModel {
     public interface DisclosureEventsCallback {
         /** Called when user accepted the disclosure. */
         void onDisclosureAccepted();
+
+        /** Called when the disclosure is shown. */
+        void onDisclosureShown();
     }
 
     @Inject
     public TrustedWebActivityModel() {
-        super(DISCLOSURE_STATE, DISCLOSURE_SCOPE, DISCLOSURE_EVENTS_CALLBACK);
+        super(DISCLOSURE_STATE, DISCLOSURE_FIRST_TIME, DISCLOSURE_SCOPE,
+                DISCLOSURE_EVENTS_CALLBACK);
     }
 }

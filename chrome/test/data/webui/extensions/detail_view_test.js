@@ -41,7 +41,7 @@ suite(extension_detail_view_tests.suiteName, function() {
 
   // Initialize an extension item before each test.
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     extensionData = createExtensionInfo({
       incognitoAccess: {isEnabled: true, isActive: false},
       fileAccess: {isEnabled: true, isActive: false},

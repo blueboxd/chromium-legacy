@@ -41,8 +41,9 @@ Polymer({
     },
 
     /**
-     * Injected sync system status.
-     * @type {?settings.SyncStatus}
+     * Injected sync system status. Undefined until the parent component injects
+     * the value.
+     * @type {settings.SyncStatus|undefined}
      */
     syncStatus: Object,
 
@@ -129,6 +130,9 @@ Polymer({
    * @private
    */
   getAccountTitle_() {
+    if (!this.syncStatus) {
+      return '';
+    }
     return this.syncStatus.hasError ? this.i18n('syncNotWorking') :
                                       this.profileName;
   },
@@ -138,6 +142,9 @@ Polymer({
    * @private
    */
   getAccountSubtitle_() {
+    if (!this.syncStatus) {
+      return '';
+    }
     return this.osSyncFeatureEnabled && !this.syncStatus.hasError ?
         this.i18n('syncingTo', this.profileEmail) :
         this.profileEmail;
@@ -149,6 +156,9 @@ Polymer({
    * @private
    */
   getSyncIconStyle_() {
+    if (!this.syncStatus) {
+      return 'sync';
+    }
     if (this.syncStatus.disabled) {
       return 'sync-disabled';
     }

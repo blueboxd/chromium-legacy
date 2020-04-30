@@ -85,7 +85,7 @@ suite('URL preload', function() {
    * given |url| to trigger routing initialization code.
    */
   function setupWithUrl(url) {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     Store.instance_ = undefined;
     window.history.replaceState({}, '', url);
 

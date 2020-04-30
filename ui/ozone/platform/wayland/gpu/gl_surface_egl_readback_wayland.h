@@ -15,8 +15,21 @@ namespace ui {
 
 class WaylandBufferManagerGpu;
 
-// GLSurface implementation that copies pixels from readback to shared memory
-// and let Wayland compositor to present them.
+// This is a GLSurface implementation that uses glReadPixels to populate a
+// shared memory region with the contents of the surface, and then passes the
+// shared memory region to Wayland for presentation.
+//
+// Basic control flow:
+//   1. Resize() creates kMaxBuffers shared memory regions. These are added to
+//   available_buffers_ and registered with Wayland via CreateShmBasedBuffer().
+//   2. SwapBuffersAsync() calls glReadPixels() to read the contents of the
+//   active GL context into the next available shared memory region. The shared
+//   memory region is immediately sent to Wayland via CommitBuffer().
+//   3. The buffer is not available for reuse until OnSubmission() is called.
+//
+// Note: This class relies on the assumption that kMaxBuffers is necessary and
+// sufficient. The behavior is undefined if SwapBuffersAsync() is called and no
+// buffers are available.
 class GLSurfaceEglReadbackWayland : public GLSurfaceEglReadback,
                                     public WaylandSurfaceGpu {
  public:

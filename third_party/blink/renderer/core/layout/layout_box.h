@@ -789,6 +789,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void SetBoxLayoutExtraInput(const BoxLayoutExtraInput* input) {
     extra_input_ = input;
   }
+  const BoxLayoutExtraInput* GetBoxLayoutExtraInput() const {
+    return extra_input_;
+  }
 
   void UpdateLayout() override;
   void Paint(const PaintInfo&) const override;
@@ -814,6 +817,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutUnit OverrideLogicalHeight() const;
   LayoutUnit OverrideLogicalWidth() const;
+  bool IsOverrideLogicalHeightDefinite() const;
   bool HasOverrideLogicalHeight() const;
   bool HasOverrideLogicalWidth() const;
   void SetOverrideLogicalHeight(LayoutUnit);
@@ -1339,7 +1343,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return IsFlexItemCommon() && Parent()->IsFlexibleBoxIncludingNG();
   }
   bool IsFlexItemCommon() const {
-    return !IsInline() && !IsFloatingOrOutOfFlowPositioned() && Parent();
+    return !IsInline() && !IsOutOfFlowPositioned() && Parent();
   }
 
   bool IsGridItem() const { return Parent() && Parent()->IsLayoutGrid(); }

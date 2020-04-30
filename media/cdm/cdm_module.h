@@ -31,11 +31,7 @@ class MEDIA_EXPORT CdmModule {
 
   ~CdmModule();
 
-  using CreateCdmFunc = void* (*)(int cdm_interface_version,
-                                  const char* key_system,
-                                  uint32_t key_system_size,
-                                  GetCdmHostFunc get_cdm_host_func,
-                                  void* user_data);
+  using CreateCdmFunc = decltype(&::CreateCdmInstance);
 
   CreateCdmFunc GetCreateCdmFunc();
 
@@ -57,9 +53,9 @@ class MEDIA_EXPORT CdmModule {
   bool was_initialize_called() const { return was_initialize_called_; }
 
  private:
-  using InitializeCdmModuleFunc = void (*)();
-  using DeinitializeCdmModuleFunc = void (*)();
-  using GetCdmVersionFunc = char* (*)();
+  using InitializeCdmModuleFunc = decltype(&::INITIALIZE_CDM_MODULE);
+  using DeinitializeCdmModuleFunc = decltype(&::DeinitializeCdmModule);
+  using GetCdmVersionFunc = decltype(&::GetCdmVersion);
 
   CdmModule();
 

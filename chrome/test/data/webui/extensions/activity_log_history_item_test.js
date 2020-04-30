@@ -24,7 +24,7 @@ suite('ExtensionsActivityLogHistoryItemTest', function() {
 
   // Initialize an extension activity log item before each test.
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
     testActivityGroup = {
       activityIds: ['1'],
       key: 'i18n.getUILanguage',

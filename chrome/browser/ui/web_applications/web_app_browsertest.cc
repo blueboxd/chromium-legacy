@@ -497,6 +497,12 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, UninstallMenuOption) {
 #else
   EXPECT_TRUE(found);
   EXPECT_TRUE(model->IsEnabledAt(index));
+
+  base::HistogramTester tester;
+  app_menu_model->ExecuteCommand(WebAppMenuModel::kUninstallAppCommandId,
+                                 /*event_flags=*/0);
+  tester.ExpectUniqueSample("HostedAppFrame.WrenchMenu.MenuAction",
+                            MENU_ACTION_UNINSTALL_APP, 1);
 #endif  // defined(OS_CHROMEOS)
 }
 

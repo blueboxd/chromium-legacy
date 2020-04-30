@@ -43,6 +43,9 @@ union UrlRequestAction {
   // Replaces a URL if the original URL ends with a pattern.
   UrlRequestRewriteReplaceUrl replace_url;
 
+  // Appends to the URL query.
+  UrlRequestRewriteAppendToQuery append_to_query;
+
   // Specifies whether the request should be allowed or blocked.
   // Cannot be combined with other UrlRequestActions.
   UrlRequestAccessPolicy policy;
@@ -84,6 +87,14 @@ struct UrlRequestRewriteReplaceUrl {
 
   // The replacement URL.
   url.mojom.Url new_url;
+};
+
+// Appends |query| to the URL request query. If the URL request already has a
+// non-empty query, appends |query| to it, preceded by "&". Otherwise, sets the
+// URL request query to |query|.
+struct UrlRequestRewriteAppendToQuery {
+  // The query to be added or set to the URL.
+  string query;
 };
 
 enum UrlRequestAccessPolicy {

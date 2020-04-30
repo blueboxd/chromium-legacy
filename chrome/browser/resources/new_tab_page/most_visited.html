@@ -164,7 +164,7 @@
           title$="[[item.title]]" on-dragstart="onDragStart_"
           on-touchstart="onTouchStart_"
           hidden$="[[isHidden_(index, columnCount_)]]"
-          on-keydown="onTileKeyDown_">
+          on-click="onTileClick_" on-keydown="onTileKeyDown_">
         <cr-icon-button id="actionMenuButton" class="icon-more-vert"
             title="$i18n{moreActions}" on-click="onTileActionButtonClick_"
             tabindex="0" hidden$="[[!customLinksEnabled_]]"></cr-icon-button>

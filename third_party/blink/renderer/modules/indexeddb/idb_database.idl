@@ -38,7 +38,6 @@
                                                                                   optional IDBTransactionMode mode = "readonly");
 
     [NewObject, CallWith=ScriptState, RaisesException, RuntimeEnabled=IDBRelaxedDurability] IDBTransaction transaction((DOMString or sequence<DOMString>) storeNames,
-
                                                                                   optional IDBTransactionMode mode = "readonly",
                                                                                   IDBTransactionOptions options);
     void close();

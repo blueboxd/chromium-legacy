@@ -11,8 +11,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_notifications.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
+#include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
@@ -43,7 +46,8 @@ namespace apps {
 class WebApps : public apps::PublisherBase,
                 public web_app::AppRegistrarObserver,
                 public content_settings::Observer,
-                public ArcAppListPrefs::Observer {
+                public ArcAppListPrefs::Observer,
+                public NotificationDisplayService::Observer {
  public:
   WebApps(const mojo::Remote<apps::mojom::AppService>& app_service,
           Profile* profile,
@@ -106,7 +110,7 @@ class WebApps : public apps::PublisherBase,
 
   // web_app::AppRegistrarObserver:
   void OnWebAppInstalled(const web_app::AppId& app_id) override;
-  void OnWebAppWillBeUninstalled(const web_app::AppId& app_id) override;
+  void OnWebAppUninstalled(const web_app::AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
   void OnWebAppDisabledStateChanged(const web_app::AppId& app_id,
                                     bool is_disabled) override;
@@ -119,6 +123,20 @@ class WebApps : public apps::PublisherBase,
                         bool uninstalled) override;
   void OnPackageListInitialRefreshed() override;
   void OnArcAppListPrefsDestroyed() override;
+
+  // NotificationDisplayService::Observer overrides.
+  void OnNotificationDisplayed(
+      const message_center::Notification& notification,
+      const NotificationCommon::Metadata* const metadata) override;
+  void OnNotificationClosed(const std::string& notification_id) override;
+  void OnNotificationDisplayServiceDestroyed(
+      NotificationDisplayService* service) override;
+
+  void MaybeAddNotification(const std::string& app_id,
+                            const std::string& notification_id);
+  void MaybeAddWebPageNotifications(
+      const message_center::Notification& notification,
+      const NotificationCommon::Metadata* const metadata);
 
   void SetShowInFields(apps::mojom::AppPtr& app,
                        const web_app::WebApp* web_app);
@@ -169,6 +187,12 @@ class WebApps : public apps::PublisherBase,
 
   // app_service_ is owned by the object that owns this object.
   apps::mojom::AppService* app_service_;
+
+  ScopedObserver<NotificationDisplayService,
+                 NotificationDisplayService::Observer>
+      notification_display_service_{this};
+
+  AppNotifications app_notifications_;
 
   base::WeakPtrFactory<WebApps> weak_ptr_factory_{this};
 };

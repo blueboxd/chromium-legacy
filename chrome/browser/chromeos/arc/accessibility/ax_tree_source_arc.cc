@@ -223,14 +223,6 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     event.event_from = ax::mojom::EventFrom::kAction;
   }
 
-  if (ShouldDispatchFocusLocationChange()) {
-    // Notify that the accessibility focus location changed.
-    event_bundle.events.emplace_back();
-    ui::AXEvent& additional_event = event_bundle.events.back();
-    additional_event.event_type = ax::mojom::Event::kLocationChanged;
-    additional_event.id = *chrome_focused_id_;
-  }
-
   HandleLiveRegions(&event_bundle.events);
 
   event_bundle.updates.emplace_back();
@@ -250,18 +242,6 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
 
   GetAutomationEventRouter()->DispatchAccessibilityEvents(event_bundle);
 
-  previous_raw_bounds_.clear();
-  for (size_t i = 0; i < event_data->node_data.size(); ++i) {
-    AXNodeInfoData* node = event_data->node_data[i].get();
-    if (IsImportantInAndroid(node)) {
-      previous_raw_bounds_[node->id] = node->bounds_in_screen;
-    }
-  }
-  for (size_t i = 0; i < event_data->window_data->size(); ++i) {
-    AXWindowInfoData* window = event_data->window_data->at(i).get();
-    previous_raw_bounds_[window->window_id] = window->bounds_in_screen;
-  }
-
   // Clear maps in order to prevent invalid access from dead pointers.
   tree_map_.clear();
   parent_map_.clear();
@@ -277,10 +257,6 @@ void AXTreeSourceArc::NotifyGetTextLocationDataResult(
     const ui::AXActionData& data,
     const base::Optional<gfx::Rect>& rect) {
   GetAutomationEventRouter()->DispatchGetTextLocationDataResult(data, rect);
-}
-
-void AXTreeSourceArc::UpdateAccessibilityFocusLocation(int32_t id) {
-  chrome_focused_id_ = id;
 }
 
 void AXTreeSourceArc::InvalidateTree() {
@@ -638,23 +614,6 @@ void AXTreeSourceArc::HandleLiveRegions(std::vector<ui::AXEvent>* events) {
   }
 
   std::swap(previous_live_region_name_, new_live_region_map);
-}
-
-bool AXTreeSourceArc::ShouldDispatchFocusLocationChange() const {
-  if (!chrome_focused_id_)
-    return false;
-
-  AccessibilityInfoDataWrapper* chrome_focused_node =
-      GetFromId(*chrome_focused_id_);
-
-  if (!chrome_focused_node)
-    return false;
-
-  auto chrome_focused_bounds = previous_raw_bounds_.find(*chrome_focused_id_);
-  if (chrome_focused_bounds == previous_raw_bounds_.end())
-    return false;
-
-  return chrome_focused_node->GetBounds() != chrome_focused_bounds->second;
 }
 
 void AXTreeSourceArc::Reset() {

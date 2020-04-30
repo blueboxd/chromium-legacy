@@ -120,12 +120,11 @@ const char kTestSmaps2[] =
 
 void CreateTempFileWithContents(const char* contents, base::ScopedFILE* file) {
   base::FilePath temp_path;
-  FILE* temp_file = CreateAndOpenTemporaryFile(&temp_path);
-  file->reset(temp_file);
-  ASSERT_TRUE(temp_file);
+  *file = CreateAndOpenTemporaryStream(&temp_path);
+  ASSERT_TRUE(*file);
 
-  ASSERT_TRUE(
-      base::WriteFileDescriptor(fileno(temp_file), contents, strlen(contents)));
+  ASSERT_TRUE(base::WriteFileDescriptor(fileno(file->get()), contents,
+                                        strlen(contents)));
 }
 
 }  // namespace

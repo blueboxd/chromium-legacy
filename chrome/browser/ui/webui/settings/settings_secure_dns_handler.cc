@@ -31,8 +31,6 @@ namespace settings {
 
 namespace {
 
-const char kProbeHostname[] = "google.com";
-
 std::unique_ptr<base::DictionaryValue> CreateSecureDnsSettingDict() {
   // Fetch the current host resolver configuration. It is not sufficient to read
   // the secure DNS prefs directly since the host resolver configuration takes
@@ -76,7 +74,10 @@ std::unique_ptr<base::DictionaryValue> CreateSecureDnsSettingDict() {
 
 }  // namespace
 
-SecureDnsHandler::SecureDnsHandler() = default;
+SecureDnsHandler::SecureDnsHandler()
+    : network_context_getter_(
+          base::BindRepeating(&SecureDnsHandler::GetNetworkContext,
+                              base::Unretained(this))) {}
 
 SecureDnsHandler::~SecureDnsHandler() = default;
 
@@ -179,7 +180,17 @@ base::Value SecureDnsHandler::GetSecureDnsResolverListForCountry(
 
 void SecureDnsHandler::SetNetworkContextForTesting(
     network::mojom::NetworkContext* network_context) {
-  network_context_for_testing_ = network_context;
+  network_context_getter_ = base::BindRepeating(
+      [](network::mojom::NetworkContext* network_context) {
+        return network_context;
+      },
+      network_context);
+}
+
+network::mojom::NetworkContext* SecureDnsHandler::GetNetworkContext() {
+  return content::BrowserContext::GetDefaultStoragePartition(
+             web_ui()->GetWebContents()->GetBrowserContext())
+      ->GetNetworkContext();
 }
 
 void SecureDnsHandler::HandleGetSecureDnsResolverList(
@@ -225,10 +236,10 @@ void SecureDnsHandler::HandleProbeCustomDnsTemplate(
   AllowJavascript();
 
   if (!probe_callback_id_.empty()) {
-    // Cancel the pending probe and report a non-error response to avoid
-    // leaking the callback.
-    receiver_.reset();
-    host_resolver_.reset();
+    // Cancel the pending probe by destroying the probe runner (which does not
+    // call the callback), and report a non-error response to avoid leaking the
+    // callback.
+    runner_.reset();
     ResolveJavascriptCallback(base::Value(probe_callback_id_),
                               base::Value(true));
   }
@@ -242,33 +253,12 @@ void SecureDnsHandler::HandleProbeCustomDnsTemplate(
   overrides.attempts = 1;
   overrides.randomize_ports = false;
   overrides.secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
-  std::string server_method;
-  // We only send probe queries to templates that have already passed a format
-  // validation check.
-  CHECK(net::dns_util::IsValidDohTemplate(server_template, &server_method));
-  overrides.dns_over_https_servers.emplace({net::DnsOverHttpsServerConfig(
-      server_template, server_method == "POST")});
-  auto* network_context =
-      network_context_for_testing_
-          ? network_context_for_testing_
-          : content::BrowserContext::GetDefaultStoragePartition(
-                web_ui()->GetWebContents()->GetBrowserContext())
-                ->GetNetworkContext();
-  network_context->CreateHostResolver(
-      overrides, host_resolver_.BindNewPipeAndPassReceiver());
-
-  network::mojom::ResolveHostParametersPtr parameters =
-      network::mojom::ResolveHostParameters::New();
-  parameters->dns_query_type = net::DnsQueryType::A;
-  parameters->source = net::HostResolverSource::DNS;
-  parameters->cache_usage =
-      network::mojom::ResolveHostParameters::CacheUsage::DISALLOWED;
-  host_resolver_->ResolveHost(net::HostPortPair(kProbeHostname, 80),
-                              net::NetworkIsolationKey::CreateTransient(),
-                              std::move(parameters),
-                              receiver_.BindNewPipeAndPassRemote());
-  receiver_.set_disconnect_handler(base::BindOnce(
-      &SecureDnsHandler::OnMojoConnectionError, base::Unretained(this)));
+  chrome_browser_net::ApplyDohTemplate(&overrides, server_template);
+  DCHECK(!runner_);
+  runner_ = std::make_unique<chrome_browser_net::DnsProbeRunner>(
+      overrides, network_context_getter_);
+  runner_->RunProbe(base::BindOnce(&SecureDnsHandler::OnProbeComplete,
+                                   base::Unretained(this)));
 }
 
 void SecureDnsHandler::HandleRecordUserDropdownInteraction(
@@ -296,22 +286,14 @@ void SecureDnsHandler::HandleRecordUserDropdownInteraction(
   }
 }
 
-// network::ResolveHostClientBase impl:
-void SecureDnsHandler::OnComplete(
-    int result,
-    const net::ResolveErrorInfo& resolve_error_info,
-    const base::Optional<net::AddressList>& resolved_addresses) {
-  receiver_.reset();
-  host_resolver_.reset();
-  UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ProbeAttemptSuccess", (result == 0));
+void SecureDnsHandler::OnProbeComplete() {
+  bool success =
+      runner_->result() == chrome_browser_net::DnsProbeRunner::CORRECT;
+  runner_.reset();
+  UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ProbeAttemptSuccess", success);
   ResolveJavascriptCallback(base::Value(probe_callback_id_),
-                            base::Value(result == 0));
+                            base::Value(success));
   probe_callback_id_.clear();
-}
-
-void SecureDnsHandler::OnMojoConnectionError() {
-  OnComplete(net::ERR_NAME_NOT_RESOLVED, net::ResolveErrorInfo(net::ERR_FAILED),
-             base::nullopt);
 }
 
 void SecureDnsHandler::SendSecureDnsSettingUpdatesToJavascript() {

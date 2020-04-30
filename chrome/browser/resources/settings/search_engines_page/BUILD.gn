@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../settings.gni")
 
@@ -87,52 +87,22 @@ js_library("search_engines_page") {
   ]
 }
 
-group("polymer3_elements") {
+group("web_components") {
   public_deps = [
     ":modulize",
-    ":omnibox_extension_entry_module",
-    ":search_engine_dialog_module",
-    ":search_engine_entry_css_module",
-    ":search_engine_entry_module",
-    ":search_engines_list_module",
-    ":search_engines_page_module",
+    ":web_components_local",
   ]
 }
 
-polymer_modulizer("omnibox_extension_entry") {
-  js_file = "omnibox_extension_entry.js"
-  html_file = "omnibox_extension_entry.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("search_engine_dialog") {
-  js_file = "search_engine_dialog.js"
-  html_file = "search_engine_dialog.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("search_engine_entry") {
-  js_file = "search_engine_entry.js"
-  html_file = "search_engine_entry.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("search_engine_entry_css") {
-  js_file = "search_engine_entry_css.js"
-  html_file = "search_engine_entry_css.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("search_engines_list") {
-  js_file = "search_engines_list.js"
-  html_file = "search_engines_list.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("search_engines_page") {
-  js_file = "search_engines_page.js"
-  html_file = "search_engines_page.html"
-  html_type = "v3-ready"
+html_to_js("web_components_local") {
+  js_files = [
+    "omnibox_extension_entry.js",
+    "search_engine_dialog.js",
+    "search_engine_entry_css.js",
+    "search_engine_entry.js",
+    "search_engines_list.js",
+    "search_engines_page.js",
+  ]
 }
 
 js_modulizer("modulize") {

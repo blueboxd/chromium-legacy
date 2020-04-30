@@ -2658,7 +2658,7 @@ TEST_F(WebContentsImplTest, PendingContentsDestroyed) {
   auto other_contents = base::WrapUnique(
       static_cast<TestWebContents*>(CreateTestWebContents().release()));
   content::TestWebContents* test_web_contents = other_contents.get();
-  contents()->AddPendingContents(std::move(other_contents));
+  contents()->AddPendingContents(std::move(other_contents), GURL());
   RenderWidgetHost* widget =
       test_web_contents->GetMainFrame()->GetRenderWidgetHost();
   int process_id = widget->GetProcess()->GetID();
@@ -2667,14 +2667,15 @@ TEST_F(WebContentsImplTest, PendingContentsDestroyed) {
   // TODO(erikchen): Fix ownership semantics of WebContents. Nothing should be
   // able to delete it beside from the owner. https://crbug.com/832879.
   delete test_web_contents;
-  EXPECT_EQ(nullptr, contents()->GetCreatedWindow(process_id, widget_id));
+  EXPECT_FALSE(contents()->GetCreatedWindow(process_id, widget_id).has_value());
 }
 
 TEST_F(WebContentsImplTest, PendingContentsShown) {
+  GURL url("http://example.com");
   auto other_contents = base::WrapUnique(
       static_cast<TestWebContents*>(CreateTestWebContents().release()));
   content::TestWebContents* test_web_contents = other_contents.get();
-  contents()->AddPendingContents(std::move(other_contents));
+  contents()->AddPendingContents(std::move(other_contents), url);
 
   RenderWidgetHost* widget =
       test_web_contents->GetMainFrame()->GetRenderWidgetHost();
@@ -2682,10 +2683,15 @@ TEST_F(WebContentsImplTest, PendingContentsShown) {
   int widget_id = widget->GetRoutingID();
 
   // The first call to GetCreatedWindow pops it off the pending list.
-  EXPECT_EQ(test_web_contents,
-            contents()->GetCreatedWindow(process_id, widget_id).get());
-  // A second call should return nullptr, verifying that it's been forgotten.
-  EXPECT_EQ(nullptr, contents()->GetCreatedWindow(process_id, widget_id));
+  base::Optional<CreatedWindow> created_window =
+      contents()->GetCreatedWindow(process_id, widget_id);
+  EXPECT_TRUE(created_window.has_value());
+  EXPECT_EQ(test_web_contents, created_window->contents.get());
+  // Validate target_url.
+  EXPECT_EQ(url, created_window->target_url);
+
+  // A second call should return nullopt, verifying that it's been forgotten.
+  EXPECT_FALSE(contents()->GetCreatedWindow(process_id, widget_id).has_value());
 }
 
 TEST_F(WebContentsImplTest, CapturerOverridesPreferredSize) {

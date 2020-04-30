@@ -103,6 +103,10 @@ class PasswordsModelDelegate {
   virtual void SavePassword(const base::string16& username,
                             const base::string16& password) = 0;
 
+  // Called from the dialog controller when a user confirms moving the recently
+  // used credential to their account store.
+  virtual void MovePasswordToAccountStore() = 0;
+
   // Called from the dialog controller when the user chooses a credential.
   // Controller can be destroyed inside the method.
   virtual void ChooseCredential(

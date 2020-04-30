@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -98,8 +99,8 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   // |copies_max| should never be < 1.
   int32_t copies_max = 1;
 
-  std::vector<DuplexMode> duplex_modes;
-  DuplexMode duplex_default = UNKNOWN_DUPLEX_MODE;
+  std::vector<mojom::DuplexMode> duplex_modes;
+  mojom::DuplexMode duplex_default = mojom::DuplexMode::kUnknownDuplexMode;
 
   bool color_changeable = false;
   bool color_default = false;

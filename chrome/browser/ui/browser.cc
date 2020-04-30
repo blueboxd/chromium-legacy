@@ -1679,6 +1679,7 @@ void Browser::VisibleSecurityStateChanged(WebContents* source) {
 
 void Browser::AddNewContents(WebContents* source,
                              std::unique_ptr<WebContents> new_contents,
+                             const GURL& target_url,
                              WindowOpenDisposition disposition,
                              const gfx::Rect& initial_rect,
                              bool user_gesture,
@@ -1699,8 +1700,8 @@ void Browser::AddNewContents(WebContents* source,
   if (source && ConsiderForPopupBlocking(disposition))
     PopupTracker::CreateForWebContents(new_contents.get(), source, disposition);
 
-  chrome::AddWebContents(this, source, std::move(new_contents), disposition,
-                         initial_rect);
+  chrome::AddWebContents(this, source, std::move(new_contents), target_url,
+                         disposition, initial_rect);
 }
 
 void Browser::ActivateContents(WebContents* contents) {

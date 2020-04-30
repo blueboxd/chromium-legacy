@@ -168,7 +168,7 @@ class ApkWebAppInstallerBrowserTest
         provider_->registrar().GetAppShortName(web_app_id);
   }
 
-  void OnWebAppWillBeUninstalled(const web_app::AppId& web_app_id) override {
+  void OnWebAppUninstalled(const web_app::AppId& web_app_id) override {
     uninstalled_web_app_id_ = web_app_id;
   }
 

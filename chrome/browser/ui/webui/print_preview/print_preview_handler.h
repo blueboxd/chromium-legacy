@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 
 namespace base {
@@ -79,7 +80,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Send the print preset options from the document.
   void SendPrintPresetOptions(bool disable_scaling,
                               int copies,
-                              int duplex,
+                              mojom::DuplexMode duplex,
                               int request_id);
 
   // Send the print preview page count and fit to page scaling

@@ -6599,11 +6599,6 @@ crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/cale
 crbug.com/1006759 http/tests/devtools/profiler/cpu-profiler-save-load.js [ Pass Failure Timeout ]
 crbug.com/1006759 http/tests/devtools/profiler/heap-snapshot-loader.js [ Pass Failure ]
 
-# Temporarily disabled to land changes in DevTools, multiple dependent CLs
-# [1] https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2049183
-# [2] https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2119670
-crbug.com/1064472 http/tests/devtools/elements/elements-tab-stops.js [ Pass Failure ]
-
 # These tests have different output on webkit_layout_tests and
 # not_site_per_process_webkit_layout_tests, as js-self-profiling is only
 # enabled on site-per-process. This means we can't have a consistent

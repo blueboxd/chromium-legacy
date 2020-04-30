@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
 
 #include "base/time/time_override.h"
+#include "printing/mojom/print.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -32,7 +33,7 @@ constexpr int kPagesNumber = 3;
 TEST(PrintJobInfoProtoConversionsTest, PrintSettingsToProto) {
   ::printing::PrintSettings settings;
   settings.set_color(::printing::ColorModel::COLOR);
-  settings.set_duplex_mode(::printing::DuplexMode::LONG_EDGE);
+  settings.set_duplex_mode(::printing::mojom::DuplexMode::kLongEdge);
   ::printing::PrintSettings::RequestedMedia media;
   media.size_microns = gfx::Size(kWidth, kHeight);
   media.vendor_id = kVendorId;

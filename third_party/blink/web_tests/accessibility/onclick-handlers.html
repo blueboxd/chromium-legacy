@@ -3,22 +3,18 @@
     if (window.testRunner)
         testRunner.dumpAsText();
 </script>
-<body id="body">
+<body>
     
     <div id="result"></div>
     
     <!-- This test checks that an element will expose AXPress as an action if it listens for onClick -->
-    <div onclick="alert('hello');">this is an on click handler</div>
+    <div id="onclick" onclick="alert('hello');">this is an on click handler</div>
 
     <script>
         if (window.accessibilityController) {
             var result = document.getElementById("result");
 
-            var body = document.getElementById("body");
-            body.focus();
-            var focusedElement = accessibilityController.focusedElement;
-            var textElement = focusedElement.childAtIndex(0).childAtIndex(1).childAtIndex(0);
-
+            var textElement = accessibilityController.accessibleElementById('onclick');
             if (textElement.isPressActionSupported()) {
                 result.innerText += "Test passed\n";
             }

@@ -42,6 +42,11 @@ static base::CallbackList<void(void)>& GetFakeLicenceKeyListeners() {
   return *instance;
 }
 
+static std::string& GetFakeUserId() {
+  static base::NoDestructor<std::string> user_id;
+  return *user_id;
+}
+
 }  // namespace
 
 // For PluginVm to be allowed:
@@ -133,6 +138,19 @@ std::string GetPluginVmLicenseKey() {
   return plugin_vm_license_key;
 }
 
+std::string GetPluginVmUserId() {
+  if (FakeUserIdIsSet()) {
+    return GetFakeUserId();
+  }
+
+  std::string plugin_vm_user_id;
+  if (!chromeos::CrosSettings::Get()->GetString(chromeos::kPluginVmUserId,
+                                                &plugin_vm_user_id)) {
+    return std::string();
+  }
+  return plugin_vm_user_id;
+}
+
 void SetFakePluginVmPolicy(Profile* profile,
                            const std::string& image_url,
                            const std::string& image_hash,
@@ -146,10 +164,15 @@ void SetFakePluginVmPolicy(Profile* profile,
   GetFakeLicenseKey() = license_key;
 
   GetFakeLicenceKeyListeners().Notify();
+  GetFakeUserId() = "FAKE_USER_ID";
 }
 
 bool FakeLicenseKeyIsSet() {
   return !GetFakeLicenseKey().empty();
+}
+
+bool FakeUserIdIsSet() {
+  return !GetFakeUserId().empty();
 }
 
 void RemoveDriveDownloadDirectoryIfExists() {

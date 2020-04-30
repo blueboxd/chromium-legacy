@@ -494,7 +494,13 @@ TEST(TracingProfileBuilderTest, ValidModule) {
                                     base::TimeTicks());
 }
 
-TEST(TracingProfileBuilderTest, InvalidModule) {
+// Crashes on Win7 only.  http://crbug.com/1076768
+#if defined(OS_WIN)
+#define MAYBE_InvalidModule DISABLED_InvalidModule
+#else
+#define MAYBE_InvalidModule InvalidModule
+#endif
+TEST(TracingProfileBuilderTest, MAYBE_InvalidModule) {
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(
       base::PlatformThreadId(),
       std::make_unique<MockTraceWriter>(base::DoNothing()), false);

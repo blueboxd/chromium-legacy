@@ -343,13 +343,14 @@ void TestWebContents::SetOpener(WebContents* opener) {
 }
 
 void TestWebContents::AddPendingContents(
-    std::unique_ptr<WebContentsImpl> contents) {
+    std::unique_ptr<WebContentsImpl> contents,
+    const GURL& target_url) {
   // This is normally only done in WebContentsImpl::CreateNewWindow.
   GlobalRoutingID key(
       contents->GetRenderViewHost()->GetProcess()->GetID(),
       contents->GetRenderViewHost()->GetWidget()->GetRoutingID());
   AddDestructionObserver(contents.get());
-  pending_contents_[key] = std::move(contents);
+  pending_contents_[key] = CreatedWindow(std::move(contents), target_url);
 }
 
 void TestWebContents::ExpectSetHistoryOffsetAndLength(int history_offset,

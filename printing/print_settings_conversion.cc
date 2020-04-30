@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"
@@ -192,7 +193,8 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
   settings->SetOrientation(landscape.value());
   settings->set_device_name(
       base::UTF8ToUTF16(*job_settings.FindStringKey(kSettingDeviceName)));
-  settings->set_duplex_mode(static_cast<DuplexMode>(duplex_mode.value()));
+  settings->set_duplex_mode(
+      static_cast<mojom::DuplexMode>(duplex_mode.value()));
   settings->set_color(static_cast<ColorModel>(color.value()));
   settings->set_scale_factor(static_cast<double>(scale_factor.value()) / 100.0);
   settings->set_rasterize_pdf(rasterize_pdf.value());
@@ -256,7 +258,8 @@ void PrintSettingsToJobSettingsDebug(const PrintSettings& settings,
   job_settings->SetBoolean(kSettingCollate, settings.collate());
   job_settings->SetInteger(kSettingCopies, settings.copies());
   job_settings->SetInteger(kSettingColor, settings.color());
-  job_settings->SetInteger(kSettingDuplexMode, settings.duplex_mode());
+  job_settings->SetInteger(kSettingDuplexMode,
+                           static_cast<int>(settings.duplex_mode()));
   job_settings->SetBoolean(kSettingLandscape, settings.landscape());
   job_settings->SetString(kSettingDeviceName, settings.device_name());
   job_settings->SetInteger(kSettingPagesPerSheet, settings.pages_per_sheet());

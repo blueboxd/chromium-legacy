@@ -1892,6 +1892,7 @@ RubyPosition StyleBuilderConverter::ConvertRubyPosition(
       return RubyPosition::kBefore;
     if (value_id == CSSValueID::kUnder)
       return RubyPosition::kAfter;
+    return identifier_value->ConvertTo<blink::RubyPosition>();
   }
   NOTREACHED();
   return RubyPosition::kBefore;

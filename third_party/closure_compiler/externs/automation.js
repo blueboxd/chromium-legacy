@@ -1589,6 +1589,16 @@ chrome.automation.AutomationNode.prototype.performStandardAction = function(acti
 chrome.automation.AutomationNode.prototype.replaceSelectedText = function(value) {};
 
 /**
+ * Sets accessibility focus. Accessibility focus is the node on which an
+ * extension tracks a user's focus. This may be conveyed through a focus ring or
+ * or speech output by the extension. Automation will dispatch more events to
+ * the accessibility focus such as location changes.
+ * @see https://developer.chrome.com/extensions/automation#method-setAccessibilityFocus
+ */
+chrome.automation.AutomationNode.prototype.setAccessibilityFocus =
+    function() {};
+
+/**
  * Sets selection within a text field.
  * @param {number} startIndex
  * @param {number} endIndex
@@ -1804,6 +1814,17 @@ chrome.automation.getDesktop = function(callback) {};
  * @see https://developer.chrome.com/extensions/automation#method-getFocus
  */
 chrome.automation.getFocus = function(callback) {};
+
+/**
+ * Get the automation node that currently has accessibility focus, globally.
+ * Will return null if none of the nodes in any loaded trees have accessibility
+ * focus.
+ * @param {function(!chrome.automation.AutomationNode):void} callback Called
+ *     with the <code>AutomationNode</code> that currently has accessibility
+ *     focus.
+ * @see https://developer.chrome.com/extensions/automation#method-getAccessibilityFocus
+ */
+chrome.automation.getAccessibilityFocus = function(callback) {};
 
 /**
  * Add a tree change observer. Tree change observers are static/global, they

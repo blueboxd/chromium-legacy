@@ -27,6 +27,6 @@ js_library("default_browser_page") {
   ]
 }
 
-html_to_js("polymer3_elements") {
+html_to_js("web_components") {
   js_files = [ "default_browser_page.js" ]
 }

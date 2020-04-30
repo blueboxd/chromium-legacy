@@ -19,6 +19,7 @@
 #include "printing/backend/cups_ipp_constants.h"
 #include "printing/backend/cups_printer.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/printing_utils.h"
 #include "printing/units.h"
 
@@ -48,7 +49,7 @@ struct ColorMap {
 
 struct DuplexMap {
   const char* name;
-  DuplexMode mode;
+  mojom::DuplexMode mode;
 };
 
 const ColorMap kColorList[]{
@@ -57,9 +58,9 @@ const ColorMap kColorList[]{
 };
 
 const DuplexMap kDuplexList[]{
-    {CUPS_SIDES_ONE_SIDED, SIMPLEX},
-    {CUPS_SIDES_TWO_SIDED_PORTRAIT, LONG_EDGE},
-    {CUPS_SIDES_TWO_SIDED_LANDSCAPE, SHORT_EDGE},
+    {CUPS_SIDES_ONE_SIDED, mojom::DuplexMode::kSimplex},
+    {CUPS_SIDES_TWO_SIDED_PORTRAIT, mojom::DuplexMode::kLongEdge},
+    {CUPS_SIDES_TWO_SIDED_LANDSCAPE, mojom::DuplexMode::kShortEdge},
 };
 
 ColorModel ColorModelFromIppColor(base::StringPiece ippColor) {
@@ -72,12 +73,12 @@ ColorModel ColorModelFromIppColor(base::StringPiece ippColor) {
   return UNKNOWN_COLOR_MODEL;
 }
 
-DuplexMode DuplexModeFromIpp(base::StringPiece ipp_duplex) {
+mojom::DuplexMode DuplexModeFromIpp(base::StringPiece ipp_duplex) {
   for (const DuplexMap& entry : kDuplexList) {
     if (base::EqualsCaseInsensitiveASCII(ipp_duplex, entry.name))
       return entry.mode;
   }
-  return UNKNOWN_DUPLEX_MODE;
+  return mojom::DuplexMode::kUnknownDuplexMode;
 }
 
 ColorModel DefaultColorModel(const CupsOptionProvider& printer) {
@@ -140,14 +141,14 @@ void ExtractDuplexModes(const CupsOptionProvider& printer,
   std::vector<base::StringPiece> duplex_modes =
       printer.GetSupportedOptionValueStrings(kIppDuplex);
   for (base::StringPiece duplex : duplex_modes) {
-    DuplexMode duplex_mode = DuplexModeFromIpp(duplex);
-    if (duplex_mode != UNKNOWN_DUPLEX_MODE)
+    mojom::DuplexMode duplex_mode = DuplexModeFromIpp(duplex);
+    if (duplex_mode != mojom::DuplexMode::kUnknownDuplexMode)
       printer_info->duplex_modes.push_back(duplex_mode);
   }
   ipp_attribute_t* attr = printer.GetDefaultOptionValue(kIppDuplex);
   printer_info->duplex_default =
       attr ? DuplexModeFromIpp(ippGetString(attr, 0, nullptr))
-           : UNKNOWN_DUPLEX_MODE;
+           : mojom::DuplexMode::kUnknownDuplexMode;
 }
 
 void CopiesRange(const CupsOptionProvider& printer,

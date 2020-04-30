@@ -36,6 +36,7 @@ class WebAppUrlLoader {
     kFailedUnknownReason,
     kFailedPageTookTooLong,
     kFailedWebContentsDestroyed,
+    kFailedErrorPageLoaded,
   };
 
   using ResultCallback = base::OnceCallback<void(Result)>;

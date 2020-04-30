@@ -5921,6 +5921,18 @@
     ]
   },
 
+  "PluginVmUserId": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "PluginVmLicenseKey": "USER_ID"
+        },
+        "prefs": { "cros.device.plugin_vm_user_id": {} }
+      }
+    ]
+  },
+
   "ParentAccessCodeConfig": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

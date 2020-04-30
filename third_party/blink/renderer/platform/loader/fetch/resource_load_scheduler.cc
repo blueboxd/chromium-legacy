@@ -50,10 +50,6 @@ enum class ReportCircumstance {
   kNumOfCircumstances,
 };
 
-base::HistogramBase::Sample ToSample(ReportCircumstance circumstance) {
-  return static_cast<base::HistogramBase::Sample>(circumstance);
-}
-
 uint32_t GetFieldTrialUint32Param(const char* trial_name,
                                   const char* parameter_name,
                                   uint32_t default_param) {
@@ -73,106 +69,7 @@ uint32_t GetFieldTrialUint32Param(const char* trial_name,
   return param;
 }
 
-int TakeWholeKilobytes(int64_t& bytes) {
-  int kilobytes = base::saturated_cast<int>(bytes / 1024);
-  bytes %= 1024;
-  return kilobytes;
-}
-
 }  // namespace
-
-// A class to gather throttling and traffic information to report histograms.
-class ResourceLoadScheduler::TrafficMonitor {
- public:
-  explicit TrafficMonitor(
-      const DetachableResourceFetcherProperties& resource_fetcher_properties);
-
-  // Notified when the ThrottlingState is changed.
-  void OnLifecycleStateChanged(scheduler::SchedulingLifecycleState);
-
-  // Reports resource request completion.
-  void Report(const ResourceLoadScheduler::TrafficReportHints&);
-
-  // Reports per-frame reports.
-  void ReportAll();
-
- private:
-  const Persistent<const DetachableResourceFetcherProperties>
-      resource_fetcher_properties_;
-
-  scheduler::SchedulingLifecycleState current_state_ =
-      scheduler::SchedulingLifecycleState::kStopped;
-
-  scheduler::AggregatedMetricReporter<scheduler::FrameStatus, int64_t>
-      traffic_kilobytes_per_frame_status_;
-  scheduler::AggregatedMetricReporter<scheduler::FrameStatus, int64_t>
-      decoded_kilobytes_per_frame_status_;
-};
-
-ResourceLoadScheduler::TrafficMonitor::TrafficMonitor(
-    const DetachableResourceFetcherProperties& resource_fetcher_properties)
-    : resource_fetcher_properties_(resource_fetcher_properties),
-      traffic_kilobytes_per_frame_status_(
-          "Blink.ResourceLoadScheduler.TrafficBytes.KBPerFrameStatus",
-          &TakeWholeKilobytes),
-      decoded_kilobytes_per_frame_status_(
-          "Blink.ResourceLoadScheduler.DecodedBytes.KBPerFrameStatus",
-          &TakeWholeKilobytes) {}
-
-void ResourceLoadScheduler::TrafficMonitor::OnLifecycleStateChanged(
-    scheduler::SchedulingLifecycleState state) {
-  current_state_ = state;
-}
-
-void ResourceLoadScheduler::TrafficMonitor::Report(
-    const ResourceLoadScheduler::TrafficReportHints& hints) {
-  // Currently we only care about stats from frames.
-  if (!IsMainThread())
-    return;
-  if (!hints.IsValid())
-    return;
-
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, request_count_by_circumstance,
-                      ("Blink.ResourceLoadScheduler.RequestCount",
-                       ToSample(ReportCircumstance::kNumOfCircumstances)));
-
-  switch (current_state_) {
-    case scheduler::SchedulingLifecycleState::kThrottled:
-    case scheduler::SchedulingLifecycleState::kHidden:
-      if (resource_fetcher_properties_->IsMainFrame()) {
-        request_count_by_circumstance.Count(
-            ToSample(ReportCircumstance::kMainframeThrottled));
-      } else {
-        request_count_by_circumstance.Count(
-            ToSample(ReportCircumstance::kSubframeThrottled));
-      }
-      break;
-    case scheduler::SchedulingLifecycleState::kNotThrottled:
-      if (resource_fetcher_properties_->IsMainFrame()) {
-        request_count_by_circumstance.Count(
-            ToSample(ReportCircumstance::kMainframeNotThrottled));
-      } else {
-        request_count_by_circumstance.Count(
-            ToSample(ReportCircumstance::kSubframeNotThrottled));
-      }
-      break;
-    case scheduler::SchedulingLifecycleState::kStopped:
-      break;
-  }
-
-  // Report kilobytes instead of bytes to avoid overflows.
-  int64_t encoded_kilobytes = hints.encoded_data_length() / 1024;
-  int64_t decoded_kilobytes = hints.decoded_body_length() / 1024;
-
-  if (encoded_kilobytes) {
-    traffic_kilobytes_per_frame_status_.RecordTask(
-        resource_fetcher_properties_->GetFrameStatus(), encoded_kilobytes);
-  }
-  if (decoded_kilobytes) {
-    decoded_kilobytes_per_frame_status_.RecordTask(
-        resource_fetcher_properties_->GetFrameStatus(), decoded_kilobytes);
-  }
-}
 
 constexpr ResourceLoadScheduler::ClientId
     ResourceLoadScheduler::kInvalidClientId;
@@ -190,9 +87,6 @@ ResourceLoadScheduler::ResourceLoadScheduler(
       console_logger_(console_logger),
       clock_(base::DefaultClock::GetInstance()),
       throttle_option_override_(throttle_option_override) {
-  traffic_monitor_ = std::make_unique<ResourceLoadScheduler::TrafficMonitor>(
-      resource_fetcher_properties);
-
   if (!frame_or_worker_scheduler)
     return;
 
@@ -233,9 +127,6 @@ void ResourceLoadScheduler::Shutdown() {
   if (is_shutdown_)
     return;
   is_shutdown_ = true;
-
-  if (traffic_monitor_)
-    traffic_monitor_.reset();
 
   scheduler_observer_handle_.reset();
 }
@@ -310,9 +201,6 @@ bool ResourceLoadScheduler::Release(
     running_requests_.erase(id);
     running_throttleable_requests_.erase(id);
 
-    if (traffic_monitor_)
-      traffic_monitor_->Report(hints);
-
     if (option == ReleaseOption::kReleaseAndSchedule)
       MaybeRun();
     return true;
@@ -353,9 +241,6 @@ void ResourceLoadScheduler::OnLifecycleStateChanged(
     scheduler::SchedulingLifecycleState state) {
   if (frame_scheduler_lifecycle_state_ == state)
     return;
-
-  if (traffic_monitor_)
-    traffic_monitor_->OnLifecycleStateChanged(state);
 
   frame_scheduler_lifecycle_state_ = state;
 

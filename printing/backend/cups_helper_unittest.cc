@@ -5,6 +5,7 @@
 #include "printing/backend/cups_helper.h"
 
 #include "printing/backend/print_backend.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 #include "printing/printing_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -60,8 +61,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexShortEdge) {
   EXPECT_TRUE(caps.collate_default);
   EXPECT_EQ(caps.copies_max, 9999);
   EXPECT_THAT(caps.duplex_modes,
-              testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
-  EXPECT_EQ(SHORT_EDGE, caps.duplex_default);
+              testing::UnorderedElementsAre(mojom::DuplexMode::kSimplex,
+                                            mojom::DuplexMode::kLongEdge,
+                                            mojom::DuplexMode::kShortEdge));
+  EXPECT_EQ(mojom::DuplexMode::kShortEdge, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
@@ -88,8 +91,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexSimples) {
   EXPECT_TRUE(caps.collate_default);
   EXPECT_EQ(caps.copies_max, 9999);
   EXPECT_THAT(caps.duplex_modes,
-              testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
-  EXPECT_EQ(SIMPLEX, caps.duplex_default);
+              testing::UnorderedElementsAre(mojom::DuplexMode::kSimplex,
+                                            mojom::DuplexMode::kLongEdge,
+                                            mojom::DuplexMode::kShortEdge));
+  EXPECT_EQ(mojom::DuplexMode::kSimplex, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
@@ -113,7 +118,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorNoDuplex) {
   EXPECT_TRUE(caps.collate_default);
   EXPECT_EQ(caps.copies_max, 9999);
   EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre());
-  EXPECT_EQ(UNKNOWN_DUPLEX_MODE, caps.duplex_default);
+  EXPECT_EQ(mojom::DuplexMode::kUnknownDuplexMode, caps.duplex_default);
   EXPECT_FALSE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
@@ -146,8 +151,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorTrueDuplexShortEdge) {
   EXPECT_TRUE(caps.collate_default);
   EXPECT_EQ(caps.copies_max, 9999);
   EXPECT_THAT(caps.duplex_modes,
-              testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
-  EXPECT_EQ(SHORT_EDGE, caps.duplex_default);
+              testing::UnorderedElementsAre(mojom::DuplexMode::kSimplex,
+                                            mojom::DuplexMode::kLongEdge,
+                                            mojom::DuplexMode::kShortEdge));
+  EXPECT_EQ(mojom::DuplexMode::kShortEdge, caps.duplex_default);
   EXPECT_TRUE(caps.color_changeable);
   EXPECT_TRUE(caps.color_default);
 }
@@ -186,8 +193,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorFalseDuplexLongEdge) {
   EXPECT_TRUE(caps.collate_default);
   EXPECT_EQ(caps.copies_max, 9999);
   EXPECT_THAT(caps.duplex_modes,
-              testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
-  EXPECT_EQ(LONG_EDGE, caps.duplex_default);
+              testing::UnorderedElementsAre(mojom::DuplexMode::kSimplex,
+                                            mojom::DuplexMode::kLongEdge,
+                                            mojom::DuplexMode::kShortEdge));
+  EXPECT_EQ(mojom::DuplexMode::kLongEdge, caps.duplex_default);
   EXPECT_TRUE(caps.color_changeable);
   EXPECT_FALSE(caps.color_default);
 }
@@ -325,8 +334,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingBrotherPrinters) {
     PrinterSemanticCapsAndDefaults caps;
     EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
     EXPECT_THAT(caps.duplex_modes,
-                testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE, SHORT_EDGE));
-    EXPECT_EQ(SHORT_EDGE, caps.duplex_default);
+                testing::UnorderedElementsAre(mojom::DuplexMode::kSimplex,
+                                              mojom::DuplexMode::kLongEdge,
+                                              mojom::DuplexMode::kShortEdge));
+    EXPECT_EQ(mojom::DuplexMode::kShortEdge, caps.duplex_default);
   }
 }
 

@@ -452,8 +452,8 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
     size_t pipe_count = GetParam();
     for (size_t i = 0; i < pipe_count; ++i) {
       base::FilePath unused;
-      base::ScopedFILE fp(
-          CreateAndOpenTemporaryFileInDir(temp_dir.GetPath(), &unused));
+      base::ScopedFILE fp =
+          CreateAndOpenTemporaryStreamInDir(temp_dir.GetPath(), &unused);
       const std::string world("world");
       CHECK_EQ(fwrite(&world[0], 1, world.size(), fp.get()), world.size());
       fflush(fp.get());

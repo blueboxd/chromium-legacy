@@ -37,6 +37,8 @@ namespace {
 constexpr ContentSettingsType kContentType = ContentSettingsType::GEOLOCATION;
 constexpr ContentSettingsType kContentTypeNotifications =
     ContentSettingsType::NOTIFICATIONS;
+constexpr ContentSettingsType kContentTypeCookies =
+    ContentSettingsType::COOKIES;
 }
 
 class SiteSettingsHelperTest : public testing::Test {
@@ -244,6 +246,17 @@ TEST_F(SiteSettingsHelperTest, ExceptionListShowsEmbargoed) {
 
     EXPECT_EQ(kOriginToEmbargo, primary_pattern);
     EXPECT_EQ(kOriginToEmbargo, display_name);
+  }
+
+  {
+    // Non-permission types should not DCHECK when there is autoblocker data
+    // present.
+    base::ListValue exceptions;
+    site_settings::GetExceptionsForContentType(
+        kContentTypeCookies, &profile, /*extension_registry=*/nullptr,
+        /*web_ui=*/nullptr,
+        /*incognito=*/false, &exceptions);
+    ASSERT_EQ(0U, exceptions.GetSize());
   }
 }
 

@@ -58,6 +58,11 @@ const FilesTooltip = Polymer({
      * @private {number}
      */
     this.hideTooltipTimerId_ = 0;
+
+    /**
+     * Add <files-tooltip files-ng> for files-ng specific CSS styles.
+     */
+    this.toggleAttribute('files-ng', util.isFilesNg());
   },
 
   /**

@@ -81,7 +81,8 @@ std::string NetworkTestHelper::ConfigureWiFiNetwork(const std::string& ssid,
                                                     bool is_secured,
                                                     bool in_profile,
                                                     bool has_connected,
-                                                    bool owned_by_user) {
+                                                    bool owned_by_user,
+                                                    bool configured_by_sync) {
   std::string security_entry =
       is_secured ? R"("SecurityClass": "psk", "Passphrase": "secretsauce", )"
                  : R"("SecurityClass": "none", )";
@@ -107,6 +108,11 @@ std::string NetworkTestHelper::ConfigureWiFiNetwork(const std::string& ssid,
   if (has_connected) {
     NetworkHandler::Get()->network_metadata_store()->ConnectSucceeded(
         service_path);
+  }
+
+  if (configured_by_sync) {
+    NetworkHandler::Get()->network_metadata_store()->SetIsConfiguredBySync(
+        guid);
   }
 
   return guid;

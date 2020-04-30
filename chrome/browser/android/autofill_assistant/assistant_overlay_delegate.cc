@@ -29,12 +29,6 @@ void AssistantOverlayDelegate::OnUnexpectedTaps(
   ui_controller_->OnUnexpectedTaps();
 }
 
-void AssistantOverlayDelegate::UpdateTouchableArea(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller) {
-  ui_controller_->UpdateTouchableArea();
-}
-
 void AssistantOverlayDelegate::OnUserInteractionInsideTouchableArea(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {

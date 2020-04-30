@@ -229,9 +229,9 @@ MULTIPROCESS_TEST_MAIN(FontLoadingProcess) {
 
 TEST_F(SandboxMacTest, FontLoadingTest) {
   base::FilePath temp_file_path;
-  FILE* temp_file = base::CreateAndOpenTemporaryFile(&temp_file_path);
+  base::ScopedFILE temp_file =
+      base::CreateAndOpenTemporaryStream(&temp_file_path);
   ASSERT_TRUE(temp_file);
-  base::ScopedFILE temp_file_closer(temp_file);
 
   std::unique_ptr<FontLoader::ResultInternal> result =
       FontLoader::LoadFontForTesting(base::ASCIIToUTF16("Geeza Pro"), 16);
@@ -245,14 +245,14 @@ TEST_F(SandboxMacTest, FontLoadingTest) {
       result->font_data->Map(font_data_size);
   ASSERT_TRUE(mapping);
 
-  base::WriteFileDescriptor(fileno(temp_file),
+  base::WriteFileDescriptor(fileno(temp_file.get()),
                             static_cast<const char*>(mapping.get()),
                             font_data_size);
 
   extra_data_ = temp_file_path.value();
   ExecuteWithParams("FontLoadingProcess",
                     service_manager::SandboxType::kRenderer);
-  temp_file_closer.reset();
+  temp_file.reset();
   ASSERT_TRUE(base::DeleteFile(temp_file_path, false));
 }
 

@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "printing/backend/print_backend.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -83,7 +84,7 @@ constexpr char kIncompleteCjt[] = R"(
 std::unique_ptr<printing::PrintSettings> ConstructPrintSettings() {
   auto settings = std::make_unique<printing::PrintSettings>();
   settings->set_color(printing::COLOR);
-  settings->set_duplex_mode(printing::LONG_EDGE);
+  settings->set_duplex_mode(printing::mojom::DuplexMode::kLongEdge);
   settings->SetOrientation(/*landscape=*/true);
   settings->set_copies(kCopies);
   settings->set_dpi_xy(kHorizontalDpi, kVerticalDpi);
@@ -98,7 +99,7 @@ std::unique_ptr<printing::PrintSettings> ConstructPrintSettings() {
 printing::PrinterSemanticCapsAndDefaults ConstructPrinterCapabilities() {
   printing::PrinterSemanticCapsAndDefaults capabilities;
   capabilities.color_model = printing::COLOR;
-  capabilities.duplex_modes.push_back(printing::LONG_EDGE);
+  capabilities.duplex_modes.push_back(printing::mojom::DuplexMode::kLongEdge);
   capabilities.copies_max = 2;
   capabilities.dpis.push_back(gfx::Size(kHorizontalDpi, kVerticalDpi));
   printing::PrinterSemanticCapsAndDefaults::Paper paper;
@@ -163,7 +164,7 @@ TEST(PrintingApiUtilsTest, ParsePrintTicket) {
 
   ASSERT_TRUE(settings);
   EXPECT_EQ(printing::GRAY, settings->color());
-  EXPECT_EQ(printing::SIMPLEX, settings->duplex_mode());
+  EXPECT_EQ(printing::mojom::DuplexMode::kSimplex, settings->duplex_mode());
   EXPECT_TRUE(settings->landscape());
   EXPECT_EQ(5, settings->copies());
   EXPECT_EQ(gfx::Size(kHorizontalDpi, kVerticalDpi), settings->dpi_size());
@@ -201,7 +202,7 @@ TEST(PrintingApiUtilsTest, CheckSettingsAndCapabilitiesCompatibility_Duplex) {
   std::unique_ptr<printing::PrintSettings> settings = ConstructPrintSettings();
   printing::PrinterSemanticCapsAndDefaults capabilities =
       ConstructPrinterCapabilities();
-  capabilities.duplex_modes = {printing::SIMPLEX};
+  capabilities.duplex_modes = {printing::mojom::DuplexMode::kSimplex};
   EXPECT_FALSE(
       CheckSettingsAndCapabilitiesCompatibility(*settings, capabilities));
 }

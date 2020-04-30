@@ -15,6 +15,7 @@
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/backend/print_backend.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -158,13 +159,13 @@ std::unique_ptr<printing::PrintSettings> ParsePrintTicket(base::Value ticket) {
     return nullptr;
   switch (duplex.value()) {
     case cloud_devices::printer::DuplexType::NO_DUPLEX:
-      settings->set_duplex_mode(printing::SIMPLEX);
+      settings->set_duplex_mode(printing::mojom::DuplexMode::kSimplex);
       break;
     case cloud_devices::printer::DuplexType::LONG_EDGE:
-      settings->set_duplex_mode(printing::LONG_EDGE);
+      settings->set_duplex_mode(printing::mojom::DuplexMode::kLongEdge);
       break;
     case cloud_devices::printer::DuplexType::SHORT_EDGE:
-      settings->set_duplex_mode(printing::SHORT_EDGE);
+      settings->set_duplex_mode(printing::mojom::DuplexMode::kShortEdge);
       break;
     default:
       NOTREACHED();

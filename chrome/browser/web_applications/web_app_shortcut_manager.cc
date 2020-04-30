@@ -36,7 +36,11 @@ WebAppShortcutManager::WebAppShortcutManager(
 
 WebAppShortcutManager::~WebAppShortcutManager() = default;
 
-void WebAppShortcutManager::OnWebAppWillBeUninstalled(const AppId& app_id) {
+void WebAppShortcutManager::OnWebAppUninstalled(const AppId& app_id) {
+  // TODO(crbug.com/1071810, crbug.com/860581): Reintroduce BuildShortcutInfo
+  // method and move OnWebAppUninstalled override to the base class.
+  AppShortcutManager::OnWebAppUninstalled(app_id);
+
   const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
   DCHECK(app);
 

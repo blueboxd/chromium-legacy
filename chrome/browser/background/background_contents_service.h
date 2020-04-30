@@ -101,6 +101,7 @@ class BackgroundContentsService : private content::NotificationObserver,
 
   // BackgroundContents::Delegate implementation.
   void AddWebContents(std::unique_ptr<content::WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool* was_blocked) override;

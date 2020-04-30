@@ -507,8 +507,7 @@ ChildProcessResults DoLaunchChildTestProcess(
   ScopedFILE output_file;
   FilePath output_filename;
   if (redirect_stdio) {
-    FILE* raw_output_file = CreateAndOpenTemporaryFile(&output_filename);
-    output_file.reset(raw_output_file);
+    output_file = CreateAndOpenTemporaryStream(&output_filename);
     CHECK(output_file);
   }
 

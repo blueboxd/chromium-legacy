@@ -202,12 +202,12 @@ bool IsDirectoryEmpty(const FilePath& dir_path) {
   return false;
 }
 
-FILE* CreateAndOpenTemporaryFile(FilePath* path) {
+ScopedFILE CreateAndOpenTemporaryStream(FilePath* path) {
   FilePath directory;
   if (!GetTempDir(&directory))
     return nullptr;
 
-  return CreateAndOpenTemporaryFileInDir(directory, path);
+  return CreateAndOpenTemporaryStreamInDir(directory, path);
 }
 
 bool CreateDirectory(const FilePath& full_path) {

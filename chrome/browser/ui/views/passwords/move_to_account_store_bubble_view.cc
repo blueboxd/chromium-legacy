@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/passwords/move_to_account_store_bubble_view.h"
 
+#include "base/bind.h"
+#include "chrome/browser/ui/passwords/bubble_controllers/move_to_account_store_bubble_controller.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 
 MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
@@ -12,7 +14,11 @@ MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
     : PasswordBubbleViewBase(web_contents,
                              anchor_view,
                              /*auto_dismissable=*/false),
-      controller_(PasswordsModelDelegateFromWebContents(web_contents)) {}
+      controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
+  SetAcceptCallback(
+      base::BindOnce(&MoveToAccountStoreBubbleController::AcceptMove,
+                     base::Unretained(&controller_)));
+}
 
 MoveToAccountStoreBubbleView::~MoveToAccountStoreBubbleView() = default;
 

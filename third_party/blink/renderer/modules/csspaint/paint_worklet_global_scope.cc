@@ -122,7 +122,10 @@ PaintWorkletGlobalScope::PaintWorkletGlobalScope(
     LocalFrame* frame,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerReportingProxy& reporting_proxy)
-    : WorkletGlobalScope(std::move(creation_params), reporting_proxy, frame) {}
+    : WorkletGlobalScope(std::move(creation_params),
+                         reporting_proxy,
+                         frame,
+                         /*create_microtask_queue=*/false) {}
 
 PaintWorkletGlobalScope::PaintWorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,

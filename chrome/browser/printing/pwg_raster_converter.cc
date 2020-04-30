@@ -23,6 +23,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
 #include "printing/units.h"
@@ -244,7 +245,7 @@ PwgRasterSettings PwgRasterConverter::GetBitmapSettings(
   PwgRasterSettings result;
   switch (duplex_value) {
     case cloud_devices::printer::DuplexType::NO_DUPLEX:
-      result.duplex_mode = DuplexMode::SIMPLEX;
+      result.duplex_mode = mojom::DuplexMode::kSimplex;
       result.odd_page_transform = TRANSFORM_NORMAL;
       break;
     case cloud_devices::printer::DuplexType::LONG_EDGE:
@@ -257,7 +258,7 @@ PwgRasterSettings PwgRasterConverter::GetBitmapSettings(
       }
       break;
     case cloud_devices::printer::DuplexType::SHORT_EDGE:
-      result.duplex_mode = DuplexMode::SHORT_EDGE;
+      result.duplex_mode = mojom::DuplexMode::kShortEdge;
       if (document_sheet_back ==
           cloud_devices::printer::DocumentSheetBack::MANUAL_TUMBLE) {
         result.odd_page_transform = TRANSFORM_ROTATE_180;

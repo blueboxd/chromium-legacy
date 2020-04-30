@@ -40,7 +40,6 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
  public:
   AXImageAnnotator(
       RenderAccessibilityImpl* const render_accessibility,
-      const std::string& preferred_language,
       mojo::PendingRemote<image_annotation::mojom::Annotator> annotator);
   ~AXImageAnnotator() override;
 
@@ -55,10 +54,6 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
   void OnImageAdded(blink::WebAXObject& image);
   void OnImageUpdated(blink::WebAXObject& image);
   void OnImageRemoved(blink::WebAXObject& image);
-
-  void set_preferred_language(const std::string& language) {
-    preferred_language_ = language;
-  }
 
  private:
   // Keeps track of the image data and the automatic annotation for each image.
@@ -121,9 +116,6 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
 
   // Weak, owns us.
   RenderAccessibilityImpl* const render_accessibility_;
-
-  // The language in which to request image descriptions.
-  std::string preferred_language_;
 
   // A pointer to the automatic image annotation service.
   mojo::Remote<image_annotation::mojom::Annotator> annotator_;

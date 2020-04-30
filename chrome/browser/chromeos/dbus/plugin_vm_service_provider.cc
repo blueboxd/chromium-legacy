@@ -43,6 +43,12 @@ void PluginVmServiceProvider::Start(
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&PluginVmServiceProvider::OnExported,
                      weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kPluginVmServiceInterface, kPluginVmServiceGetAppLicenseUserId,
+      base::BindRepeating(&PluginVmServiceProvider::GetUserId,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&PluginVmServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginVmServiceProvider::OnExported(const std::string& interface_name,
@@ -102,6 +108,18 @@ void PluginVmServiceProvider::ShowSettingsPage(
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       ProfileManager::GetPrimaryUserProfile(), request.subpage_path());
   std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
+}
+
+void PluginVmServiceProvider::GetUserId(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
+  plugin_vm_service::GetAppLicenseUserIdResponse payload;
+  payload.set_user_id(plugin_vm::GetPluginVmUserId());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendProtoAsArrayOfBytes(payload);
+  std::move(response_sender).Run(std::move(response));
 }
 
 }  // namespace chromeos

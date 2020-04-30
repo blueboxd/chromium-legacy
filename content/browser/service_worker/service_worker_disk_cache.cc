@@ -18,14 +18,13 @@ void DidReadInfo(base::WeakPtr<AppCacheResponseIO> reader,
                  ServiceWorkerResponseReader::ReadResponseHeadCallback callback,
                  int result) {
   DCHECK(io_buffer);
-  if (!io_buffer->http_info) {
-    DCHECK_LT(result, 0);
+  if (result < 0) {
     std::move(callback).Run(result, /*response_head=*/nullptr,
                             /*metadata=*/nullptr);
     return;
   }
 
-  DCHECK_GE(result, 0);
+  DCHECK(io_buffer->http_info);
   auto response_and_metadata =
       ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
           io_buffer->http_info.get(),

@@ -82,6 +82,7 @@ source_set("browser_prefs") {
     "//ios/chrome/browser/voice:prefs",
     "//ios/chrome/browser/web",
     "//ios/public/provider/chrome/browser",
+    "//ios/web/common:features",
     "//ui/base",
   ]
 }

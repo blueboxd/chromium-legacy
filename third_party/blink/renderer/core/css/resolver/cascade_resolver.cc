@@ -69,10 +69,4 @@ CascadeResolver::AutoLock::~AutoLock() {
     resolver_.cycle_depth_ = kNotFound;
 }
 
-CascadeResolver::AutoSurrogateScope::AutoSurrogateScope(
-    const CSSProperty& surrogate,
-    CascadeResolver& resolver)
-    : base::AutoReset<const CSSProperty*>(&resolver.current_surrogate_,
-                                          &surrogate) {}
-
 }  // namespace blink

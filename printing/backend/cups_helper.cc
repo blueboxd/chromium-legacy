@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/printing_utils.h"
 #include "printing/units.h"
 #include "url/gurl.h"
@@ -173,8 +174,8 @@ int32_t GetCopiesMax(ppd_file_t* ppd) {
 }
 
 void GetDuplexSettings(ppd_file_t* ppd,
-                       std::vector<DuplexMode>* duplex_modes,
-                       DuplexMode* duplex_default) {
+                       std::vector<mojom::DuplexMode>* duplex_modes,
+                       mojom::DuplexMode* duplex_default) {
   ppd_choice_t* duplex_choice = ppdFindMarkedChoice(ppd, kDuplex);
   ppd_option_t* option = ppdFindOption(ppd, kDuplex);
   if (!option)
@@ -187,24 +188,24 @@ void GetDuplexSettings(ppd_file_t* ppd,
     duplex_choice = ppdFindChoice(option, option->defchoice);
 
   if (ppdFindChoice(option, kDuplexNone))
-    duplex_modes->push_back(SIMPLEX);
+    duplex_modes->push_back(mojom::DuplexMode::kSimplex);
 
   if (ppdFindChoice(option, kDuplexNoTumble))
-    duplex_modes->push_back(LONG_EDGE);
+    duplex_modes->push_back(mojom::DuplexMode::kLongEdge);
 
   if (ppdFindChoice(option, kDuplexTumble))
-    duplex_modes->push_back(SHORT_EDGE);
+    duplex_modes->push_back(mojom::DuplexMode::kShortEdge);
 
   if (!duplex_choice)
     return;
 
   const char* choice = duplex_choice->choice;
   if (EqualsCaseInsensitiveASCII(choice, kDuplexNone)) {
-    *duplex_default = SIMPLEX;
+    *duplex_default = mojom::DuplexMode::kSimplex;
   } else if (EqualsCaseInsensitiveASCII(choice, kDuplexTumble)) {
-    *duplex_default = SHORT_EDGE;
+    *duplex_default = mojom::DuplexMode::kShortEdge;
   } else {
-    *duplex_default = LONG_EDGE;
+    *duplex_default = mojom::DuplexMode::kLongEdge;
   }
 }
 

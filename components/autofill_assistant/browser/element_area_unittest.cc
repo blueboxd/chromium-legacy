@@ -65,6 +65,8 @@ MATCHER(EmptyRectF, "EmptyRectF") {
 
 ACTION(DoNothing) {}
 
+}  // namespace
+
 class ElementAreaTest : public testing::Test {
  protected:
   ElementAreaTest()
@@ -93,6 +95,8 @@ class ElementAreaTest : public testing::Test {
     rectangle->add_elements()->add_selectors(selector);
     element_area_.SetFromProto(area);
   }
+
+  void Update() { element_area_.Update(); }
 
   void OnUpdate(const RectF& visual_viewport,
                 const std::vector<RectF>& touchable_area,
@@ -358,7 +362,7 @@ TEST_F(ElementAreaTest, ElementMovesAfterUpdate) {
   EXPECT_THAT(original, ElementsAre(MatchingRectF(0, 25, 100, 50)));
   EXPECT_THAT(reported_area_, ElementsAre(MatchingRectF(0, 25, 100, 50)));
 
-  element_area_.Update();
+  Update();
 
   // Updated area is available
   std::vector<RectF> updated;
@@ -414,5 +418,5 @@ TEST_F(ElementAreaTest, RestrictedElement) {
   EXPECT_THAT(restricted_rectangles,
               ElementsAre(MatchingRectF(25, 25, 75, 75)));
 }
-}  // namespace
+
 }  // namespace autofill_assistant

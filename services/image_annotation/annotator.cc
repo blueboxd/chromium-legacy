@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "components/google/core/common/google_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -35,6 +36,43 @@ constexpr size_t kMaxResponseSize = 1024 * 1024;  // 1MB.
 std::string MakeImageId(const std::string& source_id,
                         const std::string& desc_lang_tag) {
   return source_id + (desc_lang_tag.empty() ? "" : " " + desc_lang_tag);
+}
+
+std::string NormalizeLanguageCode(std::string language) {
+  // Remove anything after a comma, in case we got more than one language
+  // like "de,de-DE".
+  language = language.substr(0, language.find(','));
+
+  // Split based on underscore or dash so that we catch both
+  // "zh_CN" and "zh-CN".
+  const std::vector<std::string> tokens = base::SplitString(
+      language, "-_", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  if (tokens.size() == 0)
+    return "";
+
+  // Normalize the language portion to lowercase.
+  const std::string language_only = base::ToLowerASCII(tokens[0]);
+
+  // For every language other than "zh" (Chinese), return only the language
+  // and strip the locale. Image descriptions don't changed based on locale,
+  // but zh-CN and zh-TW use different character sets.
+  if (tokens.size() == 1 || language_only != "zh")
+    return language_only;
+
+  // Normalize the locale to uppercase.
+  std::string locale_only = base::ToUpperASCII(tokens[1]);
+
+  // Map several Chinese locales to the two most common ones used for
+  // Simplified and Traditional.
+  if (locale_only == "CN" || locale_only == "HANS" || locale_only == "SG") {
+    return "zh-CN";
+  } else if (locale_only == "TW" || locale_only == "HANT" ||
+             locale_only == "MO" || locale_only == "HK") {
+    return "zh-TW";
+  }
+
+  return "zh";
 }
 
 // The server returns separate OCR results for each region of the image; we
@@ -352,7 +390,9 @@ Annotator::Annotator(
       server_url_(std::move(server_url)),
       api_key_(std::move(api_key)),
       batch_size_(batch_size),
-      min_ocr_confidence_(min_ocr_confidence) {
+      min_ocr_confidence_(min_ocr_confidence),
+      server_languages_({"de", "en", "es", "fr", "hi", "it"}) {
+  // TODO(crbug.com/1070505): Fetch the server languages from the server.
   server_request_timer_ = std::make_unique<base::RepeatingTimer>(
       FROM_HERE, throttle,
       base::BindRepeating(&Annotator::SendRequestBatchToServer,
@@ -561,7 +601,7 @@ void Annotator::OnJpgImageDataReceived(
     const int32_t width,
     const int32_t height) {
   const std::string& source_id = request_key.first;
-  const std::string& desc_lang_tag = request_key.second;
+  const std::string& page_language = request_key.second;
 
   ReportPixelFetchSuccess(!image_bytes.empty());
 
@@ -575,9 +615,17 @@ void Annotator::OnJpgImageDataReceived(
   // Local processing is no longer ongoing.
   local_processors_.erase(request_key);
 
+  // Compute the desired language for the description result, based on the
+  // page language, the accept languages, the top languages, and the
+  // server languages.
+  const std::string preferred_language =
+      ComputePreferredLanguage(page_language);
+  client_->RecordLanguageMetrics(page_language, preferred_language);
+
   // Schedule a server request for this image.
-  server_request_queue_.emplace_front(
-      source_id, IsWithinDescPolicy(width, height), desc_lang_tag, image_bytes);
+  server_request_queue_.emplace_front(source_id,
+                                      IsWithinDescPolicy(width, height),
+                                      preferred_language, image_bytes);
   pending_requests_.insert(request_key);
 
   // Start sending batches to the server.
@@ -751,6 +799,64 @@ void Annotator::RemoveRequestInfo(
           request_key, request_info_list.begin()));
     }
   }
+}
+
+std::string Annotator::ComputePreferredLanguage(
+    const std::string& in_page_language) const {
+  DCHECK(!server_languages_.empty());
+  if (in_page_language.empty())
+    return "";
+
+  std::string page_language = NormalizeLanguageCode(in_page_language);
+  std::vector<std::string> accept_languages = client_->GetAcceptLanguages();
+  std::transform(accept_languages.begin(), accept_languages.end(),
+                 accept_languages.begin(), NormalizeLanguageCode);
+  std::vector<std::string> top_languages = client_->GetTopLanguages();
+  std::transform(top_languages.begin(), top_languages.end(),
+                 top_languages.begin(), NormalizeLanguageCode);
+
+  // If the page language is a server language and it's in the list of accept
+  // languages or top languages for this user, return that.
+  if (base::Contains(server_languages_, page_language) &&
+      (base::Contains(accept_languages, page_language) ||
+       base::Contains(top_languages, page_language))) {
+    return page_language;
+  }
+
+  // Otherwise, ignore the page language and compute the best language
+  // for this user. The accept languages are the ones the user can
+  // explicitly choose, so pick the first accept language that's a
+  // top language and a server language.
+  if (!top_languages.empty()) {
+    for (const std::string& accept_language : accept_languages) {
+      if (base::Contains(server_languages_, accept_language) &&
+          base::Contains(top_languages, accept_language)) {
+        return accept_language;
+      }
+    }
+  }
+
+  // Sometimes the top languages are empty. Try any accept language that's
+  // a server language.
+  for (const std::string& accept_language : accept_languages) {
+    if (base::Contains(server_languages_, accept_language))
+      return accept_language;
+  }
+
+  // If that still fails, try any top language that's a server language.
+  for (const std::string& top_language : top_languages) {
+    if (base::Contains(server_languages_, top_language))
+      return top_language;
+  }
+
+  // If all else fails, return the first accept language. The server can
+  // still do OCR and it can log this language request.
+  if (!accept_languages.empty())
+    return accept_languages[0];
+
+  // If that fails, return the page language. The server can
+  // still do OCR and it can log this language request.
+  return page_language;
 }
 
 }  // namespace image_annotation

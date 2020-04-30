@@ -140,6 +140,7 @@ class ManagePasswordsUIController
   void OnPasswordsRevealed() override;
   void SavePassword(const base::string16& username,
                     const base::string16& password) override;
+  void MovePasswordToAccountStore() override;
   void ChooseCredential(
       const autofill::PasswordForm& form,
       password_manager::CredentialType credential_type) override;

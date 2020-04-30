@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 import("../settings.gni")
 
 js_type_check("closure_compile_module") {
@@ -39,21 +39,9 @@ js_library("printing_page") {
   ]
 }
 
-group("polymer3_elements") {
-  public_deps = [
-    ":cloud_printers_module",
-    ":printing_page_module",
+html_to_js("web_components") {
+  js_files = [
+    "cloud_printers.js",
+    "printing_page.js",
   ]
-}
-
-polymer_modulizer("cloud_printers") {
-  js_file = "cloud_printers.js"
-  html_file = "cloud_printers.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("printing_page") {
-  js_file = "printing_page.js"
-  html_file = "printing_page.html"
-  html_type = "v3-ready"
 }

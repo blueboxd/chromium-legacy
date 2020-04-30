@@ -16,6 +16,8 @@ static_library("sync_wifi") {
     "pending_network_configuration_tracker_impl.h",
     "pending_network_configuration_update.cc",
     "pending_network_configuration_update.h",
+    "synced_network_metrics_logger.cc",
+    "synced_network_metrics_logger.h",
     "synced_network_updater.h",
     "synced_network_updater_impl.cc",
     "synced_network_updater_impl.h",
@@ -80,6 +82,7 @@ source_set("unit_tests") {
     "local_network_collector_impl_unittest.cc",
     "network_identifier_unittest.cc",
     "pending_network_configuration_tracker_impl_unittest.cc",
+    "synced_network_metrics_logger_unittest.cc",
     "synced_network_updater_impl_unittest.cc",
     "wifi_configuration_bridge_unittest.cc",
   ]

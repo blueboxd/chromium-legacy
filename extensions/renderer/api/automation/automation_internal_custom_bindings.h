@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "extensions/common/api/automation.h"
 #include "extensions/renderer/api/automation/automation_ax_tree_wrapper.h"
 #include "extensions/renderer/object_backed_native_handler.h"
@@ -90,6 +91,10 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   void MaybeSendFocusAndBlur(
       AutomationAXTreeWrapper* tree,
       const ExtensionMsg_AccessibilityEventBundleParams& event_bundle);
+
+  base::Optional<gfx::Rect> GetAccessibilityFocusedLocation() const;
+
+  void SendAccessibilityFocusedLocationChange(const gfx::Point& mouse_location);
 
  private:
   // ObjectBackedNativeHandler overrides:
@@ -190,6 +195,10 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   // Args: string ax_tree_id, int node_id, Returns: int child_id.
   void GetChildIDAtIndex(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Returns: string tree_id and int node_id of a node which has global
+  // accessibility focus.
+  void GetAccessibilityFocus(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Args: string ax_tree_id, int node_id
   // Returns: JS object with a map from html attribute key to value.
   void GetHtmlAttributes(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -239,6 +248,10 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
 
   // The global focused node id.
   int32_t focus_id_ = -1;
+
+  // The global accessibility focused id set by a js client. Differs from focus
+  // as used in ui::AXTree.
+  ui::AXTreeID accessibility_focused_tree_id_ = ui::AXTreeIDUnknown();
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);
 };

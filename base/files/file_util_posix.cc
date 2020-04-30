@@ -646,7 +646,8 @@ bool CreateTemporaryFile(FilePath* path) {
   return fd.is_valid();
 }
 
-FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
+ScopedFILE CreateAndOpenTemporaryStreamInDir(const FilePath& dir,
+                                             FilePath* path) {
   ScopedFD scoped_fd = CreateAndOpenFdForTemporaryFileInDir(dir, path);
   if (!scoped_fd.is_valid())
     return nullptr;
@@ -655,7 +656,7 @@ FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
   FILE* file = fdopen(fd, "a+");
   if (!file)
     close(fd);
-  return file;
+  return ScopedFILE(file);
 }
 
 bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {

@@ -232,9 +232,17 @@ void TabDragControllerTest::StopAnimating(TabStrip* tab_strip) {
 }
 
 void TabDragControllerTest::AddTabsAndResetBrowser(Browser* browser,
-                                                   int additional_tabs) {
-  for (int i = 0; i < additional_tabs; i++)
-    AddBlankTabAndShow(browser);
+                                                   int additional_tabs,
+                                                   const GURL& url) {
+  for (int i = 0; i < additional_tabs; i++) {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    chrome::AddSelectedTabWithURL(browser, url,
+                                  ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+    observer.Wait();
+  }
+  browser->window()->Show();
   StopAnimating(GetTabStripForBrowser(browser));
   ResetIDs(browser->tab_strip_model(), 0);
 }
@@ -3164,6 +3172,10 @@ class DetachToBrowserTabDragControllerTestWithTabbedSystemApp
     return web_app::LaunchWebAppBrowser(browser()->profile(), app_id);
   }
 
+  const GURL& GetAppUrl() {
+    return test_system_web_app_installation_->GetAppUrl();
+  }
+
  private:
   std::unique_ptr<web_app::TestSystemWebAppInstallation>
       test_system_web_app_installation_;
@@ -3183,7 +3195,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabbedSystemApp,
   SelectFirstBrowser();
   ASSERT_EQ(app_browser, browser());
   EXPECT_EQ(Browser::Type::TYPE_APP, browser_list->get(0)->type());
-  AddTabsAndResetBrowser(browser(), 1);
+  AddTabsAndResetBrowser(browser(), 1, GetAppUrl());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Drag tab to create a new browser.
@@ -3214,7 +3226,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabbedSystemApp,
   SelectFirstBrowser();
   ASSERT_EQ(app_browser1, browser());
 
-  AddTabsAndResetBrowser(browser(), 1);
+  AddTabsAndResetBrowser(browser(), 1, GetAppUrl());
   TabStrip* tab_strip1 = GetTabStripForBrowser(app_browser1);
   TabStrip* tab_strip2 = GetTabStripForBrowser(app_browser2);
 
@@ -3246,7 +3258,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabbedSystemApp,
   Browser* browser2 = CreateAnotherBrowserAndResize();
   ResetIDs(browser2->tab_strip_model(), 100);
 
-  AddTabsAndResetBrowser(browser(), 1);
+  AddTabsAndResetBrowser(browser(), 1, GetAppUrl());
   TabStrip* tab_strip1 = GetTabStripForBrowser(app_browser);
   TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
 

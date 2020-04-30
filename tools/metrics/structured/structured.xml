@@ -4,6 +4,188 @@
 
 <events>
 
+<event name="CrOSActionEvent.FileOpened" project="Hindsight">
+  <owner>charleszhao@chromium.org</owner>
+  <summary>
+    Records whenever a file is opened in the File App on ChromeOS.
+  </summary>
+  <metric name="Filename" kind="hashed-string">
+    <summary>
+      The absolute path of the file.
+    </summary>
+  </metric>
+  <metric name="OpenType" kind="int">
+    <summary>
+      The kind of file open, defined in FileTaskObserver::OpenType.
+    </summary>
+  </metric>
+  <metric name="SequenceId" kind="int">
+    <summary>
+      Sequence of this action across all CrOSActionEvent.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastAction" kind="int">
+    <summary>
+      Time in milliseconds since last CrOSActionLogging.
+    </summary>
+  </metric>
+</event>
+
+<event name="CrOSActionEvent.SearchResultLaunched" project="Hindsight">
+  <owner>charleszhao@chromium.org</owner>
+  <summary>
+    Records information about the launch of an item from ChromeOS launcher.
+  </summary>
+  <metric name="Query" kind="hashed-string">
+    <summary>
+      The search query associated with this launch.
+    </summary>
+  </metric>
+  <metric name="ResultType" kind="int">
+    <summary>
+      Which kind of search provider the launched result was created by.
+    </summary>
+  </metric>
+  <metric name="SearchResultId" kind="hashed-string">
+    <summary>
+      The ID of the launched result result. For example, the app ID for app
+      results, or the URL for omnibox results.
+    </summary>
+  </metric>
+  <metric name="SequenceId" kind="int">
+    <summary>
+      Sequence of this action across all CrOSActionEvent.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastAction" kind="int"/>
+</event>
+
+<event name="CrOSActionEvent.SettingChanged" project="Hindsight">
+  <owner>charleszhao@chromium.org</owner>
+  <summary>
+    Records when a setting is changed; only records quick settings for now.
+  </summary>
+  <metric name="CurrentValue" kind="int">
+    <summary>
+      Value of the setting after the change.
+    </summary>
+  </metric>
+  <metric name="PreviousValue" kind="int">
+    <summary>
+      Value of the setting before the change.
+    </summary>
+  </metric>
+  <metric name="SequenceId" kind="int">
+    <summary>
+      Sequence of this action across all CrOSActionEvent.
+    </summary>
+  </metric>
+  <metric name="SettingId" kind="int">
+    <summary>
+      The setting id (in ash::ml::UserSettingsEvent::Event::SettingId) that
+      represents the type of the changed setting.
+    </summary>
+  </metric>
+  <metric name="SettingType" kind="int">
+    <summary>
+      Enum that represents where the settings event originated from (in
+      ash::ml::UserSettingsEvent::Event::SettingType).
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastAction" kind="int">
+    <summary>
+      Time in milliseconds since last CrOSActionLogging.
+    </summary>
+  </metric>
+</event>
+
+<event name="CrOSActionEvent.TabEvent.TabNavigated" project="Hindsight">
+  <owner>charleszhao@chromium.org</owner>
+  <summary>
+    Records a tab activity of navigating to a new url.
+  </summary>
+  <metric name="PageTransition" kind="int">
+    <summary>
+      The types of transition between pages. See more on ui::PageTransition.
+    </summary>
+  </metric>
+  <metric name="SequenceId" kind="int">
+    <summary>
+      Sequence of this action across all CrOSActionEvent.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastAction" kind="int">
+    <summary>
+      Time in milliseconds since last CrOSActionLogging.
+    </summary>
+  </metric>
+  <metric name="URL" kind="hashed-string">
+    <summary>
+      The URL of the current event.
+    </summary>
+  </metric>
+  <metric name="Visibility" kind="int">
+    <summary>
+      The visibility of this url, see more on content::Visibility.
+    </summary>
+  </metric>
+</event>
+
+<event name="CrOSActionEvent.TabEvent.TabOpened" project="Hindsight">
+  <owner>charleszhao@chromium.org</owner>
+  <summary>
+    Records a tab activity of opening a new url with ctrl+click.
+  </summary>
+  <metric name="SequenceId" kind="int">
+    <summary>
+      Sequence of this action across all CrOSActionEvent.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastAction" kind="int">
+    <summary>
+      Time in milliseconds since last CrOSActionLogging.
+    </summary>
+  </metric>
+  <metric name="URL" kind="hashed-string">
+    <summary>
+      The URL of the current event.
+    </summary>
+  </metric>
+  <metric name="URLOpened" kind="hashed-string">
+    <summary>
+      The URL that is opened from the current url.
+    </summary>
+  </metric>
+  <metric name="WindowOpenDisposition" kind="int">
+    <summary>
+      Enum that indicates where the new tab is opened, see more on
+      WindowOpenDisposition.
+    </summary>
+  </metric>
+</event>
+
+<event name="CrOSActionEvent.TabEvent.TabReactivated" project="Hindsight">
+  <owner>charleszhao@chromium.org</owner>
+  <summary>
+    Records a tab activity of reactivating an existing tab.
+  </summary>
+  <metric name="SequenceId" kind="int">
+    <summary>
+      Sequence of this action across all CrOSActionEvent.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastAction" kind="int">
+    <summary>
+      Time in milliseconds since last CrOSActionLogging.
+    </summary>
+  </metric>
+  <metric name="URL" kind="hashed-string">
+    <summary>
+      The URL of the current event.
+    </summary>
+  </metric>
+</event>
+
 <event name="LauncherUsage">
   <owner>tby@chromium.org</owner>
   <summary>
@@ -98,6 +280,13 @@
 </events>
 
 <projects>
+
+<project name="Hindsight">
+  <owner>charleszhao@chromium.org</owner>
+  <summary>
+    Project for recording CrOSActions.
+  </summary>
+</project>
 
 <project name="TestProject">
   <owner>tby@chromium.org</owner>

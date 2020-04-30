@@ -10,6 +10,7 @@
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
+#import "ios/chrome/credential_provider_extension/password_util.h"
 #import "ios/chrome/credential_provider_extension/ui/consent_coordinator.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_details_consumer.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_details_view_controller.h"
@@ -124,10 +125,9 @@
   emptyCredentialsViewController.modalPresentationStyle =
       UIModalPresentationOverCurrentContext;
   emptyCredentialsViewController.actionHandler = self;
-  [self.viewController.navigationController
-      presentViewController:emptyCredentialsViewController
-                   animated:NO
-                 completion:nil];
+  [self.viewController presentViewController:emptyCredentialsViewController
+                                    animated:YES
+                                  completion:nil];
 }
 
 - (void)showDetailsForCredential:(id<Credential>)credential {
@@ -151,9 +151,9 @@
 
 - (void)unlockPasswordForCredential:(id<Credential>)credential
                   completionHandler:(void (^)(NSString*))completionHandler {
-  // TODO(crbug.com/1045454): show unlock if needed, then complete with
-  // password.
-  completionHandler(@"DreamOn");
+  NSString* password =
+      PasswordWithKeychainIdentifier(credential.keychainIdentifier);
+  completionHandler(password);
 }
 
 #pragma mark - ConfirmationAlertActionHandler

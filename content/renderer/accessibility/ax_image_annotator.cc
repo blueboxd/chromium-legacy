@@ -28,10 +28,8 @@ namespace content {
 
 AXImageAnnotator::AXImageAnnotator(
     RenderAccessibilityImpl* const render_accessibility,
-    const std::string& preferred_language,
     mojo::PendingRemote<image_annotation::mojom::Annotator> annotator)
     : render_accessibility_(render_accessibility),
-      preferred_language_(preferred_language),
       annotator_(std::move(annotator)) {
   DCHECK(render_accessibility_);
 }
@@ -82,12 +80,13 @@ void AXImageAnnotator::OnImageAdded(blink::WebAXObject& image) {
   image_annotations_.emplace(image.AxID(), image);
   ImageInfo& image_info = image_annotations_.at(image.AxID());
   // Fetch image annotation.
-  annotator_->AnnotateImage(image_id, preferred_language_,
+  annotator_->AnnotateImage(image_id, render_accessibility_->GetLanguage(),
                             image_info.GetImageProcessor(),
                             base::BindOnce(&AXImageAnnotator::OnImageAnnotated,
                                            weak_factory_.GetWeakPtr(), image));
   VLOG(1) << "Requesting annotation for " << image_id << " with language '"
-          << preferred_language_ << "' from page " << GetDocumentUrl();
+          << render_accessibility_->GetLanguage() << "' from page "
+          << GetDocumentUrl();
 }
 
 void AXImageAnnotator::OnImageUpdated(blink::WebAXObject& image) {
@@ -99,7 +98,7 @@ void AXImageAnnotator::OnImageUpdated(blink::WebAXObject& image) {
 
   ImageInfo& image_info = image_annotations_.at(image.AxID());
   // Update annotation.
-  annotator_->AnnotateImage(image_id, preferred_language_,
+  annotator_->AnnotateImage(image_id, render_accessibility_->GetLanguage(),
                             image_info.GetImageProcessor(),
                             base::BindOnce(&AXImageAnnotator::OnImageAnnotated,
                                            weak_factory_.GetWeakPtr(), image));

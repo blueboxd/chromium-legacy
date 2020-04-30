@@ -600,6 +600,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
   ROUTE_FUNCTION(GetHtmlAttributes);
   ROUTE_FUNCTION(GetState);
   ROUTE_FUNCTION(CreateAutomationPosition);
+  ROUTE_FUNCTION(GetAccessibilityFocus);
 #undef ROUTE_FUNCTION
 
   // Bindings that take a Tree ID and return a property of the tree.
@@ -1557,6 +1558,24 @@ void AutomationInternalCustomBindings::AddRoutes() {
         if (node->GetTableCellAriaRowIndex())
           result.Set(*node->GetTableCellAriaRowIndex());
       });
+  RouteNodeIDFunction(
+      "SetAccessibilityFocus",
+      [this](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+             AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        ui::AXTreeID tree_id = tree_wrapper->GetTreeID();
+        if (tree_id != accessibility_focused_tree_id_ &&
+            accessibility_focused_tree_id_ != ui::AXTreeIDUnknown()) {
+          AutomationAXTreeWrapper* previous_tree_wrapper =
+              GetAutomationAXTreeWrapperFromTreeID(
+                  accessibility_focused_tree_id_);
+          if (previous_tree_wrapper) {
+            previous_tree_wrapper->SetAccessibilityFocus(
+                ui::AXNode::kInvalidAXID);
+          }
+        }
+        accessibility_focused_tree_id_ = tree_id;
+        tree_wrapper->SetAccessibilityFocus(node->id());
+      });
   RouteNodeIDPlusEventFunction(
       "EventListenerAdded",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
@@ -1678,6 +1697,9 @@ void AutomationInternalCustomBindings::DestroyAccessibilityTree(
       [tree_id](const std::pair<ui::AXTreeID, AutomationAXTreeWrapper*>& pair) {
         return pair.first == tree_id || pair.second->GetTreeID() == tree_id;
       });
+
+  if (tree_id == accessibility_focused_tree_id_)
+    accessibility_focused_tree_id_ = ui::AXTreeIDUnknown();
 
   auto iter = tree_id_to_tree_wrapper_map_.find(tree_id);
   if (iter == tree_id_to_tree_wrapper_map_.end())
@@ -1806,6 +1828,24 @@ void AutomationInternalCustomBindings::GetFocus(
       gin::DataObjectBuilder(GetIsolate())
           .Set("treeId", focused_tree_wrapper->GetTreeID().ToString())
           .Set("nodeId", focused_node->id())
+          .Build());
+}
+
+void AutomationInternalCustomBindings::GetAccessibilityFocus(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  AutomationAXTreeWrapper* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(accessibility_focused_tree_id_);
+  if (!tree_wrapper)
+    return;
+
+  ui::AXNode* node = tree_wrapper->GetAccessibilityFocusedNode();
+  if (!node)
+    return;
+
+  args.GetReturnValue().Set(
+      gin::DataObjectBuilder(GetIsolate())
+          .Set("treeId", accessibility_focused_tree_id_.ToString())
+          .Set("nodeId", node->id())
           .Build());
 }
 
@@ -2187,9 +2227,19 @@ void AutomationInternalCustomBindings::OnAccessibilityLocationChange(
       tree_wrapper->GetNodeFromTree(tree_wrapper->GetTreeID(), params.id);
   if (!node)
     return;
+
+  base::Optional<gfx::Rect> previous_accessibility_focused_global_bounds =
+      GetAccessibilityFocusedLocation();
+
   node->SetLocation(params.new_location.offset_container_id,
                     params.new_location.bounds,
                     params.new_location.transform.get());
+
+  if (previous_accessibility_focused_global_bounds.has_value() &&
+      previous_accessibility_focused_global_bounds !=
+          GetAccessibilityFocusedLocation()) {
+    SendAccessibilityFocusedLocationChange(gfx::Point());
+  }
 }
 
 bool AutomationInternalCustomBindings::SendTreeChangeEvent(
@@ -2394,6 +2444,36 @@ void AutomationInternalCustomBindings::MaybeSendFocusAndBlur(
     focus_id_ = new_node->id();
     focus_tree_id_ = new_wrapper->GetTreeID();
   }
+}
+
+base::Optional<gfx::Rect>
+AutomationInternalCustomBindings::GetAccessibilityFocusedLocation() const {
+  if (accessibility_focused_tree_id_ == ui::AXTreeIDUnknown())
+    return base::nullopt;
+
+  AutomationAXTreeWrapper* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(accessibility_focused_tree_id_);
+  if (!tree_wrapper)
+    return base::nullopt;
+
+  ui::AXNode* node = tree_wrapper->GetAccessibilityFocusedNode();
+  if (!node)
+    return base::nullopt;
+
+  return ComputeGlobalNodeBounds(tree_wrapper, node);
+}
+
+void AutomationInternalCustomBindings::SendAccessibilityFocusedLocationChange(
+    const gfx::Point& mouse_location) {
+  AutomationAXTreeWrapper* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(accessibility_focused_tree_id_);
+  if (!tree_wrapper)
+    return;
+
+  ui::AXEvent event;
+  event.id = tree_wrapper->accessibility_focused_id();
+  SendAutomationEvent(accessibility_focused_tree_id_, mouse_location, event,
+                      api::automation::EVENT_TYPE_LOCATIONCHANGED);
 }
 
 void AutomationInternalCustomBindings::SendChildTreeIDEvent(

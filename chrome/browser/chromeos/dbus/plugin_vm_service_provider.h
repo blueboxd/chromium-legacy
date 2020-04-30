@@ -41,6 +41,16 @@ namespace chromeos {
 //     array:byte:0x0a,0x10,0x70,0x6c,0x75,0x67,0x69,0x6e,0x56,0x6d,0x2f,0x64,
 //     0x65,0x74,0x61,0x69,0x6c,0x73
 // })
+//
+// GetUserId:
+// % dbus-send --system --type=method_call --print-reply
+// --dest=org.chromium.PluginVmService /org/chromium/PluginVmService
+// org.chromium.PluginVmServiceInterface.GetUserId
+//
+// % (returns message GetLicenseDataResponse {
+//  string plugin_vm_user_id = 1; // If available, this contains the PluginVm
+//                                // user id, if not, this contains the
+//                                // empty string.
 class PluginVmServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
@@ -57,13 +67,21 @@ class PluginVmServiceProvider
                   const std::string& method_name,
                   bool success);
 
-  // Called from PluginVm process in response to a D-Bus request.
+  // Called from PluginVm process to retrieve license data. Embeds a
+  // |plugin_vm_service::GetLicenseDataResponse| in the payload for the
+  // response.
   void GetLicenseData(dbus::MethodCall* method_call,
                       dbus::ExportedObject::ResponseSender response_sender);
 
   // Called from PluginVm process to show the settings page.
   void ShowSettingsPage(dbus::MethodCall* method_call,
                         dbus::ExportedObject::ResponseSender response_sender);
+
+  // Called from PluginVm process to retrieve the PluginVm user id. Embeds a
+  // |plugin_vm_service::GetAppLicenseUserIdResponse| in the payload for the
+  // response.
+  void GetUserId(dbus::MethodCall* method_call,
+                 dbus::ExportedObject::ResponseSender response_sender);
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.

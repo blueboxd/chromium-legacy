@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -19,7 +18,7 @@ namespace {
 const size_t kCopyBufferSize = 16 * 1024;
 
 // Shim class used to turn always-async functions into async-or-result
-// functions. See the comments below near ReadInfoHelper.
+// functions. See the comments below near ReadResponseHead.
 class AsyncOnlyCompletionCallbackAdaptor
     : public base::RefCounted<AsyncOnlyCompletionCallbackAdaptor> {
  public:
@@ -51,6 +50,41 @@ class AsyncOnlyCompletionCallbackAdaptor
 }  // namespace
 
 namespace content {
+
+// Similar to AsyncOnlyCompletionCallbackAdaptor but specialized for
+// ReadResponseHead.
+class ServiceWorkerCacheWriter::ReadResponseHeadCallbackAdapter
+    : public base::RefCounted<
+          ServiceWorkerCacheWriter::ReadResponseHeadCallbackAdapter> {
+ public:
+  explicit ReadResponseHeadCallbackAdapter(
+      base::WeakPtr<ServiceWorkerCacheWriter> owner)
+      : owner_(std::move(owner)) {
+    DCHECK(owner_);
+  }
+
+  void DidReadResponseInfo(int result,
+                           network::mojom::URLResponseHeadPtr response_head,
+                           scoped_refptr<net::IOBufferWithSize> /*metadata*/) {
+    result_ = result;
+    if (!owner_)
+      return;
+    owner_->response_head_to_read_ = std::move(response_head);
+    if (async_)
+      owner_->AsyncDoLoop(result);
+  }
+
+  void SetAsync() { async_ = true; }
+  int result() { return result_; }
+
+ private:
+  friend class base::RefCounted<ReadResponseHeadCallbackAdapter>;
+  virtual ~ReadResponseHeadCallbackAdapter() = default;
+
+  base::WeakPtr<ServiceWorkerCacheWriter> owner_;
+  bool async_ = false;
+  int result_ = net::ERR_IO_PENDING;
+};
 
 int ServiceWorkerCacheWriter::DoLoop(int status) {
   do {
@@ -326,9 +360,8 @@ int ServiceWorkerCacheWriter::DoReadHeadersForCompare(int result) {
   DCHECK_GE(result, 0);
   DCHECK(response_head_to_write_);
 
-  headers_to_read_ = new HttpResponseInfoIOBuffer;
   state_ = STATE_READ_HEADERS_FOR_COMPARE_DONE;
-  return ReadInfoHelper(compare_reader_, headers_to_read_.get());
+  return ReadResponseHead(compare_reader_);
 }
 
 int ServiceWorkerCacheWriter::DoReadHeadersForCompareDone(int result) {
@@ -336,7 +369,8 @@ int ServiceWorkerCacheWriter::DoReadHeadersForCompareDone(int result) {
     state_ = STATE_DONE;
     return result;
   }
-  cached_length_ = headers_to_read_->response_data_size;
+  DCHECK(response_head_to_read_);
+  cached_length_ = response_head_to_read_->content_length;
   bytes_compared_ = 0;
   state_ = STATE_DONE;
   return net::OK;
@@ -423,10 +457,9 @@ int ServiceWorkerCacheWriter::DoReadHeadersForCopy(int result) {
   DCHECK_GE(result, 0);
   DCHECK(copy_reader_);
   bytes_copied_ = 0;
-  headers_to_read_ = new HttpResponseInfoIOBuffer;
   data_to_copy_ = base::MakeRefCounted<net::IOBuffer>(kCopyBufferSize);
   state_ = STATE_READ_HEADERS_FOR_COPY_DONE;
-  return ReadInfoHelper(copy_reader_, headers_to_read_.get());
+  return ReadResponseHead(copy_reader_);
 }
 
 int ServiceWorkerCacheWriter::DoReadHeadersForCopyDone(int result) {
@@ -447,7 +480,8 @@ int ServiceWorkerCacheWriter::DoWriteHeadersForCopy(int result) {
   DCHECK(writer_);
   state_ = STATE_WRITE_HEADERS_FOR_COPY_DONE;
   if (IsCopying()) {
-    return WriteInfo(headers_to_read_);
+    DCHECK(response_head_to_read_);
+    return WriteResponseHead(*response_head_to_read_);
   } else {
     DCHECK(response_head_to_write_);
     return WriteResponseHead(*response_head_to_write_);
@@ -469,7 +503,7 @@ int ServiceWorkerCacheWriter::DoReadDataForCopy(int result) {
   // If the cache writer is only for copy, get the total size to read from
   // header data instead of |bytes_compared_| as no comparison is done.
   size_t total_size_to_read =
-      IsCopying() ? headers_to_read_->response_data_size : bytes_compared_;
+      IsCopying() ? response_head_to_read_->content_length : bytes_compared_;
   size_t to_read =
       std::min(kCopyBufferSize, total_size_to_read - bytes_copied_);
 
@@ -549,26 +583,22 @@ int ServiceWorkerCacheWriter::DoDone(int result) {
   return result;
 }
 
-// These helpers adapt the AppCache "always use the callback" pattern to the
+// These methods adapt the AppCache "always use the callback" pattern to the
 // //net "only use the callback for async" pattern using
-// AsyncCompletionCallbackAdaptor.
+// AsyncCompletionCallbackAdaptor and ReadResponseHeadCallbackAdaptor.
 //
 // Specifically, these methods return result codes directly for synchronous
 // completions, and only run their callback (which is AsyncDoLoop) for
 // asynchronous completions.
 
-int ServiceWorkerCacheWriter::ReadInfoHelper(
-    const std::unique_ptr<ServiceWorkerResponseReader>& reader,
-    HttpResponseInfoIOBuffer* buf) {
-  net::CompletionOnceCallback run_callback = base::BindOnce(
-      &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
-  scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
-      new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
-  reader->ReadInfo(
-      buf, base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
-                          adaptor));
-  adaptor->set_async(true);
-  return adaptor->result();
+int ServiceWorkerCacheWriter::ReadResponseHead(
+    const std::unique_ptr<ServiceWorkerResponseReader>& reader) {
+  auto adapter = base::MakeRefCounted<ReadResponseHeadCallbackAdapter>(
+      weak_factory_.GetWeakPtr());
+  reader->ReadResponseHead(base::BindOnce(
+      &ReadResponseHeadCallbackAdapter::DidReadResponseInfo, adapter));
+  adapter->SetAsync();
+  return adapter->result();
 }
 
 int ServiceWorkerCacheWriter::ReadDataHelper(
@@ -601,21 +631,6 @@ int ServiceWorkerCacheWriter::WriteResponseHeadToResponseWriter(
                      adaptor));
   adaptor->set_async(true);
   return adaptor->result();
-}
-
-int ServiceWorkerCacheWriter::WriteInfo(
-    scoped_refptr<HttpResponseInfoIOBuffer> response_info) {
-  DCHECK(response_info);
-  // Always set SSLInfo. An observer will drop it if the SSLInfo isn't needed.
-  auto response = ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
-      response_info->http_info.get(),
-      /*options=*/network::mojom::kURLLoadOptionSendSSLInfoWithResponse,
-      /*request_start_time=*/base::TimeTicks(),
-      /*response_start_time=*/base::TimeTicks::Now(),
-      response_info->response_data_size);
-  // There should be no metadata when writing response headers.
-  DCHECK(!response.metadata);
-  return WriteResponseHead(*response.head);
 }
 
 int ServiceWorkerCacheWriter::WriteResponseHead(

@@ -238,18 +238,18 @@ void DriveQuickAccessProvider::OnGetQuickAccessItems(
 void DriveQuickAccessProvider::SetResultsCache(
     base::OnceCallback<void()> on_done,
     const std::vector<drive::QuickAccessItem>& drive_results) {
-  // Rescale items between 0 and 1
-  double hi = drive_results[0].confidence;
-  double lo = drive_results[0].confidence;
-  for (auto item : drive_results) {
-    hi = std::max(item.confidence, hi);
-    lo = std::min(item.confidence, lo);
-  }
-  for (auto item : drive_results) {
-    item.confidence = (item.confidence - lo) / (hi - lo);
+  results_cache_.clear();
+
+  // Assign scores to results by simply using their position in the results
+  // list. The confidence scores returned by the QuickAccess API are not
+  // reliable, but the ordering of the results is: the first result is
+  // better than the second, etc. Resulting scores are in [0, 1].
+  const double max_score = static_cast<double>(drive_results.size());
+  for (int i = 0; i < static_cast<int>(drive_results.size()); ++i) {
+    results_cache_.push_back(
+        {drive_results[i].path, 1.0 - (static_cast<double>(i) / max_score)});
   }
 
-  results_cache_ = std::move(drive_results);
   std::move(on_done).Run();
 }
 

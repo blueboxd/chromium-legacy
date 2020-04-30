@@ -1371,13 +1371,13 @@ void PrintPreviewHandler::OnInvalidPrinterSettings(int request_id) {
 
 void PrintPreviewHandler::SendPrintPresetOptions(bool disable_scaling,
                                                  int copies,
-                                                 int duplex,
+                                                 mojom::DuplexMode duplex,
                                                  int request_id) {
   if (!ShouldReceiveRendererMessage(request_id))
     return;
 
   FireWebUIListener("print-preset-options", base::Value(disable_scaling),
-                    base::Value(copies), base::Value(duplex));
+                    base::Value(copies), base::Value(static_cast<int>(duplex)));
 }
 
 void PrintPreviewHandler::SendPageCountReady(int page_count,

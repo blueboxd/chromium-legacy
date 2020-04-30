@@ -8,14 +8,14 @@
 #include <memory>
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -106,14 +106,14 @@ class PresentationConnection : public EventTargetWithInlineData,
   KURL url_;
   mojom::blink::PresentationConnectionState state_;
 
-  mojo::Receiver<mojom::blink::PresentationConnection> connection_receiver_{
-      this};
+  HeapMojoReceiver<mojom::blink::PresentationConnection, PresentationConnection>
+      connection_receiver_;
 
   // The other end of a PresentationConnection. For controller connections, this
   // can point to the browser (2-UA) or another renderer (1-UA). For receiver
   // connections, this currently only points to another renderer. This remote
   // can be used to send messages directly to the other end.
-  mojo::Remote<mojom::blink::PresentationConnection> target_connection_;
+  HeapMojoRemote<mojom::blink::PresentationConnection> target_connection_;
 
   void CloseConnection();
 

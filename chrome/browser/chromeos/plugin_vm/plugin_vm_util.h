@@ -81,6 +81,10 @@ bool IsPluginVmWindow(const aura::Window* window);
 // none is set this will return an empty string.
 std::string GetPluginVmLicenseKey();
 
+// Retrieves the User Id to be used for Plugin VM. If
+// none is set this will return an empty string.
+std::string GetPluginVmUserId();
+
 // Sets fake policy values and enables Plugin VM for testing. These set global
 // state so this should be called with empty strings on tear down.
 // TODO(crbug.com/1025136): Remove this once Tast supports setting test
@@ -90,6 +94,7 @@ void SetFakePluginVmPolicy(Profile* profile,
                            const std::string& image_hash,
                            const std::string& license_key);
 bool FakeLicenseKeyIsSet();
+bool FakeUserIdIsSet();
 
 // Used to clean up the Plugin VM Drive download directory if it did not get
 // removed when it should have, perhaps due to a crash.

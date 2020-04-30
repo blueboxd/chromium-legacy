@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/permissions/android/nfc",
   "+chrome/browser/enterprise",
   "+chrome/browser/flags/android",
   "+chrome/browser/notifications",
@@ -24,6 +23,7 @@ include_rules = [
   "+components/invalidation",
   "+components/javascript_dialogs/android",
   "+components/page_info/android/java",
+  "+components/permissions/android/nfc",
   "+components/policy",
   "+components/query_tiles",
   "+components/security_interstitials/content/android",
@@ -32,6 +32,7 @@ include_rules = [
   "+components/spellcheck/browser",
   "+components/subresource_filter/android",
   "+components/viz/common/java",
+  "+components/webrtc/android",
   "+jni",
   "+media/base/android/java",
   "+services/device/public",

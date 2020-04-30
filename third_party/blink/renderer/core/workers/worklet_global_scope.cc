@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -33,14 +34,14 @@ WorkletGlobalScope::WorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerReportingProxy& reporting_proxy,
     LocalFrame* frame,
-    Agent* agent)
+    bool create_microtask_queue)
     : WorkletGlobalScope(std::move(creation_params),
                          reporting_proxy,
                          ToIsolate(frame),
                          ThreadType::kMainThread,
                          frame,
                          nullptr /* worker_thread */,
-                         agent) {}
+                         create_microtask_queue) {}
 
 WorkletGlobalScope::WorkletGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
@@ -52,7 +53,7 @@ WorkletGlobalScope::WorkletGlobalScope(
                          ThreadType::kOffMainThread,
                          nullptr /* frame */,
                          worker_thread,
-                         nullptr /* agent */) {}
+                         false /* create_microtask_queue */) {}
 
 // Partial implementation of the "set up a worklet environment settings object"
 // algorithm:
@@ -64,13 +65,17 @@ WorkletGlobalScope::WorkletGlobalScope(
     ThreadType thread_type,
     LocalFrame* frame,
     WorkerThread* worker_thread,
-    Agent* agent)
+    bool create_microtask_queue)
     : WorkerOrWorkletGlobalScope(
           isolate,
           SecurityOrigin::CreateUniqueOpaque(),
-          // TODO(tzik): Assign an Agent for Worklets after
-          // NonMainThreadScheduler gets ready to run microtasks.
-          agent,
+          MakeGarbageCollected<Agent>(
+              isolate,
+              creation_params->agent_cluster_id,
+              create_microtask_queue
+                  ? v8::MicrotaskQueue::New(isolate,
+                                            v8::MicrotasksPolicy::kScoped)
+                  : nullptr),
           creation_params->global_scope_name,
           creation_params->parent_devtools_token,
           creation_params->v8_cache_options,
@@ -85,14 +90,15 @@ WorkletGlobalScope::WorkletGlobalScope(
       module_responses_map_(creation_params->module_responses_map),
       // Step 4. "Let inheritedHTTPSState be outsideSettings's HTTPS state."
       https_state_(creation_params->starter_https_state),
-      agent_cluster_id_(creation_params->agent_cluster_id.is_empty()
-                            ? base::UnguessableToken::Create()
-                            : creation_params->agent_cluster_id),
       thread_type_(thread_type),
       frame_(frame),
       worker_thread_(worker_thread) {
   DCHECK((thread_type_ == ThreadType::kMainThread && frame_) ||
          (thread_type_ == ThreadType::kOffMainThread && worker_thread_));
+
+  // Worklet should be in the owner's agent cluster.
+  // https://html.spec.whatwg.org/C/#obtain-a-worklet-agent
+  DCHECK(creation_params->agent_cluster_id);
 
   // Step 2: "Let inheritedAPIBaseURL be outsideSettings's API base URL."
   // |url_| is the inheritedAPIBaseURL passed from the parent Document.

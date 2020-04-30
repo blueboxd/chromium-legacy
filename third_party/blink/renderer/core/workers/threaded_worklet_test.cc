@@ -94,6 +94,13 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
                         CrossThreadBindOnce(&test::ExitRunLoop));
   }
 
+  void TestAgentCluster(base::UnguessableToken owner_agent_cluster_id) {
+    ASSERT_TRUE(owner_agent_cluster_id);
+    EXPECT_EQ(GlobalScope()->GetAgentClusterID(), owner_agent_cluster_id);
+    PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
+                        CrossThreadBindOnce(&test::ExitRunLoop));
+  }
+
   void TestContentSecurityPolicy() {
     EXPECT_TRUE(IsCurrentThread());
     ContentSecurityPolicy* csp = GlobalScope()->GetContentSecurityPolicy();
@@ -215,7 +222,10 @@ class ThreadedWorkletMessagingProxyForTest
             OriginTrialContext::GetTokens(GetExecutionContext()).get(),
             base::UnguessableToken::Create(), std::move(worker_settings),
             kV8CacheOptionsDefault,
-            MakeGarbageCollected<WorkletModuleResponsesMap>()),
+            MakeGarbageCollected<WorkletModuleResponsesMap>(),
+            mojo::NullRemote() /* browser_interface_broker */,
+            BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
+            GetExecutionContext()->GetAgentClusterID()),
         base::nullopt);
   }
 
@@ -261,6 +271,9 @@ class ThreadedWorkletTest : public testing::Test {
         messaging_proxy_->GetWorkerThread());
   }
 
+  ExecutionContext* GetExecutionContext() {
+    return page_->GetFrame().DomWindow();
+  }
   Document& GetDocument() { return page_->GetDocument(); }
 
  private:
@@ -275,6 +288,18 @@ TEST_F(ThreadedWorkletTest, SecurityOrigin) {
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBindOnce(&ThreadedWorkletThreadForTest::TestSecurityOrigin,
                           CrossThreadUnretained(GetWorkerThread())));
+  test::EnterRunLoop();
+}
+
+TEST_F(ThreadedWorkletTest, AgentCluster) {
+  MessagingProxy()->Start();
+
+  // The worklet should be in the owner window's agent cluster.
+  PostCrossThreadTask(
+      *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+      CrossThreadBindOnce(&ThreadedWorkletThreadForTest::TestAgentCluster,
+                          CrossThreadUnretained(GetWorkerThread()),
+                          GetExecutionContext()->GetAgentClusterID()));
   test::EnterRunLoop();
 }
 

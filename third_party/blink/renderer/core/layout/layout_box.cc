@@ -2572,12 +2572,11 @@ void LayoutBox::ReplaceLayoutResult(scoped_refptr<const NGLayoutResult> result,
     // we're split into multiple box fragments.
     // TODO(layout-dev): Make this work for multiple box fragments (block
     // fragmentation).
-    if (const NGFragmentItems* old_items =
-            To<NGPhysicalBoxFragment>(layout_results_[0]->PhysicalFragment())
-                .Items()) {
+    if (To<NGPhysicalBoxFragment>(layout_results_[0]->PhysicalFragment())
+            .HasItems()) {
       if (!index)
         InvalidateItems(*old_result);
-      old_items->ClearAssociatedFragments();
+      NGFragmentItems::ClearAssociatedFragments(this);
     }
   }
   layout_results_[index] = std::move(result);
@@ -2601,10 +2600,9 @@ void LayoutBox::ShrinkLayoutResults(wtf_size_t results_to_keep) {
   for (wtf_size_t i = results_to_keep; i < layout_results_.size(); i++)
     InvalidateItems(*layout_results_[i]);
   if (results_to_keep == 0 && !layout_results_.IsEmpty()) {
-    if (const NGFragmentItems* old_items =
-            To<NGPhysicalBoxFragment>(layout_results_[0]->PhysicalFragment())
-                .Items()) {
-      old_items->ClearAssociatedFragments();
+    if (To<NGPhysicalBoxFragment>(layout_results_[0]->PhysicalFragment())
+            .HasItems()) {
+      NGFragmentItems::ClearAssociatedFragments(this);
     }
   }
   layout_results_.Shrink(results_to_keep);

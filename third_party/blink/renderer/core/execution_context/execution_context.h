@@ -190,10 +190,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   virtual const SecurityContext& GetSecurityContext() const = 0;
 
   // https://tc39.github.io/ecma262/#sec-agent-clusters
-  // TODO(dtapuska): Remove this virtual once all execution_contexts
-  // always have an agent. Worklets currently override this because
-  // they don't have agents.
-  virtual const base::UnguessableToken& GetAgentClusterID() const;
+  const base::UnguessableToken& GetAgentClusterID() const;
 
   bool IsSameAgentCluster(const base::UnguessableToken&) const;
 

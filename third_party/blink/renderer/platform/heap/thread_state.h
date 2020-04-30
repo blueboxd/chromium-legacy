@@ -162,7 +162,6 @@ class PLATFORM_EXPORT ThreadState final {
     kIncrementalMarkingStepPaused,
     kIncrementalMarkingStepScheduled,
     kIncrementalMarkingFinalizeScheduled,
-    kPreciseGCScheduled,
     kForcedGCForTestingScheduled,
     kIncrementalGCScheduled,
   };
@@ -255,7 +254,6 @@ class PLATFORM_EXPORT ThreadState final {
   void PerformIdleLazySweep(base::TimeTicks deadline);
   void PerformConcurrentSweep(base::JobDelegate*);
 
-  void SchedulePreciseGC();
   void ScheduleForcedGCForTesting();
   void ScheduleGCIfNeeded();
   void SetGCState(GCState);

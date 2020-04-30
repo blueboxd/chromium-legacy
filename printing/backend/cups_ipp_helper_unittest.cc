@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "printing/backend/cups_printer.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/printing_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -164,8 +165,9 @@ TEST_F(PrintBackendCupsIppHelperTest, DuplexSupported) {
   CapsAndDefaultsFromPrinter(*printer_, &caps);
 
   EXPECT_THAT(caps.duplex_modes,
-              testing::UnorderedElementsAre(SIMPLEX, LONG_EDGE));
-  EXPECT_EQ(SIMPLEX, caps.duplex_default);
+              testing::UnorderedElementsAre(mojom::DuplexMode::kSimplex,
+                                            mojom::DuplexMode::kLongEdge));
+  EXPECT_EQ(mojom::DuplexMode::kSimplex, caps.duplex_default);
 }
 
 TEST_F(PrintBackendCupsIppHelperTest, DuplexNotSupported) {
@@ -176,8 +178,9 @@ TEST_F(PrintBackendCupsIppHelperTest, DuplexNotSupported) {
   PrinterSemanticCapsAndDefaults caps;
   CapsAndDefaultsFromPrinter(*printer_, &caps);
 
-  EXPECT_THAT(caps.duplex_modes, testing::UnorderedElementsAre(SIMPLEX));
-  EXPECT_EQ(SIMPLEX, caps.duplex_default);
+  EXPECT_THAT(caps.duplex_modes,
+              testing::UnorderedElementsAre(mojom::DuplexMode::kSimplex));
+  EXPECT_EQ(mojom::DuplexMode::kSimplex, caps.duplex_default);
 }
 
 TEST_F(PrintBackendCupsIppHelperTest, A4PaperSupported) {

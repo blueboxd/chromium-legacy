@@ -11,20 +11,17 @@
 
 #include "base/macros.h"
 #include "base/values.h"
+#include "chrome/browser/net/dns_probe_runner.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/public/doh_provider_list.h"
 #include "services/network/public/cpp/resolve_host_client_base.h"
-#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace settings {
 
 // Handler for the Secure DNS setting.
-class SecureDnsHandler : public SettingsPageUIHandler,
-                         network::ResolveHostClientBase {
+class SecureDnsHandler : public SettingsPageUIHandler {
  public:
   SecureDnsHandler();
   ~SecureDnsHandler() override;
@@ -66,18 +63,13 @@ class SecureDnsHandler : public SettingsPageUIHandler,
   void SendSecureDnsSettingUpdatesToJavascript();
 
  private:
-  // network::ResolveHostClientBase impl:
-  void OnComplete(
-      int result,
-      const net::ResolveErrorInfo& resolve_error_info,
-      const base::Optional<net::AddressList>& resolved_addresses) override;
-
-  void OnMojoConnectionError();
+  network::mojom::NetworkContext* GetNetworkContext();
+  void OnProbeComplete();
 
   std::map<std::string, net::DohProviderIdForHistogram> resolver_histogram_map_;
-  network::mojom::NetworkContext* network_context_for_testing_ = nullptr;
-  mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
-  mojo::Remote<network::mojom::HostResolver> host_resolver_;
+  std::unique_ptr<chrome_browser_net::DnsProbeRunner> runner_;
+  chrome_browser_net::DnsProbeRunner::NetworkContextGetter
+      network_context_getter_;
   // ID of the Javascript callback for the current pending probe, or "" if
   // there is no probe currently in progress.
   std::string probe_callback_id_;

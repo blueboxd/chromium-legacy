@@ -1152,6 +1152,7 @@ void DevToolsWindow::ActivateContents(WebContents* contents) {
 
 void DevToolsWindow::AddNewContents(WebContents* source,
                                     std::unique_ptr<WebContents> new_contents,
+                                    const GURL& target_url,
                                     WindowOpenDisposition disposition,
                                     const gfx::Rect& initial_rect,
                                     bool user_gesture,
@@ -1175,7 +1176,7 @@ void DevToolsWindow::AddNewContents(WebContents* source,
   WebContents* inspected_web_contents = GetInspectedWebContents();
   if (inspected_web_contents) {
     inspected_web_contents->GetDelegate()->AddNewContents(
-        source, std::move(new_contents), disposition, initial_rect,
+        source, std::move(new_contents), target_url, disposition, initial_rect,
         user_gesture, was_blocked);
   }
 }

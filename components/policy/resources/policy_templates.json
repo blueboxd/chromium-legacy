@@ -811,6 +811,7 @@
         'PluginVmAllowed',
         'PluginVmLicenseKey',
         'PluginVmImage',
+        'PluginVmUserId',
       ],
       'desc': '''Configure <ph name="PLUGIN_VM_NAME">PluginVm</ph> related policies.''',
     },
@@ -17956,7 +17957,7 @@
       'tags': [],
       'desc': '''Enable this device to run PluginVm.
 
-      If the policy is set to false or left unset, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is not enabled for the device. If set to true, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is enabled for the device as long as other settings also allow it. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME">PluginVmAllowed</ph> needs to be true, <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME">PluginVmLicenseKey</ph> and <ph name="PLUGIN_VM_IMAGE_POLICY_NAME">PluginVmImage</ph> need to be set for <ph name="PLUGIN_VM_NAME">PluginVm</ph> to be allowed to run.''',
+      If the policy is set to false or left unset, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is not enabled for the device. If set to true, <ph name="PLUGIN_VM_NAME">PluginVm</ph> is enabled for the device as long as other settings also allow it. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME">PluginVmAllowed</ph> needs to be true, and either <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME">PluginVmLicenseKey</ph> or <ph name="PLUGIN_VM_USER_ID_POLICY_NAME">PluginVmUserId</ph> or <ph name="PLUGIN_VM_IMAGE_POLICY_NAME">PluginVmImage</ph> need to be set for <ph name="PLUGIN_VM_NAME">PluginVm</ph> to be allowed to run.''',
     },
     {
       'name': 'PluginVmLicenseKey',
@@ -17975,7 +17976,26 @@
       'id': 515,
       'caption': '''<ph name="PLUGIN_VM_NAME">PluginVm</ph> license key''',
       'tags': [],
-      'desc': '''This policy specifies <ph name="PLUGIN_VM_NAME">PluginVm</ph> license key for this device.''',
+      'desc': '''This policy specifies the <ph name="PLUGIN_VM_NAME">PluginVm</ph> license key for this device.''',
+    },
+    {
+      'name': 'PluginVmUserId',
+      'owners': ['traciechan@google.com', 'zatrudo@google.com'],
+      'type': 'string',
+      'schema': {
+        'sensitiveValue': True,
+        'type': 'string'
+      },
+      'supported_on': ['chrome_os:84-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': "USER_ID",
+      'id': 698,
+      'caption': '''<ph name="PLUGIN_VM_NAME">PluginVm</ph> user id''',
+      'tags': [],
+      'desc': '''This policy specifies the <ph name="PLUGIN_VM_NAME">PluginVm</ph> user id for this device.''',
     },
     {
       'name': 'PluginVmImage',
@@ -21410,6 +21430,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceWilcoDtcAllowed': 'device_wilco_dtc_allowed.device_wilco_dtc_allowed',
     'DeviceWilcoDtcConfiguration': 'device_wilco_dtc_configuration.device_wilco_dtc_configuration',
     'PluginVmLicenseKey': 'plugin_vm_license_key.plugin_vm_license_key',
+    'PluginVmUserId': 'plugin_vm_user_id.plugin_vm_user_id',
     'DeviceAuthDataCacheLifetime': 'device_auth_data_cache_lifetime.lifetime_hours',
     'DeviceGpoCacheLifetime': 'device_gpo_cache_lifetime.lifetime_hours',
     'DeviceRebootOnUserSignout': 'device_reboot_on_user_signout.reboot_on_signout_mode',
@@ -21902,6 +21923,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 697,
+  'highest_id_currently_used': 698,
   'highest_atomic_group_id_currently_used': 38
 }

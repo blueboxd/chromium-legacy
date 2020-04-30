@@ -139,6 +139,7 @@ class Shell : public WebContentsDelegate,
                               const OpenURLParams& params) override;
   void AddNewContents(WebContents* source,
                       std::unique_ptr<WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,

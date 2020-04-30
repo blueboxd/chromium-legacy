@@ -26,6 +26,7 @@
 #include "printing/backend/cups_ipp_helper.h"
 #include "printing/backend/cups_printer.h"
 #include "printing/metafile.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "printing/printing_features.h"
@@ -121,13 +122,13 @@ std::vector<ScopedCupsOption> SettingsToCupsOptions(
     const PrintSettings& settings) {
   const char* sides = nullptr;
   switch (settings.duplex_mode()) {
-    case SIMPLEX:
+    case mojom::DuplexMode::kSimplex:
       sides = CUPS_SIDES_ONE_SIDED;
       break;
-    case LONG_EDGE:
+    case mojom::DuplexMode::kLongEdge:
       sides = CUPS_SIDES_TWO_SIDED_PORTRAIT;
       break;
-    case SHORT_EDGE:
+    case mojom::DuplexMode::kShortEdge:
       sides = CUPS_SIDES_TWO_SIDED_LANDSCAPE;
       break;
     default:

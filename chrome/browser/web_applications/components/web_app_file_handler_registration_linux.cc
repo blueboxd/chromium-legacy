@@ -56,6 +56,12 @@ void RecordRegistration(RegistrationResult result) {
 }
 
 void OnShortcutInfoReceived(std::unique_ptr<ShortcutInfo> info) {
+  if (!info) {
+    UMA_HISTOGRAM_ENUMERATION(kRecreateShortcutResultMetric,
+                              RecreateShortcutResult::kFailToCreateShortcut);
+    return;
+  }
+
   base::FilePath shortcut_data_dir = internals::GetShortcutDataDir(*info);
 
   ShortcutLocations locations;
@@ -154,6 +160,8 @@ void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
   if (!provider->registrar().IsInstalled(app_id))
     return;
 
+  // TODO(crbug.com/1076688): Fix file handlers unregistration. We can't update
+  // registration here asynchronously because app_id is being uninstalled.
   UpdateFileHandlerRegistrationInOs(app_id, profile);
 }
 

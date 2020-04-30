@@ -102,6 +102,7 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
 
   void AddNewContents(content::WebContents* source,
                       std::unique_ptr<content::WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,

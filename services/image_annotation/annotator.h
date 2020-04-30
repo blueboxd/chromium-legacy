@@ -49,6 +49,12 @@ class Annotator : public mojom::Annotator {
 
     virtual void BindJsonParser(
         mojo::PendingReceiver<data_decoder::mojom::JsonParser> receiver) = 0;
+
+    virtual std::vector<std::string> GetAcceptLanguages() = 0;
+    virtual std::vector<std::string> GetTopLanguages() = 0;
+    virtual void RecordLanguageMetrics(
+        const std::string& page_language,
+        const std::string& requested_language) = 0;
   };
 
   // The HTTP request header in which the API key should be transmitted.
@@ -94,6 +100,9 @@ class Annotator : public mojom::Annotator {
                      AnnotateImageCallback callback) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AnnotatorTest, DescLanguage);
+  FRIEND_TEST_ALL_PREFIXES(AnnotatorTest, ComputePreferredLanguage);
+
   // The relevant info for a request from a client feature for a single image.
   struct ClientRequestInfo {
     ClientRequestInfo(
@@ -201,6 +210,8 @@ class Annotator : public mojom::Annotator {
       const std::set<RequestKey>& request_keys,
       const std::map<std::string, mojom::AnnotateImageResultPtr>& results);
 
+  std::string ComputePreferredLanguage(const std::string& page_lang) const;
+
   const std::unique_ptr<Client> client_;
 
   // Maps from request key to previously-obtained annotation results.
@@ -254,6 +265,9 @@ class Annotator : public mojom::Annotator {
   const int batch_size_;
 
   const double min_ocr_confidence_;
+
+  // The languages that the server accepts.
+  std::vector<std::string> server_languages_;
 
   // Used for all callbacks.
   base::WeakPtrFactory<Annotator> weak_factory_{this};

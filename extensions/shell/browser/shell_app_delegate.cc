@@ -46,6 +46,7 @@ content::WebContents* ShellAppDelegate::OpenURLFromTab(
 void ShellAppDelegate::AddNewContents(
     content::BrowserContext* context,
     std::unique_ptr<content::WebContents> new_contents,
+    const GURL& target_url,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_rect,
     bool user_gesture) {

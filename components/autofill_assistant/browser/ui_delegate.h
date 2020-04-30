@@ -42,11 +42,6 @@ class UiDelegate {
   // Returns the current state of the controller.
   virtual AutofillAssistantState GetState() = 0;
 
-  // Asks for updated coordinates for the touchable area. This is called to
-  // speed up update of the touchable areas when there are good reasons to think
-  // that the current coordinates are out of date, such as while scrolling.
-  virtual void UpdateTouchableArea() = 0;
-
   // Called when user interaction within the allowed touchable area was
   // detected. This should cause rerun of preconditions check.
   virtual void OnUserInteractionInsideTouchableArea() = 0;

@@ -367,25 +367,25 @@ group("polymer3_elements") {
   public_deps = [
     # Sub-folder targets
     "a11y_page:polymer3_elements",
-    "about_page:polymer3_elements",
-    "appearance_page:polymer3_elements",
-    "autofill_page:polymer3_elements",
-    "basic_page:polymer3_elements",
-    "clear_browsing_data_dialog:polymer3_elements",
+    "about_page:web_components",
+    "appearance_page:web_components",
+    "autofill_page:web_components",
+    "basic_page:web_components",
+    "clear_browsing_data_dialog:web_components",
     "controls:polymer3_elements",
-    "downloads_page:polymer3_elements",
+    "downloads_page:web_components",
     "languages_page:polymer3_elements",
-    "on_startup_page:polymer3_elements",
+    "on_startup_page:web_components",
     "people_page:polymer3_elements",
     "prefs:polymer3_elements",
-    "printing_page:polymer3_elements",
+    "printing_page:web_components",
     "privacy_page:polymer3_elements",
-    "reset_page:polymer3_elements",
-    "safety_check_page:polymer3_elements",
-    "search_engines_page:polymer3_elements",
-    "search_page:polymer3_elements",
-    "settings_main:polymer3_elements",
-    "settings_menu:polymer3_elements",
+    "reset_page:web_components",
+    "safety_check_page:web_components",
+    "search_engines_page:web_components",
+    "search_page:web_components",
+    "settings_main:web_components",
+    "settings_menu:web_components",
     "settings_page:polymer3_elements",
     "settings_ui:web_components",
     "site_settings:web_components",
@@ -403,15 +403,15 @@ group("polymer3_elements") {
 
   if (!is_chromeos) {
     public_deps += [
-      "default_browser_page:polymer3_elements",
-      "system_page:polymer3_elements",
+      "default_browser_page:web_components",
+      "system_page:web_components",
     ]
   }
 
   if (is_win) {
     public_deps += [
-      "chrome_cleanup_page:polymer3_elements",
-      "incompatible_applications_page:polymer3_elements",
+      "chrome_cleanup_page:web_components",
+      "incompatible_applications_page:web_components",
     ]
   }
 }

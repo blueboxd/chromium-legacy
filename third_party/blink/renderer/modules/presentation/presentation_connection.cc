@@ -162,6 +162,8 @@ PresentationConnection::PresentationConnection(LocalDOMWindow& window,
       id_(id),
       url_(url),
       state_(mojom::blink::PresentationConnectionState::CONNECTING),
+      connection_receiver_(this, &window),
+      target_connection_(&window),
       binary_type_(kBinaryTypeArrayBuffer),
       file_reading_task_runner_(window.GetTaskRunner(TaskType::kFileReading)) {
   UpdateStateIfNeeded();
@@ -280,7 +282,9 @@ void ControllerPresentationConnection::Init(
   }
 
   DidChangeState(mojom::blink::PresentationConnectionState::CONNECTING);
-  target_connection_.Bind(std::move(connection_remote));
+  target_connection_.Bind(
+      std::move(connection_remote),
+      GetExecutionContext()->GetTaskRunner(blink::TaskType::kPresentation));
   connection_receiver_.Bind(
       std::move(connection_receiver),
       GetExecutionContext()->GetTaskRunner(blink::TaskType::kPresentation));
@@ -333,7 +337,9 @@ void ReceiverPresentationConnection::Init(
         controller_connection_remote,
     mojo::PendingReceiver<mojom::blink::PresentationConnection>
         receiver_connection_receiver) {
-  target_connection_.Bind(std::move(controller_connection_remote));
+  target_connection_.Bind(
+      std::move(controller_connection_remote),
+      GetExecutionContext()->GetTaskRunner(blink::TaskType::kPresentation));
   connection_receiver_.Bind(
       std::move(receiver_connection_receiver),
       GetExecutionContext()->GetTaskRunner(blink::TaskType::kPresentation));
@@ -367,7 +373,7 @@ void ReceiverPresentationConnection::TerminateInternal() {
   receiver_->Terminate();
 
   state_ = mojom::blink::PresentationConnectionState::TERMINATED;
-  if (target_connection_)
+  if (target_connection_.is_bound())
     target_connection_->DidChangeState(state_);
 }
 
@@ -424,6 +430,8 @@ void PresentationConnection::CloseConnection() {
 }
 
 void PresentationConnection::Trace(Visitor* visitor) {
+  visitor->Trace(connection_receiver_);
+  visitor->Trace(target_connection_);
   visitor->Trace(blob_loader_);
   visitor->Trace(messages_);
   EventTargetWithInlineData::Trace(visitor);
@@ -500,7 +508,7 @@ void PresentationConnection::DoClose(
     return;
   }
 
-  if (target_connection_)
+  if (target_connection_.is_bound())
     target_connection_->DidClose(reason);
 
   DidClose(reason);
@@ -514,11 +522,11 @@ bool PresentationConnection::CanSendMessage(ExceptionState& exception_state) {
     return false;
   }
 
-  return !!target_connection_;
+  return !!target_connection_.is_bound();
 }
 
 void PresentationConnection::HandleMessageQueue() {
-  if (!target_connection_)
+  if (!target_connection_.is_bound())
     return;
 
   while (!messages_.IsEmpty() && !blob_loader_) {
@@ -566,7 +574,7 @@ void PresentationConnection::setBinaryType(const String& binary_type) {
 
 void PresentationConnection::SendMessageToTargetConnection(
     mojom::blink::PresentationConnectionMessagePtr message) {
-  if (target_connection_)
+  if (target_connection_.is_bound())
     target_connection_->OnMessage(std::move(message));
 }
 

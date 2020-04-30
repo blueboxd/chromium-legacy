@@ -62,8 +62,14 @@ void BookmarkAppRegistrar::OnExtensionUninstalled(
     const Extension* extension,
     UninstallReason reason) {
   DCHECK_EQ(browser_context, profile());
-  if (extension->from_bookmark())
+  if (extension->from_bookmark()) {
+    DCHECK(!bookmark_app_being_observed_);
+    bookmark_app_being_observed_ = extension;
+
     NotifyWebAppUninstalled(extension->id());
+
+    bookmark_app_being_observed_ = nullptr;
+  }
 }
 
 void BookmarkAppRegistrar::OnExtensionUnloaded(
@@ -74,18 +80,15 @@ void BookmarkAppRegistrar::OnExtensionUnloaded(
   if (!extension->from_bookmark())
     return;
 
-  // OnWebAppWillBeUninstalled and OnWebAppProfileWillBeDeleted observers may
-  // find this pointer via FindExtension method.
-  DCHECK(!bookmark_app_being_uninstalled_);
-  bookmark_app_being_uninstalled_ = extension;
+  DCHECK(!bookmark_app_being_observed_);
+  bookmark_app_being_observed_ = extension;
 
-  NotifyWebAppWillBeUninstalled(extension->id());
   // If a profile is removed, notify the web app that it is uninstalled, so it
   // can cleanup any state outside the profile dir (e.g., registry settings).
   if (reason == UnloadedExtensionReason::PROFILE_SHUTDOWN)
     NotifyWebAppProfileWillBeDeleted(extension->id());
 
-  bookmark_app_being_uninstalled_ = nullptr;
+  bookmark_app_being_observed_ = nullptr;
 }
 
 void BookmarkAppRegistrar::OnShutdown(ExtensionRegistry* registry) {
@@ -211,9 +214,9 @@ BookmarkAppRegistrar* BookmarkAppRegistrar::AsBookmarkAppRegistrar() {
 
 const Extension* BookmarkAppRegistrar::FindExtension(
     const web_app::AppId& app_id) const {
-  if (bookmark_app_being_uninstalled_ &&
-      bookmark_app_being_uninstalled_->id() == app_id) {
-    return bookmark_app_being_uninstalled_;
+  if (bookmark_app_being_observed_ &&
+      bookmark_app_being_observed_->id() == app_id) {
+    return bookmark_app_being_observed_;
   }
 
   return ExtensionRegistry::Get(profile())->GetInstalledExtension(app_id);

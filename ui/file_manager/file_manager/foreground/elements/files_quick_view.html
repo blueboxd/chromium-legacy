@@ -19,22 +19,23 @@
     <dialog id="dialog" on-close="onDialogClose_">
       <div id="toolbar">
         <div class="buttons-group">
-          <cr-button id="back-button" on-click="close" aria-label="$i18n{QUICK_VIEW_CLOSE_BUTTON_LABEL}" has-tooltip>
+          <cr-button id="back-button" on-click="close" aria-label="$i18n{QUICK_VIEW_CLOSE_BUTTON_LABEL}" has-tooltip invert-tooltip>
             <iron-icon icon="files:arrow-back"></iron-icon>
             <span class="icon"></span>
           </cr-button>
         </div>
         <div id="file-path">[[filePath]]</div>
         <div class="buttons-group">
-           <cr-button id="open-button" on-click="onOpenInNewButtonTap" hidden$="[[!shouldShowOpenButton_(hasTask, isModal)]]" aria-label="$i18n{QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL}" has-tooltip>
+          <cr-button id="open-button" on-click="onOpenInNewButtonTap" hidden$="[[!shouldShowOpenButton_(hasTask, isModal)]]" aria-label="$i18n{QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL}" has-tooltip invert-tooltip>
             <span class="icon">$i18n{QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL}</span>
           </cr-button>
-           <cr-button id="delete-button" on-click="onDeleteButtonTap" hidden$="[[!shouldShowDeleteButton_(canDelete, isModal)]]" aria-label="$i18n{QUICK_VIEW_DELETE_BUTTON_LABEL}" has-tooltip>
+          <cr-button id="delete-button" on-click="onDeleteButtonTap" hidden$="[[!shouldShowDeleteButton_(canDelete, isModal)]]" aria-label="$i18n{QUICK_VIEW_DELETE_BUTTON_LABEL}" has-tooltip invert-tooltip>
             <span class="icon"></span>
-         </cr-button>
-           <files-icon-button toggles id="metadata-button" on-tap="onMetadataButtonTap_" active="{{metadataBoxActive}}" aria-label="$i18n{QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL}" tabindex="0" has-tooltip>
-           </files-icon-button>
-           <cr-button id="info-button" on-click="onMetadataButtonTap_" aria-pressed="{{metadataBoxActive}}" aria-label="$i18n{QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL}" has-tooltip>
+          </cr-button>
+          <!-- TODO(files-ng): this fancy Polymer icon toggle button is not used in files-ng. Remove it. -->
+          <files-icon-button toggles id="metadata-button" on-tap="onMetadataButtonTap_" active="{{metadataBoxActive}}" aria-label="$i18n{QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL}" tabindex="0" has-tooltip invert-tooltip>
+          </files-icon-button>
+          <cr-button id="info-button" on-click="onMetadataButtonTap_" aria-pressed="{{metadataBoxActive}}" aria-label="$i18n{QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL}" has-tooltip invert-tooltip>
             <span class="icon"></span>
           </cr-button>
         </div>

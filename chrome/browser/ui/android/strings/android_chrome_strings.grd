@@ -2206,9 +2206,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_ACCESSIBILITY_PAUSE" desc="The pause button that pauses playing the media.">
         Pause
       </message>
-      <message name="IDS_ACCESSIBILITY_STOP" desc="The stop button that stops playing the media.">
-        Stop
-      </message>
       <message name="IDS_ACCESSIBILITY_PREVIOUS_TRACK" desc="The previous track button that switches media to the previous track.">
         Previous track
       </message>
@@ -2752,34 +2749,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
 
       <message name="IDS_TAB_SWITCHER_BUTTON_LABEL" desc="Label for tab switcher button">
         Tabs
-      </message>
-
-      <message name="IDS_MEDIA_CAPTURE_NOTIFICATION_APP_NAME_SEPARATOR" desc="A separator between the app name and notification message.">
-        <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph> - <ph name="NOTIFICATION_MESSAGE">%2$s<ex>Accessing video input</ex></ph>
-      </message>
-
-      <message name="IDS_MEDIA_CAPTURE_NOTIFICATION_CONTENT_TEXT" desc="Url of the current tab. The notification will display this text for the user to identify the tab to return to.">
-        Tap to return to <ph name="URL_OF_THE_CURRENT_TAB">%1$s<ex>https://apprtc.appspot.com</ex></ph>
-      </message>
-      <message name="IDS_MEDIA_CAPTURE_NOTIFICATION_CONTENT_TEXT_INCOGNITO" desc="The notification will display this text for the user to return to the incognito tab which has created the notification.">
-        Tap to return to the site
-      </message>
-
-      <message name="IDS_NOTIFICATION_INCOGNITO_TAB" desc="Text used as notifications source when the notification is from incognito tabs.">
-        Incognito tab
-      </message>
-      <message name="IDS_SCREEN_CAPTURE_NOTIFICATION_TITLE" desc="Text to be shown as a notification when screen capture is in progress.">
-        Sharing your screen
-      </message>
-
-      <message name="IDS_VIDEO_CAPTURE_NOTIFICATION_TITLE" desc="Text to be shown as a notification when a WebRTC video call is in progress.">
-        A site is using your camera
-      </message>
-      <message name="IDS_AUDIO_CAPTURE_NOTIFICATION_TITLE" desc="Text to be shown as a notification when a WebRTC audio call is in progress">
-        A site is using your microphone
-      </message>
-      <message name="IDS_VIDEO_AUDIO_CAPTURE_NOTIFICATION_TITLE" desc="Text to be shown as a notification when a WebRTC video and audio call is in progress">
-        A site is using your camera and microphone
       </message>
 
       <message name="IDS_MEDIA_NOTIFICATION_INCOGNITO" desc="Text used as a placeholder for a media notification about playing media, when notification is shown from incognito tab.">

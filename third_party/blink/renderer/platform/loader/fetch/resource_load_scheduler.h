@@ -226,8 +226,6 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   }
 
  private:
-  class TrafficMonitor;
-
   class ClientIdWithPriority {
    public:
     struct Compare {
@@ -343,9 +341,6 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // Remembers elapsed times in seconds when the top request in each queue is
   // processed.
   std::map<ThrottleOption, base::Time> pending_queue_update_times_;
-
-  // Holds an internal class instance to monitor and report traffic.
-  std::unique_ptr<TrafficMonitor> traffic_monitor_;
 
   // Handle to throttling observer.
   std::unique_ptr<FrameOrWorkerScheduler::LifecycleObserverHandle>

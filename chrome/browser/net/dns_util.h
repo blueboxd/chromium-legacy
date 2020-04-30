@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
+#include "net/dns/dns_config_overrides.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -21,6 +22,10 @@ std::vector<base::StringPiece> SplitDohTemplateGroup(base::StringPiece group);
 // net::dns_util::IsValidDohTemplate().  This should be checked before updating
 // stored preferences.
 bool IsValidDohTemplateGroup(base::StringPiece group);
+
+// Modifies |overrides| to use the DoH server specified by |server_template|.
+void ApplyDohTemplate(net::DnsConfigOverrides* overrides,
+                      base::StringPiece server_template);
 
 const char kDnsOverHttpsModeOff[] = "off";
 const char kDnsOverHttpsModeAutomatic[] = "automatic";

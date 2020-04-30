@@ -380,6 +380,7 @@ android_library("chrome_java") {
     "//components/version_info/android:version_constants_java",
     "//components/viz/common:common_java",
     "//components/viz/service:service_java",
+    "//components/webrtc/android:java",
     "//content/public/android:content_java",
     "//device/gamepad:java",
     "//media/base/android:media_java",

@@ -1583,8 +1583,8 @@ TEST_F(ServiceWorkerResourceStorageDiskTest,
   // Create an unrelated opened file in the database directory to make sure such
   // a file does not prevent DeleteAndStartOver on non-Windows platforms.
   base::FilePath file_path;
-  base::ScopedFILE file(base::CreateAndOpenTemporaryFileInDir(
-      storage()->GetDatabasePath(), &file_path));
+  base::ScopedFILE file = base::CreateAndOpenTemporaryStreamInDir(
+      storage()->GetDatabasePath(), &file_path);
   ASSERT_TRUE(file);
   ASSERT_TRUE(base::PathExists(file_path));
 

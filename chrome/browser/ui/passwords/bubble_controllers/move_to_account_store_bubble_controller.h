@@ -17,6 +17,9 @@ class MoveToAccountStoreBubbleController : public PasswordBubbleControllerBase {
       base::WeakPtr<PasswordsModelDelegate> delegate);
   ~MoveToAccountStoreBubbleController() override;
 
+  // Called by the view when the user clicks the confirmation button.
+  void AcceptMove();
+
  private:
   // PasswordBubbleControllerBase:
   base::string16 GetTitle() const override;

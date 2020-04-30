@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
 #include "third_party/blink/renderer/core/css/resolver/css_property_priority.h"
 
@@ -184,6 +185,8 @@ TEST(CascadeMapTest, AllHighPriorityBits) {
   for (CSSPropertyID id : CSSPropertyIDList()) {
     if (CSSPropertyPriorityData<kHighPropertyPriority>::PropertyHasPriority(
             id)) {
+      if (CSSProperty::Get(id).IsSurrogate())
+        continue;
       map.Add(CSSPropertyName(id), CascadeOrigin::kAuthor);
       expected |= (1ull << static_cast<uint64_t>(id));
     }

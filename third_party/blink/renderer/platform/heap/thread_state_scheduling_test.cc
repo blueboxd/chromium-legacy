@@ -45,15 +45,6 @@ class ThreadStateSchedulingTest : public TestSupportingGC {
     return state_->reason_for_scheduled_gc_;
   }
 
-  void StartLazySweepingForPreciseGC() {
-    EXPECT_EQ(ThreadState::kNoGCScheduled, state_->GetGCState());
-    state_->SchedulePreciseGC();
-    EXPECT_EQ(ThreadState::kPreciseGCScheduled, state_->GetGCState());
-    RunScheduledGC(BlinkGC::kNoHeapPointersOnStack);
-    EXPECT_TRUE(state_->IsSweepingInProgress());
-    EXPECT_EQ(ThreadState::kNoGCScheduled, state_->GetGCState());
-  }
-
   void RunScheduledGC(BlinkGC::StackState stack_state) {
     state_->RunScheduledGC(stack_state);
   }
@@ -79,45 +70,6 @@ TEST_F(ThreadStateSchedulingTest, RunIncrementalGCForTesting) {
 
   RunLoop();
   EXPECT_EQ(ThreadState::kNoGCScheduled, test->state()->GetGCState());
-}
-
-TEST_F(ThreadStateSchedulingTest, SchedulePreciseGCWhileLazySweeping) {
-  ThreadStateSchedulingTest* test = this;
-
-  test->StartLazySweepingForPreciseGC();
-
-  test->state()->SchedulePreciseGC();
-
-  // Scheduling a precise GC should finish lazy sweeping.
-  EXPECT_FALSE(test->state()->IsSweepingInProgress());
-  EXPECT_EQ(ThreadState::kPreciseGCScheduled, test->state()->GetGCState());
-}
-
-TEST_F(ThreadStateSchedulingTest, SchedulePreciseGCWhileIncrementalMarking) {
-  ThreadStateSchedulingTest* test = this;
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      blink::features::kBlinkHeapIncrementalMarking);
-  test->state()->StartIncrementalMarking(
-      BlinkGC::GCReason::kForcedGCForTesting);
-  test->state()->SchedulePreciseGC();
-  // Scheduling a precise GC should cancel incremental marking tasks.
-  EXPECT_EQ(ThreadState::kPreciseGCScheduled, test->state()->GetGCState());
-
-  EXPECT_EQ(0, test->GCCount());
-  test->RunScheduledGC(BlinkGC::kNoHeapPointersOnStack);
-  EXPECT_TRUE(test->state()->IsSweepingInProgress());
-  EXPECT_EQ(ThreadState::kNoGCScheduled, test->state()->GetGCState());
-
-  // Running the precise GC should simply finish the incremental marking idle GC
-  // (not run another GC).
-  EXPECT_EQ(0, test->GCCount());
-  test->state()->CompleteSweep();
-  EXPECT_EQ(1, test->GCCount());
-
-  // Check that incremental GC hasn't been run.
-  RunLoop();
-  EXPECT_EQ(1, test->GCCount());
 }
 
 }  // namespace blink

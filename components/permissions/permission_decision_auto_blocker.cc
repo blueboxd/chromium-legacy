@@ -183,6 +183,8 @@ PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
     ContentSettingsType permission,
     base::Time current_time) {
   DCHECK(settings_map);
+  DCHECK(PermissionUtil::IsPermission(permission));
+
   std::unique_ptr<base::DictionaryValue> dict =
       GetOriginAutoBlockerData(settings_map, request_origin);
   base::Value* permission_dict = GetOrCreatePermissionDict(

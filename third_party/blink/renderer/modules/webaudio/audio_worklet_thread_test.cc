@@ -69,7 +69,10 @@ class AudioWorkletThreadTest : public PageTestBase {
             OriginTrialContext::GetTokens(window).get(),
             base::UnguessableToken::Create(), nullptr /* worker_settings */,
             kV8CacheOptionsDefault,
-            MakeGarbageCollected<WorkletModuleResponsesMap>()),
+            MakeGarbageCollected<WorkletModuleResponsesMap>(),
+            mojo::NullRemote() /* browser_interface_broker */,
+            BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
+            window->GetAgentClusterID()),
         base::nullopt, std::make_unique<WorkerDevToolsParams>());
     return thread;
   }

@@ -146,6 +146,21 @@ class PepperPlaybackObserver;
 using AccessibilityEventCallback =
     base::RepeatingCallback<void(const std::string&)>;
 
+// CreatedWindow holds the WebContentsImpl and target url between IPC calls to
+// CreateNewWindow and ShowCreatedWindow.
+struct CONTENT_EXPORT CreatedWindow {
+  CreatedWindow();
+  CreatedWindow(std::unique_ptr<WebContentsImpl> contents, GURL target_url);
+  CreatedWindow(CreatedWindow&&);
+  CreatedWindow(const CreatedWindow&) = delete;
+  CreatedWindow& operator=(CreatedWindow&&);
+  CreatedWindow& operator=(const CreatedWindow&) = delete;
+  ~CreatedWindow();
+
+  std::unique_ptr<WebContentsImpl> contents;
+  GURL target_url;
+};
+
 // Factory function for the implementations that content knows about. Takes
 // ownership of |delegate|.
 WebContentsView* CreateWebContentsView(
@@ -1528,10 +1543,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // called once as this call also removes it from the internal map.
   RenderWidgetHostView* GetCreatedWidget(int process_id, int route_id);
 
-  // Finds the new WebContentsImpl by |main_frame_widget_route_id|, initializes
+  // Finds the new CreatedWindow by |main_frame_widget_route_id|, initializes
   // it for renderer-initiated creation, and returns it. Note that this can only
   // be called once as this call also removes it from the internal map.
-  std::unique_ptr<WebContentsImpl> GetCreatedWindow(
+  base::Optional<CreatedWindow> GetCreatedWindow(
       int process_id,
       int main_frame_widget_route_id);
 
@@ -1666,9 +1681,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // provide this.
   RenderViewHostDelegateView* render_view_host_delegate_view_;
 
-  // Tracks created WebContentsImpl objects that have not been shown yet. They
-  // are identified by the process ID and routing ID passed to CreateNewWindow.
-  std::map<GlobalRoutingID, std::unique_ptr<WebContentsImpl>> pending_contents_;
+  // Tracks CreatedWindow objects that have not been shown yet. They are
+  // identified by the process ID and routing ID passed to CreateNewWindow.
+  std::map<GlobalRoutingID, CreatedWindow> pending_contents_;
 
   // This map holds widgets that were created on behalf of the renderer but
   // haven't been shown yet.

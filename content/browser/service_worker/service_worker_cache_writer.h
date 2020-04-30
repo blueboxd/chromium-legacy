@@ -20,7 +20,6 @@
 
 namespace content {
 
-struct HttpResponseInfoIOBuffer;
 class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
 
@@ -140,6 +139,8 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   }
 
  private:
+  class ReadResponseHeadCallbackAdapter;
+
   friend class ServiceWorkerUpdateCheckTestUtils;
 
   // States for the state machine.
@@ -243,20 +244,18 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   //   a) Return ERR_IO_PENDING, and schedule a callback to run the state
   //      machine's Run() later, or
   //   b) Return some other value and do not schedule a callback.
-  int ReadInfoHelper(const std::unique_ptr<ServiceWorkerResponseReader>& reader,
-                     HttpResponseInfoIOBuffer* buf);
+  int ReadResponseHead(
+      const std::unique_ptr<ServiceWorkerResponseReader>& reader);
   int ReadDataHelper(const std::unique_ptr<ServiceWorkerResponseReader>& reader,
                      net::IOBuffer* buf,
                      int buf_len);
   // If no write observer is set through set_write_observer(),
-  // WriteInfo() operates the same as WriteResponseHeadToResponseWriter() and
-  // WriteData() operates the same as WriteDataToResponseWriter().
+  // WriteResponseHead() operates the same as
+  // WriteResponseHeadToResponseWriter() and WriteData() operates the same as
+  // WriteDataToResponseWriter().
   // If observer is set, the argument |response_info| or |data| is first sent
   // to observer then WriteResponseHeadToResponseWriter() or
   // WriteDataToResponseWriter() is called.
-  // TODO(crbug.com/1060076): Remove WriteInfo() after |headers_to_read_| is
-  // replaced with a network::mojom::URLResponseHeadPtr.
-  int WriteInfo(scoped_refptr<HttpResponseInfoIOBuffer> response_info);
   int WriteResponseHead(const network::mojom::URLResponseHead& response_head);
   int WriteData(scoped_refptr<net::IOBuffer> data, int length);
   int WriteResponseHeadToResponseWriter(
@@ -282,9 +281,7 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   bool io_pending_;
   bool comparing_;
 
-  // TODO(crbug.com/1060076): Replace HttpResponseInfoIOBuffer with
-  // network::mojom::URLResponseHeadPtr.
-  scoped_refptr<HttpResponseInfoIOBuffer> headers_to_read_;
+  network::mojom::URLResponseHeadPtr response_head_to_read_;
   network::mojom::URLResponseHeadPtr response_head_to_write_;
   scoped_refptr<net::IOBuffer> data_to_read_;
   int len_to_read_;

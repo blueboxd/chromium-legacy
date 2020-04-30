@@ -158,7 +158,6 @@ class Controller : public ScriptExecutorDelegate,
 
   // Overrides autofill_assistant::UiDelegate:
   AutofillAssistantState GetState() override;
-  void UpdateTouchableArea() override;
   void OnUserInteractionInsideTouchableArea() override;
   const Details* GetDetails() const override;
   const InfoBox* GetInfoBox() const override;

@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
@@ -122,8 +123,8 @@ IN_PROC_BROWSER_TEST_F(AppShortcutLauncherItemControllerBrowserTest,
   EXPECT_EQ(2u,
             GetShelfItemDelegate()->GetAppMenuItems(ui::EF_SHIFT_DOWN).size());
 
-  // Open a new tab in an existing app browser. There are 3 tab items.
-  AddBlankTabAndShow(app_browser1);
+  // Open a new app tab in an existing app browser. There are 3 tab items.
+  chrome::NewTab(app_browser1);
   EXPECT_EQ(3u,
             GetShelfItemDelegate()->GetAppMenuItems(ui::EF_SHIFT_DOWN).size());
 

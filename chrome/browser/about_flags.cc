@@ -1811,6 +1811,9 @@ const FeatureEntry::Choice kEnableCrOSActionRecorderChoices[] = {
     {ash::switches::kCrOSActionRecorderDisabled,
      ash::switches::kEnableCrOSActionRecorder,
      ash::switches::kCrOSActionRecorderDisabled},
+    {ash::switches::kCrOSActionRecorderStructuredDisabled,
+     ash::switches::kEnableCrOSActionRecorder,
+     ash::switches::kCrOSActionRecorderStructuredDisabled},
 };
 #endif  // defined(OS_CHROMEOS)
 

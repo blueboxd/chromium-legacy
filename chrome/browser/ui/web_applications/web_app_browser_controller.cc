@@ -40,7 +40,7 @@ bool WebAppBrowserController::IsHostedApp() const {
   return true;
 }
 
-void WebAppBrowserController::OnWebAppWillBeUninstalled(const AppId& app_id) {
+void WebAppBrowserController::OnWebAppUninstalled(const AppId& app_id) {
   if (HasAppId() && app_id == GetAppId())
     chrome::CloseWindow(browser());
 }

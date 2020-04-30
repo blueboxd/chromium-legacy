@@ -444,6 +444,7 @@ source_set("blink_headers") {
     "//media/webrtc:webrtc",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/public/cpp/system:system",
+    "//printing/mojom",
     "//services/device/public/mojom:mojom_shared_cpp_sources",
     "//services/network/public/cpp:cpp",
     "//services/network/public/mojom",

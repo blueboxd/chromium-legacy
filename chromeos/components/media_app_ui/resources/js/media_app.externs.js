@@ -156,6 +156,6 @@ mediaApp.MessageEventData.prototype.file;
 
 /**
  * Launch data that can be read by the app when it first loads.
- * @type{{files: mediaApp.AbstractFileList}}
+ * @type {{files: mediaApp.AbstractFileList}}
  */
 window.customLaunchData;

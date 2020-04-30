@@ -227,6 +227,7 @@ void EyeDropperWin::OnPaint(gfx::Canvas* view_canvas) {
 void EyeDropperWin::WindowClosing() {
   aura::client::GetCursorClient(GetWidget()->GetNativeWindow()->GetRootWindow())
       ->UnlockCursor();
+  pre_dispatch_handler_.reset();
 }
 
 void EyeDropperWin::DeleteDelegate() {

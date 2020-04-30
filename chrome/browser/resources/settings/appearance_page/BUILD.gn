@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../settings.gni")
 
@@ -85,31 +85,19 @@ js_library("home_url_input") {
   ]
 }
 
-group("polymer3_elements") {
+group("web_components") {
   public_deps = [
-    ":appearance_fonts_page_module",
-    ":appearance_page_module",
-    ":home_url_input_module",
     ":modulize",
+    ":web_components_local",
   ]
 }
 
-polymer_modulizer("appearance_fonts_page") {
-  js_file = "appearance_fonts_page.js"
-  html_file = "appearance_fonts_page.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("appearance_page") {
-  js_file = "appearance_page.js"
-  html_file = "appearance_page.html"
-  html_type = "v3-ready"
-}
-
-polymer_modulizer("home_url_input") {
-  js_file = "home_url_input.js"
-  html_file = "home_url_input.html"
-  html_type = "v3-ready"
+html_to_js("web_components_local") {
+  js_files = [
+    "appearance_fonts_page.js",
+    "appearance_page.js",
+    "home_url_input.js",
+  ]
 }
 
 js_modulizer("modulize") {

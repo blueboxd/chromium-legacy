@@ -210,10 +210,13 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       nullptr /* worker_clients */, nullptr /* content_settings_client */,
       network::mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_token */,
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
-      kV8CacheOptionsDefault,
-      MakeGarbageCollected<WorkletModuleResponsesMap>());
+      kV8CacheOptionsDefault, MakeGarbageCollected<WorkletModuleResponsesMap>(),
+      mojo::NullRemote() /* browser_interface_broker */,
+      BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
+      base::UnguessableToken::Create() /* agent_cluster_id */);
   global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
-      std::move(creation_params), *reporting_proxy_, &GetFrame());
+      std::move(creation_params), *reporting_proxy_, &GetFrame(),
+      false /* create_microtask_queue */);
   global_scope_->ScriptController()->Initialize(NullURL());
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       global_scope_->ScriptController()->GetScriptState());

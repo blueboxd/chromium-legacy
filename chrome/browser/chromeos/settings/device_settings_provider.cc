@@ -107,6 +107,7 @@ const char* const kKnownSettings[] = {
     kMinimumChromeVersionEnforced,
     kPluginVmAllowed,
     kPluginVmLicenseKey,
+    kPluginVmUserId,
     kPolicyMissingMitigationMode,
     kRebootOnShutdown,
     kReleaseChannel,
@@ -830,6 +831,14 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (container.has_plugin_vm_license_key()) {
       new_values_cache->SetValue(
           kPluginVmLicenseKey, base::Value(container.plugin_vm_license_key()));
+    }
+  }
+
+  if (policy.has_plugin_vm_user_id()) {
+    const em::PluginVmUserIdProto& container(policy.plugin_vm_user_id());
+    if (container.has_plugin_vm_user_id()) {
+      new_values_cache->SetValue(kPluginVmUserId,
+                                 base::Value(container.plugin_vm_user_id()));
     }
   }
 

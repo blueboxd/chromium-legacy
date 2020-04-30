@@ -453,6 +453,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Position) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, AccessibilityFocus) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(
+      RunExtensionSubtest("automation/tests/tabs", "accessibility_focus.html"))
+      << message_;
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace extensions

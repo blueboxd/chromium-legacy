@@ -56,9 +56,6 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   void NotifyGetTextLocationDataResult(const ui::AXActionData& data,
                                        const base::Optional<gfx::Rect>& rect);
 
-  // Update Chrome's accessibility focused node by id.
-  void UpdateAccessibilityFocusLocation(int32_t id);
-
   // Invalidates the tree serializer.
   void InvalidateTree();
 
@@ -137,8 +134,6 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   // given vector if there is any difference.
   void HandleLiveRegions(std::vector<ui::AXEvent>* events);
 
-  bool ShouldDispatchFocusLocationChange() const;
-
   // Resets tree state.
   void Reset();
 
@@ -170,9 +165,6 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   base::Optional<int32_t> window_id_;
   base::Optional<int32_t> android_focused_id_;
 
-  // Cache of ChromeVox accessibility focus.
-  base::Optional<int32_t> chrome_focused_id_;
-
   bool is_notification_;
   bool is_input_method_window_;
 
@@ -182,9 +174,6 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   // Mapping from Chrome node ID to its cached computed bounds.
   // This simplifies bounds calculations.
   std::map<int32_t, gfx::Rect> computed_bounds_;
-
-  // Mapping from Chrome node ID to the previous raw bounds.
-  std::map<int32_t, gfx::Rect> previous_raw_bounds_;
 
   // Mapping from Chrome node ID to the previous computed name for live region.
   std::map<int32_t, std::string> previous_live_region_name_;

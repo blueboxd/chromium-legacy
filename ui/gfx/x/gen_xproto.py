@@ -17,6 +17,7 @@
 # #include <array>
 # #include <cstddef>
 # #include <cstdint>
+# #include <cstring>
 # #include <vector>
 #
 # #include "base/component_export.h"
@@ -665,6 +666,7 @@ class GenXproto:
         self.write('#include <array>')
         self.write('#include <cstddef>')
         self.write('#include <cstdint>')
+        self.write('#include <cstring>')
         self.write('#include <vector>')
         self.write()
         self.write('#include "base/component_export.h"')

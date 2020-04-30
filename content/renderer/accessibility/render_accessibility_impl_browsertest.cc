@@ -81,7 +81,6 @@ class TestAXImageAnnotator : public AXImageAnnotator {
       RenderAccessibilityImpl* const render_accessibility,
       mojo::PendingRemote<image_annotation::mojom::Annotator> annotator)
       : AXImageAnnotator(render_accessibility,
-                         std::string() /* preferred_language */,
                          std::move(annotator)) {}
   ~TestAXImageAnnotator() override = default;
 

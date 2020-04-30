@@ -4196,6 +4196,7 @@
       keywords: ["before", "after"],
       default_value: "before",
       type_name: "RubyPosition",
+      converter: "ConvertRubyPosition",
     },
     {
       name: "ruby-position",

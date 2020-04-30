@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/css/resolver/cascade_map.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/resolver/css_property_priority.h"
 
 namespace blink {
@@ -116,6 +117,8 @@ void CascadeMap::Add(const CSSPropertyName& name, CascadePriority priority) {
     AddCustom(name, priority, custom_properties_);
     return;
   }
+
+  DCHECK(!CSSProperty::Get(name.Id()).IsSurrogate());
 
   CSSPropertyID id = name.Id();
   size_t index = static_cast<size_t>(id);

@@ -176,6 +176,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
         BrowserAccessibility,
         &BrowserAccessibility::PlatformGetNextSibling,
         &BrowserAccessibility::PlatformGetPreviousSibling,
+        &BrowserAccessibility::PlatformGetFirstChild,
         &BrowserAccessibility::PlatformGetLastChild>
         platform_iterator;
   };
@@ -310,6 +311,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       BrowserAccessibility,
       &BrowserAccessibility::InternalGetNextSibling,
       &BrowserAccessibility::InternalGetPreviousSibling,
+      &BrowserAccessibility::InternalGetFirstChild,
       &BrowserAccessibility::InternalGetLastChild>;
   InternalChildIterator InternalChildrenBegin() const;
   InternalChildIterator InternalChildrenEnd() const;

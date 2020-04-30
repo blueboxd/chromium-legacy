@@ -134,6 +134,16 @@ class CORE_EXPORT StyleCascade {
   void AnalyzeMatchResult();
   void AnalyzeInterpolations();
 
+  // Clears the CascadeMap and other state, and analyzes the MatchResult/
+  // interpolations again.
+  void Reanalyze();
+
+  // Some properties are "cascade affecting", in the sense that their computed
+  // value actually affects cascade behavior. For example, css-logical
+  // properties change their cascade behavior depending on the computed value
+  // of direction/writing-mode.
+  void ApplyCascadeAffecting(CascadeResolver&);
+
   // Applies kHighPropertyPriority properties.
   //
   // In theory, it would be possible for each property/value that contains
@@ -164,13 +174,6 @@ class CORE_EXPORT StyleCascade {
                           CascadePriority,
                           const ActiveInterpolations&,
                           CascadeResolver&);
-  // Surrogates (such as css-logical properties) require special handling, since
-  // both the surrogate and the original property exist in the cascade at the
-  // same time. For example, 'inline-size' and 'width' may both exist in the
-  // CascadeMap, and the winner must be determined Apply-time, since we don't
-  // know which physical property 'inline-size' corresponds to before
-  // 'writing-mode' and 'direction' have been applied.
-  void ApplySurrogate(const CSSProperty&, CascadePriority, CascadeResolver&);
 
   // Looks up a value with random access, and applies it.
   void LookupAndApply(const CSSPropertyName&, CascadeResolver&);
@@ -308,7 +311,7 @@ class CORE_EXPORT StyleCascade {
   void MarkHasVariableReference(const CSSProperty&);
 
   const Document& GetDocument() const;
-  const CSSProperty& SurrogateFor(const CSSProperty& surrogate) const;
+  const CSSProperty& ResolveSurrogate(const CSSProperty& surrogate);
 
   bool HasAuthorDeclaration(const CSSProperty&) const;
   bool HasAuthorBorder() const;
@@ -359,6 +362,10 @@ class CORE_EXPORT StyleCascade {
 
   bool needs_match_result_analyze_ = false;
   bool needs_interpolations_analyze_ = false;
+  // A cascade-affecting property is for example 'direction', since the
+  // computed value of the property affects how e.g. margin-inline-start
+  // (and other css-logical properties) cascade.
+  bool depends_on_cascade_affecting_property_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StyleCascade);
 };

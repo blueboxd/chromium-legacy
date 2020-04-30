@@ -525,15 +525,16 @@ bool CreateTemporaryFile(FilePath* path) {
 // atomically.
 // TODO(jrg): is there equivalent call to use on Windows instead of
 // going 2-step?
-FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
+ScopedFILE CreateAndOpenTemporaryStreamInDir(const FilePath& dir,
+                                             FilePath* path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   if (!CreateTemporaryFileInDir(dir, path)) {
-    return NULL;
+    return nullptr;
   }
   // Open file in binary mode, to avoid problems with fwrite. On Windows
   // it replaces \n's with \r\n's, which may surprise you.
   // Reference: http://msdn.microsoft.com/en-us/library/h9t88zwz(VS.71).aspx
-  return OpenFile(*path, "wb+");
+  return ScopedFILE(OpenFile(*path, "wb+"));
 }
 
 bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {

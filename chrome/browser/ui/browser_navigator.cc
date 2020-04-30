@@ -90,12 +90,20 @@ namespace {
 
 bool allow_os_settings_in_tab = false;
 
-// Returns true if the specified Browser can open tabs. Not all Browsers support
-// multiple tabs, such as app frames and popups. This function returns false for
-// those types of Browser.
-bool WindowCanOpenTabs(Browser* browser) {
-  return browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP) ||
-         browser->tab_strip_model()->empty();
+// Returns true if |params.browser| exists and can open a new tab for
+// |params.url|. Not all browsers support multiple tabs, such as app frames and
+// popups. TYPE_APP will only open a new tab if the URL is within the app scope.
+bool WindowCanOpenTabs(const NavigateParams& params) {
+  if (!params.browser)
+    return false;
+
+  if (params.browser->app_controller() &&
+      !params.browser->app_controller()->IsUrlInAppScope(params.url)) {
+    return false;
+  }
+
+  return params.browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP) ||
+         params.browser->tab_strip_model()->empty();
 }
 
 // Finds an existing Browser compatible with |profile|, making a new one if no
@@ -185,13 +193,16 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
       // re-run with NEW_WINDOW.
       return {GetOrCreateBrowser(profile, params.user_gesture), -1};
     case WindowOpenDisposition::SINGLETON_TAB: {
-      int index = GetIndexOfExistingTab(params.browser, params);
-      if (index >= 0)
-        return {params.browser, index};
-      // If this window can't open tabs, then it would load in a random
-      // window, potentially opening a second copy. Instead, make an extra
-      // effort to see if there's an already open copy.
-      if (params.browser && !WindowCanOpenTabs(params.browser)) {
+      // If we have a browser window, check it first.
+      if (params.browser) {
+        int index = GetIndexOfExistingTab(params.browser, params);
+        if (index >= 0)
+          return {params.browser, index};
+      }
+      // If we don't have a a window, or if this window can't open tabs, then
+      // it would load in a random window, potentially opening a second copy.
+      // Instead, make an extra effort to see if there's an already open copy.
+      if (!WindowCanOpenTabs(params)) {
         std::pair<Browser*, int> index =
             GetIndexAndBrowserOfExistingTab(profile, params);
         if (index.first)
@@ -202,7 +213,7 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
       // See if we can open the tab in the window this navigator is bound to.
-      if (params.browser && WindowCanOpenTabs(params.browser))
+      if (WindowCanOpenTabs(params))
         return {params.browser, -1};
 
       // Find a compatible window and re-execute this command in it. Otherwise

@@ -841,11 +841,6 @@ void UiControllerAndroid::OnUnexpectedTaps() {
                               Metrics::DropOutReason::OVERLAY_STOP));
 }
 
-void UiControllerAndroid::UpdateTouchableArea() {
-  if (ui_delegate_)
-    ui_delegate_->UpdateTouchableArea();
-}
-
 void UiControllerAndroid::OnUserInteractionInsideTouchableArea() {
   if (ui_delegate_)
     ui_delegate_->OnUserInteractionInsideTouchableArea();

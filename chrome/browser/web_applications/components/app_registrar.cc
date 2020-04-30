@@ -47,11 +47,6 @@ void AppRegistrar::NotifyWebAppInstalled(const AppId& app_id) {
   // the WebappInstallSource in this event.
 }
 
-void AppRegistrar::NotifyWebAppWillBeUninstalled(const AppId& app_id) {
-  for (AppRegistrarObserver& observer : observers_)
-    observer.OnWebAppWillBeUninstalled(app_id);
-}
-
 void AppRegistrar::NotifyWebAppUninstalled(const AppId& app_id) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppUninstalled(app_id);

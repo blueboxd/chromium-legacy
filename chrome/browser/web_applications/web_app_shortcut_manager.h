@@ -33,7 +33,7 @@ class WebAppShortcutManager : public AppShortcutManager {
   ~WebAppShortcutManager() override;
 
   // AppRegistrarObserver:
-  void OnWebAppWillBeUninstalled(const AppId& app_id) override;
+  void OnWebAppUninstalled(const AppId& app_id) override;
 
   // AppShortcutManager:
   void GetShortcutInfoForApp(const AppId& app_id,

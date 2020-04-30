@@ -21,6 +21,7 @@
 #include "extensions/test/result_catcher.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/test_print_backend.h"
+#include "printing/mojom/print.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -51,7 +52,7 @@ ConstructPrinterCapabilities() {
   auto capabilities =
       std::make_unique<printing::PrinterSemanticCapsAndDefaults>();
   capabilities->color_model = printing::COLOR;
-  capabilities->duplex_modes.push_back(printing::SIMPLEX);
+  capabilities->duplex_modes.push_back(printing::mojom::DuplexMode::kSimplex);
   capabilities->copies_max = 2;
   capabilities->dpis.push_back(gfx::Size(kHorizontalDpi, kVerticalDpi));
   printing::PrinterSemanticCapsAndDefaults::Paper paper;

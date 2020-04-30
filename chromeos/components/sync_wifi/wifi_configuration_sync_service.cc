@@ -11,6 +11,7 @@
 #include "base/time/default_clock.h"
 #include "chromeos/components/sync_wifi/local_network_collector_impl.h"
 #include "chromeos/components/sync_wifi/pending_network_configuration_tracker_impl.h"
+#include "chromeos/components/sync_wifi/synced_network_metrics_logger.h"
 #include "chromeos/components/sync_wifi/synced_network_updater_impl.h"
 #include "chromeos/components/sync_wifi/timer_factory.h"
 #include "chromeos/components/sync_wifi/wifi_configuration_bridge.h"
@@ -44,6 +45,9 @@ WifiConfigurationSyncService::WifiConfigurationSyncService(
           syncer::WIFI_CONFIGURATIONS,
           base::BindRepeating(&syncer::ReportUnrecoverableError, channel)),
       std::move(create_store_callback));
+  metrics_logger_ = std::make_unique<SyncedNetworkMetricsLogger>(
+      network_handler->network_state_handler(),
+      network_handler->network_connection_handler());
 }
 
 WifiConfigurationSyncService::~WifiConfigurationSyncService() = default;

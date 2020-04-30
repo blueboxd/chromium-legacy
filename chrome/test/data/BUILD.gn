@@ -31,14 +31,7 @@ mojom("web_ui_test_bindings") {
   ]
 }
 
-group("closure_compile") {
-  deps = [
-    ":closure_compile_local",
-    "webui:closure_compile",
-  ]
-}
-
-js_type_check("closure_compile_local") {
+js_type_check("closure_compile") {
   deps = [ ":test_api_js" ]
 }
 

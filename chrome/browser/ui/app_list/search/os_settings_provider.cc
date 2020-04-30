@@ -10,6 +10,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -27,6 +28,20 @@ namespace app_list {
 namespace {
 
 constexpr char kOsSettingsResultPrefix[] = "os-settings://";
+
+// Various error states of the OsSettingsProvider. kOk is currently not emitted,
+// but may be used in future. These values persist to logs. Entries should not
+// be renumbered and numeric values should never be reused.
+enum class Error {
+  kOk = 0,
+  kAppServiceUnavailable = 1,
+  kNoSettingsIcon = 2,
+  kMaxValue = kNoSettingsIcon
+};
+
+void LogError(Error error) {
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppList.OsSettingsProvider.Error", error);
+}
 
 }  // namespace
 
@@ -63,8 +78,6 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
   DCHECK(profile_);
   DCHECK(search_handler_);
 
-  // TODO(crbug.com/1068851): Record an error metric if we can't get an app
-  // service proxy.
   app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile_);
   if (app_service_proxy_) {
     Observe(&app_service_proxy_->AppRegistryCache());
@@ -76,6 +89,8 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
         /*allow_placeholder_icon=*/false,
         base::BindOnce(&OsSettingsProvider::OnLoadIcon,
                        weak_factory_.GetWeakPtr()));
+  } else {
+    LogError(Error::kAppServiceUnavailable);
   }
 }
 
@@ -106,6 +121,9 @@ void OsSettingsProvider::OnSearchReturned(
     search_results.emplace_back(
         std::make_unique<OsSettingsResult>(profile_, result, icon_));
   }
+
+  if (icon_.isNull())
+    LogError(Error::kNoSettingsIcon);
   SwapResults(&search_results);
 }
 
@@ -133,8 +151,6 @@ void OsSettingsProvider::OnAppRegistryCacheWillBeDestroyed(
 }
 
 void OsSettingsProvider::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
-  // TODO(crbug.com/1068851): Record an error metric if we receive a compressed
-  // icon.
   if (icon_value->icon_compression ==
       apps::mojom::IconCompression::kUncompressed) {
     icon_ = icon_value->uncompressed;

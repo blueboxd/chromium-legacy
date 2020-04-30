@@ -58,6 +58,12 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver,
   // ignored.
   ui::AXNode* GetUnignoredNodeFromId(int32_t id);
 
+  // Accessibility focus is globally set via automation API from js.
+  void SetAccessibilityFocus(int32_t node_id);
+  ui::AXNode* GetAccessibilityFocusedNode();
+
+  int32_t accessibility_focused_id() { return accessibility_focused_id_; }
+
   // Updates or gets this wrapper with the latest state of listeners in js.
   void EventListenerAdded(ax::mojom::Event event_type, ui::AXNode* node);
   void EventListenerRemoved(ax::mojom::Event event_type, ui::AXNode* node);
@@ -93,6 +99,8 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver,
   std::vector<int> deleted_node_ids_;
   std::vector<int> text_changed_node_ids_;
   ui::AXEventGenerator event_generator_;
+
+  int32_t accessibility_focused_id_ = ui::AXNode::kInvalidAXID;
 
   // Tracks whether a tree change event was sent during unserialization. Tree
   // changes outside of unserialization do not get reflected here. The value is

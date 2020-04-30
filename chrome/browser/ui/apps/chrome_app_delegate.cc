@@ -254,6 +254,7 @@ content::WebContents* ChromeAppDelegate::OpenURLFromTab(
 void ChromeAppDelegate::AddNewContents(
     content::BrowserContext* context,
     std::unique_ptr<content::WebContents> new_contents,
+    const GURL& target_url,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_rect,
     bool user_gesture) {
@@ -274,8 +275,8 @@ void ChromeAppDelegate::AddNewContents(
   disposition = disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB
                     ? disposition
                     : WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  chrome::AddWebContents(displayer.browser(), NULL, std::move(new_contents),
-                         disposition, initial_rect);
+  chrome::AddWebContents(displayer.browser(), nullptr, std::move(new_contents),
+                         target_url, disposition, initial_rect);
 }
 
 content::ColorChooser* ChromeAppDelegate::ShowColorChooser(

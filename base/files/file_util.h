@@ -25,6 +25,7 @@
 #include "base/base_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 
@@ -201,8 +202,9 @@ BASE_EXPORT bool ReadFileToStringWithMaxSize(const FilePath& path,
 // Returns true iff |bytes| bytes have been successfully read from |fd|.
 BASE_EXPORT bool ReadFromFD(int fd, char* buffer, size_t bytes);
 
-// Performs the same function as CreateAndOpenTemporaryFileInDir(), but returns
-// the file-descriptor wrapped in a ScopedFD, rather than wrapped in a FILE.
+// Performs the same function as CreateAndOpenTemporaryStreamInDir(), but
+// returns the file-descriptor wrapped in a ScopedFD, rather than the stream
+// wrapped in a ScopedFILE.
 BASE_EXPORT ScopedFD CreateAndOpenFdForTemporaryFileInDir(const FilePath& dir,
                                                           FilePath* path);
 
@@ -292,11 +294,11 @@ BASE_EXPORT bool CreateTemporaryFileInDir(const FilePath& dir,
 // Create and open a temporary file.  File is opened for read/write.
 // The full path is placed in |path|.
 // Returns a handle to the opened file or NULL if an error occurred.
-BASE_EXPORT FILE* CreateAndOpenTemporaryFile(FilePath* path);
+BASE_EXPORT ScopedFILE CreateAndOpenTemporaryStream(FilePath* path);
 
-// Similar to CreateAndOpenTemporaryFile, but the file is created in |dir|.
-BASE_EXPORT FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir,
-                                                  FilePath* path);
+// Similar to CreateAndOpenTemporaryStream, but the file is created in |dir|.
+BASE_EXPORT ScopedFILE CreateAndOpenTemporaryStreamInDir(const FilePath& dir,
+                                                         FilePath* path);
 
 // Create a new directory. If prefix is provided, the new directory name is in
 // the format of prefixyyyy.

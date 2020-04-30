@@ -188,8 +188,8 @@ std::string CompressAndSaveBitmap(const std::string& dir,
   }
 
   base::FilePath screenshot_path;
-  base::ScopedFILE out_file(
-      base::CreateAndOpenTemporaryFileInDir(screenshot_dir, &screenshot_path));
+  base::ScopedFILE out_file(base::CreateAndOpenTemporaryStreamInDir(
+      screenshot_dir, &screenshot_path));
   if (!out_file) {
     LOG(ERROR) << "Failed to create temporary screenshot file";
     return std::string();

@@ -2046,6 +2046,178 @@ TEST(AXTreeTest, NullUnignoredChildren) {
   EXPECT_EQ(nullptr, root->GetUnignoredChildAtIndex(1));
 }
 
+TEST(AXTreeTest, UnignoredChildIteratorIncrementDecrementPastEnd) {
+  AXTreeUpdate tree_update;
+
+  // RootWebArea #1
+  // ++StaticText "text1" #2
+
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(2);
+
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kWebArea;
+  tree_update.nodes[0].child_ids = {2};
+
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[1].SetName("text1");
+
+  AXTree tree(tree_update);
+  AXNode* root = tree.root();
+
+  {
+    {
+      AXNode::UnignoredChildIterator root_unignored_iter =
+          root->UnignoredChildrenBegin();
+      EXPECT_EQ(2, root_unignored_iter->id());
+      EXPECT_EQ("text1", root_unignored_iter->GetStringAttribute(
+                             ax::mojom::StringAttribute::kName));
+
+      // Call unignored child iterator on root and increment, we should reach
+      // the end since there is only one iterator element.
+      EXPECT_EQ(root->UnignoredChildrenEnd(), ++root_unignored_iter);
+
+      // We increment past the end, and we should still stay at the end.
+      EXPECT_EQ(root->UnignoredChildrenEnd(), ++root_unignored_iter);
+
+      // When we decrement from the end, we should get the last iterator element
+      // "text1".
+      --root_unignored_iter;
+      EXPECT_EQ(2, root_unignored_iter->id());
+      EXPECT_EQ("text1", root_unignored_iter->GetStringAttribute(
+                             ax::mojom::StringAttribute::kName));
+    }
+
+    {
+      AXNode::UnignoredChildIterator root_unignored_iter =
+          root->UnignoredChildrenBegin();
+      EXPECT_EQ(2, root_unignored_iter->id());
+      EXPECT_EQ("text1", root_unignored_iter->GetStringAttribute(
+                             ax::mojom::StringAttribute::kName));
+
+      // Call unignored child iterator on root and decrement from the beginning,
+      // we should stay at the beginning.
+      --root_unignored_iter;
+      EXPECT_EQ(2, root_unignored_iter->id());
+      EXPECT_EQ("text1", root_unignored_iter->GetStringAttribute(
+                             ax::mojom::StringAttribute::kName));
+
+      // When we decrement past the beginning, we should still stay at the
+      // beginning.
+      --root_unignored_iter;
+      EXPECT_EQ(2, root_unignored_iter->id());
+      EXPECT_EQ("text1", root_unignored_iter->GetStringAttribute(
+                             ax::mojom::StringAttribute::kName));
+
+      // We increment past the end, and we should still reach the end.
+      EXPECT_EQ(root->UnignoredChildrenEnd(), ++root_unignored_iter);
+    }
+  }
+}
+
+TEST(AXTreeTest, UnignoredChildIteratorIgnoredContainerSiblings) {
+  AXTreeUpdate tree_update;
+
+  // RootWebArea #1
+  // ++genericContainer IGNORED #2
+  // ++++StaticText "text1" #3
+  // ++genericContainer IGNORED #4
+  // ++++StaticText "text2" #5
+  // ++genericContainer IGNORED #6
+  // ++++StaticText "text3" #7
+
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(7);
+
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kWebArea;
+  tree_update.nodes[0].child_ids = {2, 4, 6};
+
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].child_ids = {3};
+  tree_update.nodes[1].role = ax::mojom::Role::kGenericContainer;
+  tree_update.nodes[1].AddState(ax::mojom::State::kIgnored);
+
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[2].SetName("text1");
+
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].child_ids = {5};
+  tree_update.nodes[3].role = ax::mojom::Role::kGenericContainer;
+  tree_update.nodes[3].AddState(ax::mojom::State::kIgnored);
+
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[4].SetName("text2");
+
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].child_ids = {7};
+  tree_update.nodes[5].role = ax::mojom::Role::kGenericContainer;
+  tree_update.nodes[5].AddState(ax::mojom::State::kIgnored);
+
+  tree_update.nodes[6].id = 7;
+  tree_update.nodes[6].role = ax::mojom::Role::kStaticText;
+  tree_update.nodes[6].SetName("text3");
+
+  AXTree tree(tree_update);
+
+  {
+    // Call unignored child iterator on root and iterate till the end, we should
+    // get "text1", "text2", "text3" respectively because the sibling text nodes
+    // share the same parent (i.e. root) as |unignored_iter|.
+    AXNode* root = tree.root();
+    AXNode::UnignoredChildIterator root_unignored_iter =
+        root->UnignoredChildrenBegin();
+    EXPECT_EQ(3, root_unignored_iter->id());
+    EXPECT_EQ("text1", root_unignored_iter->GetStringAttribute(
+                           ax::mojom::StringAttribute::kName));
+
+    EXPECT_EQ(5, (++root_unignored_iter)->id());
+    EXPECT_EQ("text2",
+              (*root_unignored_iter)
+                  .GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+    EXPECT_EQ(7, (++root_unignored_iter)->id());
+    EXPECT_EQ("text3", root_unignored_iter->GetStringAttribute(
+                           ax::mojom::StringAttribute::kName));
+    EXPECT_EQ(root->UnignoredChildrenEnd(), ++root_unignored_iter);
+  }
+
+  {
+    // Call unignored child iterator on the ignored generic container of "text1"
+    // (id=2), When we iterate to the next of "text1", we should
+    // reach the end because the sibling text node "text2" does not share the
+    // same parent as |unignored_iter| of "text1".
+    AXNode* text1_ignored_container = tree.GetFromId(2);
+    AXNode::UnignoredChildIterator unignored_iter =
+        text1_ignored_container->UnignoredChildrenBegin();
+    EXPECT_EQ(3, unignored_iter->id());
+    EXPECT_EQ("text1", unignored_iter->GetStringAttribute(
+                           ax::mojom::StringAttribute::kName));
+    // The next child of "text1" should be the end.
+    EXPECT_EQ(text1_ignored_container->UnignoredChildrenEnd(),
+              ++unignored_iter);
+
+    // Call unignored child iterator on the ignored generic container of "text2"
+    // (id=4), When we iterate to the previous of "text2", we should
+    // reach the end because the sibling text node "text1" does not share the
+    // same parent as |unignored_iter| of "text2".
+    AXNode* text2_ignored_container = tree.GetFromId(4);
+    unignored_iter = text2_ignored_container->UnignoredChildrenBegin();
+    EXPECT_EQ(5, unignored_iter->id());
+    EXPECT_EQ("text2", unignored_iter->GetStringAttribute(
+                           ax::mojom::StringAttribute::kName));
+    // Decrement the iterator of "text2" should still remain on "text2" since
+    // the beginning of iterator is "text2."
+    --unignored_iter;
+    EXPECT_EQ(5, unignored_iter->id());
+    EXPECT_EQ("text2", unignored_iter->GetStringAttribute(
+                           ax::mojom::StringAttribute::kName));
+  }
+}
+
 TEST(AXTreeTest, UnignoredChildIterator) {
   AXTreeUpdate tree_update;
   // (i) => node is ignored
@@ -2113,27 +2285,27 @@ TEST(AXTreeTest, UnignoredChildIterator) {
   // UnignoredChildren(root) = {5, 6, 14, 15, 12, 3, 4}
   AXNode::UnignoredChildIterator unignored_iterator =
       root->UnignoredChildrenBegin();
-  EXPECT_EQ(5, (*unignored_iterator).id());
+  EXPECT_EQ(5, unignored_iterator->id());
 
-  EXPECT_EQ(6, (*++unignored_iterator).id());
+  EXPECT_EQ(6, (++unignored_iterator)->id());
 
-  EXPECT_EQ(14, (*++unignored_iterator).id());
+  EXPECT_EQ(14, (++unignored_iterator)->id());
 
-  EXPECT_EQ(15, (*++unignored_iterator).id());
+  EXPECT_EQ(15, (++unignored_iterator)->id());
 
-  EXPECT_EQ(14, (*--unignored_iterator).id());
+  EXPECT_EQ(14, (--unignored_iterator)->id());
 
-  EXPECT_EQ(6, (*--unignored_iterator).id());
+  EXPECT_EQ(6, (--unignored_iterator)->id());
 
-  EXPECT_EQ(14, (*++unignored_iterator).id());
+  EXPECT_EQ(14, (++unignored_iterator)->id());
 
-  EXPECT_EQ(15, (*++unignored_iterator).id());
+  EXPECT_EQ(15, (++unignored_iterator)->id());
 
-  EXPECT_EQ(12, (*++unignored_iterator).id());
+  EXPECT_EQ(12, (++unignored_iterator)->id());
 
-  EXPECT_EQ(3, (*++unignored_iterator).id());
+  EXPECT_EQ(3, (++unignored_iterator)->id());
 
-  EXPECT_EQ(4, (*++unignored_iterator).id());
+  EXPECT_EQ(4, (++unignored_iterator)->id());
 
   EXPECT_EQ(root->UnignoredChildrenEnd(), ++unignored_iterator);
 
@@ -2153,7 +2325,7 @@ TEST(AXTreeTest, UnignoredChildIterator) {
   // UnignoredChildren(11) = {}
   AXNode* node11 = tree.GetFromId(11);
   unignored_iterator = node11->UnignoredChildrenBegin();
-  EXPECT_EQ(14, (*unignored_iterator).id());
+  EXPECT_EQ(14, unignored_iterator->id());
 
   // Two UnignoredChildIterators from the same parent at the same position
   // should be equivalent, even in end position.

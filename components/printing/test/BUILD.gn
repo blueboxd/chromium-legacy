@@ -24,6 +24,7 @@ static_library("test_support") {
     "//ipc",
     "//printing",
     "//printing:test_support",
+    "//printing/mojom",
     "//skia",
     "//testing/gtest",
     "//ui/gfx/geometry",

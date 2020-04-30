@@ -17,7 +17,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_utils.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/init/input_method_factory.h"
@@ -116,24 +115,30 @@ void TextInputTestHelper::WaitForTextInputStateChanged(
     ui::TextInputType expected_type) {
   CHECK_EQ(NO_WAIT, waiting_type_);
   waiting_type_ = WAIT_ON_TEXT_INPUT_TYPE_CHANGED;
-  while (latest_text_input_type_ != expected_type)
-    content::RunMessageLoop();
+  while (latest_text_input_type_ != expected_type) {
+    base::RunLoop run_loop;
+    run_loop.Run();
+  }
   waiting_type_ = NO_WAIT;
 }
 
 void TextInputTestHelper::WaitForFocus() {
   CHECK_EQ(NO_WAIT, waiting_type_);
   waiting_type_ = WAIT_ON_FOCUS;
-  while (focus_state_)
-    content::RunMessageLoop();
+  while (focus_state_) {
+    base::RunLoop run_loop;
+    run_loop.Run();
+  }
   waiting_type_ = NO_WAIT;
 }
 
 void TextInputTestHelper::WaitForBlur() {
   CHECK_EQ(NO_WAIT, waiting_type_);
   waiting_type_ = WAIT_ON_BLUR;
-  while (!focus_state_)
-    content::RunMessageLoop();
+  while (!focus_state_) {
+    base::RunLoop run_loop;
+    run_loop.Run();
+  }
   waiting_type_ = NO_WAIT;
 }
 
@@ -142,8 +147,20 @@ void TextInputTestHelper::WaitForCaretBoundsChanged(
     const gfx::Rect& expected_composition_head) {
   waiting_type_ = WAIT_ON_CARET_BOUNDS_CHANGED;
   while (expected_caret_rect != caret_rect_ ||
-         expected_composition_head != composition_head_)
-    content::RunMessageLoop();
+         expected_composition_head != composition_head_) {
+    base::RunLoop run_loop;
+    run_loop.Run();
+  }
+  waiting_type_ = NO_WAIT;
+}
+
+void TextInputTestHelper::WaitForSurroundingTextChanged(
+    const base::string16& expected_text) {
+  waiting_type_ = WAIT_ON_CARET_BOUNDS_CHANGED;
+  while (expected_text != surrounding_text_) {
+    base::RunLoop run_loop;
+    run_loop.Run();
+  }
   waiting_type_ = NO_WAIT;
 }
 
@@ -152,8 +169,10 @@ void TextInputTestHelper::WaitForSurroundingTextChanged(
     const gfx::Range& expected_selection) {
   waiting_type_ = WAIT_ON_CARET_BOUNDS_CHANGED;
   while (expected_text != surrounding_text_ ||
-         expected_selection != selection_range_)
-    content::RunMessageLoop();
+         expected_selection != selection_range_) {
+    base::RunLoop run_loop;
+    run_loop.Run();
+  }
   waiting_type_ = NO_WAIT;
 }
 

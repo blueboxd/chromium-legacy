@@ -380,11 +380,13 @@ class HeadlessBrowserRendererCommandPrefixTest : public HeadlessBrowserTest {
     base::ThreadRestrictions::SetIOAllowed(true);
     base::CreateTemporaryFile(&launcher_stamp_);
 
-    FILE* launcher_file = base::CreateAndOpenTemporaryFile(&launcher_script_);
-    fprintf(launcher_file, "#!/bin/sh\n");
-    fprintf(launcher_file, "echo $@ > %s\n", launcher_stamp_.value().c_str());
-    fprintf(launcher_file, "exec $@\n");
-    fclose(launcher_file);
+    base::ScopedFILE launcher_file =
+        base::CreateAndOpenTemporaryStream(&launcher_script_);
+    fprintf(launcher_file.get(), "#!/bin/sh\n");
+    fprintf(launcher_file.get(), "echo $@ > %s\n",
+            launcher_stamp_.value().c_str());
+    fprintf(launcher_file.get(), "exec $@\n");
+    launcher_file.reset();
 #if !defined(OS_FUCHSIA)
     base::SetPosixFilePermissions(launcher_script_,
                                   base::FILE_PERMISSION_READ_BY_USER |

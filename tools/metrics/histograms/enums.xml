@@ -10489,6 +10489,9 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="Pin Missing"/>
   <int value="11" label="Unknown"/>
   <int value="12" label="No failure"/>
+  <int value="13" label="Not Associated"/>
+  <int value="14" label="Not Authenticated"/>
+  <int value="15" label="Too Many STAs"/>
 </enum>
 
 <enum name="ConnectionInfo">
@@ -12584,6 +12587,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="4" label="ParseFromStringFail"/>
   <int value="5" label="CreateDirectoryFail"/>
   <int value="6" label="WriteFileAtomicallyFail"/>
+  <int value="7" label="StructuredMetricsLogged"/>
 </enum>
 
 <enum name="CrosBeamformingDeviceState">
@@ -20079,6 +20083,7 @@ Called by update_document_policy_enum.py.-->
   <int value="695" label="DeviceCrostiniArcAdbSideloadingAllowed"/>
   <int value="696" label="OnFileDownloadedEnterpriseConnector"/>
   <int value="697" label="OnBulkDataEntryEnterpriseConnector"/>
+  <int value="698" label="PluginVmUserId"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -49879,6 +49884,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="WrongVersion"/>
   <int value="8" label="FeatureDisabled"/>
   <int value="9" label="TokenDisabled"/>
+</enum>
+
+<enum name="OsSettingsProviderError">
+  <int value="0" label="Ok"/>
+  <int value="1" label="App service unavailable"/>
+  <int value="2" label="No settings icon"/>
 </enum>
 
 <enum name="OsSuite">

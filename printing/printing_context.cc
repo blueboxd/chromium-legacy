@@ -8,6 +8,7 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/page_setup.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
@@ -79,7 +80,9 @@ PrintingContext::Result PrintingContext::UsePdfSettings() {
   pdf_settings.SetIntKey(kSettingColor, printing::COLOR);
   pdf_settings.SetIntKey(kSettingDpiHorizontal, kPointsPerInch);
   pdf_settings.SetIntKey(kSettingDpiVertical, kPointsPerInch);
-  pdf_settings.SetIntKey(kSettingDuplexMode, printing::SIMPLEX);
+  pdf_settings.SetIntKey(
+      kSettingDuplexMode,
+      static_cast<int>(printing::mojom::DuplexMode::kSimplex));
   pdf_settings.SetBoolKey(kSettingLandscape, false);
   pdf_settings.SetStringKey(kSettingDeviceName, "");
   pdf_settings.SetIntKey(kSettingPrinterType,

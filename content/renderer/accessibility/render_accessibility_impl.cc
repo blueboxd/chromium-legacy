@@ -73,12 +73,6 @@ void SetAccessibilityCrashKey(ui::AXMode mode) {
     base::debug::SetCrashKeyString(ax_mode_crash_key, mode.ToString());
 }
 
-// Returns the first language in the accept languages list.
-std::string GetPreferredLanguage(const std::string& accept_languages) {
-  const std::vector<std::string> tokens = base::SplitString(
-      accept_languages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return tokens.empty() ? "" : tokens[0];
-}
 }
 
 namespace content {
@@ -217,11 +211,6 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
   image_annotation_debugging_ =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kEnableExperimentalAccessibilityLabelsDebugging);
-
-  if (render_frame->render_view()) {
-    render_frame_->render_view()->RegisterRendererPreferenceWatcher(
-        pref_watcher_receiver_.BindNewPipeAndPassRemote());
-  }
 }
 
 RenderAccessibilityImpl::~RenderAccessibilityImpl() = default;
@@ -246,6 +235,7 @@ void RenderAccessibilityImpl::DidCommitProvisionalLoad(
   tree_source_.RemoveImageAnnotator();
   ax_image_annotator_->Destroy();
   ax_image_annotator_.release();
+  page_language_.clear();
 }
 
 void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
@@ -486,13 +476,6 @@ void RenderAccessibilityImpl::Reset(int32_t reset_token) {
   }
 }
 
-void RenderAccessibilityImpl::NotifyUpdate(
-    blink::mojom::RendererPreferencesPtr new_prefs) {
-  if (ax_image_annotator_)
-    ax_image_annotator_->set_preferred_language(
-        GetPreferredLanguage(new_prefs->accept_languages));
-}
-
 void RenderAccessibilityImpl::HandleWebAccessibilityEvent(
     const ui::AXEvent& event) {
   HandleAXEvent(event);
@@ -544,18 +527,6 @@ void RenderAccessibilityImpl::HandleAXEvent(const ui::AXEvent& event) {
   if (event.event_type == ax::mojom::Event::kFocus)
     serializer_.InvalidateSubtree(obj);
 #endif
-
-  // If some cell IDs have been added or removed, we need to update the whole
-  // table.
-  if (obj.Role() == ax::mojom::Role::kRow &&
-      event.event_type == ax::mojom::Event::kChildrenChanged) {
-    WebAXObject table_like_object = obj.ParentObject();
-    if (!table_like_object.IsDetached()) {
-      serializer_.InvalidateSubtree(table_like_object);
-      HandleAXEvent(ui::AXEvent(table_like_object.AxID(),
-                                ax::mojom::Event::kChildrenChanged));
-    }
-  }
 
   // If a select tag is opened or closed, all the children must be updated
   // because their visibility may have changed.
@@ -655,6 +626,10 @@ WebDocument RenderAccessibilityImpl::GetMainDocument() {
   return WebDocument();
 }
 
+std::string RenderAccessibilityImpl::GetLanguage() {
+  return page_language_;
+}
+
 void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   TRACE_EVENT0("accessibility",
                "RenderAccessibilityImpl::SendPendingAccessibilityEvents");
@@ -689,6 +664,10 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   bool had_load_complete_messages = false;
 
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
+
+  // Save the page language.
+  WebAXObject root = tree_source_.GetRoot();
+  page_language_ = root.Language().Utf8();
 
   // Loop over each event and generate an updated event message.
   for (auto& event : src_events) {
@@ -750,18 +729,6 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       continue;
 
     events.push_back(event);
-
-    // Whenever there's a change within a table, invalidate the
-    // whole table so that row and cell indexes are recomputed.
-    const ax::mojom::Role role = obj.Role();
-    if (ui::IsTableLike(role) || role == ax::mojom::Role::kRow ||
-        ui::IsCellOrTableHeader(role)) {
-      auto table = obj;
-      while (!table.IsDetached() && !ui::IsTableLike(table.Role()))
-        table = table.ParentObject();
-      if (!table.IsDetached())
-        serializer_.InvalidateSubtree(table);
-    }
 
     VLOG(1) << "Accessibility event: " << ui::ToString(event.event_type)
             << " on node id " << event.id;
@@ -1022,13 +989,8 @@ void RenderAccessibilityImpl::CreateAXImageAnnotator() {
   render_frame_->GetBrowserInterfaceBroker()->GetInterface(
       annotator.InitWithNewPipeAndPassReceiver());
 
-  const std::string preferred_language =
-      render_frame_->render_view()
-          ? GetPreferredLanguage(
-                render_frame_->render_view()->GetAcceptLanguages())
-          : std::string();
-  ax_image_annotator_ = std::make_unique<AXImageAnnotator>(
-      this, preferred_language, std::move(annotator));
+  ax_image_annotator_ =
+      std::make_unique<AXImageAnnotator>(this, std::move(annotator));
   tree_source_.AddImageAnnotator(ax_image_annotator_.get());
 }
 

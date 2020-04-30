@@ -85,12 +85,6 @@ namespace {
                 "mismatching enums: " #a)
 #endif
 
-// Check blink and printing enums are kept in sync.
-STATIC_ASSERT_ENUM(blink::kWebUnknownDuplexMode, UNKNOWN_DUPLEX_MODE);
-STATIC_ASSERT_ENUM(blink::kWebSimplex, SIMPLEX);
-STATIC_ASSERT_ENUM(blink::kWebLongEdge, LONG_EDGE);
-STATIC_ASSERT_ENUM(blink::kWebShortEdge, SHORT_EDGE);
-
 enum PrintPreviewHelperEvents {
   PREVIEW_EVENT_REQUESTED,        // Received a request for a preview document.
   PREVIEW_EVENT_CACHE_HIT,        // Unused.
@@ -2088,7 +2082,7 @@ bool PrintRenderFrameHelper::SetOptionsFromPdfDocument(
   options->is_scaling_disabled = PDFShouldDisableScalingBasedOnPreset(
       preset_options, print_pages_params_->params, false);
   options->copies = preset_options.copies;
-  options->duplex = static_cast<DuplexMode>(preset_options.duplex_mode);
+  options->duplex = preset_options.duplex_mode;
   return true;
 }
 

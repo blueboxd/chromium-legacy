@@ -36,6 +36,7 @@
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
+#include "components/permissions/permission_util.h"
 #include "components/permissions/permissions_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -549,7 +550,7 @@ void GetExceptionsForContentType(
     }
 
     // Off-the-record HostContentSettingsMap contains incognito content settings
-    // as well as normal content settings. Here, we use the incongnito settings
+    // as well as normal content settings. Here, we use the incognito settings
     // only.
     if (map->IsOffTheRecord() && !setting.incognito)
       continue;
@@ -570,8 +571,11 @@ void GetExceptionsForContentType(
   for (const auto& setting : embargo_settings) {
     // Off-the-record HostContentSettingsMap contains incognito content
     // settings as well as normal content settings. Here, we use the
-    // incongnito settings only.
+    // incognito settings only.
     if (map->IsOffTheRecord() && !setting.incognito)
+      continue;
+
+    if (!permissions::PermissionUtil::IsPermission(type))
       continue;
 
     if (auto_blocker

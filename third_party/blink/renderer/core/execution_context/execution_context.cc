@@ -349,9 +349,7 @@ bool ExecutionContext::IsSameAgentCluster(
 }
 
 v8::MicrotaskQueue* ExecutionContext::GetMicrotaskQueue() const {
-  // TODO(keishi): Convert to DCHECK once we assign agents everywhere.
-  if (!GetAgent())
-    return nullptr;
+  DCHECK(GetAgent());
   DCHECK(GetAgent()->event_loop());
   return GetAgent()->event_loop()->microtask_queue();
 }

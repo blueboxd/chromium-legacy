@@ -41,7 +41,7 @@ let DeleteFileMessage;
 /**
  * Response message sent by the privileged context indicating if a requested
  * delete was successful.
- * @typedef {{deleteResult: DeleteResult}}
+ * @typedef {{deleteResult: DeleteResult!}}
  */
 let DeleteFileResponse;
 
@@ -88,7 +88,7 @@ const RenameResult = {
  */
 let RenameFileMessage;
 
-/** @typedef {{renameResult: RenameResult}}  */
+/** @typedef {{renameResult: RenameResult!}}  */
 let RenameFileResponse;
 
 /**

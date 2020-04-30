@@ -26,6 +26,7 @@
 #include "content/public/test/render_view_test.h"
 #include "ipc/ipc_listener.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -119,7 +120,8 @@ void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetBoolean(kSettingCollate, false);
   dict->SetInteger(kSettingColor, GRAY);
   dict->SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kPdf));
-  dict->SetInteger(kSettingDuplexMode, SIMPLEX);
+  dict->SetInteger(kSettingDuplexMode,
+                   static_cast<int>(mojom::DuplexMode::kSimplex));
   dict->SetInteger(kSettingCopies, 1);
   dict->SetString(kSettingDeviceName, "dummy");
   dict->SetInteger(kPreviewUIID, 4);

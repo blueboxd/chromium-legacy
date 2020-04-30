@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/c/system/types.h"
 #include "net/base/filename_util.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -53,10 +54,12 @@ mojom::PrintColorMode ToArcColorMode(int color_mode) {
 
 // Converts a duplex mode to its Mojo type.
 mojom::PrintDuplexMode ToArcDuplexMode(int duplex_mode) {
-  switch (duplex_mode) {
-    case printing::LONG_EDGE:
+  printing::mojom::DuplexMode mode =
+      static_cast<printing::mojom::DuplexMode>(duplex_mode);
+  switch (mode) {
+    case printing::mojom::DuplexMode::kLongEdge:
       return mojom::PrintDuplexMode::LONG_EDGE;
-    case printing::SHORT_EDGE:
+    case printing::mojom::DuplexMode::kShortEdge:
       return mojom::PrintDuplexMode::SHORT_EDGE;
     default:
       return mojom::PrintDuplexMode::NONE;

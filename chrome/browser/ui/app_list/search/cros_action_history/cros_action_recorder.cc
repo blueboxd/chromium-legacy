@@ -24,6 +24,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action.pb.h"
+#include "chrome/common/chrome_features.h"
+#include "components/metrics/structured/structured_events.h"
 
 namespace app_list {
 namespace {
@@ -36,6 +38,18 @@ constexpr int kActionLimitInMemory = 3600;
 // that day.
 constexpr int kActionLimitPerFile = 100000;
 
+// Prefixes for CrOSActionRecorder::RecordAction.
+constexpr char kSettingChangedPrefix[] = "SettingsChanged-";
+constexpr char kSearchResultLaunchedPrefix[] = "SearchResultLaunched-";
+constexpr char kFileOpenedPrefix[] = "FileOpened-";
+constexpr char kTabNavigatedPrefix[] = "TabNavigated-";
+constexpr char kTabReactivatedPrefix[] = "TabReactivated-";
+constexpr char kTabOpenedPrefix[] = "TabOpened-";
+
+// Enables Hashed Logging for CrOSAction.
+const base::Feature kCrOSActionStructuredMetrics{
+    "CrOSActionStructuredMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Represents the events of the CrOSActionRecorder.
 // This enum is used for a histogram and should not be renumbered and the old
 // values should not be reused.
@@ -47,7 +61,8 @@ enum CrOSActionRecorderEvent {
   kParseFromStringFail = 4,
   kCreateDirectoryFail = 5,
   kWriteFileAtomicallyFail = 6,
-  kMaxValue = kWriteFileAtomicallyFail,
+  kStructuredMetricsLogged = 7,
+  kMaxValue = kStructuredMetricsLogged,
 };
 
 // Records CrOSActionRecorder event.
@@ -155,6 +170,27 @@ void CopyToDownloadDir(const base::FilePath model_dir,
   }
 }
 
+// Finds condition value with given key; return -1 if not existed.
+int FindWithDefault(const std::map<std::string, int>& conditions,
+                    const std::string& key) {
+  const auto find_it = conditions.find(key);
+  if (find_it != conditions.end()) {
+    return find_it->second;
+  } else {
+    return -1;
+  }
+}
+
+// Returns false if |input| doesn't start with prefix.
+// Returns true and delete prefix from |input| otherwise.
+bool ConsumePrefix(std::string* input, const std::string& prefix) {
+  if (input->find(prefix) != 0) {
+    return false;
+  }
+  *input = input->substr(prefix.size());
+  return true;
+}
+
 }  // namespace
 
 constexpr base::TimeDelta CrOSActionRecorder::kSaveInternal;
@@ -173,8 +209,12 @@ CrOSActionRecorder* CrOSActionRecorder::GetCrosActionRecorder() {
 
 void CrOSActionRecorder::RecordAction(
     const CrOSAction& action,
-    const std::vector<std::pair<std::string, int>>& conditions) {
+    const std::map<std::string, int>& conditions) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (structured_metrics_enabled_) {
+    LogCrOSActionAsStructuredMetrics(action, conditions);
+  }
 
   // Skip if the type is not kLogWithHash or kLogWithoutHash.
   if (type_ != CrOSActionRecorderType::kLogWithHash &&
@@ -210,7 +250,18 @@ void CrOSActionRecorder::Init(Profile* profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   last_save_timestamp_ = base::Time::Now();
+  last_action_time_ = base::Time::Now();
+  sequence_id_ = 0;
+
   SetCrOSActionRecorderType();
+
+  // Enable structured metrics only if:
+  // (1) profile is available.
+  // (2) enabled from finch.
+  // (3) not disabled by the user manually.
+  structured_metrics_enabled_ =
+      profile && base::FeatureList::IsEnabled(kCrOSActionStructuredMetrics) &&
+      type_ != CrOSActionRecorderType::kStructuredMetricsDisabled;
 
   // Do not record if the profile is empty.
   if (!profile) {
@@ -287,7 +338,86 @@ void CrOSActionRecorder::SetCrOSActionRecorderType() {
       type_ = CrOSActionRecorderType::kCopyToDownloadDir;
     } else if (cros_action_flag == ash::switches::kCrOSActionRecorderDisabled) {
       type_ = CrOSActionRecorderType::kLogDisabled;
+    } else if (cros_action_flag ==
+               ash::switches::kCrOSActionRecorderStructuredDisabled) {
+      type_ = CrOSActionRecorderType::kStructuredMetricsDisabled;
     }
+  }
+}
+
+void CrOSActionRecorder::LogCrOSActionAsStructuredMetrics(
+    const CrOSAction& action,
+    const std::map<std::string, int>& conditions) {
+  RecordCrOSActionEvent(CrOSActionRecorderEvent::kStructuredMetricsLogged);
+  // Updates sequence_id and last_action_time.
+  ++sequence_id_;
+  const int64_t time_since_last_action =
+      (base::Time::Now() - last_action_time_).InMilliseconds();
+  last_action_time_ = base::Time::Now();
+
+  std::string action_name = std::get<0>(action);
+
+  if (ConsumePrefix(&action_name, kSearchResultLaunchedPrefix)) {
+    // SearchReultLaunched.
+    metrics::structured::events::CrOSActionEvent_SearchResultLaunched()
+        .SetQuery(base::NumberToString(FindWithDefault(conditions, "Query")))
+        .SetResultType(FindWithDefault(conditions, "ResultType"))
+        .SetSearchResultId(action_name)
+        .SetSequenceId(sequence_id_)
+        .SetTimeSinceLastAction(time_since_last_action)
+        .Record();
+  } else if (ConsumePrefix(&action_name, kFileOpenedPrefix)) {
+    // FileOpened.
+    metrics::structured::events::CrOSActionEvent_FileOpened()
+        .SetFilename(action_name)
+        .SetOpenType(FindWithDefault(conditions, "open_type"))
+        .SetSequenceId(sequence_id_)
+        .SetTimeSinceLastAction(time_since_last_action)
+        .Record();
+  } else if (ConsumePrefix(&action_name, kSettingChangedPrefix)) {
+    // SettingChanged.
+    metrics::structured::events::CrOSActionEvent_SettingChanged()
+        .SetSettingId(FindWithDefault(conditions, "SettingId"))
+        .SetSettingType(FindWithDefault(conditions, "SettingType"))
+        .SetPreviousValue(FindWithDefault(conditions, "PreviousValue"))
+        .SetCurrentValue(FindWithDefault(conditions, "CurrentValue"))
+        .SetSequenceId(sequence_id_)
+        .SetTimeSinceLastAction(time_since_last_action)
+        .Record();
+  } else if (ConsumePrefix(&action_name, kTabNavigatedPrefix)) {
+    // Navigate to a new tab.
+    metrics::structured::events::CrOSActionEvent_TabEvent_TabNavigated()
+        .SetURL(action_name)
+        .SetVisibility(FindWithDefault(conditions, "Visibility"))
+        .SetPageTransition(FindWithDefault(conditions, "PageTransition"))
+        .SetSequenceId(sequence_id_)
+        .SetTimeSinceLastAction(time_since_last_action)
+        .Record();
+  } else if (ConsumePrefix(&action_name, kTabReactivatedPrefix)) {
+    // Reactivate an old tab.
+    metrics::structured::events::CrOSActionEvent_TabEvent_TabReactivated()
+        .SetURL(action_name)
+        .SetSequenceId(sequence_id_)
+        .SetTimeSinceLastAction(time_since_last_action)
+        .Record();
+  } else if (ConsumePrefix(&action_name, kTabOpenedPrefix)) {
+    // Open a tab from current tab.
+    // current tab is stored as a condition with value -1.
+    std::string current_url;
+    for (const auto& condition : conditions) {
+      if (std::get<1>(condition) == -1) {
+        current_url = std::get<0>(condition);
+      }
+    }
+
+    metrics::structured::events::CrOSActionEvent_TabEvent_TabOpened()
+        .SetURL(current_url)
+        .SetURLOpened(action_name)
+        .SetWindowOpenDisposition(
+            FindWithDefault(conditions, "WindowOpenDisposition"))
+        .SetSequenceId(sequence_id_)
+        .SetTimeSinceLastAction(time_since_last_action)
+        .Record();
   }
 }
 

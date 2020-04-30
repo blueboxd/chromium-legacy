@@ -15,6 +15,7 @@ source_set("lib") {
   deps = [
     "//components/crash/core/common:crash_key",
     "//components/pwg_encoder",
+    "//printing/mojom",
   ]
 
   public_deps = [

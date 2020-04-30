@@ -1314,6 +1314,7 @@ bool WebViewGuest::LoadDataWithBaseURL(const std::string& data_url,
 
 void WebViewGuest::AddNewContents(WebContents* source,
                                   std::unique_ptr<WebContents> new_contents,
+                                  const GURL& target_url,
                                   WindowOpenDisposition disposition,
                                   const gfx::Rect& initial_rect,
                                   bool user_gesture,

@@ -44,6 +44,7 @@ content::WebContents* AddSelectedTabWithURL(Browser* browser,
 void AddWebContents(Browser* browser,
                     content::WebContents* source_contents,
                     std::unique_ptr<content::WebContents> new_contents,
+                    const GURL& target_url,
                     WindowOpenDisposition disposition,
                     const gfx::Rect& initial_rect);
 

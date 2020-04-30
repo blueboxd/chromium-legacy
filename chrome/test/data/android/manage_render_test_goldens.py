@@ -94,7 +94,7 @@ def download(directory):
            '%d: %s') % (directory, e.returncode, e.output)
 
 
-def upload(directory):
+def upload(directory, dry_run):
   files_to_upload = []
   for f in os.listdir(directory):
     # Skip any files that we don't care about.
@@ -116,6 +116,11 @@ def upload(directory):
     files_to_upload.append(png_path)
 
   if len(files_to_upload):
+    if dry_run:
+      print ('Will upload the following files:')
+      for f in files_to_upload:
+        print ('  ' + f)
+      return
     subprocess.check_call([
         'upload_to_google_storage.py',
         '--bucket', STORAGE_BUCKET,
@@ -127,6 +132,8 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('action', choices=['download', 'upload'],
                       help='Which action to perform')
+  parser.add_argument('--dry_run', action='store_true',
+                      help='Dry run for uploading')
   args = parser.parse_args()
 
   if args.action == 'download':
@@ -134,7 +141,7 @@ def main():
       download(d)
   else:
     for d in GOLDEN_DIRECTORIES:
-      upload(d)
+      upload(d, args.dry_run)
 
 
 if __name__ == '__main__':

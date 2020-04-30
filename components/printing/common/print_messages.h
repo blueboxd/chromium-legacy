@@ -18,6 +18,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/common/metafile_utils.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
@@ -104,7 +105,7 @@ struct PrintHostMsg_SetOptionsFromDocument_Params {
 
   bool is_scaling_disabled;
   int copies;
-  printing::DuplexMode duplex;
+  printing::mojom::DuplexMode duplex;
   printing::PageRanges page_ranges;
 };
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)

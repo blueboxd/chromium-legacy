@@ -91,6 +91,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/mojom/print.mojom.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
@@ -2013,16 +2014,17 @@ bool PepperPluginInstanceImpl::GetPrintPresetOptionsFromDocument(
   preset_options->is_scaling_disabled = PP_ToBool(options.is_scaling_disabled);
   switch (options.duplex) {
     case PP_PRIVATEDUPLEXMODE_SIMPLEX:
-      preset_options->duplex_mode = blink::kWebSimplex;
+      preset_options->duplex_mode = printing::mojom::DuplexMode::kSimplex;
       break;
     case PP_PRIVATEDUPLEXMODE_SHORT_EDGE:
-      preset_options->duplex_mode = blink::kWebShortEdge;
+      preset_options->duplex_mode = printing::mojom::DuplexMode::kShortEdge;
       break;
     case PP_PRIVATEDUPLEXMODE_LONG_EDGE:
-      preset_options->duplex_mode = blink::kWebLongEdge;
+      preset_options->duplex_mode = printing::mojom::DuplexMode::kLongEdge;
       break;
     default:
-      preset_options->duplex_mode = blink::kWebUnknownDuplexMode;
+      preset_options->duplex_mode =
+          printing::mojom::DuplexMode::kUnknownDuplexMode;
       break;
   }
   preset_options->copies = options.copies;

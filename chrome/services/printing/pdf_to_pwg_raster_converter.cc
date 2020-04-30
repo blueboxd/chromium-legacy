@@ -14,6 +14,7 @@
 #include "components/pwg_encoder/pwg_encoder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "pdf/pdf.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/pdf_render_settings.h"
 
 namespace printing {
@@ -69,16 +70,16 @@ base::ReadOnlySharedMemoryRegion RenderPdfPagesToPwgRaster(
                                   : pwg_encoder::PwgHeaderInfo::SGRAY;
 
     switch (bitmap_settings.duplex_mode) {
-      case DuplexMode::UNKNOWN_DUPLEX_MODE:
+      case mojom::DuplexMode::kUnknownDuplexMode:
         NOTREACHED();
         break;
-      case DuplexMode::SIMPLEX:
+      case mojom::DuplexMode::kSimplex:
         // Already defaults to false/false.
         break;
-      case DuplexMode::LONG_EDGE:
+      case mojom::DuplexMode::kLongEdge:
         header_info.duplex = true;
         break;
-      case DuplexMode::SHORT_EDGE:
+      case mojom::DuplexMode::kShortEdge:
         header_info.duplex = true;
         header_info.tumble = true;
         break;

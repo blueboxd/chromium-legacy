@@ -32,6 +32,9 @@ const char kCrOSActionRecorderDisabled[] = "disable-and-delete-previous-log";
 const char kCrOSActionRecorderWithHash[] = "log-with-hash";
 // Log user actions with action name unhashed.
 const char kCrOSActionRecorderWithoutHash[] = "log-without-hash";
+// Disable structured metrics logging of cros actions.
+const char kCrOSActionRecorderStructuredDisabled[] =
+    "structured-metrics-disabled";
 
 bool ShouldNotDismissOnBlur() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(

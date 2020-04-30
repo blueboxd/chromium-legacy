@@ -323,6 +323,7 @@ void Shell::LoadDataWithBaseURLInternal(const GURL& url,
 
 void Shell::AddNewContents(WebContents* source,
                            std::unique_ptr<WebContents> new_contents,
+                           const GURL& target_url,
                            WindowOpenDisposition disposition,
                            const gfx::Rect& initial_rect,
                            bool user_gesture,

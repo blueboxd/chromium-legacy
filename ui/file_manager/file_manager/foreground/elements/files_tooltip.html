@@ -17,8 +17,19 @@
         z-index: 1000;
       }
 
+      :host([files-ng]) {
+        display: flex;
+        height: 24px;
+        /* Remove: only here to override non-files-ng :host padding: rule. */
+        padding: unset;
+      }
+
       :host([visible]) {
         opacity: .9;
+      }
+
+      :host([files-ng][visible]) {
+        opacity: 80%;
       }
 
       :host > #label {
@@ -29,6 +40,24 @@
         line-height: 28px;
         padding: 0 14px;
         white-space: nowrap;
+      }
+
+      :host([files-ng]) > #label {
+        align-items: center;
+        background-color: var(--google-grey-900);
+        border-radius: 2px;
+        color: var(--google-grey-100);
+        display: inline-flex;
+        font-size: 12px;
+        /* Remove: only here to override non-files-ng line-height: 28px. */
+        line-height: unset;
+        padding: 0 8px;
+        white-space: nowrap;
+      }
+
+      :host([files-ng]) > #label[invert] {
+        background-color: white;
+        color: var(--google-grey-900);
       }
     </style>
     <div id="label"></div>

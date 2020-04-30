@@ -20,7 +20,7 @@ PASS CookieStore interface: existence and properties of interface object
 PASS CookieStoreManager interface: existence and properties of interface object
 PASS CookieChangeEvent interface: existence and properties of interface object
 PASS ExtendableCookieChangeEvent interface: existence and properties of interface object
-FAIL ServiceWorkerRegistration interface: member cookies assert_false: The prototype object must not have a property "cookies" expected false got true
+PASS ServiceWorkerRegistration interface: member cookies
 PASS ServiceWorkerGlobalScope interface: existence and properties of interface object
 PASS ExtendableEvent interface: existence and properties of interface object
 PASS Window interface: existence and properties of interface object

@@ -155,6 +155,7 @@ void ExtensionOptionsGuest::OnPreferredSizeChanged(const gfx::Size& pref_size) {
 void ExtensionOptionsGuest::AddNewContents(
     WebContents* source,
     std::unique_ptr<WebContents> new_contents,
+    const GURL& target_url,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_rect,
     bool user_gesture,
@@ -168,8 +169,8 @@ void ExtensionOptionsGuest::AddNewContents(
     return;
 
   embedder_web_contents()->GetDelegate()->AddNewContents(
-      source, std::move(new_contents), disposition, initial_rect, user_gesture,
-      was_blocked);
+      source, std::move(new_contents), target_url, disposition, initial_rect,
+      user_gesture, was_blocked);
 }
 
 WebContents* ExtensionOptionsGuest::OpenURLFromTab(

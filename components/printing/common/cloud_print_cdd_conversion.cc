@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/backend/print_backend.h"
+#include "printing/mojom/print.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/feature_list.h"
@@ -27,13 +28,13 @@ namespace cloud_print {
 
 namespace {
 
-printer::DuplexType ToCloudDuplexType(printing::DuplexMode mode) {
+printer::DuplexType ToCloudDuplexType(printing::mojom::DuplexMode mode) {
   switch (mode) {
-    case printing::SIMPLEX:
+    case printing::mojom::DuplexMode::kSimplex:
       return printer::DuplexType::NO_DUPLEX;
-    case printing::LONG_EDGE:
+    case printing::mojom::DuplexMode::kLongEdge:
       return printer::DuplexType::LONG_EDGE;
-    case printing::SHORT_EDGE:
+    case printing::mojom::DuplexMode::kShortEdge:
       return printer::DuplexType::SHORT_EDGE;
     default:
       NOTREACHED();
@@ -194,7 +195,7 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
 
   if (semantic_info.duplex_modes.size() > 1) {
     printer::DuplexCapability duplex;
-    for (printing::DuplexMode mode : semantic_info.duplex_modes) {
+    for (printing::mojom::DuplexMode mode : semantic_info.duplex_modes) {
       duplex.AddDefaultOption(ToCloudDuplexType(mode),
                               semantic_info.duplex_default == mode);
     }

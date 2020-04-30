@@ -48,7 +48,7 @@ js_library("installed_app_checkbox") {
   ]
 }
 
-html_to_js("polymer3_elements") {
+html_to_js("web_components") {
   js_files = [
     "clear_browsing_data_dialog.js",
     "history_deletion_dialog.js",

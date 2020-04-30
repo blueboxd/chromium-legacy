@@ -512,6 +512,12 @@ var GetWordEndOffsets = natives.GetWordEndOffsets;
 /**
  * @param {string} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
+ */
+var SetAccessibilityFocus = natives.SetAccessibilityFocus;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
  * @param {string} eventType
  */
 var EventListenerAdded = natives.EventListenerAdded;
@@ -909,6 +915,10 @@ AutomationNodeImpl.prototype = {
 
   scrollRight: function(opt_callback) {
     this.performAction_('scrollRight', {}, opt_callback);
+  },
+
+  setAccessibilityFocus: function() {
+    SetAccessibilityFocus(this.treeID, this.id);
   },
 
   setSelection: function(startIndex, endIndex) {
@@ -1788,6 +1798,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'scrollDown',
     'scrollLeft',
     'scrollRight',
+    'setAccessibilityFocus',
     'setSelection',
     'setSequentialFocusNavigationStartingPoint',
     'setValue',

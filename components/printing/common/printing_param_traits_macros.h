@@ -9,6 +9,7 @@
 #define COMPONENTS_PRINTING_COMMON_PRINTING_PARAM_TRAITS_MACROS_H_
 
 #include "ipc/ipc_message_macros.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 
 // TODO(dgn) move all those macros back to
@@ -16,8 +17,8 @@
 // single generator. (main tracking bug: crbug.com/450822)
 IPC_ENUM_TRAITS_MAX_VALUE(printing::MarginType,
                           printing::MARGIN_TYPE_LAST)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(printing::DuplexMode,
-                              printing::UNKNOWN_DUPLEX_MODE,
-                              printing::SHORT_EDGE)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(printing::mojom::DuplexMode,
+                              printing::mojom::DuplexMode::kUnknownDuplexMode,
+                              printing::mojom::DuplexMode::kShortEdge)
 
 #endif  // COMPONENTS_PRINTING_COMMON_PRINTING_PARAM_TRAITS_MACROS_H_

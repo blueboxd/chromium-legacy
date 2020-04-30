@@ -30,14 +30,6 @@ class AssistantOverlayDelegate {
         }
     }
 
-    /** Asks for an update of the touchable area. */
-    void updateTouchableArea() {
-        if (mNativeAssistantOverlayDelegate != 0) {
-            AssistantOverlayDelegateJni.get().updateTouchableArea(
-                    mNativeAssistantOverlayDelegate, AssistantOverlayDelegate.this);
-        }
-    }
-
     /**
      * Called when interaction within allowed touchable area was detected. The interaction
      * could be any gesture.
@@ -57,8 +49,6 @@ class AssistantOverlayDelegate {
     @NativeMethods
     interface Natives {
         void onUnexpectedTaps(long nativeAssistantOverlayDelegate, AssistantOverlayDelegate caller);
-        void updateTouchableArea(
-                long nativeAssistantOverlayDelegate, AssistantOverlayDelegate caller);
         void onUserInteractionInsideTouchableArea(
                 long nativeAssistantOverlayDelegate, AssistantOverlayDelegate caller);
     }

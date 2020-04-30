@@ -253,7 +253,7 @@ void PrintSettings::Clear() {
   collate_ = false;
   color_ = UNKNOWN_COLOR_MODEL;
   copies_ = 0;
-  duplex_mode_ = UNKNOWN_DUPLEX_MODE;
+  duplex_mode_ = mojom::DuplexMode::kUnknownDuplexMode;
   device_name_.clear();
   requested_media_ = RequestedMedia();
   page_setup_device_units_.Clear();

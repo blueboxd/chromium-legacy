@@ -2,6 +2,8 @@
 <meta charset="utf-8">
 <script src="../resources/js-test.js"></script>
 <script src="../resources/accessibility-helper.js"></script>
+<body>
+<div id="container">
 <header>This is a Header for this page</header>
 <h1>Heading</h1>
 <div>Division</div>
@@ -80,7 +82,7 @@ Visit us at:www.chromium.org<br>
 <footer>
   <p>This is a footer.</p>
 </footer>
-<p>End of test</p>
+</div>  <!-- container -->
 <p id="description"></p>
 <div id="console"></div>
 <script>
@@ -89,6 +91,7 @@ description("This test make sure that unfocuasable elements are mapped implicitl
 if (window.testRunner)
   testRunner.dumpAsText();
 if (window.accessibilityController)
-  buildAccessibilityTree(accessibilityController.focusedElement, 0, 1);
+    buildAccessibilityTree(accessibilityController.accessibleElementById("container"), 0, 1);
 </script>
+</body>
 </html>

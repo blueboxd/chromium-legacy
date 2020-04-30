@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 
@@ -119,7 +120,7 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // Invoked when a "quick setting" is changed.
   virtual void OnQuickSettingsChanged(
       const std::string& setting_name,
-      const std::vector<std::pair<std::string, int>>& values) = 0;
+      const std::map<std::string, int>& values) = 0;
   // Updated when item with |id| is set to |visible|. Only sent if
   // |notify_visibility_change| was set on the SearchResultMetadata.
   virtual void OnSearchResultVisibilityChanged(const std::string& id,

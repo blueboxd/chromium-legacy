@@ -80,4 +80,14 @@ bool IsValidDohTemplateGroup(base::StringPiece group) {
   });
 }
 
+void ApplyDohTemplate(net::DnsConfigOverrides* overrides,
+                      base::StringPiece server_template) {
+  std::string server_method;
+  // We only allow use of templates that have already passed a format
+  // validation check.
+  CHECK(net::dns_util::IsValidDohTemplate(server_template, &server_method));
+  overrides->dns_over_https_servers.emplace({net::DnsOverHttpsServerConfig(
+      std::string(server_template), server_method == "POST")});
+}
+
 }  // namespace chrome_browser_net

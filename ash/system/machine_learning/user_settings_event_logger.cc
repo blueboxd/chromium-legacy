@@ -418,7 +418,8 @@ void UserSettingsEventLogger::SendToUkmAndAppList(
     app_list_client->OnQuickSettingsChanged(
         setting_name, {{"SettingType", static_cast<int>(event.setting_type())},
                        {"PreviousValue", event.previous_value()},
-                       {"CurrentValue", event.current_value()}});
+                       {"CurrentValue", event.current_value()},
+                       {"SettingId", static_cast<int>(event.setting_id())}});
   }
 }
 

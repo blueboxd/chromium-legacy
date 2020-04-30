@@ -384,14 +384,30 @@ class TestAnnotatorClient : public Annotator::Client {
   explicit TestAnnotatorClient() = default;
   ~TestAnnotatorClient() override = default;
 
+  // Set up tests.
+  void SetAcceptLanguages(const std::vector<std::string> accept_langs) {
+    accept_langs_ = accept_langs;
+  }
+  void SetTopLanguages(const std::vector<std::string> top_langs) {
+    top_langs_ = top_langs;
+  }
+
+ private:
   // Annotator::Client implementation:
   void BindJsonParser(mojo::PendingReceiver<data_decoder::mojom::JsonParser>
                           receiver) override {
     decoder_.GetService()->BindJsonParser(std::move(receiver));
   }
+  std::vector<std::string> GetAcceptLanguages() override {
+    return accept_langs_;
+  }
+  std::vector<std::string> GetTopLanguages() override { return top_langs_; }
+  void RecordLanguageMetrics(const std::string& page_language,
+                             const std::string& requested_language) override {}
 
- private:
   data_decoder::DataDecoder decoder_;
+  std::vector<std::string> accept_langs_ = {"en", "it", "fr"};
+  std::vector<std::string> top_langs_;
 };
 
 }  // namespace
@@ -1975,6 +1991,7 @@ TEST(AnnotatorTest, DescLanguage) {
                       1.0 /* min_ocr_confidence */,
                       test_url_factory.AsSharedURLLoaderFactory(),
                       std::make_unique<TestAnnotatorClient>());
+  annotator.server_languages_ = {"en", "it", "fr"};
 
   TestImageProcessor processor[3];
   base::Optional<mojom::AnnotateImageError> error[3];
@@ -1986,10 +2003,10 @@ TEST(AnnotatorTest, DescLanguage) {
       kImage1Url, "fr", processor[0].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[0], &annotations[0]));
   annotator.AnnotateImage(
-      kImage1Url, "en-AU", processor[1].GetPendingRemote(),
+      kImage1Url, "it", processor[1].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[1], &annotations[1]));
   annotator.AnnotateImage(
-      kImage2Url, "en-US", processor[2].GetPendingRemote(),
+      kImage2Url, "en", processor[2].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[2], &annotations[2]));
   test_task_env.RunUntilIdle();
 
@@ -2025,20 +2042,20 @@ TEST(AnnotatorTest, DescLanguage) {
         {
           "imageRequests": [
             {
-              "imageId": "https://www.example.com/image2.jpg en-US",
+              "imageId": "https://www.example.com/image2.jpg en",
               "imageBytes": "BAUG",
               "engineParameters": [
                 {"ocrParameters": {}}
               ]
             },
             {
-              "imageId": "https://www.example.com/image1.jpg en-AU",
+              "imageId": "https://www.example.com/image1.jpg it",
               "imageBytes": "AQID",
               "engineParameters": [
                 {"ocrParameters": {}},
                 {
                   "descriptionParameters": {
-                    "preferredLanguages": ["en-AU"]
+                    "preferredLanguages": ["it"]
                   }
                 }
               ]
@@ -2062,7 +2079,7 @@ TEST(AnnotatorTest, DescLanguage) {
         {
           "results": [
             {
-              "imageId": "https://www.example.com/image1.jpg en-AU",
+              "imageId": "https://www.example.com/image1.jpg it",
               "engineResults": [
                 {
                   "status": {},
@@ -2118,7 +2135,7 @@ TEST(AnnotatorTest, DescLanguage) {
               ]
             },
             {
-              "imageId": "https://www.example.com/image2.jpg en-US",
+              "imageId": "https://www.example.com/image2.jpg en",
               "engineResults": [
                 {
                   "status": {},
@@ -2258,6 +2275,74 @@ TEST(AnnotatorTest, ApiKey) {
         ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
         kOcrSuccessResponse, net::HTTP_OK);
   }
+}
+
+// Tests that the Annotator computes a reasonable preferred language
+// based on the page language, top languages, accept languages, and
+// server languages.
+TEST(AnnotatorTest, ComputePreferredLanguage) {
+  TestAnnotatorClient* annotator_client = new TestAnnotatorClient();
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
+  Annotator annotator(GURL("https://datascraper.com/annotation"), "my_api_key",
+                      kThrottle, 1 /* batch_size */,
+                      1.0 /* min_ocr_confidence */,
+                      test_url_factory.AsSharedURLLoaderFactory(),
+                      base::WrapUnique(annotator_client));
+
+  // Simplest case: the page language is in the list of top languages,
+  // accept languages, and server languages.
+  annotator.server_languages_ = {"fr", "ja"};
+  annotator_client->SetTopLanguages({"fr", "hu"});
+  annotator_client->SetAcceptLanguages({"fr", "es"});
+  EXPECT_EQ("fr", annotator.ComputePreferredLanguage("fr"));
+
+  // Case and locale are ignored (except for zh, see below).
+  annotator.server_languages_ = {"fR-FR", "ja"};
+  annotator_client->SetTopLanguages({"Fr-CA", "hu"});
+  annotator_client->SetAcceptLanguages({"fr-BE", "es"});
+  EXPECT_EQ("fr", annotator.ComputePreferredLanguage("FR-ch"));
+
+  // The page language is respected if it appears in the list of accept
+  // languages OR top languages, and it's also a supported server language.
+  annotator.server_languages_ = {"fr", "en", "de", "pt", "ja"};
+  annotator_client->SetTopLanguages({"fr", "de"});
+  annotator_client->SetAcceptLanguages({"en", "pt"});
+  EXPECT_EQ("pt", annotator.ComputePreferredLanguage("pt"));
+  EXPECT_EQ("de", annotator.ComputePreferredLanguage("de"));
+  EXPECT_EQ("en", annotator.ComputePreferredLanguage("en"));
+  EXPECT_EQ("fr", annotator.ComputePreferredLanguage("fr"));
+
+  // If the page language is not in the list of accept languages or top
+  // languages, the first choice should be an accept language that's
+  // also a top language and server language.
+  annotator.server_languages_ = {"en", "es"};
+  annotator_client->SetTopLanguages({"es"});
+  annotator_client->SetAcceptLanguages({"en", "es"});
+  EXPECT_EQ("es", annotator.ComputePreferredLanguage("hu"));
+
+  // If the page language is not in the list of accept languages or top
+  // languages, and no accept languages are top languages, return the
+  // first accept language that's a server language.
+  annotator.server_languages_ = {"en", "es"};
+  annotator_client->SetTopLanguages({});
+  annotator_client->SetAcceptLanguages({"en", "es"});
+  EXPECT_EQ("en", annotator.ComputePreferredLanguage("ja"));
+
+  // If the page language is not in the list of accept languages and none
+  // of the accept languages are server languages either, return the first
+  // top language that's a server language.
+  annotator.server_languages_ = {"en", "de", "pt"};
+  annotator_client->SetTopLanguages({"it", "hu", "de", "pt"});
+  annotator_client->SetAcceptLanguages({"es"});
+  EXPECT_EQ("de", annotator.ComputePreferredLanguage("ja"));
+
+  // If nothing matches, just return the first accept language. The server can
+  // still return OCR results, and it can log the request.
+  annotator.server_languages_ = {"en", "de", "pt"};
+  annotator_client->SetTopLanguages({"it", "hu"});
+  annotator_client->SetAcceptLanguages({"zh-TW"});
+  EXPECT_EQ("zh-TW", annotator.ComputePreferredLanguage("zh-CN"));
 }
 
 }  // namespace image_annotation

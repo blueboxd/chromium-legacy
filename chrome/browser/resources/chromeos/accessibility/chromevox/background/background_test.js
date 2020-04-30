@@ -2501,3 +2501,17 @@ TEST_F('ChromeVoxBackgroundTest', 'OutputEmptyQueueMode', function() {
         .replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'SetAccessibilityFocus', function() {
+  this.runWithLoadedTree('<p>Text.</p><button>Button</button>', function(root) {
+    const node = root.find({role: RoleType.BUTTON});
+
+    node.addEventListener(EventType.FOCUS, this.newCallback(function() {
+      chrome.automation.getAccessibilityFocus((focusedNode) => {
+        assertEquals(node, focusedNode);
+      });
+    }));
+
+    node.focus();
+  });
+});

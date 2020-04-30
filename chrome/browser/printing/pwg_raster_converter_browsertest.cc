@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/printing/pwg_raster_converter.h"
 #include "chrome/common/chrome_paths.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
 
@@ -127,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccessColor) {
                                  /*use_color=*/true,
                                  PdfRenderSettings::Mode::NORMAL);
   PwgRasterSettings pwg_settings;
-  pwg_settings.duplex_mode = DuplexMode::SIMPLEX;
+  pwg_settings.duplex_mode = mojom::DuplexMode::kSimplex;
   pwg_settings.odd_page_transform = PwgRasterTransformType::TRANSFORM_NORMAL;
   pwg_settings.rotate_all_pages = false;
   pwg_settings.reverse_page_order = false;
@@ -155,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccessMono) {
                                  /*use_color=*/false,
                                  PdfRenderSettings::Mode::NORMAL);
   PwgRasterSettings pwg_settings;
-  pwg_settings.duplex_mode = DuplexMode::SIMPLEX;
+  pwg_settings.duplex_mode = mojom::DuplexMode::kSimplex;
   pwg_settings.odd_page_transform = PwgRasterTransformType::TRANSFORM_NORMAL;
   pwg_settings.rotate_all_pages = false;
   pwg_settings.reverse_page_order = false;
@@ -183,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccessLongDuplex) {
                                  /*use_color=*/false,
                                  PdfRenderSettings::Mode::NORMAL);
   PwgRasterSettings pwg_settings;
-  pwg_settings.duplex_mode = DuplexMode::LONG_EDGE;
+  pwg_settings.duplex_mode = mojom::DuplexMode::kLongEdge;
   pwg_settings.odd_page_transform = PwgRasterTransformType::TRANSFORM_NORMAL;
   pwg_settings.rotate_all_pages = false;
   pwg_settings.reverse_page_order = false;

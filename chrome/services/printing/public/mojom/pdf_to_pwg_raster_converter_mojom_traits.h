@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 #include "chrome/services/printing/public/mojom/pdf_to_pwg_raster_converter.mojom.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/pwg_raster_settings.h"
 
 namespace mojo {
@@ -61,17 +62,17 @@ struct EnumTraits<printing::mojom::PwgRasterSettings::TransformType,
 
 template <>
 struct EnumTraits<printing::mojom::PwgRasterSettings::DuplexMode,
-                  printing::DuplexMode> {
+                  printing::mojom::DuplexMode> {
   static printing::mojom::PwgRasterSettings::DuplexMode ToMojom(
-      printing::DuplexMode duplex_mode) {
+      printing::mojom::DuplexMode duplex_mode) {
     switch (duplex_mode) {
-      case printing::DuplexMode::UNKNOWN_DUPLEX_MODE:
+      case printing::mojom::DuplexMode::kUnknownDuplexMode:
         break;
-      case printing::DuplexMode::SIMPLEX:
+      case printing::mojom::DuplexMode::kSimplex:
         return printing::mojom::PwgRasterSettings::DuplexMode::SIMPLEX;
-      case printing::DuplexMode::LONG_EDGE:
+      case printing::mojom::DuplexMode::kLongEdge:
         return printing::mojom::PwgRasterSettings::DuplexMode::LONG_EDGE;
-      case printing::DuplexMode::SHORT_EDGE:
+      case printing::mojom::DuplexMode::kShortEdge:
         return printing::mojom::PwgRasterSettings::DuplexMode::SHORT_EDGE;
     }
     NOTREACHED() << "Unknown duplex mode " << static_cast<int>(duplex_mode);
@@ -79,16 +80,16 @@ struct EnumTraits<printing::mojom::PwgRasterSettings::DuplexMode,
   }
 
   static bool FromMojom(printing::mojom::PwgRasterSettings::DuplexMode input,
-                        printing::DuplexMode* output) {
+                        printing::mojom::DuplexMode* output) {
     switch (input) {
       case printing::mojom::PwgRasterSettings::DuplexMode::SIMPLEX:
-        *output = printing::DuplexMode::SIMPLEX;
+        *output = printing::mojom::DuplexMode::kSimplex;
         return true;
       case printing::mojom::PwgRasterSettings::DuplexMode::LONG_EDGE:
-        *output = printing::DuplexMode::LONG_EDGE;
+        *output = printing::mojom::DuplexMode::kLongEdge;
         return true;
       case printing::mojom::PwgRasterSettings::DuplexMode::SHORT_EDGE:
-        *output = printing::DuplexMode::SHORT_EDGE;
+        *output = printing::mojom::DuplexMode::kShortEdge;
         return true;
     }
     NOTREACHED() << "Unknown duplex mode " << static_cast<int>(input);
@@ -113,7 +114,7 @@ class StructTraits<printing::mojom::PwgRasterSettingsDataView,
       const printing::PwgRasterSettings& settings) {
     return settings.odd_page_transform;
   }
-  static printing::DuplexMode duplex_mode(
+  static printing::mojom::DuplexMode duplex_mode(
       const printing::PwgRasterSettings& settings) {
     return settings.duplex_mode;
   }

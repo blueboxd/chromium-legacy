@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/passwords/bubble_controllers/move_to_account_store_bubble_controller.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "components/password_manager/core/common/password_manager_ui.h"
 
 MoveToAccountStoreBubbleController::MoveToAccountStoreBubbleController(
     base::WeakPtr<PasswordsModelDelegate> delegate)
@@ -19,6 +21,10 @@ MoveToAccountStoreBubbleController::~MoveToAccountStoreBubbleController() {
 
 base::string16 MoveToAccountStoreBubbleController::GetTitle() const {
   return base::string16();
+}
+
+void MoveToAccountStoreBubbleController::AcceptMove() {
+  return delegate_->MovePasswordToAccountStore();
 }
 
 void MoveToAccountStoreBubbleController::ReportInteractions() {}

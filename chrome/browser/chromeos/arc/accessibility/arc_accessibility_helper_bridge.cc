@@ -497,11 +497,6 @@ void ArcAccessibilityHelperBridge::OnAction(
     return;
   } else if (action == arc::mojom::AccessibilityActionType::CUSTOM_ACTION) {
     action_data->custom_action_id = data.custom_action_id;
-  } else if (action == arc::mojom::AccessibilityActionType::SHOW_ON_SCREEN) {
-    // This action is performed every time ChromeVox focus gets changed (from
-    // Background.setCurrentRange). Use this action as a notification of focus
-    // change, and update focus cache.
-    tree_source->UpdateAccessibilityFocusLocation(data.target_node_id);
   }
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(

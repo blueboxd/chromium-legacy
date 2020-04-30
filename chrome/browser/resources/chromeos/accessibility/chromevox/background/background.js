@@ -225,6 +225,7 @@ Background = class extends ChromeVoxState {
 
     const start = this.currentRange_.start.node;
     start.makeVisible();
+    start.setAccessibilityFocus();
 
     const root = AutomationUtil.getTopLevelRoot(start);
     if (!root || root.role == RoleType.DESKTOP || root == start) {

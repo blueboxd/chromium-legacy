@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
 
 #include "base/optional.h"
+#include "printing/mojom/print.mojom.h"
 
 namespace chromeos {
 
@@ -19,13 +20,13 @@ proto::PrintSettings_ColorMode ColorModelToProto(::printing::ColorModel color) {
 }
 
 proto::PrintSettings_DuplexMode DuplexModeToProto(
-    ::printing::DuplexMode duplex) {
+    ::printing::mojom::DuplexMode duplex) {
   switch (duplex) {
-    case ::printing::DuplexMode::SIMPLEX:
+    case ::printing::mojom::DuplexMode::kSimplex:
       return proto::PrintSettings_DuplexMode_ONE_SIDED;
-    case ::printing::DuplexMode::LONG_EDGE:
+    case ::printing::mojom::DuplexMode::kLongEdge:
       return proto::PrintSettings_DuplexMode_TWO_SIDED_LONG_EDGE;
-    case ::printing::DuplexMode::SHORT_EDGE:
+    case ::printing::mojom::DuplexMode::kShortEdge:
       return proto::PrintSettings_DuplexMode_TWO_SIDED_SHORT_EDGE;
     default:
       NOTREACHED();

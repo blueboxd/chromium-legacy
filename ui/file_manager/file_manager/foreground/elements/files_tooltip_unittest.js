@@ -48,15 +48,14 @@ const bodyContent = `
 
   <!-- Polymer files tooltip element. -->
   <files-tooltip></files-tooltip>
-
 `;
 
-function setUpPage() {
+function setUp() {
   /** @const {boolean} Assume files-ng in unittest. */
   const enableFilesNg = true;
 
-  // Mock LoadTimeData strings for files-ng case. These tests check CSS top and left
-  // position values, which are different in files-ng vs not-files-ng.
+  // Mock LoadTimeData strings for files-ng case. These tests check top and
+  // left position values, which can differ in files-ng vs not-files-ng.
   window.loadTimeData.data = {
     FILES_NG_ENABLED: enableFilesNg,
   };
@@ -69,15 +68,17 @@ function setUpPage() {
   window.isFilesNg = () => {
     return enableFilesNg;
   };
-}
 
-function setUp() {
-  document.body.innerHTML += bodyContent;
+  document.body.innerHTML = bodyContent;
   chocolateButton = document.querySelector('#chocolate');
   cherriesButton = document.querySelector('#cherries');
   otherButton = document.querySelector('#other');
 
   tooltip = document.querySelector('files-tooltip');
+  assertNotEqual('none', window.getComputedStyle(tooltip).display);
+  assertEquals('0', window.getComputedStyle(tooltip).opacity);
+  assertEquals(enableFilesNg, tooltip.hasAttribute('files-ng'));
+
   tooltip.addTargets([chocolateButton, cherriesButton]);
 }
 

@@ -7,5 +7,7 @@
   RuntimeEnabled=CookieStoreWorker,
   ImplementedAs=ServiceWorkerRegistrationCookies
 ] partial interface ServiceWorkerRegistration {
-  readonly attribute CookieStoreManager cookies;
+  // TODO(crbug.com/839117): Remove the following [Exposed] on a member
+  // declaration once the [Exposed] on a partial interface gets supported.
+  [Exposed=(ServiceWorker,Window)] readonly attribute CookieStoreManager cookies;
 };

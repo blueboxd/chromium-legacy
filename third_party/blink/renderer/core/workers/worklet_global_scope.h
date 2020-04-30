@@ -70,18 +70,6 @@ class CORE_EXPORT WorkletGlobalScope
 
   virtual LocalFrame* GetFrame() const;
 
-  const base::UnguessableToken& GetAgentClusterID() const final {
-    // Currently, worklet agents have no clearly defined owner. See
-    // https://html.spec.whatwg.org/C/#integration-with-the-javascript-agent-cluster-formalism
-    //
-    // However, it is intended that a SharedArrayBuffer can be shared with a
-    // worklet, e.g. the AudioWorklet. If this WorkletGlobalScope's creation
-    // params included an agent cluster ID, we'll assume that this worklet is
-    // in the same agent cluster. See
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=892067.
-    return agent_cluster_id_;
-  }
-
   // Implementation of the "fetch and invoke a worklet script" algorithm:
   // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
   // When script evaluation is done or any exception happens, it's notified to
@@ -118,10 +106,13 @@ class CORE_EXPORT WorkletGlobalScope
 
   // Constructs an instance as a main thread worklet. Must be called on the main
   // thread.
+  // When |create_microtask_queue| is true, creates a microtask queue separated
+  // from the Isolate's default microtask queue.
   WorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                      WorkerReportingProxy&,
                      LocalFrame*,
-                     Agent* = nullptr);
+                     bool create_microtask_queue);
+
   // Constructs an instance as a threaded worklet. Must be called on a worker
   // thread.
   WorkletGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
@@ -148,7 +139,7 @@ class CORE_EXPORT WorkletGlobalScope
                      ThreadType,
                      LocalFrame*,
                      WorkerThread*,
-                     Agent*);
+                     bool create_microtask_queue);
 
   EventTarget* ErrorEventTarget() final { return nullptr; }
 
@@ -168,8 +159,6 @@ class CORE_EXPORT WorkletGlobalScope
   CrossThreadPersistent<WorkletModuleResponsesMap> module_responses_map_;
 
   const HttpsState https_state_;
-
-  const base::UnguessableToken agent_cluster_id_;
 
   const ThreadType thread_type_;
   // |frame_| is available only when |thread_type_| is kMainThread.

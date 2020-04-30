@@ -33,6 +33,7 @@
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/pwg_raster_converter.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/pwg_raster_settings.h"
 #endif
 
@@ -754,7 +755,7 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
   EXPECT_TRUE(SuccessfulResponse(kSubmitDocURL, kSampleLocalPrintResponse));
   EXPECT_EQ("foobar", GetUploadData(kSubmitDocURL));
 
-  EXPECT_EQ(printing::DuplexMode::SIMPLEX,
+  EXPECT_EQ(printing::mojom::DuplexMode::kSimplex,
             pwg_converter_->bitmap_settings().duplex_mode);
   EXPECT_EQ(printing::TRANSFORM_NORMAL,
             pwg_converter_->bitmap_settings().odd_page_transform);
@@ -790,7 +791,7 @@ TEST_P(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
       SuccessfulResponse(kSubmitDocWithJobIDURL, kSampleLocalPrintResponse));
   EXPECT_EQ("foobar", GetUploadData(kSubmitDocWithJobIDURL));
 
-  EXPECT_EQ(printing::DuplexMode::SHORT_EDGE,
+  EXPECT_EQ(printing::mojom::DuplexMode::kShortEdge,
             pwg_converter_->bitmap_settings().duplex_mode);
   EXPECT_EQ(printing::TRANSFORM_ROTATE_180,
             pwg_converter_->bitmap_settings().odd_page_transform);

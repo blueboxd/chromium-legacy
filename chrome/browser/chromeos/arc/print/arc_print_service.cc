@@ -47,6 +47,7 @@
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/metafile_skia.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/printed_document.h"
 #include "printing/units.h"
@@ -358,14 +359,14 @@ printing::ColorModel FromArcColorMode(mojom::PrintColorMode mode) {
 
 // Get requested duplex mode from Mojo type.
 // |mode| is a bitfield but must have exactly one mode set here.
-printing::DuplexMode FromArcDuplexMode(mojom::PrintDuplexMode mode) {
+printing::mojom::DuplexMode FromArcDuplexMode(mojom::PrintDuplexMode mode) {
   switch (mode) {
     case mojom::PrintDuplexMode::NONE:
-      return printing::SIMPLEX;
+      return printing::mojom::DuplexMode::kSimplex;
     case mojom::PrintDuplexMode::LONG_EDGE:
-      return printing::LONG_EDGE;
+      return printing::mojom::DuplexMode::kLongEdge;
     case mojom::PrintDuplexMode::SHORT_EDGE:
-      return printing::SHORT_EDGE;
+      return printing::mojom::DuplexMode::kShortEdge;
   }
   NOTREACHED();
 }

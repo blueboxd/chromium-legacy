@@ -21,6 +21,7 @@
 #include "printing/backend/win_helper.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_settings_initializer_win.h"
 #include "printing/printed_document.h"
 #include "printing/printing_context_system_dialog_win.h"
@@ -183,19 +184,19 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     }
 
     switch (settings_->duplex_mode()) {
-      case LONG_EDGE:
+      case mojom::DuplexMode::kLongEdge:
         dev_mode->dmFields |= DM_DUPLEX;
         dev_mode->dmDuplex = DMDUP_VERTICAL;
         break;
-      case SHORT_EDGE:
+      case mojom::DuplexMode::kShortEdge:
         dev_mode->dmFields |= DM_DUPLEX;
         dev_mode->dmDuplex = DMDUP_HORIZONTAL;
         break;
-      case SIMPLEX:
+      case mojom::DuplexMode::kSimplex:
         dev_mode->dmFields |= DM_DUPLEX;
         dev_mode->dmDuplex = DMDUP_SIMPLEX;
         break;
-      default:  // UNKNOWN_DUPLEX_MODE
+      default:  // kUnknownDuplexMode
         break;
     }
 

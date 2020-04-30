@@ -152,8 +152,7 @@ PrintHostMsg_SetOptionsFromDocument_Params::
     PrintHostMsg_SetOptionsFromDocument_Params()
     : is_scaling_disabled(false),
       copies(0),
-      duplex(printing::UNKNOWN_DUPLEX_MODE) {
-}
+      duplex(printing::mojom::DuplexMode::kUnknownDuplexMode) {}
 
 PrintHostMsg_SetOptionsFromDocument_Params::
     ~PrintHostMsg_SetOptionsFromDocument_Params() {

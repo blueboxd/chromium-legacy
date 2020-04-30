@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 
 namespace printing {
@@ -31,7 +32,8 @@ base::Value GetPrintTicket(PrinterType type) {
   ticket.SetIntKey(kSettingColor, 2);  // color printing
   ticket.SetBoolKey(kSettingHeaderFooterEnabled, false);
   ticket.SetIntKey(kSettingMarginsType, 0);  // default margins
-  ticket.SetIntKey(kSettingDuplexMode, LONG_EDGE);
+  ticket.SetIntKey(kSettingDuplexMode,
+                   static_cast<int>(mojom::DuplexMode::kLongEdge));
   ticket.SetIntKey(kSettingCopies, 1);
   ticket.SetBoolKey(kSettingCollate, true);
   ticket.SetBoolKey(kSettingShouldPrintBackgrounds, false);

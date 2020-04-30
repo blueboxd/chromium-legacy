@@ -172,10 +172,6 @@ class AXTreeSourceArcTest : public testing::Test,
     tree_source_->NotifyAccessibilityEvent(event_data);
   }
 
-  void CallUpdateAccessibilityFocusLocation(int32_t id) {
-    tree_source_->UpdateAccessibilityFocusLocation(id);
-  }
-
   void GetChildren(AXNodeInfoData* node,
                    std::vector<ui::AXNode*>& out_children) {
     ui::AXNode* ax_node = tree()->GetFromId(node->id);
@@ -1424,7 +1420,6 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   SetProperty(node2, AXBooleanProperty::FOCUSABLE, true);
   SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
   SetProperty(node2, AXBooleanProperty::VISIBLE_TO_USER, true);
-  node2->bounds_in_screen = gfx::Rect(50, 50, 100, 100);
 
   // Add a child node to |node1|, but it's not an important node.
   SetProperty(node1, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({3}));
@@ -1446,17 +1441,6 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
 
   EXPECT_TRUE(CallGetTreeData(&data));
   EXPECT_EQ(node1->id, data.focus_id);
-
-  // Move Chrome accessibility focus to |node2|.
-  CallUpdateAccessibilityFocusLocation(node2->id);
-
-  // When focused node moved, dispatch kLocationChanged event.
-  event->source_id = root->id;
-  event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
-  node2->bounds_in_screen = gfx::Rect(100, 100, 150, 150);
-  CallNotifyAccessibilityEvent(event.get());
-
-  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kLocationChanged));
 
   // When the focused node disappeared from the tree, move the focus to the
   // root.

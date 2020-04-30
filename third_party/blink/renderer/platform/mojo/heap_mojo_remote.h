@@ -33,6 +33,8 @@ class HeapMojoRemote {
       : wrapper_(MakeGarbageCollected<Wrapper>(notifier)) {}
   HeapMojoRemote(const HeapMojoRemote&) = delete;
   HeapMojoRemote& operator=(const HeapMojoRemote&) = delete;
+  HeapMojoRemote(HeapMojoRemote&&) = default;
+  HeapMojoRemote& operator=(HeapMojoRemote&&) = default;
 
   // Methods to redirect to mojo::Remote.
   using Proxy = typename Interface::Proxy_;
@@ -81,6 +83,10 @@ class HeapMojoRemote {
     explicit Wrapper(ContextLifecycleNotifier* notifier) {
       SetContextLifecycleNotifier(notifier);
     }
+    Wrapper(const Wrapper&) = delete;
+    Wrapper& operator=(const Wrapper&) = delete;
+    Wrapper(Wrapper&&) = default;
+    Wrapper& operator=(Wrapper&&) = default;
 
     void Trace(Visitor* visitor) override {
       ContextLifecycleObserver::Trace(visitor);

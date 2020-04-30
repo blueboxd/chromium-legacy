@@ -5084,6 +5084,7 @@ test("unit_tests") {
     deps += [
       "//printing",
       "//printing:test_support",
+      "//printing/mojom",
     ]
 
     if (enable_print_preview) {

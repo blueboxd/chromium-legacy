@@ -1,5 +1,6 @@
 <script src="../resources/js-test.js"></script>
 <script src="../resources/accessibility-helper.js"></script>
+<div id="container">
 <div>These lists have a static text role because they have a presentation role.</div>
 <ul role="presentation">
     <li>Presentation Item 1</li>
@@ -69,8 +70,8 @@ The option B has option role because it has an explicit role.</div>
     <option value="B" disabled role="option">B</option>
   </select>
 </div>
+</div>  <!-- container -->
 
-<p>End of test</p>
 <p id="description"></p>
 <div id="console"></div>
 <script>
@@ -82,6 +83,6 @@ if (window.testRunner)
 if (window.accessibilityController) {
     // Ensure we've seen all nodes in accessibility tree.
     traverseAccessibilityTree(accessibilityController.rootElement);
-    buildAccessibilityTree(accessibilityController.focusedElement, 0, 1);
+    buildAccessibilityTree(accessibilityController.accessibleElementById('container'), 0, 1);
 }
 </script>

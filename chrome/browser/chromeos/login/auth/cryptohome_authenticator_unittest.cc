@@ -323,10 +323,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
   base::FilePath PopulateTempFile(const char* data, int data_len) {
     base::FilePath out;
-    FILE* tmp_file = base::CreateAndOpenTemporaryFile(&out);
-    EXPECT_NE(tmp_file, static_cast<FILE*>(NULL));
+    base::ScopedFILE tmp_file = base::CreateAndOpenTemporaryStream(&out);
+    EXPECT_TRUE(tmp_file);
     EXPECT_EQ(base::WriteFile(out, data, data_len), data_len);
-    EXPECT_TRUE(base::CloseFile(tmp_file));
     return out;
   }
 

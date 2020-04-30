@@ -77,9 +77,13 @@ class MainThreadWorkletTest : public PageTestBase {
         OriginTrialContext::GetTokens(window).get(),
         base::UnguessableToken::Create(), nullptr /* worker_settings */,
         kV8CacheOptionsDefault,
-        MakeGarbageCollected<WorkletModuleResponsesMap>());
+        MakeGarbageCollected<WorkletModuleResponsesMap>(),
+        mojo::NullRemote() /* browser_interface_broker */,
+        BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
+        window->GetAgentClusterID());
     global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
-        std::move(creation_params), *reporting_proxy_, &GetFrame());
+        std::move(creation_params), *reporting_proxy_, &GetFrame(),
+        false /* create_microtask_queue */);
     EXPECT_TRUE(global_scope_->IsMainThreadWorkletGlobalScope());
     EXPECT_FALSE(global_scope_->IsThreadedWorkletGlobalScope());
   }
@@ -101,6 +105,13 @@ TEST_F(MainThreadWorkletTest, SecurityOrigin) {
   // the owner Document's SecurityOrigin shouldn't.
   EXPECT_TRUE(global_scope_->GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(global_scope_->DocumentSecurityOrigin()->IsOpaque());
+}
+
+TEST_F(MainThreadWorkletTest, AgentCluster) {
+  // The worklet should be in the owner window's agent cluster.
+  ASSERT_TRUE(GetFrame().DomWindow()->GetAgentClusterID());
+  EXPECT_EQ(global_scope_->GetAgentClusterID(),
+            GetFrame().DomWindow()->GetAgentClusterID());
 }
 
 TEST_F(MainThreadWorkletTest, ContentSecurityPolicy) {

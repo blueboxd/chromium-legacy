@@ -30,9 +30,14 @@ class MoveToAccountStoreBubbleControllerTest : public ::testing::Test {
   std::unique_ptr<MoveToAccountStoreBubbleController> controller_;
 };
 
-TEST_F(MoveToAccountStoreBubbleControllerTest, CloseExplicictly) {
-  EXPECT_CALL(*delegate(), OnBubbleHidden());
+TEST_F(MoveToAccountStoreBubbleControllerTest, CloseExplicitly) {
+  EXPECT_CALL(*delegate(), OnBubbleHidden);
   controller()->OnBubbleClosing();
+}
+
+TEST_F(MoveToAccountStoreBubbleControllerTest, AcceptMove) {
+  EXPECT_CALL(*delegate(), MovePasswordToAccountStore);
+  controller()->AcceptMove();
 }
 
 }  // namespace

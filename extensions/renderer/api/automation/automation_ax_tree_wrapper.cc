@@ -272,6 +272,9 @@ AutomationAXTreeWrapper* AutomationAXTreeWrapper::GetParentOfTreeId(
 bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     const ExtensionMsg_AccessibilityEventBundleParams& event_bundle,
     bool is_active_profile) {
+  base::Optional<gfx::Rect> previous_accessibility_focused_global_bounds =
+      owner_->GetAccessibilityFocusedLocation();
+
   std::map<ui::AXTreeID, AutomationAXTreeWrapper*>& child_tree_id_reverse_map =
       GetChildTreeIDReverseMap();
   const auto& child_tree_ids = tree_.GetAllChildTreeIds();
@@ -384,6 +387,12 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     }
   }
 
+  if (previous_accessibility_focused_global_bounds.has_value() &&
+      previous_accessibility_focused_global_bounds !=
+          owner_->GetAccessibilityFocusedLocation()) {
+    owner_->SendAccessibilityFocusedLocationChange(event_bundle.mouse_location);
+  }
+
   return true;
 }
 
@@ -439,6 +448,16 @@ ui::AXTree::Selection AutomationAXTreeWrapper::GetUnignoredSelection() {
 ui::AXNode* AutomationAXTreeWrapper::GetUnignoredNodeFromId(int32_t id) {
   ui::AXNode* node = tree_.GetFromId(id);
   return (node && !node->IsIgnored()) ? node : nullptr;
+}
+
+void AutomationAXTreeWrapper::SetAccessibilityFocus(int32_t node_id) {
+  accessibility_focused_id_ = node_id;
+}
+
+ui::AXNode* AutomationAXTreeWrapper::GetAccessibilityFocusedNode() {
+  return accessibility_focused_id_ == ui::AXNode::kInvalidAXID
+             ? nullptr
+             : tree_.GetFromId(accessibility_focused_id_);
 }
 
 void AutomationAXTreeWrapper::EventListenerAdded(ax::mojom::Event event_type,

@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -55,6 +56,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/message_center/public/cpp/notification.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -153,6 +155,8 @@ void WebApps::Initialize(
   registrar_observer_.Add(&provider_->registrar());
   content_settings_observer_.Add(
       HostContentSettingsMapFactory::GetForProfile(profile_));
+  notification_display_service_.Add(
+      NotificationDisplayServiceFactory::GetForProfile(profile_));
 
   web_app_launch_manager_ =
       std::make_unique<web_app::WebAppLaunchManager>(profile_);
@@ -474,7 +478,7 @@ void WebApps::OnWebAppInstalled(const web_app::AppId& app_id) {
   }
 }
 
-void WebApps::OnWebAppWillBeUninstalled(const web_app::AppId& app_id) {
+void WebApps::OnWebAppUninstalled(const web_app::AppId& app_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (!web_app || !Accepts(app_id)) {
     return;
@@ -544,6 +548,83 @@ void WebApps::OnPackageListInitialRefreshed() {
 
 void WebApps::OnArcAppListPrefsDestroyed() {
   arc_prefs_ = nullptr;
+}
+
+void WebApps::OnNotificationDisplayed(
+    const message_center::Notification& notification,
+    const NotificationCommon::Metadata* const metadata) {
+  if (notification.notifier_id().type !=
+      message_center::NotifierType::WEB_PAGE) {
+    return;
+  }
+  MaybeAddWebPageNotifications(notification, metadata);
+}
+
+void WebApps::OnNotificationClosed(const std::string& notification_id) {
+  const std::string& app_id =
+      app_notifications_.GetAppIdForNotification(notification_id);
+  if (app_id.empty()) {
+    return;
+  }
+
+  const web_app::WebApp* web_app = GetWebApp(app_id);
+  if (!web_app || !Accepts(app_id)) {
+    return;
+  }
+
+  app_notifications_.RemoveNotification(notification_id);
+  Publish(app_notifications_.GetAppWithHasBadgeStatus(
+              apps::mojom::AppType::kWeb, app_id),
+          subscribers_);
+}
+
+void WebApps::OnNotificationDisplayServiceDestroyed(
+    NotificationDisplayService* service) {
+  notification_display_service_.Remove(service);
+}
+
+void WebApps::MaybeAddNotification(const std::string& app_id,
+                                   const std::string& notification_id) {
+  const web_app::WebApp* web_app = GetWebApp(app_id);
+  if (!web_app || !Accepts(app_id)) {
+    return;
+  }
+
+  app_notifications_.AddNotification(app_id, notification_id);
+  Publish(app_notifications_.GetAppWithHasBadgeStatus(
+              apps::mojom::AppType::kWeb, app_id),
+          subscribers_);
+}
+
+void WebApps::MaybeAddWebPageNotifications(
+    const message_center::Notification& notification,
+    const NotificationCommon::Metadata* const metadata) {
+  const GURL& url =
+      metadata
+          ? PersistentNotificationMetadata::From(metadata)->service_worker_scope
+          : notification.origin_url();
+
+  if (metadata) {
+    // For persistent notifications, find the web app with the scope url.
+    base::Optional<web_app::AppId> app_id =
+        web_app::FindInstalledAppWithUrlInScope(profile_, url,
+                                                /*window_only=*/false);
+    if (app_id.has_value()) {
+      MaybeAddNotification(app_id.value(), notification.id());
+    }
+  } else {
+    // For non-persistent notifications, find all web apps that are installed
+    // under the origin url.
+    auto* web_app_provider = web_app::WebAppProvider::Get(profile_);
+    if (!web_app_provider) {
+      return;
+    }
+
+    auto app_ids = web_app_provider->registrar().FindAppsInScope(url);
+    for (const auto& app_id : app_ids) {
+      MaybeAddNotification(app_id, notification.id());
+    }
+  }
 }
 
 void WebApps::SetShowInFields(apps::mojom::AppPtr& app,

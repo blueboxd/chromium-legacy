@@ -26,6 +26,7 @@ include_rules = [
     "+components/viz/common/surfaces/frame_sink_id.h",
     "+mojo/public",
     "+net/cookies/site_for_cookies.h",
+    "+printing/mojom/print.mojom-shared.h",
     "+services/metrics/public/cpp/ukm_source_id.h",
     "+services/network/public/cpp/web_sandbox_flags.h",
     "+services/network/public/mojom/web_sandbox_flags.mojom-shared.h",

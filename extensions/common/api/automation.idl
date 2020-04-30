@@ -1074,6 +1074,12 @@ enum MarkerType {
     // Replaces the selected text within a text field.
     static void replaceSelectedText(DOMString value);
 
+    // Sets accessibility focus. Accessibility focus is the node on which an
+    // extension tracks a user's focus. This may be conveyed through a focus
+    // ring or or speech output by the extension. Automation will dispatch more
+    // events to the accessibility focus such as location changes.
+    static void setAccessibilityFocus();
+
     // Sets selection within a text field.
     static void setSelection(long startIndex, long endIndex);
 
@@ -1173,6 +1179,10 @@ enum MarkerType {
   // Called with the <code>AutomationNode</code> that currently has focus.
   callback FocusCallback = void(AutomationNode focusedNode);
 
+  // Called with the <code>AutomationNode</code> that currently has
+  // accessibility focus.
+  callback AccessibilityFocusCallback = void(AutomationNode focusedNode);
+
   interface Functions {
     // Get the automation tree for the tab with the given tabId, or the current
     // tab if no tabID is given, enabling automation if necessary. Returns a
@@ -1189,6 +1199,12 @@ enum MarkerType {
     // Get the automation node that currently has focus, globally. Will return
     // null if none of the nodes in any loaded trees have focus.
     [nocompile] static void getFocus(FocusCallback callback);
+
+    // Get the automation node that currently has accessibility focus, globally.
+    // Will return null if none of the nodes in any loaded trees have
+    // accessibility focus.
+    [nocompile] static void getAccessibilityFocus(
+        AccessibilityFocusCallback callback);
 
     // Add a tree change observer. Tree change observers are static/global, they
     // listen to changes across all trees. Pass a filter to determine what

@@ -92,6 +92,11 @@ jumbo_component("gtk") {
     "//ui/strings",
     "//ui/views",
   ]
+
+  if (use_cups) {
+    deps += [ "//printing/mojom" ]
+  }
+
   public_deps = [ ":gtk_ui_delegate" ]
 
   if (use_x11 || ozone_platform_x11) {

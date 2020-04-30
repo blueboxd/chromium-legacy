@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 // Custom bindings for the automation API.
-var AutomationNode = require('automationNode').AutomationNode;
 var AutomationRootNode = require('automationNode').AutomationRootNode;
 var automationInternal = getInternalApi('automationInternal');
 var exceptionHandler = require('uncaught_exception_handler');
@@ -11,13 +10,14 @@ var logging = requireNative('logging');
 var nativeAutomationInternal = requireNative('automationInternal');
 var DestroyAccessibilityTree =
     nativeAutomationInternal.DestroyAccessibilityTree;
-var GetIntAttribute = nativeAutomationInternal.GetIntAttribute;
 var StartCachingAccessibilityTrees =
     nativeAutomationInternal.StartCachingAccessibilityTrees;
 var AddTreeChangeObserver = nativeAutomationInternal.AddTreeChangeObserver;
 var RemoveTreeChangeObserver =
     nativeAutomationInternal.RemoveTreeChangeObserver;
 var GetFocusNative = nativeAutomationInternal.GetFocus;
+var GetAccessibilityFocusNative =
+    nativeAutomationInternal.GetAccessibilityFocus;
 
 /**
  * A namespace to export utility functions to other files in automation.
@@ -131,6 +131,17 @@ automationUtil.tabIDToAutomationNode = {};
       callback(privates(tree).impl.get(focusedNodeInfo.nodeId));
       return;
     }
+  });
+
+  apiFunctions.setHandleRequest('getAccessibilityFocus', function(callback) {
+    var focusedNodeInfo = GetAccessibilityFocusNative();
+    if (!focusedNodeInfo) {
+      callback(null);
+      return;
+    }
+    var tree = AutomationRootNode.getOrCreate(focusedNodeInfo.treeId);
+    if (tree)
+      callback(privates(tree).impl.get(focusedNodeInfo.nodeId));
   });
 
   function removeTreeChangeObserver(observer) {

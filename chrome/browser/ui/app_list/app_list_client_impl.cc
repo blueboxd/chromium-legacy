@@ -312,7 +312,7 @@ void AppListClientImpl::OnSearchResultVisibilityChanged(const std::string& id,
 
 void AppListClientImpl::OnQuickSettingsChanged(
     const std::string& setting_name,
-    const std::vector<std::pair<std::string, int>>& values) {
+    const std::map<std::string, int>& values) {
   // CrOS action recorder.
   app_list::CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
       {base::StrCat({"SettingsChanged-", setting_name})}, values);

@@ -141,12 +141,15 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
       app_browser_->tab_strip_model()->delegate()->ShouldDisplayFavicon(
           app_browser_->tab_strip_model()->GetActiveWebContents()));
 
+  // Tabbed PWAs only open URLs within the scope of the app. The manifest is
+  // another URL besides |tabbed_app_url_| in scope.
+  GURL manifest("chrome://test-system-app/manifest.json");
   // Check URL of tab1.
   EXPECT_EQ(GetActiveTabURL(), tabbed_app_url_);
-  // Create tab2 with specific URL, check URL, number of tabs.
-  chrome::AddTabAt(app_browser_, GURL(chrome::kChromeUINewTabURL), -1, true);
+  // Create tab2 with another URL from app, check URL, number of tabs.
+  chrome::AddTabAt(app_browser_, manifest, -1, true);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 2);
-  EXPECT_EQ(GetActiveTabURL(), GURL("chrome://newtab/"));
+  EXPECT_EQ(GetActiveTabURL(), manifest);
   // Create tab3 with default URL, check URL, number of tabs.
   chrome::NewTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 3);
@@ -158,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
   // Switch to tab2, check URL.
   chrome::SelectNextTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 3);
-  EXPECT_EQ(GetActiveTabURL(), GURL("chrome://newtab/"));
+  EXPECT_EQ(GetActiveTabURL(), manifest);
   // Switch to tab3, check URL.
   chrome::SelectNextTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 3);
@@ -166,9 +169,38 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
   // Close tab3, check number of tabs.
   chrome::CloseTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 2);
-  EXPECT_EQ(GetActiveTabURL(), GURL("chrome://newtab/"));
+  EXPECT_EQ(GetActiveTabURL(), manifest);
   // Close tab2, check number of tabs.
   chrome::CloseTab(app_browser_);
+  EXPECT_EQ(app_browser_->tab_strip_model()->count(), 1);
+  EXPECT_EQ(GetActiveTabURL(), tabbed_app_url_);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, NonAppUrl) {
+  InstallAndLaunchMockApp();
+
+  // Check we have 2 browsers: |browser()| and |app_browser_|.
+  EXPECT_EQ(BrowserList::GetInstance()->size(), 2u);
+  EXPECT_NE(browser(), app_browser_);
+  EXPECT_TRUE(browser()->is_type_normal());
+  EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
+  EXPECT_EQ(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL(),
+      "about:blank");
+  EXPECT_TRUE(app_browser_->is_type_app());
+  EXPECT_EQ(app_browser_->tab_strip_model()->count(), 1);
+  EXPECT_EQ(GetActiveTabURL(), tabbed_app_url_);
+
+  // Create tab2 with URL not from app, it will open in the NORMAL browser.
+  chrome::AddTabAt(app_browser_, GURL(chrome::kChromeUINewTabURL), -1, true);
+  EXPECT_EQ(BrowserList::GetInstance()->size(), 2u);
+  EXPECT_NE(browser(), app_browser_);
+  EXPECT_TRUE(browser()->is_type_normal());
+  EXPECT_EQ(browser()->tab_strip_model()->count(), 2);
+  EXPECT_EQ(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL(),
+      "chrome://newtab/");
+  EXPECT_TRUE(app_browser_->is_type_app());
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 1);
   EXPECT_EQ(GetActiveTabURL(), tabbed_app_url_);
 }

@@ -716,6 +716,7 @@ const std::string& BackgroundContentsService::GetParentApplicationId(
 
 void BackgroundContentsService::AddWebContents(
     std::unique_ptr<WebContents> new_contents,
+    const GURL& target_url,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_rect,
     bool* was_blocked) {
@@ -723,7 +724,7 @@ void BackgroundContentsService::AddWebContents(
       Profile::FromBrowserContext(new_contents->GetBrowserContext()));
   if (browser) {
     chrome::AddWebContents(browser, nullptr, std::move(new_contents),
-                           disposition, initial_rect);
+                           target_url, disposition, initial_rect);
   }
 }
 

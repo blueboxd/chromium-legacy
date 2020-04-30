@@ -13,6 +13,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/url_constants.h"
 
 namespace web_app {
 
@@ -81,6 +82,14 @@ class LoaderTask : public content::WebContentsObserver {
     }
 
     timer_.Stop();
+
+    if (validated_url == content::kUnreachableWebDataURL) {
+      // Navigation ends up in an error page. For example, network errors and
+      // policy blocked URLs.
+      // TODO(https://crbug.com/1071300): Handle error codes appropriately.
+      PostResultTask(WebAppUrlLoader::Result::kFailedErrorPageLoaded);
+      return;
+    }
 
     if (EqualsWithComparison(validated_url, url_, url_comparison_)) {
       PostResultTask(WebAppUrlLoader::Result::kUrlLoaded);

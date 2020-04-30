@@ -66,6 +66,8 @@ template <HeapMojoWrapperMode Mode>
 class RemoteOwner : public GarbageCollected<RemoteOwner<Mode>> {
  public:
   explicit RemoteOwner(MockContext* context) : remote_(context) {}
+  explicit RemoteOwner(HeapMojoRemote<sample::blink::Service, Mode> remote)
+      : remote_(std::move(remote)) {}
 
   HeapMojoRemote<sample::blink::Service, Mode>& remote() { return remote_; }
 
@@ -155,6 +157,24 @@ class HeapMojoRemoteDisconnectWithReasonHandlerBaseTest
   bool disconnected_with_reason_ = false;
 };
 
+template <HeapMojoWrapperMode Mode>
+class HeapMojoRemoteMoveBaseTest : public TestSupportingGC {
+ protected:
+  void SetUp() override {
+    context_ = MakeGarbageCollected<MockContext>();
+    HeapMojoRemote<sample::blink::Service, Mode> remote(context_);
+    owner_ = MakeGarbageCollected<RemoteOwner<Mode>>(std::move(remote));
+    scoped_refptr<base::NullTaskRunner> null_task_runner =
+        base::MakeRefCounted<base::NullTaskRunner>();
+    impl_.receiver().Bind(
+        owner_->remote().BindNewPipeAndPassReceiver(null_task_runner));
+  }
+
+  ServiceImpl impl_;
+  Persistent<MockContext> context_;
+  Persistent<RemoteOwner<Mode>> owner_;
+};
+
 }  // namespace
 
 class HeapMojoRemoteGCWithContextObserverTest
@@ -174,6 +194,12 @@ class HeapMojoRemoteDisconnectWithReasonHandlerWithContextObserverTest
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoRemoteDisconnectWithReasonHandlerWithoutContextObserverTest
     : public HeapMojoRemoteDisconnectWithReasonHandlerBaseTest<
+          HeapMojoWrapperMode::kWithoutContextObserver> {};
+class HeapMojoRemoteMoveWithContextObserverTest
+    : public HeapMojoRemoteMoveBaseTest<
+          HeapMojoWrapperMode::kWithContextObserver> {};
+class HeapMojoRemoteMoveWithoutContextObserverTest
+    : public HeapMojoRemoteMoveBaseTest<
           HeapMojoWrapperMode::kWithoutContextObserver> {};
 
 // Make HeapMojoRemote with context observer garbage collected and check that
@@ -238,6 +264,20 @@ TEST_F(HeapMojoRemoteDisconnectWithReasonHandlerWithoutContextObserverTest,
   owner_->remote().ResetWithReason(reason, message);
   run_loop().Run();
   EXPECT_TRUE(disconnected_with_reason());
+}
+
+// Move the remote from the outside of Owner class.
+TEST_F(HeapMojoRemoteMoveWithContextObserverTest, MoveSemantics) {
+  EXPECT_TRUE(owner_->remote().is_bound());
+  context_->NotifyContextDestroyed();
+  EXPECT_FALSE(owner_->remote().is_bound());
+}
+
+// Move the remote from the outside of Owner class.
+TEST_F(HeapMojoRemoteMoveWithoutContextObserverTest, MoveSemantics) {
+  EXPECT_TRUE(owner_->remote().is_bound());
+  context_->NotifyContextDestroyed();
+  EXPECT_TRUE(owner_->remote().is_bound());
 }
 
 }  // namespace blink

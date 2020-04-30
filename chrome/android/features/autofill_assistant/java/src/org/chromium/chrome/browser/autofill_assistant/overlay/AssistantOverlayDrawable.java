@@ -108,8 +108,6 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     /** The image to draw on top of full overlays, if set. */
     private AssistantOverlayImage mOverlayImage;
 
-    private AssistantOverlayDelegate mDelegate;
-
     AssistantOverlayDrawable(Context context, ChromeFullscreenManager fullscreenManager) {
         mContext = context;
         mFullscreenManager = fullscreenManager;
@@ -177,13 +175,8 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
         invalidateSelf();
     }
 
-    void setDelegate(AssistantOverlayDelegate delegate) {
-        mDelegate = delegate;
-    }
-
     void destroy() {
         mFullscreenManager.removeListener(this);
-        mDelegate = null;
     }
 
     /**
@@ -378,12 +371,6 @@ class AssistantOverlayDrawable extends Drawable implements FullscreenListener {
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {
         invalidateSelf();
-    }
-
-    private void askForTouchableAreaUpdate() {
-        if (mDelegate != null) {
-            mDelegate.updateTouchableArea();
-        }
     }
 
     /**

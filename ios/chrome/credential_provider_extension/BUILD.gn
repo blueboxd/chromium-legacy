@@ -27,7 +27,10 @@ tweak_info_plist("tweak_info_plist") {
 }
 
 compile_entitlements("entitlements") {
-  substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
+  substitutions = [
+    "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix",
+    "CHROMIUM_BUNDLE_ID=$chromium_bundle_id",
+  ]
   output_name =
       "$target_gen_dir/credential_provider_extension.appex.entitlements"
   entitlements_templates = [
@@ -47,6 +50,7 @@ ios_appex_bundle("credential_provider_extension") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":password_util",
     ":reauthentication_handler",
     ":system_strings",
     "//ios/chrome/common/app_group",
@@ -102,5 +106,21 @@ source_set("reauthentication_handler") {
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/app_group:command",
     "//ios/chrome/common/ui/reauthentication",
+  ]
+}
+
+source_set("password_util") {
+  sources = [
+    "password_util.h",
+    "password_util.mm",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    "//base",
+    "//ios/chrome/common/app_group",
+  ]
+  libs = [
+    "Security.framework",
+    "Foundation.framework",
   ]
 }

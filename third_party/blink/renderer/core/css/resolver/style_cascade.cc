@@ -114,35 +114,6 @@ CascadeOrigin TargetOriginForRevert(CascadeOrigin origin) {
   }
 }
 
-// When doing 'revert' on a surrogate property (e.g. inline-size), or the
-// corresponding original property (e.g. width), we have to check which of the
-// two properties won the cascade in the target origin. The property with the
-// highest priority in the target origin is the property we need to revert to.
-//
-// For example, if the UA sheet specifies:
-//
-//  h1 { margin-block-end: 0.67em }
-//
-// And the author specifies:
-//
-//  h1 { margin-bottom: revert }
-//
-// Then the expectation is to revert to 0.67em. Without computing the correct
-// target property, we'd revert to 'margin-bottom' in the user-agent origin,
-// which isn't present, and hence it resolve to 'unset', which is not correct.
-const CSSProperty* TargetPropertyForRevert(const CSSProperty& original,
-                                           const CSSProperty* surrogate,
-                                           CascadeOrigin origin,
-                                           CascadeMap& map) {
-  if (!surrogate)
-    return &original;
-  CascadePriority surrogate_priority =
-      map.At(surrogate->GetCSSPropertyName(), origin);
-  CascadePriority original_priority =
-      map.At(original.GetCSSPropertyName(), origin);
-  return (original_priority < surrogate_priority) ? surrogate : &original;
-}
-
 CSSPropertyID UnvisitedID(CSSPropertyID id) {
   if (id == CSSPropertyID::kVariable)
     return id;
@@ -170,6 +141,8 @@ void StyleCascade::Apply(CascadeFilter filter) {
   AnalyzeIfNeeded();
 
   CascadeResolver resolver(filter, ++generation_);
+
+  ApplyCascadeAffecting(resolver);
 
   // Affects the computed value of 'color', hence needs to happen before
   // high-priority properties.
@@ -213,6 +186,7 @@ void StyleCascade::Reset() {
   match_result_.Reset();
   interpolations_.Reset();
   generation_ = 0;
+  depends_on_cascade_affecting_property_ = false;
 }
 
 const CSSValue* StyleCascade::Resolve(const CSSPropertyName& name,
@@ -222,7 +196,7 @@ const CSSValue* StyleCascade::Resolve(const CSSPropertyName& name,
   CSSPropertyRef ref(name, state_.GetDocument());
 
   const CSSValue* resolved =
-      Resolve(ref.GetProperty(), value, origin, resolver);
+      Resolve(ResolveSurrogate(ref.GetProperty()), value, origin, resolver);
 
   DCHECK(resolved);
 
@@ -245,8 +219,10 @@ void StyleCascade::AnalyzeIfNeeded() {
 
 void StyleCascade::AnalyzeMatchResult() {
   for (auto e : match_result_.Expansions(GetDocument(), CascadeFilter())) {
-    for (; !e.AtEnd(); e.Next())
-      map_.Add(e.Name(), e.Priority());
+    for (; !e.AtEnd(); e.Next()) {
+      const CSSProperty& property = ResolveSurrogate(e.Property());
+      map_.Add(property.GetCSSPropertyName(), e.Priority());
+    }
   }
 }
 
@@ -261,9 +237,9 @@ void StyleCascade::AnalyzeInterpolations() {
       auto name = active_interpolation.key.GetCSSPropertyName();
       CSSPropertyRef ref(name, GetDocument());
       DCHECK(ref.IsValid());
-      const CSSProperty& property = ref.GetProperty();
+      const CSSProperty& property = ResolveSurrogate(ref.GetProperty());
 
-      map_.Add(name, priority);
+      map_.Add(property.GetCSSPropertyName(), priority);
 
       // Since an interpolation for an unvisited property also causes an
       // interpolation of the visited property, add the visited property to
@@ -272,6 +248,35 @@ void StyleCascade::AnalyzeInterpolations() {
       if (const CSSProperty* visited = property.GetVisitedProperty())
         map_.Add(visited->GetCSSPropertyName(), priority);
     }
+  }
+}
+
+void StyleCascade::Reanalyze() {
+  map_.Reset();
+  generation_ = 0;
+  depends_on_cascade_affecting_property_ = false;
+
+  needs_match_result_analyze_ = true;
+  needs_interpolations_analyze_ = true;
+  AnalyzeIfNeeded();
+}
+
+void StyleCascade::ApplyCascadeAffecting(CascadeResolver& resolver) {
+  // During the initial call to Analyze, we speculatively assume that the
+  // direction/writing-mode inherited from the parent will be the final
+  // direction/writing-mode. If either property ends up with another value,
+  // our assumption was incorrect, and we have to Reanalyze with the correct
+  // values on ComputedStyle.
+  auto direction = state_.Style()->Direction();
+  auto writing_mode = state_.Style()->GetWritingMode();
+
+  LookupAndApply(GetCSSPropertyDirection(), resolver);
+  LookupAndApply(GetCSSPropertyWritingMode(), resolver);
+
+  if (depends_on_cascade_affecting_property_ &&
+      (direction != state_.Style()->Direction() ||
+       writing_mode != state_.Style()->GetWritingMode())) {
+    Reanalyze();
   }
 }
 
@@ -336,15 +341,11 @@ void StyleCascade::ApplyMatchResult(CascadeResolver& resolver) {
   for (auto e : match_result_.Expansions(GetDocument(), resolver.filter_)) {
     for (; !e.AtEnd(); e.Next()) {
       auto priority = CascadePriority(e.Priority(), resolver.generation_);
-      CascadePriority* p = map_.Find(e.Name());
+      const CSSProperty& property = ResolveSurrogate(e.Property());
+      CascadePriority* p = map_.Find(property.GetCSSPropertyName());
       if (!p || *p >= priority)
         continue;
       *p = priority;
-      const CSSProperty& property = e.Property();
-      if (property.IsSurrogate()) {
-        ApplySurrogate(property, priority, resolver);
-        continue;
-      }
       CascadeOrigin origin = priority.GetOrigin();
       const CSSValue* value = Resolve(property, e.Value(), origin, resolver);
       StyleBuilder::ApplyProperty(property, state_, *value);
@@ -372,22 +373,18 @@ void StyleCascade::ApplyInterpolationMap(const ActiveInterpolationsMap& map,
     priority = CascadePriority(priority, resolver.generation_);
 
     CSSPropertyRef ref(name, GetDocument());
-    const CSSProperty& property = ref.GetProperty();
-    if (resolver.filter_.Rejects(property))
+    if (resolver.filter_.Rejects(ref.GetProperty()))
       continue;
 
-    CascadePriority* p = map_.Find(name);
+    const CSSProperty& property = ResolveSurrogate(ref.GetProperty());
+
+    CascadePriority* p = map_.Find(property.GetCSSPropertyName());
     if (!p || *p >= priority) {
       if (p->IsImportant())
         state_.SetHasImportantOverrides();
       continue;
     }
     *p = priority;
-
-    if (property.IsSurrogate()) {
-      ApplySurrogate(property, priority, resolver);
-      continue;
-    }
 
     ApplyInterpolation(property, priority, entry.value, resolver);
   }
@@ -398,6 +395,8 @@ void StyleCascade::ApplyInterpolation(
     CascadePriority priority,
     const ActiveInterpolations& interpolations,
     CascadeResolver& resolver) {
+  DCHECK(!property.IsSurrogate());
+
   const Interpolation& interpolation = *interpolations.front();
   if (IsA<InvalidatableInterpolation>(interpolation)) {
     CSSInterpolationTypesMap map(state_.GetDocument().GetPropertyRegistry(),
@@ -429,35 +428,6 @@ void StyleCascade::ApplyInterpolation(
   }
 }
 
-void StyleCascade::ApplySurrogate(const CSSProperty& surrogate,
-                                  CascadePriority surrogate_priority,
-                                  CascadeResolver& resolver) {
-  DCHECK(surrogate.IsSurrogate());
-
-  CascadeResolver::AutoSurrogateScope surrogate_scope(surrogate, resolver);
-
-  const CSSProperty& original = SurrogateFor(surrogate);
-  CascadePriority* original_priority = map_.Find(original.GetCSSPropertyName());
-
-  if (original_priority) {
-    if (surrogate_priority < *original_priority) {
-      // The original has a higher priority, so skip the surrogate property.
-      // However, we need to force-reapply the original property, since applying
-      // with and without surrogate scope can yield different results.
-      resolver.MarkUnapplied(original_priority);
-      LookupAndApply(original, resolver);
-      return;
-    }
-
-    // The surrogate has a higher priority, so skip the original property.
-    // The original might have been applied already, but that doesn't matter,
-    // as we're about to overwrite it.
-    resolver.MarkApplied(original_priority);
-  }
-
-  LookupAndApplyValue(surrogate, surrogate_priority, resolver);
-}
-
 void StyleCascade::LookupAndApply(const CSSPropertyName& name,
                                   CascadeResolver& resolver) {
   CSSPropertyRef ref(name, state_.GetDocument());
@@ -467,6 +437,8 @@ void StyleCascade::LookupAndApply(const CSSPropertyName& name,
 
 void StyleCascade::LookupAndApply(const CSSProperty& property,
                                   CascadeResolver& resolver) {
+  DCHECK(!property.IsSurrogate());
+
   CSSPropertyName name = property.GetCSSPropertyName();
   DCHECK(!resolver.IsLocked(name));
 
@@ -480,10 +452,6 @@ void StyleCascade::LookupAndApply(const CSSProperty& property,
 
   if (resolver.filter_.Rejects(property))
     return;
-  if (property.IsSurrogate()) {
-    ApplySurrogate(property, priority, resolver);
-    return;
-  }
 
   LookupAndApplyValue(property, priority, resolver);
 }
@@ -491,6 +459,8 @@ void StyleCascade::LookupAndApply(const CSSProperty& property,
 void StyleCascade::LookupAndApplyValue(const CSSProperty& property,
                                        CascadePriority priority,
                                        CascadeResolver& resolver) {
+  DCHECK(!property.IsSurrogate());
+
   if (priority.GetOrigin() < CascadeOrigin::kAnimation)
     LookupAndApplyDeclaration(property, priority, resolver);
   else if (priority.GetOrigin() >= CascadeOrigin::kAnimation)
@@ -500,6 +470,7 @@ void StyleCascade::LookupAndApplyValue(const CSSProperty& property,
 void StyleCascade::LookupAndApplyDeclaration(const CSSProperty& property,
                                              CascadePriority priority,
                                              CascadeResolver& resolver) {
+  DCHECK(!property.IsSurrogate());
   DCHECK(priority.GetOrigin() < CascadeOrigin::kAnimation);
   const CSSValue* value = ValueAt(match_result_, priority.GetPosition());
   DCHECK(value);
@@ -512,6 +483,8 @@ void StyleCascade::LookupAndApplyDeclaration(const CSSProperty& property,
 void StyleCascade::LookupAndApplyInterpolation(const CSSProperty& property,
                                                CascadePriority priority,
                                                CascadeResolver& resolver) {
+  DCHECK(!property.IsSurrogate());
+
   // Interpolations for -internal-visited properties are applied via the
   // interpolation for the main (unvisited) property, so we don't need to
   // apply it twice.
@@ -573,6 +546,7 @@ const CSSValue* StyleCascade::Resolve(const CSSProperty& property,
                                       const CSSValue& value,
                                       CascadeOrigin origin,
                                       CascadeResolver& resolver) {
+  DCHECK(!property.IsSurrogate());
   if (const auto* v = DynamicTo<CSSCustomPropertyDeclaration>(value))
     return ResolveCustomProperty(property, *v, origin, resolver);
   if (const auto* v = DynamicTo<CSSVariableReferenceValue>(value))
@@ -589,6 +563,8 @@ const CSSValue* StyleCascade::ResolveCustomProperty(
     const CSSCustomPropertyDeclaration& decl,
     CascadeOrigin origin,
     CascadeResolver& resolver) {
+  DCHECK(!property.IsSurrogate());
+
   // TODO(andruud): Don't transport css-wide keywords in this value.
   if (!decl.Value()) {
     if (decl.IsRevert())
@@ -624,6 +600,7 @@ const CSSValue* StyleCascade::ResolveVariableReference(
     const CSSProperty& property,
     const CSSVariableReferenceValue& value,
     CascadeResolver& resolver) {
+  DCHECK(!property.IsSurrogate());
   DCHECK(!resolver.IsLocked(property));
   CascadeResolver::AutoLock lock(property, resolver);
 
@@ -649,6 +626,7 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
     const CSSProperty& property,
     const cssvalue::CSSPendingSubstitutionValue& value,
     CascadeResolver& resolver) {
+  DCHECK(!property.IsSurrogate());
   DCHECK(!resolver.IsLocked(property));
   CascadeResolver::AutoLock lock(property, resolver);
 
@@ -701,7 +679,9 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
     const CSSProperty& longhand = CSSProperty::Get(parsed_properties[i].Id());
     const CSSValue* parsed = parsed_properties[i].Value();
 
-    if (unvisited_property == &longhand)
+    // When using var() in a css-logical shorthand (e.g. margin-inline),
+    // the longhands here will also be logical.
+    if (unvisited_property == &ResolveSurrogate(longhand))
       return parsed;
   }
 
@@ -715,18 +695,6 @@ const CSSValue* StyleCascade::ResolveRevert(const CSSProperty& property,
   GetDocument().CountUse(WebFeature::kCSSKeywordRevert);
 
   CascadeOrigin target_origin = TargetOriginForRevert(origin);
-  const CSSProperty* target_property = &property;
-
-  // A 'revert' in a surrogate property (e.g. inline-size), or a 'revert' in
-  // a corresponding original property (e.g. width) could mean we need to revert
-  // to a different property on the previous origin.
-  if (const auto* current_surrogate = resolver.current_surrogate_) {
-    const CSSProperty& surrogate_target = SurrogateFor(*current_surrogate);
-    if (&property == &surrogate_target || &property == current_surrogate) {
-      target_property = TargetPropertyForRevert(
-          surrogate_target, current_surrogate, target_origin, map_);
-    }
-  }
 
   switch (target_origin) {
     case CascadeOrigin::kTransition:
@@ -737,12 +705,11 @@ const CSSValue* StyleCascade::ResolveRevert(const CSSProperty& property,
     case CascadeOrigin::kAuthor:
     case CascadeOrigin::kAnimation: {
       CascadePriority* p =
-          map_.Find(target_property->GetCSSPropertyName(), target_origin);
+          map_.Find(property.GetCSSPropertyName(), target_origin);
       if (!p)
         return cssvalue::CSSUnsetValue::Create();
-      return Resolve(*target_property,
-                     *ValueAt(match_result_, p->GetPosition()), target_origin,
-                     resolver);
+      return Resolve(property, *ValueAt(match_result_, p->GetPosition()),
+                     target_origin, resolver);
     }
   }
 }
@@ -924,10 +891,15 @@ const Document& StyleCascade::GetDocument() const {
   return state_.GetDocument();
 }
 
-const CSSProperty& StyleCascade::SurrogateFor(
-    const CSSProperty& surrogate) const {
-  DCHECK(surrogate.IsSurrogate());
-  const CSSProperty* original = surrogate.SurrogateFor(
+const CSSProperty& StyleCascade::ResolveSurrogate(const CSSProperty& property) {
+  if (!property.IsSurrogate())
+    return property;
+  // This marks the cascade as dependent on cascade-affecting properties
+  // even for simple surrogates like -webkit-writing-mode, but there isn't
+  // currently a flag to distinguish such surrogates from e.g. css-logical
+  // properties.
+  depends_on_cascade_affecting_property_ = true;
+  const CSSProperty* original = property.SurrogateFor(
       state_.Style()->Direction(), state_.Style()->GetWritingMode());
   DCHECK(original);
   return *original;

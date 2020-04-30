@@ -92,8 +92,8 @@ TEST_F(WebDialogWebContentsDelegateTest, AddNewContentsForegroundTabTest) {
   std::unique_ptr<WebContents> contents =
       WebContentsTester::CreateTestWebContents(profile(), nullptr);
   test_web_contents_delegate_->AddNewContents(
-      nullptr, std::move(contents), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      gfx::Rect(), false, nullptr);
+      nullptr, std::move(contents), GURL(),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, gfx::Rect(), false, nullptr);
   // This should create a new foreground tab in the existing browser.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
@@ -104,13 +104,14 @@ TEST_F(WebDialogWebContentsDelegateTest, DetachTest) {
   test_web_contents_delegate_->Detach();
   EXPECT_EQ(nullptr, test_web_contents_delegate_->browser_context());
   // Now, none of the following calls should do anything.
+  GURL url(url::kAboutBlankURL);
   test_web_contents_delegate_->OpenURLFromTab(
-      nullptr, OpenURLParams(GURL(url::kAboutBlankURL), Referrer(),
-                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_LINK, false));
+      nullptr,
+      OpenURLParams(url, Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                    ui::PAGE_TRANSITION_LINK, false));
   test_web_contents_delegate_->AddNewContents(
-      nullptr, nullptr, WindowOpenDisposition::NEW_FOREGROUND_TAB, gfx::Rect(),
-      false, nullptr);
+      nullptr, nullptr, url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      gfx::Rect(), false, nullptr);
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
 }

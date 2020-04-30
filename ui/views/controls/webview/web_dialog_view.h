@@ -140,6 +140,7 @@ class WEBVIEW_EXPORT WebDialogView : public ClientView,
       const content::OpenURLParams& params) override;
   void AddNewContents(content::WebContents* source,
                       std::unique_ptr<content::WebContents> new_contents,
+                      const GURL& target_url,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,

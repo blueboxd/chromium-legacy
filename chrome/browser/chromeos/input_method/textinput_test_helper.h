@@ -57,6 +57,7 @@ class TextInputTestHelper : public ui::InputMethodObserver {
   void WaitForBlur();
   void WaitForCaretBoundsChanged(const gfx::Rect& expected_caret_rect,
                                  const gfx::Rect& expected_composition_head);
+  void WaitForSurroundingTextChanged(const base::string16& expected_text);
   void WaitForSurroundingTextChanged(const base::string16& expected_text,
                                      const gfx::Range& expected_selection);
   void WaitForPassageOfTimeMillis(const int milliseconds);

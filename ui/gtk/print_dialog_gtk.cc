@@ -33,6 +33,10 @@
 #include "ui/gtk/gtk_util.h"
 #include "ui/gtk/printing_gtk_util.h"
 
+#if defined(USE_CUPS)
+#include "printing/mojom/print.mojom.h"
+#endif
+
 using printing::PageRanges;
 using printing::PrintSettings;
 
@@ -244,19 +248,20 @@ void PrintDialogGtk::UpdateSettings(
   gtk_print_settings_set(gtk_settings_, color_setting_name.c_str(),
                          color_value.c_str());
 
-  if (settings->duplex_mode() != printing::UNKNOWN_DUPLEX_MODE) {
+  if (settings->duplex_mode() !=
+      printing::mojom::DuplexMode::kUnknownDuplexMode) {
     const char* cups_duplex_mode = nullptr;
     switch (settings->duplex_mode()) {
-      case printing::LONG_EDGE:
+      case printing::mojom::DuplexMode::kLongEdge:
         cups_duplex_mode = kDuplexNoTumble;
         break;
-      case printing::SHORT_EDGE:
+      case printing::mojom::DuplexMode::kShortEdge:
         cups_duplex_mode = kDuplexTumble;
         break;
-      case printing::SIMPLEX:
+      case printing::mojom::DuplexMode::kSimplex:
         cups_duplex_mode = kDuplexNone;
         break;
-      default:  // UNKNOWN_DUPLEX_MODE
+      default:  // kUnknownDuplexMode
         NOTREACHED();
         break;
     }

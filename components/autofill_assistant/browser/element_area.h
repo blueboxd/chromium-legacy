@@ -37,15 +37,6 @@ class ElementArea {
   // The area is updated asynchronously, so Contains will not work right away.
   void SetFromProto(const ElementAreaProto& proto);
 
-  // Forces an out-of-schedule update of the viewport and positions right away.
-  //
-  // This method is never strictly necessary. It is useful to call it when
-  // there's a reason to think the positions might have changed, to speed up
-  // updates.
-  //
-  // Does nothing if the area is empty.
-  void Update();
-
   // Defines a callback that'll be run every time the set of element coordinates
   // changes.
   //
@@ -76,6 +67,8 @@ class ElementArea {
   }
 
  private:
+  friend class ElementAreaTest;
+
   // A rectangle that corresponds to the area of the visual viewport covered by
   // an element. Coordinates are values between 0 and 1, relative to the size of
   // the visible viewport.
@@ -111,6 +104,15 @@ class ElementArea {
     // Fills the given rectangle from the current state, if possible.
     void FillRect(RectF* rect, const RectF& visual_viewport) const;
   };
+
+  // Forces an out-of-schedule update of the viewport and positions right away.
+  //
+  // This method is never strictly necessary. It is useful to call it when
+  // there's a reason to think the positions might have changed, to speed up
+  // updates.
+  //
+  // Does nothing if the area is empty.
+  void Update();
 
   void AddRectangles(const ::google::protobuf::RepeatedPtrField<
                          ElementAreaProto::Rectangle>& rectangles_proto,

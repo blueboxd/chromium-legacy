@@ -165,4 +165,24 @@ TEST(DNSUtil, IsValidDohTemplateGroup) {
   EXPECT_FALSE(IsValidDohTemplateGroup("invalid invalid2"));
 }
 
+TEST(DNSUtil, ApplyDohTemplatePost) {
+  std::string post_template("https://valid");
+  net::DnsConfigOverrides overrides;
+  ApplyDohTemplate(&overrides, post_template);
+
+  EXPECT_THAT(overrides.dns_over_https_servers,
+              testing::Optional(ElementsAre(net::DnsOverHttpsServerConfig(
+                  {post_template, true /* use_post */}))));
+}
+
+TEST(DNSUtil, ApplyDohTemplateGet) {
+  std::string get_template("https://valid/{?dns}");
+  net::DnsConfigOverrides overrides;
+  ApplyDohTemplate(&overrides, get_template);
+
+  EXPECT_THAT(overrides.dns_over_https_servers,
+              testing::Optional(ElementsAre(net::DnsOverHttpsServerConfig(
+                  {get_template, false /* use_post */}))));
+}
+
 }  // namespace chrome_browser_net

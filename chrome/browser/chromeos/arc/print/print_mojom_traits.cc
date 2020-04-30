@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/print/print_mojom_traits.h"
 
 #include "base/strings/stringprintf.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/units.h"
 
 namespace mojo {
@@ -20,13 +21,13 @@ arc::mojom::PrintMediaSizePtr ToMediaSize(
                                          size_mil.width(), size_mil.height());
 }
 
-arc::mojom::PrintDuplexMode ToArcDuplexMode(printing::DuplexMode mode) {
+arc::mojom::PrintDuplexMode ToArcDuplexMode(printing::mojom::DuplexMode mode) {
   switch (mode) {
-    case printing::LONG_EDGE:
+    case printing::mojom::DuplexMode::kLongEdge:
       return arc::mojom::PrintDuplexMode::LONG_EDGE;
-    case printing::SHORT_EDGE:
+    case printing::mojom::DuplexMode::kShortEdge:
       return arc::mojom::PrintDuplexMode::SHORT_EDGE;
-    case printing::SIMPLEX:
+    case printing::mojom::DuplexMode::kSimplex:
       return arc::mojom::PrintDuplexMode::NONE;
     default:
       NOTREACHED();
@@ -83,7 +84,7 @@ StructTraits<arc::mojom::PrinterCapabilitiesDataView,
              printing::PrinterSemanticCapsAndDefaults>::
     duplex_modes(const printing::PrinterSemanticCapsAndDefaults& caps) {
   uint32_t duplex_modes = 0;
-  for (printing::DuplexMode mode : caps.duplex_modes) {
+  for (printing::mojom::DuplexMode mode : caps.duplex_modes) {
     duplex_modes |= static_cast<uint32_t>(ToArcDuplexMode(mode));
   }
   return static_cast<arc::mojom::PrintDuplexMode>(duplex_modes);

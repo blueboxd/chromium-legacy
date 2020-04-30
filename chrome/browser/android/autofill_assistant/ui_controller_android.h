@@ -119,7 +119,6 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
-  void UpdateTouchableArea();
   void OnUserInteractionInsideTouchableArea();
 
   // Called by AssistantHeaderDelegate:

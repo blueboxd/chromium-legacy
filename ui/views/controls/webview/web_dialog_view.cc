@@ -387,13 +387,14 @@ content::WebContents* WebDialogView::OpenURLFromTab(
 void WebDialogView::AddNewContents(
     content::WebContents* source,
     std::unique_ptr<content::WebContents> new_contents,
+    const GURL& target_url,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_rect,
     bool user_gesture,
     bool* was_blocked) {
-  WebDialogWebContentsDelegate::AddNewContents(source, std::move(new_contents),
-                                               disposition, initial_rect,
-                                               user_gesture, was_blocked);
+  WebDialogWebContentsDelegate::AddNewContents(
+      source, std::move(new_contents), target_url, disposition, initial_rect,
+      user_gesture, was_blocked);
 }
 
 void WebDialogView::LoadingStateChanged(content::WebContents* source,

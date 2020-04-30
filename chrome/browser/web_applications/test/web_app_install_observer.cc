@@ -28,11 +28,6 @@ void WebAppInstallObserver::SetWebAppInstalledDelegate(
   app_installed_delegate_ = delegate;
 }
 
-void WebAppInstallObserver::SetWebAppWillBeUninstalledDelegate(
-    WebAppUninstalledDelegate delegate) {
-  app_will_be_uninstalled_delegate_ = delegate;
-}
-
 void WebAppInstallObserver::SetWebAppUninstalledDelegate(
     WebAppUninstalledDelegate delegate) {
   app_uninstalled_delegate_ = delegate;
@@ -44,11 +39,6 @@ void WebAppInstallObserver::OnWebAppInstalled(const AppId& app_id) {
 
   app_id_ = app_id;
   run_loop_.Quit();
-}
-
-void WebAppInstallObserver::OnWebAppWillBeUninstalled(const AppId& app_id) {
-  if (app_will_be_uninstalled_delegate_)
-    app_will_be_uninstalled_delegate_.Run(app_id);
 }
 
 void WebAppInstallObserver::OnWebAppUninstalled(const AppId& app_id) {

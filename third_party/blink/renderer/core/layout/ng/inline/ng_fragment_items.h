@@ -38,7 +38,7 @@ class CORE_EXPORT NGFragmentItems {
       const Vector<scoped_refptr<const NGLayoutResult>, 1>&);
 
   // Disassociate |NGFragmentItem|s with |LayoutObject|s. And more.
-  void ClearAssociatedFragments() const;
+  static void ClearAssociatedFragments(LayoutObject* container);
 
   // Notify when |LayoutObject| will be destroyed/moved.
   static void LayoutObjectWillBeDestroyed(const LayoutObject& layout_object);

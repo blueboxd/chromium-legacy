@@ -590,12 +590,6 @@ void ThreadState::ScheduleConcurrentAndLazySweep() {
           WTF::CrossThreadUnretained(this))));
 }
 
-void ThreadState::SchedulePreciseGC() {
-  DCHECK(CheckThread());
-  CompleteSweep();
-  SetGCState(kPreciseGCScheduled);
-}
-
 namespace {
 
 #define UNEXPECTED_GCSTATE(s)                                   \
@@ -606,7 +600,6 @@ namespace {
 void UnexpectedGCState(ThreadState::GCState gc_state) {
   switch (gc_state) {
     UNEXPECTED_GCSTATE(kNoGCScheduled);
-    UNEXPECTED_GCSTATE(kPreciseGCScheduled);
     UNEXPECTED_GCSTATE(kForcedGCForTestingScheduled);
     UNEXPECTED_GCSTATE(kIncrementalMarkingStepPaused);
     UNEXPECTED_GCSTATE(kIncrementalMarkingStepScheduled);
@@ -627,13 +620,13 @@ void ThreadState::SetGCState(GCState gc_state) {
   switch (gc_state) {
     case kNoGCScheduled:
       DCHECK(CheckThread());
-      VERIFY_STATE_TRANSITION(
-          gc_state_ == kNoGCScheduled || gc_state_ == kPreciseGCScheduled ||
-          gc_state_ == kForcedGCForTestingScheduled ||
-          gc_state_ == kIncrementalMarkingStepPaused ||
-          gc_state_ == kIncrementalMarkingStepScheduled ||
-          gc_state_ == kIncrementalMarkingFinalizeScheduled ||
-          gc_state_ == kIncrementalGCScheduled);
+      VERIFY_STATE_TRANSITION(gc_state_ == kNoGCScheduled ||
+                              gc_state_ == kForcedGCForTestingScheduled ||
+                              gc_state_ == kIncrementalMarkingStepPaused ||
+                              gc_state_ == kIncrementalMarkingStepScheduled ||
+                              gc_state_ ==
+                                  kIncrementalMarkingFinalizeScheduled ||
+                              gc_state_ == kIncrementalGCScheduled);
       break;
     case kIncrementalMarkingStepScheduled:
       DCHECK(CheckThread());
@@ -647,7 +640,6 @@ void ThreadState::SetGCState(GCState gc_state) {
       VERIFY_STATE_TRANSITION(gc_state_ == kIncrementalMarkingStepScheduled);
       break;
     case kForcedGCForTestingScheduled:
-    case kPreciseGCScheduled:
       DCHECK(CheckThread());
       DCHECK(!IsSweepingInProgress());
       VERIFY_STATE_TRANSITION(gc_state_ == kNoGCScheduled ||
@@ -655,7 +647,6 @@ void ThreadState::SetGCState(GCState gc_state) {
                               gc_state_ == kIncrementalMarkingStepScheduled ||
                               gc_state_ ==
                                   kIncrementalMarkingFinalizeScheduled ||
-                              gc_state_ == kPreciseGCScheduled ||
                               gc_state_ == kForcedGCForTestingScheduled ||
                               gc_state_ == kIncrementalGCScheduled);
       break;
@@ -710,12 +701,6 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
   switch (GetGCState()) {
     case kForcedGCForTestingScheduled:
       CollectAllGarbageForTesting();
-      break;
-    case kPreciseGCScheduled:
-      CollectGarbage(BlinkGC::CollectionType::kMajor,
-                     BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                     BlinkGC::kConcurrentAndLazySweeping,
-                     BlinkGC::GCReason::kPreciseGC);
       break;
     default:
       break;

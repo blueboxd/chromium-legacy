@@ -72,9 +72,7 @@ public class AssistantOverlayCoordinator {
                 mEventFilter.setRestrictedArea(area);
                 mDrawable.setRestrictedArea(area);
             } else if (AssistantOverlayModel.DELEGATE == propertyKey) {
-                AssistantOverlayDelegate delegate = model.get(AssistantOverlayModel.DELEGATE);
-                mEventFilter.setDelegate(delegate);
-                mDrawable.setDelegate(delegate);
+                mEventFilter.setDelegate(model.get(AssistantOverlayModel.DELEGATE));
             } else if (AssistantOverlayModel.BACKGROUND_COLOR == propertyKey) {
                 mDrawable.setBackgroundColor(model.get(AssistantOverlayModel.BACKGROUND_COLOR));
             } else if (AssistantOverlayModel.HIGHLIGHT_BORDER_COLOR == propertyKey) {

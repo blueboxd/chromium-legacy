@@ -2555,14 +2555,14 @@ TEST_F(FileUtilTest, CreateTemporaryFileTest) {
     EXPECT_TRUE(DeleteFile(i, false));
 }
 
-TEST_F(FileUtilTest, CreateAndOpenTemporaryFileTest) {
+TEST_F(FileUtilTest, CreateAndOpenTemporaryStreamTest) {
   FilePath names[3];
-  FILE* fps[3];
+  ScopedFILE fps[3];
   int i;
 
   // Create; make sure they are open and exist.
   for (i = 0; i < 3; ++i) {
-    fps[i] = CreateAndOpenTemporaryFile(&(names[i]));
+    fps[i] = CreateAndOpenTemporaryStream(&(names[i]));
     ASSERT_TRUE(fps[i]);
     EXPECT_TRUE(PathExists(names[i]));
   }
@@ -2574,7 +2574,7 @@ TEST_F(FileUtilTest, CreateAndOpenTemporaryFileTest) {
 
   // Close and delete.
   for (i = 0; i < 3; ++i) {
-    EXPECT_TRUE(CloseFile(fps[i]));
+    fps[i].reset();
     EXPECT_TRUE(DeleteFile(names[i], false));
   }
 }
@@ -4029,7 +4029,7 @@ TEST(FileUtilMultiThreadedTest, MAYBE_MultiThreadedTempFiles) {
 
   const RepeatingClosure open_write_close_read = BindRepeating([]() {
     FilePath output_filename;
-    ScopedFILE output_file(CreateAndOpenTemporaryFile(&output_filename));
+    ScopedFILE output_file(CreateAndOpenTemporaryStream(&output_filename));
     EXPECT_TRUE(output_file);
 
     const std::string content = GenerateGUID();

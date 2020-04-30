@@ -14,10 +14,6 @@ namespace blink {
 
 namespace {
 
-inline bool ShouldAssociateWithLayoutObject(const NGFragmentItem& item) {
-  return item.Type() != NGFragmentItem::kLine && !item.IsFloating();
-}
-
 inline bool ShouldSetFirstAndLastForNode() {
   return RuntimeEnabledFeatures::LayoutNGFragmentTraversalEnabled();
 }
@@ -58,9 +54,6 @@ void NGFragmentItems::FinalizeAfterLayout(
     const NGFragmentItems* current = fragment.Items();
     DCHECK(current);
     const Span items = current->Items();
-    DCHECK(std::all_of(items.begin(), items.end(), [](const auto& item) {
-      return !item->DeltaToNextForSameLayoutObject();
-    }));
     // items_[0] can be:
     //  - kBox  for list marker, e.g. <li>abc</li>
     //  - kLine for line, e.g. <div>abc</div>
@@ -71,10 +64,18 @@ void NGFragmentItems::FinalizeAfterLayout(
     wtf_size_t index = 0;
     for (const scoped_refptr<const NGFragmentItem>& item : items.subspan(1)) {
       ++index;
-      if (!ShouldAssociateWithLayoutObject(*item))
+      if (item->Type() == NGFragmentItem::kLine) {
+        DCHECK_EQ(item->DeltaToNextForSameLayoutObject(), 0u);
         continue;
+      }
       LayoutObject* const layout_object = item->GetMutableLayoutObject();
+      if (UNLIKELY(layout_object->IsFloating())) {
+        DCHECK_EQ(item->DeltaToNextForSameLayoutObject(), 0u);
+        continue;
+      }
+      DCHECK(!layout_object->IsOutOfFlowPositioned());
       DCHECK(layout_object->IsInLayoutNGInlineFormattingContext()) << *item;
+      item->SetDeltaToNextForSameLayoutObject(0);
 
       if (ShouldSetFirstAndLastForNode()) {
         bool is_first_for_node =
@@ -109,27 +110,22 @@ void NGFragmentItems::FinalizeAfterLayout(
     iter.value->SetIsLastForNode(true);
 }
 
-void NGFragmentItems::ClearAssociatedFragments() const {
-  DCHECK(Items().empty() || Items()[0]->IsContainer());
-  if (Size() <= 1)
-    return;
-  LayoutObject* last_object = nullptr;
-  for (const scoped_refptr<const NGFragmentItem>& item : Items().subspan(1)) {
-    if (!ShouldAssociateWithLayoutObject(*item)) {
-      // These items are not associated and that no need to clear.
-      DCHECK_EQ(item->DeltaToNextForSameLayoutObject(), 0u);
+void NGFragmentItems::ClearAssociatedFragments(LayoutObject* container) {
+  // Clear by traversing |LayoutObject| tree rather than |NGFragmentItem|
+  // because a) we don't need to modify |NGFragmentItem|, and in general the
+  // number of |LayoutObject| is less than the number of |NGFragmentItem|.
+  for (LayoutObject* child = container->SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    if (UNLIKELY(!child->IsInLayoutNGInlineFormattingContext() ||
+                 child->IsFloatingOrOutOfFlowPositioned()))
       continue;
-    }
-    LayoutObject* object = item->GetMutableLayoutObject();
-    if (object && object != last_object) {
-      if (object->IsInLayoutNGInlineFormattingContext())
-        object->ClearFirstInlineFragmentItemIndex();
-      last_object = object;
-    }
+    child->ClearFirstInlineFragmentItemIndex();
 
-    // Clear |DeltaToNextForSameLayoutObject| in case this |item| is re-used.
-    // This must be after |ClearFirstInlineFragmentItemIndex|.
-    item->SetDeltaToNextForSameLayoutObject(0u);
+    // Children of |LayoutInline| are part of this inline formatting context,
+    // but children of other |LayoutObject| (e.g., floats, oof, inline-blocks)
+    // are not.
+    if (child->IsLayoutInline())
+      ClearAssociatedFragments(child);
   }
 }
 

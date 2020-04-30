@@ -1059,10 +1059,6 @@ void Controller::OnScriptSelected(const ScriptHandle& handle,
                     : AutofillAssistantState::PROMPT);
 }
 
-void Controller::UpdateTouchableArea() {
-  touchable_element_area()->Update();
-}
-
 void Controller::OnUserInteractionInsideTouchableArea() {
   GetOrCheckScripts();
 }

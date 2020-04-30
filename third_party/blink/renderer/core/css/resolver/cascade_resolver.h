@@ -71,19 +71,6 @@ class CORE_EXPORT CascadeResolver {
     CascadeResolver& resolver_;
   };
 
-  // Automatically sets (and resets) the current surrogate.
-  //
-  // We need to know the current surrogate in order to make 'revert' work for
-  // e.g. css-logical properties. See TargetPropertyForRevert for more
-  // information.
-  class CORE_EXPORT AutoSurrogateScope
-      : private base::AutoReset<const CSSProperty*> {
-    STACK_ALLOCATED();
-
-   public:
-    AutoSurrogateScope(const CSSProperty& surrogate, CascadeResolver&);
-  };
-
  private:
   friend class AutoLock;
   friend class AutoSurrogateScope;
@@ -112,7 +99,6 @@ class CORE_EXPORT CascadeResolver {
   wtf_size_t cycle_depth_ = kNotFound;
   CascadeFilter filter_;
   const uint8_t generation_ = 0;
-  const CSSProperty* current_surrogate_ = nullptr;
 
   // A very simple cache for CSSPendingSubstitutionValues. We cache only the
   // most recently parsed CSSPendingSubstitutionValue, such that consecutive

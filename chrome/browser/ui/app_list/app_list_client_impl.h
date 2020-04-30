@@ -90,7 +90,7 @@ class AppListClientImpl
                                        bool visible) override;
   void OnQuickSettingsChanged(
       const std::string& setting_name,
-      const std::vector<std::pair<std::string, int>>& values) override;
+      const std::map<std::string, int>& values) override;
   void NotifySearchResultsForLogging(
       const base::string16& trimmed_query,
       const ash::SearchResultIdWithPositionIndices& results,

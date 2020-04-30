@@ -230,6 +230,7 @@ extern const char kDeviceUnaffiliatedCrostiniAllowed[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kPluginVmAllowed[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kPluginVmLicenseKey[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kPluginVmUserId[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceRebootOnUserSignout[];

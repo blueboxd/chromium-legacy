@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/polymer.gni")
+import("//tools/polymer/html_to_js.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../settings.gni")
 
@@ -44,17 +44,15 @@ js_library("about_page_browser_proxy.m") {
   extra_deps = [ ":modulize" ]
 }
 
-group("polymer3_elements") {
+group("web_components") {
   public_deps = [
-    ":about_page_module",
     ":modulize",
+    ":web_components_local",
   ]
 }
 
-polymer_modulizer("about_page") {
-  js_file = "about_page.js"
-  html_file = "about_page.html"
-  html_type = "v3-ready"
+html_to_js("web_components_local") {
+  js_files = [ "about_page.js" ]
 }
 
 js_modulizer("modulize") {

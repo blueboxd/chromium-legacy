@@ -119,6 +119,9 @@ void PendingAppInstallTask::Install(content::WebContents* web_contents,
     case WebAppUrlLoader::Result::kFailedPageTookTooLong:
       code = InstallResultCode::kInstallURLLoadTimeOut;
       break;
+    case WebAppUrlLoader::Result::kFailedErrorPageLoaded:
+      code = InstallResultCode::kInstallURLLoadFailed;
+      break;
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

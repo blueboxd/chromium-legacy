@@ -72,7 +72,6 @@ StyleImage* CSSImageValue::CacheImage(
     options.initiator_info.name = initiator_name_.IsEmpty()
                                       ? fetch_initiator_type_names::kCSS
                                       : initiator_name_;
-    options.initiator_info.referrer = referrer_.referrer;
     FetchParameters params(std::move(resource_request), options);
 
     if (cross_origin != kCrossOriginAttributeNotSet) {

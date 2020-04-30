@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_CROS_ACTION_HISTORY_CROS_ACTION_RECORDER_H_
 
 #include <cstdint>
+#include <map>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -40,9 +41,8 @@ class CrOSActionRecorder {
   static CrOSActionRecorder* GetCrosActionRecorder();
 
   // Record a user |action| with |conditions|.
-  void RecordAction(
-      const CrOSAction& action,
-      const std::vector<std::pair<std::string, int>>& conditions = {});
+  void RecordAction(const CrOSAction& action,
+                    const std::map<std::string, int>& conditions = {});
 
   // The sub-directory in profile path where the action history is stored.
   static constexpr char kActionHistoryDir[] = "cros_action_history";
@@ -58,6 +58,7 @@ class CrOSActionRecorder {
     kLogWithoutHash = 2,
     kCopyToDownloadDir = 3,
     kLogDisabled = 4,
+    kStructuredMetricsDisabled = 5,
   };
 
   friend class CrOSActionRecorderTest;
@@ -83,12 +84,22 @@ class CrOSActionRecorder {
   // |should_hash_| accordingly.
   void SetCrOSActionRecorderType();
 
+  // Re-maps action name and conditions into structured metrics.
+  void LogCrOSActionAsStructuredMetrics(
+      const CrOSAction& action,
+      const std::map<std::string, int>& conditions);
+
   // Hashes the |input| if |should_hash| is true; otherwise return |input|.
   static std::string MaybeHashed(const std::string& input, bool should_hash);
 
   // Recorder type set from the flag.
   CrOSActionRecorderType type_ = CrOSActionRecorderType::kDefault;
-
+  // Sequence of the cros action.
+  int64_t sequence_id_ = 0;
+  // Time of the last cros action.
+  base::Time last_action_time_;
+  // Only log structured metrics when enabled.
+  bool structured_metrics_enabled_ = false;
   // The timestamp of last save to disk.
   base::Time last_save_timestamp_;
   // A list of actions since last save.

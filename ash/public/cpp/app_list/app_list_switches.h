@@ -20,6 +20,7 @@ ASH_PUBLIC_EXPORT extern const char kDisableDriveSearchInChromeLauncher[];
 ASH_PUBLIC_EXPORT extern const char kEnableCrOSActionRecorder[];
 ASH_PUBLIC_EXPORT extern const char kCrOSActionRecorderCopyToDownloadDir[];
 ASH_PUBLIC_EXPORT extern const char kCrOSActionRecorderDisabled[];
+ASH_PUBLIC_EXPORT extern const char kCrOSActionRecorderStructuredDisabled[];
 ASH_PUBLIC_EXPORT extern const char kCrOSActionRecorderWithHash[];
 ASH_PUBLIC_EXPORT extern const char kCrOSActionRecorderWithoutHash[];
 

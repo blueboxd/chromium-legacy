@@ -6,12 +6,17 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
+#include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/language/core/browser/url_language_histogram.h"
+#include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -29,6 +34,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #endif
+
+using LanguageInfo = language::UrlLanguageHistogram::LanguageInfo;
 
 namespace {
 
@@ -48,7 +55,7 @@ GetImageAnnotatorBinderOverride() {
 
 class ImageAnnotatorClient : public image_annotation::Annotator::Client {
  public:
-  ImageAnnotatorClient() = default;
+  explicit ImageAnnotatorClient(Profile* profile) : profile_(profile) {}
   ~ImageAnnotatorClient() override = default;
 
   // image_annotation::Annotator::Client implementation:
@@ -57,7 +64,55 @@ class ImageAnnotatorClient : public image_annotation::Annotator::Client {
     data_decoder_.GetService()->BindJsonParser(std::move(receiver));
   }
 
+  std::vector<std::string> GetAcceptLanguages() override {
+    std::vector<std::string> accept_languages;
+    const PrefService* pref_service = profile_->GetPrefs();
+    std::string accept_languages_pref =
+        pref_service->GetString(language::prefs::kAcceptLanguages);
+    for (std::string lang :
+         base::SplitString(accept_languages_pref, ",", base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_NONEMPTY)) {
+      accept_languages.push_back(lang);
+    }
+    return accept_languages;
+  }
+
+  std::vector<std::string> GetTopLanguages() override {
+    // The UrlLanguageHistogram includes the frequency of all languages
+    // of pages the user has visited, and some of these might be rare or
+    // even mistakes. Set a minimum threshold so that we're only returning
+    // languages that account for a nontrivial amount of browsing time.
+    // The purpose of this list is to handle the case where users might
+    // not be setting their accept languages correctly, we want a way to
+    // detect the primary languages a user actually reads.
+    const float kMinTopLanguageFrequency = 0.1;
+
+    std::vector<std::string> top_languages;
+    language::UrlLanguageHistogram* url_language_histogram =
+        UrlLanguageHistogramFactory::GetForBrowserContext(profile_);
+    std::vector<LanguageInfo> language_infos =
+        url_language_histogram->GetTopLanguages();
+    for (const LanguageInfo& info : language_infos) {
+      if (info.frequency >= kMinTopLanguageFrequency)
+        top_languages.push_back(info.language_code);
+    }
+    return top_languages;
+  }
+
+  void RecordLanguageMetrics(const std::string& page_language,
+                             const std::string& requested_language) override {
+    base::UmaHistogramSparse(
+        "Accessibility.ImageLabels.PageLanguage",
+        language_usage_metrics::LanguageUsageMetrics::ToLanguageCode(
+            page_language));
+    base::UmaHistogramSparse(
+        "Accessibility.ImageLabels.RequestLanguage",
+        language_usage_metrics::LanguageUsageMetrics::ToLanguageCode(
+            requested_language));
+  }
+
  private:
+  Profile* const profile_;
   data_decoder::DataDecoder data_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageAnnotatorClient);
@@ -161,7 +216,7 @@ void AccessibilityLabelsService::BindImageAnnotator(
       service_ = std::make_unique<image_annotation::ImageAnnotationService>(
           std::move(service_receiver), APIKeyForChannel(),
           profile_->GetURLLoaderFactory(),
-          std::make_unique<ImageAnnotatorClient>());
+          std::make_unique<ImageAnnotatorClient>(profile_));
     }
   }
 

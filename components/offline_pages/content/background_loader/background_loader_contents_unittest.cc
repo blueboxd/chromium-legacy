@@ -146,6 +146,7 @@ TEST_F(BackgroundLoaderContentsTest, ShouldNotAddNewContents) {
   contents()->AddNewContents(
       nullptr /* source */,
       std::unique_ptr<content::WebContents>() /* new_contents */,
+      GURL() /* target_url */,
       WindowOpenDisposition::CURRENT_TAB /* disposition */,
       gfx::Rect() /* initial_rect */, false /* user_gesture */,
       &blocked /* was_blocked */);

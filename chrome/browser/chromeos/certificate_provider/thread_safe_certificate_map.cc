@@ -4,6 +4,12 @@
 
 #include "chrome/browser/chromeos/certificate_provider/thread_safe_certificate_map.h"
 
+#include <string>
+#include <vector>
+
+#include "base/containers/flat_map.h"
+#include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
 #include "net/base/hash_value.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/x509_certificate.h"
@@ -23,81 +29,45 @@ std::string GetSubjectPublicKeyInfo(const net::X509Certificate& certificate) {
   return spki_bytes.as_string();
 }
 
-void BuildFingerprintsMap(
-    const std::map<std::string, certificate_provider::CertificateInfoList>&
-        extension_to_certificates,
-    ThreadSafeCertificateMap::FingerprintToCertAndExtensionMap*
-        fingerprint_to_cert) {
-  for (const auto& entry : extension_to_certificates) {
-    const std::string& extension_id = entry.first;
-    for (const CertificateInfo& cert_info : entry.second) {
-      const net::SHA256HashValue fingerprint =
-          net::X509Certificate::CalculateFingerprint256(
-              cert_info.certificate->cert_buffer());
-      fingerprint_to_cert->insert(std::make_pair(
-          fingerprint,
-          std::make_unique<ThreadSafeCertificateMap::CertAndExtension>(
-              cert_info, extension_id)));
-    }
-  }
-}
-
-void BuildSpkiMap(
-    const std::map<std::string, certificate_provider::CertificateInfoList>&
-        extension_to_certificates,
-    ThreadSafeCertificateMap::SpkiToCertAndExtensionMap* spki_to_cert) {
-  for (const auto& entry : extension_to_certificates) {
-    const std::string& extension_id = entry.first;
-    for (const CertificateInfo& cert_info : entry.second) {
-      const std::string spki = GetSubjectPublicKeyInfo(*cert_info.certificate);
-      // If the same public key appears in the |extension_to_certificates| input
-      // multiple times, it is unspecified which (cert_info, extension_id) will
-      // end up in the output map.
-      spki_to_cert->insert(std::make_pair(
-          spki, std::make_unique<ThreadSafeCertificateMap::CertAndExtension>(
-                    cert_info, extension_id)));
-    }
-  }
-}
-
 }  // namespace
-
-ThreadSafeCertificateMap::CertAndExtension::CertAndExtension(
-    const CertificateInfo& cert_info,
-    const std::string& extension_id)
-    : cert_info(cert_info), extension_id(extension_id) {}
-
-ThreadSafeCertificateMap::CertAndExtension::~CertAndExtension() {}
 
 ThreadSafeCertificateMap::ThreadSafeCertificateMap() {}
 
 ThreadSafeCertificateMap::~ThreadSafeCertificateMap() {}
 
-void ThreadSafeCertificateMap::Update(
-    const std::map<std::string, certificate_provider::CertificateInfoList>&
-        extension_to_certificates) {
-  FingerprintToCertAndExtensionMap new_fingerprint_map;
-  SpkiToCertAndExtensionMap new_spki_map;
-  BuildFingerprintsMap(extension_to_certificates, &new_fingerprint_map);
-  BuildSpkiMap(extension_to_certificates, &new_spki_map);
-
+void ThreadSafeCertificateMap::UpdateCertificatesForExtension(
+    const std::string& extension_id,
+    const CertificateInfoList& certificates) {
   base::AutoLock auto_lock(lock_);
-  // Keep all old keys from the old maps (|fingerprint_to_cert_and_extension_|
-  // and |spki_to_cert_and_extension_|), but remove the association to any
-  // extension.
-  for (const auto& entry : fingerprint_to_cert_and_extension_) {
-    const net::SHA256HashValue& fingerprint = entry.first;
-    // This doesn't modify the map if it already contains the key |fingerprint|.
-    new_fingerprint_map.insert(std::make_pair(fingerprint, nullptr));
-  }
-  fingerprint_to_cert_and_extension_.swap(new_fingerprint_map);
+  RemoveCertificatesProvidedByExtension(extension_id);
 
-  for (const auto& entry : spki_to_cert_and_extension_) {
-    const std::string& spki = entry.first;
-    // This doesn't modify the map if it already contains the key |spki|.
-    new_spki_map.insert(std::make_pair(spki, nullptr));
+  for (const CertificateInfo& cert_info : certificates) {
+    const net::SHA256HashValue fingerprint =
+        net::X509Certificate::CalculateFingerprint256(
+            cert_info.certificate->cert_buffer());
+    fingerprint_to_extension_and_cert_[fingerprint][extension_id] = cert_info;
+
+    const std::string spki = GetSubjectPublicKeyInfo(*cert_info.certificate);
+    spki_to_extension_and_cert_[spki][extension_id] = cert_info;
   }
-  spki_to_cert_and_extension_.swap(new_spki_map);
+}
+
+std::vector<scoped_refptr<net::X509Certificate>>
+ThreadSafeCertificateMap::GetCertificates() {
+  base::AutoLock auto_lock(lock_);
+  std::vector<scoped_refptr<net::X509Certificate>> certificates;
+  for (const auto& fingerprint_entry : fingerprint_to_extension_and_cert_) {
+    const ExtensionToCertificateMap* extension_to_certificate_map =
+        &fingerprint_entry.second;
+    if (!extension_to_certificate_map->empty()) {
+      // If there are multiple entries with the same fingerprint, they are the
+      // same certificate as SHA256 should not have collisions.
+      // Since we need each certificate only once, we can return any entry.
+      certificates.push_back(
+          extension_to_certificate_map->begin()->second.certificate);
+    }
+  }
+  return certificates;
 }
 
 bool ThreadSafeCertificateMap::LookUpCertificate(
@@ -110,15 +80,17 @@ bool ThreadSafeCertificateMap::LookUpCertificate(
       net::X509Certificate::CalculateFingerprint256(cert.cert_buffer());
 
   base::AutoLock auto_lock(lock_);
-  const auto it = fingerprint_to_cert_and_extension_.find(fingerprint);
-  if (it == fingerprint_to_cert_and_extension_.end())
+  const auto it = fingerprint_to_extension_and_cert_.find(fingerprint);
+  if (it == fingerprint_to_extension_and_cert_.end())
     return false;
 
-  CertAndExtension* const value = it->second.get();
-  if (value) {
+  ExtensionToCertificateMap* const map = &it->second;
+  if (!map->empty()) {
+    // If multiple entries are found, it is unspecified which is returned.
+    const auto map_entry = map->begin();
     *is_currently_provided = true;
-    *info = value->cert_info;
-    *extension_id = value->extension_id;
+    *info = map_entry->second;
+    *extension_id = map_entry->first;
   }
   return true;
 }
@@ -130,15 +102,17 @@ bool ThreadSafeCertificateMap::LookUpCertificateBySpki(
     std::string* extension_id) {
   *is_currently_provided = false;
   base::AutoLock auto_lock(lock_);
-  const auto it = spki_to_cert_and_extension_.find(subject_public_key_info);
-  if (it == spki_to_cert_and_extension_.end())
+  const auto it = spki_to_extension_and_cert_.find(subject_public_key_info);
+  if (it == spki_to_extension_and_cert_.end())
     return false;
 
-  CertAndExtension* const value = it->second.get();
-  if (value) {
+  ExtensionToCertificateMap* const map = &it->second;
+  if (!map->empty()) {
+    // If multiple entries are found, it is unspecified which is returned.
+    const auto map_entry = map->begin();
     *is_currently_provided = true;
-    *info = value->cert_info;
-    *extension_id = value->extension_id;
+    *info = map_entry->second;
+    *extension_id = map_entry->first;
   }
   return true;
 }
@@ -146,20 +120,19 @@ bool ThreadSafeCertificateMap::LookUpCertificateBySpki(
 void ThreadSafeCertificateMap::RemoveExtension(
     const std::string& extension_id) {
   base::AutoLock auto_lock(lock_);
-  for (auto& entry : fingerprint_to_cert_and_extension_) {
-    CertAndExtension* const value = entry.second.get();
-    // Only remove the association of the fingerprint to the extension, but keep
-    // the fingerprint.
-    if (value && value->extension_id == extension_id)
-      entry.second.reset();
+  RemoveCertificatesProvidedByExtension(extension_id);
+}
+
+void ThreadSafeCertificateMap::RemoveCertificatesProvidedByExtension(
+    const std::string& extension_id) {
+  for (auto& entry : fingerprint_to_extension_and_cert_) {
+    ExtensionToCertificateMap* map = &entry.second;
+    map->erase(extension_id);
   }
 
-  for (auto& entry : spki_to_cert_and_extension_) {
-    CertAndExtension* const value = entry.second.get();
-    // Only remove the association of the SPKI to the extension, but keep the
-    // SPKI.
-    if (value && value->extension_id == extension_id)
-      entry.second.reset();
+  for (auto& entry : spki_to_extension_and_cert_) {
+    ExtensionToCertificateMap* map = &entry.second;
+    map->erase(extension_id);
   }
 }
 

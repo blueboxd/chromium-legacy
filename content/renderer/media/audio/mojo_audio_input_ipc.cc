@@ -44,11 +44,7 @@ void MojoAudioInputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
   factory_client_receiver_.set_disconnect_handler(base::BindOnce(
       &media::AudioInputIPCDelegate::OnError, base::Unretained(delegate_)));
 
-  mojo::PendingReceiver<audio::mojom::AudioProcessorControls> controls_receiver;
-  if (source_params_.processing.has_value())
-    controls_receiver = processor_controls_.BindNewPipeAndPassReceiver();
-  stream_creator_.Run(source_params_, std::move(client),
-                      std::move(controls_receiver), params,
+  stream_creator_.Run(source_params_, std::move(client), params,
                       automatic_gain_control, total_segments);
 }
 
@@ -73,35 +69,12 @@ void MojoAudioInputIPC::SetOutputDeviceForAec(
     stream_associator_.Run(*stream_id_, output_device_id);
 }
 
-media::AudioProcessorControls* MojoAudioInputIPC::GetProcessorControls() {
-  return processor_controls_ ? this : nullptr;
-}
-
 void MojoAudioInputIPC::CloseStream() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_ = nullptr;
   factory_client_receiver_.reset();
   stream_client_receiver_.reset();
   stream_.reset();
-  processor_controls_.reset();
-}
-
-void MojoAudioInputIPC::GetStats(GetStatsCB callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (processor_controls_)
-    processor_controls_->GetStats(std::move(callback));
-}
-
-void MojoAudioInputIPC::StartEchoCancellationDump(base::File file) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (processor_controls_)
-    processor_controls_->StartEchoCancellationDump(std::move(file));
-}
-
-void MojoAudioInputIPC::StopEchoCancellationDump() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (processor_controls_)
-    processor_controls_->StopEchoCancellationDump();
 }
 
 void MojoAudioInputIPC::StreamCreated(

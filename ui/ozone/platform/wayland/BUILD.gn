@@ -77,6 +77,8 @@ source_set("wayland") {
     "host/wayland_data_source.h",
     "host/wayland_drm.cc",
     "host/wayland_drm.h",
+    "host/wayland_event_source.cc",
+    "host/wayland_event_source.h",
     "host/wayland_input_method_context.cc",
     "host/wayland_input_method_context.h",
     "host/wayland_input_method_context_factory.cc",

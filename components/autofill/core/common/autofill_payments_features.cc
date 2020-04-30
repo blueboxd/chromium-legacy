@@ -57,12 +57,6 @@ const base::Feature kAutofillEnableFixedPaymentsBubbleLogging{
 const base::Feature kAutofillEnableGoogleIssuedCard{
     "AutofillEnableGoogleIssuedCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, enable local card migration flow for user who has signed in but
-// has not turned on sync.
-const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{
-    "AutofillEnableLocalCardMigrationForNonSyncUser",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, all payments related bubbles will not be dismissed upon page
 // navigation.
 const base::Feature kAutofillEnableStickyPaymentsBubble{

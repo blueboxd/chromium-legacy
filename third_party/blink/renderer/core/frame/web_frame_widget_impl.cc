@@ -405,7 +405,7 @@ void WebFrameWidgetImpl::ThemeChanged() {
   view->InvalidateRect(damaged_rect);
 }
 
-WebHitTestResult WebFrameWidgetImpl::HitTestResultAt(const gfx::Point& point) {
+WebHitTestResult WebFrameWidgetImpl::HitTestResultAt(const gfx::PointF& point) {
   return CoreHitTestResultAt(point);
 }
 
@@ -743,12 +743,10 @@ void WebFrameWidgetImpl::MouseContextMenu(const WebMouseEvent& event) {
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(LocalRootImpl()->GetFrameView(), event);
   transformed_event.menu_source_type = kMenuSourceMouse;
-  IntPoint position_in_root_frame =
-      FlooredIntPoint(transformed_event.PositionInRootFrame());
 
   // Find the right target frame. See issue 1186900.
-  HitTestResult result =
-      HitTestResultForRootFramePos(PhysicalOffset(position_in_root_frame));
+  HitTestResult result = HitTestResultForRootFramePos(
+      FloatPoint(transformed_event.PositionInRootFrame()));
   Frame* target_frame;
   if (result.InnerNodeOrImageMapImage())
     target_frame = result.InnerNodeOrImageMapImage()->GetDocument().GetFrame();
@@ -1028,12 +1026,12 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
 }
 
 HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
-    const gfx::Point& point_in_viewport) {
+    const gfx::PointF& point_in_viewport) {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
   LocalFrameView* view = LocalRootImpl()->GetFrameView();
-  PhysicalOffset point_in_root_frame(
-      view->ViewportToFrame(IntPoint(point_in_viewport)));
+  FloatPoint point_in_root_frame(
+      view->ViewportToFrame(FloatPoint(point_in_viewport)));
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
@@ -1044,8 +1042,8 @@ void WebFrameWidgetImpl::ZoomToFindInPageRect(
 }
 
 HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
-    const PhysicalOffset& pos_in_root_frame) {
-  PhysicalOffset doc_point =
+    const FloatPoint& pos_in_root_frame) {
+  FloatPoint doc_point =
       LocalRootImpl()->GetFrame()->View()->ConvertFromRootFrame(
           pos_in_root_frame);
   HitTestLocation location(doc_point);

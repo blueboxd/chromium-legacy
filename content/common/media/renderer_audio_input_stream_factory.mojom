@@ -9,7 +9,6 @@ import "media/mojo/mojom/audio_input_stream.mojom";
 import "media/mojo/mojom/audio_parameters.mojom";
 import "media/mojo/mojom/media_types.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "services/audio/public/mojom/audio_processing.mojom";
 
 // This interface is used by the renderer to ask the browser to create input
 // streams. The renderer supplies the desired audio parameters, and a client
@@ -21,8 +20,7 @@ interface RendererAudioInputStreamFactory {
       mojo_base.mojom.UnguessableToken session_id,
       media.mojom.AudioParameters params,
       bool automatic_gain_control,
-      uint32 shared_memory_count,
-      audio.mojom.AudioProcessingConfig? processing_config);
+      uint32 shared_memory_count);
 
   // Associates an output device with an input stream, so that the input knows
   // which output device to cancel echo from. |input_stream_id| is the id

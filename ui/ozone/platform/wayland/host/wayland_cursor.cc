@@ -11,11 +11,20 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
 
 namespace ui {
 
-WaylandCursor::WaylandCursor() = default;
+WaylandCursor::WaylandCursor(WaylandPointer* pointer,
+                             WaylandConnection* connection)
+    : pointer_(pointer), connection_(connection) {
+  DCHECK(connection);
+  DCHECK(connection->compositor());
+
+  pointer_surface_.reset(
+      wl_compositor_create_surface(connection->compositor()));
+}
 
 WaylandCursor::~WaylandCursor() = default;
 
@@ -26,23 +35,11 @@ void WaylandCursor::OnBufferRelease(void* data, wl_buffer* buffer) {
   cursor->buffers_.erase(buffer);
 }
 
-void WaylandCursor::Init(wl_pointer* pointer, WaylandConnection* connection) {
-  DCHECK(connection);
-  DCHECK(connection->shm());
-  DCHECK(connection->compositor());
-
-  input_pointer_ = pointer;
-  shm_ = connection->shm();
-  pointer_surface_.reset(
-      wl_compositor_create_surface(connection->compositor()));
-
-  connection_ = connection;
-}
-
 void WaylandCursor::UpdateBitmap(const std::vector<SkBitmap>& cursor_image,
                                  const gfx::Point& hotspot,
                                  uint32_t serial) {
-  if (!input_pointer_)
+  DCHECK(connection_->shm());
+  if (!pointer_)
     return;
 
   if (!cursor_image.size())
@@ -53,7 +50,7 @@ void WaylandCursor::UpdateBitmap(const std::vector<SkBitmap>& cursor_image,
     return HideCursor(serial);
 
   gfx::Size image_size = gfx::SkISizeToSize(image.dimensions());
-  WaylandShmBuffer buffer(shm_, image_size);
+  WaylandShmBuffer buffer(connection_->shm(), image_size);
 
   if (!buffer.IsValid()) {
     LOG(ERROR) << "Failed to create SHM buffer for Cursor Bitmap.";
@@ -67,7 +64,7 @@ void WaylandCursor::UpdateBitmap(const std::vector<SkBitmap>& cursor_image,
 
   wl::DrawBitmap(image, &buffer);
 
-  wl_pointer_set_cursor(input_pointer_, serial, pointer_surface_.get(),
+  wl_pointer_set_cursor(pointer_->wl_object(), serial, pointer_surface_.get(),
                         hotspot.x(), hotspot.y());
   wl_surface_damage(pointer_surface_.get(), 0, 0, image_size.width(),
                     image_size.height());
@@ -79,8 +76,8 @@ void WaylandCursor::UpdateBitmap(const std::vector<SkBitmap>& cursor_image,
 }
 
 void WaylandCursor::HideCursor(uint32_t serial) {
-  DCHECK(input_pointer_);
-  wl_pointer_set_cursor(input_pointer_, serial, nullptr, 0, 0);
+  DCHECK(pointer_);
+  wl_pointer_set_cursor(pointer_->wl_object(), serial, nullptr, 0, 0);
 
   wl_surface_attach(pointer_surface_.get(), nullptr, 0, 0);
   wl_surface_commit(pointer_surface_.get());

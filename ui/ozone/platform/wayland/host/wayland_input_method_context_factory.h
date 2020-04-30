@@ -30,7 +30,7 @@ class WaylandInputMethodContextFactory : public LinuxInputMethodContextFactory {
       bool is_simple) const;
 
  private:
-  WaylandConnection* connection_;
+  WaylandConnection* const connection_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandInputMethodContextFactory);
 };

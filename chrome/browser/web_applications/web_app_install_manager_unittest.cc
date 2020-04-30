@@ -781,6 +781,16 @@ TEST_F(WebAppInstallManagerTest, UninstallWebAppsAfterSync) {
   const AppId app_id = app->app_id();
   InitRegistrarWithApp(std::move(app));
 
+  // Remove app from the in-memory registry.
+  std::vector<std::unique_ptr<WebApp>> apps_unregistered;
+  {
+    Registry& registry = controller().mutable_registrar().registry();
+    auto it = registry.find(app_id);
+    DCHECK(it != registry.end());
+    apps_unregistered.push_back(std::move(it->second));
+    registry.erase(it);
+  }
+
   file_utils().SetNextDeleteFileRecursivelyResult(true);
 
   enum Event {
@@ -797,23 +807,15 @@ TEST_F(WebAppInstallManagerTest, UninstallWebAppsAfterSync) {
       }));
 
   base::RunLoop run_loop;
-
-  controller().SetUninstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
-      [&](std::vector<std::unique_ptr<WebApp>> apps_unregistered,
-          SyncInstallDelegate::RepeatingUninstallCallback callback) {
-        install_manager().UninstallWebAppsAfterSync(
-            std::move(apps_unregistered),
-            base::BindLambdaForTesting([&](const AppId& uninstalled_app_id,
-                                           bool uninstalled) {
-              EXPECT_EQ(uninstalled_app_id, app_id);
-              EXPECT_TRUE(uninstalled);
-              event_order.push_back(Event::kUninstallWebAppsAfterSync_Callback);
-              run_loop.Quit();
-            }));
-      }));
-
-  // The sync server sends a change to delete the app.
-  controller().ApplySyncChanges_DeleteApps({app_id});
+  install_manager().UninstallWebAppsAfterSync(
+      std::move(apps_unregistered),
+      base::BindLambdaForTesting(
+          [&](const AppId& uninstalled_app_id, bool uninstalled) {
+            EXPECT_EQ(uninstalled_app_id, app_id);
+            EXPECT_TRUE(uninstalled);
+            event_order.push_back(Event::kUninstallWebAppsAfterSync_Callback);
+            run_loop.Quit();
+          }));
   run_loop.Run();
 
   const std::vector<Event> expected_event_order{
@@ -932,7 +934,14 @@ TEST_F(WebAppInstallManagerTest, DefaultAndUser_UninstallExternalAppByUser) {
 
   WebAppInstallObserver observer(&registrar());
 
+  bool observer_will_be_uninstalled_called = false;
   bool observer_uninstalled_called = false;
+
+  observer.SetWebAppWillBeUninstalledDelegate(
+      base::BindLambdaForTesting([&](const AppId& uninstalled_app_id) {
+        EXPECT_EQ(app_id, uninstalled_app_id);
+        observer_will_be_uninstalled_called = true;
+      }));
 
   observer.SetWebAppUninstalledDelegate(
       base::BindLambdaForTesting([&](const AppId& uninstalled_app_id) {
@@ -945,6 +954,7 @@ TEST_F(WebAppInstallManagerTest, DefaultAndUser_UninstallExternalAppByUser) {
   EXPECT_TRUE(UninstallExternalAppByUser(app_id));
 
   EXPECT_FALSE(registrar().GetAppById(app_id));
+  EXPECT_TRUE(observer_will_be_uninstalled_called);
   EXPECT_TRUE(observer_uninstalled_called);
   EXPECT_FALSE(finalizer().CanUserUninstallExternalApp(app_id));
   EXPECT_TRUE(finalizer().WasExternalAppUninstalledByUser(app_id));

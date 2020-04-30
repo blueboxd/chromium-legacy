@@ -60,7 +60,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   // Finds the extension object in ExtensionRegistry and in the being
   // uninstalled slot.
   //
-  // When AppRegistrarObserver::OnWebAppUninstalled(app_id) happens for
+  // When AppRegistrarObserver::OnWebAppWillBeUninstalled(app_id) happens for
   // bookmark apps, the bookmark app backing that app_id is already removed
   // from ExtensionRegistry. If some abstract observer needs the extension
   // pointer for |app_id| being uninstalled, that observer should use this
@@ -77,8 +77,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_observer_{this};
 
-  // Observers may find this pointer via FindExtension method.
-  const Extension* bookmark_app_being_observed_ = nullptr;
+  const Extension* bookmark_app_being_uninstalled_ = nullptr;
 };
 
 }  // namespace extensions

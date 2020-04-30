@@ -7,6 +7,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/structured_headers.h"
 #include "services/network/public/cpp/features.h"
 
 namespace network {
@@ -17,12 +18,6 @@ namespace {
 constexpr char kCrossOriginOpenerPolicyHeader[] = "Cross-Origin-Opener-Policy";
 const char kSameOrigin[] = "same-origin";
 const char kSameOriginAllowPopups[] = "same-origin-allow-popups";
-
-// Spec's HTTP tab or space: https://fetch.spec.whatwg.org/#http-tab-or-space.
-const char kHTTPTabOrSpace[] = {0x09, /* CHARACTER TABULATION */
-                                0x20, /* SPACE */
-                                0};
-
 }  // namespace
 
 mojom::CrossOriginOpenerPolicy ParseCrossOriginOpenerPolicy(
@@ -36,12 +31,16 @@ mojom::CrossOriginOpenerPolicy ParseCrossOriginOpenerPolicy(
     return mojom::CrossOriginOpenerPolicy::kUnsafeNone;
   }
 
-  base::StringPiece trimmed_value =
-      base::TrimString(header_value, kHTTPTabOrSpace, base::TRIM_ALL);
-  if (trimmed_value == kSameOrigin)
-    return mojom::CrossOriginOpenerPolicy::kSameOrigin;
-  if (trimmed_value == kSameOriginAllowPopups)
-    return mojom::CrossOriginOpenerPolicy::kSameOriginAllowPopups;
+  using Item = net::structured_headers::Item;
+  const auto item = net::structured_headers::ParseItem(header_value);
+  if (item && item->item.Type() == Item::kTokenType) {
+    const auto& policy_item = item->item.GetString();
+    if (policy_item == kSameOrigin)
+      return mojom::CrossOriginOpenerPolicy::kSameOrigin;
+    if (policy_item == kSameOriginAllowPopups)
+      return mojom::CrossOriginOpenerPolicy::kSameOriginAllowPopups;
+  }
+
   // Default to kUnsafeNone for all malformed values and "unsafe-none"
   return mojom::CrossOriginOpenerPolicy::kUnsafeNone;
 }

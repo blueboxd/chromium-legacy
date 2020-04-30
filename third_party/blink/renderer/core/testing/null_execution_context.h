@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
@@ -41,6 +42,7 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
 
   void AddConsoleMessageImpl(ConsoleMessage*,
                              bool discard_duplicates) override {}
+  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) override {}
   void ExceptionThrown(ErrorEvent*) override {}
 
   void SetUpSecurityContextForTesting();

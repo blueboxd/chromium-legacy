@@ -47,18 +47,15 @@ public interface SiteSettingsClient {
     BrowserContextHandle getBrowserContextHandle();
 
     /**
-     * Asynchronously looks up the locally cached favicon image for the given URL.
+     * Asynchronously looks up the locally cached favicon image for the given URL, generating a
+     * fallback if one isn't available.
      *
      * @param faviconUrl The URL of the page to get the favicon for. If a favicon for the full URL
      *     can't be found, the favicon for its host will be used as a fallback.
-     * @param faviconSizePx The expected size of the favicon in pixels. If a favicon of this size
-     *     doesn't exist, the cached favicon closest to this size will be resized to a square of
-     *     this dimension.
      * @param callback A callback that will be called with the favicon bitmap, or null if no
-     *     favicon could be found locally.
+     *     favicon could be found or generated.
      */
-    void getLocalFaviconImageForURL(
-            String faviconUrl, int faviconSizePx, Callback<Bitmap> callback);
+    void getFaviconImageForURL(String faviconUrl, Callback<Bitmap> callback);
 
     /**
      * @return true if the QuietNotificationPrompts Feature is enabled.

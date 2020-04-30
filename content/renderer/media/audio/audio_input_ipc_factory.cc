@@ -16,7 +16,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
@@ -27,22 +26,14 @@ void CreateMojoAudioInputStreamOnMainThread(
     int frame_id,
     const media::AudioSourceParameters& source_params,
     mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
-    mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
-        controls_receiver,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
   RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(frame_id);
   if (frame) {
-    audio::mojom::AudioProcessingConfigPtr processing_config;
-    if (source_params.processing) {
-      processing_config = audio::mojom::AudioProcessingConfig::New(
-          std::move(controls_receiver), source_params.processing->id,
-          source_params.processing->settings);
-    }
     frame->GetAudioInputStreamFactory()->CreateStream(
         std::move(client), source_params.session_id, params,
-        automatic_gain_control, total_segments, std::move(processing_config));
+        automatic_gain_control, total_segments);
   }
 }
 
@@ -51,16 +42,14 @@ void CreateMojoAudioInputStream(
     int frame_id,
     const media::AudioSourceParameters& source_params,
     mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
-    mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
-        controls_receiver,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
   main_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&CreateMojoAudioInputStreamOnMainThread,
-                                frame_id, source_params, std::move(client),
-                                std::move(controls_receiver), params,
-                                automatic_gain_control, total_segments));
+      FROM_HERE,
+      base::BindOnce(&CreateMojoAudioInputStreamOnMainThread, frame_id,
+                     source_params, std::move(client), params,
+                     automatic_gain_control, total_segments));
 }
 
 void AssociateInputAndOutputForAec(

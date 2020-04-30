@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "components/account_id/account_id.h"
@@ -60,21 +59,19 @@ class SignRequests {
             const base::Optional<AccountId>& authenticating_user_account_id,
             net::SSLPrivateKey::SignCallback callback);
     Request(Request&& other);
-    ~Request();
     Request& operator=(Request&&);
+    ~Request();
 
     scoped_refptr<net::X509Certificate> certificate;
     base::Optional<AccountId> authenticating_user_account_id;
     net::SSLPrivateKey::SignCallback callback;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
   // Holds state of all sign requests to a single extension.
   struct RequestsState {
     RequestsState();
     RequestsState(RequestsState&& other);
+    RequestsState& operator=(RequestsState&&);
     ~RequestsState();
 
     // Maps from request id to the request state.
@@ -87,8 +84,6 @@ class SignRequests {
 
   // Contains the state of all sign requests per extension.
   std::map<std::string, RequestsState> extension_to_requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(SignRequests);
 };
 
 }  // namespace certificate_provider

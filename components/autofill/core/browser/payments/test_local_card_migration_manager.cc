@@ -25,17 +25,7 @@ TestLocalCardMigrationManager::TestLocalCardMigrationManager(
 TestLocalCardMigrationManager::~TestLocalCardMigrationManager() {}
 
 bool TestLocalCardMigrationManager::IsCreditCardMigrationEnabled() {
-  bool has_google_payments_account =
-      (payments::GetBillingCustomerId(personal_data_manager_) != 0);
-
-  bool sync_feature_enabled =
-      (personal_data_manager_->GetSyncSigninState() ==
-       AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled);
-
-  return has_google_payments_account &&
-         (sync_feature_enabled ||
-          base::FeatureList::IsEnabled(
-              features::kAutofillEnableLocalCardMigrationForNonSyncUser));
+  return payments::GetBillingCustomerId(personal_data_manager_) != 0;
 }
 
 bool TestLocalCardMigrationManager::LocalCardMigrationWasTriggered() {

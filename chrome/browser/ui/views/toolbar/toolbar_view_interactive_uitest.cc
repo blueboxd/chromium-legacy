@@ -151,7 +151,8 @@ void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
 }
 
 // TODO(pkasting): https://crbug.com/939621 Fails on Mac.
-#if defined(OS_MACOSX)
+// Also flaky on linux-chromeos-chrome crbug.com/1076875.
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_TestAppMenuOpensOnDrag DISABLED_TestAppMenuOpensOnDrag
 #else
 #define MAYBE_TestAppMenuOpensOnDrag TestAppMenuOpensOnDrag

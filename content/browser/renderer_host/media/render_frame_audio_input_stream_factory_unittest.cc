@@ -107,7 +107,6 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
         uint32_t shared_memory_count,
         bool enable_agc,
         base::ReadOnlySharedMemoryRegion key_press_count_buffer,
-        audio::mojom::AudioProcessingConfigPtr processing_config,
         CreateInputStreamCallback created_callback) override {
       last_created_callback = std::move(created_callback);
     }
@@ -212,7 +211,7 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
   mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
   ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
-                               kSharedMemoryCount, nullptr);
+                               kSharedMemoryCount);
 
   base::RunLoop().RunUntilIdle();
 
@@ -239,7 +238,7 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
   mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
   ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
-                               kSharedMemoryCount, nullptr);
+                               kSharedMemoryCount);
 
   base::RunLoop().RunUntilIdle();
 
@@ -267,7 +266,7 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
   mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
   ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
-                               kSharedMemoryCount, nullptr);
+                               kSharedMemoryCount);
 
   base::RunLoop().RunUntilIdle();
 
@@ -285,7 +284,7 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
   mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
   ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
-                               kSharedMemoryCount, nullptr);
+                               kSharedMemoryCount);
 
   base::RunLoop().RunUntilIdle();
 

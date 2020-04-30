@@ -228,6 +228,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - UITableViewDelegate
 
+- (void)setEditing:(BOOL)editing animated:(BOOL)animated {
+  [super setEditing:editing animated:animated];
+
+  [self updateUIForEditState];
+}
+
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [super tableView:tableView didSelectRowAtIndexPath:indexPath];

@@ -45,6 +45,11 @@ TEST(CrossOriginOpenerPolicyTest, Parse) {
       {"some-origin", CrossOriginOpenerPolicy::kUnsafeNone},
       // Trailing line-tab.
       {"same-origin\x0B", CrossOriginOpenerPolicy::kUnsafeNone},
+      // Adding report endpoints should not prevent the parsing.
+      {"same-origin; report-to=endpoint", CrossOriginOpenerPolicy::kSameOrigin},
+      {"same-origin-allow-popups; report-to=endpoint",
+       CrossOriginOpenerPolicy::kSameOriginAllowPopups},
+      {"unsafe-none; report-to=endpoint", CrossOriginOpenerPolicy::kUnsafeNone},
   };
 
   for (const auto& test_case : kTestCases) {

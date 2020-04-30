@@ -287,6 +287,18 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const TimeTicks& timestamp,
       TraceArguments* args,
       unsigned int flags);
+  TraceEventHandle AddTraceEventWithThreadIdAndTimestamps(
+      char phase,
+      const unsigned char* category_group_enabled,
+      const char* name,
+      const char* scope,
+      unsigned long long id,
+      unsigned long long bind_id,
+      int thread_id,
+      const TimeTicks& timestamp,
+      const ThreadTicks& thread_timestamp,
+      TraceArguments* args,
+      unsigned int flags);
 
   // Adds a metadata event that will be written when the trace log is flushed.
   void AddMetadataEvent(const unsigned char* category_group_enabled,

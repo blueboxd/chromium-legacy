@@ -110,7 +110,7 @@ class WebApps : public apps::PublisherBase,
 
   // web_app::AppRegistrarObserver:
   void OnWebAppInstalled(const web_app::AppId& app_id) override;
-  void OnWebAppUninstalled(const web_app::AppId& app_id) override;
+  void OnWebAppWillBeUninstalled(const web_app::AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
   void OnWebAppDisabledStateChanged(const web_app::AppId& app_id,
                                     bool is_disabled) override;

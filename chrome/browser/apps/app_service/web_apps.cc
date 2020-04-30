@@ -478,7 +478,7 @@ void WebApps::OnWebAppInstalled(const web_app::AppId& app_id) {
   }
 }
 
-void WebApps::OnWebAppUninstalled(const web_app::AppId& app_id) {
+void WebApps::OnWebAppWillBeUninstalled(const web_app::AppId& app_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (!web_app || !Accepts(app_id)) {
     return;

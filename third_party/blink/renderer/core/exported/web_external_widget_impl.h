@@ -35,7 +35,7 @@ class WebExternalWidgetImpl : public WebExternalWidget,
   void SetCompositorVisible(bool visible) override;
   void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
              base::OnceCallback<void()> cleanup_task) override;
-  WebHitTestResult HitTestResultAt(const gfx::Point&) override;
+  WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
   WebURL GetURLForDebugTrace() override;
   WebSize Size() override;
   void Resize(const WebSize& size) override;

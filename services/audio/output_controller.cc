@@ -139,14 +139,11 @@ void OutputController::ErrorStatisticsTracker::WedgeCheck() {
   }
 }
 
-OutputController::OutputController(
-    media::AudioManager* audio_manager,
-    EventHandler* handler,
-    const media::AudioParameters& params,
-    const std::string& output_device_id,
-    SyncReader* sync_reader,
-    StreamMonitorCoordinator* stream_monitor_coordinator,
-    const base::UnguessableToken& processing_id)
+OutputController::OutputController(media::AudioManager* audio_manager,
+                                   EventHandler* handler,
+                                   const media::AudioParameters& params,
+                                   const std::string& output_device_id,
+                                   SyncReader* sync_reader)
     : audio_manager_(audio_manager),
       params_(params),
       handler_(handler),
@@ -158,8 +155,6 @@ OutputController::OutputController(
       volume_(1.0),
       state_(kEmpty),
       sync_reader_(sync_reader),
-      stream_monitor_coordinator_(stream_monitor_coordinator),
-      processing_id_(processing_id),
       power_monitor_(
           params.sample_rate(),
           TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis)) {
@@ -167,7 +162,6 @@ OutputController::OutputController(
   DCHECK(handler_);
   DCHECK(sync_reader_);
   DCHECK(task_runner_.get());
-  DCHECK(stream_monitor_coordinator_ || processing_id.is_empty());
 }
 
 OutputController::~OutputController() {
@@ -302,19 +296,6 @@ void OutputController::RecreateStream(OutputController::RecreateReason reason) {
   // output dispatcher which falls back to a fake stream if audio parameters
   // are invalid or if a physical stream can't be opened for some reason.
   state_ = kCreated;
-
-  if (processing_id_) {
-    // Ensure new monitors know that we're active.
-    stream_monitor_coordinator_->AddObserver(processing_id_, this);
-    // Ensure existing monitors do as well.
-    stream_monitor_coordinator_->ForEachMemberInGroup(
-        processing_id_,
-        base::BindRepeating(
-            [](OutputController* controller, StreamMonitor* monitor) {
-              monitor->OnStreamActive(controller);
-            },
-            this));
-  }
 }
 
 void OutputController::Play() {
@@ -545,20 +526,6 @@ void OutputController::StopCloseAndClearStream() {
     // AudioManager.
     audio_manager_->RemoveOutputDeviceChangeListener(this);
 
-    // Only notify and remove ourselves if startup was successful.
-    if (processing_id_ && state_ != kEmpty) {
-      // Don't send out activation messages for now.
-      stream_monitor_coordinator_->RemoveObserver(processing_id_, this);
-      // Ensure everyone monitoring us knows we're no-longer active.
-      stream_monitor_coordinator_->ForEachMemberInGroup(
-          processing_id_,
-          base::BindRepeating(
-              [](OutputController* controller, StreamMonitor* monitor) {
-                monitor->OnStreamInactive(controller);
-              },
-              this));
-    }
-
     StopStream();
     stream_->Close();
     stats_tracker_.reset();
@@ -636,15 +603,6 @@ void OutputController::ToggleLocalOutput() {
     if (state_ == kCreated && restore_playback)
       Play();
   }
-}
-
-void OutputController::OnMemberJoinedGroup(StreamMonitor* monitor) {
-  // We're only observing the group when we're active.
-  monitor->OnStreamActive(this);
-}
-
-void OutputController::OnMemberLeftGroup(StreamMonitor* monitor) {
-  // Do nothing. The monitor will have already cleaned up.
 }
 
 void OutputController::OnDeviceChange() {

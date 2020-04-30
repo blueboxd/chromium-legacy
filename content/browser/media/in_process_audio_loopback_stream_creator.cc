@@ -84,8 +84,7 @@ void CreateSystemWideLoopbackStreamHelper(
   const bool enable_agc = false;
   factory->CreateInputStream(
       -1, -1, media::AudioDeviceDescription::kLoopbackWithMuteDeviceId, params,
-      total_segments, enable_agc, nullptr /* processing_config */,
-      std::move(client_remote));
+      total_segments, enable_agc, std::move(client_remote));
 }
 
 }  // namespace

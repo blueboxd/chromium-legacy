@@ -75,11 +75,11 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void DidDetachLocalFrameTree() override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
-  WebHitTestResult HitTestResultAt(const gfx::Point&) override;
+  WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
 
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return false; }
-  HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
+  HitTestResult CoreHitTestResultAt(const gfx::PointF&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
   // FrameWidget overrides:

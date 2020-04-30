@@ -87,6 +87,8 @@ class TestDelegate : public CertificateProviderService::Delegate {
   enum class RequestType { NONE, SIGN, GET_CERTIFICATES };
 
   TestDelegate() {}
+  TestDelegate(const TestDelegate&) = delete;
+  TestDelegate& operator=(const TestDelegate&) = delete;
 
   std::vector<std::string> CertificateProviderExtensions() override {
     return std::vector<std::string>(provider_extensions_.begin(),
@@ -132,9 +134,6 @@ class TestDelegate : public CertificateProviderService::Delegate {
   std::string last_extension_id_;
   std::set<std::string> provider_extensions_;
   RequestType expected_request_type_ = RequestType::NONE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
 class MockObserver : public CertificateProviderService::Observer {
@@ -280,6 +279,8 @@ TEST_F(CertificateProviderServiceTest, GetCertificates) {
   // Deregister the extensions as certificate providers. The next
   // GetCertificates call must report an empty list of certs.
   test_delegate_->provider_extensions_.clear();
+  service_->OnExtensionUnloaded(kExtension1);
+  service_->OnExtensionUnloaded(kExtension2);
 
   // No request expected.
   test_delegate_->ClearAndExpectRequest(TestDelegate::RequestType::NONE);
@@ -333,6 +334,7 @@ TEST_F(CertificateProviderServiceTest, LookUpCertificate) {
   // Deregister |kExtension2| as certificate provider and provide |cert_info1_|
   // from |kExtension1|.
   test_delegate_->provider_extensions_.erase(kExtension2);
+  service_->OnExtensionUnloaded(kExtension2);
 
   {
     const int cert_request_id = RequestCertificatesFromExtensions(nullptr);

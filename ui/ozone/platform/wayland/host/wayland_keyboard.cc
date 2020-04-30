@@ -33,9 +33,11 @@ const wl_callback_listener WaylandKeyboard::callback_listener_ = {
 };
 
 WaylandKeyboard::WaylandKeyboard(wl_keyboard* keyboard,
+                                 WaylandConnection* connection,
                                  KeyboardLayoutEngine* layout_engine,
                                  const EventDispatchCallback& callback)
     : obj_(keyboard),
+      connection_(connection),
       callback_(callback),
       auto_repeat_handler_(this),
 #if BUILDFLAG(USE_XKBCOMMON)

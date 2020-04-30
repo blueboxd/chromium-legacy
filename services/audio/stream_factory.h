@@ -21,7 +21,6 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/audio/loopback_coordinator.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
-#include "services/audio/stream_monitor_coordinator.h"
 
 namespace base {
 class UnguessableToken;
@@ -61,7 +60,6 @@ class StreamFactory final : public mojom::StreamFactory {
       uint32_t shared_memory_count,
       bool enable_agc,
       base::ReadOnlySharedMemoryRegion key_press_count_buffer,
-      mojom::AudioProcessingConfigPtr processing_config,
       CreateInputStreamCallback created_callback) final;
 
   void AssociateInputAndOutputForAec(
@@ -76,7 +74,6 @@ class StreamFactory final : public mojom::StreamFactory {
       const std::string& output_device_id,
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
-      const base::Optional<base::UnguessableToken>& processing_id,
       CreateOutputStreamCallback created_callback) final;
   void BindMuter(mojo::PendingAssociatedReceiver<mojom::LocalMuter> receiver,
                  const base::UnguessableToken& group_id) final;
@@ -111,7 +108,6 @@ class StreamFactory final : public mojom::StreamFactory {
   std::vector<std::unique_ptr<LocalMuter>> muters_;
   base::Thread loopback_worker_thread_;
   std::vector<std::unique_ptr<LoopbackStream>> loopback_streams_;
-  StreamMonitorCoordinator stream_monitor_coordinator_;
   InputStreamSet input_streams_;
   OutputStreamSet output_streams_;
 

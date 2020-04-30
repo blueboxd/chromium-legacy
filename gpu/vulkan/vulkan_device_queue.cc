@@ -4,6 +4,7 @@
 
 #include "gpu/vulkan/vulkan_device_queue.h"
 
+#include <cstring>
 #include <unordered_set>
 #include <utility>
 #include <vector>

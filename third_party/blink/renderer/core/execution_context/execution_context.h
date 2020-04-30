@@ -36,6 +36,7 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom-blink-forward.h"
@@ -217,6 +218,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
                          bool discard_duplicates = false) {
     AddConsoleMessageImpl(message, discard_duplicates);
   }
+  virtual void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) = 0;
 
   bool IsContextPaused() const;
   bool IsContextDestroyed() const { return is_context_destroyed_; }

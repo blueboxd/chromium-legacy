@@ -124,6 +124,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   const SecurityContext& GetSecurityContext() const final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
   void ExceptionThrown(ErrorEvent*) final;
+  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;
   EventTarget* ErrorEventTarget() final { return this; }
   String OutgoingReferrer() const final;
   network::mojom::ReferrerPolicy GetReferrerPolicy() const final;

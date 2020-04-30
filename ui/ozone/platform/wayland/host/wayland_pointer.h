@@ -16,6 +16,7 @@
 
 namespace ui {
 
+class WaylandConnection;
 class WaylandWindow;
 
 // Wraps the wl_pointer object and transmits events to the dispatcher callback.
@@ -24,19 +25,15 @@ class WaylandWindow;
 // pointer.
 class WaylandPointer {
  public:
-  WaylandPointer(wl_pointer* pointer, const EventDispatchCallback& callback);
+  WaylandPointer(wl_pointer* pointer,
+                 WaylandConnection* connection,
+                 const EventDispatchCallback& callback);
   virtual ~WaylandPointer();
-
-  void set_connection(WaylandConnection* connection) {
-    connection_ = connection;
-    cursor_->Init(obj_.get(), connection_);
-  }
 
   int GetFlagsWithKeyboardModifiers();
   void ResetFlags();
 
-  WaylandCursor* cursor() { return cursor_.get(); }
-
+  wl_pointer* wl_object() const { return obj_.get(); }
   void reset_window_with_pointer_focus() {
     window_with_pointer_focus_ = nullptr;
   }
@@ -74,10 +71,11 @@ class WaylandPointer {
   void FocusWindow(wl_surface* surface);
   void UnfocusWindow(wl_surface* surface);
 
-  WaylandConnection* connection_ = nullptr;
-  std::unique_ptr<WaylandCursor> cursor_;
   wl::Object<wl_pointer> obj_;
+  WaylandConnection* const connection_;
+
   EventDispatchCallback callback_;
+
   gfx::PointF location_;
   // Flags is a bitmask of EventFlags corresponding to the pointer/keyboard
   // state.

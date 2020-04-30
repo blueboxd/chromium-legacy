@@ -14,6 +14,9 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/hash/sha1.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -21,11 +24,13 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/chromeos/certificate_provider/test_certificate_provider_extension.h"
 #include "chrome/browser/chromeos/ui/request_pin_view.h"
 #include "chrome/browser/extensions/api/certificate_provider/certificate_provider_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -40,14 +45,19 @@
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "extensions/test/test_background_page_first_load_observer.h"
+#include "net/cert/x509_certificate.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
+#include "third_party/boringssl/src/include/openssl/pool.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/controls/label.h"
@@ -66,13 +76,6 @@ void IgnoreResult(const base::Closure& callback, base::Value value) {
 
 void StoreBool(bool* result, const base::Closure& callback, base::Value value) {
   value.GetAsBoolean(result);
-  callback.Run();
-}
-
-void StoreString(std::string* result,
-                 const base::Closure& callback,
-                 base::Value value) {
-  value.GetAsString(result);
   callback.Run();
 }
 
@@ -114,6 +117,30 @@ std::string JsUint8Array(const std::vector<uint8_t>& bytes) {
   return res;
 }
 
+std::string GetPageTextContent(content::WebContents* web_contents) {
+  base::RunLoop run_loop;
+  std::string text_content;
+  web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("document.body.textContent;"),
+      base::BindOnce(
+          [](std::string* result, base::OnceClosure callback,
+             base::Value value) {
+            if (value.is_string())
+              *result = value.GetString();
+            std::move(callback).Run();
+          },
+          &text_content, run_loop.QuitClosure()));
+  run_loop.Run();
+  return text_content;
+}
+
+std::string GetCertFingerprint1(const net::X509Certificate& cert) {
+  unsigned char hash[base::kSHA1Length];
+  base::SHA1HashBytes(CRYPTO_BUFFER_data(cert.cert_buffer()),
+                      CRYPTO_BUFFER_len(cert.cert_buffer()), hash);
+  return base::ToLowerASCII(base::HexEncode(hash, base::kSHA1Length));
+}
+
 class CertificateProviderApiTest : public extensions::ExtensionApiTest {
  public:
   CertificateProviderApiTest() {}
@@ -130,8 +157,7 @@ class CertificateProviderApiTest : public extensions::ExtensionApiTest {
     extensions::ExtensionApiTest::SetUpOnMainThread();
     // Set up the AutoSelectCertificateForUrls policy to avoid the client
     // certificate selection dialog.
-    const std::string autoselect_pattern =
-        "{\"pattern\": \"*\", \"filter\": {\"ISSUER\": {\"CN\": \"root\"}}}";
+    const std::string autoselect_pattern = R"({"pattern": "*", "filter": {}})";
 
     std::unique_ptr<base::ListValue> autoselect_policy(new base::ListValue);
     autoselect_policy->AppendString(autoselect_pattern);
@@ -346,23 +372,12 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
 
   VLOG(1) << "Check whether the server acknowledged that a client certificate "
              "was presented.";
-  {
-    base::RunLoop run_loop;
-    std::string https_reply;
-    https_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-        base::ASCIIToUTF16("document.body.textContent;"),
-        base::BindOnce(&StoreString, &https_reply, run_loop.QuitClosure()));
-    run_loop.Run();
-    // Expect the server to return the fingerprint of the client cert that we
-    // presented, which should be the fingerprint of 'l1_leaf.der'.
-    // The fingerprint can be calculated independently using:
-    // openssl x509 -inform DER -noout -fingerprint -in
-    //   chrome/test/data/extensions/api_test/certificate_provider/l1_leaf.der
-    ASSERT_EQ(
-        "got client cert with fingerprint: "
-        "edeb84ab3b5a36dd09a3203c74794b25efa8f126",
-        https_reply);
-  }
+  // The fingerprint can be calculated independently using:
+  // openssl x509 -inform DER -noout -fingerprint -in
+  //   chrome/test/data/extensions/api_test/certificate_provider/l1_leaf.der
+  EXPECT_EQ(GetPageTextContent(https_contents),
+            "got client cert with fingerprint: "
+            "edeb84ab3b5a36dd09a3203c74794b25efa8f126");
 
   // Replying to the same signature request a second time must fail.
   {
@@ -375,6 +390,72 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
     run_loop.Run();
     EXPECT_TRUE(result);
   }
+}
+
+// Test that the certificateProvider events are delivered correctly in the
+// scenario when the event listener is in a lazy background page that gets idle.
+IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, LazyBackgroundPage) {
+  // Make extension background pages idle immediately.
+  extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
+  extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
+
+  // Start an HTTPS test server that requests a client certificate.
+  net::SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  net::SpawnedTestServer https_server(net::SpawnedTestServer::TYPE_HTTPS,
+                                      ssl_options, base::FilePath());
+  ASSERT_TRUE(https_server.Start());
+
+  // Load the test extension.
+  base::FilePath test_data_dir;
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  const extensions::Extension* const extension =
+      LoadExtension(test_data_dir.AppendASCII("extensions")
+                        .AppendASCII("test_certificate_provider")
+                        .AppendASCII("extension"));
+  ASSERT_TRUE(extension);
+  std::unique_ptr<TestCertificateProviderExtension>
+      test_certificate_provider_extension;
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    test_certificate_provider_extension =
+        std::make_unique<TestCertificateProviderExtension>(profile(),
+                                                           extension->id());
+  }
+  extensions::TestBackgroundPageFirstLoadObserver(profile(), extension->id())
+      .Wait();
+
+  // Navigate to the page that requests the client authentication. Use the
+  // incognito profile in order to force re-authentication in the later request
+  // made by the test.
+  const GURL client_cert_url = https_server.GetURL("client-cert");
+  const std::string client_cert_fingerprint =
+      GetCertFingerprint1(*TestCertificateProviderExtension::GetCertificate());
+  Browser* const incognito_browser = CreateIncognitoBrowser(profile());
+  ASSERT_TRUE(incognito_browser);
+  ui_test_utils::NavigateToURLWithDisposition(
+      incognito_browser, client_cert_url,
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  EXPECT_EQ(test_certificate_provider_extension->certificate_request_count(),
+            1);
+  EXPECT_EQ(GetPageTextContent(
+                incognito_browser->tab_strip_model()->GetActiveWebContents()),
+            "got client cert with fingerprint: " + client_cert_fingerprint);
+
+  // Let the extension's background page become idle.
+  WaitForExtensionIdle(extension->id());
+
+  // Navigate again to the page with the client authentication. The extension
+  // gets awakened and handles the request.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), client_cert_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  EXPECT_EQ(test_certificate_provider_extension->certificate_request_count(),
+            2);
+  EXPECT_EQ(
+      GetPageTextContent(browser()->tab_strip_model()->GetActiveWebContents()),
+      "got client cert with fingerprint: " + client_cert_fingerprint);
 }
 
 // User enters the correct PIN.

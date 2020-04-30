@@ -232,6 +232,7 @@ class CORE_EXPORT WorkerGlobalScope
   // Used for importScripts().
   void ImportScriptsInternal(const Vector<String>& urls, ExceptionState&);
   // ExecutionContext
+  void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;
   EventTarget* ErrorEventTarget() final { return this; }
 
   KURL url_;

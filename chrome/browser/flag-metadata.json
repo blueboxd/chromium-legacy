@@ -269,11 +269,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "autofill-enable-local-card-migration-for-non-sync-user",
-    "owners": [ "siyua" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "autofill-enable-sticky-payments-bubble",
     "owners": [ "siyua" ],
     "expiry_milestone": 90
@@ -3548,7 +3543,7 @@
   {
     "name": "recover-from-never-save-android",
     "owners": ["ioanap"],
-    "expiry_milestone": 83
+    "expiry_milestone": 85
   },
   { "name": "reduce-display-notifications",
     "owners": [ "baileyberro", "zentaro" ],

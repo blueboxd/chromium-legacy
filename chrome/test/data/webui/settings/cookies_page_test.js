@@ -5,7 +5,7 @@
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ContentSetting, ContentSettingsTypes, CookieControlsMode, SiteSettingSource, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from 'chrome://settings/settings.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions, Router, routes} from 'chrome://settings/settings.js';
 import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
 import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
 import {createContentSettingTypeToValuePair, createDefaultContentSetting,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
@@ -229,6 +229,48 @@ suite('CrSettingsCookiesPageTest', function() {
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
     assertEquals(PrivacyElementInteractions.NETWORK_PREDICTION, result);
   });
+
+  test('CookiesSiteDataSubpageRoute', function() {
+    page.$$('#site-data-trigger').click();
+    assertEquals(
+        Router.getInstance().getCurrentRoute(), routes.SITE_SETTINGS_SITE_DATA);
+  });
+
+  test('CookiesRadioClicksRecorded', async function() {
+    allowAll.click();
+    let result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(PrivacyElementInteractions.COOKIES_ALL, result);
+
+    testMetricsBrowserProxy.reset();
+
+    blockThirdPartyIncognito.click();
+    result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(PrivacyElementInteractions.COOKIES_INCOGNITO, result);
+
+    testMetricsBrowserProxy.reset();
+
+    blockThirdParty.click();
+    result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(PrivacyElementInteractions.COOKIES_THIRD, result);
+
+    testMetricsBrowserProxy.reset();
+
+    blockAll.click();
+    result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(PrivacyElementInteractions.COOKIES_BLOCK, result);
+  });
+
+  test('CookiseSessionOnlyClickRecorded', async function() {
+    clearOnExit.click();
+    const result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(PrivacyElementInteractions.COOKIES_SESSION, result);
+  });
+
 
   test('CookieSettingExceptions_Search', async function() {
     const exceptionPrefs = createSiteSettingsPrefs([], [

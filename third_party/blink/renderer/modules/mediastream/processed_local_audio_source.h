@@ -26,7 +26,6 @@ class AudioProcessorControls;
 
 namespace blink {
 
-class AudioServiceAudioProcessorProxy;
 class LocalFrame;
 class MediaStreamAudioProcessor;
 
@@ -135,14 +134,9 @@ class MODULES_EXPORT ProcessedLocalAudioSource final
   // Callback that's called when the audio source has been initialized.
   ConstraintsOnceCallback started_callback_;
 
-  // At most one of |audio_processor_| and |audio_processor_proxy_| can be set.
-
   // Audio processor doing processing like FIFO, AGC, AEC and NS. Its output
   // data is in a unit of 10 ms data chunk.
   scoped_refptr<MediaStreamAudioProcessor> audio_processor_;
-
-  // Proxy for the audio processor when it's run in the Audio Service process,
-  scoped_refptr<AudioServiceAudioProcessorProxy> audio_processor_proxy_;
 
   // The device created by the AudioDeviceFactory in EnsureSourceIsStarted().
   scoped_refptr<media::AudioCapturerSource> source_;

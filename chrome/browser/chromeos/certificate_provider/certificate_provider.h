@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "net/ssl/client_cert_identity.h"
 
 namespace chromeos {
@@ -15,13 +14,12 @@ namespace chromeos {
 class CertificateProvider {
  public:
   CertificateProvider() {}
+  CertificateProvider(const CertificateProvider&) = delete;
+  CertificateProvider& operator=(const CertificateProvider&) = delete;
   virtual ~CertificateProvider() {}
 
   virtual void GetCertificates(
       base::OnceCallback<void(net::ClientCertIdentityList)> callback) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CertificateProvider);
 };
 
 }  // namespace chromeos

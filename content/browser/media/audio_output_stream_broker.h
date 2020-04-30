@@ -36,7 +36,6 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
       const std::string& output_device_id,
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
-      const base::Optional<base::UnguessableToken>& processing_id,
       DeleterCallback deleter,
       mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
           client);
@@ -62,7 +61,6 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
   const std::string output_device_id_;
   const media::AudioParameters params_;
   const base::UnguessableToken group_id_;
-  const base::Optional<base::UnguessableToken> processing_id_;
 
   // Set while CreateStream() has been called, but not StreamCreated().
   base::TimeTicks stream_creation_start_time_;

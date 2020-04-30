@@ -27,25 +27,21 @@ WaylandTouch::TouchPoint::~TouchPoint() = default;
 //-----------------------------------------------------------------------------
 
 WaylandTouch::WaylandTouch(wl_touch* touch,
+                           WaylandConnection* connection,
                            const EventDispatchCallback& callback)
-    : obj_(touch), callback_(callback) {
+    : obj_(touch), connection_(connection), callback_(callback) {
   static const wl_touch_listener listener = {
       &WaylandTouch::Down,  &WaylandTouch::Up,     &WaylandTouch::Motion,
       &WaylandTouch::Frame, &WaylandTouch::Cancel,
   };
 
   wl_touch_add_listener(obj_.get(), &listener, this);
+  // Observs remove changes to know when touch points can be removed.
+  connection_->wayland_window_manager()->AddObserver(this);
 }
 
 WaylandTouch::~WaylandTouch() {
   DCHECK(current_points_.empty());
-}
-
-void WaylandTouch::SetConnection(WaylandConnection* connection) {
-  connection_ = connection;
-
-  // Observs remove changes to know when touch points can be removed.
-  connection_->wayland_window_manager()->AddObserver(this);
 }
 
 void WaylandTouch::RemoveTouchPoints(const WaylandWindow* window) {

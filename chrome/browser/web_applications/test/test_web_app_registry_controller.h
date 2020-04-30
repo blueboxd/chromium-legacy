@@ -38,8 +38,6 @@ class TestWebAppRegistryController : public SyncInstallDelegate {
   void UnregisterApp(const AppId& app_id);
   void UnregisterAll();
 
-  void ApplySyncChanges_DeleteApps(std::vector<AppId> app_ids_to_delete);
-
   using InstallWebAppsAfterSyncDelegate =
       base::RepeatingCallback<void(std::vector<WebApp*> web_apps,
                                    RepeatingInstallCallback callback)>;

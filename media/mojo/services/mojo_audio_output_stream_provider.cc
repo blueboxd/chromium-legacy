@@ -38,8 +38,8 @@ MojoAudioOutputStreamProvider::~MojoAudioOutputStreamProvider() {
 
 void MojoAudioOutputStreamProvider::Acquire(
     const AudioParameters& params,
-    mojo::PendingRemote<mojom::AudioOutputStreamProviderClient> provider_client,
-    const base::Optional<base::UnguessableToken>& processing_id) {
+    mojo::PendingRemote<mojom::AudioOutputStreamProviderClient>
+        provider_client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 // |processing_id| gets dropped here. It's not supported outside of the audio
 // service. As this class is slated for removal, it will not be updated to

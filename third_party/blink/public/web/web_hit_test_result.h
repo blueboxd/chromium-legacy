@@ -27,7 +27,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_HIT_TEST_RESULT_H_
 
 #include "third_party/blink/public/platform/web_private_ptr.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace blink {
 
@@ -58,7 +58,7 @@ class WebHitTestResult {
 
   // Coordinates of the point that was hit. Relative to the node, but with
   // ContentBoxOffset removed if the node has box layout.
-  BLINK_EXPORT gfx::Point LocalPointWithoutContentBoxOffset() const;
+  BLINK_EXPORT gfx::PointF LocalPointWithoutContentBoxOffset() const;
 
   // Returns whether the content box contains the hit test point.
   BLINK_EXPORT bool ContentBoxContainsPoint() const;

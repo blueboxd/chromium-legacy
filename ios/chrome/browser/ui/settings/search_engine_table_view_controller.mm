@@ -174,6 +174,7 @@ const char kUmaSelectDefaultSearchEngine[] =
   // Disable prepopulated engines and remove the checkmark in editing mode, and
   // recover them in normal mode.
   [self updatePrepopulatedEnginesForEditing:editing];
+  [self updateUIForEditState];
 }
 
 #pragma mark - ChromeTableViewController

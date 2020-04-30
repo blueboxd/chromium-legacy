@@ -11437,7 +11437,7 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
   Element* div1_tag = document->getElementById("div1");
 
   HitTestResult hit_test_result = web_view->CoreHitTestResultAt(
-      gfx::Point(div1_tag->OffsetLeft() + 5, div1_tag->OffsetTop() + 5));
+      gfx::PointF(div1_tag->OffsetLeft() + 5, div1_tag->OffsetTop() + 5));
 
   EXPECT_TRUE(hit_test_result.InnerElement());
 

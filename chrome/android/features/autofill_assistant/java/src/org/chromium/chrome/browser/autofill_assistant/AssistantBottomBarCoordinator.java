@@ -51,6 +51,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
 
     private final AssistantModel mModel;
     private final BottomSheetController mBottomSheetController;
+    private final TabObscuringHandler mTabObscuringHandler;
     private final AssistantBottomSheetContent mContent;
     private final ScrollView mScrollableContent;
     private final AssistantRootViewContainer mRootViewContainer;
@@ -93,6 +94,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
             TabObscuringHandler tabObscuringHandler) {
         mModel = model;
         mBottomSheetController = controller;
+        mTabObscuringHandler = tabObscuringHandler;
 
         mWindowApplicationInsetSupplier = applicationViewportInsetSupplier;
         mWindowApplicationInsetSupplier.addSupplier(mInsetSupplier);
@@ -202,12 +204,8 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
                     hide();
                 }
             } else if (AssistantModel.ALLOW_TALKBACK_ON_WEBSITE == propertyKey) {
-                // Calling |setIsObscuringAllTabs| with the state it's already in triggers an
-                // assertion in |BottomSheetController|.
-                boolean shouldBeObscuring = !model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE);
-                if (shouldBeObscuring != tabObscuringHandler.areAllTabsObscured()) {
-                    controller.setIsObscuringAllTabs(tabObscuringHandler, shouldBeObscuring);
-                }
+                controller.setIsObscuringAllTabs(
+                        tabObscuringHandler, !model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE));
             } else if (AssistantModel.WEB_CONTENTS == propertyKey) {
                 mWebContents = model.get(AssistantModel.WEB_CONTENTS);
             } else if (AssistantModel.TALKBACK_SHEET_SIZE_FRACTION == propertyKey) {
@@ -297,6 +295,10 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         resetVisualViewportHeight();
         mWindowApplicationInsetSupplier.removeSupplier(mInsetSupplier);
         AccessibilityUtil.removeObserver(mAccessibilityObserver);
+
+        if (!mModel.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE)) {
+            mBottomSheetController.setIsObscuringAllTabs(mTabObscuringHandler, false);
+        }
 
         mInfoBoxCoordinator.destroy();
         mInfoBoxCoordinator = null;

@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CERTIFICATE_PROVIDER_THREAD_SAFE_CERTIFICATE_MAP_H_
 #define CHROME_BROWSER_CHROMEOS_CERTIFICATE_PROVIDER_THREAD_SAFE_CERTIFICATE_MAP_H_
 
-#include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "base/macros.h"
+#include "base/containers/flat_map.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
 
@@ -23,27 +23,18 @@ namespace certificate_provider {
 
 class ThreadSafeCertificateMap {
  public:
-  struct CertAndExtension {
-    CertAndExtension(const CertificateInfo& cert_info,
-                     const std::string& extension_id);
-    ~CertAndExtension();
-
-    CertificateInfo cert_info;
-    std::string extension_id;
-  };
-  using FingerprintToCertAndExtensionMap =
-      std::map<net::SHA256HashValue, std::unique_ptr<CertAndExtension>>;
-  // A map that has a DER-encoded X.509 Subject Public Key Info as keys.
-  using SpkiToCertAndExtensionMap =
-      std::map<std::string, std::unique_ptr<CertAndExtension>>;
-
   ThreadSafeCertificateMap();
+  ThreadSafeCertificateMap(const ThreadSafeCertificateMap&) = delete;
+  ThreadSafeCertificateMap& operator=(const ThreadSafeCertificateMap&) = delete;
   ~ThreadSafeCertificateMap();
 
-  // Updates the stored certificates with the given mapping from extension ids
-  // to certificates.
-  void Update(const std::map<std::string, CertificateInfoList>&
-                  extension_to_certificates);
+  // Updates the certificates provided by extension |extension_id| to be
+  // |certificates|.
+  void UpdateCertificatesForExtension(const std::string& extension_id,
+                                      const CertificateInfoList& certificates);
+
+  // Returns all currently provided certificates.
+  std::vector<scoped_refptr<net::X509Certificate>> GetCertificates();
 
   // Looks up the given certificate. If the certificate was added by any
   // previous Update() call, returns true.
@@ -78,11 +69,17 @@ class ThreadSafeCertificateMap {
   void RemoveExtension(const std::string& extension_id);
 
  private:
-  base::Lock lock_;
-  FingerprintToCertAndExtensionMap fingerprint_to_cert_and_extension_;
-  SpkiToCertAndExtensionMap spki_to_cert_and_extension_;
+  void RemoveCertificatesProvidedByExtension(const std::string& extension_id);
 
-  DISALLOW_COPY_AND_ASSIGN(ThreadSafeCertificateMap);
+  base::Lock lock_;
+  using ExtensionToCertificateMap =
+      base::flat_map<std::string, CertificateInfo>;
+  // A map that has the certificates' fingerprints as keys.
+  base::flat_map<net::SHA256HashValue, ExtensionToCertificateMap>
+      fingerprint_to_extension_and_cert_;
+  // A map that has a DER-encoded X.509 Subject Public Key Info as keys.
+  base::flat_map<std::string, ExtensionToCertificateMap>
+      spki_to_extension_and_cert_;
 };
 
 }  // namespace certificate_provider

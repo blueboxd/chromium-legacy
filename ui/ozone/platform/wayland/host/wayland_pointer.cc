@@ -6,6 +6,7 @@
 
 #include <linux/input.h>
 #include <wayland-client.h>
+
 #include <memory>
 
 #include "ui/events/base_event_utils.h"
@@ -33,16 +34,18 @@ bool HasAnyButtonFlag(int flags) {
 }  // namespace
 
 WaylandPointer::WaylandPointer(wl_pointer* pointer,
+                               WaylandConnection* connection,
                                const EventDispatchCallback& callback)
-    : obj_(pointer), callback_(callback), weak_ptr_factory_(this) {
+    : obj_(pointer),
+      connection_(connection),
+      callback_(callback),
+      weak_ptr_factory_(this) {
   static const wl_pointer_listener listener = {
       &WaylandPointer::Enter,  &WaylandPointer::Leave, &WaylandPointer::Motion,
       &WaylandPointer::Button, &WaylandPointer::Axis,
   };
 
   wl_pointer_add_listener(obj_.get(), &listener, this);
-
-  cursor_ = std::make_unique<WaylandCursor>();
 }
 
 WaylandPointer::~WaylandPointer() {

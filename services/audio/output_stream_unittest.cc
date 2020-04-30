@@ -141,8 +141,7 @@ class TestEnvironment {
         remote_stream.InitWithNewPipeAndPassReceiver(), observer_.MakeRemote(),
         log_.MakeRemote(), "",
         media::AudioParameters::UnavailableDeviceParams(),
-        base::UnguessableToken::Create(), base::nullopt,
-        created_callback_.Get());
+        base::UnguessableToken::Create(), created_callback_.Get());
     return remote_stream;
   }
 
@@ -153,8 +152,7 @@ class TestEnvironment {
         remote_stream.InitWithNewPipeAndPassReceiver(),
         mojo::NullAssociatedRemote(), log_.MakeRemote(), "",
         media::AudioParameters::UnavailableDeviceParams(),
-        base::UnguessableToken::Create(), base::nullopt,
-        created_callback_.Get());
+        base::UnguessableToken::Create(), created_callback_.Get());
     return remote_stream;
   }
 
@@ -165,8 +163,7 @@ class TestEnvironment {
         remote_stream.InitWithNewPipeAndPassReceiver(), observer_.MakeRemote(),
         mojo::NullRemote(), "",
         media::AudioParameters::UnavailableDeviceParams(),
-        base::UnguessableToken::Create(), base::nullopt,
-        created_callback_.Get());
+        base::UnguessableToken::Create(), created_callback_.Get());
     return remote_stream;
   }
 

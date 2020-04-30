@@ -452,7 +452,6 @@ bool UtilityProcessHost::StartProcess() {
       switches::kAudioServiceQuitTimeoutMs,
       switches::kDisableAudioOutput,
       switches::kFailAudioStreamCreation,
-      switches::kForceDisableWebRtcApmInAudioService,
       switches::kMuteAudio,
       switches::kUseFileForFakeAudioCapture,
       switches::kAgcStartupMinVolume,

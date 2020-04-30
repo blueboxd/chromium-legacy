@@ -104,24 +104,6 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
   if (BlameContext* blame_context =
           Platform::Current()->GetTopLevelBlameContext())
     blame_context->Enter();
-
-  v8::HandleScope scope(isolate);
-  switch (type) {
-    case v8::kGCTypeScavenge:
-      break;
-    case v8::kGCTypeIncrementalMarking:
-    case v8::kGCTypeMarkSweepCompact:
-      if (ThreadState::Current()) {
-        // Finish Oilpan's complete sweeping before running a V8 major GC.
-        // This will let the GC collect more V8 objects.
-        ThreadState::Current()->CompleteSweep();
-      }
-      break;
-    case v8::kGCTypeProcessWeakCallbacks:
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 void V8GCController::GcEpilogue(v8::Isolate* isolate,

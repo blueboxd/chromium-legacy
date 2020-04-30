@@ -116,8 +116,10 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     // For the following lines, clear states that are not shared across lines.
     for (NGInlineBoxState& box : stack_) {
       box.fragment_start = line_box->size();
-      if (&box != stack_.begin())
+      if (box.needs_box_fragment) {
+        DCHECK_NE(&box, stack_.begin());
         AddBoxFragmentPlaceholder(&box, line_box, baseline_type);
+      }
       if (!line_height_quirk)
         box.metrics = box.text_metrics;
       else
@@ -158,7 +160,8 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
   NGInlineBoxState* box =
       OnOpenTag(item, item_result, baseline_type, *line_box);
   box->needs_box_fragment = item.ShouldCreateBoxFragment();
-  AddBoxFragmentPlaceholder(box, line_box, baseline_type);
+  if (box->needs_box_fragment)
+    AddBoxFragmentPlaceholder(box, line_box, baseline_type);
   return box;
 }
 

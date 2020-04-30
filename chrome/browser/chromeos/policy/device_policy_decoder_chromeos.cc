@@ -1661,16 +1661,20 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
-  if (policy.has_device_wilco_dtc_allowed()) {
-    const em::DeviceWilcoDtcAllowedProto& container(
-        policy.device_wilco_dtc_allowed());
-    if (container.has_device_wilco_dtc_allowed()) {
-      policies->Set(
-          key::kDeviceWilcoDtcAllowed, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-          std::make_unique<base::Value>(container.device_wilco_dtc_allowed()),
-          nullptr);
-    }
+  if (policy.has_device_wilco_dtc_allowed() &&
+      policy.device_wilco_dtc_allowed().has_device_wilco_dtc_allowed()) {
+    VLOG(2) << "Set Wilco DTC allowed to "
+            << policy.device_wilco_dtc_allowed().device_wilco_dtc_allowed();
+    policies->Set(
+        key::kDeviceWilcoDtcAllowed, POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+        std::make_unique<base::Value>(
+            policy.device_wilco_dtc_allowed().device_wilco_dtc_allowed()),
+        nullptr);
+  } else {
+    VLOG(2) << "No Wilco DTC allowed policy: "
+            << policy.has_device_wilco_dtc_allowed() << " "
+            << policy.device_wilco_dtc_allowed().has_device_wilco_dtc_allowed();
   }
 
   if (policy.has_device_wifi_allowed()) {
@@ -1716,14 +1720,19 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
-  if (policy.has_device_dock_mac_address_source()) {
-    const em::DeviceDockMacAddressSourceProto& container(
-        policy.device_dock_mac_address_source());
-    if (container.has_source()) {
-      policies->Set(key::kDeviceDockMacAddressSource, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    std::make_unique<base::Value>(container.source()), nullptr);
-    }
+  if (policy.has_device_dock_mac_address_source() &&
+      policy.device_dock_mac_address_source().has_source()) {
+    VLOG(2) << "Set dock MAC address source to "
+            << policy.device_dock_mac_address_source().source();
+    policies->Set(key::kDeviceDockMacAddressSource, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  std::make_unique<base::Value>(
+                      policy.device_dock_mac_address_source().source()),
+                  nullptr);
+  } else {
+    VLOG(2) << "No dock MAC address source policy: "
+            << policy.has_device_dock_mac_address_source() << " "
+            << policy.device_dock_mac_address_source().has_source();
   }
 
   if (policy.has_device_advanced_battery_charge_mode()) {

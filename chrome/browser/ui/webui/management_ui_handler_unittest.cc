@@ -27,6 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -82,12 +84,14 @@ class TestDeviceStatusCollector : public policy::DeviceStatusCollector {
                             bool report_activity_times,
                             bool report_nics,
                             bool report_users,
-                            bool report_hw_status)
+                            bool report_hw_status,
+                            bool report_crash_info)
       : policy::DeviceStatusCollector(local_state, nullptr),
         report_activity_times_(report_activity_times),
         report_nics_(report_nics),
         report_users_(report_users),
-        report_hw_status_(report_hw_status) {}
+        report_hw_status_(report_hw_status),
+        report_crash_info_(report_crash_info) {}
   ~TestDeviceStatusCollector() override = default;
 
   bool ShouldReportActivityTimes() const override {
@@ -96,6 +100,9 @@ class TestDeviceStatusCollector : public policy::DeviceStatusCollector {
   bool ShouldReportNetworkInterfaces() const override { return report_nics_; }
   bool ShouldReportUsers() const override { return report_users_; }
   bool ShouldReportHardwareStatus() const override { return report_hw_status_; }
+  bool ShouldReportCrashReportInfo() const override {
+    return report_crash_info_;
+  }
 
   // empty methods that need to be implemented but are of no use for this case.
   void GetStatusAsync(
@@ -107,6 +114,7 @@ class TestDeviceStatusCollector : public policy::DeviceStatusCollector {
   bool report_nics_;
   bool report_users_;
   bool report_hw_status_;
+  bool report_crash_info_;
 };
 
 class TestDeviceCloudPolicyManagerChromeOS
@@ -266,9 +274,11 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     bool report_nics;
     bool report_users;
     bool report_hw_status;
+    bool report_crash_info;
     bool upload_enabled;
     bool printing_send_username_and_filename;
     bool crostini_report_usage;
+    bool cloud_reporting_enabled;
     std::string profile_name;
     bool override_policy_connector_is_managed;
     bool managed_account;
@@ -283,9 +293,11 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     setup_config_.report_nics = default_value;
     setup_config_.report_users = default_value;
     setup_config_.report_hw_status = default_value;
+    setup_config_.report_crash_info = default_value;
     setup_config_.upload_enabled = default_value;
     setup_config_.printing_send_username_and_filename = default_value;
     setup_config_.crostini_report_usage = default_value;
+    setup_config_.cloud_reporting_enabled = default_value;
     setup_config_.profile_name = "";
     setup_config_.override_policy_connector_is_managed = false;
     setup_config_.managed_account = true;
@@ -299,6 +311,8 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     install_attributes_ =
         std::make_unique<chromeos::ScopedStubInstallAttributes>(
             chromeos::StubInstallAttributes::CreateUnset());
+    scoped_feature_list_.Init();
+
     SetUpConnectManager();
   }
   void TearDown() override {
@@ -326,7 +340,8 @@ class ManagementUIHandlerTests : public TestingBaseClass {
         new TestDeviceStatusCollector(
             &local_state_, GetTestConfig().report_activity_times,
             GetTestConfig().report_nics, GetTestConfig().report_users,
-            GetTestConfig().report_hw_status);
+            GetTestConfig().report_hw_status,
+            GetTestConfig().report_crash_info);
     settings_.device_settings()->SetTrustedStatus(
         chromeos::CrosSettingsProvider::TRUSTED);
     settings_.device_settings()->SetBoolean(chromeos::kSystemLogUploadEnabled,
@@ -337,6 +352,12 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     profile_->GetPrefs()->SetBoolean(
         crostini::prefs::kReportCrostiniUsageEnabled,
         GetTestConfig().crostini_report_usage);
+    local_state_.SetBoolean(prefs::kCloudReportingEnabled,
+                            GetTestConfig().cloud_reporting_enabled);
+    scoped_feature_list()->Reset();
+    scoped_feature_list()->InitAndEnableFeature(
+        features::kEnterpriseReportingInChromeOS);
+
     const policy::SystemLogUploader* system_uploader =
         new policy::SystemLogUploader(/*syslog_delegate=*/nullptr,
                                       /*task_runner=*/task_runner_);
@@ -371,6 +392,10 @@ class ManagementUIHandlerTests : public TestingBaseClass {
   base::string16 GetManagementOverview() const {
     return extracted_.management_overview;
   }
+  base::test::ScopedFeatureList* scoped_feature_list() {
+    return &scoped_feature_list_;
+  }
+
 #else
   base::string16 GetBrowserManagementNotice() const {
     return extracted_.browser_management_notice;
@@ -397,6 +422,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::ScopedStubInstallAttributes> install_attributes_;
   TestingPrefServiceSimple local_state_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestDeviceCloudPolicyManagerChromeOS> manager_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   policy::ServerBackedStateKeysBroker state_keys_broker_;
@@ -741,9 +767,13 @@ TEST_F(ManagementUIHandlerTests, AllEnabledDeviceReportingInfo) {
       {kManagementReportActivityTimes, "device activity"},
       {kManagementReportHardwareStatus, "device statistics"},
       {kManagementReportNetworkInterfaces, "device"},
+      {kManagementReportCrashReports, "crash report"},
       {kManagementLogUploadEnabled, "logs"},
       {kManagementPrinting, "print"},
-      {kManagementCrostini, "crostini"}};
+      {kManagementCrostini, "crostini"},
+      {kManagementExtensionReportUsername, "username"},
+      {kManagementReportExtensions, "extension"},
+      {kManagementReportAndroidApplications, "android application"}};
 
   ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
                       expected_elements);

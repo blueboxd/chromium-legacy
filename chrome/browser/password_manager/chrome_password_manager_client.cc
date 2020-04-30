@@ -919,7 +919,8 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
       popup_controller_, element_bounds_in_screen_space, ui_data,
       driver->AsWeakPtr(), observer_, web_contents(),
-      password_generation_driver_receivers_.GetCurrentTargetFrame());
+      password_generation_driver_receivers_.GetCurrentTargetFrame(),
+      GetPasswordSyncState());
   DCHECK(!password_value.empty());
   popup_controller_->UpdatePassword(password_value);
   popup_controller_->Show(
@@ -1315,7 +1316,7 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
       popup_controller_, element_bounds_in_screen_space, ui_data,
       driver->AsWeakPtr(), observer_, web_contents(),
-      driver->render_frame_host());
+      driver->render_frame_host(), GetPasswordSyncState());
   popup_controller_->Show(PasswordGenerationPopupController::kOfferGeneration);
 }
 

@@ -29,8 +29,13 @@ cr.define('settings', function() {
     SAFE_BROWSING: 6,
     PASSWORD_CHECK: 7,
     IMPROVE_SECURITY: 8,
+    COOKIES_ALL: 9,
+    COOKIES_INCOGNITO: 10,
+    COOKIES_THIRD: 11,
+    COOKIES_BLOCK: 12,
+    COOKIES_SESSION: 13,
     // Leave this at the end.
-    COUNT: 9,
+    COUNT: 14,
   };
 
   /**

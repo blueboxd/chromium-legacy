@@ -146,7 +146,7 @@ class AudioServiceInputStreamTest : public testing::Test {
         observer_.MakeRemote(), log_.MakeRemote(), kDefaultDeviceId,
         media::AudioParameters::UnavailableDeviceParams(),
         kDefaultSharedMemoryCount, enable_agc,
-        base::ReadOnlySharedMemoryRegion(), nullptr,
+        base::ReadOnlySharedMemoryRegion(),
         base::BindOnce(&AudioServiceInputStreamTest::OnCreated,
                        base::Unretained(this)));
     return remote_stream;
@@ -160,7 +160,6 @@ class AudioServiceInputStreamTest : public testing::Test {
         observer_.MakeRemote(), mojo::NullRemote(), kDefaultDeviceId,
         media::AudioParameters::UnavailableDeviceParams(),
         kDefaultSharedMemoryCount, false, base::ReadOnlySharedMemoryRegion(),
-        nullptr,
         base::BindOnce(&AudioServiceInputStreamTest::OnCreated,
                        base::Unretained(this)));
     return remote_stream;
@@ -174,7 +173,6 @@ class AudioServiceInputStreamTest : public testing::Test {
         mojo::NullRemote(), log_.MakeRemote(), kDefaultDeviceId,
         media::AudioParameters::UnavailableDeviceParams(),
         kDefaultSharedMemoryCount, false, base::ReadOnlySharedMemoryRegion(),
-        nullptr,
         base::BindOnce(&AudioServiceInputStreamTest::OnCreated,
                        base::Unretained(this)));
     return remote_stream;

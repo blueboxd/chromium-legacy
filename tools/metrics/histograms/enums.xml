@@ -12572,6 +12572,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="6" label="Empty credential, any other reason"/>
   <int value="7" label="Account chooser credential"/>
   <int value="8" label="Auto sign-in"/>
+  <int value="9" label="Empty credential, called in incognito mode"/>
 </enum>
 
 <enum name="CreditCardUploadDisallowedNetwork">
@@ -60459,6 +60460,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="6" label="Safe browsing toggle"/>
   <int value="7" label="Passwords leak detection toggle"/>
   <int value="8" label="Safe browsing reporting toggle"/>
+  <int value="9" label="Cookies allow all radio"/>
+  <int value="10" label="Cookies block third incognito radio"/>
+  <int value="11" label="Cookies block third radio"/>
+  <int value="12" label="Cookies block all radio"/>
+  <int value="13" label="Cookies session only toggle"/>
 </enum>
 
 <enum name="SettingsResetPromptConfigError">

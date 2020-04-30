@@ -19,7 +19,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace media {
@@ -42,7 +41,6 @@ class CONTENT_EXPORT AudioInputStreamBroker final
       uint32_t shared_memory_count,
       media::UserInputMonitorBase* user_input_monitor,
       bool enable_agc,
-      audio::mojom::AudioProcessingConfigPtr processing_config,
       AudioStreamBroker::DeleterCallback deleter,
       mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client);
@@ -76,7 +74,6 @@ class CONTENT_EXPORT AudioInputStreamBroker final
 
   DeleterCallback deleter_;
 
-  audio::mojom::AudioProcessingConfigPtr processing_config_;
   mojo::Remote<mojom::RendererAudioInputStreamFactoryClient>
       renderer_factory_client_;
   mojo::Receiver<AudioInputStreamObserver> observer_receiver_{this};

@@ -58,10 +58,6 @@ class UkmRecorderFactory;
 class LayerTreeSettings;
 }
 
-namespace gfx {
-class Point;
-}
-
 namespace blink {
 class WebCoalescedInputEvent;
 
@@ -121,7 +117,7 @@ class WebWidget {
   virtual void ThemeChanged() {}
 
   // Do a hit test at given point and return the WebHitTestResult.
-  virtual WebHitTestResult HitTestResultAt(const gfx::Point&) = 0;
+  virtual WebHitTestResult HitTestResultAt(const gfx::PointF&) = 0;
 
   // Called to inform the WebWidget of an input event.
   virtual WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) {

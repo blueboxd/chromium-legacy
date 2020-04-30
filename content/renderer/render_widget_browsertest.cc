@@ -267,21 +267,21 @@ TEST_F(RenderWidgetTest, FrameSinkIdHitTestAPI) {
 
   gfx::PointF point;
   viz::FrameSinkId main_frame_sink_id =
-      widget()->GetFrameSinkIdAtPoint(gfx::PointF(10, 10), &point);
+      widget()->GetFrameSinkIdAtPoint(gfx::PointF(10.43, 10.74), &point);
   EXPECT_EQ(static_cast<uint32_t>(widget()->routing_id()),
             main_frame_sink_id.sink_id());
   EXPECT_EQ(static_cast<uint32_t>(RenderThreadImpl::Get()->GetClientId()),
             main_frame_sink_id.client_id());
-  EXPECT_EQ(gfx::PointF(10, 10), point);
+  EXPECT_EQ(gfx::PointF(10.43, 10.74), point);
 
   // Targeting a child frame should also return the FrameSinkId for the main
   // widget.
   viz::FrameSinkId frame_sink_id =
-      widget()->GetFrameSinkIdAtPoint(gfx::PointF(150, 150), &point);
+      widget()->GetFrameSinkIdAtPoint(gfx::PointF(150.27, 150.25), &point);
   EXPECT_EQ(static_cast<uint32_t>(widget()->routing_id()),
             frame_sink_id.sink_id());
   EXPECT_EQ(main_frame_sink_id.client_id(), frame_sink_id.client_id());
-  EXPECT_EQ(gfx::PointF(150, 150), point);
+  EXPECT_EQ(gfx::PointF(150.27, 150.25), point);
 }
 
 TEST_F(RenderWidgetTest, GetCompositionRangeValidComposition) {

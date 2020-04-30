@@ -25,6 +25,13 @@ namespace features {
 const base::Feature kAutofillAddressNormalizer{
     "AutofillAddressNormalizer", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls if a full country name instead of a country code in a field with a
+// type derived from HTML_TYPE_COUNTRY_CODE can be used to set the profile
+// country.
+const base::Feature kAutofillAllowHtmlTypeCountryCodesWithFullNames{
+    "AutofillAllowHtmlTypeCountryCodesWithFullNames",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether autofill activates on non-HTTP(S) pages. Useful for
 // automated with data URLS in cases where it's too difficult to use the
 // embedded test server. Generally avoid using.

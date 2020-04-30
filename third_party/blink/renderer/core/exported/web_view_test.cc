@@ -322,14 +322,14 @@ class WebViewTest : public testing::Test {
 };
 
 static bool HitTestIsContentEditable(WebView* view, int x, int y) {
-  gfx::Point hit_point(x, y);
+  gfx::PointF hit_point(x, y);
   WebHitTestResult hit_test_result =
       view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.IsContentEditable();
 }
 
 static std::string HitTestElementId(WebView* view, int x, int y) {
-  gfx::Point hit_point(x, y);
+  gfx::PointF hit_point(x, y);
   WebHitTestResult hit_test_result =
       view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.GetNode().To<WebElement>().GetAttribute("id").Utf8();
@@ -385,14 +385,14 @@ TEST_F(WebViewTest, HitTestContentEditableImageMaps) {
 }
 
 static std::string HitTestAbsoluteUrl(WebView* view, int x, int y) {
-  gfx::Point hit_point(x, y);
+  gfx::PointF hit_point(x, y);
   WebHitTestResult hit_test_result =
       view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.AbsoluteImageURL().GetString().Utf8();
 }
 
 static WebElement HitTestUrlElement(WebView* view, int x, int y) {
-  gfx::Point hit_point(x, y);
+  gfx::PointF hit_point(x, y);
   WebHitTestResult hit_test_result =
       view->MainFrameWidget()->HitTestResultAt(hit_point);
   return hit_test_result.UrlElement();
@@ -774,7 +774,7 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScale) {
       ToKURL(url), test::CoreTestDataPath("specify_size.html"));
   WebView* web_view = web_view_helper_.InitializeAndLoad(url);
   web_view->MainFrameWidget()->Resize(WebSize(100, 100));
-  gfx::Point hit_point(75, 75);
+  gfx::PointF hit_point(75, 75);
 
   // Image is at top left quandrant, so should not hit it.
   WebHitTestResult negative_result =
@@ -798,7 +798,7 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScaleAndPan) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   LoadFrame(web_view->MainFrameImpl(), url);
   web_view->MainFrameWidget()->Resize(WebSize(100, 100));
-  gfx::Point hit_point(75, 75);
+  gfx::PointF hit_point(75, 75);
 
   // Image is at top left quandrant, so should not hit it.
   WebHitTestResult negative_result = web_view->HitTestResultAt(hit_point);
@@ -828,7 +828,7 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapArea) {
 
   // Image is at top left quandrant, so should not hit it.
   WebHitTestResult negative_result =
-      web_view->MainFrameWidget()->HitTestResultAt(hit_point);
+      web_view->MainFrameWidget()->HitTestResultAt(gfx::PointF(hit_point));
   EXPECT_FALSE(
       negative_result.GetNode().To<WebElement>().HasHTMLTagName("img"));
   negative_result.Reset();
@@ -857,7 +857,8 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan) {
   gfx::Point hit_point(55, 55);
 
   // Image is at top left quandrant, so should not hit it.
-  WebHitTestResult negative_result = web_view->HitTestResultAt(hit_point);
+  WebHitTestResult negative_result =
+      web_view->HitTestResultAt(gfx::PointF(hit_point));
   EXPECT_FALSE(
       negative_result.GetNode().To<WebElement>().HasHTMLTagName("img"));
   negative_result.Reset();

@@ -190,7 +190,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                             const WebSize& max_size) override;
   void DisableAutoResizeMode() override;
   void AudioStateChanged(bool is_audio_playing) override;
-  WebHitTestResult HitTestResultAt(const gfx::Point&);
+  WebHitTestResult HitTestResultAt(const gfx::PointF&);
   WebHitTestResult HitTestResultForTap(const gfx::Point&,
                                        const WebSize&) override;
   uint64_t CreateUniqueIdentifierForRequest() override;
@@ -234,7 +234,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   float ClampPageScaleFactorToLimits(float) const;
   void ResetScaleStateImmediately();
 
-  HitTestResult CoreHitTestResultAt(const gfx::Point&);
+  HitTestResult CoreHitTestResultAt(const gfx::PointF&);
   void InvalidateRect(const IntRect&);
 
   void SetZoomFactorOverride(float);
@@ -511,7 +511,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle);
   ~WebViewImpl() override;
 
-  HitTestResult HitTestResultForRootFramePos(const PhysicalOffset&);
+  HitTestResult HitTestResultForRootFramePos(const FloatPoint&);
 
   void ConfigureAutoResizeMode();
 

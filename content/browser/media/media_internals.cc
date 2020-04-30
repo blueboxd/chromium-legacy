@@ -502,9 +502,6 @@ void MediaInternals::SendGeneralAudioInformation() {
   set_feature_data(features::kAudioServiceLaunchOnStartup);
   set_explicit_feature_data(service_manager::features::kAudioServiceSandbox,
                             service_manager::IsAudioSandboxEnabled());
-  set_explicit_feature_data(features::kWebRtcApmInAudioService,
-                            media::IsWebRtcApmInAudioServiceEnabled());
-
   base::string16 audio_info_update =
       SerializeUpdate("media.updateGeneralAudioInformation", &audio_info_data);
   SendUpdate(audio_info_update);

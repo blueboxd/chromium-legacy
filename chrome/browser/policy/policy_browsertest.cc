@@ -3684,14 +3684,9 @@ IN_PROC_BROWSER_TEST_P(AudioSandboxEnabledTest, IsRespected) {
   base::Optional<bool> enable_sandbox_via_policy = GetParam();
   bool is_sandbox_enabled_by_default = base::FeatureList::IsEnabled(
       service_manager::features::kAudioServiceSandbox);
-  bool is_apm_enabled_by_default =
-      base::FeatureList::IsEnabled(features::kWebRtcApmInAudioService);
 
   ASSERT_EQ(enable_sandbox_via_policy.value_or(is_sandbox_enabled_by_default),
             service_manager::IsAudioSandboxEnabled());
-  ASSERT_EQ(
-      is_apm_enabled_by_default && service_manager::IsAudioSandboxEnabled(),
-      media::IsWebRtcApmInAudioServiceEnabled());
 }
 
 INSTANTIATE_TEST_SUITE_P(

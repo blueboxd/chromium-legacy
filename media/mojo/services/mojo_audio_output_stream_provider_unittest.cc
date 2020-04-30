@@ -92,12 +92,12 @@ TEST(MojoAudioOutputStreamProviderTest, AcquireTwice_BadMessage) {
   mojo::PendingRemote<mojom::AudioOutputStreamProviderClient> client_1;
   ignore_result(client_1.InitWithNewPipeAndPassReceiver());
   provider_remote->Acquire(media::AudioParameters::UnavailableDeviceParams(),
-                           std::move(client_1), base::nullopt);
+                           std::move(client_1));
 
   mojo::PendingRemote<mojom::AudioOutputStreamProviderClient> client_2;
   ignore_result(client_2.InitWithNewPipeAndPassReceiver());
   provider_remote->Acquire(media::AudioParameters::UnavailableDeviceParams(),
-                           std::move(client_2), base::nullopt);
+                           std::move(client_2));
 
   EXPECT_CALL(deleter, Run(provider)).WillOnce(DeleteArg<0>());
   base::RunLoop().RunUntilIdle();
@@ -130,7 +130,7 @@ TEST(MojoAudioOutputStreamProviderTest,
 
   mojo::PendingRemote<mojom::AudioOutputStreamProviderClient> client;
   ignore_result(client.InitWithNewPipeAndPassReceiver());
-  provider_remote->Acquire(params, std::move(client), base::nullopt);
+  provider_remote->Acquire(params, std::move(client));
 
 #if defined(OS_ANDROID)
   base::RunLoop().RunUntilIdle();

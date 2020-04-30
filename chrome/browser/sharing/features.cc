@@ -41,4 +41,4 @@ const base::FeatureParam<int> kSharingMessageBridgeTimeoutSeconds = {
     &kSharingMessageBridgeTimeout, "SharingMessageBridgeTimeoutSeconds", 5};
 
 const base::Feature kSharingSendViaSync{"SharingSendViaSync",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};

@@ -1,7 +1,6 @@
-bartfab@chromium.org
-mnissler@chromium.org
-olsen@chromium.org
-pastarmovj@chromium.org
+file://chromeos/policy/OWNERS
+
+# (in PST)
 stevenjb@chromium.org
 
 # COMPONENT: Enterprise

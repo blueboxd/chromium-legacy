@@ -234,6 +234,12 @@ Polymer({
     Router.getInstance().navigateTo(routes.SECURITY_KEYS);
   },
 
+  /** @private */
+  onSafeBrowsingExtendedReportingChange_() {
+    this.metricsBrowserProxy_.recordSettingsPageHistogram(
+        PrivacyElementInteractions.IMPROVE_SECURITY);
+  },
+
   /**
    * Handles the closure of the disable safebrowsing dialog, reselects the
    * appropriate radio button if the user cancels the dialog, and puts focus on

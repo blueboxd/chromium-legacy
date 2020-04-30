@@ -75,7 +75,9 @@ namespace content {
 
 namespace {
 
+// TODO(nzolghadr): We need to have a much lower tolerance across the board.
 constexpr float kHitTestTolerance = 1.f;
+constexpr float kHitTestLowTolerance = 0.2f;
 
 class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
  public:
@@ -6546,10 +6548,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
   // Create two points to hit test: One in the child of the main frame, and
   // one in the frame nested within that. The hit test request is sent to the
   // child's renderer.
-  gfx::PointF point_in_child(1, 1);
-  gfx::PointF point_in_nested_child(5, 5);
+  gfx::PointF point_in_child(1.29, 1.59);
+  gfx::PointF point_in_nested_child(5.52, 5.62);
+  gfx::PointF point_in_nested_child_transformed;  // Transformed into child view
+                                                  // coordinate space.
   rwhv_grandchild->TransformPointToCoordSpaceForView(
-      point_in_nested_child, rwhv_child, &point_in_nested_child);
+      point_in_nested_child, rwhv_child, &point_in_nested_child_transformed);
 
   {
     base::RunLoop run_loop;
@@ -6570,7 +6574,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
     content::RunThisRunLoop(&run_loop);
     // |point_in_child| should hit test to the view for |child_node|.
     ASSERT_EQ(rwhv_child->GetFrameSinkId(), received_frame_sink_id);
-    ASSERT_EQ(gfx::PointF(1, 1), returned_point);
+    EXPECT_NEAR(returned_point.x(), point_in_child.x(), kHitTestLowTolerance);
+    EXPECT_NEAR(returned_point.y(), point_in_child.y(), kHitTestLowTolerance);
   }
 
   {
@@ -6582,7 +6587,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
     DCHECK_NE(child_node->current_frame_host()->GetInputTargetClient(),
               nullptr);
     child_node->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
-        point_in_nested_child, 0,
+        point_in_nested_child_transformed, 0,
         base::BindLambdaForTesting(
             [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
               received_frame_sink_id = id;
@@ -6590,10 +6595,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
               std::move(quit_closure).Run();
             }));
     content::RunThisRunLoop(&run_loop);
-    // |point_in_nested_child| should hit test to |rwhv_grandchild|.
+    // |point_in_nested_child_transformed| should hit test to |rwhv_grandchild|.
     ASSERT_EQ(rwhv_grandchild->GetFrameSinkId(), received_frame_sink_id);
-    EXPECT_NEAR(returned_point.x(), 5, kHitTestTolerance);
-    EXPECT_NEAR(returned_point.y(), 5, kHitTestTolerance);
+    EXPECT_NEAR(returned_point.x(), point_in_nested_child.x(),
+                kHitTestLowTolerance);
+    EXPECT_NEAR(returned_point.y(), point_in_nested_child.y(),
+                kHitTestLowTolerance);
   }
 }
 

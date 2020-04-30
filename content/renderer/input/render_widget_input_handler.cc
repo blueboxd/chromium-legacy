@@ -268,8 +268,7 @@ blink::WebHitTestResult RenderWidgetInputHandler::GetHitTestResultAtPoint(
     point_in_pixel = gfx::ConvertPointToPixel(
         widget_->GetOriginalScreenInfo().device_scale_factor, point_in_pixel);
   }
-  return widget_->GetWebWidget()->HitTestResultAt(
-      ToRoundedPoint(point_in_pixel));
+  return widget_->GetWebWidget()->HitTestResultAt(point_in_pixel);
 }
 
 viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(

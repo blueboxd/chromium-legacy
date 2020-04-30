@@ -113,10 +113,7 @@ Polymer({
      */
     showShelfNavigationButtonsSettings_: {
       type: Boolean,
-      value() {
-        return loadTimeData.getBoolean(
-            'showTabletModeShelfNavigationButtonsSettings');
-      },
+      value: false,
     },
 
     /** @private */
@@ -192,9 +189,8 @@ Polymer({
   /** @override */
   ready() {
     this.addWebUIListener(
-        'startup-sound-enabled-updated',
-        this.updateStartupSoundEnabled_.bind(this));
-    chrome.send('getStartupSoundEnabled');
+        'initial-data-ready', this.onManageAllyPageReady_.bind(this));
+    chrome.send('manageA11yPageReady');
 
     const r = settings.routes;
     this.addFocusConfig_(r.MANAGE_TTS_SETTINGS, '#ttsSubpageButton');
@@ -240,14 +236,6 @@ Polymer({
    */
   toggleStartupSoundEnabled_(e) {
     chrome.send('setStartupSoundEnabled', [e.detail]);
-  },
-
-  /**
-   * @param {boolean} enabled
-   * @private
-   */
-  updateStartupSoundEnabled_(enabled) {
-    this.$.startupSoundEnabled.checked = enabled;
   },
 
   /** @private */
@@ -370,5 +358,18 @@ Polymer({
     settings.Router.getInstance().navigateTo(
         settings.routes.POINTERS,
         /* dynamicParams */ null, /* removeSearch */ true);
+  },
+
+  /**
+   * Handles updating the visibility of the shelf navigation buttons setting
+   * and updating whether startupSoundEnabled is checked.
+   * @param {boolean} startup_sound_enabled Whether startup sound is enabled.
+   * @param {boolean} tablet_mode_supported Whether tablet mode is supported.
+   * @private
+   */
+  onManageAllyPageReady_(startup_sound_enabled, tablet_mode_supported) {
+    this.$.startupSoundEnabled.checked = startup_sound_enabled;
+    this.showShelfNavigationButtonsSettings_ = tablet_mode_supported &&
+        loadTimeData.getBoolean('showTabletModeShelfNavigationButtonsSettings');
   },
 });

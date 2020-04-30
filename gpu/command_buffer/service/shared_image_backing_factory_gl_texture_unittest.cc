@@ -274,8 +274,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Basic) {
     gl_representation.reset();
   }
 
-  // Skia does not support RGBA_1010102 as render target, only BGRA_1010102.
-  if (format == viz::ResourceFormat::RGBA_1010102)
+  // Skia does not support BGRA_1010102 as render target, only RGBA_1010102.
+  if (format == viz::ResourceFormat::BGRA_1010102)
     return;
 
   // Finally, validate a SharedImageRepresentationSkia.
@@ -392,8 +392,8 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, Image) {
     gl_representation.reset();
   }
 
-  // Skia does not support RGBA_1010102 as render target, only BGRA_1010102.
-  if (format == viz::ResourceFormat::RGBA_1010102)
+  // Skia does not support BGRA_1010102 as render target, only RGBA_1010102.
+  if (format == viz::ResourceFormat::BGRA_1010102)
     return;
 
   // Finally, validate a SharedImageRepresentationSkia.

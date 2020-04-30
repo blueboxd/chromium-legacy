@@ -1387,8 +1387,14 @@ const gfx::ScrollOffset ScrollTree::GetPixelSnappedScrollOffset(
     if (transform_node->needs_local_transform_update)
       property_trees()->transform_tree.UpdateTransforms(transform_node->id);
 
-    offset.set_x(offset.x() - transform_node->snap_amount.x());
-    offset.set_y(offset.y() - transform_node->snap_amount.y());
+    // The calculated pixel snap amount can be slightly larger than the actual
+    // snapping needed, due to floating point precision errors. In general this
+    // is fine, but we never want to report a negative scroll offset so avoid
+    // that case here.
+    // TODO(crbug.com/1076878): Remove the clamping when scroll timeline effects
+    // always match the snapping.
+    offset = ClampScrollOffsetToLimits(
+        offset - gfx::ScrollOffset(transform_node->snap_amount), *scroll_node);
   }
 
   return offset;

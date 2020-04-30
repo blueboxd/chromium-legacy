@@ -63,8 +63,7 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
   void Acquire(
       const media::AudioParameters& params,
       mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
-          pending_provider_client,
-      const base::Optional<base::UnguessableToken>& processing_id) override {
+          pending_provider_client) override {
     EXPECT_EQ(receiver_, base::nullopt);
     EXPECT_NE(stream_, nullptr);
     provider_client_.reset();

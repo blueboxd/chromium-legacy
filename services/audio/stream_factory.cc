@@ -44,28 +44,11 @@ void StreamFactory::CreateInputStream(
     uint32_t shared_memory_count,
     bool enable_agc,
     base::ReadOnlySharedMemoryRegion key_press_count_buffer,
-    mojom::AudioProcessingConfigPtr processing_config,
     CreateInputStreamCallback created_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT2("audio", "CreateInputStream", this,
                                       "device id", device_id, "params",
                                       params.AsHumanReadableString());
-
-  if (processing_config && processing_config->settings.requires_apm() &&
-      params.GetBufferDuration() != base::TimeDelta::FromMilliseconds(10)) {
-    // If the buffer size is incorrect, the data can't be fed into the APM.
-    // This should never happen unless a renderer misbehaves.
-    mojo::Remote<media::mojom::AudioLog> log(std::move(pending_log));
-
-    log->OnLogMessage(
-        "audio::SF::" +
-        base::StringPrintf("%s => (ERROR: Invalid APM configuration)",
-                           __func__));
-    log->OnError();
-    // The callback must still be invoked or mojo complains.
-    std::move(created_callback).Run(nullptr, false, base::nullopt);
-    return;
-  }
 
   // Unretained is safe since |this| indirectly owns the InputStream.
   auto deleter_callback = base::BindOnce(&StreamFactory::DestroyInputStream,
@@ -76,8 +59,7 @@ void StreamFactory::CreateInputStream(
       std::move(stream_receiver), std::move(client), std::move(observer),
       std::move(pending_log), audio_manager_,
       UserInputMonitor::Create(std::move(key_press_count_buffer)), device_id,
-      params, shared_memory_count, enable_agc, &stream_monitor_coordinator_,
-      std::move(processing_config)));
+      params, shared_memory_count, enable_agc));
 }
 
 void StreamFactory::AssociateInputAndOutputForAec(
@@ -100,7 +82,6 @@ void StreamFactory::CreateOutputStream(
     const std::string& output_device_id,
     const media::AudioParameters& params,
     const base::UnguessableToken& group_id,
-    const base::Optional<base::UnguessableToken>& processing_id,
     CreateOutputStreamCallback created_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT2("audio", "CreateOutputStream", this,
@@ -127,9 +108,7 @@ void StreamFactory::CreateOutputStream(
   output_streams_.insert(std::make_unique<OutputStream>(
       std::move(created_callback), std::move(deleter_callback),
       std::move(stream_receiver), std::move(observer), std::move(log),
-      audio_manager_, device_id_or_group_id, params, &coordinator_, group_id,
-      &stream_monitor_coordinator_,
-      processing_id.value_or(base::UnguessableToken())));
+      audio_manager_, device_id_or_group_id, params, &coordinator_, group_id));
 }
 
 void StreamFactory::BindMuter(

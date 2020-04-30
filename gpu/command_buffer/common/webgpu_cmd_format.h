@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_COMMON_WEBGPU_CMD_FORMAT_H_
 #define GPU_COMMAND_BUFFER_COMMON_WEBGPU_CMD_FORMAT_H_
 
+#include <string.h>
+
 #include "gpu/command_buffer/common/gl2_types.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/webgpu_cmd_enums.h"

@@ -4494,14 +4494,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableAssistantSearch)},
 #endif  // OS_CHROMEOS
 
-    {"autofill-enable-local-card-migration-for-non-sync-user",
-     flag_descriptions::kAutofillEnableLocalCardMigrationForNonSyncUserName,
-     flag_descriptions::
-         kAutofillEnableLocalCardMigrationForNonSyncUserDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnableLocalCardMigrationForNonSyncUser)},
-
 #if defined(TOOLKIT_VIEWS)
     {"enable-md-rounded-corners-on-dialogs",
      flag_descriptions::kEnableMDRoundedCornersOnDialogsName,

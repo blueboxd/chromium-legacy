@@ -23,13 +23,10 @@ class WaylandConnection;
 class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
  public:
   WaylandKeyboard(wl_keyboard* keyboard,
+                  WaylandConnection* connection,
                   KeyboardLayoutEngine* keyboard_layout_engine,
                   const EventDispatchCallback& callback);
   virtual ~WaylandKeyboard();
-
-  void set_connection(WaylandConnection* connection) {
-    connection_ = connection;
-  }
 
   int modifiers() { return modifiers_; }
 
@@ -80,8 +77,8 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
                    int device_id,
                    int flags) override;
 
-  WaylandConnection* connection_ = nullptr;
   wl::Object<wl_keyboard> obj_;
+  WaylandConnection* const connection_;
   EventDispatchCallback callback_;
   int modifiers_ = 0;
 

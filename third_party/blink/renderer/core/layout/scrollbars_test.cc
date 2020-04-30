@@ -119,7 +119,7 @@ class ScrollbarsTest : public SimTest {
   }
 
   HitTestResult HitTest(int x, int y) {
-    return WebView().CoreHitTestResultAt(gfx::Point(x, y));
+    return WebView().CoreHitTestResultAt(gfx::PointF(x, y));
   }
 
   EventHandler& GetEventHandler() {

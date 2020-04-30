@@ -7,7 +7,7 @@ import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_po
 import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {SafeBrowsingBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {MetricsBrowserProxyImpl, PrivacyElementInteractions,PrivacyPageBrowserProxyImpl, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {MetricsBrowserProxyImpl, PrivacyElementInteractions,PrivacyPageBrowserProxyImpl, Router, routes, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
 import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
 import {TestSafeBrowsingBrowserProxy} from 'chrome://test/settings/test_safe_browsing_browser_proxy.js';
@@ -76,12 +76,26 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     });
   }
 
-  test('LogManageCerfificatesClick', function() {
+  test('LogManageCerfificatesClick', async function() {
     page.$$('#manageCertificates').click();
-    return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
-        .then(result => {
-          assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
-        });
+    const result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
+  });
+
+  test('ManageSecurityKeysSubpageRoute', function() {
+    page.$$('#security-keys-subpage-trigger').click();
+    assertEquals(Router.getInstance().getCurrentRoute(), routes.SECURITY_KEYS);
+  });
+
+  test('LogSafeBrowsingExtendedToggle', async function() {
+    page.$$('#safeBrowsingStandard').click();
+    flush();
+
+    page.$.safeBrowsingReportingToggle.click();
+    const result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(PrivacyElementInteractions.IMPROVE_SECURITY, result);
   });
 
   test('safeBrowsingReportingToggle', function() {

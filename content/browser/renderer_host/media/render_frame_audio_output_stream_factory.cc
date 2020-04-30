@@ -74,8 +74,7 @@ class RenderFrameAudioOutputStreamFactory::Core final
     void Acquire(
         const media::AudioParameters& params,
         mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
-            provider_client,
-        const base::Optional<base::UnguessableToken>& processing_id) final {
+            provider_client) final {
       DCHECK_CURRENTLY_ON(BrowserThread::IO);
       TRACE_EVENT1("audio",
                    "RenderFrameAudioOutputStreamFactory::ProviderImpl::Acquire",
@@ -85,7 +84,7 @@ class RenderFrameAudioOutputStreamFactory::Core final
           owner_->forwarding_factory_;
       if (factory) {
         factory->CreateOutputStream(owner_->process_id_, owner_->frame_id_,
-                                    device_id_, params, processing_id,
+                                    device_id_, params,
                                     std::move(provider_client));
       }
 

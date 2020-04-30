@@ -411,11 +411,10 @@ void WebViewImpl::MouseContextMenu(const WebMouseEvent& event) {
   WebMouseEvent transformed_event =
       TransformWebMouseEvent(MainFrameImpl()->GetFrameView(), event);
   transformed_event.menu_source_type = kMenuSourceMouse;
-  PhysicalOffset position_in_root_frame = PhysicalOffset::FromFloatPointRound(
-      FloatPoint(transformed_event.PositionInRootFrame()));
 
   // Find the right target frame. See issue 1186900.
-  HitTestResult result = HitTestResultForRootFramePos(position_in_root_frame);
+  HitTestResult result = HitTestResultForRootFramePos(
+      FloatPoint(transformed_event.PositionInRootFrame()));
   Frame* target_frame;
   if (result.InnerNodeOrImageMapImage())
     target_frame = result.InnerNodeOrImageMapImage()->GetDocument().GetFrame();
@@ -2742,12 +2741,12 @@ void WebViewImpl::AudioStateChanged(bool is_audio_playing) {
   GetPage()->GetPageScheduler()->AudioStateChanged(is_audio_playing);
 }
 
-WebHitTestResult WebViewImpl::HitTestResultAt(const gfx::Point& point) {
+WebHitTestResult WebViewImpl::HitTestResultAt(const gfx::PointF& point) {
   return CoreHitTestResultAt(point);
 }
 
 HitTestResult WebViewImpl::CoreHitTestResultAt(
-    const gfx::Point& point_in_viewport) {
+    const gfx::PointF& point_in_viewport) {
   // TODO(crbug.com/843128): When we do async hit-testing, we might try to do
   // hit-testing when the local main frame is not valid anymore. Look into if we
   // can avoid getting here earlier in the pipeline.
@@ -2757,8 +2756,8 @@ HitTestResult WebViewImpl::CoreHitTestResultAt(
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
   LocalFrameView* view = MainFrameImpl()->GetFrameView();
-  PhysicalOffset point_in_root_frame =
-      view->ViewportToFrame(PhysicalOffset(IntPoint(point_in_viewport)));
+  FloatPoint point_in_root_frame =
+      view->ViewportToFrame(FloatPoint(point_in_viewport));
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
@@ -3123,7 +3122,7 @@ Element* WebViewImpl::FocusedElement() const {
 }
 
 HitTestResult WebViewImpl::HitTestResultForRootFramePos(
-    const PhysicalOffset& pos_in_root_frame) {
+    const FloatPoint& pos_in_root_frame) {
   auto* main_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame());
   if (!main_frame)
     return HitTestResult();

@@ -198,6 +198,8 @@ class SharingFCMSenderTest : public testing::Test {
 }  // namespace
 
 TEST_F(SharingFCMSenderTest, NoFcmRegistration) {
+  scoped_feature_list_.InitAndDisableFeature(kSharingSendViaSync);
+
   sync_prefs_.ClearFCMRegistration();
 
   std::unique_ptr<crypto::ECPrivateKey> vapid_key =
@@ -231,6 +233,8 @@ TEST_F(SharingFCMSenderTest, NoFcmRegistration) {
 }
 
 TEST_F(SharingFCMSenderTest, NoVapidKey) {
+  scoped_feature_list_.InitAndDisableFeature(kSharingSendViaSync);
+
   sync_prefs_.SetFCMRegistration(SharingSyncPreference::FCMRegistration(
       kAuthorizedEntity, base::Time::Now()));
 
@@ -263,7 +267,6 @@ TEST_F(SharingFCMSenderTest, NoVapidKey) {
 }
 
 TEST_F(SharingFCMSenderTest, NoChannelsSpecified) {
-  scoped_feature_list_.InitAndEnableFeature(kSharingSendViaSync);
   test_sync_service_.SetActiveDataTypes({syncer::SHARING_MESSAGE});
   sync_prefs_.SetFCMRegistration(SharingSyncPreference::FCMRegistration(
       kAuthorizedEntity, base::Time::Now()));
@@ -439,7 +442,6 @@ class SharingFCMSenderCommitErrorCodeTest
       public testing::WithParamInterface<CommitErrorCodeTestData> {};
 
 TEST_P(SharingFCMSenderCommitErrorCodeTest, ErrorCodeTest) {
-  scoped_feature_list_.InitAndEnableFeature(kSharingSendViaSync);
   test_sync_service_.SetActiveDataTypes({syncer::SHARING_MESSAGE});
 
   fake_sharing_message_bridge_.set_error_code(GetParam().commit_erorr_code);
@@ -489,7 +491,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::ValuesIn(kCommitErrorCodeTestData));
 
 TEST_F(SharingFCMSenderTest, ServerTarget) {
-  scoped_feature_list_.InitAndEnableFeature(kSharingSendViaSync);
   test_sync_service_.SetActiveDataTypes({syncer::SHARING_MESSAGE});
 
   fake_sharing_message_bridge_.set_error_code(

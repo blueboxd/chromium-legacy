@@ -90,7 +90,7 @@ void MojoAudioOutputIPC::CreateStream(
   receiver_.set_disconnect_with_reason_handler(
       base::BindOnce(&MojoAudioOutputIPC::ProviderClientBindingDisconnected,
                      base::Unretained(this)));
-  stream_provider_->Acquire(params, std::move(client_remote), processing_id);
+  stream_provider_->Acquire(params, std::move(client_remote));
 }
 
 void MojoAudioOutputIPC::PlayStream() {

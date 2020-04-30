@@ -118,6 +118,14 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
         metrics_util::CredentialManagerGetResult::kNone, mediation);
     return;
   }
+  // Return an empty credential for incognito mode.
+  if (client_->IsIncognito()) {
+    // Callback with empty credential info.
+    std::move(callback).Run(CredentialManagerError::SUCCESS, CredentialInfo());
+    LogCredentialManagerGetResult(
+        metrics_util::CredentialManagerGetResult::kNoneIncognito, mediation);
+    return;
+  }
   // Return an empty credential if zero-click is required but disabled.
   if (mediation == CredentialMediationRequirement::kSilent &&
       !IsZeroClickAllowed()) {

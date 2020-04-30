@@ -134,7 +134,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetFocus(bool) override;
   WebURL GetURLForDebugTrace() override;
-  WebHitTestResult HitTestResultAt(const gfx::Point&) override { return {}; }
+  WebHitTestResult HitTestResultAt(const gfx::PointF&) override { return {}; }
   cc::LayerTreeHost* InitializeCompositing(
       cc::TaskGraphRunner* task_graph_runner,
       const cc::LayerTreeSettings& settings,

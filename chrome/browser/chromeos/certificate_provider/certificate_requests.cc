@@ -34,10 +34,6 @@ struct CertificateRequests::CertificateRequestState {
   // Extensions that this request is still waiting for.
   std::set<std::string> pending_extensions;
 
-  // For every extension that replied to this request, there is one entry from
-  // extension id to the reported certificates.
-  std::map<std::string, CertificateInfoList> extension_to_certificates;
-
   // The callback that must be run with the final list of certificates.
   base::OnceCallback<void(net::ClientCertIdentityList)> callback;
 };
@@ -65,10 +61,9 @@ int CertificateRequests::AddRequest(
   return request_id;
 }
 
-bool CertificateRequests::SetCertificates(
+bool CertificateRequests::SetExtensionReplyReceived(
     const std::string& extension_id,
     int request_id,
-    const CertificateInfoList& certificate_infos,
     bool* completed) {
   *completed = false;
   const auto it = requests_.find(request_id);
@@ -79,21 +74,18 @@ bool CertificateRequests::SetCertificates(
   if (state.pending_extensions.erase(extension_id) == 0)
     return false;
 
-  state.extension_to_certificates[extension_id] = certificate_infos;
   *completed = state.pending_extensions.empty();
   return true;
 }
 
 bool CertificateRequests::RemoveRequest(
     int request_id,
-    std::map<std::string, CertificateInfoList>* certificates,
     base::OnceCallback<void(net::ClientCertIdentityList)>* callback) {
   const auto it = requests_.find(request_id);
   if (it == requests_.end())
     return false;
 
   CertificateRequestState& state = *it->second;
-  *certificates = state.extension_to_certificates;
   *callback = std::move(state.callback);
   requests_.erase(it);
   DVLOG(2) << "Completed certificate request " << request_id;

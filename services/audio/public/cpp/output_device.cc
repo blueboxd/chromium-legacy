@@ -31,7 +31,6 @@ OutputDevice::OutputDevice(
   stream_factory_->CreateOutputStream(
       stream_.BindNewPipeAndPassReceiver(), mojo::NullAssociatedRemote(),
       mojo::NullRemote(), device_id, params, base::UnguessableToken::Create(),
-      base::nullopt,
       base::BindOnce(&OutputDevice::StreamCreated, weak_factory_.GetWeakPtr()));
   stream_.set_disconnect_handler(base::BindOnce(
       &OutputDevice::OnConnectionError, weak_factory_.GetWeakPtr()));

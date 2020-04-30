@@ -1196,8 +1196,6 @@ jumbo_component("platform") {
     "media_capabilities/web_video_configuration.h",
     "mediastream/aec_dump_agent_impl.cc",
     "mediastream/aec_dump_agent_impl.h",
-    "mediastream/audio_service_audio_processor_proxy.cc",
-    "mediastream/audio_service_audio_processor_proxy.h",
     "mediastream/media_constraints.cc",
     "mediastream/media_constraints.h",
     "mediastream/media_stream_audio_deliverer.h",

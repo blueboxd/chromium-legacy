@@ -235,19 +235,20 @@ bool CertificateProviderService::SetCertificatesProvidedByExtension(
     const CertificateInfoList& certificate_infos) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  certificate_map_.UpdateCertificatesForExtension(extension_id,
+                                                  certificate_infos);
+
   bool completed = false;
-  if (!certificate_requests_.SetCertificates(extension_id, cert_request_id,
-                                             certificate_infos, &completed)) {
+  if (!certificate_requests_.SetExtensionReplyReceived(
+          extension_id, cert_request_id, &completed)) {
     DLOG(WARNING) << "Unexpected reply of extension " << extension_id
                   << " to request " << cert_request_id;
     return false;
   }
   if (completed) {
-    std::map<std::string, CertificateInfoList> certificates;
     base::OnceCallback<void(net::ClientCertIdentityList)> callback;
-    certificate_requests_.RemoveRequest(cert_request_id, &certificates,
-                                        &callback);
-    UpdateCertificatesAndRun(certificates, std::move(callback));
+    certificate_requests_.RemoveRequest(cert_request_id, &callback);
+    CollectCertificatesAndRun(std::move(callback));
   }
   return true;
 }
@@ -299,20 +300,23 @@ CertificateProviderService::CreateCertificateProvider() {
   return std::make_unique<CertificateProviderImpl>(weak_factory_.GetWeakPtr());
 }
 
+void CertificateProviderService::OnExtensionUnregistered(
+    const std::string& extension_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  certificate_map_.RemoveExtension(extension_id);
+}
+
 void CertificateProviderService::OnExtensionUnloaded(
     const std::string& extension_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  for (const int cert_request_id :
-       certificate_requests_.DropExtension(extension_id)) {
-    std::map<std::string, CertificateInfoList> certificates;
-    base::OnceCallback<void(net::ClientCertIdentityList)> callback;
-    certificate_requests_.RemoveRequest(cert_request_id, &certificates,
-                                        &callback);
-    UpdateCertificatesAndRun(certificates, std::move(callback));
-  }
-
   certificate_map_.RemoveExtension(extension_id);
+
+  for (const int completed_cert_request_id :
+       certificate_requests_.DropExtension(extension_id)) {
+    base::OnceCallback<void(net::ClientCertIdentityList)> callback;
+    certificate_requests_.RemoveRequest(completed_cert_request_id, &callback);
+    CollectCertificatesAndRun(std::move(callback));
+  }
 
   for (auto& callback : sign_requests_.RemoveAllRequests(extension_id))
     std::move(callback).Run(net::ERR_FAILED, std::vector<uint8_t>());
@@ -397,9 +401,10 @@ void CertificateProviderService::GetCertificatesFromExtensions(
       delegate_->CertificateProviderExtensions());
 
   if (provider_extensions.empty()) {
-    DVLOG(2) << "No provider extensions left, clear all certificates.";
-    UpdateCertificatesAndRun(std::map<std::string, CertificateInfoList>(),
-                             std::move(callback));
+    DVLOG(2) << "No provider extensions left.";
+    // Note that there could still be unfinished requests to extensions that
+    // were previously registered.
+    CollectCertificatesAndRun(std::move(callback));
     return;
   }
 
@@ -412,39 +417,33 @@ void CertificateProviderService::GetCertificatesFromExtensions(
   delegate_->BroadcastCertificateRequest(cert_request_id);
 }
 
-void CertificateProviderService::UpdateCertificatesAndRun(
-    const std::map<std::string, CertificateInfoList>& extension_to_certificates,
+void CertificateProviderService::CollectCertificatesAndRun(
     base::OnceCallback<void(net::ClientCertIdentityList)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Extensions are removed from the service's state when they're unloaded.
-  // Any remaining extension is assumed to be enabled.
-  certificate_map_.Update(extension_to_certificates);
-
-  net::ClientCertIdentityList all_certs;
-  for (const auto& entry : extension_to_certificates) {
-    for (const CertificateInfo& cert_info : entry.second)
-      all_certs.push_back(std::make_unique<ClientCertIdentity>(
-          cert_info.certificate, weak_factory_.GetWeakPtr()));
+  net::ClientCertIdentityList client_cert_identity_list;
+  std::vector<scoped_refptr<net::X509Certificate>> certificates =
+      certificate_map_.GetCertificates();
+  for (const scoped_refptr<net::X509Certificate>& certificate : certificates) {
+    client_cert_identity_list.push_back(std::make_unique<ClientCertIdentity>(
+        certificate, weak_factory_.GetWeakPtr()));
   }
 
-  std::move(callback).Run(std::move(all_certs));
+  std::move(callback).Run(std::move(client_cert_identity_list));
 }
 
 void CertificateProviderService::TerminateCertificateRequest(
     int cert_request_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::map<std::string, CertificateInfoList> certificates;
   base::OnceCallback<void(net::ClientCertIdentityList)> callback;
-  if (!certificate_requests_.RemoveRequest(cert_request_id, &certificates,
-                                           &callback)) {
+  if (!certificate_requests_.RemoveRequest(cert_request_id, &callback)) {
     DLOG(WARNING) << "Request id " << cert_request_id << " unknown.";
     return;
   }
 
   DVLOG(1) << "Time out certificate request " << cert_request_id;
-  UpdateCertificatesAndRun(certificates, std::move(callback));
+  CollectCertificatesAndRun(std::move(callback));
 }
 
 void CertificateProviderService::RequestSignatureFromExtension(

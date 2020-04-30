@@ -531,14 +531,15 @@ bool MixedContentChecker::ShouldBlockFetch(
     frame->GetDocument()->AddConsoleMessage(
         CreateConsoleMessageAboutFetch(MainResourceUrlForFrame(mixed_frame),
                                        url, request_context, allowed, nullptr));
-
-    CreateMixedContentIssue(
-        MainResourceUrlForFrame(mixed_frame), url, request_context, frame,
-        allowed
-            ? mojom::blink::MixedContentResolutionStatus::MixedContentWarning
-            : mojom::blink::MixedContentResolutionStatus::MixedContentBlocked,
-        devtools_id);
   }
+  // Issue is created even when reporting disposition is false i.e. for
+  // speculative prefetches. Otherwise the DevTools frontend would not
+  // receive an issue with a devtools_id which it can match to a request.
+  CreateMixedContentIssue(
+      MainResourceUrlForFrame(mixed_frame), url, request_context, frame,
+      allowed ? mojom::blink::MixedContentResolutionStatus::MixedContentWarning
+              : mojom::blink::MixedContentResolutionStatus::MixedContentBlocked,
+      devtools_id);
   return !allowed;
 }
 
@@ -726,12 +727,15 @@ bool MixedContentChecker::IsMixedFormAction(
         MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kSecurity,
             mojom::ConsoleMessageLevel::kWarning, message));
-    CreateMixedContentIssue(
-        MainResourceUrlForFrame(mixed_frame), url,
-        mojom::blink::RequestContextType::FORM, frame,
-        mojom::blink::MixedContentResolutionStatus::MixedContentWarning,
-        base::Optional<String>());
   }
+  // Issue is created even when reporting disposition is false i.e. for
+  // speculative prefetches. Otherwise the DevTools frontend would not
+  // receive an issue with a devtools_id which it can match to a request.
+  CreateMixedContentIssue(
+      MainResourceUrlForFrame(mixed_frame), url,
+      mojom::blink::RequestContextType::FORM, frame,
+      mojom::blink::MixedContentResolutionStatus::MixedContentWarning,
+      base::Optional<String>());
 
   return true;
 }

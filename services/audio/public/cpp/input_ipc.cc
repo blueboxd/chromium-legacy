@@ -11,7 +11,6 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/audio/public/mojom/audio_processing.mojom.h"
 
 namespace audio {
 
@@ -56,7 +55,6 @@ void InputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
       stream_.BindNewPipeAndPassReceiver(), std::move(client), {},
       std::move(log), device_id_, params, total_segments,
       automatic_gain_control, std::move(invalid_key_press_count_buffer),
-      /*processing config*/ nullptr,
       base::BindOnce(&InputIPC::StreamCreated, weak_factory_.GetWeakPtr()));
 }
 

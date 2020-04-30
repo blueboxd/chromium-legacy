@@ -210,8 +210,6 @@ bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
     case AutofillSyncSigninState::kSyncPaused:
       return false;
     case AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled:
-      return base::FeatureList::IsEnabled(
-          features::kAutofillEnableLocalCardMigrationForNonSyncUser);
     case AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled:
       return true;
     case AutofillSyncSigninState::kNumSyncStates:

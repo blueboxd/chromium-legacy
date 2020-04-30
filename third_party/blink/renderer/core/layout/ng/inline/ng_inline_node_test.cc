@@ -1389,9 +1389,9 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   // Keep the text fragment to compare later.
   Element* inner_span = GetElementById("inner_span");
   Node* text = inner_span->firstChild();
-  NGInlineCursor text_fragment_before_split;
-  text_fragment_before_split.MoveTo(*text->GetLayoutObject());
-  EXPECT_TRUE(text_fragment_before_split);
+  scoped_refptr<NGPaintFragment> text_fragment_before_split =
+      text->GetLayoutObject()->FirstInlineFragment();
+  EXPECT_NE(text_fragment_before_split.get(), nullptr);
 
   // Append <div> to <span>. causing SplitFlow().
   Element* outer_span = GetElementById("outer_span");
@@ -1407,21 +1407,23 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   // destroyed, and should not be accessible.
   GetDocument().UpdateStyleAndLayoutTree();
   EXPECT_FALSE(text->GetLayoutObject()->IsInLayoutNGInlineFormattingContext());
+  scoped_refptr<NGPaintFragment> text_fragment_before_layout =
+      text->GetLayoutObject()->FirstInlineFragment();
+  EXPECT_EQ(text_fragment_before_layout, nullptr);
 
   // Update layout. There should be a different instance of the text fragment.
   UpdateAllLifecyclePhasesForTest();
-  NGInlineCursor text_fragment_after_layout;
-  text_fragment_after_layout.MoveTo(*text->GetLayoutObject());
-  EXPECT_NE(text_fragment_before_split.Current(),
-            text_fragment_after_layout.Current());
+  scoped_refptr<NGPaintFragment> text_fragment_after_layout =
+      text->GetLayoutObject()->FirstInlineFragment();
+  EXPECT_NE(text_fragment_before_split, text_fragment_after_layout);
 
   // Check it is the one owned by the new root inline formatting context.
   LayoutBlock* anonymous_block =
       inner_span->GetLayoutObject()->ContainingBlock();
   EXPECT_TRUE(anonymous_block->IsAnonymous());
-  EXPECT_EQ(anonymous_block, text_fragment_after_layout.Current()
-                                 .GetLayoutObject()
-                                 ->ContainingBlock());
+  const NGPaintFragment* block_fragment = anonymous_block->PaintFragment();
+  const NGPaintFragment* line_box_fragment = block_fragment->FirstChild();
+  EXPECT_EQ(line_box_fragment->FirstChild(), text_fragment_after_layout);
 }
 
 TEST_F(NGInlineNodeTest, AddChildToSVGRoot) {

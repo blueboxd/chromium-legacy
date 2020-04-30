@@ -616,30 +616,6 @@ class AutoGainControlContainer {
 // APM, processed without APM, and unprocessed.
 class ProcessingBasedContainer {
  public:
-  static ProcessingBasedContainer CreateRemoteApmProcessedContainer(
-      const SourceInfo& source_info,
-      bool is_device_capture,
-      const media::AudioParameters& device_parameters,
-      bool is_reconfiguration_allowed) {
-    return ProcessingBasedContainer(
-        ProcessingType::kApmProcessed,
-        {EchoCancellationType::kEchoCancellationAec3,
-         EchoCancellationType::kEchoCancellationDisabled},
-        BoolSet(), /* auto_gain_control_set */
-        BoolSet(), /* goog_audio_mirroring_set */
-        BoolSet(), /* goog_experimental_echo_cancellation_set */
-        BoolSet(), /* goog_noise_suppression_set */
-        BoolSet(), /* goog_experimental_noise_suppression_set */
-        BoolSet(), /* goog_highpass_filter_set */
-        IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
-        IntRangeSet::FromValue(
-            device_parameters.channels()), /* channels_range */
-        IntRangeSet::FromValue(
-            device_parameters.sample_rate()), /* sample_rate_range */
-        source_info, is_device_capture, device_parameters,
-        is_reconfiguration_allowed);
-  }
-
   // Creates an instance of ProcessingBasedContainer for the WebRTC processed
   // source type. The source type allows (a) any type of echo cancellation,
   // though the system echo cancellation type depends on the availability of the
@@ -1071,17 +1047,10 @@ class DeviceContainer {
         ProcessingBasedContainer::CreateNoApmProcessedContainer(
             source_info, is_device_capture, device_parameters_,
             is_reconfiguration_allowed));
-    if (media::IsWebRtcApmInAudioServiceEnabled()) {
-      processing_based_containers_.push_back(
-          ProcessingBasedContainer::CreateRemoteApmProcessedContainer(
-              source_info, is_device_capture, device_parameters_,
-              is_reconfiguration_allowed));
-    } else {
-      processing_based_containers_.push_back(
-          ProcessingBasedContainer::CreateApmProcessedContainer(
-              source_info, is_device_capture, device_parameters_,
-              is_reconfiguration_allowed));
-    }
+    processing_based_containers_.push_back(
+        ProcessingBasedContainer::CreateApmProcessedContainer(
+            source_info, is_device_capture, device_parameters_,
+            is_reconfiguration_allowed));
 
     DCHECK_EQ(processing_based_containers_.size(), 3u);
 

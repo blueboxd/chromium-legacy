@@ -27,12 +27,13 @@ static void JNI_EarlyTraceEvent_RecordEarlyEvent(
   int64_t begin_us = begin_time_ns / 1000;
   int64_t end_us = end_time_ns / 1000;
   int64_t thread_duration_us = thread_duration_ms * 1000;
+  ThreadTicks thread_now = ThreadTicks::Now();
 
   INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMPS(
       kEarlyJavaCategory, name.c_str(), trace_event_internal::kNoId, thread_id,
       TimeTicks::FromInternalValue(begin_us),
-      TimeTicks::FromInternalValue(end_us),
-      ThreadTicks::Now() + TimeDelta::FromMicroseconds(thread_duration_us),
+      TimeTicks::FromInternalValue(end_us), thread_now,
+      thread_now + TimeDelta::FromMicroseconds(thread_duration_us),
       TRACE_EVENT_FLAG_JAVA_STRING_LITERALS | TRACE_EVENT_FLAG_COPY);
 }
 

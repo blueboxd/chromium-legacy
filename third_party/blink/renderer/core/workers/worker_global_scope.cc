@@ -346,6 +346,12 @@ void WorkerGlobalScope::AddConsoleMessageImpl(ConsoleMessage* console_message,
       this, console_message, discard_duplicates);
 }
 
+void WorkerGlobalScope::AddInspectorIssue(
+    mojom::blink::InspectorIssueInfoPtr info) {
+  GetThread()->GetInspectorIssueStorage()->AddInspectorIssue(
+      this, InspectorIssue::Create(std::move(info)));
+}
+
 CoreProbeSink* WorkerGlobalScope::GetProbeSink() {
   if (IsClosing())
     return nullptr;

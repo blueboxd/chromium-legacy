@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 #include <wayland-client.h>
+
 #include <memory>
 
 #include "base/bind.h"
@@ -12,6 +13,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/events_ozone.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"

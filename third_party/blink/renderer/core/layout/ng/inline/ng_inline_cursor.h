@@ -315,12 +315,6 @@ class CORE_EXPORT NGInlineCursor {
   void MoveTo(const NGPaintFragment& paint_fragment);
   void MoveTo(const NGPaintFragment* paint_fragment);
 
-  // Move to first |NGFragmentItem| or |NGPaintFragment| associated to
-  // |layout_object|. When |layout_object| has no associated fragments, this
-  // cursor points nothing.
-  void MoveTo(const LayoutObject& layout_object);
-  void MoveToIncludingCulledInline(const LayoutObject& layout_object);
-
   // Move to containing line box. It is error if the current position is line.
   void MoveToContainingLine();
 
@@ -341,9 +335,6 @@ class CORE_EXPORT NGInlineCursor {
   // See also |TryToMoveToFirstChild()|.
   void MoveToLastChild();
 
-  // Move the current position to the last fragment on same layout object.
-  void MoveToLastForSameLayoutObject();
-
   // Move to last logical leaf of current line box. If current line box has
   // no children, curosr becomes null.
   void MoveToLastLogicalLeaf();
@@ -351,9 +342,6 @@ class CORE_EXPORT NGInlineCursor {
   // Move the current position to the next fragment in pre-order DFS. When
   // the current position is at last fragment, this cursor points nothing.
   void MoveToNext();
-
-  // Move the current position to next fragment on same layout object.
-  void MoveToNextForSameLayoutObject();
 
   // Move the current position to next line. It is error to call other than line
   // box.
@@ -389,8 +377,17 @@ class CORE_EXPORT NGInlineCursor {
   // Returns true if the current position moves to last child.
   bool TryToMoveToLastChild();
 
-  // TODO(kojii): Add more variations as needed, NextSibling,
-  // NextSkippingChildren, Previous, etc.
+  // Move to first |NGFragmentItem| or |NGPaintFragment| associated to
+  // |layout_object|. When |layout_object| has no associated fragments, this
+  // cursor points nothing.
+  void MoveTo(const LayoutObject& layout_object);
+  void MoveToIncludingCulledInline(const LayoutObject& layout_object);
+
+  // Move the current position to next fragment on same layout object.
+  void MoveToNextForSameLayoutObject();
+
+  // Move the current position to the last fragment on same layout object.
+  void MoveToLastForSameLayoutObject();
 
 #if DCHECK_IS_ON()
   void CheckValid(const NGInlineCursorPosition& position) const;

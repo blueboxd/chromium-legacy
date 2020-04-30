@@ -39,12 +39,15 @@ class BrowserContext;
 class TestCertificateProviderExtension final
     : public content::NotificationObserver {
  public:
-  // Returns the Spki of the certificate provided by the extension.
+  // Returns the certificate provided by the extension.
+  static scoped_refptr<net::X509Certificate> GetCertificate();
   static std::string GetCertificateSpki();
 
   TestCertificateProviderExtension(content::BrowserContext* browser_context,
                                    const std::string& extension_id);
   ~TestCertificateProviderExtension() override;
+
+  int certificate_request_count() const { return certificate_request_count_; }
 
   // Sets the PIN that will be required when doing every signature request.
   // (By default, no PIN is requested.)
@@ -83,6 +86,7 @@ class TestCertificateProviderExtension final
   const std::string extension_id_;
   const scoped_refptr<net::X509Certificate> certificate_;
   const bssl::UniquePtr<EVP_PKEY> private_key_;
+  int certificate_request_count_ = 0;
   // When non-empty, contains the expected PIN; the implementation will request
   // the PIN on every signature request in this case.
   base::Optional<std::string> required_pin_;

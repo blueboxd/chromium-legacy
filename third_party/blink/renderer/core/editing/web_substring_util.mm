@@ -161,7 +161,7 @@ NSAttributedString* WebSubstringUtil::AttributedWordAtPoint(
     gfx::Point point,
     gfx::Point& baseline_point) {
   HitTestResult result = static_cast<WebFrameWidgetBase*>(frame_widget)
-                             ->CoreHitTestResultAt(IntPoint(point));
+                             ->CoreHitTestResultAt(FloatPoint(IntPoint(point)));
 
   if (!result.InnerNode())
     return nil;

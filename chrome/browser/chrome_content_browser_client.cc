@@ -3684,17 +3684,8 @@ void ChromeContentBrowserClient::WillStartServiceManager() {
     if (force_network_in_process)
       content::ForceInProcessNetworkService(true);
 #endif
-    bool enable_audio_process =
-        base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess);
 
     service_manager::EnableAudioSandbox(ShouldEnableAudioSandbox(policies));
-    if (!service_manager::IsAudioSandboxEnabled() || !enable_audio_process) {
-      // Disabling the audio process or audio sandbox implies disabling APM in
-      // the audio service for security reasons. Append a switch so that this
-      // is communicated to the audio and renderer processes.
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kForceDisableWebRtcApmInAudioService);
-    }
   }
 #endif
 }

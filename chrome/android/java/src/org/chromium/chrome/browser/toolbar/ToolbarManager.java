@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibil
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
-import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.identity_disc.IdentityDiscController;
 import org.chromium.chrome.browser.metrics.OmniboxStartupMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -109,7 +108,6 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
-import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.search_engines.TemplateUrl;
@@ -120,9 +118,7 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.util.TokenHolder;
 
@@ -132,9 +128,8 @@ import java.util.List;
  * Contains logic for managing the toolbar visual component.  This class manages the interactions
  * with the rest of the application to ensure the toolbar is always visually up to date.
  */
-public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener,
-                                       ThemeColorObserver, MenuButtonDelegate,
-                                       AccessibilityUtil.Observer {
+public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserver,
+                                       MenuButtonDelegate, AccessibilityUtil.Observer {
     /**
      * Handle UI updates of menu icons. Only applicable for phones.
      */
@@ -196,6 +191,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private UrlFocusChangeListener mLocationBarFocusObserver;
     private ComponentCallbacks mComponentCallbacks;
     private final LoadProgressCoordinator mProgressBarCoordinator;
+    private final ToolbarTabControllerImpl mToolbarTabController;
 
     private BrowserStateBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
     private int mFullscreenFocusToken = TokenHolder.INVALID_TOKEN;
@@ -390,10 +386,16 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         mTabObscuringHandler = tabObscuringHandler;
         mActivityTabProvider = tabProvider;
+        mToolbarTabController = new ToolbarTabControllerImpl(mLocationBarModel::getTab,
+                // clang-format off
+                this::isBottomToolbarVisible,
+                () -> mShowStartSurfaceSupplier != null && mShowStartSurfaceSupplier.get(),
+                () -> mCurrentProfile, () -> mBottomControlsCoordinator, this::updateButtonStatus);
+        // clang-format on
 
         mToolbar = new TopToolbarCoordinator(controlContainer, mActivity.findViewById(R.id.toolbar),
-                identityDiscController, mLocationBarModel, this, new UserEducationHelper(mActivity),
-                buttonDataProviders);
+                identityDiscController, mLocationBarModel, mToolbarTabController,
+                new UserEducationHelper(mActivity), buttonDataProviders);
 
         mActionModeController =
                 new ActionModeController(mActivity, mActionBarDelegate, toolbarActionModeCallback);
@@ -794,25 +796,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                         : BottomTabSwitcherActionMenuCoordinator.createOnLongClickListener(
                                 id -> mActivity.onOptionsItemSelected(id, null)),
                 mAppThemeColorProvider, mShareDelegateSupplier, mShowStartSurfaceSupplier,
-                this::openHomepage, (reason) -> setUrlBarFocus(true, reason));
+                mToolbarTabController::openHomepage, (reason) -> setUrlBarFocus(true, reason));
 
         boolean isBottomToolbarVisible = BottomToolbarConfiguration.isBottomToolbarEnabled()
                 && (!BottomToolbarConfiguration.isAdaptiveToolbarEnabled()
                         || mActivity.getResources().getConfiguration().orientation
                                 != Configuration.ORIENTATION_LANDSCAPE);
         setBottomToolbarVisible(isBottomToolbarVisible);
-    }
-
-    /** Record that homepage button was used for IPH reasons */
-    private void recordToolbarUseForIPH(String toolbarIPHEvent) {
-        // TODO(https://crbug.com/865801): access the profile directly, either via
-        // getOriginalProfile or via a Supplier<Profile>.
-        Tab tab = mActivityTabProvider.get();
-        if (tab != null) {
-            Tracker tracker = TrackerFactory.getTrackerForProfile(
-                    Profile.fromWebContents(tab.getWebContents()));
-            tracker.notifyEvent(toolbarIPHEvent);
-        }
     }
 
     /**
@@ -1309,75 +1299,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mMenuDelegatePhone = menuDelegatePhone;
     }
 
-    @Override
+    // TODO(https://crbug.com/865801): remove the below two methods if possible.
     public boolean back() {
-        if (mBottomControlsCoordinator != null && mBottomControlsCoordinator.onBackPressed()) {
-            return true;
-        }
-
-        Tab tab = mLocationBarModel.getTab();
-        if (tab != null && tab.canGoBack()) {
-            tab.goBack();
-            updateButtonStatus();
-            return true;
-        }
-        return false;
+        return mToolbarTabController.back();
     }
 
-    @Override
     public boolean forward() {
-        Tab tab = mLocationBarModel.getTab();
-        if (tab != null && tab.canGoForward()) {
-            tab.goForward();
-            updateButtonStatus();
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public void stopOrReloadCurrentTab() {
-        Tab currentTab = mLocationBarModel.getTab();
-        if (currentTab != null) {
-            if (currentTab.isLoading()) {
-                currentTab.stopLoading();
-                RecordUserAction.record("MobileToolbarStop");
-            } else {
-                currentTab.reload();
-                RecordUserAction.record("MobileToolbarReload");
-            }
-        }
-        updateButtonStatus();
-    }
-
-    @Override
-    public void openHomepage() {
-        RecordUserAction.record("Home");
-
-        if (isBottomToolbarVisible()) {
-            RecordUserAction.record("MobileBottomToolbarHomeButton");
-        } else {
-            RecordUserAction.record("MobileTopToolbarHomeButton");
-        }
-
-        if (mShowStartSurfaceSupplier.get()) {
-            return;
-        }
-        Tab currentTab = mLocationBarModel.getTab();
-        if (currentTab == null) return;
-        String homePageUrl = HomepageManager.getHomepageUri();
-        if (TextUtils.isEmpty(homePageUrl)) {
-            homePageUrl = UrlConstants.NTP_URL;
-        }
-        boolean is_chrome_internal =
-                homePageUrl.startsWith(ContentUrlConstants.ABOUT_URL_SHORT_PREFIX)
-                || homePageUrl.startsWith(UrlConstants.CHROME_URL_SHORT_PREFIX)
-                || homePageUrl.startsWith(UrlConstants.CHROME_NATIVE_URL_SHORT_PREFIX);
-        RecordHistogram.recordBooleanHistogram(
-                "Navigation.Home.IsChromeInternal", is_chrome_internal);
-
-        recordToolbarUseForIPH(EventConstants.HOMEPAGE_BUTTON_CLICKED);
-        currentTab.loadUrl(new LoadUrlParams(homePageUrl, PageTransition.HOME_PAGE));
+        return mToolbarTabController.forward();
     }
 
     /**

@@ -268,7 +268,7 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
       std::make_unique<chromeos::settings::ChangePictureHandler>());
 
   web_ui()->AddMessageHandler(
-      std::make_unique<chromeos::settings::AccessibilityHandler>(web_ui()));
+      std::make_unique<chromeos::settings::AccessibilityHandler>(profile));
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::AndroidAppsHandler>(profile));
   if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile,

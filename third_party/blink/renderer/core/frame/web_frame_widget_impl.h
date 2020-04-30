@@ -93,7 +93,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason) override;
   void ThemeChanged() override;
-  WebHitTestResult HitTestResultAt(const gfx::Point&) override;
+  WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetCursorVisibilityState(bool is_visible) override;
@@ -124,7 +124,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   bool ForSubframe() const override { return true; }
   void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) override;
   void DidCreateLocalRootView() override;
-  HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
+  HitTestResult CoreHitTestResultAt(const gfx::PointF&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
   // FrameWidget overrides:
@@ -157,7 +157,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult HitTestResultForRootFramePos(
-      const PhysicalOffset& pos_in_root_frame);
+      const FloatPoint& pos_in_root_frame);
 
   void UpdateLayerTreeViewport();
 

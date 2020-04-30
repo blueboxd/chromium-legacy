@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
-import("//media/webrtc/audio_processing.gni")
 import("//testing/test.gni")
 
 source_set("audio") {
@@ -54,8 +53,6 @@ source_set("audio") {
     "stream_factory.cc",
     "stream_factory.h",
     "stream_monitor.h",
-    "stream_monitor_coordinator.cc",
-    "stream_monitor_coordinator.h",
     "sync_reader.cc",
     "sync_reader.h",
     "system_info.cc",
@@ -68,10 +65,6 @@ source_set("audio") {
     ":testing_api_support",
     "//build:chromecast_buildflags",
   ]
-
-  if (audio_processing_in_audio_service_supported) {
-    deps += [ "//media/webrtc" ]
-  }
 
   public_deps = [
     "//base",

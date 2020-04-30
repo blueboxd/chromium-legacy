@@ -55,10 +55,6 @@ std::vector<uint8_t> ExtractBytesFromValue(const base::Value& value) {
   return bytes;
 }
 
-scoped_refptr<net::X509Certificate> GetCertificate() {
-  return net::ImportCertFromFile(net::GetTestCertsDirectory(), "client_1.pem");
-}
-
 base::span<const uint8_t> GetCertDer(const net::X509Certificate& certificate) {
   return base::as_bytes(base::make_span(
       net::x509_util::CryptoBufferAsStringPiece(certificate.cert_buffer())));
@@ -114,7 +110,13 @@ void SendReplyToJs(extensions::TestSendMessageFunction* function,
 
 }  // namespace
 
-// Returns the Spki of the certificate provided by the extension.
+// static
+scoped_refptr<net::X509Certificate>
+TestCertificateProviderExtension::GetCertificate() {
+  return net::ImportCertFromFile(net::GetTestCertsDirectory(), "client_1.pem");
+}
+
+// static
 std::string TestCertificateProviderExtension::GetCertificateSpki() {
   const scoped_refptr<net::X509Certificate> certificate = GetCertificate();
   base::StringPiece spki_bytes;
@@ -191,6 +193,7 @@ void TestCertificateProviderExtension::Observe(
 
 void TestCertificateProviderExtension::HandleCertificatesRequest(
     ReplyToJsCallback callback) {
+  ++certificate_request_count_;
   base::Value cert_info_values(base::Value::Type::LIST);
   if (!should_fail_certificate_requests_)
     cert_info_values.Append(MakeCertInfoValue(*certificate_));

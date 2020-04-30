@@ -7,7 +7,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [
     "audio_device_description.mojom",
-    "audio_processing.mojom",
     "audio_service.mojom",
     "debug_recording.mojom",
     "device_notifications.mojom",
@@ -62,10 +61,6 @@ mojom("mojom") {
           cpp = "::media::NoiseSuppressionType"
         },
       ]
-      traits_headers =
-          [ "//services/audio/public/cpp/audio_processing_mojom_traits.h" ]
-      traits_sources =
-          [ "//services/audio/public/cpp/audio_processing_mojom_traits.cc" ]
       traits_public_deps = [
         "//media",
         "//third_party/webrtc_overrides:webrtc_component",

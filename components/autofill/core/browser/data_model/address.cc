@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
@@ -22,6 +23,7 @@
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/state_names.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 
 namespace autofill {
@@ -222,10 +224,21 @@ bool Address::SetInfoImpl(const AutofillType& type,
                           const std::string& app_locale) {
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
     if (!data_util::IsValidCountryCode(base::i18n::ToUpper(value))) {
-      country_code_ = std::string();
-      return false;
+      // Some popular websites use the HTML_TYPE_COUNTRY_CODE attribute for
+      // full text names (e.g. alliedelec.com). Try to convert the value to a
+      // country code as a fallback.
+      if (base::FeatureList::IsEnabled(
+              features::kAutofillAllowHtmlTypeCountryCodesWithFullNames)) {
+        CountryNames* country_names =
+            !value.empty() ? CountryNames::GetInstance() : nullptr;
+        country_code_ = country_names ? country_names->GetCountryCode(value)
+                                      : std::string();
+        return !country_code_.empty();
+      } else {
+        country_code_ = std::string();
+        return false;
+      }
     }
-
     country_code_ = base::ToUpperASCII(base::UTF16ToASCII(value));
     return true;
   }

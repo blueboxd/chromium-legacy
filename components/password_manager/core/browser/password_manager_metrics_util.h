@@ -162,7 +162,9 @@ enum class CredentialManagerGetResult {
   kAccountChooser,
   // User is auto signed in.
   kAutoSignIn,
-  kMaxValue = kAutoSignIn,
+  // No credentials are returned in incognito mode.
+  kNoneIncognito,
+  kMaxValue = kNoneIncognito,
 };
 
 enum PasswordReusePasswordFieldDetected {

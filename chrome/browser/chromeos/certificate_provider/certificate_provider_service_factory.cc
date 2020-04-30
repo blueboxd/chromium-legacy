@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
@@ -38,12 +37,15 @@ namespace {
 namespace api_cp = extensions::api::certificate_provider;
 
 class DefaultDelegate : public CertificateProviderService::Delegate,
+                        public extensions::EventRouter::Observer,
                         public extensions::ExtensionRegistryObserver {
  public:
   // |event_router| may be null in tests.
   DefaultDelegate(CertificateProviderService* service,
                   extensions::ExtensionRegistry* registry,
                   extensions::EventRouter* event_router);
+  DefaultDelegate(const DefaultDelegate&) = delete;
+  DefaultDelegate& operator=(const DefaultDelegate&) = delete;
   ~DefaultDelegate() override;
 
   // CertificateProviderService::Delegate:
@@ -56,6 +58,10 @@ class DefaultDelegate : public CertificateProviderService::Delegate,
       const scoped_refptr<net::X509Certificate>& certificate,
       base::span<const uint8_t> digest) override;
 
+  // extensions::EventRouter::Observer:
+  void OnListenerAdded(const extensions::EventListenerInfo& details) override {}
+  void OnListenerRemoved(const extensions::EventListenerInfo& details) override;
+
   // extensions::ExtensionRegistryObserver:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const extensions::Extension* extension,
@@ -65,8 +71,6 @@ class DefaultDelegate : public CertificateProviderService::Delegate,
   CertificateProviderService* const service_;
   extensions::ExtensionRegistry* const registry_;
   extensions::EventRouter* const event_router_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultDelegate);
 };
 
 DefaultDelegate::DefaultDelegate(CertificateProviderService* service,
@@ -75,9 +79,12 @@ DefaultDelegate::DefaultDelegate(CertificateProviderService* service,
     : service_(service), registry_(registry), event_router_(event_router) {
   DCHECK(service_);
   registry_->AddObserver(this);
+  event_router_->RegisterObserver(this,
+                                  api_cp::OnCertificatesRequested::kEventName);
 }
 
 DefaultDelegate::~DefaultDelegate() {
+  event_router_->UnregisterObserver(this);
   registry_->RemoveObserver(this);
 }
 
@@ -148,6 +155,13 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
           extensions::events::CERTIFICATEPROVIDER_ON_SIGN_DIGEST_REQUESTED,
           event_name, std::move(internal_args)));
   return true;
+}
+
+void DefaultDelegate::OnListenerRemoved(
+    const extensions::EventListenerInfo& details) {
+  if (!event_router_->ExtensionHasEventListener(
+          details.extension_id, api_cp::OnSignDigestRequested::kEventName))
+    service_->OnExtensionUnregistered(details.extension_id);
 }
 
 void DefaultDelegate::OnExtensionUnloaded(

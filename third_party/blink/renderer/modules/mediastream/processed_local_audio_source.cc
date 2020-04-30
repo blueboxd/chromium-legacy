@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
-#include "third_party/blink/renderer/platform/mediastream/audio_service_audio_processor_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/media/base/media_channel.h"
@@ -273,37 +272,12 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   DCHECK(params.IsValid());
 
   media::AudioSourceParameters source_params(device().session_id());
-  const bool use_remote_apm =
-      media::IsWebRtcApmInAudioServiceEnabled() &&
-      MediaStreamAudioProcessor::WouldModifyAudio(audio_processing_properties_);
-  if (use_remote_apm) {
-    audio_processor_proxy_ =
-        new rtc::RefCountedObject<AudioServiceAudioProcessorProxy>(
-            GetTaskRunner());
-    SetFormat(params);
-    // Add processing to the source.
-    source_params.processing = media::AudioSourceParameters::ProcessingConfig(
-        rtc_audio_device->GetAudioProcessingId(),
-        audio_processing_properties_.ToAudioProcessingSettings());
-    if (source_params.processing->settings.automatic_gain_control !=
-            media::AutomaticGainControlType::kDisabled &&
-        base::FeatureList::IsEnabled(features::kWebRtcHybridAgc)) {
-      source_params.processing->settings.automatic_gain_control =
-          media::AutomaticGainControlType::kHybridExperimental;
-    }
-    SendLogMessageWithSessionId(base::StringPrintf(
-        "EnsureSourceIsStarted() => (using APM in audio process: "
-        "settings=[%s])",
-        source_params.processing->settings.ToString().c_str()));
-
-  } else {
-    blink::WebRtcLogMessage("Using APM in renderer process.");
-    audio_processor_ = new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-        audio_processing_properties_, rtc_audio_device);
-    params.set_frames_per_buffer(GetBufferSize(device().input.sample_rate()));
-    audio_processor_->OnCaptureFormatChanged(params);
-    SetFormat(audio_processor_->OutputFormat());
-  }
+  blink::WebRtcLogMessage("Using APM in renderer process.");
+  audio_processor_ = new rtc::RefCountedObject<MediaStreamAudioProcessor>(
+      audio_processing_properties_, rtc_audio_device);
+  params.set_frames_per_buffer(GetBufferSize(device().input.sample_rate()));
+  audio_processor_->OnCaptureFormatChanged(params);
+  SetFormat(audio_processor_->OutputFormat());
 
   // Start the source.
   SendLogMessageWithSessionId(base::StringPrintf(
@@ -347,27 +321,18 @@ void ProcessedLocalAudioSource::EnsureSourceIsStopped() {
   if (audio_processor_)
     audio_processor_->Stop();
 
-  // Stop the proxy, if we have one, so as to detach from the processor
-  // controls.
-  if (audio_processor_proxy_)
-    audio_processor_proxy_->Stop();
-
   DVLOG(1) << "Stopped WebRTC audio pipeline for consumption.";
 }
 
 scoped_refptr<webrtc::AudioProcessorInterface>
 ProcessedLocalAudioSource::GetAudioProcessor() const {
-  DCHECK(audio_processor_ || audio_processor_proxy_);
-  return audio_processor_
-             ? static_cast<scoped_refptr<webrtc::AudioProcessorInterface>>(
-                   audio_processor_)
-             : static_cast<scoped_refptr<webrtc::AudioProcessorInterface>>(
-                   audio_processor_proxy_);
+  DCHECK(audio_processor_);
+  return static_cast<scoped_refptr<webrtc::AudioProcessorInterface>>(
+      audio_processor_);
 }
 
 bool ProcessedLocalAudioSource::HasAudioProcessing() const {
-  return audio_processor_proxy_ ||
-         (audio_processor_ && audio_processor_->has_audio_processing());
+  return audio_processor_ && audio_processor_->has_audio_processing();
 }
 
 void ProcessedLocalAudioSource::SetVolume(int volume) {
@@ -425,8 +390,6 @@ void ProcessedLocalAudioSource::OnCaptureProcessorCreated(
     media::AudioProcessorControls* controls) {
   SendLogMessageWithSessionId(
       base::StringPrintf("OnCaptureProcessorCreated()"));
-  DCHECK(audio_processor_proxy_);
-  audio_processor_proxy_->SetControls(controls);
 }
 
 void ProcessedLocalAudioSource::SetOutputDeviceForAec(
@@ -518,7 +481,7 @@ int ProcessedLocalAudioSource::GetBufferSize(int sample_rate) const {
   return (2 * sample_rate / 100);
 #else
   // If audio processing is turned on, require 10ms buffers.
-  if (audio_processor_->has_audio_processing() || audio_processor_proxy_)
+  if (audio_processor_->has_audio_processing())
     return (sample_rate / 100);
 
   // If audio processing is off and the native hardware buffer size was

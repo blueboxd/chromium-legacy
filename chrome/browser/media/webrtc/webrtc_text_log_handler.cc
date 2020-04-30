@@ -488,10 +488,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
            features::kAudioServiceLaunchOnStartup),
        ", Sandbox=",
        enabled_or_disabled_bool_string(
-           service_manager::IsAudioSandboxEnabled()),
-       ", ApmInAudioService=",
-       enabled_or_disabled_bool_string(
-           media::IsWebRtcApmInAudioServiceEnabled())}));
+           service_manager::IsAudioSandboxEnabled())}));
 
   // Audio manager
   // On some platforms, this can vary depending on build flags and failure

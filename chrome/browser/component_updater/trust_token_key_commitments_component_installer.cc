@@ -44,22 +44,22 @@ const uint8_t kTrustTokenKeyCommitmentsPublicKeySHA256[32] = {
 const char kTrustTokenKeyCommitmentsManifestName[] =
     "Trust Token Key Commitments";
 
-// Attempts to load key commitments as raw JSON from their storage file, leaving
-// |loaded_commitments| untouched on failure.
-void LoadKeyCommitmentsFromDisk(
-    const base::FilePath& path,
-    scoped_refptr<base::RefCountedData<std::string>> loaded_commitments) {
+// Attempts to load key commitments as raw JSON from their storage file,
+// returning the loaded commitments on success and nullopt on failure.
+base::Optional<std::string> LoadKeyCommitmentsFromDisk(
+    const base::FilePath& path) {
   if (path.empty())
-    return;
+    return base::nullopt;
 
   VLOG(1) << "Reading trust token key commitments from file: " << path.value();
 
-  // This method, LoadKeyCommitmentsFromDisk, is called on the IO thread. Put a
-  // thread-safe wrapper around the commitments so that we can ship them to the
-  // UI thread in order to pass them on via Mojo.
-  if (!base::ReadFileToString(path, &loaded_commitments->data)) {
+  std::string ret;
+  if (!base::ReadFileToString(path, &ret)) {
     VLOG(1) << "Failed reading from " << path.value();
+    return base::nullopt;
   }
+
+  return ret;
 }
 
 }  // namespace
@@ -111,27 +111,21 @@ void TrustTokenKeyCommitmentsComponentInstallerPolicy::ComponentReady(
   VLOG(1) << "Component ready, version " << version.GetString() << " in "
           << install_dir.value();
 
-  // Use a ref-counted, thread-safe wrapper to hold the commitments since we're
-  // loading them on the IO thread but need to send them to the network service
-  // via a UI-thread Mojo call.
-  auto loaded_commitments =
-      base::MakeRefCounted<base::RefCountedData<std::string>>();
-
-  base::ThreadPool::PostTaskAndReply(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&LoadKeyCommitmentsFromDisk, GetInstalledPath(install_dir),
-                     loaded_commitments),
+      base::BindOnce(&LoadKeyCommitmentsFromDisk,
+                     GetInstalledPath(install_dir)),
       base::BindOnce(
           // Only bother sending commitments to the network service if we loaded
           // them successfully.
-          [](scoped_refptr<base::RefCountedData<std::string>> commitments,
-             base::RepeatingCallback<void(const std::string&)>
-                 on_commitments_ready) {
-            if (!commitments->data.empty()) {
-              on_commitments_ready.Run(commitments->data);
+          [](base::RepeatingCallback<void(const std::string&)>
+                 on_commitments_ready,
+             base::Optional<std::string> loaded_commitments) {
+            if (loaded_commitments.has_value()) {
+              on_commitments_ready.Run(*loaded_commitments);
             }
           },
-          loaded_commitments, on_commitments_ready_));
+          on_commitments_ready_));
 }
 
 // Called during startup and installation before ComponentReady().

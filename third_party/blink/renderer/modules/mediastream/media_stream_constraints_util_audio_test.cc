@@ -550,37 +550,6 @@ class MediaStreamConstraintsUtilAudioTest
   std::string GetMediaStreamSource() override { return GetParam(); }
 };
 
-class MediaStreamConstraintsRemoteAPMTest
-    : public MediaStreamConstraintsUtilAudioTestBase,
-      public testing::TestWithParam<bool> {
-  void SetUp() override {
-    if (UseRemoteAPMFlag()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kWebRtcApmInAudioService);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kWebRtcApmInAudioService);
-    }
-
-    // Setup the capabilities.
-    ResetFactory();
-    if (IsDeviceCapture()) {
-      capabilities_.emplace_back(
-          "default_device", "fake_group1",
-          media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                 media::CHANNEL_LAYOUT_STEREO,
-                                 media::AudioParameters::kAudioCDSampleRate,
-                                 1000));
-      default_device_ = &capabilities_[0];
-    }
-  }
-
-  bool UseRemoteAPMFlag() { return GetParam(); }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 // The Unconstrained test checks the default selection criteria.
 TEST_P(MediaStreamConstraintsUtilAudioTest, Unconstrained) {
   auto result = SelectSettings();
@@ -1940,39 +1909,6 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ExperimetanlEcWithSource) {
   EXPECT_TRUE(result.HasValue());
 }
 
-TEST_P(MediaStreamConstraintsRemoteAPMTest, Channels) {
-  if (!IsDeviceCapture())
-    return;
-
-  AudioCaptureSettings result;
-  ResetFactory();
-  constraint_factory_.basic().channel_count.SetExact(1);
-  constraint_factory_.basic().echo_cancellation.SetExact(true);
-  result = SelectSettings();
-
-  if (media::IsWebRtcApmInAudioServiceEnabled() && GetParam())
-    EXPECT_FALSE(result.HasValue());
-  else
-    EXPECT_TRUE(result.HasValue());
-}
-
-TEST_P(MediaStreamConstraintsRemoteAPMTest, SampleRate) {
-  if (!IsDeviceCapture())
-    return;
-
-  AudioCaptureSettings result;
-  ResetFactory();
-  constraint_factory_.basic().sample_rate.SetExact(
-      media::AudioParameters::kAudioCDSampleRate);
-  constraint_factory_.basic().echo_cancellation.SetExact(true);
-  result = SelectSettings();
-
-  if (media::IsWebRtcApmInAudioServiceEnabled() && GetParam())
-    EXPECT_TRUE(result.HasValue());
-  else
-    EXPECT_FALSE(result.HasValue());
-}
-
 TEST_P(MediaStreamConstraintsUtilAudioTest, LatencyConstraint) {
   if (!IsDeviceCapture())
     return;
@@ -2026,8 +1962,4 @@ INSTANTIATE_TEST_SUITE_P(All,
                                          blink::kMediaStreamSourceTab,
                                          blink::kMediaStreamSourceSystem,
                                          blink::kMediaStreamSourceDesktop));
-INSTANTIATE_TEST_SUITE_P(All,
-                         MediaStreamConstraintsRemoteAPMTest,
-                         testing::Bool());
-
 }  // namespace blink

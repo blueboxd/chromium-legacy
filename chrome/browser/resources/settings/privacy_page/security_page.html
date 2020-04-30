@@ -129,6 +129,7 @@
                 pref="{{prefs.safebrowsing.scout_reporting_enabled}}"
                 label="$i18n{safeBrowsingStandardReportingLabel}"
                 sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
+                on-change="onSafeBrowsingExtendedReportingChange_"
                 disabled="[[
                     getDisabledExtendedSafeBrowsing_(prefs.safebrowsing.*)]]">
             </settings-toggle-button>

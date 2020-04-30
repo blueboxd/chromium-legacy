@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context.h"
 
 namespace ui {
@@ -15,6 +16,7 @@ namespace ui {
 WaylandInputMethodContextFactory::WaylandInputMethodContextFactory(
     WaylandConnection* connection)
     : connection_(connection) {
+  DCHECK(connection_);
 }
 
 WaylandInputMethodContextFactory::~WaylandInputMethodContextFactory() = default;
@@ -30,10 +32,10 @@ std::unique_ptr<WaylandInputMethodContext>
 WaylandInputMethodContextFactory::CreateWaylandInputMethodContext(
     LinuxInputMethodContextDelegate* delegate,
     bool is_simple) const {
+  DCHECK(connection_->event_source());
   return std::make_unique<WaylandInputMethodContext>(
       connection_, delegate, is_simple,
-      base::BindRepeating(&WaylandConnection::DispatchUiEvent,
-                          base::Unretained(connection_)));
+      connection_->event_source()->GetDispatchCallback());
 }
 
 }  // namespace ui

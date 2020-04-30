@@ -158,6 +158,16 @@ void WorkletGlobalScope::AddConsoleMessageImpl(ConsoleMessage* console_message,
       worker_thread_->GlobalScope(), console_message, discard_duplicates);
 }
 
+void WorkletGlobalScope::AddInspectorIssue(
+    mojom::blink::InspectorIssueInfoPtr info) {
+  if (IsMainThreadWorkletGlobalScope()) {
+    frame_->AddInspectorIssue(std::move(info));
+  } else {
+    worker_thread_->GetInspectorIssueStorage()->AddInspectorIssue(
+        this, InspectorIssue::Create(std::move(info)));
+  }
+}
+
 void WorkletGlobalScope::ExceptionThrown(ErrorEvent* error_event) {
   if (IsMainThreadWorkletGlobalScope()) {
     MainThreadDebugger::Instance()->ExceptionThrown(this, error_event);

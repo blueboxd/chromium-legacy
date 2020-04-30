@@ -24,6 +24,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -326,7 +327,8 @@ void BrowserTestBase::SetUp() {
   // not affect the results.
   command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
 
-  test_host_resolver_ = std::make_unique<TestHostResolver>();
+  if (!allow_network_access_to_host_resolutions_)
+    test_host_resolver_ = std::make_unique<TestHostResolver>();
 
   ContentBrowserSanityChecker scoped_enable_sanity_checks;
 
@@ -699,6 +701,18 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
   PostRunTestOnMainThread();
 }
 
+void BrowserTestBase::SetAllowNetworkAccessToHostResolutions() {
+  const char kManualTestPrefix[] = "MANUAL_";
+  // Must be called before Setup() to take effect. This mode can only be
+  // used in manual tests to prevent flakiness in tryjobs due to the
+  // dependency on network access.
+  CHECK(!set_up_called_);
+  CHECK(base::StartsWith(
+      testing::UnitTest::GetInstance()->current_test_info()->name(),
+      kManualTestPrefix, base::CompareCase::SENSITIVE));
+  allow_network_access_to_host_resolutions_ = true;
+}
+
 void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {
   CHECK(!spawned_test_server_.get());
   spawned_test_server_ = std::make_unique<net::SpawnedTestServer>(
@@ -744,70 +758,90 @@ void BrowserTestBase::InitializeNetworkProcess() {
     return;
 
   initialized_network_process_ = true;
-  host_resolver()->DisableModifications();
+
+  // Test host resolver may not be initiatized if host resolutions are allowed
+  // to reach the network.
+  if (host_resolver()) {
+    host_resolver()->DisableModifications();
+  }
 
   // Send the host resolver rules to the network service if it's in use. No need
   // to do this if it's running in the browser process though.
-  if (!IsOutOfProcessNetworkService())
+  if (!IsOutOfProcessNetworkService()) {
     return;
-
-  net::RuleBasedHostResolverProc::RuleList rules = host_resolver()->GetRules();
-  std::vector<network::mojom::RulePtr> mojo_rules;
-  for (const auto& rule : rules) {
-    // For now, this covers all the rules used in content's tests.
-    // TODO(jam: expand this when we try to make browser_tests and
-    // components_browsertests work.
-    if (rule.resolver_type ==
-            net::RuleBasedHostResolverProc::Rule::kResolverTypeFail ||
-        rule.resolver_type ==
-            net::RuleBasedHostResolverProc::Rule::kResolverTypeFailTimeout) {
-      // The host "wpad" is added automatically in TestHostResolver, so we don't
-      // need to send it to NetworkServiceTest.
-      if (rule.host_pattern != "wpad") {
-        network::mojom::RulePtr mojo_rule = network::mojom::Rule::New();
-        mojo_rule->resolver_type =
-            (rule.resolver_type ==
-             net::RuleBasedHostResolverProc::Rule::kResolverTypeFail)
-                ? network::mojom::ResolverType::kResolverTypeFail
-                : network::mojom::ResolverType::kResolverTypeFailTimeout;
-        mojo_rule->host_pattern = rule.host_pattern;
-        mojo_rules.push_back(std::move(mojo_rule));
-      }
-      continue;
-    }
-
-    if ((rule.resolver_type !=
-             net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem &&
-         rule.resolver_type !=
-             net::RuleBasedHostResolverProc::Rule::kResolverTypeIPLiteral) ||
-        rule.address_family != net::AddressFamily::ADDRESS_FAMILY_UNSPECIFIED ||
-        !!rule.latency_ms) {
-      continue;
-    }
-    network::mojom::RulePtr mojo_rule = network::mojom::Rule::New();
-    if (rule.resolver_type ==
-        net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem) {
-      mojo_rule->resolver_type =
-          rule.replacement.empty()
-              ? network::mojom::ResolverType::kResolverTypeDirectLookup
-              : network::mojom::ResolverType::kResolverTypeSystem;
-    } else {
-      mojo_rule->resolver_type =
-          network::mojom::ResolverType::kResolverTypeIPLiteral;
-    }
-    mojo_rule->host_pattern = rule.host_pattern;
-    mojo_rule->replacement = rule.replacement;
-    mojo_rule->host_resolver_flags = rule.host_resolver_flags;
-    mojo_rule->canonical_name = rule.canonical_name;
-    mojo_rules.push_back(std::move(mojo_rule));
   }
-
-  if (mojo_rules.empty())
-    return;
 
   mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
   content::GetNetworkService()->BindTestInterface(
       network_service_test.BindNewPipeAndPassReceiver());
+
+  // Do not set up host resolver rules if we allow the test to access
+  // the network.
+  if (allow_network_access_to_host_resolutions_) {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    network_service_test->SetAllowNetworkAccessToHostResolutions();
+    return;
+  }
+
+  std::vector<network::mojom::RulePtr> mojo_rules;
+
+  if (host_resolver()) {
+    net::RuleBasedHostResolverProc::RuleList rules =
+        host_resolver()->GetRules();
+    for (const auto& rule : rules) {
+      // For now, this covers all the rules used in content's tests.
+      // TODO(jam: expand this when we try to make browser_tests and
+      // components_browsertests work.
+      if (rule.resolver_type ==
+              net::RuleBasedHostResolverProc::Rule::kResolverTypeFail ||
+          rule.resolver_type ==
+              net::RuleBasedHostResolverProc::Rule::kResolverTypeFailTimeout) {
+        // The host "wpad" is added automatically in TestHostResolver, so we
+        // don't need to send it to NetworkServiceTest.
+        if (rule.host_pattern != "wpad") {
+          network::mojom::RulePtr mojo_rule = network::mojom::Rule::New();
+          mojo_rule->resolver_type =
+              (rule.resolver_type ==
+               net::RuleBasedHostResolverProc::Rule::kResolverTypeFail)
+                  ? network::mojom::ResolverType::kResolverTypeFail
+                  : network::mojom::ResolverType::kResolverTypeFailTimeout;
+          mojo_rule->host_pattern = rule.host_pattern;
+          mojo_rules.push_back(std::move(mojo_rule));
+        }
+        continue;
+      }
+
+      if ((rule.resolver_type !=
+               net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem &&
+           rule.resolver_type !=
+               net::RuleBasedHostResolverProc::Rule::kResolverTypeIPLiteral) ||
+          rule.address_family !=
+              net::AddressFamily::ADDRESS_FAMILY_UNSPECIFIED ||
+          !!rule.latency_ms) {
+        continue;
+      }
+      network::mojom::RulePtr mojo_rule = network::mojom::Rule::New();
+      if (rule.resolver_type ==
+          net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem) {
+        mojo_rule->resolver_type =
+            rule.replacement.empty()
+                ? network::mojom::ResolverType::kResolverTypeDirectLookup
+                : network::mojom::ResolverType::kResolverTypeSystem;
+      } else {
+        mojo_rule->resolver_type =
+            network::mojom::ResolverType::kResolverTypeIPLiteral;
+      }
+      mojo_rule->host_pattern = rule.host_pattern;
+      mojo_rule->replacement = rule.replacement;
+      mojo_rule->host_resolver_flags = rule.host_resolver_flags;
+      mojo_rule->canonical_name = rule.canonical_name;
+      mojo_rules.push_back(std::move(mojo_rule));
+    }
+  }
+
+  if (mojo_rules.empty()) {
+    return;
+  }
 
   // Send the DNS rules to network service process. Android needs the RunLoop
   // to dispatch a Java callback that makes network process to enter native

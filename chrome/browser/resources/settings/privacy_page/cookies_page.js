@@ -332,15 +332,23 @@ Polymer({
     if (event.detail.value === CookiesControl.ALLOW_ALL) {
       this.setAllPrefs_(
           CookieControlsMode.DISABLED, this.computeClearOnExitSetting_());
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          PrivacyElementInteractions.COOKIES_ALL);
     } else if (
         event.detail.value === CookiesControl.BLOCK_THIRD_PARTY_INCOGNITO) {
       this.setAllPrefs_(
           CookieControlsMode.INCOGNITO_ONLY, this.computeClearOnExitSetting_());
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          PrivacyElementInteractions.COOKIES_INCOGNITO);
     } else if (event.detail.value === CookiesControl.BLOCK_THIRD_PARTY) {
       this.setAllPrefs_(
           CookieControlsMode.ENABLED, this.computeClearOnExitSetting_());
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          PrivacyElementInteractions.COOKIES_THIRD);
     } else {  // CookiesControl.BLOCK_ALL
       this.setAllPrefs_(CookieControlsMode.ENABLED, ContentSetting.BLOCK);
+      this.metricsBrowserProxy_.recordSettingsPageHistogram(
+          PrivacyElementInteractions.COOKIES_BLOCK);
     }
   },
 
@@ -348,6 +356,8 @@ Polymer({
   onClearOnExitChange_() {
     this.browserProxy_.setDefaultValueForContentType(
         ContentSettingsTypes.COOKIES, this.computeClearOnExitSetting_());
+    this.metricsBrowserProxy_.recordSettingsPageHistogram(
+        PrivacyElementInteractions.COOKIES_SESSION);
   },
 
   /**

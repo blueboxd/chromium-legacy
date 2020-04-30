@@ -58,7 +58,7 @@ void WebExternalWidgetImpl::SetCompositorVisible(bool visible) {
   widget_base_->SetCompositorVisible(visible);
 }
 
-WebHitTestResult WebExternalWidgetImpl::HitTestResultAt(const gfx::Point&) {
+WebHitTestResult WebExternalWidgetImpl::HitTestResultAt(const gfx::PointF&) {
   NOTIMPLEMENTED();
   return {};
 }

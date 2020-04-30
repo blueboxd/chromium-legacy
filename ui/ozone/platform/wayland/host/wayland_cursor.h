@@ -7,8 +7,6 @@
 
 #include <wayland-client.h>
 
-#include <memory>
-#include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -26,7 +24,7 @@ class Point;
 namespace ui {
 
 class WaylandConnection;
-class WaylandShm;
+class WaylandPointer;
 
 // Manages the actual visual representation (what users see drawn) of the
 // 'pointer' (which is the Wayland term for mouse/mice).
@@ -38,10 +36,8 @@ class WaylandShm;
 // Wayland protocol calls.
 class WaylandCursor {
  public:
-  WaylandCursor();
+  WaylandCursor(WaylandPointer* pointer, WaylandConnection* connection);
   ~WaylandCursor();
-
-  void Init(wl_pointer* pointer, WaylandConnection* connection);
 
   // Updates wl_pointer's visual representation with the given bitmap
   // image set and hotspot.
@@ -55,9 +51,8 @@ class WaylandCursor {
 
   void HideCursor(uint32_t serial);
 
-  WaylandShm* shm_ = nullptr;            // Owned by WaylandConnection.
-  wl_pointer* input_pointer_ = nullptr;  // Owned by WaylandPointer.
-  WaylandConnection* connection_ = nullptr;
+  WaylandPointer* const pointer_;
+  WaylandConnection* const connection_;
 
   // Holds the buffers and their memory until the compositor releases them.
   base::flat_map<wl_buffer*, WaylandShmBuffer> buffers_;

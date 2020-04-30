@@ -85,8 +85,6 @@ class FakeStreamCreator {
   void Create(const media::AudioSourceParameters& source_params,
               mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
                   factory_client,
-              mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
-                  controls_receiver,
               const media::AudioParameters& params,
               bool automatic_gain_control,
               uint32_t total_segments) {
@@ -173,8 +171,6 @@ TEST(MojoAudioInputIPC, FactoryDisconnected_SendsError) {
           [](const media::AudioSourceParameters&,
              mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
                  factory_client,
-             mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
-                 controls_receiver,
              const media::AudioParameters& params, bool automatic_gain_control,
              uint32_t total_segments) {}),
       base::BindRepeating(&AssociateOutputForAec));

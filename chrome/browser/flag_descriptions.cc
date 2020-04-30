@@ -180,12 +180,6 @@ const char kAutofillEnableGoogleIssuedCardDescription[] =
     "When enabled, Google-issued cards will be available in the autofill "
     "suggestions.";
 
-const char kAutofillEnableLocalCardMigrationForNonSyncUserName[] =
-    "Enable local card migration flow for non-syncing users";
-const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[] =
-    "When enabled, the local card migration flow will be enabled for users who "
-    "have signed in but not enabled Chrome Sync.";
-
 const char kAutofillEnableStickyPaymentsBubbleName[] =
     "Enable Autofill payments sticky bubbles";
 const char kAutofillEnableStickyPaymentsBubbleDescription[] =

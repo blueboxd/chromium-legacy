@@ -411,11 +411,6 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
   if (update_local_data->IsEmpty())
     return;
 
-  // Notify observers that web apps will be uninstalled. |apps_to_delete| are
-  // still registered at this stage.
-  for (const AppId& app_id : update_local_data->apps_to_delete)
-    registrar_->NotifyWebAppUninstalled(app_id);
-
   std::vector<WebApp*> apps_to_install;
   for (const auto& web_app : update_local_data->apps_to_create)
     apps_to_install.push_back(web_app.get());

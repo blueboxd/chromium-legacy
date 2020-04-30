@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.site_settings;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -20,7 +19,6 @@ import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.chrome.R;
 import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
-import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 
 /**
  * A preference that displays a website's favicon and URL and, optionally, the amount of local
@@ -33,20 +31,12 @@ class WebsitePreference extends ChromeImageViewPreference {
     private final Website mSite;
     private final SiteSettingsCategory mCategory;
 
+    // TODO(crbug.com/1076571): Move these constants to dimens.xml
+    private static final int FAVICON_PADDING_DP = 4;
     private static final int TEXT_SIZE_SP = 13;
 
     // Whether the favicon has been fetched already.
     private boolean mFaviconFetched;
-
-    // Metrics for favicon processing.
-    // Sets the favicon corner radius to 12.5% of favicon size (2dp for a 16dp favicon)
-    private static final float FAVICON_CORNER_RADIUS_FRACTION = 0.125f;
-    private static final int FAVICON_PADDING_DP = 4;
-    // Sets the favicon text size to 62.5% of favicon size (10dp for a 16dp favicon)
-    private static final float FAVICON_TEXT_SIZE_FRACTION = 0.625f;
-    private static final int FAVICON_BACKGROUND_COLOR = 0xff969696;
-
-    private int mFaviconSizePx;
 
     WebsitePreference(Context context, SiteSettingsClient siteSettingsClient, Website site,
             SiteSettingsCategory category) {
@@ -55,7 +45,6 @@ class WebsitePreference extends ChromeImageViewPreference {
         mSite = site;
         mCategory = category;
         setWidgetLayoutResource(R.layout.website_features);
-        mFaviconSizePx = context.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
 
         // To make sure the layout stays stable throughout, we assign a
         // transparent drawable as the icon initially. This is so that
@@ -143,8 +132,7 @@ class WebsitePreference extends ChromeImageViewPreference {
 
         if (!mFaviconFetched) {
             // Start the favicon fetching. Will respond in onFaviconAvailable.
-            mSiteSettingsClient.getLocalFaviconImageForURL(
-                    faviconUrl(), mFaviconSizePx, this::onFaviconAvailable);
+            mSiteSettingsClient.getFaviconImageForURL(faviconUrl(), this::onFaviconAvailable);
             mFaviconFetched = true;
         }
 
@@ -155,19 +143,8 @@ class WebsitePreference extends ChromeImageViewPreference {
     }
 
     private void onFaviconAvailable(Bitmap image) {
-        Resources resources = getContext().getResources();
-        if (image == null) {
-            // Invalid favicon, produce a generic one.
-            float density = resources.getDisplayMetrics().density;
-            int faviconSizeDp = Math.round(mFaviconSizePx / density);
-            RoundedIconGenerator faviconGenerator =
-                    new RoundedIconGenerator(resources, faviconSizeDp, faviconSizeDp,
-                            Math.round(FAVICON_CORNER_RADIUS_FRACTION * faviconSizeDp),
-                            FAVICON_BACKGROUND_COLOR,
-                            Math.round(FAVICON_TEXT_SIZE_FRACTION * faviconSizeDp));
-            image = faviconGenerator.generateIconForUrl(faviconUrl());
+        if (image != null) {
+            setIcon(new BitmapDrawable(getContext().getResources(), image));
         }
-
-        setIcon(new BitmapDrawable(resources, image));
     }
 }

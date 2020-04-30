@@ -92,7 +92,7 @@ class CORE_EXPORT WebFrameWidgetBase
   base::WeakPtr<PaintWorkletPaintDispatcher> EnsureCompositorPaintDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* paint_task_runner);
 
-  virtual HitTestResult CoreHitTestResultAt(const gfx::Point&) = 0;
+  virtual HitTestResult CoreHitTestResultAt(const gfx::PointF&) = 0;
 
   // FrameWidget implementation.
   WebWidgetClient* Client() const final { return client_; }

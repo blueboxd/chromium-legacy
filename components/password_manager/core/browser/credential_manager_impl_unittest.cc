@@ -760,6 +760,32 @@ TEST_F(CredentialManagerImplTest,
 }
 
 TEST_F(CredentialManagerImplTest,
+       CredentialManagerOnPreventMediatedAccessIncognito) {
+  EXPECT_CALL(*client_, IsIncognito()).WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr).Times(0);
+  store_->AddLogin(form_);
+  RunAllPendingTasks();
+
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  ASSERT_EQ(1U, passwords.size());
+  ASSERT_EQ(1U, passwords[form_.signon_realm].size());
+  EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
+
+  bool called = false;
+  CredentialManagerError error;
+  std::vector<GURL> federations;
+  base::Optional<CredentialInfo> credential;
+  CallGet(CredentialMediationRequirement::kOptional, true, federations,
+          base::BindOnce(&GetCredentialCallback, &called, &error, &credential));
+  RunAllPendingTasks();
+
+  EXPECT_TRUE(called);
+  ASSERT_TRUE(credential);
+  EXPECT_FALSE(credential->password);
+  EXPECT_EQ(CredentialManagerError::SUCCESS, error);
+}
+
+TEST_F(CredentialManagerImplTest,
        CredentialManagerOnPreventSilentAccessWithAffiliation) {
   store_->AddLogin(form_);
   store_->AddLogin(cross_origin_form_);
@@ -1293,41 +1319,6 @@ TEST_F(CredentialManagerImplTest, ResetSkipZeroClickAfterPrompt) {
   EXPECT_EQ(1U, passwords[cross_origin_form_.signon_realm].size());
   EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
   EXPECT_TRUE(passwords[cross_origin_form_.signon_realm][0].skip_zero_click);
-}
-
-TEST_F(CredentialManagerImplTest, NoResetSkipZeroClickAfterPromptInIncognito) {
-  EXPECT_CALL(*client_, IsIncognito()).WillRepeatedly(testing::Return(true));
-  // Turn on the global zero-click flag which should be overriden by Incognito.
-  client_->set_zero_click_enabled(true);
-  form_.skip_zero_click = true;
-  store_->AddLogin(form_);
-  RunAllPendingTasks();
-
-  // Sanity check.
-  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
-  ASSERT_EQ(1U, passwords.size());
-  ASSERT_EQ(1U, passwords[form_.signon_realm].size());
-  EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
-
-  // Trigger a request which should return the credential found in |form_|, and
-  // wait for it to process.
-  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _))
-      .Times(testing::Exactly(1));
-  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(testing::Exactly(0));
-
-  bool called = false;
-  CredentialManagerError error;
-  base::Optional<CredentialInfo> credential;
-  CallGet(CredentialMediationRequirement::kOptional, true, std::vector<GURL>(),
-          base::BindOnce(&GetCredentialCallback, &called, &error, &credential));
-
-  RunAllPendingTasks();
-
-  // The form shouldn't become a zero-click one.
-  passwords = store_->stored_passwords();
-  ASSERT_EQ(1U, passwords.size());
-  ASSERT_EQ(1U, passwords[form_.signon_realm].size());
-  EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
 }
 
 TEST_F(CredentialManagerImplTest, IncognitoZeroClickRequestCredential) {

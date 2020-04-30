@@ -150,6 +150,9 @@ using RegisterProtocolHandlerExtensionBrowserTest =
     extensions::ExtensionBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerExtensionBrowserTest, Basic) {
+#if defined(OS_MACOSX)
+  ASSERT_TRUE(test::RegisterAppWithLaunchServices());
+#endif
   permissions::PermissionRequestManager* manager =
       permissions::PermissionRequestManager::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());

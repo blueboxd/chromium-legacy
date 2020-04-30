@@ -5,11 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_TOUCH_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_TOUCH_H_
 
-#include <memory>
-
 #include "base/containers/flat_map.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
 
@@ -20,10 +18,10 @@ class WaylandWindow;
 
 class WaylandTouch : public WaylandWindowObserver {
  public:
-  WaylandTouch(wl_touch* touch, const EventDispatchCallback& callback);
+  WaylandTouch(wl_touch* touch,
+               WaylandConnection* connection,
+               const EventDispatchCallback& callback);
   ~WaylandTouch() override;
-
-  void SetConnection(WaylandConnection* connection);
 
   void RemoveTouchPoints(const WaylandWindow* window);
 
@@ -69,8 +67,8 @@ class WaylandTouch : public WaylandWindowObserver {
   static void Frame(void* data, wl_touch* obj);
   static void Cancel(void* data, wl_touch* obj);
 
-  WaylandConnection* connection_ = nullptr;
   wl::Object<wl_touch> obj_;
+  WaylandConnection* const connection_;
   EventDispatchCallback callback_;
   TouchPoints current_points_;
 

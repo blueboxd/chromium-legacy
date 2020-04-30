@@ -9,6 +9,7 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 
 namespace ui {
@@ -24,7 +25,7 @@ TEST(WaylandConnectionTest, Ping) {
   ASSERT_TRUE(server.Start(kXdgVersionStable));
   WaylandConnection connection;
   ASSERT_TRUE(connection.Initialize());
-  connection.StartProcessingEvents();
+  connection.event_source()->StartProcessingEvents();
 
   base::RunLoop().RunUntilIdle();
   server.Pause();

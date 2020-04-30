@@ -515,6 +515,13 @@ void LocalDOMWindow::AddConsoleMessageImpl(ConsoleMessage* console_message,
   GetFrame()->Console().AddMessage(console_message, discard_duplicates);
 }
 
+void LocalDOMWindow::AddInspectorIssue(
+    mojom::blink::InspectorIssueInfoPtr info) {
+  if (document()) {
+    document()->AddInspectorIssue(InspectorIssue::Create(std::move(info)));
+  }
+}
+
 void LocalDOMWindow::CountUse(mojom::WebFeature feature) {
   if (!GetFrame())
     return;

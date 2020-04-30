@@ -40,9 +40,7 @@ OutputStream::OutputStream(
     const std::string& output_device_id,
     const media::AudioParameters& params,
     LoopbackCoordinator* coordinator,
-    const base::UnguessableToken& loopback_group_id,
-    StreamMonitorCoordinator* stream_monitor_coordinator,
-    const base::UnguessableToken& processing_id)
+    const base::UnguessableToken& loopback_group_id)
     : foreign_socket_(),
       delete_callback_(std::move(delete_callback)),
       receiver_(this, std::move(stream_receiver)),
@@ -55,13 +53,7 @@ OutputStream::OutputStream(
                    : base::DoNothing(),
               params,
               &foreign_socket_),
-      controller_(audio_manager,
-                  this,
-                  params,
-                  output_device_id,
-                  &reader_,
-                  stream_monitor_coordinator,
-                  processing_id),
+      controller_(audio_manager, this, params, output_device_id, &reader_),
       loopback_group_id_(loopback_group_id) {
   DCHECK(receiver_.is_bound());
   DCHECK(created_callback);
@@ -253,9 +245,7 @@ void OutputStream::OnControllerError() {
 void OutputStream::OnLog(base::StringPiece message) {
   // No sequence check: |log_| is thread-safe.
   if (log_) {
-    log_->OnLogMessage(base::StringPrintf("%s [id=%s]",
-                                          message.as_string().c_str(),
-                                          processing_id().ToString().c_str()));
+    log_->OnLogMessage(base::StringPrintf("%s", message.as_string().c_str()));
   }
 }
 
@@ -309,9 +299,7 @@ void OutputStream::SendLogMessage(const char* format, ...) {
     return;
   va_list args;
   va_start(args, format);
-  log_->OnLogMessage(
-      "audio::OS::" + base::StringPrintV(format, args) +
-      base::StringPrintf(" [id=%s]", processing_id().ToString().c_str()));
+  log_->OnLogMessage("audio::OS::" + base::StringPrintV(format, args));
   va_end(args);
 }
 

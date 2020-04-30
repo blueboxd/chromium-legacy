@@ -64,8 +64,7 @@ class AppShortcutManager : public AppRegistrarObserver {
   using GetShortcutInfoCallback =
       base::OnceCallback<void(std::unique_ptr<ShortcutInfo>)>;
   // Asynchronously gets the information required to create a shortcut for
-  // |app_id| including all the icon bitmaps. Returns nullptr if app_id is
-  // uninstalled or becomes uninstalled during the asynchronous read of icons.
+  // |app_id|.
   virtual void GetShortcutInfoForApp(const AppId& app_id,
                                      GetShortcutInfoCallback callback) = 0;
 

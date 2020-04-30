@@ -136,6 +136,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self hideDeleteButton];
     [self setSwitchItemEnabled:YES itemType:ItemTypeAutofillCardSwitch];
   }
+  [self updateUIForEditState];
 }
 
 - (void)viewWillAppear:(BOOL)animated {

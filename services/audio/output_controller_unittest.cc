@@ -99,17 +99,6 @@ class MockOutputControllerSyncReader : public OutputController::SyncReader {
   DISALLOW_COPY_AND_ASSIGN(MockOutputControllerSyncReader);
 };
 
-class MockStreamMonitor : public StreamMonitor {
- public:
-  MockStreamMonitor() = default;
-
-  MOCK_METHOD1(OnStreamActive, void(Snoopable* snoopable));
-  MOCK_METHOD1(OnStreamInactive, void(Snoopable* snoopable));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockStreamMonitor);
-};
-
 // Wraps an AudioOutputStream instance, calling DidXYZ() mock methods for test
 // verification of controller behavior. If a null AudioOutputStream pointer is
 // provided to the constructor, a "data pump" thread will be run between the
@@ -328,16 +317,13 @@ ACTION(PopulateBuffer) {
 
 class OutputControllerTest : public ::testing::Test {
  public:
-  OutputControllerTest()
-      : group_id_(base::UnguessableToken::Create()),
-        processing_id_(base::UnguessableToken::Create()) {}
+  OutputControllerTest() : group_id_(base::UnguessableToken::Create()) {}
 
   ~OutputControllerTest() override { audio_manager_.Shutdown(); }
 
   void SetUp() override {
     controller_.emplace(&audio_manager_, &mock_event_handler_, GetTestParams(),
-                        std::string(), &mock_sync_reader_,
-                        &stream_monitor_coordinator_, processing_id_);
+                        std::string(), &mock_sync_reader_);
     controller_->SetVolume(kTestVolume);
   }
 
@@ -443,14 +429,6 @@ class OutputControllerTest : public ::testing::Test {
 
   Snoopable* GetSnoopable() { return &(*controller_); }
 
-  void JoinProcessingGroup(StreamMonitor* monitor) {
-    stream_monitor_coordinator_.RegisterMember(processing_id_, monitor);
-  }
-
-  void LeaveProcessingGroup(StreamMonitor* monitor) {
-    stream_monitor_coordinator_.UnregisterMember(processing_id_, monitor);
-  }
-
   void Close() {
     EXPECT_CALL(mock_sync_reader_, Close());
     controller_->Close();
@@ -495,10 +473,8 @@ class OutputControllerTest : public ::testing::Test {
   base::TestMessageLoop message_loop_;
   AudioManagerForControllerTest audio_manager_;
   base::UnguessableToken group_id_;
-  base::UnguessableToken processing_id_;
   StrictMock<MockOutputControllerSyncReader> mock_sync_reader_;
   base::Optional<OutputController> controller_;
-  StreamMonitorCoordinator stream_monitor_coordinator_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputControllerTest);
 };
@@ -714,40 +690,6 @@ TEST_F(OutputControllerTest, SnoopWhileMuting) {
   Close();
   EXPECT_EQ(mute_stream, last_created_stream());
   EXPECT_EQ(mute_stream, last_closed_stream());
-}
-
-TEST_F(OutputControllerTest, InformsStreamMonitorsAlreadyInGroup) {
-  MockStreamMonitor monitor;
-  EXPECT_CALL(monitor, OnStreamActive(GetSnoopable()));
-  EXPECT_CALL(monitor, OnStreamInactive(GetSnoopable()));
-  JoinProcessingGroup(&monitor);
-  Create();
-  Play();
-  Close();
-  LeaveProcessingGroup(&monitor);
-}
-
-TEST_F(OutputControllerTest, InformsStreamMonitorsJoiningInGroup) {
-  MockStreamMonitor monitor;
-  EXPECT_CALL(monitor, OnStreamActive(GetSnoopable()));
-  EXPECT_CALL(monitor, OnStreamInactive(GetSnoopable()));
-  Create();
-  Play();
-  JoinProcessingGroup(&monitor);
-  Close();
-  LeaveProcessingGroup(&monitor);
-}
-
-TEST_F(OutputControllerTest,
-       DoesNotInformStreamMonitorsJoiningInGroupAfterClose) {
-  MockStreamMonitor monitor;
-  EXPECT_CALL(monitor, OnStreamActive(GetSnoopable())).Times(0);
-  EXPECT_CALL(monitor, OnStreamInactive(GetSnoopable())).Times(0);
-  Create();
-  Play();
-  Close();
-  JoinProcessingGroup(&monitor);
-  LeaveProcessingGroup(&monitor);
 }
 
 TEST_F(OutputControllerTest, FlushWhenStreamIsPlayingTriggersError) {

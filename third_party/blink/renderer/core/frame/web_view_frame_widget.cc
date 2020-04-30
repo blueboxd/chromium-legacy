@@ -206,11 +206,12 @@ void WebViewFrameWidget::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   web_view_->DidChangeRootLayer(!!root_layer);
 }
 
-WebHitTestResult WebViewFrameWidget::HitTestResultAt(const gfx::Point& point) {
+WebHitTestResult WebViewFrameWidget::HitTestResultAt(const gfx::PointF& point) {
   return web_view_->HitTestResultAt(point);
 }
 
-HitTestResult WebViewFrameWidget::CoreHitTestResultAt(const gfx::Point& point) {
+HitTestResult WebViewFrameWidget::CoreHitTestResultAt(
+    const gfx::PointF& point) {
   return web_view_->CoreHitTestResultAt(point);
 }
 

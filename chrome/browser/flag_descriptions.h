@@ -120,9 +120,6 @@ extern const char kAutofillEnableCompanyNameDescription[];
 extern const char kAutofillEnableGoogleIssuedCardName[];
 extern const char kAutofillEnableGoogleIssuedCardDescription[];
 
-extern const char kAutofillEnableLocalCardMigrationForNonSyncUserName[];
-extern const char kAutofillEnableLocalCardMigrationForNonSyncUserDescription[];
-
 extern const char kAutofillEnableStickyPaymentsBubbleName[];
 extern const char kAutofillEnableStickyPaymentsBubbleDescription[];
 

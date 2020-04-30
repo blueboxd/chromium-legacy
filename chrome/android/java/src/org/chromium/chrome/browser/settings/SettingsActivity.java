@@ -266,7 +266,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
     public void onAttachFragment(Fragment fragment) {
         if (fragment instanceof SiteSettingsPreferenceFragment) {
             ((SiteSettingsPreferenceFragment) fragment)
-                    .setSiteSettingsClient(new ChromeSiteSettingsClient());
+                    .setSiteSettingsClient(new ChromeSiteSettingsClient(this));
         }
     }
 

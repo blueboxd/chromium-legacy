@@ -392,9 +392,6 @@ TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_FCMChannel) {
 }
 
 TEST_F(SharingDeviceSourceSyncTest, GetDeviceCandidates_SenderIDChannel) {
-  scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingSendViaSync},
-      /*disabled_features=*/{});
   test_sync_service_.SetActiveDataTypes(
       {syncer::DEVICE_INFO, syncer::SHARING_MESSAGE});
   auto device_source = CreateDeviceSource(/*wait_until_ready=*/true);

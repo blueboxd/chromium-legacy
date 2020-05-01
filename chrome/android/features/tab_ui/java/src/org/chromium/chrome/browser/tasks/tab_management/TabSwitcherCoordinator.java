@@ -84,7 +84,6 @@ public class TabSwitcherCoordinator
     private TabAttributeCache mTabAttributeCache;
     private ViewGroup mContainer;
     private TabCreatorManager mTabCreatorManager;
-    private boolean mIsInitialized;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
@@ -192,8 +191,6 @@ public class TabSwitcherCoordinator
             DynamicResourceLoader dynamicResourceLoader,
             SnackbarManager.SnackbarManageable snackbarManageable,
             ModalDialogManager modalDialogManager) {
-        if (mIsInitialized) return;
-
         // For tab switcher in carousel mode, the selection editor should still follow grid style.
         int selectionEditorMode = mMode == TabListCoordinator.TabListMode.CAROUSEL
                 ? TabListCoordinator.TabListMode.GRID
@@ -243,7 +240,6 @@ public class TabSwitcherCoordinator
                 mMessageCardProviderCoordinator.subscribeMessageService(iphMessageService);
             }
         }
-        mIsInitialized = true;
     }
 
     // TabSwitcher implementation.

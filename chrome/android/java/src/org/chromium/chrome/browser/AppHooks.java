@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
 import org.chromium.components.browser_ui.widget.FeatureHighlightProvider;
+import org.chromium.components.external_intents.AuthenticatorNavigationInterceptor;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
 import org.chromium.policy.AppRestrictionsProvider;
@@ -108,11 +109,8 @@ public abstract class AppHooks {
     /**
      * Return a {@link AuthenticatorNavigationInterceptor} for the given {@link Tab}.
      * This can be null if there are no applicable interceptor to be built.
-     * NOTE: This method will be transitioned to talk in terms of the //components-level interface
-     * once downstream has been transitioned.
      */
-    public org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor
-    createAuthenticatorNavigationInterceptor(Tab tab) {
+    public AuthenticatorNavigationInterceptor createAuthenticatorNavigationInterceptor(Tab tab) {
         return null;
     }
 
@@ -122,8 +120,7 @@ public abstract class AppHooks {
      * NOTE: This method exists only to allow downstream to transition to talking in terms of the
      * //components-level interface. It will be deleted once the transition is complete.
      */
-    public org.chromium.components.external_intents.AuthenticatorNavigationInterceptor
-    createAuthenticatorNavigationInterceptorV2(Tab tab) {
+    public AuthenticatorNavigationInterceptor createAuthenticatorNavigationInterceptorV2(Tab tab) {
         return null;
     }
 

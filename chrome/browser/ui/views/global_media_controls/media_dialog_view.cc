@@ -157,6 +157,11 @@ MediaDialogView::GetNotificationsForTesting() const {
   return active_sessions_view_->notifications_for_testing();
 }
 
+const MediaNotificationListView* MediaDialogView::GetListViewForTesting()
+    const {
+  return active_sessions_view_;
+}
+
 MediaDialogView::MediaDialogView(views::View* anchor_view,
                                  MediaNotificationService* service)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),

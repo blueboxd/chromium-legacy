@@ -56,6 +56,8 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   const std::map<const std::string, MediaNotificationContainerImplView*>&
   GetNotificationsForTesting() const;
 
+  const MediaNotificationListView* GetListViewForTesting() const;
+
  private:
   explicit MediaDialogView(views::View* anchor_view,
                            MediaNotificationService* service);

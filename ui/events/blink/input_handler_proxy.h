@@ -36,9 +36,9 @@ class TestInputHandlerProxy;
 }  // namespace test
 
 class CompositorThreadEventQueue;
-class ElasticOverscrollController;
 class EventWithCallback;
 class InputHandlerProxyClient;
+class InputScrollElasticityController;
 class ScrollPredictor;
 class SynchronousInputHandler;
 class SynchronousInputHandlerProxy;
@@ -58,8 +58,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
                     bool force_input_to_main_thread);
   ~InputHandlerProxy() override;
 
-  ElasticOverscrollController* elastic_overscroll_controller() {
-    return elastic_overscroll_controller_.get();
+  InputScrollElasticityController* scroll_elasticity_controller() {
+    return scroll_elasticity_controller_.get();
   }
 
   enum EventDisposition {
@@ -210,8 +210,9 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   bool in_inertial_scrolling_ = false;
   bool scroll_sequence_ignored_;
 
-  // Used to animate rubber-band/bounce over-scroll effect.
-  std::unique_ptr<ElasticOverscrollController> elastic_overscroll_controller_;
+  // Used to animate rubber-band over-scroll effect on Mac.
+  std::unique_ptr<InputScrollElasticityController>
+      scroll_elasticity_controller_;
 
   // The merged result of the last touch event with previous touch events
   // within a single touch sequence. This value will get returned for

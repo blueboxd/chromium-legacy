@@ -17085,7 +17085,7 @@
       'owners': ['catan-team@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'supported_on': ['chrome.*:79-79', 'chrome_os:79-79'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,

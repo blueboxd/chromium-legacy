@@ -6,9 +6,6 @@ package org.chromium.components.external_intents;
 
 /**
  * Handles intercepting navigation requests for an external authenticator application.
- * NOTE: DO NOT CHANGE ANYTHING IN THIS INTERFACE. It needs to stay identical to the one in //chrome
- * until downstream has been transitioned to use this one, at which point this comment will be
- * eliminated.
  */
 public interface AuthenticatorNavigationInterceptor {
     /**

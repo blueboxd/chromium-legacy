@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/network_service_instance.h"
@@ -156,6 +157,7 @@ void FileTasksNotifier::NotifyObservers(
   std::vector<FileTasksObserver::FileOpenEvent> opens;
   for (const auto& path : paths) {
     if (profile_->GetPath().IsParent(path) ||
+        util::GetMyFilesFolderForProfile(profile_).IsParent(path) ||
         base::FilePath("/run/arc/sdcard/write/emulated/0").IsParent(path) ||
         base::FilePath("/media/fuse").IsParent(path)) {
       opens.push_back({path, open_type});

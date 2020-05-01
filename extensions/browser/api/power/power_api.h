@@ -55,9 +55,9 @@ class PowerReleaseKeepAwakeFunction : public ExtensionFunction {
 class PowerAPI : public BrowserContextKeyedAPI,
                  public extensions::ExtensionRegistryObserver {
  public:
-  typedef base::Callback<void(device::mojom::WakeLockType)>
-      ActivateWakeLockFunction;
-  typedef base::Callback<void()> CancelWakeLockFunction;
+  using ActivateWakeLockFunction =
+      base::RepeatingCallback<void(device::mojom::WakeLockType)>;
+  using CancelWakeLockFunction = base::RepeatingCallback<void()>;
 
   static PowerAPI* Get(content::BrowserContext* context);
 
@@ -82,8 +82,8 @@ class PowerAPI : public BrowserContextKeyedAPI,
   // Replaces the functions that will be called to activate and cancel the wake
   // lock. Passing empty callbacks will revert to the default.
   void SetWakeLockFunctionsForTesting(
-      const ActivateWakeLockFunction& activate_function,
-      const CancelWakeLockFunction& cancel_function);
+      ActivateWakeLockFunction activate_function,
+      CancelWakeLockFunction cancel_function);
 
   // Overridden from extensions::ExtensionRegistryObserver.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,

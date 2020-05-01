@@ -11,7 +11,6 @@
 #include "cc/input/scroll_elasticity_helper.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
-#include "ui/events/blink/elastic_overscroll_controller.h"
 
 // InputScrollElasticityController is based on
 // WebKit/Source/platform/mac/ScrollElasticityController.h
@@ -46,12 +45,12 @@ struct InputHandlerScrollResult;
 
 namespace ui {
 
-class InputScrollElasticityController : public ElasticOverscrollController {
+class InputScrollElasticityController {
  public:
   explicit InputScrollElasticityController(cc::ScrollElasticityHelper* helper);
-  ~InputScrollElasticityController() override;
+  virtual ~InputScrollElasticityController();
 
-  base::WeakPtr<ElasticOverscrollController> GetWeakPtr() override;
+  base::WeakPtr<InputScrollElasticityController> GetWeakPtr();
 
   // These methods that are "real" should only be called if the associated
   // event is not synthetic. Otherwise, calling them will disrupt elastic
@@ -71,11 +70,11 @@ class InputScrollElasticityController : public ElasticOverscrollController {
   // this class may disregard some scrolls that come in at unexpected times.
   void ObserveGestureEventAndResult(
       const blink::WebGestureEvent& gesture_event,
-      const cc::InputHandlerScrollResult& scroll_result) override;
+      const cc::InputHandlerScrollResult& scroll_result);
 
-  void Animate(base::TimeTicks time) override;
+  void Animate(base::TimeTicks time);
 
-  void ReconcileStretchAndScroll() override;
+  void ReconcileStretchAndScroll();
 
  private:
   enum State {

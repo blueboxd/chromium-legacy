@@ -12,13 +12,11 @@
 #include "base/files/file_util.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
-#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/test/task_environment.h"
 #include "fuchsia/base/context_provider_test_connector.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
-#include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_devtools_list_fetcher.h"
 #include "fuchsia/base/test_navigation_listener.h"
@@ -29,27 +27,6 @@
 namespace {
 
 const char kTestServerRoot[] = FILE_PATH_LITERAL("fuchsia/engine/test/data");
-
-base::Optional<base::Value> ReadConfigFile(base::FilePath config_file_path) {
-  char data[4096];
-  int length = base::ReadFile(config_file_path, data, 4096);
-  if (length == -1)
-    return base::nullopt;
-
-  base::StringPiece json(data, length);
-  return base::JSONReader::Read(base::StringPiece(json));
-}
-
-bool WriteConfigFile(base::FilePath config_file_path,
-                     const base::StringPiece& config) {
-  base::File config_file(config_file_path,
-                         base::File::FLAG_OPEN | base::File::FLAG_WRITE);
-  if (config_file.error_details() != base::File::FILE_OK)
-    return false;
-
-  int result = config_file.Write(0, config.data(), config.size());
-  return result != -1;
-}
 
 }  // namespace
 
@@ -82,6 +59,8 @@ class WebEngineDebugIntegrationTest : public testing::Test {
     base::FileEnumerator file_enum(
         base::FilePath("/hub/c/context_provider.cmx"), false,
         base::FileEnumerator::DIRECTORIES);
+    base::FilePath web_engine_path = file_enum.Next();
+    ASSERT_FALSE(web_engine_path.empty());
 
     for (auto dir = file_enum.Next(); !dir.empty(); dir = file_enum.Next()) {
       std::string args;
@@ -93,19 +72,19 @@ class WebEngineDebugIntegrationTest : public testing::Test {
 
       if (args.find(test_arg) != std::string::npos) {
         // There should only one instance of WebEngine with |test_arg|.
-        EXPECT_TRUE(web_engine_path_.empty());
+        EXPECT_TRUE(web_engine_path.empty());
 
-        web_engine_path_ = dir;
+        web_engine_path = dir;
 
         // Keep iterating to check that there are no other matching instances.
       }
     }
 
     // Check that we've found the WebEngine instance with |test_arg|.
-    ASSERT_FALSE(web_engine_path_.empty());
+    ASSERT_FALSE(web_engine_path.empty());
 
     debug_dir_ = std::make_unique<sys::ServiceDirectory>(
-        base::fuchsia::OpenDirectory(web_engine_path_.Append("out/debug")));
+        base::fuchsia::OpenDirectory(web_engine_path.Append("out/debug")));
     debug_dir_->Connect(debug_.NewRequest());
 
     // Attach the DevToolsListener. EnableDevTools has an acknowledgement
@@ -152,7 +131,6 @@ class WebEngineDebugIntegrationTest : public testing::Test {
 
   TestDebugListener dev_tools_listener_;
   fidl::Binding<fuchsia::web::DevToolsListener> dev_tools_listener_binding_;
-  base::FilePath web_engine_path_;
   std::unique_ptr<sys::ServiceDirectory> debug_dir_;
   fuchsia::web::ContextProviderPtr web_context_provider_;
   fidl::InterfaceHandle<fuchsia::sys::ComponentController>
@@ -342,95 +320,4 @@ TEST_F(WebEngineDebugIntegrationTest, DebugAndUserService) {
   // DevTools port.
   frame_data.context.Unbind();
   dev_tools_listener_.RunUntilNumberOfPortsIs(0);
-}
-
-// Checks the default and override configuration files in the debug directory
-// behave properly.
-// Due to potential side effects with other integration tests, these checks need
-// to be kept in a single test.
-TEST_F(WebEngineDebugIntegrationTest, ConfigOverride) {
-  base::FilePath default_config_path =
-      web_engine_path_.Append("out/debug/config-default.json");
-  base::FilePath config_override_path =
-      web_engine_path_.Append("out/debug/config-override.json");
-  const std::string kInvalidValue = "[foo";
-  const std::string kNonDictionayJson = "[\"foo\"]";
-  const std::string kDisableJavaScriptConfig =
-      "{\"command-line-args\":{\"blink-settings\":\"scriptEnabled=false\"}}";
-
-  {
-    // Read the default configuration. It should be a valid JSON dictionary.
-    base::Optional<base::Value> default_config =
-        ReadConfigFile(default_config_path);
-    ASSERT_TRUE(default_config);
-    EXPECT_TRUE(default_config->is_dict());
-
-    // Check the default configuration is read-only.
-    EXPECT_FALSE(WriteConfigFile(default_config_path, "foo"));
-  }
-
-  {
-    // Read the original config override, it should be an empty dictionary.
-    base::Optional<base::Value> config_override =
-        ReadConfigFile(config_override_path);
-    ASSERT_TRUE(config_override);
-    EXPECT_TRUE(config_override->is_dict());
-    EXPECT_TRUE(config_override->DictEmpty());
-  }
-
-  {
-    // Attempt to write a non-JSON value to the config override and read the
-    // value again, it should still be an empty dictionary.
-    ASSERT_TRUE(WriteConfigFile(config_override_path, kInvalidValue));
-    base::Optional<base::Value> config_override =
-        ReadConfigFile(config_override_path);
-    ASSERT_TRUE(config_override);
-    EXPECT_TRUE(config_override->is_dict());
-    EXPECT_TRUE(config_override->DictEmpty());
-  }
-
-  {
-    // Attempt to write a non-dictionary JSON value to the config override and
-    // read the value again, it should still be an empty dictionary.
-    ASSERT_TRUE(WriteConfigFile(config_override_path, kNonDictionayJson));
-    base::Optional<base::Value> config_override =
-        ReadConfigFile(config_override_path);
-    ASSERT_TRUE(config_override);
-    EXPECT_TRUE(config_override->is_dict());
-    EXPECT_TRUE(config_override->DictEmpty());
-  }
-
-  {
-    // Write a dictionary JSON value to the config override. The file should
-    // have been updated.
-    ASSERT_TRUE(
-        WriteConfigFile(config_override_path, kDisableJavaScriptConfig));
-    base::Optional<base::Value> config_override =
-        ReadConfigFile(config_override_path);
-    ASSERT_TRUE(config_override);
-    EXPECT_TRUE(config_override->is_dict());
-    EXPECT_FALSE(config_override->DictEmpty());
-
-    // Load a page and attempt to execute JavaScript. JavaScript execution
-    // should fail and return a "null" value.
-    std::string url = test_server_.GetURL("/title1.html").spec();
-    TestContextAndFrame frame_data(web_context_provider_.get(),
-                                   UserModeDebugging::kDisabled, url);
-
-    base::Optional<base::Value> value =
-        cr_fuchsia::ExecuteJavaScript(frame_data.frame.get(), "42;");
-    ASSERT_TRUE(value);
-    EXPECT_TRUE(value->is_none());
-  }
-
-  {
-    // Clear the config override and read the value again, it should be an empty
-    // dictionary.
-    ASSERT_TRUE(WriteConfigFile(config_override_path, "{}"));
-    base::Optional<base::Value> config_override =
-        ReadConfigFile(config_override_path);
-    ASSERT_TRUE(config_override);
-    EXPECT_TRUE(config_override->is_dict());
-    EXPECT_TRUE(config_override->DictEmpty());
-  }
 }

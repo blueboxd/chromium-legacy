@@ -674,8 +674,8 @@ void WidgetInputHandlerManager::ObserveGestureEventOnInputHandlingThread(
     const cc::InputHandlerScrollResult& scroll_result) {
   if (!input_handler_proxy_)
     return;
-  DCHECK(input_handler_proxy_->elastic_overscroll_controller());
-  input_handler_proxy_->elastic_overscroll_controller()
+  DCHECK(input_handler_proxy_->scroll_elasticity_controller());
+  input_handler_proxy_->scroll_elasticity_controller()
       ->ObserveGestureEventAndResult(gesture_event, scroll_result);
 }
 

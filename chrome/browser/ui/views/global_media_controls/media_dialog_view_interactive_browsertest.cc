@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view_observer.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -386,9 +387,11 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
     observer.Wait();
   }
 
-  void WaitForStop() {
+  void WaitForStop() { WaitForStop(GetActiveWebContents()); }
+
+  void WaitForStop(content::WebContents* web_contents) {
     content::MediaStartStopObserver observer(
-        GetActiveWebContents(), content::MediaStartStopObserver::Type::kStop);
+        web_contents, content::MediaStartStopObserver::Type::kStop);
     observer.Wait();
   }
 
@@ -470,6 +473,25 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
 
   content::WebContents* GetActiveWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  bool IsPlayingSessionDisplayedFirst() {
+    bool seen_paused = false;
+    for (views::View* view : MediaDialogView::GetDialogViewForTesting()
+                                 ->GetListViewForTesting()
+                                 ->contents()
+                                 ->children()) {
+      MediaNotificationContainerImplView* notification =
+          static_cast<MediaNotificationContainerImplView*>(view);
+
+      if (seen_paused && notification->is_playing_for_testing())
+        return false;
+
+      if (!seen_paused && !notification->is_playing_for_testing())
+        seen_paused = true;
+    }
+
+    return true;
   }
 
  protected:
@@ -701,4 +723,37 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
 
   EnablePictureInPicture();
   WaitForPictureInPictureButtonVisibility(true);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
+                       PlayingSessionAlwaysDisplayFirst) {
+  OpenTestURL();
+  StartPlayback();
+  WaitForStart();
+
+  content::WebContents* first_web_contents = GetActiveWebContents();
+
+  OpenDifferentMetadataURLInNewTab();
+  StartPlayback();
+  WaitForStart();
+
+  WaitForVisibleToolbarIcon();
+  EXPECT_TRUE(IsToolbarIconVisible());
+
+  ClickToolbarIcon();
+  WaitForDialogOpened();
+  EXPECT_TRUE(IsDialogVisible());
+
+  // Pause the first session.
+  ClickPauseButtonOnDialog();
+  WaitForStop(first_web_contents);
+
+  // Reopen dialog.
+  ClickToolbarIcon();
+  EXPECT_FALSE(IsDialogVisible());
+  ClickToolbarIcon();
+  WaitForDialogOpened();
+  EXPECT_TRUE(IsDialogVisible());
+
+  EXPECT_TRUE(IsPlayingSessionDisplayedFirst());
 }

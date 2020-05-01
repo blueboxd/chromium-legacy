@@ -61,7 +61,7 @@ class MediaNotificationContainerImplView
   // media_message_center::MediaNotificationContainer:
   void OnExpanded(bool expanded) override;
   void OnMediaSessionInfoChanged(
-      const media_session::mojom::MediaSessionInfoPtr& session_info) override {}
+      const media_session::mojom::MediaSessionInfoPtr& session_info) override;
   void OnMediaSessionMetadataChanged() override;
   void OnVisibleActionsChanged(
       const base::flat_set<media_session::mojom::MediaSessionAction>& actions)
@@ -92,6 +92,8 @@ class MediaNotificationContainerImplView
   media_message_center::MediaNotificationViewImpl* view_for_testing() {
     return view_;
   }
+
+  bool is_playing_for_testing() { return is_playing_; }
 
  private:
   class DismissButton;
@@ -150,6 +152,8 @@ class MediaNotificationContainerImplView
   // True if the current mouse press has been dragged enough to be considered a
   // drag instead of a button click.
   bool is_dragging_ = false;
+
+  bool is_playing_ = false;
 
   base::ObserverList<MediaNotificationContainerObserver> observers_;
 

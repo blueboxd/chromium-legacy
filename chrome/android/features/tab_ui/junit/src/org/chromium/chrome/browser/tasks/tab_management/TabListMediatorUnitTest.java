@@ -78,6 +78,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -342,11 +343,13 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void initializesWithCurrentTabs() {
         initAndAssertAllProperties();
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void updatesTitle_WithoutStoredTitle() {
         initAndAssertAllProperties();
 
@@ -359,6 +362,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures(TAB_GROUPS_CONTINUATION_ANDROID)
     public void updatesTitle_WithStoredTitle_TabGroup() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -381,6 +385,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void updatesFavicon_SingleTab_GTS() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
@@ -394,6 +399,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void updatesFavicon_SingleTab_NonGTS() {
         initAndAssertAllProperties();
 
@@ -406,6 +412,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void updatesFavicon_TabGroup_GTS() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
@@ -421,6 +428,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void updateFavicon_StaleIndex() {
         initAndAssertAllProperties();
         mModel.get(0).model.set(TabProperties.FAVICON, null);
@@ -440,6 +448,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void sendsSelectSignalCorrectly() {
         initAndAssertAllProperties();
 
@@ -452,6 +461,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void sendsCloseSignalCorrectly() {
         initAndAssertAllProperties();
 
@@ -463,6 +473,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void sendsMoveTabSignalCorrectlyWithoutGroup() {
         initAndAssertAllProperties();
         TabGridItemTouchHelperCallback itemTouchHelperCallback = getItemTouchHelperCallback();
@@ -474,6 +485,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void sendsMoveTabSignalCorrectlyWithGroup() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -488,6 +500,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void sendsMoveTabSignalCorrectlyWithinGroup() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG);
 
@@ -497,6 +510,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void sendsMergeTabSignalCorrectly() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -518,6 +532,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void neverSendsMergeTabSignal_Without_Group() {
         initAndAssertAllProperties();
 
@@ -538,6 +553,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void sendsUngroupSignalCorrectly() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG);
 
@@ -558,6 +574,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabClosure() {
         initAndAssertAllProperties();
 
@@ -570,6 +587,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabClosure_IgnoresUpdatesForTabsOutsideOfModel() {
         initAndAssertAllProperties();
 
@@ -580,6 +598,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabAddition_RestoreNotComplete() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
@@ -602,6 +621,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabAddition_Restore() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
@@ -633,6 +653,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabAddition_Restore_SyncingTabListModelWithTabModel() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
         // Mock that tab restoring stage is over.
@@ -658,6 +679,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabAddition_GTS() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
@@ -682,6 +704,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabAddition_GTS_Skip() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
@@ -704,6 +727,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabAddition_GTS_Middle() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
@@ -728,6 +752,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabAddition_Dialog_End() {
         initAndAssertAllProperties();
         doReturn(true).when(mTabModelFilter).isTabModelRestored();
@@ -748,6 +773,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabAddition_Dialog_Middle() {
         initAndAssertAllProperties();
         doReturn(true).when(mTabModelFilter).isTabModelRestored();
@@ -768,6 +794,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabAddition_Dialog_Skip() {
         initAndAssertAllProperties();
         doReturn(true).when(mTabModelFilter).isTabModelRestored();
@@ -784,6 +811,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabSelection() {
         initAndAssertAllProperties();
 
@@ -796,6 +824,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabClosureUndone() {
         initAndAssertAllProperties();
 
@@ -813,6 +842,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMergeIntoGroup() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -843,6 +873,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMoveOutOfGroup_GTS_Moved_Tab_Selected() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -871,6 +902,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMoveOutOfGroup_GTS_Origin_Tab_Selected() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -899,6 +931,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMoveOutOfGroup_GTS_LastTab() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -918,6 +951,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMoveOutOfGroup_Dialog() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG);
 
@@ -939,6 +973,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMoveOutOfGroup_Dialog_LastTab() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG);
 
@@ -956,6 +991,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMoveOutOfGroup_Strip() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_STRIP);
 
@@ -977,6 +1013,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMovementWithoutGroup_Forward() {
         initAndAssertAllProperties();
 
@@ -994,6 +1031,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMovementWithoutGroup_Backward() {
         initAndAssertAllProperties();
 
@@ -1011,6 +1049,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMovementWithGroup_Forward() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -1031,6 +1070,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMovementWithGroup_Backward() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -1051,6 +1091,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMovementWithinGroup_Forward() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG);
 
@@ -1073,6 +1114,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void tabMovementWithinGroup_Backward() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG);
 
@@ -1095,6 +1137,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void undoGrouped_One_Adjacent_Tab() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -1119,6 +1162,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void undoForwardGrouped_One_Tab() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -1143,6 +1187,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void undoBackwardGrouped_One_Tab() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -1167,6 +1212,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void updateSpanCount_Portrait_SingleWindow() {
         initAndAssertAllProperties();
         // Mock that we are switching to portrait mode.
@@ -1181,6 +1227,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void updateSpanCount_Landscape_SingleWindow() {
         initAndAssertAllProperties();
         // Mock that we are switching to landscape mode.
@@ -1196,6 +1243,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void updateSpanCount_MultiWindow() {
         initAndAssertAllProperties();
         Configuration portraitConfiguration = new Configuration();
@@ -1215,6 +1263,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void resetWithListOfTabs_MruOrder() {
         List<Tab> tabs = new ArrayList<>();
         for (int i = 0; i < mTabModel.getCount(); i++) {
@@ -1248,6 +1297,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void getLatestTitle_NotGTS() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG);
@@ -1268,6 +1318,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void getLatestTitle_SingleTab_GTS() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1288,6 +1339,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void getLatestTitle_Stored_GTS() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1308,6 +1360,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void updateTabGroupTitle_GTS() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1327,6 +1380,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void tabGroupTitleEditor_storeTitle() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1342,6 +1396,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void tabGroupTitleEditor_deleteTitle() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1361,6 +1416,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void addSpecialItem() {
         PropertyModel model = mock(PropertyModel.class);
         when(model.get(CARD_TYPE)).thenReturn(MESSAGE);
@@ -1371,6 +1427,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void addSpecialItem_notPersistOnReset() {
         PropertyModel model = mock(PropertyModel.class);
         when(model.get(CARD_TYPE)).thenReturn(MESSAGE);
@@ -1390,11 +1447,13 @@ public class TabListMediatorUnitTest {
     }
 
     @Test(expected = AssertionError.class)
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void addSpecialItem_withoutTabListModelProperties() {
         mMediator.addSpecialItemToModel(0, TabProperties.UiType.DIVIDER, new PropertyModel());
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void removeSpecialItem_Message() {
         PropertyModel model = mock(PropertyModel.class);
         int expectedMessageType = FOR_TESTING;
@@ -1412,6 +1471,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.DisableFeatures({TAB_GROUPS_ANDROID})
     public void testUrlUpdated_forSingleTab_GTS_GroupNotEnabled() {
         initAndAssertAllProperties();
@@ -1426,6 +1486,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdated_forSingleTab_GTS() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1443,6 +1504,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdated_forGroup_GTS() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1475,6 +1537,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdated_forGroup_Dialog() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG);
@@ -1507,6 +1570,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdated_forUnGroup() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1530,6 +1594,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testOnInitializeAccessibilityNodeInfo() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1556,6 +1621,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testPerformAccessibilityAction() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1583,6 +1649,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testPerformAccessibilityAction_defaultAccessibilityAction() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1605,6 +1672,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testPerformAccessibilityAction_InvalidIndex() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -1630,6 +1698,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void testTabObserverRemovedFromClosedTab() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
@@ -1642,6 +1711,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void testTabObserverReattachToUndoClosedTab() {
         initAndAssertAllProperties();
         mMediator.setActionOnAllRelatedTabsForTesting(true);
@@ -1665,6 +1735,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void testUnchangeCheckIgnoreNonTabs() {
         initAndAssertAllProperties();
         List<Tab> tabs = new ArrayList<>();
@@ -1691,6 +1762,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void testSearchTermProperty() {
         initAndAssertAllProperties();
         List<Tab> tabs = new ArrayList<>();
@@ -1735,6 +1807,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void testSearchTermProperty_TabGroups_TabSwitcher() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
         String searchTerm1 = "hello world";
@@ -1753,6 +1826,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void testSearchTermProperty_TabGroups_Dialog() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG);
         createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
@@ -1766,6 +1840,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void testSearchTermProperty_TabGroups_Strip() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_STRIP);
         createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
@@ -1779,6 +1854,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void navigateToLastSearchQuery() {
         initAndAssertAllProperties();
 
@@ -1855,6 +1931,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void searchListener() {
         initAndAssertAllProperties();
 
@@ -1892,6 +1969,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void searchListener_frozenTab() {
         initAndAssertAllProperties();
 
@@ -1927,6 +2005,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void testSearchChipAdaptiveIcon_Disabled() {
         // Mock that google is the default search engine, and the search chip adaptive icon field
         // is set as false.
@@ -1950,6 +2029,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     public void testSearchChipAdaptiveIcon_ChangeWithSetting() {
         // Mock that google is the default search engine, and the search chip adaptive icon is
         // turned on.
@@ -1993,6 +2073,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUpdateFaviconForGroup() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -2026,6 +2107,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUpdateFaviconForGroup_StaleIndex_SelectAnotherTabWithinGroup() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -2053,6 +2135,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUpdateFaviconForGroup_StaleIndex_CloseTab() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
@@ -2080,6 +2163,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/1077209")
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUpdateFaviconForGroup_StaleIndex_Reset() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);

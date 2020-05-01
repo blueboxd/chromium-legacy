@@ -360,7 +360,6 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
 
     @Override
     public void destroy() {
-        mTabContentManager = null;
         mDestroyed = true;
     }
 

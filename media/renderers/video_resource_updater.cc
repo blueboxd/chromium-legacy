@@ -528,13 +528,13 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
   gfx::Rect visible_rect = frame->visible_rect();
   gfx::Size coded_size = frame->coded_size();
 
-  const float tex_width_scale =
-      static_cast<float>(visible_rect.width()) / coded_size.width();
-  const float tex_height_scale =
-      static_cast<float>(visible_rect.height()) / coded_size.height();
+  const gfx::PointF uv_top_left(
+      static_cast<float>(visible_rect.x()) / coded_size.width(),
+      static_cast<float>(visible_rect.y()) / coded_size.height());
 
-  const gfx::PointF uv_top_left(0.f, 0.f);
-  const gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
+  const gfx::PointF uv_bottom_right(
+      static_cast<float>(visible_rect.right()) / coded_size.width(),
+      static_cast<float>(visible_rect.bottom()) / coded_size.height());
 
   switch (frame_resource_type_) {
     case VideoFrameResourceType::VIDEO_HOLE: {
@@ -620,17 +620,13 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
           protected_video_type = gfx::ProtectedVideoType::kSoftwareProtected;
       }
 
-      const gfx::Vector2dF offset(
-          static_cast<float>(visible_rect.x()) / coded_size.width(),
-          static_cast<float>(visible_rect.y()) / coded_size.height());
-
       auto* texture_quad =
           render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
-      texture_quad->SetNew(
-          shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
-          frame_resources_[0].id, premultiplied_alpha, uv_top_left + offset,
-          uv_bottom_right + offset, SK_ColorTRANSPARENT, opacity, flipped,
-          nearest_neighbor, false, protected_video_type);
+      texture_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
+                           needs_blending, frame_resources_[0].id,
+                           premultiplied_alpha, uv_top_left, uv_bottom_right,
+                           SK_ColorTRANSPARENT, opacity, flipped,
+                           nearest_neighbor, false, protected_video_type);
       texture_quad->set_resource_size_in_pixels(coded_size);
       for (viz::ResourceId resource_id : texture_quad->resources) {
         resource_provider_->ValidateResource(resource_id);

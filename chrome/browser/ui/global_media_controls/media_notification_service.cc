@@ -206,6 +206,10 @@ void MediaNotificationService::Session::OnSessionOverlayStateChanged(
   }
 }
 
+bool MediaNotificationService::Session::IsPlaying() {
+  return is_playing_;
+}
+
 // static
 void MediaNotificationService::Session::RecordDismissReason(
     GlobalMediaControlsDismissReason reason) {
@@ -599,7 +603,15 @@ void MediaNotificationService::SetDialogDelegate(
   if (!dialog_delegate_)
     return;
 
+  std::list<std::string> sorted_session_ids;
   for (const std::string& id : active_controllable_session_ids_) {
+    if (sessions_.find(id)->second.IsPlaying())
+      sorted_session_ids.push_front(id);
+    else
+      sorted_session_ids.push_back(id);
+  }
+
+  for (const std::string& id : sorted_session_ids) {
     base::WeakPtr<media_message_center::MediaNotificationItem> item =
         GetNotificationItem(id);
     MediaNotificationContainerImpl* container =

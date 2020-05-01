@@ -49,10 +49,10 @@ class FakeWakeLockManager {
       : browser_context_(context), is_active_(false) {
     PowerAPI::Get(browser_context_)
         ->SetWakeLockFunctionsForTesting(
-            base::Bind(&FakeWakeLockManager::ActivateWakeLock,
-                       base::Unretained(this)),
-            base::Bind(&FakeWakeLockManager::CancelWakeLock,
-                       base::Unretained(this)));
+            base::BindRepeating(&FakeWakeLockManager::ActivateWakeLock,
+                                base::Unretained(this)),
+            base::BindRepeating(&FakeWakeLockManager::CancelWakeLock,
+                                base::Unretained(this)));
   }
 
   ~FakeWakeLockManager() {

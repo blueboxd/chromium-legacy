@@ -873,10 +873,10 @@
     To share, right-click on a folder in Files app, then select "Share with Plugin VM".
   </message>
   <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_INSTRUCTIONS_REMOVE" desc="Instructions for removing shared folders in Plugin VM.">
-    Removing folders from here will stop sharing but will not delete files.
+    Removing folders will stop sharing but will not delete files.
   </message>
   <message name="IDS_SETTINGS_PLUGIN_VM_SHARED_PATHS_REMOVE_SHARING" desc="Tooltip to show when hovering on the remove icon for a Plugin VM shared folder.">
-    Remove sharing
+    Stop sharing
   </message>
   <message name="IDS_SETTINGS_PLUGIN_VM_REMOVE_LABEL" desc="Label for the row to open a dialog confirming removal of Plugin VM.">
     Uninstall Plugin VM

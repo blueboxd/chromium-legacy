@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.common;
 
+import org.chromium.components.metrics.MetricsSwitches;
+
 /**
  * List of experimental features/flags supported for user devices. Add features/flags to this list
  * with scrutiny: any feature/flag in this list can be enabled for production Android devices, and
@@ -43,6 +45,10 @@ public final class ProductionSupportedFlagList {
             Flag.commandLine(AwSwitches.FINCH_SEED_MIN_UPDATE_PERIOD,
                     "Disables throttling of new variations seed requests to the WebView service.",
                     "0"),
+            Flag.commandLine(MetricsSwitches.FORCE_ENABLE_METRICS_REPORTING,
+                    "Forces WebView's metrics reporting to be enabled. This overrides user "
+                            + "settings and capacity sampling, but does not override the app's "
+                            + "choice to opt-out."),
             Flag.commandLine("webview-log-js-console-messages",
                     "Mirrors JavaScript console messages to system logs."),
             Flag.commandLine(AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH,

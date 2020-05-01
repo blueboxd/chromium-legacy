@@ -70,8 +70,9 @@ namespace captions {
 // Caption Bubble is focused.
 class CaptionBubbleFrameView : public views::BubbleFrameView {
  public:
-  CaptionBubbleFrameView()
-      : views::BubbleFrameView(gfx::Insets(), gfx::Insets()) {
+  explicit CaptionBubbleFrameView(views::View* close_button)
+      : views::BubbleFrameView(gfx::Insets(), gfx::Insets()),
+        close_button_(close_button) {
     // The focus ring is drawn on CaptionBubbleFrameView because it has the
     // correct bounds, but focused state is taken from the CaptionBubble.
     focus_ring_ = views::FocusRing::Install(this);
@@ -114,13 +115,23 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
     if (!bounds().Contains(point))
       return HTNOWHERE;
 
+    // |point| is in coordinates relative to CaptionBubbleFrameView, i.e.
+    // (0,0) is the upper left corner of this view. Convert it to screen
+    // coordinates to see whether the close button contains this point.
+    gfx::Point point_in_screen =
+        GetBoundsInScreen().origin() + gfx::Vector2d(point.x(), point.y());
+    if (close_button_->GetBoundsInScreen().Contains(point_in_screen))
+      return HTCLOSE;
+
+    // Ensure it's within the BubbleFrameView. This takes into account the
+    // rounded corners and drop shadow of the BubbleBorder.
     int hit = views::BubbleFrameView::NonClientHitTest(point);
 
     // After BubbleFrameView::NonClientHitTest processes the bubble-specific
-    // hits such as the close button and the rounded corners, it checks hits to
-    // the bubble's client view. Any hits to ClientFrameView::NonClientHitTest
-    // return HTCLIENT or HTNOWHERE. Override these to return HTCAPTION in
-    // order to make the entire widget draggable.
+    // hits such as the rounded corners, it checks hits to the bubble's client
+    // view. Any hits to ClientFrameView::NonClientHitTest return HTCLIENT or
+    // HTNOWHERE. Override these to return HTCAPTION in order to make the
+    // entire widget draggable.
     return (hit == HTCLIENT || hit == HTNOWHERE) ? HTCAPTION : hit;
   }
 
@@ -133,6 +144,7 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CaptionBubbleFrameView);
+  views::View* close_button_;
   std::unique_ptr<views::FocusRing> focus_ring_;
   bool contents_focused_ = false;
 };
@@ -344,7 +356,7 @@ bool CaptionBubble::ShouldShowCloseButton() const {
 
 views::NonClientFrameView* CaptionBubble::CreateNonClientFrameView(
     views::Widget* widget) {
-  frame_ = new CaptionBubbleFrameView();
+  frame_ = new CaptionBubbleFrameView(close_button_);
   return frame_;
 }
 

@@ -92,26 +92,6 @@
   [_ownerProxy setAlive:NO];
 }
 
-- (void)clearOwnerWhenWindowWillClose:(NSWindow*)window {
-  DCHECK(window);
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center addObserver:self
-             selector:@selector(windowWillClose:)
-                 name:NSWindowWillCloseNotification
-               object:window];
-}
-
-- (BOOL)mouseInsideTrackingAreaForView:(NSView*)view {
-  DCHECK(view);
-  NSPoint mouseLoc = [[view window] mouseLocationOutsideOfEventStream];
-  NSPoint mousePos = [view convertPoint:mouseLoc fromView:nil];
-  return NSMouseInRect(mousePos, [self rect], [view isFlipped]);
-}
-
-- (void)windowWillClose:(NSNotification*)notif {
-  [self clearOwner];
-}
-
 @end
 
 // Scoper //////////////////////////////////////////////////////////////////////

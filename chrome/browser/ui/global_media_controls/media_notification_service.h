@@ -183,6 +183,8 @@ class MediaNotificationService
     // into an overlay or it's overlay is closed.
     void OnSessionOverlayStateChanged(bool is_in_overlay);
 
+    bool IsPlaying();
+
    private:
     static void RecordDismissReason(GlobalMediaControlsDismissReason reason);
 

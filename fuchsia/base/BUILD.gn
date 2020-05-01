@@ -16,7 +16,6 @@ source_set("base") {
     "fuchsia_dir_scheme.cc",
     "init_logging.cc",
     "mem_buffer_util.cc",
-    "scoped_pseudo_file_publisher.cc",
     "string_util.cc",
   ]
   public = [
@@ -24,7 +23,6 @@ source_set("base") {
     "fuchsia_dir_scheme.h",
     "init_logging.h",
     "mem_buffer_util.h",
-    "scoped_pseudo_file_publisher.h",
     "string_util.h",
   ]
   deps = [

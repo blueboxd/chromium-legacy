@@ -31,14 +31,6 @@ UI_BASE_EXPORT
 // Prevents any future messages from being delivered to the |owner|.
 - (void)clearOwner;
 
-// Watches |window| for its NSWindowWillCloseNotification and calls
-// |-clearOwner| when the notification is observed.
-- (void)clearOwnerWhenWindowWillClose:(NSWindow*)window;
-
-// Returns YES if the mouse is inside the tracking area's rect. |view| is the
-// NSView the tracking area is attached to.
-- (BOOL)mouseInsideTrackingAreaForView:(NSView*)view;
-
 @end
 
 // Scoper //////////////////////////////////////////////////////////////////////

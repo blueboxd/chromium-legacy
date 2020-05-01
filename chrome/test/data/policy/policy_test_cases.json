@@ -46,17 +46,6 @@
     ]
   },
 
-  "TabFreezingEnabled": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "official_only": true,
-    "policy_pref_mapping_test": [
-      {
-        "policies": { "TabFreezingEnabled": false },
-        "prefs": { "tab_freezing_enabled": { "local_state": true } }
-      }
-    ]
-  },
-
   "OverrideSecurityRestrictionsOnInsecureOrigin": {
     "os": ["win", "linux", "mac", "android", "chromeos"],
     "policy_pref_mapping_test": [
